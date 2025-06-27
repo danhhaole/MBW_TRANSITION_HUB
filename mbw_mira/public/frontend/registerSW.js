@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/assets/mbw_mira/frontend/sw.js', { scope: '/assets/mbw_mira/frontend/' })})}
