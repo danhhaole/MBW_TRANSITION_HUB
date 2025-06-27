@@ -1,8 +1,6 @@
 <template>
   <FrappeUIProvider>
-    <Layout >
       <router-view />
-    </Layout>
   </FrappeUIProvider>
 </template>
 
