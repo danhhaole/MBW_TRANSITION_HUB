@@ -1,0 +1,70 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-06-27 14:59:48.010299",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "campaign_name",
+  "candidate_id",
+  "status",
+  "current_step_order",
+  "next_action_at"
+ ],
+ "fields": [
+  {
+   "fieldname": "campaign_name",
+   "fieldtype": "Link",
+   "label": "Campaign",
+   "options": "Campaign"
+  },
+  {
+   "fieldname": "candidate_id",
+   "fieldtype": "Link",
+   "label": "Candidate",
+   "options": "Candidate"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "ACTIVE\nCOMPLETED\nSTOPPED"
+  },
+  {
+   "fieldname": "current_step_order",
+   "fieldtype": "Int",
+   "label": "Current Step Order"
+  },
+  {
+   "fieldname": "next_action_at",
+   "fieldtype": "Datetime",
+   "label": "Next Action At"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-06-27 17:04:43.114836",
+ "modified_by": "Administrator",
+ "module": "MBW Mira",
+ "name": "CandidateCampaign",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

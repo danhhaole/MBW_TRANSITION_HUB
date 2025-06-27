@@ -1,0 +1,71 @@
+{
+ "actions": [],
+ "autoname": "format:CPG_STEP-{YY}{MM}{DD}-{#####}",
+ "creation": "2025-06-27 16:43:46.587473",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "campaign",
+  "step_order",
+  "action_type",
+  "delay_in_days",
+  "template"
+ ],
+ "fields": [
+  {
+   "fieldname": "step_order",
+   "fieldtype": "Int",
+   "label": "Step Order"
+  },
+  {
+   "fieldname": "action_type",
+   "fieldtype": "Select",
+   "label": "Action Type",
+   "options": "SEND_EMAIL\nSEND_SMS\nMANUAL_CALL\nMANUAL_TASK"
+  },
+  {
+   "fieldname": "delay_in_days",
+   "fieldtype": "Int",
+   "label": "Delay In Day"
+  },
+  {
+   "fieldname": "template",
+   "fieldtype": "Long Text",
+   "label": "Template"
+  },
+  {
+   "fieldname": "campaign",
+   "fieldtype": "Link",
+   "label": "Campaign",
+   "options": "Campaign"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-06-27 16:54:17.381337",
+ "modified_by": "Administrator",
+ "module": "MBW Mira",
+ "name": "CampaignStep",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -165,6 +165,11 @@ app_license = "agpl-3.0"
 # 		"mbw_mira.tasks.monthly"
 # 	],
 # }
+scheduler_events = {
+    "cron": {
+        "*/5 * * * *": ["mbw_mira.run_schedulers"]
+    }
+}
 
 # Testing
 # -------

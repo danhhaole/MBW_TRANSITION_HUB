@@ -1,0 +1,82 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-06-27 16:49:37.855079",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "candidate_campaign",
+  "campaign_step",
+  "status",
+  "scheduled_at",
+  "executed_at",
+  "result",
+  "assignee"
+ ],
+ "fields": [
+  {
+   "fieldname": "candidate_campaign",
+   "fieldtype": "Link",
+   "label": "Candidate Campaign",
+   "options": "CandidateCampaign"
+  },
+  {
+   "fieldname": "campaign_step",
+   "fieldtype": "Link",
+   "label": "Campaign Step",
+   "options": "CampaignStep"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "SCHEDULED\nPENDING_MANUAL\nEXECUTED\nFAILED"
+  },
+  {
+   "fieldname": "scheduled_at",
+   "fieldtype": "Datetime",
+   "label": "Scheduled At"
+  },
+  {
+   "fieldname": "executed_at",
+   "fieldtype": "Datetime",
+   "label": "Executed At"
+  },
+  {
+   "fieldname": "result",
+   "fieldtype": "JSON",
+   "label": "Result"
+  },
+  {
+   "fieldname": "assignee",
+   "fieldtype": "Data",
+   "label": "Assignee"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-06-27 17:04:22.799374",
+ "modified_by": "Administrator",
+ "module": "MBW Mira",
+ "name": "Action",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
