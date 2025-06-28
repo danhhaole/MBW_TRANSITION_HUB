@@ -6,11 +6,13 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "campaign_step_name",
   "campaign",
   "step_order",
   "action_type",
   "delay_in_days",
-  "template"
+  "template",
+  "action_config"
  ],
  "fields": [
   {
@@ -39,12 +41,22 @@
    "fieldtype": "Link",
    "label": "Campaign",
    "options": "Campaign"
+  },
+  {
+   "fieldname": "campaign_step_name",
+   "fieldtype": "Data",
+   "label": "Campaign Step Name"
+  },
+  {
+   "fieldname": "action_config",
+   "fieldtype": "JSON",
+   "label": "Config"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-06-27 16:54:17.381337",
+ "modified": "2025-06-28 08:41:11.984180",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "CampaignStep",

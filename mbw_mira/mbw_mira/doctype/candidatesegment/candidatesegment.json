@@ -5,28 +5,12 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "candidate",
-  "segment",
+  "candidate_id",
+  "segment_id",
   "added_at",
   "added_by"
  ],
  "fields": [
-  {
-   "fieldname": "candidate",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Candidate",
-   "options": "Candidate",
-   "reqd": 1
-  },
-  {
-   "fieldname": "segment",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Segment",
-   "options": "CandidateSegment",
-   "reqd": 1
-  },
   {
    "fieldname": "added_at",
    "fieldtype": "Datetime",
@@ -36,12 +20,28 @@
    "fieldname": "added_by",
    "fieldtype": "Data",
    "label": "Added By"
+  },
+  {
+   "fieldname": "candidate_id",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Candidate",
+   "options": "Candidate",
+   "reqd": 1
+  },
+  {
+   "fieldname": "segment_id",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Segment",
+   "options": "CandidateSegment",
+   "reqd": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-06-26 14:14:56.932573",
+ "modified": "2025-06-28 09:55:19.020082",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "CandidateSegment",

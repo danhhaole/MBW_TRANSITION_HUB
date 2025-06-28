@@ -21,7 +21,7 @@ class ActionWorker:
                 "result": result
             })
 
-            PostActionProcessor(self.action.name).trigger_next_step()
+            PostActionProcessor(self.action.name).trigger_next_step(self.action)
 
         except Exception as e:
             self.action.db_set({

@@ -167,7 +167,7 @@ app_license = "agpl-3.0"
 # }
 scheduler_events = {
     "cron": {
-        "*/5 * * * *": ["mbw_mira.run_schedulers"]
+        "*/5 * * * *": ["mbw_mira.run_schedulers.run_schedulers"]
     }
 }
 

@@ -6,12 +6,14 @@
  "engine": "InnoDB",
  "field_order": [
   "campaign_name",
+  "type",
+  "status",
+  "target_segment",
   "description",
   "is_active",
   "owner_id",
   "start_date",
-  "end_date",
-  "campaign_step"
+  "end_date"
  ],
  "fields": [
   {
@@ -32,8 +34,9 @@
   },
   {
    "fieldname": "owner_id",
-   "fieldtype": "Data",
-   "label": "Owner ID"
+   "fieldtype": "Link",
+   "label": "Owner ID",
+   "options": "User"
   },
   {
    "fieldname": "start_date",
@@ -46,16 +49,28 @@
    "label": "End Date"
   },
   {
-   "fieldname": "campaign_step",
+   "fieldname": "type",
+   "fieldtype": "Select",
+   "label": "Type",
+   "options": "NURTURING\nATTRACTION"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "DRAFT\nACTIVE\nPAUSED\nARCHIVED"
+  },
+  {
+   "fieldname": "target_segment",
    "fieldtype": "Link",
-   "label": "Campaign Step",
-   "options": "CampaignStep"
+   "label": "Target Segment",
+   "options": "TalentSegment"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-06-27 16:55:29.424414",
+ "modified": "2025-06-28 09:38:19.101811",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Campaign",

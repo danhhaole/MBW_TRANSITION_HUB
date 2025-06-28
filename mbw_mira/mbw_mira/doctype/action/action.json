@@ -5,22 +5,17 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "candidate_campaign",
+  "candidate_campaign_id",
   "campaign_step",
   "status",
   "scheduled_at",
   "executed_at",
   "result",
-  "assignee"
+  "assignee_id"
  ],
  "fields": [
   {
-   "fieldname": "candidate_campaign",
-   "fieldtype": "Link",
-   "label": "Candidate Campaign",
-   "options": "CandidateCampaign"
-  },
-  {
+   "description": "(Foreign Key -> CampaignStep) B\u01b0\u1edbc \u0111\u00e3 t\u1ea1o ra h\u00e0nh \u0111\u1ed9ng n\u00e0y.",
    "fieldname": "campaign_step",
    "fieldtype": "Link",
    "label": "Campaign Step",
@@ -30,7 +25,7 @@
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
-   "options": "SCHEDULED\nPENDING_MANUAL\nEXECUTED\nFAILED"
+   "options": "SCHEDULED\nEXECUTED\nSKIPPED\nFAILED\nPENDING_MANUAL"
   },
   {
    "fieldname": "scheduled_at",
@@ -48,15 +43,23 @@
    "label": "Result"
   },
   {
-   "fieldname": "assignee",
-   "fieldtype": "Data",
-   "label": "Assignee"
+   "description": "(Foreign Key -> CandidateCampaign)",
+   "fieldname": "candidate_campaign_id",
+   "fieldtype": "Link",
+   "label": "Candidate Campaign",
+   "options": "CandidateCampaign"
+  },
+  {
+   "fieldname": "assignee_id",
+   "fieldtype": "Link",
+   "label": "Assignee",
+   "options": "User"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-06-27 17:04:22.799374",
+ "modified": "2025-06-28 09:40:08.861356",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Action",

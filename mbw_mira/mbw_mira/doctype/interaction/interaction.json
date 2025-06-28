@@ -1,0 +1,70 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-06-28 08:53:23.203334",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "candidate_id",
+  "interaction_type"
+ ],
+ "fields": [
+  {
+   "fieldname": "candidate_id",
+   "fieldtype": "Link",
+   "label": "Candidate",
+   "options": "Candidate"
+  },
+  {
+   "fieldname": "interaction_type",
+   "fieldtype": "Select",
+   "label": "Interaction Type",
+   "options": "EMAIL_SENT\nEMAIL_DELIVERED\nEMAIL_BOUNCED\nEMAIL_OPENED\nEMAIL_CLICKED\nEMAIL_UNSUBSCRIBED\nEMAIL_REPLIED\nPAGE_VISITED\nFORM_SUBMITTED\nDOWNLOAD_TRIGGERED\nCHAT_STARTED\nCHAT_MESSAGE_SENT\nCHAT_COMPLETED\nCALL_MISSED\nCALL_COMPLETED\nSMS_SENT\nSMS_DELIVERED\nSMS_REPLIED\nAPPLICATION_SUBMITTED\nDOCUMENT_UPLOADED\nTEST_STARTED\nTEST_COMPLETED\nINTERVIEW_CONFIRMED\nINTERVIEW_RESCHEDULED",
+      "description": "Loại hành vi của ứng viên được hệ thống ghi nhận"
+  },{
+    "fieldname": "action",
+    "label": "Source Action",
+    "fieldtype": "Link",
+    "options": "Action",
+    "description": "Hành động hệ thống đã thực hiện dẫn đến tương tác này"
+  },
+  {
+    "fieldname": "url",
+    "label": "URL (if any)",
+    "fieldtype": "Data",
+    "description": "Liên kết mà ứng viên đã nhấp vào (nếu có)"
+  },
+  {
+    "fieldname": "description",
+    "label": "Description",
+    "fieldtype": "Text",
+    "description": "Thông tin bổ sung hoặc nội dung liên quan"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-06-28 09:18:52.686751",
+ "modified_by": "Administrator",
+ "module": "MBW Mira",
+ "name": "Interaction",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
