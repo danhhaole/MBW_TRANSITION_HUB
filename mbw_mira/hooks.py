@@ -167,7 +167,9 @@ app_license = "agpl-3.0"
 # }
 scheduler_events = {
     "cron": {
-        "*/5 * * * *": ["mbw_mira.run_schedulers.run_schedulers"]
+         "*/1 * * * *": [
+            #"mbw_mira.campaign.scheduler.run_campaign_scheduler"
+        ]
     }
 }
 
@@ -246,4 +248,7 @@ scheduler_events = {
 # default_log_clearing_doctypes = {
 # 	"Logging DocType Name": 30  # days to retain logs
 # }
-
+routes = [
+    {"from_route": "/track/open/<action_id>", "to_route": "mbw_mira.campaign.tracking.open_tracker"},
+    {"from_route": "/track/click/<action_id>", "to_route": "mbw_mira.campaign.tracking.click_tracker"},
+]
