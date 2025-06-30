@@ -22,16 +22,16 @@ def process_nurturing_campaign(campaign_id: str):
     for candidate in candidates:
         # Kiểm tra nếu ứng viên đã được enroll trong campaign này
         exists = frappe.db.exists("CandidateCampaign", {
-            "candidate": candidate["name"],
-            "campaign": campaign_id
+            "candidate_id": candidate["name"],
+            "campaign_id": campaign_id
         })
 
         if not exists:
             # Tạo mới CandidateCampaign
             frappe.get_doc({
                 "doctype": "CandidateCampaign",
-                "candidate": candidate["name"],
-                "campaign": campaign_id,
+                "candidate_id": candidate["name"],
+                "campaign_id": campaign_id,
                 "status": "ACTIVE",
                 "enrolled_at": now_datetime(),
                 "current_step_order": 1,

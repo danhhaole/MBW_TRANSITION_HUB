@@ -10,34 +10,33 @@ def process_candidate_campaign(candidate_campaign_id: str):
     Tạo bản ghi Action tương ứng với bước tiếp theo trong CampaignStep.
     """
     now = now_datetime()
-    candidate_campaign = frappe.get_doc("CandidateCampaign", candidate_campaign_id)
+    candidate_campaign = frappe.db.get_value("CandidateCampaign", candidate_campaign_id,['name','campaign_id','current_step_order'],as_dict=1)
 
-    campaign_id = candidate_campaign.campaign
+    campaign_id = candidate_campaign.campaign_id
     current_order = candidate_campaign.current_step_order
 
     # 1. Lấy bước kế tiếp trong Campaign
-    next_step = frappe.get_value("CampaignStep", {
+    next_step = frappe.db.get_value("CampaignStep", {
         "campaign": campaign_id,
-        "step_order": current_order + 1
-    }, ["name", "action_type"])
-
+        "step_order": current_order
+    }, ["name", "action_type"],as_dict=1)
+    print(campaign_id,current_order,next_step)
     if not next_step:
         # Không còn bước nào, có thể đánh dấu COMPLETED ở nơi khác
         return
 
-    step_name, action_type = next_step
-
     # 2. Xác định trạng thái và người phụ trách (nếu là manual)
-    status = "SCHEDULED" if action_type in ["SEND_EMAIL", "SEND_SMS"] else "PENDING_MANUAL"
+    status = "SCHEDULED" if next_step.action_type in ["SEND_EMAIL", "SEND_SMS"] else "PENDING_MANUAL"
     assignee_id = None
 
     if status == "PENDING_MANUAL":
         assignee_id = get_assignee_for_manual_action(campaign_id)
 
+    print(candidate_campaign_id)
     # 3. Tạo bản ghi Action
     action = Action(
         candidate_campaign_id=candidate_campaign.name,
-        campaign_step=step_name,
+        campaign_step=next_step.name,
         status=status,
         scheduled_at=now,
         assignee_id=assignee_id

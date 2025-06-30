@@ -8,7 +8,6 @@ from mbw_mira.services.enqueue_worker import (
     enqueue_scheduler_worker,
 )
 
-
 class CampaignSchedulerEngine(BaseScheduler):
     def run(self):
         """Chỉ kiểm tra campaign đủ điều kiện (status = ACTIVE)
@@ -23,6 +22,7 @@ class CampaignSchedulerEngine(BaseScheduler):
         now = now_datetime()
 
         # 1. Quét tất cả Campaign status = ACTIVE
+        print("1. Quét tất cả Campaign status = ACTIVE")
         campaigns = frappe.get_all(
             "Campaign",
             filters={"status": "ACTIVE", "type": ["in", ["NURTURING", "ATTRACTION"]]},
@@ -31,6 +31,7 @@ class CampaignSchedulerEngine(BaseScheduler):
 
         for campaign in campaigns:
             if campaign["type"] == "NURTURING":
+                print("2.1 Campaign type = NURTURING")
                 enqueue_nurturing_collector_worker(campaign["name"])
 
             elif campaign["type"] == "ATTRACTION":
@@ -39,11 +40,11 @@ class CampaignSchedulerEngine(BaseScheduler):
                     "CandidateCampaign",
                     filters={
                         "status": "ACTIVE",
-                        "campaign": campaign["name"],
+                        "campaign_id": campaign["name"],
                         "next_action_at": ["<=", now],
                     },
                     fields=["name"],
                 )
-
-                for cc in candidate_campaigns:
+                print("2.2 Campaign type = ATTRACTION",candidate_campaigns,campaign["name"])
+                for cc in candidate_campaigns:                    
                     enqueue_scheduler_worker(cc["name"])

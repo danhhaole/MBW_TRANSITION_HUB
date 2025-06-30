@@ -5,6 +5,7 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
+  "section_break_lenk",
   "title",
   "description",
   "criteria",
@@ -49,12 +50,17 @@
    "fieldname": "candidate_count",
    "fieldtype": "Int",
    "label": "Candidate Count"
+  },
+  {
+   "description": "(Ph\u00e2n kh\u00fac Nh\u00e2n t\u00e0i / Talent Pool)",
+   "fieldname": "section_break_lenk",
+   "fieldtype": "Section Break"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-06-26 14:08:53.957607",
+ "modified": "2025-06-30 08:19:33.511437",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "TalentSegment",

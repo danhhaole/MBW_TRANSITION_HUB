@@ -33,7 +33,7 @@ class PostActionProcessor:
 
         # Tìm bước tiếp theo
         next_step = frappe.get_doc("CampaignStep", {
-            "campaign": candidate_campaign.campaign,
+            "campaign_id": candidate_campaign.campaign,
             "step_order": current_step_order + 1
         })
 

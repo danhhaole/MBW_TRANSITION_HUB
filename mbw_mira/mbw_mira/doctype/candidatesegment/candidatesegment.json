@@ -18,8 +18,9 @@
   },
   {
    "fieldname": "added_by",
-   "fieldtype": "Data",
-   "label": "Added By"
+   "fieldtype": "Link",
+   "label": "Added By",
+   "options": "User"
   },
   {
    "fieldname": "candidate_id",
@@ -34,14 +35,14 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Segment",
-   "options": "CandidateSegment",
+   "options": "TalentSegment",
    "reqd": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-06-28 09:55:19.020082",
+ "modified": "2025-06-30 10:27:22.534745",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "CandidateSegment",
