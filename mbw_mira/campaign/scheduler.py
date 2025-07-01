@@ -4,7 +4,7 @@ from frappe.utils import now_datetime
 
 
 def run_campaign_scheduler():
-    print("================================================VÀO====================")
+    print("===============VÀO====================")
     candidates = frappe.get_all(
         "CandidateCampaign",
         filters={"status": "ACTIVE", "next_action_at": ["<=", now_datetime()]},
