@@ -20,11 +20,13 @@ def handle_step(candidate_campaign_id: str):
         "step_order": cc.current_step_order
     })
 
+    status_action = "SCHEDULED" if step.action_type in ["SEND_EMAIL","SEND_SMS","SEND_NOTIFICATION"] else "PENDING_MANUAL"
+    
     action = frappe.get_doc({
         "doctype": "Action",
         "candidate_campaign_id": cc.name,
         "campaign_step": step.name,
-        "status": "SCHEDULED",
+        "status": status_action,
         "scheduled_at": now_datetime()
     }).insert(ignore_permissions=True)
     

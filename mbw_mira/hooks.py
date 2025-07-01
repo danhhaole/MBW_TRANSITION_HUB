@@ -166,9 +166,11 @@ app_license = "agpl-3.0"
 # 	],
 # }
 scheduler_events = {
+    "all":["mbw_mira.campaign.scheduler.run_campaign_scheduler"],
     "cron": {
-         "*/1 * * * *": [
-            "mbw_mira.campaign.scheduler.run_campaign_scheduler"
+         "0/1 * * * *": [
+            "mbw_mira.campaign.scheduler.run_campaign_scheduler",
+            "mbw_mira.auth.after_login"
         ]
     }
 }
@@ -239,7 +241,12 @@ scheduler_events = {
 # --------------------------------
 
 # auth_hooks = [
-# 	"mbw_mira.auth.validate"
+# 	"mbw_mira.auth.after_login",
+#  "mbw_mira.auth.after_logout",
+#  "mbw_mira.auth.on_login_failed",
+#  "mbw_mira.auth.before_login",
+#  "mbw_mira.auth.before_logout",
+#  "mbw_mira.auth.on_session_creation"
 # ]
 
 # Automatically update python controller files with type annotations for this app.
@@ -248,7 +255,3 @@ scheduler_events = {
 # default_log_clearing_doctypes = {
 # 	"Logging DocType Name": 30  # days to retain logs
 # }
-routes = [
-    {"from_route": "/track/open/<action_id>", "to_route": "mbw_mira.campaign.tracking.open_tracker"},
-    {"from_route": "/track/click/<action_id>", "to_route": "mbw_mira.campaign.tracking.click_tracker"},
-]

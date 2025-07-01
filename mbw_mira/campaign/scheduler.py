@@ -12,6 +12,7 @@ def run_campaign_scheduler():
     )
     
     for cc_id in candidates:
+        print("CC_ID",cc_id)
         frappe.enqueue(
             "mbw_mira.campaign.background_jobs.process_next_step",
             candidate_campaign_id=cc_id,
