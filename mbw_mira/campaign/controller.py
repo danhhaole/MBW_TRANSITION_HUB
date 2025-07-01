@@ -29,8 +29,10 @@ def handle_step(candidate_campaign_id: str):
         "status": status_action,
         "scheduled_at": now_datetime()
     }).insert(ignore_permissions=True)
-    
-    frappe.enqueue("mbw_mira.campaign.background_jobs.execute_action", action_id=action.name,queue="short")
+
+    #Nếu status là Scheduled thì chạy tự động
+    if status_action == "SCHEDULED":
+        frappe.enqueue("mbw_mira.campaign.background_jobs.execute_action", action_id=action.name,queue="short")
 
 def execute_action_logic(action_id: str):
     action = frappe.get_doc("Action", action_id)
@@ -58,11 +60,7 @@ def execute_action_logic(action_id: str):
                 interaction_type="SMS_SENT",
                 source_action=action.name
             )
-        elif step.action_type in ["MANUAL_CALL", "MANUAL_TASK"]:
-            action.status = "PENDING_MANUAL"
-            action.result = {"note": f"Manual action '{step.action_type}' required."}
-            action.save()
-            return
+        
 
         action.status = "EXECUTED"
         action.executed_at = now_datetime()
