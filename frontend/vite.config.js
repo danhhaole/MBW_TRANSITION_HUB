@@ -41,6 +41,17 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'src'),
     },
   },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        additionalData: `
+          @use "vuetify/settings" with (
+            $color-pack: true
+          );
+        `,
+      },
+    },
+  },
   build: {
     outDir: "../mbw_mira/public/frontend",
     emptyOutDir: true,
