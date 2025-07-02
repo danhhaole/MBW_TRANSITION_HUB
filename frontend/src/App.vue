@@ -1,12 +1,20 @@
 <template>
-  <FrappeUIProvider>
-      <router-view />
-  </FrappeUIProvider>
+  <component :is="layout" >
+    <router-view />
+  </component>
 </template>
 
-
 <script setup>
-import { FrappeUIProvider, setConfig } from 'frappe-ui'
-setConfig('systemTimezone', window.timezone?.system || null)
-setConfig('localTimezone', window.timezone?.user || null)
+import { useRoute } from 'vue-router'
+import { computed } from 'vue'
+import { sessionStore as session } from '@/stores/session'
+import PublicLayout from './layouts/PublicLayout.vue'
+import PrivateLayout from './layouts/PrivateLayout.vue'
+
+const route = useRoute()
+
+const layout = computed(() => {
+  const layoutType = route.meta.layout
+  return layoutType === 'private' && session().isLoggedIn ? PrivateLayout : PublicLayout
+})
 </script>

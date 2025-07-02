@@ -9,41 +9,14 @@ import router from './router'
 import App from './App.vue'
 
 // Vuetify
-import 'vuetify/styles'
-import { createVuetify } from 'vuetify'
-import * as components from 'vuetify/components'
-import * as directives from 'vuetify/directives'
+import vuetify from './plugins/vuetify'
 // Vuetify theme (tuỳ chọn)
-const vuetify = createVuetify({
-  components,
-  directives,
-})
+
+
 import {
-    Button,
-    Input,
-    TextInput,
-    FormControl,
-    ErrorMessage,
-    Dialog,
-    Alert,
-    Badge,
     setConfig,
     frappeRequest,
-    FeatherIcon,
   } from 'frappe-ui'
-
-
-  let globalComponents = {
-    Button,
-    TextInput,
-    Input,
-    FormControl,
-    ErrorMessage,
-    Dialog,
-    Alert,
-    Badge,
-    FeatherIcon,
-  }
 
 // create a pinia instance
 let pinia = createPinia()
@@ -56,8 +29,4 @@ app.use(vuetify)
 // app.use(translationPlugin)
 //app.use(posthogPlugin)
 
-
-for (let key in globalComponents) {
-    app.component(key, globalComponents[key])
-  }
 app.mount('#app')
