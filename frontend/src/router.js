@@ -10,7 +10,7 @@ const routes = [
   {
     path: '/',
     component: Home,
-    meta: { layout: 'public' }
+    meta: { layout: 'private' }
   },
   {
     path: '/login',
@@ -34,7 +34,8 @@ router.beforeEach(async (to, from, next) => {
   isLoggedIn && (await userResource.promise)
   const isAuthenticated = true // kiểm tra login ở đây
   if (to.meta.layout === 'private' && !isLoggedIn) {
-    window.location.href = '/login?redirect-to=/mbw_mira'
+     next('/login')
+    //window.location.href = '/login?redirect-to=/mbw_mira'
   }else{
     next()
   }

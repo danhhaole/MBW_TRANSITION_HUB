@@ -31,10 +31,22 @@ export default defineConfig({
       icons: [
 
       ],
-    }
+    },
+  workbox: {
+    globIgnores: [
+      'assets/index-*.css',
+      'assets/index-*.js'
+    ]
+  }
   })],
   server: {
-    port: 8088
+    host: true,
+    allowedHosts: [
+      "localhost",
+      "127.0.0.1",
+      "mira.local",
+      "172.30.57.120"
+    ],
   },
   resolve: {
     alias: {
@@ -51,19 +63,6 @@ export default defineConfig({
         `,
       },
     },
-  },
-  build: {
-    outDir: "../mbw_mira/public/frontend",
-    emptyOutDir: true,
-    commonjsOptions: {
-      include: [/tailwind.config.js/, /node_modules/],
-    },
-    sourcemap: true,
-    rollupOptions: {
-      output: {
-        format: 'esm'
-      }
-    }
   },
   optimizeDeps: {
     include: ['frappe-ui > feather-icons', 'showdown', 'engine.io-client', 'tailwind.config.js',
