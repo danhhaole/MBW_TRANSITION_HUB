@@ -10,7 +10,7 @@ const routes = [
   {
     path: '/',
     component: Home,
-    meta: { layout: 'private' }
+    meta: { layout: 'public' }
   },
   {
     path: '/login',
