@@ -16,7 +16,8 @@
   "skills",
   "ai_summary",
   "status",
-  "last_interaction"
+  "last_interaction",
+  "email_opt_out"
  ],
  "fields": [
   {
@@ -91,12 +92,18 @@
    "fieldname": "last_interaction",
    "fieldtype": "Datetime",
    "label": "Last Interaction"
+  },
+  {
+   "default": "0",
+   "fieldname": "email_opt_out",
+   "fieldtype": "Check",
+   "label": "Email Opt Out"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-06-26 14:15:17.851732",
+ "modified": "2025-07-03 14:42:00.266047",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Candidate",

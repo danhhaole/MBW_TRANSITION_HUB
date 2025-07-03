@@ -1,0 +1,93 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-07-03 15:20:18.714853",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "subject",
+  "recipients",
+  "cc",
+  "bcc",
+  "sender",
+  "content",
+  "attachments",
+  "status",
+  "error"
+ ],
+ "fields": [
+  {
+   "description": "Ti\u00eau \u0111\u1ec1 email",
+   "fieldname": "subject",
+   "fieldtype": "Data",
+   "label": "Subject"
+  },
+  {
+   "fieldname": "recipients",
+   "fieldtype": "Small Text",
+   "label": "Recipients"
+  },
+  {
+   "fieldname": "cc",
+   "fieldtype": "Small Text",
+   "label": "CC"
+  },
+  {
+   "fieldname": "bcc",
+   "fieldtype": "Small Text",
+   "label": "BCC"
+  },
+  {
+   "fieldname": "sender",
+   "fieldtype": "Data",
+   "label": "Sender"
+  },
+  {
+   "fieldname": "content",
+   "fieldtype": "Long Text",
+   "label": "Content"
+  },
+  {
+   "fieldname": "attachments",
+   "fieldtype": "Long Text",
+   "label": "Attachments"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Success\nFailed\nFallback"
+  },
+  {
+   "fieldname": "error",
+   "fieldtype": "Long Text",
+   "label": "Error"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-07-03 15:26:16.182747",
+ "modified_by": "Administrator",
+ "module": "MBW Mira",
+ "name": "EmailLog",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
