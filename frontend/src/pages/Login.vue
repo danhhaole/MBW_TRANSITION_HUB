@@ -101,7 +101,7 @@ async function handleLogin() {
   error.value = ''
   loading.value = true
   try {
-    await session().login.submit({ email: email.value, password: password.value })
+    await session().login.submit({ usr: email.value, pwd: password.value })
   } catch (e) {
     error.value = e.message || 'Login failed'
   } finally {

@@ -1,5 +1,20 @@
 <script setup>
+import { ref } from 'vue'
+import { sessionStore as session } from '@/stores/session'
+const loading = ref(false)
 defineEmits(['toggle-drawer'])
+
+
+async function handleLogout() {
+  loading.value = true
+  try {
+    await session().logout.submit()
+  } catch (e) {
+    error.value = e.message || 'Logout failed'
+  } finally {
+    loading.value = false
+  }
+}
 </script>
 
 <template>
@@ -28,7 +43,7 @@ defineEmits(['toggle-drawer'])
       </template>
 
       <v-list>
-        <v-list-item @click="">
+        <v-list-item @click="handleLogout" :loading="loading">
           <v-list-item-title>Logout</v-list-item-title>
         </v-list-item>
       </v-list>
