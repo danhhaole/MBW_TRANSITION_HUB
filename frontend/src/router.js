@@ -3,6 +3,10 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Home from '@/pages/Home.vue'
 import Login from '@/pages/Login.vue'
 import Dashboard from '@/pages/Dashboard.vue'
+import CampaignManagement from '@/pages/CampaignManagement.vue'
+import TalentSegments from '@/pages/TalentSegmentManagement.vue'
+import TalentSegmentDetail from '@/pages/TalentSegmentDetail.vue'
+import CandidateManagement from '@/pages/CandidateManagement.vue'
 import { userResource } from '@/stores/user'
 import { sessionStore } from '@/stores/session'
 
@@ -21,6 +25,30 @@ const routes = [
     path: '/dashboard',
     component: Dashboard,
     meta: { layout: 'private' }
+  },
+  {
+    path: '/campaigns',
+    component: CampaignManagement,
+    meta: { layout: 'private' },
+    name: 'CampaignManagement'
+  },
+  {
+    path: '/talent-segments',
+    component: TalentSegments,
+    meta: { layout: 'private' },
+    name: 'TalentSegments'
+  },
+  {
+    path: '/talent-segments/:id',
+    component: TalentSegmentDetail,
+    meta: { layout: 'private' },
+    name: 'TalentSegmentDetail'
+  },
+  {
+    path: '/candidates',
+    component: CandidateManagement,
+    meta: { layout: 'private' },
+    name: 'CandidateManagement'
   }
 ]
 

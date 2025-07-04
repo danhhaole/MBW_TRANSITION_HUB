@@ -113,8 +113,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { createResource } from 'frappe-ui'
-import CampaignCard from '@/components/CampaignCard.vue'
-import TaskUpdateModal from '@/components/TaskUpdateModal.vue'
+import CampaignCard from '@/components/campaign/CampaignCard.vue'
+import TaskUpdateModal from '@/components/shared/TaskUpdateModal.vue'
 
 // Reactive data
 const tasks = ref([])

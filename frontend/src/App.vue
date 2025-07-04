@@ -2,6 +2,9 @@
   <component :is="layout" >
     <router-view />
   </component>
+  
+  <!-- Global Toast Container -->
+  <ToastContainer />
 </template>
 
 <script setup>
@@ -10,6 +13,7 @@ import { computed } from 'vue'
 import { sessionStore as session } from '@/stores/session'
 import PublicLayout from './layouts/PublicLayout.vue'
 import PrivateLayout from './layouts/PrivateLayout.vue'
+import ToastContainer from '@/components/shared/ToastContainer.vue'
 
 const route = useRoute()
 

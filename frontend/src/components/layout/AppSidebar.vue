@@ -11,6 +11,24 @@ const menuItems = [
     to: '/dashboard'
   },
   {
+    id: 'campaign',
+    title: 'Campaign',
+    icon: 'mdi-target',
+    to: '/campaigns'
+  },
+  {
+    id: 'talentsegments',
+    title: 'Talent Segments',
+    icon: 'mdi-account-group',
+    to: '/talent-segments'
+  },
+  {
+    id: 'candidates',
+    title: 'Candidates',
+    icon: 'mdi-account',
+    to: '/candidates'
+  },
+  {
     id: 'user',
     title: 'User',
     icon: 'mdi-account',
