@@ -2,12 +2,13 @@
 import frappe
 from frappe.utils import now_datetime, now
 
+#Lịch chạy quét Campaign active
 def run_campaign_scheduler():
     campaigns = get_active_campaigns()
 
     for cp in campaigns:
         frappe.enqueue(
-            "mbw_mira.campaign.background_jobs.process_next_step",
+            "mbw_mira.campaign.background_jobs.add_candidate_to_talentsegment",
             campaign=cp.name,
             segment=cp.target_segment
         )
@@ -45,6 +46,7 @@ def get_active_campaigns():
 
     return campaigns
 
+#Lích chạy quét CandidateCampaign
 def run_candidate_campaign_scheduler():
     print("===============VÀO====================")
     candidates = frappe.get_all(

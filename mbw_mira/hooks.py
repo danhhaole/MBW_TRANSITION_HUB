@@ -148,32 +148,20 @@ app_license = "agpl-3.0"
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-# 	"all": [
-# 		"mbw_mira.tasks.all"
-# 	],
-# 	"daily": [
-# 		"mbw_mira.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"mbw_mira.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"mbw_mira.tasks.weekly"
-# 	],
-# 	"monthly": [
-# 		"mbw_mira.tasks.monthly"
-# 	],
-# }
 scheduler_events = {
-    "all":["mbw_mira.campaign.scheduler.run_campaign_scheduler"],
+    "all": [],
+    "daily": [],
+    "hourly": [],
+    "weekly": [],
+    "monthly": [],
     "cron": {
-         "0/1 * * * *": [
+        "0/1 * * * *": [
+            "mbw_mira.campaign.scheduler.run_candidate_campaign_scheduler",
             "mbw_mira.campaign.scheduler.run_campaign_scheduler",
-            "mbw_mira.auth.after_login"
         ]
-    }
+    },
 }
+
 
 # Testing
 # -------
@@ -256,8 +244,14 @@ scheduler_events = {
 # 	"Logging DocType Name": 30  # days to retain logs
 # }
 website_route_rules = [
-    {"from_route": "/track/open", "to_route": "mbw_mira.api.interaction.tracking_pixel"},
-    {"from_route": "/track/click", "to_route": "mbw_mira.api.interaction.click_redirect"},
+    {
+        "from_route": "/track/open",
+        "to_route": "mbw_mira.api.interaction.tracking_pixel",
+    },
+    {
+        "from_route": "/track/click",
+        "to_route": "mbw_mira.api.interaction.click_redirect",
+    },
     {"from_route": "/track/event", "to_route": "mbw_mira.api.interaction.track"},
-    {"from_route": "/unsubscribe", "to_route": "mbw_mira.api.email.unsubscribe"}
+    {"from_route": "/unsubscribe", "to_route": "mbw_mira.api.email.unsubscribe"},
 ]

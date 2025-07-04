@@ -32,12 +32,13 @@ def complete_manual(action_id, note=None, user=None):
     )
 
 
-def add_candidate_to_talentsegment(data):
+def add_candidate_to_talentsegment(campaign,segment):
     frappe.enqueue(
         candidate_service.insert_candidate_segment,
         queue="default",
         timeout=300,
-        data=data,
+        campaign=campaign,
+        segment =segment
     )
 
 def add_candidate_to_campaign(data):
