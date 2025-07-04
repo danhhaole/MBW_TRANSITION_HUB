@@ -13,5 +13,8 @@ def complete_manual_action(action_id: str, user: str = None, note: str = ""):
         "manual_note": note,
         "manual_completed_at": now_datetime()
     })
-    action.save()
+    action.save(ignore_permissions=True)
+    #Publish event action from server
+    frappe.publish_realtime('manual_action_complete', data=action)
+
     frappe.enqueue("mbw_mira.campaign.background_jobs.step_executed", action_id=action.name)

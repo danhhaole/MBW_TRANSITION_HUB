@@ -13,7 +13,7 @@ frappe.ui.form.on('Action', {
                     }
                 ], (values) => {
                     frappe.call({
-                        method: "mbw_mira.campaign.background_jobs.complete_manual",
+                        method: "mbw_mira.api.complete_manual_action",
                         args: {
                             action_id: frm.doc.name,
                             note: values.note
