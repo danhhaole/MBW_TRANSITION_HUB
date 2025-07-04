@@ -2,6 +2,38 @@ import frappe
 from frappe import _
 from frappe.utils import now_datetime, add_days
 
+#Tạo CandidateSegment từ Campaign
+def handle_candidate_segment(campaigns: list[str]):
+    """
+    Xử lý các CandidateCampaign từ danh sách Campaigns.
+    Mỗi Campaign sẽ lấy danh sách Candidate từ CandidateSegment,
+    sau đó insert vào CandidateCampaign.
+    """
+    if not campaigns:
+        frappe.logger("campaign").info("[SKIP] No active campaigns found.")
+        return
+
+    for campaign in campaigns:
+        segment = frappe.get_value("Campaign", campaign, "target_segment")
+        if not segment:
+            frappe.logger("campaign").info(f"[SKIP] Campaign {campaign} has no target segment.")
+            continue
+
+        # Mỗi campaign sẽ có thông tin segment,
+        # lấy danh sách candidate từ CandidateSegment
+        candidate_ids = candidate_segment_by_campaign(segment)
+        if not candidate_ids:
+            frappe.logger("campaign").info(f"[SKIP] No candidates found for segment {segment}.")
+            continue
+
+        # Insert vào CandidateSegment
+        frappe.enqueue(
+            "mbw_mira.services.candidate_service.insert_candidate_segment",
+            queue="default",
+            timeout=300,
+            candidates=candidate_ids,
+            segment=segment
+        )
 
 def insert_candidate_segment(**kwargs) -> list[str]:
     """
@@ -9,6 +41,7 @@ def insert_candidate_segment(**kwargs) -> list[str]:
     đảm bảo duy nhất theo (candidate, segment).
     Bỏ qua các candidate đã tồn tại trong segment.
     """
+        
     segment_id = kwargs.get("segment")
     candidate_ids = kwargs.get("candidates")
     added_by = kwargs.get("added_by", None)
@@ -128,6 +161,8 @@ def insert_candidate_campaign(**kwargs):
         frappe.publish_realtime("candidate_segment_created", data=doc)
 
     frappe.db.commit()
+
+
 
 
 # lấy danh sách candidate từ CandidateSegment

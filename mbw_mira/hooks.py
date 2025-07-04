@@ -155,9 +155,11 @@ scheduler_events = {
     "weekly": [],
     "monthly": [],
     "cron": {
-        "0/1 * * * *": [
-            "mbw_mira.campaign.scheduler.run_candidate_campaign_scheduler",
-            "mbw_mira.campaign.scheduler.run_campaign_scheduler",
+        "*/1 * * * *": [
+            "mbw_mira.campaign.scheduler.run_campaign_scheduler"
+        ],
+        "*/5 * * * *": [
+            "mbw_mira.campaign.scheduler.run_candidate_campaign_scheduler"
         ]
     },
 }
