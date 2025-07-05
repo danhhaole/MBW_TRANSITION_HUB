@@ -1,4 +1,5 @@
 import frappe
+from frappe.utils import now_datetime
 
 def process_campaign_with_steps(data):
     """
@@ -58,36 +59,3 @@ def process_campaign_with_steps(data):
         user=owner_id
     )
 
-
-    
-def _get_active_campaigns():
-    """
-    Lấy danh sách Campaign:
-    - status = ACTIVE
-    - is_active = 1
-    - start_date <= hôm nay
-    - end_date >= hôm nay
-    """
-    current_date = now()  # yyyy-mm-dd
-
-    campaigns = frappe.get_all(
-        "Campaign",
-        filters={
-            "status": "ACTIVE",
-            "is_active": 1,
-            "start_date": ["<=", current_date],
-            "end_date": [">=", current_date]
-        },
-        fields=[
-            "name",
-            "campaign_name",
-            "start_date",
-            "end_date",
-            "status",
-            "is_active",
-            "target_segment"
-        ],
-        order_by="start_date asc"
-    )
-
-    return campaigns

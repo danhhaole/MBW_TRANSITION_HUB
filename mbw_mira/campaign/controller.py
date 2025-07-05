@@ -34,19 +34,15 @@ def handle_step(candidate_campaign_id: str):
     if status_action == "SCHEDULED":
         frappe.enqueue("mbw_mira.campaign.background_jobs.execute_action", action_id=action.name,queue="short")
 
+#Process campaign tạo candidate segment
 def handle_campaign():
-    from mbw_mira.services.candidate_service import _get_active_campaigns
-    campaigns = _get_active_campaigns()
-    if not campaigns:
-        frappe.logger("campaign").info("[SKIP] No active campaigns found.")
-        return
-    #Enqueue campaign
-    frappe.enqueue(
-        candidate_service.handle_candidate_segment,
-        queue="default",
-        timeout=300,
-        campaigns=campaigns,
-    )
+    from mbw_mira.services import candidate_service
+    candidate_service.handle_candidate_segment()
+
+#Process CandidateCampaign xử lý logic
+def handle_candidate_campaign():
+    from mbw_mira.services import candidate_service   
+    candidate_service.handle_candidate_campaign()
 
 def execute_action_logic(action_id: str):
     action = frappe.get_doc("Action", action_id)

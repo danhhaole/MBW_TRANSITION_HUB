@@ -21,7 +21,7 @@ def execute_action(action_id):
 def step_executed(action_id):
     frappe.enqueue(controller.process_step_result, queue="default", action_id=action_id)
 
-
+#Queu hoàn thành thủ công nếu action manual
 def complete_manual(action_id, note=None, user=None):
     frappe.enqueue(
         manual_task_handler.complete_manual_action,
@@ -31,13 +31,6 @@ def complete_manual(action_id, note=None, user=None):
         user=user,
     )
 
-
-def process_campaign():
-    frappe.enqueue(
-        campaign_service.handle_campaign,
-        queue="default",
-        timeout=300
-    )
 
 
 def process_campaign_with_steps(data):

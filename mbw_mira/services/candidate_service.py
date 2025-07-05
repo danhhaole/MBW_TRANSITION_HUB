@@ -1,18 +1,14 @@
 import frappe
 from frappe import _
-from frappe.utils import now_datetime, add_days
+from frappe.utils import now_datetime, add_days,now
 
 #Tạo CandidateSegment từ Campaign
-def handle_candidate_segment(campaigns: list[str]):
-    """
-    Xử lý các CandidateCampaign từ danh sách Campaigns.
-    Mỗi Campaign sẽ lấy danh sách Candidate từ CandidateSegment,
-    sau đó insert vào CandidateCampaign.
-    """
+def handle_candidate_segment():
+    campaigns = _get_active_campaigns()
     if not campaigns:
         frappe.logger("campaign").info("[SKIP] No active campaigns found.")
         return
-
+    frappe.logger("campaign").info("Active campaigns found. {campaigns}")
     for campaign in campaigns:
         segment = frappe.get_value("Campaign", campaign, "target_segment")
         if not segment:
@@ -34,6 +30,23 @@ def handle_candidate_segment(campaigns: list[str]):
             candidates=candidate_ids,
             segment=segment
         )
+
+def handle_candidate_campaign():
+    candidate_campaigns = _get_active_candidate_campaigns()
+    if not candidate_campaigns:
+        frappe.logger("candidate_campaigns").info("[SKIP] No active candidate_campaigns found.")
+        return
+
+    for can_campaign in candidate_campaigns:
+        segment = frappe.get_value("Campaign", can_campaign.campaign_id, "target_segment")
+        if not segment:
+            continue
+        frappe.enqueue(
+            "mbw_mira.campaign.background_jobs.process_next_step",
+            candidate_campaign_id=can_campaign.name,
+        )
+            
+
 
 def insert_candidate_segment(**kwargs) -> list[str]:
     """
@@ -60,7 +73,7 @@ def insert_candidate_segment(**kwargs) -> list[str]:
     existing_candidates = frappe.get_all(
         "CandidateSegment",
         filters={"segment_id": segment_id, "candidate_id": ["in", candidate_ids]},
-        fields=["candidate_id"],
+        fields=["candidate_id"]
     )
     existing_candidate_ids = {x.candidate_id for x in existing_candidates}
 
@@ -92,9 +105,6 @@ def insert_candidate_segment(**kwargs) -> list[str]:
         )
 
     frappe.db.commit()
-
-    
-    
     return inserted_names
 
 
@@ -110,7 +120,7 @@ def insert_candidate_campaign(**kwargs):
     # lấy step trong Campaign theo campaign
     step = frappe.get_all(
         "CampaignStep",
-        filters={"campaign_id": campaign_id},
+        filters={"campaign": campaign_id},
         fields=[
             "name",
             "campaign_step_name",
@@ -163,12 +173,62 @@ def insert_candidate_campaign(**kwargs):
     frappe.db.commit()
 
 
-
-
 # lấy danh sách candidate từ CandidateSegment
 def candidate_segment_by_campaign(segment) -> list[str]:
     candidate_segments = frappe.get_all(
-        "CandidateSegment", filters={"segment_id": segment}, fields=["candidate_id"]
+        "CandidateSegment",
+        filters={"segment_id": segment},
+        fields=["candidate_id"]
     )
-    candidate_ids = {x.candidate_id for x in candidate_segments}
-    return candidate_ids
+    return [x["candidate_id"] for x in candidate_segments]
+
+
+def _get_active_campaigns():
+    """
+    Lấy danh sách Campaign:
+    - status = ACTIVE
+    - is_active = 1
+    - start_date <= hôm nay
+    - end_date >= hôm nay
+    """
+    current_date = now()  # yyyy-mm-dd
+
+    campaigns = frappe.get_all(
+        "Campaign",
+        filters={
+            "status": "ACTIVE",
+            "is_active": 1,
+            "start_date": ["<=", current_date],
+            "end_date": [">=", current_date]
+        },
+        fields=[
+            "name",
+            "campaign_name",
+            "start_date",
+            "end_date",
+            "status",
+            "is_active",
+            "target_segment"
+        ],
+        order_by="start_date asc"
+    )
+
+    return campaigns
+
+
+def _get_active_candidate_campaigns() ->dict:
+    """
+    Lấy danh sách CandidateCampaign:
+    - status = ACTIVE
+    - next_action_at <= hôm nay
+    """
+
+    candidate_campaigns = frappe.get_all(
+        "CandidateCampaign",
+        filters={"status": "ACTIVE", "next_action_at": ["<=", now_datetime()]},
+        fields=[
+            "*"
+        ]
+    )
+
+    return candidate_campaigns
