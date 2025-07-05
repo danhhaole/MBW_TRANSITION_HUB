@@ -11,7 +11,7 @@
       >
         <v-card 
           class="segment-card h-100"
-          variant="outlined"
+          variant="default"
           :loading="loading"
           style="border-radius: 12px; overflow: hidden;"
         >

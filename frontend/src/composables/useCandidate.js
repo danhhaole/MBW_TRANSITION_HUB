@@ -180,8 +180,13 @@ export function useCandidate() {
       await createCandidateResource.fetch({ data: candidateData })
       
       if (createCandidateResource.data) {
-        // Refresh the list
-        await fetchCandidates()
+        // Add to local list instead of refetching
+        candidates.value.unshift(createCandidateResource.data)
+        
+        // Update pagination
+        pagination.total += 1
+        
+        // Only fetch stats to update counts
         await fetchStats()
         return createCandidateResource.data
       }
@@ -242,8 +247,10 @@ export function useCandidate() {
         selectedCandidate.value = null
       }
       
-      // Refresh pagination info
-      await fetchCandidates()
+      // Update pagination
+      pagination.total -= 1
+      
+      // Only fetch stats to update counts
       await fetchStats()
       
       return true

@@ -1,1 +1,5 @@
 @import './assets/Inter/inter.css';
+
+[class*="elevation-"] {
+    box-shadow: none !important;
+  }

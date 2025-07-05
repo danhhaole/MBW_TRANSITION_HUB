@@ -255,6 +255,8 @@ export const validateCandidateForm = (data) => {
   if (data.phone && !/^[+\d\s\-()]+$/.test(data.phone)) {
     errors.phone = 'Số điện thoại không hợp lệ'
   }
+
+  console.log(errors)
   
   return {
     isValid: Object.keys(errors).length === 0,

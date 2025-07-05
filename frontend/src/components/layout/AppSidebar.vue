@@ -5,6 +5,12 @@ defineProps({ mini: Boolean })
 
 const menuItems = [
   {
+    id: 'product-introduction',
+    title: 'Product Introduction',
+    icon: 'mdi-information',
+    to: '/product-introduction'
+  },
+  {
     id: 'dashboard',
     title: 'Dashboard',
     icon: 'mdi-view-dashboard',

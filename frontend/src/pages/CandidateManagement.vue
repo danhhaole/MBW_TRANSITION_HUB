@@ -27,83 +27,9 @@
       </div>
     </div>
 
-    <!-- Stats Cards -->
-    <v-row v-if="stats && Object.keys(stats).length > 0" class="mb-6">
-      <v-col cols="12" md="3" sm="6">
-        <v-card class="stats-card" variant="outlined">
-          <v-card-text class="pa-4">
-            <div class="d-flex align-center">
-              <div class="flex-grow-1">
-                <div class="text-caption text-medium-emphasis">Tổng ứng viên</div>
-                <div class="text-h5 font-weight-bold text-primary">
-                  {{ stats.total_candidates || 0 }}
-                </div>
-              </div>
-              <v-avatar color="primary" variant="tonal" size="48">
-                <v-icon size="24">mdi-account-group</v-icon>
-              </v-avatar>
-            </div>
-          </v-card-text>
-        </v-card>
-      </v-col>
-      
-      <v-col cols="12" md="3" sm="6">
-        <v-card class="stats-card" variant="outlined">
-          <v-card-text class="pa-4">
-            <div class="d-flex align-center">
-              <div class="flex-grow-1">
-                <div class="text-caption text-medium-emphasis">Ứng viên mới</div>
-                <div class="text-h5 font-weight-bold text-success">
-                  {{ stats.new_candidates || 0 }}
-                </div>
-              </div>
-              <v-avatar color="success" variant="tonal" size="48">
-                <v-icon size="24">mdi-account-plus</v-icon>
-              </v-avatar>
-            </div>
-          </v-card-text>
-        </v-card>
-      </v-col>
-      
-      <v-col cols="12" md="3" sm="6">
-        <v-card class="stats-card" variant="outlined">
-          <v-card-text class="pa-4">
-            <div class="d-flex align-center">
-              <div class="flex-grow-1">
-                <div class="text-caption text-medium-emphasis">Đang chăm sóc</div>
-                <div class="text-h5 font-weight-bold text-warning">
-                  {{ stats.nurturing_candidates || 0 }}
-                </div>
-              </div>
-              <v-avatar color="warning" variant="tonal" size="48">
-                <v-icon size="24">mdi-account-heart</v-icon>
-              </v-avatar>
-            </div>
-          </v-card-text>
-        </v-card>
-      </v-col>
-      
-      <v-col cols="12" md="3" sm="6">
-        <v-card class="stats-card" variant="outlined">
-          <v-card-text class="pa-4">
-            <div class="d-flex align-center">
-              <div class="flex-grow-1">
-                <div class="text-caption text-medium-emphasis">Hoạt động gần đây</div>
-                <div class="text-h5 font-weight-bold text-info">
-                  {{ stats.recently_active || 0 }}
-                </div>
-              </div>
-              <v-avatar color="info" variant="tonal" size="48">
-                <v-icon size="24">mdi-account-clock</v-icon>
-              </v-avatar>
-            </div>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
 
     <!-- Filters and Controls -->
-    <v-card class="mb-6" variant="outlined">
+    <v-card class="mb-6" variant="default">
       <v-card-text class="pa-4">
         <v-row align="center">
           <!-- Search -->
@@ -216,7 +142,7 @@
       <v-card
         v-if="pagination.total > 0"
         class="d-flex align-center justify-space-between pa-4 mt-4"
-        variant="outlined"
+        variant="default"
       >
         <!-- Items per page selector -->
         <div class="d-flex align-center">
@@ -300,7 +226,7 @@
       :candidate="editModal.candidate"
       :loading="editModal.loading"
       :saving="editModal.saving"
-      :filter-options="filterOptions"
+      :filter-options="filterOptions || {}"
       @save-candidate="handleSaveCandidate"
       @cancel="editModal.show = false"
     />
@@ -351,26 +277,7 @@
       </v-card>
     </v-dialog>
 
-    <!-- Success Snackbar -->
-    <v-snackbar
-      v-model="snackbar.show"
-      :color="snackbar.color"
-      timeout="4000"
-      location="top right"
-    >
-      <v-icon class="mr-2">{{ snackbar.icon }}</v-icon>
-      {{ snackbar.message }}
-      
-      <template v-slot:actions>
-        <v-btn
-          color="white"
-          variant="text"
-          @click="snackbar.show = false"
-        >
-          Đóng
-        </v-btn>
-      </template>
-    </v-snackbar>
+    <!-- Toast notifications handled by ToastContainer -->
   </div>
 </template>
 
@@ -378,6 +285,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCandidate } from '@/composables/useCandidate'
+import { useToast } from '@/composables/useToast'
 import {
   CandidateCardView,
   CandidateViewModal,
@@ -416,7 +324,9 @@ const {
   initialize
 } = useCandidate()
 
-console.log(filterOptions)
+const { showToast, showSuccess, showError } = useToast()
+
+// Debug logs removed
 
 // Local state (removed currentView since we only have card view)
 
@@ -441,12 +351,7 @@ const deleteDialog = ref({
   loading: false
 })
 
-const snackbar = ref({
-  show: false,
-  message: '',
-  color: 'success',
-  icon: 'mdi-check-circle'
-})
+// Removed snackbar state - using useToast instead
 
 // Computed
 const hasCandidates = computed(() => hasData.value)
@@ -477,7 +382,11 @@ const sourceFilterOptions = computed(() => {
   ]
   
   try {
-    const apiOptions = filterOptions.value?.source || []
+    if (!filterOptions.value || typeof filterOptions.value !== 'object') {
+      return defaultOptions
+    }
+    
+    const apiOptions = filterOptions.value.source || []
     if (Array.isArray(apiOptions)) {
       return [...defaultOptions, ...apiOptions]
     }
@@ -490,7 +399,11 @@ const sourceFilterOptions = computed(() => {
 
 const skillFilterOptions = computed(() => {
   try {
-    const skills = filterOptions.value?.skills || []
+    if (!filterOptions.value || typeof filterOptions.value !== 'object') {
+      return []
+    }
+    
+    const skills = filterOptions.value.skills || []
     return Array.isArray(skills) ? skills : []
   } catch (err) {
     console.error('Error in skillFilterOptions:', err)
@@ -505,15 +418,7 @@ const itemsPerPageOptions = [
   { title: '48', value: 48 }
 ]
 
-// Methods
-const showSnackbar = (message, color = 'success', icon = 'mdi-check-circle') => {
-  snackbar.value = {
-    show: true,
-    message,
-    color,
-    icon
-  }
-}
+// Methods - removed showSnackbar, using useToast instead
 
 const openCreateModal = () => {
   editModal.value = {
@@ -559,41 +464,72 @@ const handleDeleteCandidate = (candidate) => {
   }
 }
 
+// Prevent double delete
+let isDeleting = false
+
 const confirmDelete = async () => {
+  // Prevent double delete
+  if (isDeleting) {
+    console.log('Already deleting, ignoring duplicate call')
+    return
+  }
+  
   try {
+    isDeleting = true
     deleteDialog.value.loading = true
     await deleteCandidate(deleteDialog.value.candidate.name)
     
     deleteDialog.value.show = false
     viewModal.value.show = false
     
-    showSnackbar('Ứng viên đã được xóa thành công', 'success', 'mdi-check-circle')
+    showSuccess('Ứng viên đã được xóa thành công')
   } catch (err) {
-    showSnackbar(`Lỗi khi xóa ứng viên: ${err.message}`, 'error', 'mdi-alert-circle')
+    showError(`Lỗi khi xóa ứng viên: ${err.message}`)
   } finally {
     deleteDialog.value.loading = false
+    isDeleting = false
   }
 }
 
+// Prevent double save
+let isSaving = false
+
 const handleSaveCandidate = async (candidateData) => {
+  console.log('handleSaveCandidate called with:', candidateData)
+  
+  // Prevent double save
+  if (isSaving) {
+    console.log('Already saving, ignoring duplicate call')
+    return
+  }
+  
   try {
+    isSaving = true
     editModal.value.saving = true
+    console.log('Setting saving to true')
+    console.log(editModal.value.candidate)  
     
     if (editModal.value.candidate) {
       // Update existing candidate
+      console.log('Updating candidate:', editModal.value.candidate.name)
       await updateCandidate(editModal.value.candidate.name, candidateData)
-      showSnackbar('Ứng viên đã được cập nhật thành công', 'success', 'mdi-check-circle')
+      showSuccess('Ứng viên đã được cập nhật thành công')
     } else {
       // Create new candidate
+      console.log('Creating new candidate')
       await createCandidate(candidateData)
-      showSnackbar('Ứng viên mới đã được tạo thành công', 'success', 'mdi-check-circle')
+      showSuccess('Ứng viên mới đã được tạo thành công')
     }
     
+    console.log('Closing modal')
     editModal.value.show = false
   } catch (err) {
-    showSnackbar(`Lỗi khi lưu ứng viên: ${err.message}`, 'error', 'mdi-alert-circle')
+    console.error('Error in handleSaveCandidate:', err)
+    showError(`Lỗi khi lưu ứng viên: ${err.message}`)
   } finally {
+    console.log('Setting saving to false')
     editModal.value.saving = false
+    isSaving = false
   }
 }
 
@@ -635,7 +571,7 @@ onMounted(async () => {
   try {
     await initialize()
   } catch (err) {
-    showSnackbar(`Lỗi khi tải dữ liệu: ${err.message}`, 'error', 'mdi-alert-circle')
+    showError(`Lỗi khi tải dữ liệu: ${err.message}`)
   }
 })
 </script>

@@ -13,7 +13,7 @@
         >
           <v-card
             class="candidate-card"
-            height="320"
+            min-height="280"
             variant="outlined"
           >
             <v-card-text>
@@ -35,169 +35,169 @@
       >
         <v-card
           class="candidate-card"
-          height="320"
-          variant="outlined"
+          min-height="280"
+          variant="default"
           hover
           @click="$emit('view-candidate', candidate)"
         >
-        <v-card-text class="pa-4">
-          <!-- Header with Avatar and Basic Info -->
-          <div class="d-flex align-center mb-4">
-            <v-avatar
-              :color="getAvatarColor(candidate.full_name)"
-              size="48"
-              class="mr-3"
-            >
-              <v-img
-                v-if="candidate.avatar"
-                :src="candidate.avatar"
-                :alt="candidate.full_name"
-              />
-              <span
-                v-else
-                class="text-white font-weight-medium"
-                style="font-size: 18px;"
+          <v-card-text class="pa-3 d-flex flex-column" style="height: 100%;">
+            <!-- Header with Avatar and Basic Info -->
+            <div class="d-flex align-center mb-3">
+              <v-avatar
+                :color="getAvatarColor(candidate.full_name)"
+                size="44"
+                class="mr-3"
               >
-                {{ getAvatarText(candidate.full_name) }}
-              </span>
-            </v-avatar>
-            
-            <div class="flex-grow-1">
-              <h3 class="text-h6 font-weight-medium text-truncate">
-                {{ candidate.full_name }}
-              </h3>
-              <p class="text-body-2 text-medium-emphasis mb-0 text-truncate">
-                {{ candidate.headline || 'Chưa có thông tin' }}
-              </p>
+                <v-img
+                  v-if="candidate.avatar"
+                  :src="candidate.avatar"
+                  :alt="candidate.full_name"
+                />
+                <span
+                  v-else
+                  class="text-white font-weight-medium"
+                  style="font-size: 16px;"
+                >
+                  {{ getAvatarText(candidate.full_name) }}
+                </span>
+              </v-avatar>
+              
+              <div class="flex-grow-1">
+                <h3 class="text-subtitle-1 font-weight-medium text-truncate">
+                  {{ candidate.full_name }}
+                </h3>
+                <p class="text-body-2 text-medium-emphasis mb-0 text-truncate">
+                  {{ candidate.headline || 'Chưa có thông tin' }}
+                </p>
+              </div>
             </div>
-          </div>
 
-          <!-- Contact Information -->
-          <div class="mb-3">
-            <div class="d-flex align-center text-body-2 text-medium-emphasis mb-1">
-              <v-icon size="16" class="mr-1">mdi-email</v-icon>
-              <span class="text-truncate">{{ candidate.email }}</span>
+            <!-- Contact Information -->
+            <div class="mb-3">
+              <div class="d-flex align-center text-body-2 text-medium-emphasis mb-1">
+                <v-icon size="14" class="mr-1">mdi-email</v-icon>
+                <span class="text-truncate">{{ candidate.email }}</span>
+              </div>
+              <div class="d-flex align-center text-body-2 text-medium-emphasis">
+                <v-icon size="14" class="mr-1">mdi-map-marker</v-icon>
+                <span>{{ getLocation(candidate) }}</span>
+              </div>
             </div>
-            <div class="d-flex align-center text-body-2 text-medium-emphasis">
-              <v-icon size="16" class="mr-1">mdi-map-marker</v-icon>
-              <span>{{ getLocation(candidate) }}</span>
-            </div>
-          </div>
 
-          <!-- Skills -->
-          <div class="mb-3">
-            <div class="text-caption text-medium-emphasis mb-1">Kỹ năng</div>
-            <div class="d-flex flex-wrap" style="gap: 4px;">
+            <!-- Skills -->
+            <div class="mb-3">
+              <div class="text-caption text-medium-emphasis mb-1">Kỹ năng</div>
+              <div class="d-flex flex-wrap" style="gap: 4px;">
+                <v-chip
+                  v-for="skill in getTopSkills(candidate.skills, 2)"
+                  :key="skill"
+                  size="x-small"
+                  variant="outlined"
+                  color="primary"
+                >
+                  {{ skill }}
+                </v-chip>
+                <v-chip
+                  v-if="candidate.skills && candidate.skills.length > 2"
+                  size="x-small"
+                  variant="outlined"
+                  color="grey"
+                >
+                  +{{ candidate.skills.length - 2 }}
+                </v-chip>
+              </div>
+            </div>
+
+            <!-- Talent Pools -->
+            <div class="mb-3">
+              <div class="text-caption text-medium-emphasis mb-1">Talent Pools</div>
+              <div class="d-flex flex-wrap" style="gap: 4px;">
+                <v-chip
+                  v-for="pool in getTalentPools(candidate).slice(0, 1)"
+                  :key="pool"
+                  size="x-small"
+                  variant="tonal"
+                  color="info"
+                >
+                  {{ pool }}
+                </v-chip>
+              </div>
+            </div>
+
+            <!-- Engagement Score -->
+            <div class="mb-3">
+              <div class="text-caption text-medium-emphasis mb-1">Điểm tương tác</div>
+              <div class="d-flex align-center">
+                <v-progress-linear
+                  :model-value="calculateEngagementScore(candidate)"
+                  :color="getEngagementColor(calculateEngagementScore(candidate))"
+                  height="6"
+                  rounded
+                  class="flex-grow-1 mr-2"
+                />
+                <span class="text-caption font-weight-medium">
+                  {{ calculateEngagementScore(candidate) }}%
+                </span>
+              </div>
+            </div>
+
+            <!-- Footer with Status and Actions -->
+            <div class="d-flex justify-space-between align-center mt-auto">
               <v-chip
-                v-for="skill in getTopSkills(candidate.skills)"
-                :key="skill"
-                size="small"
-                variant="outlined"
-                color="primary"
+                :color="getStatusChipColor(candidate.status)"
+                size="x-small"
+                variant="flat"
               >
-                {{ skill }}
+                {{ formatCandidateStatus(candidate.status).text }}
               </v-chip>
-              <v-chip
-                v-if="candidate.skills && candidate.skills.length > 3"
-                size="small"
-                variant="outlined"
-                color="grey"
-              >
-                +{{ candidate.skills.length - 3 }}
-              </v-chip>
+              
+              <div class="d-flex align-center">
+                <v-btn
+                  size="x-small"
+                  variant="text"
+                  color="primary"
+                  @click.stop="$emit('view-candidate', candidate)"
+                >
+                  Xem chi tiết
+                </v-btn>
+                <v-menu>
+                  <template v-slot:activator="{ props }">
+                    <v-btn
+                      v-bind="props"
+                      size="x-small"
+                      variant="text"
+                      icon="mdi-dots-vertical"
+                      @click.stop
+                    />
+                  </template>
+                  <v-list density="compact">
+                    <v-list-item @click.stop="$emit('edit-candidate', candidate)">
+                      <template v-slot:prepend>
+                        <v-icon size="18">mdi-pencil</v-icon>
+                      </template>
+                      <v-list-item-title>Chỉnh sửa</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item @click.stop="$emit('duplicate-candidate', candidate)">
+                      <template v-slot:prepend>
+                        <v-icon size="18">mdi-content-copy</v-icon>
+                      </template>
+                      <v-list-item-title>Sao chép</v-list-item-title>
+                    </v-list-item>
+                    <v-divider />
+                    <v-list-item 
+                      @click.stop="$emit('delete-candidate', candidate)"
+                      class="text-error"
+                    >
+                      <template v-slot:prepend>
+                        <v-icon size="18" color="error">mdi-delete</v-icon>
+                      </template>
+                      <v-list-item-title>Xóa</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
+              </div>
             </div>
-          </div>
-
-          <!-- Talent Pools -->
-          <div class="mb-3">
-            <div class="text-caption text-medium-emphasis mb-1">Talent Pools</div>
-            <div class="d-flex flex-wrap" style="gap: 4px;">
-              <v-chip
-                v-for="pool in getTalentPools(candidate)"
-                :key="pool"
-                size="small"
-                variant="tonal"
-                color="info"
-              >
-                {{ pool }}
-              </v-chip>
-            </div>
-          </div>
-
-          <!-- Engagement Score -->
-          <div class="mb-4">
-            <div class="text-caption text-medium-emphasis mb-1">Điểm tương tác</div>
-            <div class="d-flex align-center">
-              <v-progress-linear
-                :model-value="calculateEngagementScore(candidate)"
-                :color="getEngagementColor(calculateEngagementScore(candidate))"
-                height="8"
-                rounded
-                class="flex-grow-1 mr-2"
-              />
-              <span class="text-caption font-weight-medium">
-                {{ calculateEngagementScore(candidate) }}%
-              </span>
-            </div>
-          </div>
-
-          <!-- Footer with Status and Actions -->
-          <div class="d-flex justify-space-between align-center">
-            <v-chip
-              :color="getStatusChipColor(candidate.status)"
-              size="small"
-              variant="flat"
-            >
-              {{ formatCandidateStatus(candidate.status).text }}
-            </v-chip>
-            
-            <div class="d-flex align-center">
-              <v-btn
-                size="small"
-                variant="text"
-                color="primary"
-                @click.stop="$emit('view-candidate', candidate)"
-              >
-                Xem chi tiết
-              </v-btn>
-              <v-menu>
-                <template v-slot:activator="{ props }">
-                  <v-btn
-                    v-bind="props"
-                    size="small"
-                    variant="text"
-                    icon="mdi-dots-vertical"
-                    @click.stop
-                  />
-                </template>
-                <v-list density="compact">
-                  <v-list-item @click.stop="$emit('edit-candidate', candidate)">
-                    <template v-slot:prepend>
-                      <v-icon size="18">mdi-pencil</v-icon>
-                    </template>
-                    <v-list-item-title>Chỉnh sửa</v-list-item-title>
-                  </v-list-item>
-                  <v-list-item @click.stop="$emit('duplicate-candidate', candidate)">
-                    <template v-slot:prepend>
-                      <v-icon size="18">mdi-content-copy</v-icon>
-                    </template>
-                    <v-list-item-title>Sao chép</v-list-item-title>
-                  </v-list-item>
-                  <v-divider />
-                  <v-list-item 
-                    @click.stop="$emit('delete-candidate', candidate)"
-                    class="text-error"
-                  >
-                    <template v-slot:prepend>
-                      <v-icon size="18" color="error">mdi-delete</v-icon>
-                    </template>
-                    <v-list-item-title>Xóa</v-list-item-title>
-                  </v-list-item>
-                </v-list>
-              </v-menu>
-            </div>
-          </div>
-                  </v-card-text>
+          </v-card-text>
         </v-card>
       </v-col>
 
@@ -280,9 +280,9 @@ const emit = defineEmits([
 ])
 
 // Helper functions
-const getTopSkills = (skills) => {
+const getTopSkills = (skills, limit) => {
   if (!skills || !Array.isArray(skills)) return []
-  return skills.slice(0, 3)
+  return skills.slice(0, limit || 3)
 }
 
 const getTalentPools = (candidate) => {

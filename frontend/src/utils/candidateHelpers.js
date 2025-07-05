@@ -88,6 +88,8 @@ export const validateCandidateForm = (candidate) => {
   if (candidate.cv_original_url && !/^https?:\/\/.+/.test(candidate.cv_original_url)) {
     errors.cv_original_url = 'URL CV không hợp lệ'
   }
+
+  console.log(errors)
   
   return errors
 }

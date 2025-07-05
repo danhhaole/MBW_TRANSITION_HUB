@@ -7,6 +7,9 @@ import CampaignManagement from '@/pages/CampaignManagement.vue'
 import TalentSegments from '@/pages/TalentSegmentManagement.vue'
 import TalentSegmentDetail from '@/pages/TalentSegmentDetail.vue'
 import CandidateManagement from '@/pages/CandidateManagement.vue'
+import ProductIntroduction from '@/pages/ProductIntroduction.vue'
+import LinkFieldExample from '@/pages/LinkFieldExample.vue'
+import TestLinkField from '@/components/TestLinkField.vue'
 import { userResource } from '@/stores/user'
 import { sessionStore } from '@/stores/session'
 
@@ -49,6 +52,24 @@ const routes = [
     component: CandidateManagement,
     meta: { layout: 'private' },
     name: 'CandidateManagement'
+  },
+  {
+    path: '/product-introduction',
+    component: ProductIntroduction,
+    meta: { layout: 'public' },
+    name: 'ProductIntroduction'
+  },
+  {
+    path: '/link-field-example',
+    component: LinkFieldExample,
+    meta: { layout: 'private' },
+    name: 'LinkFieldExample'
+  },
+  {
+    path: '/test-link-field',
+    component: TestLinkField,
+    meta: { layout: 'private' },
+    name: 'TestLinkField'
   }
 ]
 

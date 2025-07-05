@@ -59,7 +59,7 @@
         <div class="d-flex align-center justify-space-between pa-6 bg-grey-lighten-5">
           <div class="d-flex align-center">
             <v-chip
-              :color="getStatusChipColor(candidate.status)"
+              
               size="default"
               variant="flat"
               class="mr-3"
@@ -157,7 +157,7 @@
                     :href="`mailto:${candidate.email}`"
                     target="_blank"
                   >
-                    <v-icon>mdi-email-send</v-icon>
+                    <v-icon color="primary">mdi-arrow-right-circle</v-icon>
                   </v-btn>
                 </div>
                 
@@ -278,7 +278,7 @@
                   <div>
                     <div class="text-body-2 font-weight-medium">Tương tác cuối</div>
                     <div class="text-caption text-medium-emphasis">
-                      {{ formatRelativeTime(candidate.last_interaction) }}
+                      {{ moment(candidate.last_interaction).format('DD/MM/YYYY HH:mm') }}
                     </div>
                   </div>
                 </div>
@@ -288,7 +288,7 @@
                   <div>
                     <div class="text-body-2 font-weight-medium">Cập nhật cuối</div>
                     <div class="text-caption text-medium-emphasis">
-                      {{ formatRelativeTime(candidate.modified) }}
+                      {{ moment(candidate.modified).format('DD/MM/YYYY HH:mm') }}
                     </div>
                   </div>
                 </div>
@@ -302,7 +302,7 @@
                 Cài đặt Email
               </h3>
               
-              <v-card variant="outlined" class="pa-4">
+              <v-card variant="default" class="pa-4">
                 <div class="d-flex align-center justify-space-between">
                   <div>
                     <div class="font-weight-medium">Email Marketing</div>
@@ -386,6 +386,7 @@ import {
   getEngagementColor,
   processSkills
 } from '@/utils/candidateHelpers'
+import moment from 'moment'
 
 // Props
 const props = defineProps({
