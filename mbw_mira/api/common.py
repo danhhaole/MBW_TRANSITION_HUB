@@ -17,7 +17,7 @@ no_value_fields = [
 @frappe.whitelist()
 def get_list_data(
     doctype: str,
-    filters: dict = None,
+    filters=None,
     order_by: str = "modified desc",
     page_length=20,
     start=0,
@@ -136,7 +136,7 @@ def get_form_data(doctype: str, name: str = None):
 
 
 @frappe.whitelist()
-def save_doc(doctype: str, data: dict, name: str = None):
+def save_doc(doctype: str, data, name: str = None):
     """
     Save document (create or update)
     """

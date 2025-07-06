@@ -1,7 +1,6 @@
 <template>
   <div class="link-field">
     <v-label v-if="label" class="mb-2">{{ label }}</v-label>
-    
     <v-autocomplete
       ref="autocomplete"
       v-model="selectedValue"
@@ -13,33 +12,23 @@
       :size="size"
       :variant="variant"
       :clearable="true"
-      item-title="label"
       item-value="value"
-      no-filter
-      hide-no-data
+      item-title="label"
       :menu-props="{ maxHeight: '300px' }"
+      persistent-search
+      open-on-clear
+      eager
     >
-      <template #selection="{ item }">
-        <!-- Chỉ hiển thị label khi đã chọn -->
-        <span>{{ item.raw.label }}</span>
-      </template>
-
-      <template #prepend-inner>
-        <slot name="prefix" />
-      </template>
-
-      <template #item="{ props: itemProps, item }">
-        <v-list-item v-bind="itemProps">
+      <template #item="{ props, item }">
+        <v-list-item v-bind="props">
           <template #prepend>
-            <slot name="item-prefix" :option="item.raw" />
+            <slot name="item-prefix" :option="item" />
           </template>
-          <v-list-item-title>
-            <slot name="item-label" :option="item.raw">
-              {{ item.raw.label }}
-            </slot>
+          <v-list-item-title class="text-body-2">
+            {{ item.description }}
           </v-list-item-title>
-          <v-list-item-subtitle v-if="item.raw.description && item.raw.description !== item.raw.label">
-            {{ item.raw.description }}
+          <v-list-item-subtitle class="text-caption">
+            {{ item.value }}
           </v-list-item-subtitle>
         </v-list-item>
       </template>
@@ -75,12 +64,26 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import { useLinkField } from '@/composables/useLinkField'
+import { call } from 'frappe-ui'
 
 const props = defineProps({
   doctype: {
     type: String,
     required: true,
+  },
+  displayField: {
+    type: String,
+    default: null,
+    // Ví dụ: 'full_name' cho User, 'customer_name' cho Customer
+  },
+  searchField: {
+    type: String,
+    default: null,
+  },
+  mode: {
+    type: String,
+    default: 'auto', // 'auto', 'custom', 'simple'
+    validator: (value) => ['auto', 'custom', 'simple'].includes(value)
   },
   filters: {
     type: [Array, String],
@@ -126,50 +129,139 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'change'])
 
+// Reactive state
 const autocomplete = ref(null)
 const searchText = ref('')
-const selectedValue = ref('')
+const options = ref([])
+const loading = ref(false)
 
-// Sử dụng composable để xử lý logic
-const {
-  options,
-  loading,
-  searchOptions,
-  parsedFilters
-} = useLinkField(props)
+// Computed để lọc options có kết quả
+const filteredOptions = computed(() => {
+  return options.value.filter(item => {
+    if (!searchText.value) return true
+    return filterSearch(item, searchText.value)
+  })
+})
 
-// Debug log
-watch(options, (newOptions) => {
-  console.log('Options updated:', newOptions)
-}, { deep: true })
+// Parse filters với eval support
+const parsedFilters = computed(() => {
+  if (!Array.isArray(props.filters)) {
+    return props.filters || []
+  }
+  
+  return props.filters.map((f) => {
+    if (Array.isArray(f) && typeof f[3] === 'string' && f[3].startsWith('eval:')) {
+      // Cắt bỏ 'eval:' và trim path, vd "doc.country_id"
+      const path = f[3].slice(5).trim().split('.')
+      // Lấy giá trị từ props.doc theo đường dẫn
+      let val = props[path[0]] // Đầu tiên: props["doc"]
+      for (let i = 1; i < path.length; i++) {
+        val = val?.[path[i]]
+      }
+      return [f[0], f[1], f[2], val]
+    }
+    return f
+  })
+})
 
-// Computed để xử lý giá trị
-const currentValue = computed({
+// Computed để xử lý giá trị với selectedValue
+const selectedValue = computed({
   get: () => {
-    return props.modelValue || ''
+    return props.modelValue || null
   },
   set: (val) => {
-    emit('update:modelValue', val)
-    emit('change', val)
+    emit('update:modelValue', val || '')
+    emit('change', val || '')
   }
 })
 
-// Watch để đồng bộ selectedValue với currentValue
-watch(currentValue, (newVal) => {
-  selectedValue.value = newVal
-}, { immediate: true })
-
-// Watch để đồng bộ ngược lại
-watch(selectedValue, (newVal) => {
-  if (newVal !== currentValue.value) {
-    currentValue.value = newVal
+// Debounce function
+let debounceTimer = null
+const debounce = (func, delay) => {
+  return (...args) => {
+    clearTimeout(debounceTimer)
+    debounceTimer = setTimeout(() => func.apply(this, args), delay)
   }
-})
+}
 
-// Xử lý tìm kiếm
+
+// Hàm search duy nhất
+const searchOptions = async (query = '') => {
+  if (!props.doctype) return
+
+  loading.value = true
+  
+  try {
+    const response = await call('mbw_mira.api.link_search.search_link_custom', {
+      doctype: props.doctype,
+      txt: query,
+      filters: parsedFilters.value,
+      page_length: 20,
+      searchfield: props.searchField,
+      display_field: props.displayField,
+      ignore_user_permissions: true
+    })
+
+    console.log('Search Response:', response)
+
+    console.log('API Response:', response)
+    
+    // Transform data - dùng description làm label chính
+    options.value = response.map(item => ({
+      value: item.value,
+      label: item.description,  // Hiển thị description làm label chính
+      description: item.value   // Value làm description phụ
+    }))
+
+    // Thêm option "@me" cho User doctype nếu không hideMe và đang search rỗng
+    if (!query && !props.hideMe && props.doctype === 'User') {
+      const hasMe = options.value.some(item => item.value === '@me')
+      if (!hasMe) {
+        options.value.unshift({
+          value: '@me',
+          label: '@me',
+          description: 'Current User'
+        })
+      }
+    }
+
+  } catch (error) {
+    console.error('Error searching:', error)
+    options.value = []
+  } finally {
+    loading.value = false
+  }
+}
+
+// Debounced search function
+const debouncedSearch = debounce(searchOptions, 300)
+
+// Custom filter function cho local search
+const filterSearch = (item, query, itemText) => {
+  if (!query) return true
+
+  const searchQuery = query.toLowerCase().trim()
+  const label = (item.label || '').toLowerCase()
+  const description = (item.description || '').toLowerCase()
+  const value = (item.value || '').toLowerCase()
+
+  // Tìm trong tất cả các trường
+  return label.includes(searchQuery) || 
+         description.includes(searchQuery) || 
+         value.includes(searchQuery)
+}
+
+// Xử lý tìm kiếm - kết hợp cả server và client search
 const handleSearch = (query) => {
   searchText.value = query || ''
-  searchOptions(query || '')
+  
+  // Nếu query quá ngắn, chỉ search local
+  if (!query || query.length < 2) {
+    return
+  }
+
+  // Ngược lại thì search server
+  debouncedSearch(query)
 }
 
 // Xử lý tạo mới
@@ -184,8 +276,7 @@ const handleCreate = () => {
 
 // Xử lý xóa
 const handleClear = () => {
-  selectedValue.value = ''
-  currentValue.value = ''
+  selectedValue.value = null
   searchText.value = ''
 }
 
@@ -194,8 +285,8 @@ onMounted(() => {
   searchOptions('')
 })
 
-// Watch thay đổi doctype và filters
-watch([() => props.doctype, parsedFilters], () => {
+// Watch thay đổi doctype, displayField và filters
+watch([() => props.doctype, () => props.displayField, () => props.mode, parsedFilters], () => {
   searchOptions(searchText.value)
 }, { deep: true })
 </script>
@@ -209,5 +300,35 @@ watch([() => props.doctype, parsedFilters], () => {
   color: rgb(var(--v-theme-on-surface));
   font-size: 0.875rem;
   font-weight: 400;
+}
+
+/* Ẩn subtitle trong selection input */
+.link-field :deep(.v-field__input .v-list-item-subtitle) {
+  display: none !important;
+}
+
+/* Chỉ hiển thị title trong selection */
+.link-field :deep(.v-field__input .v-list-item-title) {
+  display: block !important;
+}
+
+/* Xóa background khi không có selection */
+.link-field :deep(.v-field__input) {
+  background: transparent !important;
+}
+
+/* Style cho dropdown items */
+.link-field :deep(.v-list-item-title) {
+  font-weight: 500 !important;
+}
+
+.link-field :deep(.v-list-item-subtitle) {
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+/* Đảm bảo placeholder hiển thị đúng */
+.link-field :deep(.v-field__input input::placeholder) {
+  opacity: 0.6;
 }
 </style> 

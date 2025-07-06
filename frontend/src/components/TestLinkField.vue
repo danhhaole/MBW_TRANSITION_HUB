@@ -3,7 +3,7 @@
     <h2>Test EasyLinkField</h2>
     
     <div class="mb-4">
-      <EasyLinkField 
+      <LinkField 
         v-model="userValue" 
         doctype="User" 
         label="Chọn User"
@@ -13,17 +13,17 @@
     </div>
 
     <div class="mb-4">
-      <EasyLinkField 
+      <LinkField 
         v-model="customerValue" 
-        doctype="Customer" 
-        label="Chọn Customer"
-        placeholder="Tìm customer..."
+        doctype="Campaign" 
+        label="Chọn Campaign"
+        placeholder="Tìm campaign..."
       />
       <p>Selected: {{ customerValue }}</p>
     </div>
 
     <div class="mb-4">
-      <EasyLinkField 
+      <LinkField 
         v-model="companyValue" 
         doctype="Company" 
         label="Chọn Company"
@@ -41,7 +41,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import EasyLinkField from './EasyLinkField.vue'
+import LinkField from './LinkField.vue'
 
 const userValue = ref('')
 const customerValue = ref('')

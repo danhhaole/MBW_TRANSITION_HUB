@@ -1,5 +1,53 @@
 import frappe
 from frappe import _
+import json
+import re
+from frappe.utils import cint, cstr, unique
+from frappe.utils.data import make_filter_tuple
+from frappe.model.db_query import get_order_by
+
+
+# Backup logic từ core search.py
+def build_for_autosuggest_custom(res, doctype, display_field=None):
+    """
+    Backup và cải tiến logic từ core build_for_autosuggest
+    """
+    def to_string(parts):
+        return ", ".join(
+            unique(_(cstr(part)) for part in parts if part)
+        )
+
+    results = []
+    meta = frappe.get_meta(doctype)
+    
+    for item in res:
+        item = list(item)
+        
+        # Luôn lấy name làm value
+        value = item[0]
+        
+        # Xử lý description
+        if len(item) > 1:
+            # Nếu có display_field được chỉ định và khác name
+            if display_field and len(item) >= 2:
+                description = item[1] if item[1] != value else ""
+            else:
+                description = to_string(item[1:])
+        else:
+            description = ""
+        
+        # Tạo label (hiển thị chính)
+        label = value
+        
+        autosuggest_row = {
+            "value": value,
+            "label": label,
+            "description": description
+        }
+        
+        results.append(autosuggest_row)
+    
+    return results
 
 
 @frappe.whitelist()
@@ -13,12 +61,12 @@ def search_link_custom(
     ignore_user_permissions=False
 ):
     """
-    Custom search link với khả năng chỉ định field hiển thị
+    Custom search link dựa trên logic core nhưng có thể chỉ định display_field
     
     Args:
         doctype: DocType cần search
         txt: Text tìm kiếm
-        display_field: Field để hiển thị làm description (vd: full_name, title, etc.)
+        display_field: Field để hiển thị làm description
         filters: Filters để lọc dữ liệu
         page_length: Số lượng kết quả trả về
         searchfield: Field để search (mặc định là name)
@@ -33,7 +81,6 @@ def search_link_custom(
     
     # Parse filters
     if isinstance(filters, str):
-        import json
         filters = json.loads(filters) if filters else []
     
     if not filters:
@@ -46,26 +93,18 @@ def search_link_custom(
     # Get meta
     meta = frappe.get_meta(doctype)
     
-    # Determine fields to fetch
+    # Determine fields to fetch - luôn bắt đầu với name
     fields = ["name"]
     
     # Add display_field if specified and exists
-    if display_field:
-        if meta.has_field(display_field):
-            fields.append(display_field)
-        else:
-            # Fallback to common fields
-            common_fields = ["title", "full_name", "description", "subject"]
-            for field in common_fields:
-                if meta.has_field(field):
-                    fields.append(field)
-                    display_field = field
-                    break
+    if display_field and meta.has_field(display_field):
+        fields.append(display_field)
     else:
         # Auto detect display field based on doctype
-        display_field = get_auto_display_field(doctype, meta)
-        if display_field and meta.has_field(display_field):
-            fields.append(display_field)
+        auto_field = get_auto_display_field(doctype, meta)
+        if auto_field and meta.has_field(auto_field):
+            fields.append(auto_field)
+            display_field = auto_field
     
     # Determine search fields
     search_fields = ["name"]
@@ -74,20 +113,34 @@ def search_link_custom(
     elif meta.search_fields:
         search_fields.extend([f.strip() for f in meta.search_fields.split(",")])
     
-    # Add search fields to fetch fields
+    # Add search fields to fetch fields if not already included
     for field in search_fields:
         if field not in fields and meta.has_field(field):
             fields.append(field)
     
-    # Remove duplicates
-    fields = list(set(fields))
+    # Convert string filters to proper format
+    if isinstance(filters, dict):
+        filters = [make_filter_tuple(doctype, key, value) for key, value in filters.items()]
     
     # Build or_filters for search
     or_filters = []
     if txt:
+        field_types = {
+            "Data",
+            "Text", 
+            "Small Text",
+            "Long Text",
+            "Link",
+            "Select",
+            "Read Only",
+            "Text Editor",
+        }
+        
         for field in search_fields:
             if meta.has_field(field):
-                or_filters.append([doctype, field, "like", f"%{txt}%"])
+                fmeta = meta.get_field(field)
+                if fmeta and fmeta.fieldtype in field_types:
+                    or_filters.append([doctype, field, "like", f"%{txt}%"])
     
     # Add standard filters
     if meta.has_field("enabled"):
@@ -95,42 +148,49 @@ def search_link_custom(
     if meta.has_field("disabled"):
         filters.append([doctype, "disabled", "!=", 1])
     
+    # Format fields for query
+    formatted_fields = [f"`tab{meta.name}`.`{f.strip()}`" for f in fields]
+    
     # Check permissions
     ignore_permissions = ignore_user_permissions and frappe.has_permission(
         doctype, "read"
     )
     
+    # Order by
+    order_by_based_on_meta = get_order_by(doctype, meta)
+    order_by = f"`tab{doctype}`.idx desc, {order_by_based_on_meta}"
+    
+    # Add relevance sorting if searching
+    if txt and not meta.get("translated_doctype"):
+        _txt = frappe.db.escape((txt or "").replace("%", "").replace("@", ""))
+        _relevance = f"(1 / nullif(locate({_txt}, `tab{doctype}`.`name`), 0))"
+        formatted_fields.append(f"""{_relevance} as `_relevance`""")
+        
+        if frappe.db.db_type == "mariadb":
+            order_by = f"ifnull(_relevance, -9999) desc, {order_by}"
+        elif frappe.db.db_type == "postgres":
+            order_by = f"{len(formatted_fields)} desc nulls last, {order_by}"
+    
     try:
-        # Get data
-        data = frappe.get_list(
+        # Get data using frappe.get_list
+        values = frappe.get_list(
             doctype,
-            fields=fields,
             filters=filters,
+            fields=formatted_fields,
             or_filters=or_filters if txt else None,
             limit_page_length=page_length,
-            order_by="name asc",
-            ignore_permissions=ignore_permissions
+            order_by=order_by,
+            ignore_permissions=ignore_permissions,
+            as_list=True,
+            strict=False,
         )
         
-        # Transform data
-        results = []
-        for item in data:
-            result = {
-                "value": item.name,
-                "label": item.name
-            }
-            
-            # Add description if display_field exists and different from name
-            if display_field and display_field in item:
-                desc_value = item[display_field]
-                if desc_value and str(desc_value).strip() and str(desc_value) != item.name:
-                    result["description"] = str(desc_value)
-                else:
-                    result["description"] = ""
-            else:
-                result["description"] = ""
-            
-            results.append(result)
+        # Remove _relevance column if exists
+        if txt and not meta.get("translated_doctype"):
+            values = [r[:-1] for r in values]
+        
+        # Build results for autosuggest
+        results = build_for_autosuggest_custom(values, doctype, display_field)
         
         return results
         
