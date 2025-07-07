@@ -210,14 +210,23 @@
 
         <!-- Task Update Modal -->
         <TaskUpdateModal v-model="taskModal" :task="selectedTask" @update:completed="handleTaskCompleted" />
+
+        <!-- Toast Container -->
+        <ToastContainer 
+            :show="showToast" 
+            :message="toastMessage"
+            :type="toastType"
+            @close="closeToast"
+        />
     </v-container>
 </template>
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { createResource, toast } from 'frappe-ui'
+import { createResource } from 'frappe-ui'
 import CampaignCard from '@/components/campaign/CampaignCard.vue'
 import TaskUpdateModal from '@/components/shared/TaskUpdateModal.vue'
+import { ToastContainer } from '@/components/shared'
 import { 
   campaignService, 
   candidateCampaignService, 
@@ -232,6 +241,11 @@ const completedCampaigns = ref([])
 const taskModal = ref(false)
 const selectedTask = ref(null)
 const loading = ref(false)
+
+// Toast state
+const toastMessage = ref('')
+const toastType = ref('success')
+const showToast = ref(false)
 
 // Computed properties
 const urgentTasks = computed(() => {
@@ -303,7 +317,7 @@ const loadActiveCampaigns = async () => {
         result.data.map(async (campaign) => {
           const ccResult = await candidateCampaignService.getList({
             filters: { campaign_id: campaign.name },
-            fields: ['status'],
+            fields: ['status', 'creation'],
             page_length: 1000
           })
           
@@ -312,12 +326,8 @@ const loadActiveCampaigns = async () => {
             stats.total = ccResult.data.length
             stats.active = ccResult.data.filter(cc => cc.status === 'ACTIVE').length
             stats.completed = ccResult.data.filter(cc => cc.status === 'COMPLETED').length
-            // Consider candidates added in last 7 days as new
-            const sevenDaysAgo = new Date()
-            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-            stats.newApplicants = ccResult.data.filter(cc => 
-              new Date(cc.creation) > sevenDaysAgo
-            ).length
+            // Use total count as newApplicants (total candidates in campaign)
+            stats.newApplicants = stats.total
           }
 
           return {
@@ -327,6 +337,7 @@ const loadActiveCampaigns = async () => {
             status: campaign.status.toLowerCase(),
             stats: {
               ...stats,
+              candidates: stats.total, // Total candidates in campaign
               openRate: stats.total > 0 ? (stats.active / stats.total * 100).toFixed(1) : 0,
               clickRate: stats.total > 0 ? (stats.completed / stats.total * 100).toFixed(1) : 0
             }
@@ -404,6 +415,17 @@ const updateTaskResource = createResource({
 })
 
 // Helper functions
+const showToastMessage = (message, type = 'success') => {
+  toastMessage.value = message
+  toastType.value = type
+  showToast.value = true
+}
+
+const closeToast = () => {
+  showToast.value = false
+  toastMessage.value = ''
+}
+
 const getActionTitle = (actionStatus) => {
   const titles = {
     'SCHEDULED': 'Đã lên lịch',
@@ -541,8 +563,7 @@ const handleTaskCompleted = async (taskData) => {
         })
       })
     }
-    
-    // Show success message
+     // Show success message
     const actionMessages = {
       'EXECUTED': 'Tác vụ đã được hoàn thành',
       'SCHEDULED': 'Tác vụ đã được lên lịch',
@@ -550,24 +571,14 @@ const handleTaskCompleted = async (taskData) => {
       'FAILED': 'Tác vụ đã được đánh dấu thất bại'
     }
     
-    toast({
-      title: 'Thành công',
-      text: actionMessages[taskData.action] || 'Tác vụ đã được cập nhật',
-      icon: 'check',
-      iconClasses: 'text-green-600'
-    })
+    showToastMessage(actionMessages[taskData.action] || 'Tác vụ đã được cập nhật', 'success')
     
     // Refresh data
     await refreshData()
     
   } catch (error) {
     console.error('Error updating task:', error)
-    toast({
-      title: 'Lỗi',
-      text: 'Không thể cập nhật tác vụ. Vui lòng thử lại.',
-      icon: 'x',
-      iconClasses: 'text-red-600'
-    })
+    showToastMessage('Không thể cập nhật tác vụ. Vui lòng thử lại.', 'error')
   } finally {
     loading.value = false
   }
@@ -583,6 +594,7 @@ const refreshData = async () => {
     ])
   } catch (error) {
     console.error('Error refreshing data:', error)
+    showToastMessage('Không thể tải dữ liệu. Vui lòng thử lại.', 'error')
   } finally {
     loading.value = false
   }

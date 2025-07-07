@@ -14,80 +14,149 @@
 
       <v-row class="mt-4">
         <!-- Donut Chart -->
-        <v-col cols="6" class="d-flex justify-center align-center">
-          <div class="position-relative">
+        <v-col cols="6" class="d-flex flex-column justify-center align-center">
+          <div class="position-relative donut-container">
             <!-- SVG Donut Chart -->
-            <svg width="96" height="96" viewBox="0 0 96 96" class="donut-chart">
+            <svg width="120" height="120" viewBox="0 0 120 120" class="donut-chart">
+              <!-- Outer glow/shadow -->
+              <defs>
+                <filter id="glow">
+                  <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                  <feMerge> 
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+                <linearGradient id="openRateGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#60a5fa;stop-opacity:1" />
+                </linearGradient>
+                <linearGradient id="clickRateGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+                </linearGradient>
+              </defs>
+              
               <!-- Background circle -->
               <circle
-                cx="48"
-                cy="48"
-                r="40"
+                cx="60"
+                cy="60"
+                r="45"
                 fill="transparent"
-                stroke="#e5e7eb"
+                stroke="#f3f4f6"
                 stroke-width="8"
               />
+              
               <!-- Open rate circle -->
               <circle
-                cx="48"
-                cy="48"
-                r="40"
+                cx="60"
+                cy="60"
+                r="45"
                 fill="transparent"
-                stroke="#3b82f6"
+                stroke="url(#openRateGradient)"
                 stroke-width="8"
                 :stroke-dasharray="circumference"
                 :stroke-dashoffset="openRateOffset"
-                transform="rotate(-90 48 48)"
+                transform="rotate(-90 60 60)"
                 stroke-linecap="round"
-                class="progress-circle"
+                class="progress-circle open-rate-circle"
+                filter="url(#glow)"
               />
+              
               <!-- Inner background circle -->
               <circle
-                cx="48"
-                cy="48"
-                r="28"
+                cx="60"
+                cy="60"
+                r="30"
                 fill="transparent"
-                stroke="#e5e7eb"
-                stroke-width="8"
+                stroke="#f3f4f6"
+                stroke-width="6"
               />
+              
               <!-- Click rate circle -->
               <circle
-                cx="48"
-                cy="48"
-                r="28"
+                cx="60"
+                cy="60"
+                r="30"
                 fill="transparent"
-                stroke="#6366f1"
-                stroke-width="8"
+                stroke="url(#clickRateGradient)"
+                stroke-width="6"
                 :stroke-dasharray="innerCircumference"
                 :stroke-dashoffset="clickRateOffset"
-                transform="rotate(-90 48 48)"
+                transform="rotate(-90 60 60)"
                 stroke-linecap="round"
-                class="progress-circle"
+                class="progress-circle click-rate-circle"
+                filter="url(#glow)"
               />
             </svg>
             
-            <!-- Center text -->
+            <!-- Center content -->
             <div class="donut-center">
-              <div class="text-h5 font-weight-bold">{{ campaign.stats.newApplicants }}</div>
-              <div class="text-caption text-medium-emphasis">ứng tuyển</div>
+              <div class="center-number" :class="getNumberSizeClass(campaign.stats.newApplicants)">
+                {{ formatNumber(campaign.stats.newApplicants) }}
+              </div>
             </div>
+            
+            <!-- Floating icons -->
+            <div class="floating-icon open-icon" v-if="campaign.stats.openRate > 0">
+              <v-icon size="12" color="primary">mdi-email-open</v-icon>
+            </div>
+            <div class="floating-icon click-icon" v-if="campaign.stats.clickRate > 0">
+              <v-icon size="12" color="indigo">mdi-cursor-default-click</v-icon>
+            </div>
+          </div>
+          
+          <!-- Label below chart -->
+          <div class="chart-label-simple">
+           Số lượng ứng tuyển
           </div>
         </v-col>
 
         <!-- Stats -->
         <v-col cols="6">
           <div class="stats-container">
-            <div class="stat-item mb-2">
-              <div class="text-caption text-medium-emphasis">Ứng viên mục tiêu</div>
-              <div class="text-h6 font-weight-bold">{{ campaign.stats.candidates }}</div>
+            <div class="stat-item mb-3">
+              <div class="stat-header">
+                <v-icon size="16" color="medium-emphasis" class="mr-1">mdi-account-group</v-icon>
+                <span class="text-caption text-medium-emphasis">Ứng viên mục tiêu</span>
+              </div>
+              <div class="stat-value">{{ formatNumber(campaign.stats.candidates || campaign.stats.total || 0) }}</div>
             </div>
-            <div class="stat-item mb-2">
-              <div class="text-caption text-medium-emphasis">Tỷ lệ mở</div>
-              <div class="text-subtitle-1 font-weight-bold text-blue">{{ campaign.stats.openRate }}%</div>
+            
+            <div class="stat-item mb-3">
+              <div class="stat-header">
+                <v-icon size="16" color="primary" class="mr-1">mdi-email-open</v-icon>
+                <span class="text-caption text-medium-emphasis">Tỷ lệ mở</span>
+              </div>
+              <div class="stat-value text-primary">
+                {{ campaign.stats.openRate }}%
+                <v-progress-linear 
+                  :model-value="campaign.stats.openRate"
+                  color="primary"
+                  height="4"
+                  rounded
+                  class="mt-1"
+                  style="opacity: 0.7"
+                />
+              </div>
             </div>
+            
             <div class="stat-item">
-              <div class="text-caption text-medium-emphasis">Tỷ lệ nhấp</div>
-              <div class="text-subtitle-1 font-weight-bold text-indigo">{{ campaign.stats.clickRate }}%</div>
+              <div class="stat-header">
+                <v-icon size="16" color="indigo" class="mr-1">mdi-cursor-default-click</v-icon>
+                <span class="text-caption text-medium-emphasis">Tỷ lệ nhấp</span>
+              </div>
+              <div class="stat-value text-indigo">
+                {{ campaign.stats.clickRate }}%
+                <v-progress-linear 
+                  :model-value="campaign.stats.clickRate"
+                  color="indigo"
+                  height="4"
+                  rounded
+                  class="mt-1"
+                  style="opacity: 0.7"
+                />
+              </div>
             </div>
           </div>
         </v-col>
@@ -120,8 +189,8 @@ const props = defineProps({
 })
 
 // Computed properties for donut chart
-const circumference = computed(() => 2 * Math.PI * 40) // outer circle radius = 40
-const innerCircumference = computed(() => 2 * Math.PI * 28) // inner circle radius = 28
+const circumference = computed(() => 2 * Math.PI * 45) // outer circle radius = 45
+const innerCircumference = computed(() => 2 * Math.PI * 30) // inner circle radius = 30
 
 const openRateOffset = computed(() => {
   const progress = props.campaign.stats.openRate / 100
@@ -133,6 +202,27 @@ const clickRateOffset = computed(() => {
   return innerCircumference.value - (progress * innerCircumference.value)
 })
 
+// Helper functions
+const formatNumber = (num) => {
+  if (num >= 1000000) {
+    return (num / 1000000).toFixed(1) + 'M'
+  } else if (num >= 1000) {
+    return (num / 1000).toFixed(1) + 'K'
+  }
+  return num.toString()
+}
+
+const getNumberSizeClass = (num) => {
+  if (num >= 1000000) {
+    return 'size-mega'
+  } else if (num >= 10000) {
+    return 'size-large'
+  } else if (num >= 1000) {
+    return 'size-medium'
+  }
+  return 'size-small'
+}
+
 // Methods
 const viewDetails = () => {
   // Navigate to campaign detail page
@@ -143,15 +233,24 @@ const viewDetails = () => {
 <style scoped>
 .campaign-card {
   height: 100%;
-  transition: transform 0.2s ease-in-out;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
 }
 
 .campaign-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border-color: rgba(99, 102, 241, 0.1);
+}
+
+.donut-container {
+  position: relative;
+  padding: 8px;
 }
 
 .donut-chart {
   display: block;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 .donut-center {
@@ -160,27 +259,158 @@ const viewDetails = () => {
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
+  pointer-events: none;
+}
+
+.center-number {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1f2937;
+  line-height: 1;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Dynamic sizing based on number length */
+.center-number.size-small {
+  font-size: 2rem;
+}
+
+.center-number.size-medium {
+  font-size: 1.75rem;
+}
+
+.center-number.size-large {
+  font-size: 1.5rem;
+}
+
+.center-number.size-mega {
+  font-size: 1.25rem;
+}
+
+.chart-label-simple {
+  text-align: center;
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 8px;
 }
 
 .progress-circle {
-  transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.open-rate-circle {
+  animation: drawCircle 2s ease-out;
+}
+
+.click-rate-circle {
+  animation: drawCircle 2s ease-out 0.5s both;
+}
+
+@keyframes drawCircle {
+  from {
+    stroke-dashoffset: 283; /* approximately 2 * PI * 45 */
+  }
+}
+
+.floating-icon {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  animation: float 3s ease-in-out infinite;
+}
+
+.open-icon {
+  top: 10px;
+  right: 15px;
+  animation-delay: 0s;
+}
+
+.click-icon {
+  bottom: 10px;
+  left: 15px;
+  animation-delay: 1.5s;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
 }
 
 .stats-container {
-  padding-left: 8px;
+  padding-left: 12px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .stat-item {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
-.text-blue {
-  color: #3b82f6;
+.stat-header {
+  display: flex;
+  align-items: center;
+  opacity: 0.8;
+}
+
+.stat-value {
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.text-primary {
+  color: #3b82f6 !important;
 }
 
 .text-indigo {
-  color: #6366f1;
+  color: #6366f1 !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 960px) {
+  .donut-chart {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .center-number {
+    max-width: 70px;
+  }
+  
+  .center-number.size-small {
+    font-size: 1.75rem;
+  }
+  
+  .center-number.size-medium {
+    font-size: 1.5rem;
+  }
+  
+  .center-number.size-large {
+    font-size: 1.25rem;
+  }
+  
+  .center-number.size-mega {
+    font-size: 1.1rem;
+  }
+  
+  .chart-label-simple {
+    font-size: 0.7rem;
+  }
 }
 </style> 

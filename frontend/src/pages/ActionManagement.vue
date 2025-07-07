@@ -428,6 +428,8 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { actionService, candidateCampaignService, campaignStepService, userService } from '../services/universalService'
 import { debounce } from 'lodash'
+import { createResource } from 'frappe-ui'
+import { ToastContainer } from '@/components/shared'
 
 const router = useRouter()
 
@@ -691,7 +693,10 @@ const saveData = async () => {
       dataToSave.assignee_id = null
     }
     
-    const result = await actionService.save(dataToSave)
+    // Extract name for update, or pass null for create
+    const nameForUpdate = dataToSave.name && dataToSave.name !== 'new' ? dataToSave.name : null
+    
+    const result = await actionService.save(dataToSave, nameForUpdate)
     if (result.success) {
       closeFormModal()
       loadData()
@@ -731,16 +736,30 @@ const deleteData = async () => {
 
 const executeAction = async (item) => {
   try {
-    // Update status to EXECUTED
-    const result = await actionService.save({
-      name: item.name,
-      status: 'EXECUTED',
-      executed_at: new Date().toISOString(),
-      result: item.result || null // Keep existing result or set to null
+    // Create resource for updating Action
+    const updateResource = createResource({
+      url: 'frappe.client.set_value',
+      method: 'POST'
     })
-    if (result.success) {
-      loadData()
-    }
+    
+    // Update status to EXECUTED
+    await updateResource.submit({
+      doctype: 'Action',
+      name: item.name,
+      fieldname: 'status',
+      value: 'EXECUTED'
+    })
+    
+    // Set executed_at timestamp
+    await updateResource.submit({
+      doctype: 'Action',
+      name: item.name,
+      fieldname: 'executed_at',
+      value: new Date().toISOString()
+    })
+    
+    // Reload data to reflect changes
+    loadData()
   } catch (error) {
     console.error('Error executing action:', error)
   }
