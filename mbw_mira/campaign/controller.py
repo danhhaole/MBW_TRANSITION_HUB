@@ -152,7 +152,7 @@ def send_email_to_candidate(candidate, step):
         return
 
     subject = "Thông báo từ chiến dịch"
-    context = {candidate,step}
+    context = (candidate,step)
     message = render_template(step.template, context)
 
     frappe.enqueue(
@@ -175,7 +175,7 @@ def send_sms_to_candidate(candidate, step):
     if candidate.email_opt_out:
         frappe.logger("campain").error("Candidate unsubcrible")
         return
-    context = {candidate,step}
+    context = (candidate,step)
     message = render_template(step.template, context)
 
     frappe.enqueue(
