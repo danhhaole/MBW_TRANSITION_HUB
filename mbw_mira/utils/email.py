@@ -65,20 +65,13 @@ def send_email(
                 delayed=False
             )
             frappe.logger().info(f"Email sent via Frappe to {recipients}")
-
         else:
             # Fallback to AWS SES
             status = "Fallback"
             sendmail_via_ses(
                 recipients=recipients,
                 subject=subject,
-                html_message=content,
-                text_message=text_message,
-                sender=sender,
-                cc=cc,
-                bcc=bcc,
-                reply_to=reply_to,
-                attachments=attachments
+                message=content
             )
             frappe.logger().info(f"Email sent via AWS SES to {recipients}")
 

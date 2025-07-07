@@ -196,7 +196,6 @@ def render_template(template_str, context):
     from frappe.utils import get_url
     if not template_str:
         return "Xin chào bạn"
-
     candidate, step = context
     
     params = {
