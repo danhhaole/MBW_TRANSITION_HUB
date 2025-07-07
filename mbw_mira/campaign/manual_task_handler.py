@@ -17,4 +17,4 @@ def complete_manual_action(action_id: str, user: str = None, note: str = ""):
     #Publish event action from server
     frappe.publish_realtime('manual_action_complete', data=action)
 
-    frappe.enqueue("mbw_mira.campaign.background_jobs.step_executed", action_id=action.name)
+    frappe.enqueue("mbw_mira.campaign.background_jobs.step_executed", job_name="step_executed",action_id=action.name)

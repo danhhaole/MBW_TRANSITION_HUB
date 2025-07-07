@@ -5,30 +5,32 @@ from frappe.utils import now_datetime, add_days,now
 #Tạo CandidateSegment từ Campaign
 def handle_candidate_segment():
     campaigns = _get_active_campaigns()
+    
     if not campaigns:
         frappe.logger("campaign").info("[SKIP] No active campaigns found.")
         return
-    frappe.logger("campaign").info("Active campaigns found. {campaigns}")
+    
     for campaign in campaigns:
-        segment = frappe.get_value("Campaign", campaign, "target_segment")
-        if not segment:
+        if not campaign.target_segment:
             frappe.logger("campaign").info(f"[SKIP] Campaign {campaign} has no target segment.")
             continue
 
         # Mỗi campaign sẽ có thông tin segment,
         # lấy danh sách candidate từ CandidateSegment
-        candidate_ids = candidate_segment_by_campaign(segment)
+        candidate_ids = candidate_segment_by_campaign(campaign.target_segment)
         if not candidate_ids:
-            frappe.logger("campaign").info(f"[SKIP] No candidates found for segment {segment}.")
+            frappe.logger("campaign").info(f"[SKIP] No candidates found for segment {campaign.target_segment}.")
             continue
-
+        print("=======================handle_candidate_segment============================= ",campaign.target_segment)
         # Insert vào CandidateSegment
         frappe.enqueue(
             "mbw_mira.services.candidate_service.insert_candidate_segment",
             queue="default",
             timeout=300,
             candidates=candidate_ids,
-            segment=segment
+            segment=campaign.target_segment,
+            campaign= campaign.name,
+            job_name = "insert_candidate_segment"
         )
 
 def handle_candidate_campaign():
@@ -44,6 +46,9 @@ def handle_candidate_campaign():
         frappe.enqueue(
             "mbw_mira.campaign.background_jobs.process_next_step",
             candidate_campaign_id=can_campaign.name,
+            queue="default",
+            timeout=300,
+            job_name = "process_next_step"
         )
             
 
@@ -54,11 +59,12 @@ def insert_candidate_segment(**kwargs) -> list[str]:
     đảm bảo duy nhất theo (candidate, segment).
     Bỏ qua các candidate đã tồn tại trong segment.
     """
-        
+    
     segment_id = kwargs.get("segment")
     candidate_ids = kwargs.get("candidates")
     added_by = kwargs.get("added_by", None)
-
+    campaign = kwargs.get("campaign")
+    print("=======================insert_candidate_segment============================= ",segment_id)
     if not segment_id or not candidate_ids:
         frappe.throw(_("Both 'segment' and 'candidates' are required."))
 
@@ -91,27 +97,28 @@ def insert_candidate_segment(**kwargs) -> list[str]:
                 "added_by": added_by,
             }
         )
+        
         doc.insert(ignore_permissions=True)
         inserted_names.append(doc.name)
 
-        # có thể publish realtime từng bản ghi hoặc gom lại
-        frappe.publish_realtime("candidate_segment_created", data=doc)
-        frappe.enqueue(
+        # có thể publish realtime từng bản ghi hoặc gom lại        
+        frappe.publish_realtime("candidate_segment_created", doc)
+    frappe.db.commit()
+    frappe.enqueue(
             "mbw_mira.services.candidate_service.insert_candidate_campaign",
             queue="default",
             timeout=300,
-            campaign=doc.name,
-            segment=segment_id
+            campaign=campaign,
+            segment=segment_id,
+            job_name = "insert_candidate_campaign"
         )
-
-    frappe.db.commit()
     return inserted_names
 
 
 def insert_candidate_campaign(**kwargs):
     campaign_id = kwargs.get("campaign")
     segment = kwargs.get("segment")    
-
+    print("=======================insert_candidate_campaign============================= ",campaign_id)
     if not campaign_id or not segment:
         frappe.throw(_("Both 'campaign' and 'segment' are required."))
 
@@ -148,7 +155,7 @@ def insert_candidate_campaign(**kwargs):
     # Mặc định là active
     status = "ACTIVE"
     enrolled_at = now_datetime()
-    current_step_order = (step["step_order"],)
+    current_step_order = step["step_order"] or 1
     for candidate_id in candidate_ids:
         if candidate_id in existing_candidate_ids:
             # Bỏ qua nếu đã tồn tại
@@ -157,6 +164,7 @@ def insert_candidate_campaign(**kwargs):
         doc = frappe.get_doc(
             {
                 "doctype": "CandidateCampaign",
+                "campaign_id":campaign_id,
                 "candidate_id": candidate_id,
                 "segment_id": campaign_id,
                 "status": status,
@@ -168,7 +176,7 @@ def insert_candidate_campaign(**kwargs):
         doc.insert(ignore_permissions=True)
 
         # có thể publish realtime từng bản ghi hoặc gom lại
-        frappe.publish_realtime("candidate_segment_created", data=doc)
+        frappe.publish_realtime("candidate_campaign_created", doc)
 
     frappe.db.commit()
 
@@ -192,7 +200,6 @@ def _get_active_campaigns():
     - end_date >= hôm nay
     """
     current_date = now()  # yyyy-mm-dd
-
     campaigns = frappe.get_all(
         "Campaign",
         filters={

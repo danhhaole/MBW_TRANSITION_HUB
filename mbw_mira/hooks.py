@@ -152,9 +152,11 @@ scheduler_events = {
     "cron": {
         "*/1 * * * *": [
             "mbw_mira.tasks.do_campaign_scheduler"
+        ],
+        "*/5 * * * *": [
+            "mbw_mira.tasks.do_candidate_campaign_scheduler"
         ]
     },
-    "all": ["mbw_mira.tasks.do_candidate_campaign_scheduler"],
     # "daily": [],
     # "hourly": [],
     # "weekly": [],
