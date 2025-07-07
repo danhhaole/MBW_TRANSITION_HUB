@@ -36,10 +36,10 @@ def track(candidate_id=None, action=None, type=None, url=None):
 
 @frappe.whitelist(allow_guest=True)
 def click_redirect(candidate_id=None, action=None, url=None, sig=None):
-    if not candidate_id or not url or not sig:
+    if not candidate_id or not sig:
         frappe.throw("Missing required parameters")
 
-    data_string = f"candidate_id={candidate_id}&action={action}&url={url}"
+    data_string = f"candidate_id={candidate_id}&action={action}" #&url={url}
     if not verify_signature(data_string, sig):
         frappe.throw("Invalid signature")
 
