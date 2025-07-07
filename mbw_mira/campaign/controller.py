@@ -193,6 +193,7 @@ def send_sms_to_candidate(candidate, step):
 def render_template(template_str, context):
     from mbw_mira.campaign.utils import make_signature
     from urllib.parse import urlencode
+    from frappe.utils import get_url
     if not template_str:
         return "Xin chào bạn"
 
@@ -211,14 +212,16 @@ def render_template(template_str, context):
 
     # dùng urllib để encode query string
     query = urlencode({**params, "sig": sig})
+
+    base_url = get_url()
     context_parse["tracking_pixel_url"] = (
-        f"{frappe.request.host}api/method/mbw_mira.interaction.tracking_pixel?{query}"
+        f"{base_url}api/method/mbw_mira.interaction.tracking_pixel?{query}"
     )
     context_parse["tracking_link"] = (
-        f"{frappe.request.host}api/method/mbw_mira.interaction.click_redirect?{query}"
+        f"{base_url}api/method/mbw_mira.interaction.click_redirect?{query}"
     )
     context_parse['url_link'] = (
-        f"{frappe.request.host}api/method/mbw_mira.interaction.unsubscribe?{query}"
+        f"{base_url}api/method/mbw_mira.interaction.unsubscribe?{query}"
     )
 
     return frappe.render_template(template_str, context_parse)
