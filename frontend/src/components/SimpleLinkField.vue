@@ -35,7 +35,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import { call } from 'frappe-ui'
+import { createResource } from 'frappe-ui'
 
 const props = defineProps({
   doctype: {
@@ -91,7 +91,13 @@ const searchOptions = async (query = '') => {
   loading.value = true
   
   try {
-    const response = await call('frappe.desk.search.search_link', {
+    const resource = createResource({
+      url: 'frappe.desk.search.search_link',
+      method: 'POST',
+      auto: false
+    })
+    
+    const response = await resource.fetch({
       doctype: props.doctype,
       txt: query,
       filters: props.filters,

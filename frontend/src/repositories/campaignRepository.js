@@ -1,19 +1,24 @@
-import { call } from 'frappe-ui'
+import { createApiResource, executeApiCall, frappeClientCall, retryApiCall } from '@/utils/api'
 
 // Lấy danh sách campaigns với pagination
 export const getCampaigns = async (options = {}) => {
-  try {
-    const {
-      page = 1,
-      limit = 10,
-      search = "",
-      status_filter = "all",
-      type_filter = "all", 
-      active_filter = "all",
-      order_by = "modified desc"
-    } = options
+  const {
+    page = 1,
+    limit = 10,
+    search = "",
+    status_filter = "all",
+    type_filter = "all", 
+    active_filter = "all",
+    order_by = "modified desc"
+  } = options
+  
+  const apiCall = async () => {
+    const resource = createApiResource({
+      url: 'mbw_mira.api.campaign.get_campaigns_paginated',
+      method: 'POST'
+    })
     
-    const result = await call('mbw_mira.api.campaign.get_campaigns_paginated', {
+    return await resource.fetch({
       page,
       limit,
       search,
@@ -22,14 +27,15 @@ export const getCampaigns = async (options = {}) => {
       active_filter,
       order_by
     })
-    
-    return result
-  } catch (error) {
-    console.error('Error getting campaigns:', error)
+  }
+  
+  const result = await executeApiCall(apiCall, 'Có lỗi xảy ra khi lấy danh sách campaigns')
+  
+  if (!result.success) {
     return { 
       success: false, 
-      message: error.messages?.[0] || 'Có lỗi xảy ra khi lấy danh sách campaigns',
-      error,
+      message: result.message,
+      error: result.error,
       data: [],
       pagination: {
         page: 1,
@@ -41,51 +47,60 @@ export const getCampaigns = async (options = {}) => {
       }
     }
   }
+  
+  return result.data
 }
 
 // Lấy thống kê campaigns
 export const getCampaignStats = async () => {
-  try {
-    const result = await call('mbw_mira.api.campaign.get_campaign_stats')
-    return result
-  } catch (error) {
-    console.error('Error getting campaign stats:', error)
-    return { 
-      success: false, 
-      message: error.messages?.[0] || 'Có lỗi xảy ra khi lấy thống kê campaigns',
-      error 
-    }
-  }
+  const result = await frappeClientCall({
+    url: 'mbw_mira.api.campaign.get_campaign_stats',
+    method: 'GET',
+    errorMessage: 'Có lỗi xảy ra khi lấy thống kê campaigns'
+  })
+  
+  return result
 }
 
 // Lấy chi tiết campaign theo name
 export const getCampaignByName = async (name) => {
-  try {
-    const result = await call('frappe.client.get', {
+  const result = await frappeClientCall({
+    url: 'frappe.client.get',
+    method: 'POST',
+    data: {
       doctype: 'Campaign',
       name: name
-    })
-    return { success: true, message: result, data: result }
-  } catch (error) {
-    console.error('Error getting campaign by name:', error)
-    return { 
-      success: false, 
-      message: error.messages?.[0] || 'Có lỗi xảy ra khi lấy thông tin campaign',
-      error 
-    }
+    },
+    errorMessage: 'Có lỗi xảy ra khi lấy thông tin campaign'
+  })
+  
+  if (result.success) {
+    return { success: true, message: result.data, data: result.data }
   }
+  
+  return result
 }
 
 // Tạo mới campaign
 export const createCampaign = async (data) => {
-  try {
-    const doc = await call('frappe.client.insert', {
+  const apiCall = async () => {
+    const resource = createApiResource({
+      url: 'frappe.client.insert',
+      method: 'POST'
+    })
+    
+    return await resource.fetch({
       doc: {
         doctype: 'Campaign',
         ...data
       }
     })
-    return { success: true, message: doc, data: doc }
+  }
+  
+  // Sử dụng retry logic cho create operation
+  try {
+    const result = await retryApiCall(apiCall, 1)
+    return { success: true, message: result, data: result }
   } catch (error) {
     console.error('Error creating campaign:', error)
     return { 
@@ -98,95 +113,108 @@ export const createCampaign = async (data) => {
 
 // Cập nhật campaign
 export const updateCampaign = async (name, data) => {
-  try {
-    const result = await call('frappe.client.set_value', {
+  const result = await frappeClientCall({
+    url: 'frappe.client.set_value',
+    method: 'POST',
+    data: {
       doctype: 'Campaign',
       name: name,
       fieldname: data
-    })
-    return { success: true, message: result, data: result }
-  } catch (error) {
-    console.error('Error updating campaign:', error)
-    return { 
-      success: false, 
-      message: error.messages?.[0] || 'Có lỗi xảy ra khi cập nhật campaign',
-      error 
-    }
+    },
+    errorMessage: 'Có lỗi xảy ra khi cập nhật campaign'
+  })
+  
+  if (result.success) {
+    return { success: true, message: result.data, data: result.data }
   }
+  
+  return result
 }
 
 // Xóa campaign
 export const deleteCampaign = async (name) => {
-  try {
-    const result = await call('frappe.client.delete', {
+  const result = await frappeClientCall({
+    url: 'frappe.client.delete',
+    method: 'POST',
+    data: {
       doctype: 'Campaign',
       name: name
-    })
-    return { success: true, message: result, data: result }
-  } catch (error) {
-    console.error('Error deleting campaign:', error)
-    return { 
-      success: false, 
-      message: error.messages?.[0] || 'Có lỗi xảy ra khi xóa campaign',
-      error 
-    }
+    },
+    errorMessage: 'Có lỗi xảy ra khi xóa campaign'
+  })
+  
+  if (result.success) {
+    return { success: true, message: result.data, data: result.data }
   }
+  
+  return result
 }
 
 // Tìm kiếm campaigns nhanh (autocomplete)
 export const searchCampaigns = async (searchText, limit = 10) => {
-  try {
-    const result = await call('mbw_mira.api.campaign.search_campaigns', {
+  const apiCall = async () => {
+    const resource = createApiResource({
+      url: 'mbw_mira.api.campaign.search_campaigns',
+      method: 'POST'
+    })
+    
+    return await resource.fetch({
       query: searchText,
       limit
     })
-    return result
-  } catch (error) {
-    console.error('Error searching campaigns:', error)
+  }
+  
+  const result = await executeApiCall(apiCall, 'Có lỗi xảy ra khi tìm kiếm campaigns')
+  
+  if (!result.success) {
     return { 
       success: false, 
-      message: error.messages?.[0] || 'Có lỗi xảy ra khi tìm kiếm campaigns',
-      error,
+      message: result.message,
+      error: result.error,
       data: []
     }
   }
+  
+  return result.data
 }
 
 // Lấy danh sách Users cho Owner ID
 export const getUsers = async () => {
-  try {
-    const result = await call('frappe.client.get_list', {
+  const result = await frappeClientCall({
+    url: 'frappe.client.get_list',
+    method: 'POST',
+    data: {
       doctype: 'User',
       fields: ['name', 'full_name', 'email'],
       filters: { enabled: 1 },
       order_by: 'full_name asc'
-    })
-    return { success: true, message: result, data: result }
-  } catch (error) {
-    console.error('Error getting users:', error)
-    return { 
-      success: false, 
-      message: error.messages?.[0] || 'Có lỗi xảy ra khi lấy danh sách users',
-      error 
-    }
+    },
+    errorMessage: 'Có lỗi xảy ra khi lấy danh sách users'
+  })
+  
+  if (result.success) {
+    return { success: true, message: result.data, data: result.data }
   }
+  
+  return result
 }
 
 // Lấy danh sách TalentSegment
 export const getTalentSegments = async () => {
-  try {
-    const result = await call('frappe.client.get_list', {
+  const result = await frappeClientCall({
+    url: 'frappe.client.get_list',
+    method: 'POST',
+    data: {
       doctype: 'TalentSegment',
       fields: ['name', 'title'],
       order_by: 'title asc'
-    })
-    return { success: true, message: result, data: result }
-  } catch (error) {
-    console.error('Error getting talent segments:', error)
-    return { 
-      success: false, 
-      message: error.messages?.[0] || 'Có lỗi xảy ra khi lấy danh sách talent segments',
-      error 
-    }
+    },
+    errorMessage: 'Có lỗi xảy ra khi lấy danh sách talent segments'
+  })
+  
+  if (result.success) {
+    return { success: true, message: result.data, data: result.data }
   }
+  
+  return result
 } 

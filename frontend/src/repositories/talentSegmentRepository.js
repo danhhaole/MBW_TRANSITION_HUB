@@ -1,8 +1,14 @@
-import { call } from 'frappe-ui'
+import { createResource } from 'frappe-ui'
 
 // Lấy danh sách TalentSegment với filter
 export const getTalentSegments = async (filters = {}) => {
   try {
+    const resource = createResource({
+      url: 'frappe.client.get_list',
+      method: 'POST',
+      auto: false
+    })
+    
     const params = {
       doctype: 'TalentSegment',
       fields: ['name', 'title', 'description', 'type', 'candidate_count', 'owner_id', 'creation', 'modified'],
@@ -14,7 +20,7 @@ export const getTalentSegments = async (filters = {}) => {
       params.filters = filters
     }
 
-    const result = await call('frappe.client.get_list', params)
+    const result = await resource.fetch(params)
     return { success: true, message: 'Lấy danh sách phân khúc thành công', data: result }
   } catch (error) {
     console.error('Error getting talent segments:', error)
@@ -29,7 +35,13 @@ export const getTalentSegments = async (filters = {}) => {
 // Lấy chi tiết TalentSegment
 export const getTalentSegmentByName = async (name) => {
   try {
-    const result = await call('frappe.client.get', {
+    const resource = createResource({
+      url: 'frappe.client.get',
+      method: 'POST',
+      auto: false
+    })
+    
+    const result = await resource.fetch({
       doctype: 'TalentSegment',
       name: name
     })
@@ -47,7 +59,13 @@ export const getTalentSegmentByName = async (name) => {
 // Tạo TalentSegment mới
 export const createTalentSegment = async (data) => {
   try {
-    const result = await call('frappe.client.insert', {
+    const resource = createResource({
+      url: 'frappe.client.insert',
+      method: 'POST',
+      auto: false
+    })
+    
+    const result = await resource.fetch({
       doc: {
         doctype: 'TalentSegment',
         ...data
@@ -67,7 +85,13 @@ export const createTalentSegment = async (data) => {
 // Cập nhật TalentSegment
 export const updateTalentSegment = async (name, data) => {
   try {
-    const result = await call('frappe.client.set_value', {
+    const resource = createResource({
+      url: 'frappe.client.set_value',
+      method: 'POST',
+      auto: false
+    })
+    
+    const result = await resource.fetch({
       doctype: 'TalentSegment',
       name: name,
       fieldname: data
@@ -86,7 +110,13 @@ export const updateTalentSegment = async (name, data) => {
 // Xóa TalentSegment
 export const deleteTalentSegment = async (name) => {
   try {
-    await call('frappe.client.delete', {
+    const resource = createResource({
+      url: 'frappe.client.delete',
+      method: 'POST',
+      auto: false
+    })
+    
+    await resource.fetch({
       doctype: 'TalentSegment',
       name: name
     })
@@ -104,7 +134,13 @@ export const deleteTalentSegment = async (name) => {
 // Tìm kiếm TalentSegment
 export const searchTalentSegments = async (searchText) => {
   try {
-    const result = await call('frappe.client.get_list', {
+    const resource = createResource({
+      url: 'frappe.client.get_list',
+      method: 'POST',
+      auto: false
+    })
+    
+    const result = await resource.fetch({
       doctype: 'TalentSegment',
       fields: ['name', 'title', 'description', 'type', 'candidate_count', 'owner_id', 'creation', 'modified'],
       filters: [
@@ -129,6 +165,12 @@ export const searchTalentSegments = async (searchText) => {
 // Lấy danh sách ứng viên trong phân khúc
 export const getTalentSegmentCandidates = async (segmentId, filters = {}) => {
   try {
+    const resource = createResource({
+      url: 'frappe.client.get_list',
+      method: 'POST',
+      auto: false
+    })
+    
     const params = {
       doctype: 'CandidateSegment',
       fields: ['candidate_id', 'added_at', 'added_by'],
@@ -141,12 +183,18 @@ export const getTalentSegmentCandidates = async (segmentId, filters = {}) => {
       params.filters = { ...params.filters, ...filters }
     }
 
-    const result = await call('frappe.client.get_list', params)
+    const result = await resource.fetch(params)
     
     // Lấy thông tin chi tiết ứng viên nếu có kết quả
     if (result && result.length > 0) {
       const candidateIds = result.map(item => item.candidate_id)
-      const candidates = await call('frappe.client.get_list', {
+      const candidateResource = createResource({
+        url: 'frappe.client.get_list',
+        method: 'POST',
+        auto: false
+      })
+      
+      const candidates = await candidateResource.fetch({
         doctype: 'Candidate',
         fields: ['name', 'first_name', 'last_name', 'email', 'phone', 'skills', 'status'],
         filters: [['name', 'in', candidateIds]]
@@ -178,7 +226,13 @@ export const getTalentSegmentCandidates = async (segmentId, filters = {}) => {
 // Thêm ứng viên vào phân khúc
 export const addCandidateToSegment = async (segmentId, candidateId) => {
   try {
-    const result = await call('frappe.client.insert', {
+    const resource = createResource({
+      url: 'frappe.client.insert',
+      method: 'POST',
+      auto: false
+    })
+    
+    const result = await resource.fetch({
       doc: {
         doctype: 'CandidateSegment',
         segment_id: segmentId,
@@ -202,7 +256,13 @@ export const addCandidateToSegment = async (segmentId, candidateId) => {
 export const removeCandidateFromSegment = async (segmentId, candidateId) => {
   try {
     // Tìm record CandidateSegment
-    const segments = await call('frappe.client.get_list', {
+    const resource = createResource({
+      url: 'frappe.client.get_list',
+      method: 'POST',
+      auto: false
+    })
+    
+    const segments = await resource.fetch({
       doctype: 'CandidateSegment',
       fields: ['name'],
       filters: {
@@ -212,7 +272,13 @@ export const removeCandidateFromSegment = async (segmentId, candidateId) => {
     })
 
     if (segments && segments.length > 0) {
-      await call('frappe.client.delete', {
+      const deleteResource = createResource({
+        url: 'frappe.client.delete',
+        method: 'POST',
+        auto: false
+      })
+      
+      await deleteResource.fetch({
         doctype: 'CandidateSegment',
         name: segments[0].name
       })

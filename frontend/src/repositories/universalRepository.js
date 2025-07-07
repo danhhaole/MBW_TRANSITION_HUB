@@ -1,6 +1,6 @@
 // Universal repository sử dụng hàm chung từ common.py
 
-import { call } from "frappe-ui"
+import { createResource } from "frappe-ui"
 
 class UniversalRepository {
   constructor(doctype) {
@@ -9,6 +9,12 @@ class UniversalRepository {
 
   async getList(options = {}) {
     try {
+      const resource = createResource({
+        url: 'mbw_mira.api.common.get_list_data',
+        method: 'POST',
+        auto: false
+      })
+      
       const params = {
         doctype: this.doctype,
         filters: options.filters || {},
@@ -18,7 +24,7 @@ class UniversalRepository {
         fields: options.fields || null
       }
       
-      const response = await call('mbw_mira.api.common.get_list_data', params)
+      const response = await resource.fetch(params)
       
       return response
     } catch (error) {
@@ -29,7 +35,13 @@ class UniversalRepository {
 
   async getFormData(name = null) {
     try {
-      const response = await call('mbw_mira.api.common.get_form_data', {
+      const resource = createResource({
+        url: 'mbw_mira.api.common.get_form_data',
+        method: 'POST',
+        auto: false
+      })
+      
+      const response = await resource.fetch({
         doctype: this.doctype,
         name
       })
@@ -43,7 +55,13 @@ class UniversalRepository {
 
   async save(data, name = null) {
     try {
-      const response = await call('mbw_mira.api.common.save_doc', {
+      const resource = createResource({
+        url: 'mbw_mira.api.common.save_doc',
+        method: 'POST',
+        auto: false
+      })
+      
+      const response = await resource.fetch({
         doctype: this.doctype,
         data: data,
         name
@@ -58,7 +76,13 @@ class UniversalRepository {
 
   async delete(name) {
     try {
-      const response = await call('mbw_mira.api.common.delete_doc', {
+      const resource = createResource({
+        url: 'mbw_mira.api.common.delete_doc',
+        method: 'POST',
+        auto: false
+      })
+      
+      const response = await resource.fetch({
         doctype: this.doctype,
         name
       })
@@ -72,7 +96,13 @@ class UniversalRepository {
 
   async getFilterOptions(field) {
     try {
-      const response = await call('mbw_mira.api.common.get_filter_options', {
+      const resource = createResource({
+        url: 'mbw_mira.api.common.get_filter_options',
+        method: 'POST',
+        auto: false
+      })
+      
+      const response = await resource.fetch({
         doctype: this.doctype,
         field
       })

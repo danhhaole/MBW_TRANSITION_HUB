@@ -64,7 +64,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import { call } from 'frappe-ui'
+import { createResource } from 'frappe-ui'
 
 const props = defineProps({
   doctype: {
@@ -192,7 +192,13 @@ const searchOptions = async (query = '') => {
   loading.value = true
   
   try {
-    const response = await call('mbw_mira.api.link_search.search_link_custom', {
+    const resource = createResource({
+      url: 'mbw_mira.api.link_search.search_link_custom',
+      method: 'POST',
+      auto: false
+    })
+    
+    const response = await resource.fetch({
       doctype: props.doctype,
       txt: query,
       filters: parsedFilters.value,
