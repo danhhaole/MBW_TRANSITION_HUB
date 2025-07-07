@@ -106,6 +106,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
+import moment from 'moment'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -211,7 +212,7 @@ const updateTask = async () => {
       action: selectedAction.value,
       scheduledDate: scheduledDate.value,
       notes: notes.value,
-      updatedAt: new Date().toISOString()
+      updatedAt: moment().format("YYYY-MM-DD HH:mm:ss") // Use moment for consistent date formatting
     }
 
     // Emit the update event
