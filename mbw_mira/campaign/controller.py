@@ -191,15 +191,15 @@ def send_sms_to_candidate(candidate, step):
 
 
 def render_template(template_str, context):
-    from mbw_mira.utils import make_signature
+    from mbw_mira.campaign.utils import make_signature
 
     if not template_str:
         return "Xin chào bạn"
     params = {
-        "candidate_id": context.candidate.name,
-        "action": context.step.name,
+        "candidate_id": context.get('candidate').get('name'),
+        "action": context.get('step').get('name'),
     }
-    context.candidate_name = context.candidate.full_name
+    context.candidate_name = context.get('candidate').get('full_name')
     sig = make_signature(params)
     query = frappe.utils.encode_query({**params, "sig": sig})
     context.tracking_pixel_url = (
