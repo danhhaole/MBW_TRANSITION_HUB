@@ -1,12 +1,16 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "format:ITRC-{YY}{MM}{DD}-{#####}",
  "creation": "2025-06-28 08:53:23.203334",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
   "candidate_id",
-  "interaction_type"
+  "interaction_type",
+  "action",
+  "url",
+  "description"
  ],
  "fields": [
   {
@@ -16,38 +20,40 @@
    "options": "Candidate"
   },
   {
+   "description": "Lo\u1ea1i h\u00e0nh vi c\u1ee7a \u1ee9ng vi\u00ean \u0111\u01b0\u1ee3c h\u1ec7 th\u1ed1ng ghi nh\u1eadn",
    "fieldname": "interaction_type",
    "fieldtype": "Select",
    "label": "Interaction Type",
-   "options": "EMAIL_SENT\nEMAIL_DELIVERED\nEMAIL_BOUNCED\nEMAIL_OPENED\nEMAIL_CLICKED\nEMAIL_UNSUBSCRIBED\nEMAIL_REPLIED\nPAGE_VISITED\nFORM_SUBMITTED\nDOWNLOAD_TRIGGERED\nCHAT_STARTED\nCHAT_MESSAGE_SENT\nCHAT_COMPLETED\nCALL_MISSED\nCALL_COMPLETED\nSMS_SENT\nSMS_DELIVERED\nSMS_REPLIED\nAPPLICATION_SUBMITTED\nDOCUMENT_UPLOADED\nTEST_STARTED\nTEST_COMPLETED\nINTERVIEW_CONFIRMED\nINTERVIEW_RESCHEDULED",
-      "description": "Loại hành vi của ứng viên được hệ thống ghi nhận"
-  },{
-    "fieldname": "action",
-    "label": "Source Action",
-    "fieldtype": "Link",
-    "options": "Action",
-    "description": "Hành động hệ thống đã thực hiện dẫn đến tương tác này"
+   "options": "EMAIL_SENT\nEMAIL_DELIVERED\nEMAIL_BOUNCED\nEMAIL_OPENED\nEMAIL_CLICKED\nEMAIL_UNSUBSCRIBED\nEMAIL_REPLIED\nPAGE_VISITED\nFORM_SUBMITTED\nDOWNLOAD_TRIGGERED\nCHAT_STARTED\nCHAT_MESSAGE_SENT\nCHAT_COMPLETED\nCALL_MISSED\nCALL_COMPLETED\nSMS_SENT\nSMS_DELIVERED\nSMS_REPLIED\nAPPLICATION_SUBMITTED\nDOCUMENT_UPLOADED\nTEST_STARTED\nTEST_COMPLETED\nINTERVIEW_CONFIRMED\nINTERVIEW_RESCHEDULED"
   },
   {
-    "fieldname": "url",
-    "label": "URL (if any)",
-    "fieldtype": "Data",
-    "description": "Liên kết mà ứng viên đã nhấp vào (nếu có)"
+   "description": "H\u00e0nh \u0111\u1ed9ng h\u1ec7 th\u1ed1ng \u0111\u00e3 th\u1ef1c hi\u1ec7n d\u1eabn \u0111\u1ebfn t\u01b0\u01a1ng t\u00e1c n\u00e0y",
+   "fieldname": "action",
+   "fieldtype": "Link",
+   "label": "Source Action",
+   "options": "Action"
   },
   {
-    "fieldname": "description",
-    "label": "Description",
-    "fieldtype": "Text",
-    "description": "Thông tin bổ sung hoặc nội dung liên quan"
+   "description": "Li\u00ean k\u1ebft m\u00e0 \u1ee9ng vi\u00ean \u0111\u00e3 nh\u1ea5p v\u00e0o (n\u1ebfu c\u00f3)",
+   "fieldname": "url",
+   "fieldtype": "Data",
+   "label": "URL (if any)"
+  },
+  {
+   "description": "Th\u00f4ng tin b\u1ed5 sung ho\u1eb7c n\u1ed9i dung li\u00ean quan",
+   "fieldname": "description",
+   "fieldtype": "Text",
+   "label": "Description"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-06-28 09:18:52.686751",
+ "modified": "2025-07-07 13:33:24.107413",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Interaction",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {

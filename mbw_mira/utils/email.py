@@ -6,6 +6,7 @@ from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
 import os
 import boto3
+from frappe.query_builder import DocType, Query
 
 def send_email(
     recipients,
@@ -37,26 +38,25 @@ def send_email(
     bcc = normalize_emails(bcc)
     reply_to = normalize_emails(reply_to)
     prepared_attachments = prepare_attachments(attachments)
-
+    
     # Default sender
-    sender_email = sender or frappe.db.get_single_value("Email Account", "email_id")
-
-    # Default content if template given
+    senderemail= ''
+    if sender_email():
+        senderemail = sender_email().email_id
     if template:
         content = render_template(template, template_args)
         if not text_message:
             text_message = frappe.utils.strip_html(content)
-
     status = "Success"
     error = None
 
     try:
-        if sender_email:
+        if senderemail:
             # Use Frappe
             frappe.sendmail(
                 recipients=recipients,
                 subject=subject,
-                sender=sender_email,
+                sender=senderemail,
                 cc=cc,
                 bcc=bcc,
                 reply_to=reply_to,
@@ -231,3 +231,52 @@ def log_email_transaction(
     except Exception as e:
         frappe.logger().error(f"Failed to write Email Log: {e}")
 
+def query_get_one(q: Query) -> dict:
+    r = q.run(as_dict=True)
+
+    if len(r) != 1:
+        return
+
+    return r.pop()
+
+
+def default_outgoing_email_account():
+    QBEmailAccount = DocType("Email Account")
+
+    r = (
+        frappe.qb.from_(QBEmailAccount)
+        .select(QBEmailAccount.star)
+        .where(QBEmailAccount.default_outgoing == 1)
+        .limit(1)
+    )
+
+    return query_get_one(r)
+
+
+def default_ats_outgoing_email_account():
+    QBEmailAccount = DocType("Email Account")
+    QBImapFolder = DocType("IMAP Folder")
+
+    r = (
+        frappe.qb.from_(QBEmailAccount)
+        .select(QBEmailAccount.star)
+        .where(QBEmailAccount.default_outgoing == 1)
+        .inner_join(QBImapFolder)
+        .on(QBImapFolder.parent == QBEmailAccount.name)
+        .where(QBImapFolder.append_to == "MBW_ATS")
+        .limit(1)
+    )
+
+    return query_get_one(r)
+
+def sender_email():
+        """
+        Find an email to use as sender. Fall back through multiple choices
+
+        :return: `Email Account`
+        """
+        if email_account := default_ats_outgoing_email_account():
+            return email_account
+
+        if email_account := default_outgoing_email_account():
+            return email_account

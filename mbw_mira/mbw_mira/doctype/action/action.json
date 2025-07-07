@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "format:ACT-{YY}{MM}{DD}-{#####}",
  "creation": "2025-06-27 16:49:37.855079",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -59,10 +60,11 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-06-28 09:40:08.861356",
+ "modified": "2025-07-07 13:32:32.612770",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Action",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {

@@ -27,25 +27,26 @@ def handle_step(candidate_campaign_id: str):
         if step.action_type in ["SEND_EMAIL", "SEND_SMS", "SEND_NOTIFICATION"]
         else "PENDING_MANUAL"
     )
+    exists_action = frappe.db.get_value("Action",{"candidate_campaign_id":cc.name,"campaign_step":step.name})
+    if not exists_action:
+        action = frappe.get_doc(
+            {
+                "doctype": "Action",
+                "candidate_campaign_id": cc.name,
+                "campaign_step": step.name,
+                "status": status_action,
+                "scheduled_at": now_datetime(),
+            }
+        ).insert(ignore_permissions=True)
 
-    action = frappe.get_doc(
-        {
-            "doctype": "Action",
-            "candidate_campaign_id": cc.name,
-            "campaign_step": step.name,
-            "status": status_action,
-            "scheduled_at": now_datetime(),
-        }
-    ).insert(ignore_permissions=True)
-
-    # Nếu status là Scheduled thì chạy tự động
-    if status_action == "SCHEDULED":
-        frappe.enqueue(
-            "mbw_mira.campaign.background_jobs.execute_action",
-            job_name="execute_action",
-            action_id=action.name,
-            queue="short",
-        )
+        # Nếu status là Scheduled thì chạy tự động
+        if status_action == "SCHEDULED":
+            frappe.enqueue(
+                "mbw_mira.campaign.background_jobs.execute_action",
+                job_name="execute_action",
+                action_id=action.name,
+                queue="short",
+            )
 
 
 # Process campaign tạo candidate segment
@@ -151,7 +152,7 @@ def send_email_to_candidate(candidate, step):
         return
 
     subject = "Thông báo từ chiến dịch"
-    context = {candidate: candidate, step: step}
+    context = {"candidate":dict(candidate),"step":dict(step)}
     message = render_template(step.template, context)
 
     frappe.enqueue(
@@ -174,8 +175,7 @@ def send_sms_to_candidate(candidate, step):
     if candidate.email_opt_out:
         frappe.logger("campain").error("Candidate unsubcrible")
         return
-
-    context = {candidate: candidate, step: step}
+    context = {"candidate":dict(candidate),"step":dict(step)}
     message = render_template(step.template, context)
 
     frappe.enqueue(
