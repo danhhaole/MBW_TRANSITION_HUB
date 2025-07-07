@@ -195,11 +195,14 @@ def render_template(template_str, context):
 
     if not template_str:
         return "Xin chào bạn"
+
+    candidate, step = context
+    
     params = {
-        "candidate_id": context[0].candidate.name,
-        "action": context[1].step.name,
+        "candidate_id": candidate.name,
+        "action": step.name,
     }
-    context.candidate_name = context[0].candidate.full_name
+    context.candidate_name = candidate.full_name
     sig = make_signature(params)
     query = frappe.utils.encode_query({**params, "sig": sig})
     context.tracking_pixel_url = (
