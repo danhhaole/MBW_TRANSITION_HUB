@@ -152,7 +152,7 @@ def send_email_to_candidate(candidate, step):
         return
 
     subject = "Thông báo từ chiến dịch"
-    context = {"candidate":dict(candidate),"step":dict(step)}
+    context = {candidate,step}
     message = render_template(step.template, context)
 
     frappe.enqueue(
@@ -175,7 +175,7 @@ def send_sms_to_candidate(candidate, step):
     if candidate.email_opt_out:
         frappe.logger("campain").error("Candidate unsubcrible")
         return
-    context = {"candidate":dict(candidate),"step":dict(step)}
+    context = {candidate,step}
     message = render_template(step.template, context)
 
     frappe.enqueue(
@@ -196,10 +196,10 @@ def render_template(template_str, context):
     if not template_str:
         return "Xin chào bạn"
     params = {
-        "candidate_id": context.get('candidate').get('name'),
-        "action": context.get('step').get('name'),
+        "candidate_id": context[0].candidate.name,
+        "action": context[1].step.name,
     }
-    context.candidate_name = context.get('candidate').get('full_name')
+    context.candidate_name = context[0].candidate.full_name
     sig = make_signature(params)
     query = frappe.utils.encode_query({**params, "sig": sig})
     context.tracking_pixel_url = (
