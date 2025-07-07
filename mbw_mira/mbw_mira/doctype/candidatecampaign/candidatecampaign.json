@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "format:CAN-CPG-{YY}{MM}{DD)-{#####}",
+ "autoname": "format:CAN-CPG-{YY}{MM}{DD}-{#####}",
  "creation": "2025-06-27 14:59:48.010299",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -56,7 +56,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-07 11:54:44.491249",
+ "modified": "2025-07-07 15:38:17.232755",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "CandidateCampaign",
