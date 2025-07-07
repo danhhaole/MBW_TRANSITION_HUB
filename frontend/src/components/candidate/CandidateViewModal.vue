@@ -195,9 +195,9 @@
                 Kỹ năng
               </h3>
               
-              <div v-if="candidate.skills && candidate.skills.length > 0" class="d-flex flex-wrap" style="gap: 8px;">
+              <div v-if="processSkills(candidate.skills).length > 0" class="d-flex flex-wrap" style="gap: 8px;">
                 <v-chip
-                  v-for="skill in candidate.skills"
+                  v-for="skill in processSkills(candidate.skills)"
                   :key="skill"
                   variant="outlined"
                   color="primary"
@@ -385,7 +385,7 @@ import {
   getAvatarText,
   getEngagementColor,
   processSkills
-} from '@/utils/candidateHelpers'
+} from '../../services/candidateService'
 import moment from 'moment'
 
 // Props

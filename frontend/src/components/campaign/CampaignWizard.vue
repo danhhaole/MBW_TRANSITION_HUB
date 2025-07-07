@@ -231,12 +231,25 @@ import PoolConfig from './PoolConfig.vue'
 import AtsConfig from './AtsConfig.vue'
 import WebConfig from './WebConfig.vue'
 import { submitNewCampaign, searchCandidates } from '@/services/campaignService'
+import { 
+  campaignService, 
+  candidateService, 
+  candidateSegmentService, 
+  talentSegmentService,
+  candidateCampaignService 
+} from '@/services/universalService'
+import { processSkills } from '@/services/candidateService'
+import moment from 'moment'
 
 // Props & Emits
 const props = defineProps({
   modelValue: {
     type: Boolean,
     default: false
+  },
+  preselectedSegment: {
+    type: String,
+    default: ''
   }
 })
 
@@ -255,12 +268,16 @@ const campaignData = ref({
   campaign_name: '',
   description: '',
   type: 'NURTURING',
-  status: 'DRAFT'
+  status: 'DRAFT',
+  target_segment: props.preselectedSegment || ''
 })
 
-const selectedSource = ref('')
-const configData = ref({})
+const selectedSource = ref(props.preselectedSegment ? 'pool' : '')
+const configData = ref({
+  selectedSegment: props.preselectedSegment || ''
+})
 const selectedCandidates = ref(new Set())
+const realCandidates = ref([]) // Thay thế mockCandidates
 
 // Steps definition
 const steps = [
@@ -295,7 +312,7 @@ const sources = [
 // Source configurations
 const sourceConfigs = {
   pool: {
-    description: 'Sử dụng bộ lọc để tìm ứng viên phù hợp từ nguồn nhân tài có sẵn.'
+    description: 'Chọn phân khúc nhân tài có sẵn để tạo chiến dịch.'
   },
   ats: {
     description: 'Chọn hệ thống ATS và thiết lập quy tắc để đồng bộ.'
@@ -306,12 +323,43 @@ const sourceConfigs = {
 }
 
 // Mock candidates (will be updated by search)
-const mockCandidates = ref([
-  { id: 'c1', name: 'Nguyễn Văn An', title: 'Senior React Developer', source: 'Nguồn nhân tài' },
-  { id: 'c2', name: 'Trần Thị Bình', title: 'Fullstack Engineer', source: 'ATS' },
-  { id: 'c3', name: 'Lê Hoàng Cường', title: 'Data Scientist', source: 'Web' },
-  { id: 'c4', name: 'Phạm Thị Dung', title: 'React Native Developer', source: 'Nguồn nhân tài' }
-])
+const mockCandidates = ref([])
+
+// Load candidates from segment
+const loadCandidatesFromSegment = async (segmentId) => {
+  try {
+    // Get candidates from target segment through CandidateSegment
+    const candidateSegmentResult = await candidateSegmentService.getList({
+      filters: { segment_id: segmentId },
+      fields: ['candidate_id']
+    })
+    
+    if (candidateSegmentResult.success && candidateSegmentResult.data.length > 0) {
+      const candidateIds = candidateSegmentResult.data.map(cs => cs.candidate_id)
+      
+      // Get the actual candidate data
+      const candidateResult = await candidateService.getList({
+        filters: { name: ['in', candidateIds] },
+        fields: ['name', 'candidate_name', 'email', 'skills', 'status']
+      })
+      
+      if (candidateResult.success) {
+        return candidateResult.data.map(candidate => ({
+          id: candidate.name,
+          name: candidate.candidate_name || candidate.name,
+          title: candidate.email || 'Candidate',
+          source: 'Talent Segment',
+          email: candidate.email,
+          skills: processSkills(candidate.skills)
+        }))
+      }
+    }
+    return []
+  } catch (error) {
+    console.error('Error loading candidates from segment:', error)
+    return []
+  }
+}
 
 // Validation rules
 const rules = {
@@ -375,19 +423,31 @@ const handleSearch = async () => {
   loading.value = true
   
   try {
-    // Call search candidates API (currently returns mock data)
-    const candidates = await searchCandidates(selectedSource.value, configData.value)
+    let candidates = []
     
-    // Update mock candidates with filtered results
-    mockCandidates.value.splice(0, mockCandidates.value.length, ...candidates)
+    if (selectedSource.value === 'pool') {
+      // Load candidates from selected segment
+      const segmentId = configData.value.selectedSegment || props.preselectedSegment
+      if (segmentId) {
+        candidates = await loadCandidatesFromSegment(segmentId)
+        
+        // Set target_segment in campaign data
+        campaignData.value.target_segment = segmentId
+      }
+    } else {
+      // For ATS and Web, use the existing search API
+      candidates = await searchCandidates(selectedSource.value, configData.value)
+    }
     
-    setTimeout(() => {
-      loading.value = false
-      showCandidates.value = true
-    }, 1000) // Shorter delay since we have actual logic
+    // Update candidates list
+    mockCandidates.value = candidates
+    
+    loading.value = false
+    showCandidates.value = true
   } catch (error) {
     console.error('Error searching candidates:', error)
     loading.value = false
+    alert('Có lỗi khi tìm kiếm ứng viên. Vui lòng thử lại.')
   }
 }
 
@@ -412,77 +472,92 @@ const activateCampaign = async () => {
   activating.value = true
   
   try {
-    // Prepare campaign data
+    // First, create the campaign
     const campaignPayload = {
-      ...campaignData.value,
-      start_date: new Date().toISOString().split('T')[0], // Today
-      end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
-      target_segment: "",
-      is_active: true,
-      // Add config data based on source
-      config_data: {
-        source: selectedSource.value,
-        ...configData.value,
-        selectedCandidates: Array.from(selectedCandidates.value)
-      }
+      campaign_name: campaignData.value.campaign_name,
+      description: campaignData.value.description,
+      type: campaignData.value.type,
+      status: 'ACTIVE',
+      start_date: new Date().toISOString().split('T')[0],
+      end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      target_segment: campaignData.value.target_segment,
+      is_active: true
     }
     
     console.log('Creating campaign with payload:', campaignPayload)
     
-    // Call actual API
-    const response = await submitNewCampaign(campaignPayload)
+    // Create campaign using universal service
+    const campaignResult = await campaignService.save(campaignPayload)
     
-    if (response && response.success) {
+    if (campaignResult.success) {
+      const campaignId = campaignResult.data.name
+      
+      // Create CandidateCampaign records for selected candidates
+      const candidateCampaignPromises = Array.from(selectedCandidates.value).map(candidateId => 
+        candidateCampaignService.save({
+          candidate_id: candidateId,
+          campaign_id: campaignId,
+          status: 'ACTIVE',
+          current_step_order: 1,
+          enrolled_at: moment().format("YYYY-MM-DD HH:mm:ss")
+        })
+      )
+      
+      // Wait for all candidate assignments to complete
+      await Promise.all(candidateCampaignPromises)
+      
       emit('success', {
         action: 'create',
-        data: response.data || campaignPayload
+        data: campaignResult.data
       })
       
       closeWizard()
     } else {
-      throw new Error(response?.message || 'Failed to create campaign')
+      throw new Error(campaignResult.message || 'Failed to create campaign')
     }
-      } catch (error) {
-      console.error('Error creating campaign:', error)
-      
-      // Better error handling with user-friendly messages
-      let errorMessage = 'Có lỗi xảy ra khi tạo chiến dịch'
-      
-      if (error.message.includes('campaign_name')) {
-        errorMessage = 'Tên chiến dịch không hợp lệ hoặc đã tồn tại'
-      } else if (error.message.includes('validation')) {
-        errorMessage = 'Dữ liệu nhập vào không đúng định dạng'
-      } else if (error.message.includes('network') || error.message.includes('fetch')) {
-        errorMessage = 'Lỗi kết nối mạng, vui lòng thử lại'
-      } else if (error.message) {
-        errorMessage = error.message
-      }
-      
-      alert(errorMessage)
-    } finally {
-      activating.value = false
+  } catch (error) {
+    console.error('Error creating campaign:', error)
+    
+    let errorMessage = 'Có lỗi xảy ra khi tạo chiến dịch'
+    
+    if (error.message.includes('campaign_name')) {
+      errorMessage = 'Tên chiến dịch không hợp lệ hoặc đã tồn tại'
+    } else if (error.message.includes('validation')) {
+      errorMessage = 'Dữ liệu nhập vào không đúng định dạng'
+    } else if (error.message.includes('network') || error.message.includes('fetch')) {
+      errorMessage = 'Lỗi kết nối mạng, vui lòng thử lại'
+    } else if (error.message) {
+      errorMessage = error.message
     }
+    
+    alert(errorMessage)
+  } finally {
+    activating.value = false
+  }
 }
 
 const closeWizard = () => {
   show.value = false
   // Reset state
   currentStep.value = 1
-  campaignData.value = { campaign_name: '', description: '', type: 'NURTURING', status: 'DRAFT' }
-  selectedSource.value = ''
-  configData.value = {}
+  campaignData.value = {
+    campaign_name: '',
+    description: '',
+    type: 'NURTURING',
+    status: 'DRAFT',
+    target_segment: props.preselectedSegment || ''
+  }
+  selectedSource.value = props.preselectedSegment ? 'pool' : ''
+  configData.value = {
+    selectedSegment: props.preselectedSegment || ''
+  }
   selectedCandidates.value.clear()
   showCandidates.value = false
   loading.value = false
   activating.value = false
   
-  // Reset candidates to default
-  mockCandidates.value = [
-    { id: 'c1', name: 'Nguyễn Văn An', title: 'Senior React Developer', source: 'Nguồn nhân tài' },
-    { id: 'c2', name: 'Trần Thị Bình', title: 'Fullstack Engineer', source: 'ATS' },
-    { id: 'c3', name: 'Lê Hoàng Cường', title: 'Data Scientist', source: 'Web' },
-    { id: 'c4', name: 'Phạm Thị Dung', title: 'React Native Developer', source: 'Nguồn nhân tài' }
-  ]
+  // Reset candidates
+  mockCandidates.value = []
 }
 
 // Watchers

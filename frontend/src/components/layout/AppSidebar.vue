@@ -52,12 +52,12 @@ const menuItems = [
         to: '/candidates',
         icon: 'mdi-account'
       },
-      { 
-        id: 'candidate-segments', 
-        title: 'Candidate Segments', 
-        to: '/candidate-segments',
-        icon: 'mdi-account-network'
-      }
+      // { 
+      //   id: 'candidate-segments', 
+      //   title: 'Candidate Segments', 
+      //   to: '/candidate-segments',
+      //   icon: 'mdi-account-network'
+      // }
     ]
   },
   {
@@ -65,12 +65,12 @@ const menuItems = [
     title: 'Campaign Execution',
     icon: 'mdi-play-circle',
     children: [
-      { 
-        id: 'candidate-campaigns', 
-        title: 'Candidate Campaigns', 
-        to: '/candidate-campaigns',
-        icon: 'mdi-account-arrow-right'
-      },
+      // { 
+      //   id: 'candidate-campaigns', 
+      //   title: 'Candidate Campaigns', 
+      //   to: '/candidate-campaigns',
+      //   icon: 'mdi-account-arrow-right'
+      // },
       { 
         id: 'actions', 
         title: 'Actions', 

@@ -264,19 +264,55 @@ export const validateCandidateForm = (data) => {
   }
 }
 
-// Process skills array/string
+// Process skills array/string for display (returns array)
 export const processSkills = (skills) => {
   if (!skills) return []
   
   if (Array.isArray(skills)) {
-    return skills.filter(skill => skill?.trim())
+    return skills
+      .filter(skill => skill != null && skill !== '') // Filter out null/undefined/empty values
+      .map(skill => {
+        // Handle objects that might come from v-combobox
+        if (typeof skill === 'object' && skill !== null) {
+          return String(skill.value || skill.label || skill.toString()).trim()
+        }
+        return String(skill).trim()
+      }) // Convert to string and trim
+      .filter(skill => skill.length > 0 && skill !== '[object Object]') // Remove empty strings and object objects
   }
   
   if (typeof skills === 'string') {
-    return skills.split(',').map(s => s.trim()).filter(s => s)
+    return skills.split(',')
+      .map(s => s.trim())
+      .filter(s => s.length > 0) // Remove empty strings
   }
   
   return []
+}
+
+// Convert skills array to string for backend storage (returns string)
+export const skillsToString = (skills) => {
+  if (!skills) return ''
+  
+  if (Array.isArray(skills)) {
+    return skills
+      .filter(skill => skill != null && skill !== '') // Filter out null/undefined/empty values
+      .map(skill => {
+        // Handle objects that might come from v-combobox
+        if (typeof skill === 'object' && skill !== null) {
+          return String(skill.value || skill.label || skill.toString()).trim()
+        }
+        return String(skill).trim()
+      }) // Convert to string and trim
+      .filter(skill => skill.length > 0 && skill !== '[object Object]') // Remove empty strings and object objects
+      .join(', ')
+  }
+  
+  if (typeof skills === 'string') {
+    return skills.trim()
+  }
+  
+  return ''
 }
 
 // Get engagement color based on score
@@ -305,5 +341,6 @@ export default {
   getStatusChipColor,
   validateCandidateForm,
   processSkills,
+  skillsToString,
   getEngagementColor
 } 

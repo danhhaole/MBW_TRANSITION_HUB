@@ -98,12 +98,12 @@
                   {{ skill }}
                 </v-chip>
                 <v-chip
-                  v-if="candidate.skills && candidate.skills.length > 2"
+                  v-if="processSkills(candidate.skills).length > 2"
                   size="x-small"
                   variant="outlined"
                   color="grey"
                 >
-                  +{{ candidate.skills.length - 2 }}
+                  +{{ processSkills(candidate.skills).length - 2 }}
                 </v-chip>
               </div>
             </div>
@@ -250,8 +250,9 @@ import {
   getAvatarColor,
   getAvatarText,
   getStatusChipColor,
-  getEngagementColor
-} from '@/utils/candidateHelpers'
+  getEngagementColor,
+  processSkills
+} from '../../services/candidateService'
 
 // Props
 const props = defineProps({
@@ -281,8 +282,8 @@ const emit = defineEmits([
 
 // Helper functions
 const getTopSkills = (skills, limit) => {
-  if (!skills || !Array.isArray(skills)) return []
-  return skills.slice(0, limit || 3)
+  const skillsArray = processSkills(skills)
+  return skillsArray.slice(0, limit || 3)
 }
 
 const getTalentPools = (candidate) => {
@@ -290,7 +291,7 @@ const getTalentPools = (candidate) => {
   const pools = []
   
   if (candidate.skills) {
-    const skills = Array.isArray(candidate.skills) ? candidate.skills : []
+    const skills = processSkills(candidate.skills)
     if (skills.some(skill => ['React', 'Vue.js', 'Angular', 'JavaScript'].includes(skill))) {
       pools.push('Frontend Experts')
     }

@@ -7,9 +7,12 @@ import CampaignManagement from '@/pages/CampaignManagement.vue'
 import CampaignStepManagement from '@/pages/CampaignStepManagement.vue'
 import TalentSegments from '@/pages/TalentSegmentManagement.vue'
 import TalentSegmentDetail from '@/pages/TalentSegmentDetail.vue'
+import TalentSegmentDetailView from '@/pages/TalentSegmentDetailView.vue'
 import CandidateManagement from '@/pages/CandidateManagement.vue'
+import CandidateDetailView from '@/pages/CandidateDetailView.vue'
 import CandidateSegmentManagement from '@/pages/CandidateSegmentManagement.vue'
 import CandidateCampaignManagement from '@/pages/CandidateCampaignManagement.vue'
+import CampaignDetailView from '@/pages/CampaignDetailView.vue'
 import ActionManagement from '@/pages/ActionManagement.vue'
 import InteractionManagement from '@/pages/InteractionManagement.vue'
 import EmailLogManagement from '@/pages/EmailLogManagement.vue'
@@ -42,6 +45,12 @@ const routes = [
     name: 'CampaignManagement'
   },
   {
+    path: '/campaigns/:id',
+    component: CampaignDetailView,
+    meta: { layout: 'private' },
+    name: 'CampaignDetailView'
+  },
+  {
     path: '/campaign-steps',
     component: CampaignStepManagement,
     meta: { layout: 'private' },
@@ -60,10 +69,22 @@ const routes = [
     name: 'TalentSegmentDetail'
   },
   {
+    path: '/talent-segments/:id/detail',
+    component: TalentSegmentDetailView,
+    meta: { layout: 'private' },
+    name: 'TalentSegmentDetailView'
+  },
+  {
     path: '/candidates',
     component: CandidateManagement,
     meta: { layout: 'private' },
     name: 'CandidateManagement'
+  },
+  {
+    path: '/candidates/:id',
+    component: CandidateDetailView,
+    meta: { layout: 'private' },
+    name: 'CandidateDetailView'
   },
   {
     path: '/candidate-segments',

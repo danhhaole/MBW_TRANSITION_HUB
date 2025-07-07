@@ -19,7 +19,7 @@
 
     <!-- Stats Cards -->
     <div class="row mb-4">
-      <div class="col-md-3 col-6">
+      <div class="col-md-3 col-6 mb-2">
         <v-card class="pa-3">
           <div class="d-flex align-center">
             <v-icon color="primary" size="40" class="mr-3">mdi-account-arrow-right</v-icon>
@@ -30,7 +30,7 @@
           </div>
         </v-card>
       </div>
-      <div class="col-md-3 col-6">
+      <div class="col-md-3 col-6 mb-2">
         <v-card class="pa-3">
           <div class="d-flex align-center">
             <v-icon color="success" size="40" class="mr-3">mdi-play-circle</v-icon>
@@ -41,7 +41,7 @@
           </div>
         </v-card>
       </div>
-      <div class="col-md-3 col-6">
+      <div class="col-md-3 col-6 mb-2">
         <v-card class="pa-3">
           <div class="d-flex align-center">
             <v-icon color="warning" size="40" class="mr-3">mdi-pause-circle</v-icon>
@@ -52,7 +52,7 @@
           </div>
         </v-card>
       </div>
-      <div class="col-md-3 col-6">
+      <div class="col-md-3 col-6 mb-2">
         <v-card class="pa-3">
           <div class="d-flex align-center">
             <v-icon color="error" size="40" class="mr-3">mdi-stop-circle</v-icon>
@@ -69,7 +69,7 @@
     <v-card class="mb-4">
       <v-card-text>
         <div class="row">
-          <div class="col-md-3">
+          <div class="col-md-3 mb-2">
             <v-text-field
               v-model="search"
               label="Search campaigns..."
@@ -79,7 +79,7 @@
               @input="debouncedSearch"
             />
           </div>
-          <div class="col-md-2">
+          <div class="col-md-2 mb-2">
             <v-select
               v-model="filters.candidate_id"
               :items="filterOptions.candidates"
@@ -89,7 +89,7 @@
               @update:model-value="applyFilters"
             />
           </div>
-          <div class="col-md-2">
+          <div class="col-md-2 mb-2">
             <v-select
               v-model="filters.campaign_id"
               :items="filterOptions.campaigns"
@@ -99,7 +99,7 @@
               @update:model-value="applyFilters"
             />
           </div>
-          <div class="col-md-2">
+          <div class="col-md-2 mb-2">
             <v-select
               v-model="filters.status"
               :items="statusOptions"
@@ -109,7 +109,7 @@
               @update:model-value="applyFilters"
             />
           </div>
-          <div class="col-md-2">
+          <div class="col-md-2 mb-2">
             <v-select
               v-model="filters.current_step"
               :items="filterOptions.steps"

@@ -18,7 +18,7 @@
       <v-card-text class="pa-6">
         <!-- Task Info -->
         <div v-if="task" class="mb-6">
-          <div class="d-flex align-center gap-3 mb-4">
+          <div class="d-flex align-center ga-3 mb-4">
             <v-avatar size="48" color="primary" variant="tonal">
               <span class="text-h6 font-weight-bold">
                 {{ task.candidate?.charAt(0)?.toUpperCase() || 'U' }}
@@ -29,27 +29,43 @@
               <div class="text-subtitle-2 text-medium-emphasis">
                 Chiến dịch: {{ task.campaign }}
               </div>
+              <div class="text-caption text-medium-emphasis">
+                Trạng thái hiện tại: {{ getStatusLabel(task.status) }}
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Outcome Selection -->
+        <!-- Action Selection -->
         <div class="mb-4">
           <v-label class="text-subtitle-1 font-weight-medium mb-3">
-            Cập nhật kết quả:
+            Cập nhật trạng thái:
           </v-label>
-          <div class="d-flex flex-wrap gap-2 mb-4">
+          <div class="d-flex ga-1 flex-wrap gap-2 mb-4">
             <v-chip
-              v-for="outcome in outcomeOptions"
-              :key="outcome.value"
-              :color="selectedOutcome === outcome.value ? 'primary' : 'default'"
-              :variant="selectedOutcome === outcome.value ? 'flat' : 'outlined'"
+              v-for="action in actionOptions"
+              :key="action.value"
+              :color="selectedAction === action.value ? action.color : 'default'"
+              :variant="selectedAction === action.value ? 'flat' : 'outlined'"
               clickable
-              @click="selectedOutcome = outcome.value"
+              @click="selectedAction = action.value"
             >
-              {{ outcome.label }}
+              <v-icon :icon="action.icon" size="small" class="mr-1" />
+              {{ action.label }}
             </v-chip>
           </div>
+        </div>
+
+        <!-- Schedule Date for SCHEDULED status -->
+        <div v-if="selectedAction === 'SCHEDULED'" class="mb-4">
+          <v-text-field
+            v-model="scheduledDate"
+            label="Ngày lên lịch"
+            type="datetime-local"
+            variant="outlined"
+            hide-details
+            :min="new Date().toISOString().slice(0, 16)"
+          />
         </div>
 
         <!-- Notes -->
@@ -57,7 +73,7 @@
           <v-textarea
             v-model="notes"
             label="Ghi chú chi tiết"
-            placeholder="Nhập ghi chú về cuộc gọi hoặc tác vụ..."
+            placeholder="Nhập ghi chú về kết quả thực hiện tác vụ..."
             rows="3"
             variant="outlined"
             hide-details
@@ -77,11 +93,11 @@
         <v-btn
           color="primary"
           variant="flat"
-          :disabled="!selectedOutcome"
+          :disabled="!selectedAction || (selectedAction === 'SCHEDULED' && !scheduledDate)"
           :loading="loading"
-          @click="completeTask"
+          @click="updateTask"
         >
-          Hoàn thành tác vụ
+          {{ getActionButtonText() }}
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -99,7 +115,8 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'update:completed'])
 
 // Reactive data
-const selectedOutcome = ref('')
+const selectedAction = ref('')
+const scheduledDate = ref('')
 const notes = ref('')
 const loading = ref(false)
 
@@ -109,26 +126,34 @@ const dialog = computed({
   set: (value) => emit('update:modelValue', value)
 })
 
-// Outcome options based on task type
-const outcomeOptions = computed(() => {
-  if (props.task?.type === 'MANUAL_CALL') {
-    return [
-      { value: 'answered', label: 'Đã trả lời' },
-      { value: 'no_answer', label: 'Không nghe máy' },
-      { value: 'voicemail', label: 'Để lại lời nhắn' },
-      { value: 'wrong_number', label: 'Sai số' },
-      { value: 'interested', label: 'Quan tâm' },
-      { value: 'not_interested', label: 'Không quan tâm' }
-    ]
-  } else {
-    return [
-      { value: 'completed', label: 'Đã hoàn thành' },
-      { value: 'reviewed', label: 'Đã review' },
-      { value: 'approved', label: 'Đã duyệt' },
-      { value: 'rejected', label: 'Từ chối' },
-      { value: 'needs_revision', label: 'Cần sửa đổi' }
-    ]
-  }
+// Action options based on current task status
+const actionOptions = computed(() => {
+  return [
+    { 
+      value: 'EXECUTED', 
+      label: 'Hoàn thành', 
+      color: 'success',
+      icon: 'mdi-check-circle'
+    },
+    { 
+      value: 'SCHEDULED', 
+      label: 'Lên lịch', 
+      color: 'info',
+      icon: 'mdi-calendar-clock'
+    },
+    { 
+      value: 'SKIPPED', 
+      label: 'Bỏ qua', 
+      color: 'warning',
+      icon: 'mdi-skip-next'
+    },
+    { 
+      value: 'FAILED', 
+      label: 'Thất bại', 
+      color: 'error',
+      icon: 'mdi-alert-circle'
+    }
+  ]
 })
 
 // Methods
@@ -138,27 +163,65 @@ const closeModal = () => {
 }
 
 const resetForm = () => {
-  selectedOutcome.value = ''
+  selectedAction.value = ''
+  scheduledDate.value = ''
   notes.value = ''
   loading.value = false
 }
 
-const completeTask = async () => {
-  if (!selectedOutcome.value || !props.task) return
+const getActionButtonText = () => {
+  switch (selectedAction.value) {
+    case 'EXECUTED':
+      return 'Hoàn thành tác vụ'
+    case 'SCHEDULED':
+      return 'Lên lịch tác vụ'
+    case 'SKIPPED':
+      return 'Bỏ qua tác vụ'
+    case 'FAILED':
+      return 'Đánh dấu thất bại'
+    default:
+      return 'Cập nhật tác vụ'
+  }
+}
+
+const getStatusLabel = (status) => {
+  const statusLabels = {
+    'PENDING_MANUAL': 'Chờ xác nhận',
+    'SCHEDULED': 'Đã lên lịch',
+    'EXECUTED': 'Đã hoàn thành',
+    'SKIPPED': 'Đã bỏ qua',
+    'FAILED': 'Thất bại'
+  }
+  return statusLabels[status] || status
+}
+
+const updateTask = async () => {
+  if (!selectedAction.value || !props.task) return
+  
+  // Validate scheduled date if action is SCHEDULED
+  if (selectedAction.value === 'SCHEDULED' && !scheduledDate.value) {
+    return
+  }
 
   loading.value = true
   
   try {
     const taskData = {
       taskId: props.task.id,
-      outcome: selectedOutcome.value,
+      action: selectedAction.value,
+      scheduledDate: scheduledDate.value,
       notes: notes.value,
-      completedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString()
     }
 
+    // Emit the update event
     emit('update:completed', taskData)
+    
+    // Close modal immediately after emitting
+    dialog.value = false
+    
   } catch (error) {
-    console.error('Error completing task:', error)
+    console.error('Error updating task:', error)
   } finally {
     loading.value = false
   }
@@ -173,6 +236,13 @@ watch(() => props.modelValue, (newVal) => {
 
 watch(() => props.task, (newTask) => {
   if (newTask) {
+    resetForm()
+  }
+})
+
+// Watch for successful updates to close modal
+watch(() => dialog.value, (newVal) => {
+  if (!newVal) {
     resetForm()
   }
 })

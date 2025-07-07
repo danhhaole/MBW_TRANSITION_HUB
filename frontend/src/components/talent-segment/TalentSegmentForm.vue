@@ -153,39 +153,13 @@
                     <v-row>
                       <v-col cols="12">
                         <v-textarea
-                          v-model="formData.ai_criteria"
+                          v-model="formData.criteria"
                           label="Tiêu chí AI"
-                          placeholder="Mô tả các tiêu chí để AI tự động phân loại ứng viên..."
+                          placeholder="Nhập tiêu chí dưới dạng JSON: {&quot;skills&quot;: [&quot;java&quot;, &quot;spring&quot;], &quot;experienceYears&quot;: &quot;>5&quot;}"
                           variant="outlined"
                           rows="3"
                           auto-grow
                           hint="AI sẽ sử dụng các tiêu chí này để tự động thêm ứng viên vào phân khúc"
-                        />
-                      </v-col>
-                      <v-col cols="12" md="6">
-                        <v-slider
-                          v-model="formData.confidence_threshold"
-                          label="Ngưỡng tin cậy"
-                          min="0"
-                          max="100"
-                          step="5"
-                          thumb-label
-                          :thumb-size="24"
-                          track-color="grey-lighten-3"
-                          hint="AI chỉ thêm ứng viên khi độ tin cậy >= ngưỡng này"
-                        >
-                          <template v-slot:thumb-label="{ modelValue }">
-                            {{ modelValue }}%
-                          </template>
-                        </v-slider>
-                      </v-col>
-                      <v-col cols="12" md="6">
-                        <v-switch
-                          v-model="formData.auto_update"
-                          label="Tự động cập nhật"
-                          color="primary"
-                          inset
-                          hint="Cho phép AI tự động thêm/xóa ứng viên"
                         />
                       </v-col>
                     </v-row>
@@ -223,12 +197,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import { 
-  createNewTalentSegment, 
-  updateTalentSegmentDetails, 
-  getUserOptions,
-  validateTalentSegmentForm 
-} from '@/services/talentSegmentService'
+import { talentSegmentService, userService } from '@/services/universalService'
 
 // Props
 const props = defineProps({
@@ -257,9 +226,7 @@ const formData = ref({
   type: 'MANUAL',
   owner_id: '',
   candidate_count: 0,
-  ai_criteria: '',
-  confidence_threshold: 70,
-  auto_update: false
+  criteria: ''
 })
 
 // Computed
@@ -328,17 +295,17 @@ const resetForm = () => {
     type: 'MANUAL',
     owner_id: '',
     candidate_count: 0,
-    ai_criteria: '',
-    confidence_threshold: 70,
-    auto_update: false
+    criteria: ''
   }
 }
 
 const loadUserOptions = async () => {
   loadingUsers.value = true
   try {
-    const users = await getUserOptions()
-    userOptions.value = users
+    const result = await userService.getList({ fields: ['name', 'full_name', 'email'] })
+    if (result.success) {
+      userOptions.value = result.data
+    }
   } catch (error) {
     console.error('Error loading users:', error)
   } finally {
@@ -352,21 +319,14 @@ const handleSubmit = async () => {
 
   loading.value = true
   try {
-    // Validate form data
-    const validation = validateTalentSegmentForm(formData.value)
-    if (!validation.isValid) {
-      // Handle validation errors
-      return
-    }
-
     let result
     if (isEditing.value) {
-      result = await updateTalentSegmentDetails(props.segment.name, formData.value)
+      result = await talentSegmentService.save(formData.value, props.segment.name)
     } else {
-      result = await createNewTalentSegment(formData.value)
+      result = await talentSegmentService.save(formData.value)
     }
 
-    if (result) {
+    if (result.success) {
       emit('success')
       handleCancel()
     }
@@ -392,9 +352,7 @@ watch(() => props.segment, (newSegment) => {
       type: newSegment.type || 'MANUAL',
       owner_id: newSegment.owner_id || '',
       candidate_count: newSegment.candidate_count || 0,
-      ai_criteria: newSegment.ai_criteria || '',
-      confidence_threshold: newSegment.confidence_threshold || 70,
-      auto_update: newSegment.auto_update || false
+      criteria: newSegment.criteria || ''
     }
   }
 }, { immediate: true })

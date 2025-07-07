@@ -191,7 +191,7 @@ const handleSearch = (searchText) => {
 // Event handlers
 const handleViewDetails = async (segment) => {
   // Navigate to detail page instead of modal
-  router.push(`/talent-segments/${segment.name}`)
+  router.push(`/talent-segments/${segment.name}/detail`)
 }
 
 const handleEdit = (segment) => {

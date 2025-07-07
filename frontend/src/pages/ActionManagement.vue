@@ -19,7 +19,7 @@
 
     <!-- Stats Cards -->
     <div class="row mb-4">
-      <div class="col-md-3 col-6">
+      <div class="col-md-3 col-6 mb-2">
         <v-card class="pa-3">
           <div class="d-flex align-center">
             <v-icon color="primary" size="40" class="mr-3">mdi-lightning-bolt</v-icon>
@@ -30,7 +30,7 @@
           </div>
         </v-card>
       </div>
-      <div class="col-md-3 col-6">
+      <div class="col-md-3 col-6 mb-2">
         <v-card class="pa-3">
           <div class="d-flex align-center">
             <v-icon color="success" size="40" class="mr-3">mdi-check-circle</v-icon>
@@ -41,7 +41,7 @@
           </div>
         </v-card>
       </div>
-      <div class="col-md-3 col-6">
+      <div class="col-md-3 col-6 mb-2">
         <v-card class="pa-3">
           <div class="d-flex align-center">
             <v-icon color="warning" size="40" class="mr-3">mdi-clock-outline</v-icon>
@@ -52,7 +52,7 @@
           </div>
         </v-card>
       </div>
-      <div class="col-md-3 col-6">
+      <div class="col-md-3 col-6 mb-2">
         <v-card class="pa-3">
           <div class="d-flex align-center">
             <v-icon color="error" size="40" class="mr-3">mdi-alert-circle</v-icon>

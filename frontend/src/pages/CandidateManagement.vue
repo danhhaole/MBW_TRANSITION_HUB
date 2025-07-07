@@ -429,22 +429,9 @@ const openCreateModal = () => {
   }
 }
 
-const openViewModal = async (candidate) => {
-  viewModal.value = {
-    show: true,
-    candidate: null,
-    loading: true,
-    error: null
-  }
-  
-  try {
-    const detailedCandidate = await getCandidate(candidate.name)
-    viewModal.value.candidate = detailedCandidate
-  } catch (err) {
-    viewModal.value.error = err.message
-  } finally {
-    viewModal.value.loading = false
-  }
+const openViewModal = (candidate) => {
+  // Navigate to candidate detail view instead of opening modal
+  router.push(`/candidates/${candidate.name}`)
 }
 
 const openEditModal = (candidate) => {

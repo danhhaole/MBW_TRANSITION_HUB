@@ -19,7 +19,7 @@
 
     <!-- Stats Cards -->
     <div class="row mb-4">
-      <div class="col-md-4 col-6">
+      <div class="col-md-4 col-6 mb-2">
         <v-card class="pa-3">
           <div class="d-flex align-center">
             <v-icon color="primary" size="40" class="mr-3">mdi-email</v-icon>
@@ -30,7 +30,7 @@
           </div>
         </v-card>
       </div>
-      <div class="col-md-4 col-6">
+      <div class="col-md-4 col-6 mb-2">
         <v-card class="pa-3">
           <div class="d-flex align-center">
             <v-icon color="success" size="40" class="mr-3">mdi-check-circle</v-icon>
@@ -58,7 +58,7 @@
     <v-card class="mb-4">
       <v-card-text>
         <div class="row">
-          <div class="col-md-4">
+          <div class="col-md-4 mb-2">
             <v-text-field
               v-model="search"
               label="Search emails..."
@@ -68,7 +68,7 @@
               @input="debouncedSearch"
             />
           </div>
-          <div class="col-md-3">
+          <div class="col-md-3 mb-2">
             <v-select
               v-model="filters.status"
               :items="statusOptions"
@@ -78,7 +78,7 @@
               @update:model-value="applyFilters"
             />
           </div>
-          <div class="col-md-3">
+          <div class="col-md-3 mb-2">
             <v-text-field
               v-model="filters.sender"
               label="Sender"
@@ -102,7 +102,7 @@
     </v-card>
 
     <!-- Data Table -->
-    <v-card>
+    <v-card class="mb-4">
       <v-card-title class="d-flex justify-space-between align-center">
         <span>Email Logs ({{ pagination.total }})</span>
         <div>
@@ -198,7 +198,7 @@
       </v-data-table>
 
       <!-- Pagination -->
-      <v-card-actions class="justify-space-between">
+      <v-card-actions class="justify-space-between mt-2">
         <div class="text-caption text-medium-emphasis">
           Showing {{ pagination.showing_from }} to {{ pagination.showing_to }} of {{ pagination.total }} entries
         </div>

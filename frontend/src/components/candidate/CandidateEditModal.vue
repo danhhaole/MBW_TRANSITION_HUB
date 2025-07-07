@@ -128,8 +128,6 @@
                   multiple
                   closable-chips
                   :items="availableSkills"
-                  item-title="label"
-                  item-value="value"
                   placeholder="Nhập kỹ năng và nhấn Enter"
                   hint="Nhập kỹ năng và nhấn Enter để thêm"
                 />
@@ -216,7 +214,7 @@
 
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue'
-import { validateCandidateForm, processSkills } from '../../utils/candidateHelpers'
+import { validateCandidateForm, processSkills, skillsToString } from '../../services/candidateService'
 
 // Props
 const props = defineProps({
@@ -341,35 +339,46 @@ const sourceOptions = computed(() => {
 const availableSkills = computed(() => {
   try {
     const baseSkills = [
-      { label: 'JavaScript', value: 'JavaScript' },
-      { label: 'Python', value: 'Python' },
-      { label: 'Java', value: 'Java' },
-      { label: 'React', value: 'React' },
-      { label: 'Vue.js', value: 'Vue.js' },
-      { label: 'Node.js', value: 'Node.js' },
-      { label: 'SQL', value: 'SQL' },
-      { label: 'HTML/CSS', value: 'HTML/CSS' }
+      'JavaScript',
+      'Python', 
+      'Java',
+      'React',
+      'Vue.js',
+      'Node.js',
+      'SQL',
+      'HTML/CSS',
+      'TypeScript',
+      'Angular',
+      'AWS',
+      'Docker',
+      'Kubernetes'
     ]
     
     const filterOptions = props.filterOptions || {}
     const skillsFromAPI = filterOptions.skills || []
     
     if (Array.isArray(skillsFromAPI)) {
-      return [...baseSkills, ...skillsFromAPI]
+      // Convert API skills to strings if they're objects
+      const apiSkillsStrings = skillsFromAPI.map(skill => 
+        typeof skill === 'string' ? skill : (skill.label || skill.value || skill)
+      )
+      return [...baseSkills, ...apiSkillsStrings].filter((skill, index, arr) => 
+        arr.indexOf(skill) === index // Remove duplicates
+      )
     }
     
     return baseSkills
   } catch (error) {
     console.error('Error in availableSkills:', error)
     return [
-      { label: 'JavaScript', value: 'JavaScript' },
-      { label: 'Python', value: 'Python' },
-      { label: 'Java', value: 'Java' },
-      { label: 'React', value: 'React' },
-      { label: 'Vue.js', value: 'Vue.js' },
-      { label: 'Node.js', value: 'Node.js' },
-      { label: 'SQL', value: 'SQL' },
-      { label: 'HTML/CSS', value: 'HTML/CSS' }
+      'JavaScript',
+      'Python',
+      'Java',
+      'React',
+      'Vue.js',
+      'Node.js',
+      'SQL',
+      'HTML/CSS'
     ]
   }
 })
@@ -529,7 +538,7 @@ const submitForm = async () => {
     // Prepare data for submission
     const submitData = {
       ...formData.value,
-      skills: processSkills(formData.value.skills)
+      skills: skillsToString(formData.value.skills)
     }
     
     console.log('Emitting save-candidate with:', submitData)

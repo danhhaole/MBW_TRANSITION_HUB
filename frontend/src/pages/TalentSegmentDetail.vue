@@ -278,8 +278,8 @@
         </template>
 
         <!-- Last Contact column -->
-        <template v-slot:item.lastContact="{ item }">
-          <div class="text-body-2">{{ formatRelativeTime(item.lastContact) }}</div>
+        <template v-slot:item.last_contact="{ item }">
+          <div class="text-body-2">{{ formatRelativeTime(item.last_contact) }}</div>
         </template>
 
         <!-- Engagement column -->
@@ -382,13 +382,16 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { getTalentSegmentDetails, getSegmentCandidates } from '@/services/talentSegmentService'
 
 // Route params
 const route = useRoute()
+const router = useRouter()
 const segmentId = route.params.id
 
 // State
+const loading = ref(true)
 const loadingCandidates = ref(false)
 const candidateSearch = ref('')
 const showFilters = ref(false)
@@ -396,10 +399,16 @@ const statusFilter = ref('all')
 const skillFilter = ref('all')
 const engagementFilter = ref('all')
 
-// Static data (replace with API calls)
-const segmentTitle = ref('Software Developers')
-const candidateCount = ref(248)
-const creationDate = ref('2023-05-15')
+// Segment data (from backend)
+const segmentData = ref({})
+const segmentTitle = computed(() => segmentData.value.title || 'Loading...')
+const candidateCount = computed(() => segmentData.value.candidate_count || 0)
+const creationDate = computed(() => segmentData.value.creation || '')
+const segmentType = computed(() => segmentData.value.type || 'MANUAL')
+const segmentDescription = computed(() => segmentData.value.description || '')
+const ownerId = computed(() => segmentData.value.owner_id || '')
+
+// Mock stats data (these would come from analytics APIs)
 const newCandidatesThisMonth = ref(12)
 const engagementRate = ref(78)
 const engagementChange = ref(5)
@@ -408,42 +417,14 @@ const pendingApprovals = ref(1)
 const avgResponseTime = ref(2.4)
 const responseTimeChange = ref(-0.5)
 
-// Sample candidates data
-const candidates = ref([
-  {
-    id: 1,
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    skills: ['React', 'Node.js', 'TypeScript'],
-    lastContact: '2024-01-10',
-    engagement: 85,
-    status: 'Active'
-  },
-  {
-    id: 2,
-    name: 'Tran Nguyen',
-    email: 'tran.nguyen@example.com',
-    skills: ['React', 'Vue.js', 'AWS'],
-    lastContact: '2024-01-03',
-    engagement: 65,
-    status: 'Nurturing'
-  },
-  {
-    id: 3,
-    name: 'Kim Lee',
-    email: 'kim.lee@example.com',
-    skills: ['React Native', 'Node.js', 'GraphQL'],
-    lastContact: '2024-01-12',
-    engagement: 90,
-    status: 'Active'
-  }
-])
+// Candidates data (from backend)
+const candidates = ref([])
 
 // Table headers
 const candidateHeaders = [
   { title: 'CANDIDATE', key: 'candidate', sortable: true, width: '25%' },
   { title: 'SKILLS', key: 'skills', sortable: false, width: '20%' },
-  { title: 'LAST CONTACT', key: 'lastContact', sortable: true, width: '15%' },
+  { title: 'LAST CONTACT', key: 'last_contact', sortable: true, width: '15%' },
   { title: 'ENGAGEMENT', key: 'engagement', sortable: true, width: '15%' },
   { title: 'STATUS', key: 'status', sortable: true, width: '12%' },
   { title: 'ACTIONS', key: 'actions', sortable: false, width: '13%', align: 'center' }
@@ -593,7 +574,8 @@ const viewAnalytics = () => {
 }
 
 const viewCandidate = (candidate) => {
-  console.log('View candidate:', candidate)
+  // Navigate to candidate detail view
+  router.push(`/candidate/${candidate.name}`)
 }
 
 const contactCandidate = (candidate) => {
@@ -614,10 +596,38 @@ const clearFilters = () => {
   engagementFilter.value = 'all'
 }
 
+// Data loading functions
+const loadSegmentData = async () => {
+  try {
+    loading.value = true
+    const data = await getTalentSegmentDetails(segmentId)
+    segmentData.value = data
+  } catch (error) {
+    console.error('Failed to load segment data:', error)
+    // You might want to show an error message or redirect
+  } finally {
+    loading.value = false
+  }
+}
+
+const loadCandidatesData = async () => {
+  try {
+    loadingCandidates.value = true
+    const data = await getSegmentCandidates(segmentId)
+    candidates.value = data || []
+  } catch (error) {
+    console.error('Failed to load candidates:', error)
+    candidates.value = []
+  } finally {
+    loadingCandidates.value = false
+  }
+}
+
 // Initialize
-onMounted(() => {
-  // Load segment data based on segmentId
+onMounted(async () => {
   console.log('Loading segment:', segmentId)
+  await loadSegmentData()
+  await loadCandidatesData()
 })
 </script>
 

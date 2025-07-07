@@ -86,6 +86,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import { useCampaignList, useCampaignCRUD } from '../composables/useCampaign'
 import { useToast } from '@/composables/useToast'
 import { 
@@ -96,6 +97,9 @@ import {
   CampaignView
 } from '@/components/campaign'
 import { ToastContainer } from '@/components/shared'
+
+// Router
+const router = useRouter()
 
 // Page state
 const viewMode = ref('list')
@@ -183,8 +187,8 @@ const openEditDialog = (campaign) => {
 }
 
 const openViewDialog = (campaign) => {
-    selectedCampaign.value = campaign
-    showViewDialog.value = true
+    // Navigate to campaign detail view instead of opening modal
+    router.push(`/campaigns/${campaign.name}`)
 }
 
 const editFromView = () => {
