@@ -215,13 +215,13 @@ def render_template(template_str, context):
 
     base_url = get_url()
     context_parse["tracking_pixel_url"] = (
-        f"{base_url}api/method/mbw_mira.interaction.tracking_pixel?{query}"
+        f"{base_url}/api/method/mbw_mira.api.interaction.tracking_pixel?{query}"
     )
     context_parse["tracking_link"] = (
-        f"{base_url}api/method/mbw_mira.interaction.click_redirect?{query}"
+        f"{base_url}/api/method/mbw_mira.api.interaction.click_redirect?{query}"
     )
     context_parse['url_link'] = (
-        f"{base_url}api/method/mbw_mira.interaction.unsubscribe?{query}"
+        f"{base_url}/api/method/mbw_mira.api.interaction.unsubscribe?{query}"
     )
 
     return frappe.render_template(template_str, context_parse)
