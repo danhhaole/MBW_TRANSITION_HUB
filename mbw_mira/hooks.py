@@ -153,7 +153,7 @@ scheduler_events = {
         "*/1 * * * *": [
             "mbw_mira.tasks.do_campaign_scheduler"
         ],
-        "*/5 * * * *": [
+        "*/2 * * * *": [
             "mbw_mira.tasks.do_candidate_campaign_scheduler"
         ]
     },

@@ -202,20 +202,24 @@ def render_template(template_str, context):
         "candidate_id": candidate.name,
         "action": step.name,
     }
-    context.candidate_name = candidate.full_name
+
+    context_parse ={
+        "candidate_name":candidate.full_name
+        }
+    
     sig = make_signature(params)
     query = frappe.utils.encode_query({**params, "sig": sig})
-    context.tracking_pixel_url = (
+    context_parse["tracking_pixel_url"] = (
         f"{frappe.request.host}api/method/mbw_mira.interaction.tracking_pixel?{query}"
     )
-    context.tracking_link = (
+    context_parse["tracking_link"] = (
         f"{frappe.request.host}api/method/mbw_mira.interaction.click_redirect?{query}"
     )
-    context.url_link = (
+    context_parse['url_link'] = (
         f"{frappe.request.host}api/method/mbw_mira.interaction.unsubscribe?{query}"
     )
 
-    return frappe.render_template(template_str, context)
+    return frappe.render_template(template_str, context_parse)
 
 
 def create_interaction(
