@@ -1,9 +1,33 @@
+<!--
+  TalentSegmentManagement.vue
+  
+  Debug Mode:
+  - Enable by adding ?debug=true to URL
+  - Or use keyboard shortcut: Ctrl+Shift+D
+  - Enables detailed data structure view in segment cards
+  - Shows all segment fields, criteria JSON, and raw data
+  - Useful for debugging and admin review
+-->
 <template>
   <v-container fluid class="pa-6">
     <div>
       <!-- Header -->
       <div class="d-flex align-center justify-space-between mb-6">
-        <h1 class="text-h4 font-weight-bold">Talent Pools</h1>
+        <div class="d-flex align-center">
+          <h1 class="text-h4 font-weight-bold">Talent Pools</h1>
+          
+          <!-- Debug Mode Indicator -->
+          <v-chip 
+            v-if="isDebugMode" 
+            color="orange" 
+            size="small" 
+            class="ml-3"
+            variant="tonal"
+          >
+            <v-icon start>mdi-bug</v-icon>
+            Debug Mode
+          </v-chip>
+        </div>
 
         <div class="d-flex align-center">
           <!-- Search box -->
@@ -67,10 +91,12 @@
         <TalentSegmentCardView
           :segments="segments"
           :loading="loading"
+          :show-debug-toggle="isDebugMode"
           @view-details="handleViewDetails"
           @edit="handleEdit"
           @delete="handleDelete"
           @create="showCreateForm = true"
+          @debug-toggle="handleDebugToggle"
         />
       </div>
 
@@ -125,7 +151,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTalentSegment } from '@/composables/useTalentSegment'
 import { 
@@ -160,6 +186,16 @@ const showCreateForm = ref(false)
 const showDeleteDialog = ref(false)
 const editingSegment = ref(null)
 const deletingSegment = ref(null)
+
+// Debug mode - can be enabled via query parameter ?debug=true or localStorage
+const isDebugMode = computed(() => {
+  // Check URL query parameter
+  const urlParams = new URLSearchParams(window.location.search)
+  if (urlParams.get('debug') === 'true') return true
+  
+  // Check localStorage for persistent debug mode
+  return localStorage.getItem('talent-segment-debug') === 'true'
+})
 
 // Filter options
 const typeFilterOptions = [
@@ -227,6 +263,25 @@ const handleFormClose = () => {
   editingSegment.value = null
 }
 
+const handleDebugToggle = (enabled) => {
+  // Store debug mode preference in localStorage
+  localStorage.setItem('talent-segment-debug', enabled ? 'true' : 'false')
+  console.log('Debug mode', enabled ? 'enabled' : 'disabled')
+}
+
+// Keyboard shortcuts
+const handleKeyDown = (event) => {
+  // Ctrl+Shift+D to toggle debug mode
+  if (event.ctrlKey && event.shiftKey && event.key === 'D') {
+    event.preventDefault()
+    const currentDebug = localStorage.getItem('talent-segment-debug') === 'true'
+    localStorage.setItem('talent-segment-debug', !currentDebug ? 'true' : 'false')
+    console.log('Debug mode toggled via keyboard:', !currentDebug)
+    // Force reactivity update
+    window.location.reload()
+  }
+}
+
 // Watch for search results count
 watch(() => filters.searchText, (newValue) => {
   if (newValue && segments.value.length > 0) {
@@ -243,6 +298,13 @@ watch(() => filters.searchText, (newValue) => {
 // Initialize
 onMounted(() => {
   loadSegments()
+  // Add keyboard event listener
+  document.addEventListener('keydown', handleKeyDown)
+})
+
+onUnmounted(() => {
+  // Remove keyboard event listener
+  document.removeEventListener('keydown', handleKeyDown)
 })
 </script>
 

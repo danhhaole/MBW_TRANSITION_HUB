@@ -47,14 +47,64 @@ export const useTalentSegment = () => {
   const segmentCount = computed(() => segments.value?.length || 0)
 
   // Methods
+  const enrichSegmentData = async (segment) => {
+    try {
+      // Extract skills from criteria JSON field
+      let topSkills = []
+      console.log(segment)
+      if (segment.criteria) {
+        try {
+          const criteria = typeof segment.criteria === 'string' 
+            ? JSON.parse(segment.criteria) 
+            : segment.criteria
+          
+          if (criteria.skills && Array.isArray(criteria.skills)) {
+            console.log('Extracted skills from criteria:', criteria.skills)
+            topSkills = criteria.skills
+          }
+        } catch (e) {
+          console.error('Error parsing criteria JSON for segment:', segment.name, e)
+        }
+      }
+      
+      // Get candidates for this segment from CandidateSegment records
+      const candidateSegmentData = await getSegmentCandidates(segment.name)
+      console.log(candidateSegmentData)
+      // Extract candidate info for team members display
+      const teamMembers = candidateSegmentData.map(item => ({
+        name: item.candidate?.name,
+        candidate_name: item.candidate?.full_name || item.candidate?.name,
+        email: item.candidate?.email,
+        phone: item.candidate?.phone,
+        status: item.candidate?.status,
+        added_at: item.added_at
+      })).filter(member => member.name) // Filter out any invalid entries
+      
+      segment.topSkills = topSkills
+      segment.teamMembers = teamMembers
+    } catch (error) {
+      console.error('Error enriching segment data for:', segment.name, error)
+      segment.topSkills = []
+      segment.teamMembers = []
+    }
+    
+    return segment
+  }
+
   const loadSegments = async () => {
     loading.value = true
     error.value = null
     try {
       console.log('Loading segments with filters:', filters)
       const data = await getFilteredTalentSegments(filters)
-      segments.value = data
-      console.log('Loaded segments:', data)
+      
+      // Enrich each segment with additional data
+      const enrichedSegments = await Promise.all(
+        data.map(segment => enrichSegmentData(segment))
+      )
+      
+      segments.value = enrichedSegments
+      console.log('Loaded and enriched segments:', enrichedSegments)
     } catch (err) {
       console.error('Error loading segments:', err)
       error.value = err.message
