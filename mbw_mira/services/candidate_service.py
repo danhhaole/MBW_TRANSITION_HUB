@@ -18,13 +18,13 @@ def handle_candidate_segment():
 
         # Mỗi campaign sẽ có thông tin segment,
         # lấy danh sách candidate từ CandidateSegment
-        #candidate_ids = candidate_segment_by_campaign(campaign.target_segment)
+        candidate_ids = candidate_segment_by_campaign(campaign.target_segment)
 
         #Lấy danh sách Candidate từ AI 
-        candidate_ids = None
-        candidate_segments = find_candidates_fuzzy(campaign.target_segment)
-        if candidate_segments:
-            candidate_ids = [s.get("candidate_name") for s in candidate_segments]
+        # candidate_ids = None
+        # candidate_segments = find_candidates_fuzzy(campaign.target_segment)
+        # if candidate_segments:
+        #     candidate_ids = [s.get("candidate_name") for s in candidate_segments]
         
         if not candidate_ids:
             frappe.logger("campaign").info(f"[SKIP] No candidates found for segment {campaign.target_segment}.")
@@ -111,7 +111,7 @@ def insert_candidate_segment(**kwargs) -> list[str]:
         # có thể publish realtime từng bản ghi hoặc gom lại        
         frappe.publish_realtime("candidate_segment_created", doc)
     frappe.db.commit()
-    
+    count_candidate_segment(segment_id)
     frappe.enqueue(
             "mbw_mira.services.candidate_service.insert_candidate_campaign",
             queue="default",
@@ -120,7 +120,7 @@ def insert_candidate_segment(**kwargs) -> list[str]:
             segment=segment_id,
             job_name = "insert_candidate_campaign"
         )
-    count_candidate_segment(segment_id)
+    
     return inserted_names
 
 
