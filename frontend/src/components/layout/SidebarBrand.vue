@@ -1,9 +1,9 @@
 <template>
     <div class="sidebar-brand">
       <router-link to="/dashboard" class="brand-link">
-        <v-avatar size="48" class="mb-2">
+        <div class="mb-2 d-flex justify-center align-center" style="width: 434px;">
           <img src="https://mbw.vn/wp-content/uploads/2023/09/logo-1.png" alt="MBW Mira" />
-        </v-avatar>
+        </div>
         <span v-if="!mini" class="app-title">{{ title }}</span>
       </router-link>
     </div>

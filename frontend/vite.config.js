@@ -7,72 +7,84 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [frappeui({
-    frappeProxy: true,
-    lucideIcons: true,
-    jinjaBootData: true,
-    buildConfig: {
-      indexHtmlPath: '../mbw_mira/www/mbw_mira.html',
-      outDir: "../mbw_mira/public/frontend",
-      emptyOutDir: true,
-      sourcemap: true,
-    },
-  }),
-  vueJsx(), vue(), VitePWA({
-    registerType: "autoUpdate",
-    devOptions: { enabled: false },
-    manifest: {
-      display: "standalone",
-      name: "MBW Mira",
-      short_name: "MBW Mira",
-      start_url: "/mbw_mira",
-      description:
-        "MBW Mira .",
-      icons: [
-
-      ],
-    },
-  workbox: {
-    globIgnores: [
-      'assets/index-*.css',
-      'assets/index-*.js'
-    ]
-  }
-  })],
-  server: {
-    host: true,
-    allowedHosts: [
-      "localhost",
-      "127.0.0.1",
-      "mira.local",
-      "172.30.57.120"
-    ],
-  },
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, 'src'),
-    },
-  },
-  css: {
-    preprocessorOptions: {
-      scss: {
-        additionalData: `
+	plugins: [
+		frappeui({
+			frappeProxy: true,
+			lucideIcons: true,
+			jinjaBootData: true,
+			buildConfig: {
+				indexHtmlPath: '../mbw_mira/www/mbw_mira.html',
+				outDir: '../mbw_mira/public/frontend',
+				emptyOutDir: true,
+				sourcemap: true,
+			},
+		}),
+		vueJsx(),
+		vue(),
+		VitePWA({
+			registerType: 'autoUpdate',
+			devOptions: { enabled: false },
+			manifest: {
+				display: 'standalone',
+				name: 'MBW Mira',
+				short_name: 'MBW Mira',
+				start_url: '/mbw_mira',
+				description: 'MBW Mira .',
+				icons: [],
+			},
+			workbox: {
+				globIgnores: ['assets/index-*.css', 'assets/index-*.js'],
+			},
+		}),
+	],
+	server: {
+		host: true,
+		allowedHosts: ['localhost', '127.0.0.1', 'mira.local', '172.30.57.120'],
+	},
+	resolve: {
+		alias: {
+			'@': path.resolve(__dirname, 'src'),
+		},
+	},
+	css: {
+		preprocessorOptions: {
+			scss: {
+				additionalData: `
           @use "vuetify/settings" with (
             $color-pack: true
           );
         `,
-      },
-    },
-  },
-  optimizeDeps: {
-    include: ['frappe-ui > feather-icons', 'showdown', 'engine.io-client', 'tailwind.config.js',
-      'prosemirror-state',
-      'prosemirror-view',
-      'lowlight', "highlight.js"],
-    esbuildOptions: {
-      format: 'esm',
-      mainFields: ['module', 'main'],
-      resolveExtensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json'],
-    }
-  },
+			},
+		},
+	},
+	optimizeDeps: {
+		include: [
+			'frappe-ui > feather-icons',
+			'showdown',
+			'engine.io-client',
+			'tailwind.config.js',
+			'prosemirror-state',
+			'prosemirror-view',
+			'lowlight',
+			'highlight.js',
+		],
+		esbuildOptions: {
+			format: 'esm',
+			mainFields: ['module', 'main'],
+			resolveExtensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json'],
+		},
+	},
+	build: {
+		outDir: '../mbw_mira/public/frontend',
+		emptyOutDir: true,
+		commonjsOptions: {
+			include: [/tailwind.config.js/, /node_modules/],
+		},
+		sourcemap: true,
+		rollupOptions: {
+			output: {
+				format: 'esm',
+			},
+		},
+	},
 })
