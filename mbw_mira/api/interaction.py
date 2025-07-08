@@ -81,8 +81,6 @@ def tracking_pixel():
     frappe.local.response["headers"]["Content-Type"] = "image/gif"
 
 
-
-
 @frappe.whitelist(allow_guest=True)
 def unsubscribe():
     candidate_id = frappe.form_dict.get("candidate_id")
