@@ -111,6 +111,7 @@ def insert_candidate_segment(**kwargs) -> list[str]:
         # có thể publish realtime từng bản ghi hoặc gom lại        
         frappe.publish_realtime("candidate_segment_created", doc)
     frappe.db.commit()
+    
     frappe.enqueue(
             "mbw_mira.services.candidate_service.insert_candidate_campaign",
             queue="default",
@@ -223,7 +224,7 @@ def count_candidate_segment(segment):
     try:
         total_candidate = frappe.db.count("CandidateSegment",filters={"segment_id":segment})
         if total_candidate and total_candidate > 0:
-            frappe.db.set_value("TalentSegment","candidate_count",total_candidate)
+            frappe.db.set_value("TalentSegment",segment,"candidate_count",total_candidate)
             frappe.db.commit()
     except Exception as e:
         pass
