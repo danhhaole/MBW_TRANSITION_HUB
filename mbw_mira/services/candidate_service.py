@@ -224,6 +224,7 @@ def candidate_segment_by_campaign(segment) -> list[str]:
 def count_candidate_segment(segment):
     try:
         total_candidate = frappe.db.count("CandidateSegment",filters={"segment_id":segment})
+        print("===========total_candidate==============",total_candidate)
         if total_candidate and total_candidate > 0:
             frappe.db.set_value("TalentSegment",segment,"candidate_count",total_candidate)
             frappe.db.commit()
