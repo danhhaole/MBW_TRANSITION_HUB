@@ -55,8 +55,7 @@ def handle_candidate_campaign():
             queue="default",
             timeout=300,
             job_name = "process_next_step"
-        )
-            
+        )           
 
 
 def insert_candidate_segment(**kwargs) -> list[str]:
