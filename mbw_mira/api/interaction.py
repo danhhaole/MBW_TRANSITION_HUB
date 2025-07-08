@@ -66,13 +66,21 @@ def tracking_pixel():
     track(candidate_id=candidate_id, action=action, type="EMAIL_OPENED")
 
     # Return transparent GIF
+    frappe.local.response.type = "binary"
     frappe.local.response.filename = "pixel.gif"
-    frappe.local.response.type = "image/gif"
     frappe.local.response.filecontent = (
         b"GIF89a\x01\x00\x01\x00\x80\x00\x00\x00\x00\x00"
         b"\xFF\xFF\xFF!\xF9\x04\x01\x00\x00\x00\x00,"
         b"\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02L\x01\x00;"
     )
+
+    # ensure headers is a dict
+    if frappe.local.response.get("headers") is None:
+        frappe.local.response["headers"] = {}
+
+    frappe.local.response["headers"]["Content-Type"] = "image/gif"
+
+
 
 
 @frappe.whitelist(allow_guest=True)
