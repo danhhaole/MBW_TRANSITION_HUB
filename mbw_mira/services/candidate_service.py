@@ -4,6 +4,7 @@ from frappe.utils import now_datetime, add_days,now
 
 #Tạo CandidateSegment từ Campaign
 def handle_candidate_segment():
+    from mbw_mira.campaign.utils import find_candidates_fuzzy
     campaigns = _get_active_campaigns()
     
     if not campaigns:
@@ -17,7 +18,12 @@ def handle_candidate_segment():
 
         # Mỗi campaign sẽ có thông tin segment,
         # lấy danh sách candidate từ CandidateSegment
-        candidate_ids = candidate_segment_by_campaign(campaign.target_segment)
+        #candidate_ids = candidate_segment_by_campaign(campaign.target_segment)
+
+        #Lấy danh sách Candidate từ AI 
+        candidate_segments = find_candidates_fuzzy(campaign.target_segment)
+        candidate_ids = [s.get("candidate_name") for s in candidate_segments]
+        
         if not candidate_ids:
             frappe.logger("campaign").info(f"[SKIP] No candidates found for segment {campaign.target_segment}.")
             continue
