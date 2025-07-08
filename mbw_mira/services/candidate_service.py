@@ -119,6 +119,7 @@ def insert_candidate_segment(**kwargs) -> list[str]:
             segment=segment_id,
             job_name = "insert_candidate_campaign"
         )
+    count_candidate_segment(segment_id)
     return inserted_names
 
 
@@ -197,6 +198,14 @@ def candidate_segment_by_campaign(segment) -> list[str]:
     )
     return [x["candidate_id"] for x in candidate_segments]
 
+#Tổng số lượng candidate theo segment
+def count_candidate_segment(segment):
+    try:
+        total_candidate = frappe.db.count("CandidateSegment",filters={"segment_id":segment})
+        if total_candidate:
+            frappe.db.set_value("TalentSegment","candidate_count",total_candidate)
+    except Exception as e:
+        pass
 
 def _get_active_campaigns():
     """
