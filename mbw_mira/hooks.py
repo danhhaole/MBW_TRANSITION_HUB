@@ -246,6 +246,7 @@ scheduler_events = {
 # 	"Logging DocType Name": 30  # days to retain logs
 # }
 website_route_rules = [
+    {"from_route": "/mbw_mira/<path:app_path>", "to_route": "mbw_mira"},
     {
         "from_route": "/track/open",
         "to_route": "mbw_mira.api.interaction.tracking_pixel",
@@ -256,4 +257,5 @@ website_route_rules = [
     },
     {"from_route": "/track/event", "to_route": "mbw_mira.api.interaction.track"},
     {"from_route": "/unsubscribe", "to_route": "mbw_mira.api.email.unsubscribe"},
+    
 ]

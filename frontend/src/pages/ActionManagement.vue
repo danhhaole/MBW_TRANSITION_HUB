@@ -18,122 +18,135 @@
     </div>
 
     <!-- Stats Cards -->
-    <div class="row mb-4">
-      <div class="col-md-3 col-6 mb-2">
-        <v-card class="pa-3">
-          <div class="d-flex align-center">
-            <v-icon color="primary" size="40" class="mr-3">mdi-lightning-bolt</v-icon>
-            <div>
-              <div class="text-h6">{{ stats.total }}</div>
-              <div class="text-caption text-medium-emphasis">Total Actions</div>
-            </div>
-          </div>
-        </v-card>
-      </div>
-      <div class="col-md-3 col-6 mb-2">
-        <v-card class="pa-3">
-          <div class="d-flex align-center">
-            <v-icon color="success" size="40" class="mr-3">mdi-check-circle</v-icon>
-            <div>
-              <div class="text-h6">{{ stats.executed }}</div>
-              <div class="text-caption text-medium-emphasis">Executed</div>
-            </div>
-          </div>
-        </v-card>
-      </div>
-      <div class="col-md-3 col-6 mb-2">
-        <v-card class="pa-3">
-          <div class="d-flex align-center">
-            <v-icon color="warning" size="40" class="mr-3">mdi-clock-outline</v-icon>
-            <div>
-              <div class="text-h6">{{ stats.scheduled }}</div>
-              <div class="text-caption text-medium-emphasis">Scheduled</div>
-            </div>
-          </div>
-        </v-card>
-      </div>
-      <div class="col-md-3 col-6 mb-2">
-        <v-card class="pa-3">
-          <div class="d-flex align-center">
-            <v-icon color="error" size="40" class="mr-3">mdi-alert-circle</v-icon>
-            <div>
-              <div class="text-h6">{{ stats.failed }}</div>
-              <div class="text-caption text-medium-emphasis">Failed</div>
-            </div>
-          </div>
-        </v-card>
-      </div>
-    </div>
-
-    <!-- Filters -->
-    <v-card class="mb-4">
-      <v-card-title>
-        <v-icon class="mr-2">mdi-filter</v-icon>
-        Filters
-      </v-card-title>
-      <v-card-text>
-        <div class="row">
-          <div class="col-md-3">
-            <v-text-field
-              v-model="search"
-              label="Search..."
-              prepend-inner-icon="mdi-magnify"
-              clearable
-              hide-details
-              @update:model-value="debouncedSearch"
-            />
-          </div>
-          <div class="col-md-2">
-            <v-select
-              v-model="filters.status"
-              :items="statusOptions"
-              label="Status"
-              clearable
-              hide-details
-              @update:model-value="applyFilters"
-            />
-          </div>
-          <div class="col-md-2">
-            <v-select
-              v-model="filters.campaign_step"
-              :items="filterOptions.campaignSteps"
-              label="Campaign Step"
-              clearable
-              hide-details
-              @update:model-value="applyFilters"
-            />
-          </div>
-          <div class="col-md-2">
-            <v-select
-              v-model="filters.candidate_campaign_id"
-              :items="filterOptions.candidateCampaigns"
-              label="Candidate Campaign"
-              clearable
-              hide-details
-              @update:model-value="applyFilters"
-            />
-          </div>
-          <div class="col-md-2">
-            <v-select
-              v-model="filters.assignee_id"
-              :items="filterOptions.assignees"
-              label="Assignee"
-              clearable
-              hide-details
-              @update:model-value="applyFilters"
-            />
-          </div>
-          <div class="col-md-1">
-            <v-btn
-              color="primary"
-              variant="outlined"
-              @click="clearFilters"
-              class="mt-1"
-            >
-              Clear
-            </v-btn>
+    <div class="d-flex gap-3 mb-4 stats-container">
+      <v-card class="flex-1 pa-3 stats-card">
+        <div class="d-flex align-center">
+          <v-icon color="primary" size="40" class="mr-3">mdi-lightning-bolt</v-icon>
+          <div>
+            <div class="text-h6">{{ stats.total }}</div>
+            <div class="text-caption text-medium-emphasis">Total Actions</div>
           </div>
         </div>
+      </v-card>
+      <v-card class="flex-1 pa-3 stats-card">
+        <div class="d-flex align-center">
+          <v-icon color="success" size="40" class="mr-3">mdi-check-circle</v-icon>
+          <div>
+            <div class="text-h6">{{ stats.executed }}</div>
+            <div class="text-caption text-medium-emphasis">Executed</div>
+          </div>
+        </div>
+      </v-card>
+      <v-card class="flex-1 pa-3 stats-card">
+        <div class="d-flex align-center">
+          <v-icon color="warning" size="40" class="mr-3">mdi-clock-outline</v-icon>
+          <div>
+            <div class="text-h6">{{ stats.scheduled }}</div>
+            <div class="text-caption text-medium-emphasis">Scheduled</div>
+          </div>
+        </div>
+      </v-card>
+      <v-card class="flex-1 pa-3 stats-card">
+        <div class="d-flex align-center">
+          <v-icon color="error" size="40" class="mr-3">mdi-alert-circle</v-icon>
+          <div>
+            <div class="text-h6">{{ stats.failed }}</div>
+            <div class="text-caption text-medium-emphasis">Failed</div>
+          </div>
+        </div>
+      </v-card>
+    </div>
+
+    <!-- Compact Filters -->
+    <v-card class="mb-4">
+      <v-card-text class="pa-3">
+        <div class="d-flex gap-3">
+          <v-text-field
+            v-model="search"
+            label="Search actions"
+            prepend-inner-icon="mdi-magnify"
+            clearable
+            hide-details
+            density="compact"
+            class="flex-grow-1"
+            @update:model-value="debouncedSearch"
+          />
+          
+          <v-btn
+            color="primary"
+            variant="outlined"
+            prepend-icon="mdi-filter"
+            @click="showAdvancedFilters = !showAdvancedFilters"
+            class="text-none"
+          >
+            Advanced Filters
+            <v-icon class="ml-1">
+              {{ showAdvancedFilters ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
+            </v-icon>
+          </v-btn>
+          <v-btn
+            v-if="hasActiveFilters"
+            color="grey"
+            variant="text"
+            prepend-icon="mdi-close"
+            @click="clearFilters"
+            class="text-none"
+          >
+            Clear
+          </v-btn>
+        </div>
+        
+        <!-- Advanced Filters (Collapsible) -->
+        <v-expand-transition>
+          <div v-if="showAdvancedFilters" class="mt-4 pt-3 border-t">
+            <div class="row">
+              <div class="col-md-3">
+                <v-select
+                  v-model="filters.status"
+                  :items="statusOptions"
+                  label="Status"
+                  clearable
+                  hide-details
+                  density="compact"
+                  @update:model-value="applyFilters"
+                />
+              </div>
+              <div class="col-md-3">
+                <v-select
+                  v-model="filters.campaign_step"
+                  :items="filterOptions.campaignSteps"
+                  label="Campaign Step"
+                  clearable
+                  hide-details
+                  density="compact"
+                  @update:model-value="applyFilters"
+                />
+              </div>
+              <div class="col-md-3">
+                <v-select
+                  v-model="filters.candidate_campaign_id"
+                  :items="filterOptions.candidateCampaigns"
+                  label="Candidate Campaign"
+                  clearable
+                  hide-details
+                  density="compact"
+                  @update:model-value="applyFilters"
+                />
+              </div>
+              <div class="col-md-3">
+                <v-select
+                  v-model="filters.assignee_id"
+                  :items="filterOptions.assignees"
+                  label="Assignee"
+                  clearable
+                  hide-details
+                  density="compact"
+                  @update:model-value="applyFilters"
+                />
+              </div>
+            </div>
+          </div>
+        </v-expand-transition>
       </v-card-text>
     </v-card>
 
@@ -424,7 +437,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { actionService, candidateCampaignService, campaignStepService, userService } from '../services/universalService'
 import { debounce } from 'lodash'
@@ -444,6 +457,7 @@ const showFormModal = ref(false)
 const showDeleteDialog = ref(false)
 const formValid = ref(false)
 const itemToDelete = ref(null)
+const showAdvancedFilters = ref(false)
 
 // Status options matching doctype
 const statusOptions = [
@@ -506,6 +520,11 @@ const headers = [
   { title: 'Assignee', key: 'assignee_id', sortable: true },
   { title: 'Actions', key: 'actions', sortable: false }
 ]
+
+// Computed properties
+const hasActiveFilters = computed(() => {
+  return Object.values(filters).some(value => value && value !== '')
+})
 
 // Methods
 const loadData = async () => {
@@ -885,5 +904,35 @@ onMounted(() => {
 
 .row > [class*="col-"] {
   padding: 0 8px;
+}
+
+.border-t {
+  border-top: 1px solid #e0e0e0;
+}
+
+.gap-3 {
+  gap: 12px;
+}
+
+.v-card-text {
+  padding: 12px 16px;
+}
+
+.v-select.v-field--density-compact,
+.v-text-field.v-field--density-compact {
+  margin-bottom: 8px;
+}
+
+.stats-container {
+  width: 100%;
+}
+
+.stats-card {
+  transition: transform 0.2s ease-in-out;
+  width: 25%;
+}
+
+.stats-card:hover {
+  transform: translateY(-2px);
 }
 </style>
