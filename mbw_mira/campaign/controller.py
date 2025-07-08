@@ -201,7 +201,7 @@ def render_template(template_str, context):
     params = {
         "candidate_id": candidate.name,
         "action": action.name,
-        "url": f"{base_url}/mbw_mira/dashboard"
+        "url": f"{base_url}/mbw_mira"
     }
 
     context_parse ={
