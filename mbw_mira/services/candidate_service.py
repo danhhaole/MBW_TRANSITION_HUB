@@ -21,8 +21,10 @@ def handle_candidate_segment():
         #candidate_ids = candidate_segment_by_campaign(campaign.target_segment)
 
         #Lấy danh sách Candidate từ AI 
+        candidate_ids = None
         candidate_segments = find_candidates_fuzzy(campaign.target_segment)
-        candidate_ids = [s.get("candidate_name") for s in candidate_segments]
+        if candidate_segments:
+            candidate_ids = [s.get("candidate_name") for s in candidate_segments]
         
         if not candidate_ids:
             frappe.logger("campaign").info(f"[SKIP] No candidates found for segment {campaign.target_segment}.")

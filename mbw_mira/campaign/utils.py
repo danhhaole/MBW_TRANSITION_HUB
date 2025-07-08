@@ -19,54 +19,59 @@ def find_candidates_fuzzy(segment_name, min_score=50):
     Tìm các ứng viên có mức độ khớp >= min_score (0–100) theo fuzzy matching
     giữa candidate.skills và talent_segment.criteria.skills.
     """
-    segment = frappe.get_doc("TalentSegment", segment_name)
-    criteria = json.loads(segment.criteria or "{}")
-    criteria_skills = criteria.get("skills", [])
-    
-    if not criteria_skills:
-        frappe.throw("No skills criteria defined in this Talent Segment.")
-
-    candidates = frappe.get_all(
-        "Candidate",
-        fields=["name", "full_name", "skills"]
-    )
-
-    results = []
-
-    for c in candidates:
-        if not c.skills:
-            continue
+    try:
+        segment = frappe.get_doc("TalentSegment", segment_name)
+        criteria = json.loads(segment.criteria or "{}")
+        criteria_skills = criteria.get("skills", [])
         
-        try:
-            candidate_skills = json.loads(c.skills)
-        except Exception:
-            continue
-        
-        if not candidate_skills:
-            continue
-        
-        # fuzzy match từng kỹ năng của criteria với từng kỹ năng của ứng viên
-        total_score = 0
-        for crit_skill in criteria_skills:
-            # tìm điểm cao nhất của crit_skill so với tất cả skills của candidate
-            best_score = max(
-                [fuzz.token_sort_ratio(crit_skill, cand_skill) for cand_skill in candidate_skills],
-                default=0
-            )
-            total_score += best_score
+        if not criteria_skills:
+            frappe.throw("No skills criteria defined in this Talent Segment.")
 
-        avg_score = total_score / len(criteria_skills)
+        candidates = frappe.get_all(
+            "Candidate",
+            fields=["name", "full_name", "skills"]
+        )
 
-        if avg_score >= min_score:
-            results.append({
-                "candidate_name": c.name,
-                "full_name": c.full_name,
-                "skills": candidate_skills,
-                "criteria_skills": criteria_skills,
-                "score": round(avg_score, 2)
-            })
+        results = []
 
-    # sắp xếp giảm dần theo điểm
-    results.sort(key=lambda x: x["score"], reverse=True)
+        for c in candidates:
+            if not c.skills:
+                continue
+            
+            try:
+                candidate_skills = json.loads(c.skills)
+            except Exception:
+                continue
+            
+            if not candidate_skills:
+                continue
+            
+            # fuzzy match từng kỹ năng của criteria với từng kỹ năng của ứng viên
+            total_score = 0
+            for crit_skill in criteria_skills:
+                # tìm điểm cao nhất của crit_skill so với tất cả skills của candidate
+                best_score = max(
+                    [fuzz.token_sort_ratio(crit_skill, cand_skill) for cand_skill in candidate_skills],
+                    default=0
+                )
+                total_score += best_score
 
-    return results
+            avg_score = total_score / len(criteria_skills)
+
+            if avg_score >= min_score:
+                results.append({
+                    "candidate_name": c.name,
+                    "full_name": c.full_name,
+                    "skills": candidate_skills,
+                    "criteria_skills": criteria_skills,
+                    "score": round(avg_score, 2)
+                })
+
+        # sắp xếp giảm dần theo điểm
+        results.sort(key=lambda x: x["score"], reverse=True)
+
+        return results
+
+    except Exception as e:
+        frappe.log_error(f"Error in get candidate segment: {str(e)}")
+        return None
