@@ -4,9 +4,15 @@ import path from 'path'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import frappeui from 'frappe-ui/vite'
 import { VitePWA } from 'vite-plugin-pwa'
+import { fileURLToPath } from "url";
+
+// ESM-safe __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // https://vitejs.dev/config/
 export default defineConfig({
+	base: '/mbw_mira/',
 	plugins: [
 		frappeui({
 			frappeProxy: true,
