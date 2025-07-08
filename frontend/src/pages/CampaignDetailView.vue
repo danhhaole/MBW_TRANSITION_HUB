@@ -525,6 +525,13 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Edit Campaign Modal -->
+    <campaign-form
+      v-model="showEditCampaignModal"
+      :campaign="campaign"
+      @success="handleCampaignUpdated"
+    />
   </div>
 </template>
 
@@ -540,6 +547,7 @@ import {
   talentSegmentService,
   actionService
 } from '../services/universalService'
+import CampaignForm from '@/components/campaign/CampaignForm.vue'
 import moment from 'moment'
 
 const route = useRoute()
@@ -563,6 +571,7 @@ const availableCandidates = ref([])
 // Modals
 const showStepModal = ref(false)
 const showCandidateModal = ref(false)
+const showEditCampaignModal = ref(false)
 const stepFormValid = ref(false)
 const candidateFormValid = ref(false)
 const savingStep = ref(false)
@@ -1054,8 +1063,19 @@ const getCompletedCandidates = () => {
 }
 
 const editCampaign = () => {
-  // Implementation for editing campaign
-  router.push(`/campaigns/${route.params.id}/edit`)
+  // Ensure we have loaded campaign data before opening modal
+  if (Object.keys(campaign).length === 0) {
+    console.warn('Campaign data not loaded yet')
+    return
+  }
+  // Open edit modal with current campaign data
+  showEditCampaignModal.value = true
+}
+
+const handleCampaignUpdated = async () => {
+  console.log('Campaign updated successfully')
+  // Reload campaign data
+  await loadCampaign()
 }
 
 const deleteCampaign = async () => {

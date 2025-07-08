@@ -161,11 +161,22 @@
             <div class="text-h1 mb-4">🎉</div>
             <h3 class="text-h5 font-weight-bold mb-4">Chiến dịch đã sẵn sàng!</h3>
             <p class="text-body-1 mb-2">
-              Bạn sắp thêm <strong>{{ selectedCandidates.size }} ứng viên</strong> 
-              vào chiến dịch <strong>"{{ campaignData.campaign_name }}"</strong>.
+              <template v-if="selectedCandidates.size > 0">
+                Bạn sắp thêm <strong>{{ selectedCandidates.size }} ứng viên</strong> 
+                vào chiến dịch <strong>"{{ campaignData.campaign_name }}"</strong>.
+              </template>
+              <template v-else>
+                Bạn sắp tạo chiến dịch <strong>"{{ campaignData.campaign_name }}"</strong> 
+                với trạng thái nháp để bổ sung ứng viên sau.
+              </template>
             </p>
             <p class="text-caption text-grey-darken-1">
-              Sau khi kích hoạt, hệ thống sẽ bắt đầu thực hiện các bước tương tác đầu tiên.
+              <template v-if="selectedCandidates.size > 0">
+                Sau khi tạo, chiến dịch sẽ ở trạng thái nháp để bạn có thể chỉnh sửa và kích hoạt sau.
+              </template>
+              <template v-else>
+                Bạn có thể thêm ứng viên và kích hoạt chiến dịch sau khi tạo.
+              </template>
             </p>
           </div>
         </div>
@@ -207,18 +218,17 @@
           v-if="currentStep === 3 && showCandidates"
           color="primary"
           @click="nextStep"
-          :disabled="selectedCandidates.size === 0"
         >
-          Thêm {{ selectedCandidates.size }} ứng viên
+          {{ selectedCandidates.size > 0 ? `Thêm ${selectedCandidates.size} ứng viên` : 'Bỏ qua bước này' }}
         </v-btn>
         
         <v-btn
           v-if="currentStep === 4"
           color="success"
-          @click="activateCampaign"
+          @click="createCampaign"
           :loading="activating"
         >
-          Kích hoạt Chiến dịch
+          Tạo Chiến dịch
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -468,7 +478,7 @@ const getSearchButtonText = () => {
   return texts[selectedSource.value] || 'Tìm kiếm'
 }
 
-const activateCampaign = async () => {
+const createCampaign = async () => {
   activating.value = true
   
   try {
@@ -477,11 +487,11 @@ const activateCampaign = async () => {
       campaign_name: campaignData.value.campaign_name,
       description: campaignData.value.description,
       type: campaignData.value.type,
-      status: 'ACTIVE',
+      status: 'DRAFT',
       start_date: new Date().toISOString().split('T')[0],
       end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       target_segment: campaignData.value.target_segment,
-      is_active: true
+      is_active: false
     }
     
     console.log('Creating campaign with payload:', campaignPayload)
@@ -492,19 +502,21 @@ const activateCampaign = async () => {
     if (campaignResult.success) {
       const campaignId = campaignResult.data.name
       
-      // Create CandidateCampaign records for selected candidates
-      const candidateCampaignPromises = Array.from(selectedCandidates.value).map(candidateId => 
-        candidateCampaignService.save({
-          candidate_id: candidateId,
-          campaign_id: campaignId,
-          status: 'ACTIVE',
-          current_step_order: 1,
-          enrolled_at: moment().format("YYYY-MM-DD HH:mm:ss")
-        })
-      )
-      
-      // Wait for all candidate assignments to complete
-      await Promise.all(candidateCampaignPromises)
+      // Create CandidateCampaign records for selected candidates (only if any candidates are selected)
+      if (selectedCandidates.value.size > 0) {
+        const candidateCampaignPromises = Array.from(selectedCandidates.value).map(candidateId => 
+          candidateCampaignService.save({
+            candidate_id: candidateId,
+            campaign_id: campaignId,
+            status: 'DRAFT',
+            current_step_order: 1,
+            enrolled_at: moment().format("YYYY-MM-DD HH:mm:ss")
+          })
+        )
+        
+        // Wait for all candidate assignments to complete
+        await Promise.all(candidateCampaignPromises)
+      }
       
       emit('success', {
         action: 'create',

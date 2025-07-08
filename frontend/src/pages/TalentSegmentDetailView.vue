@@ -380,6 +380,13 @@
       :preselected-segment="route.params.id"
       @success="handleCampaignCreated"
     />
+
+    <!-- Edit Talent Segment Modal -->
+    <talent-segment-form
+      v-model="showEditTalentSegmentModal"
+      :segment="Object.keys(talentSegment).length > 0 ? talentSegment : null"
+      @success="handleTalentSegmentUpdated"
+    />
   </div>
 </template>
 
@@ -396,6 +403,7 @@ import {
 import { processSkills } from '../services/candidateService'
 import { usersStore } from '@/stores/users'
 import CampaignWizard from '@/components/campaign/CampaignWizard.vue'
+import TalentSegmentForm from '@/components/talent-segment/TalentSegmentForm.vue'
 import moment from 'moment'
 
 
@@ -419,6 +427,7 @@ const availableCandidates = ref([])
 // Modals
 const showAddCandidateModal = ref(false)
 const showCampaignWizard = ref(false)
+const showEditTalentSegmentModal = ref(false)
 const candidateFormValid = ref(false)
 const savingCandidate = ref(false)
 
@@ -652,6 +661,12 @@ const handleCampaignCreated = async (event) => {
   await loadRelatedCampaigns()
 }
 
+const handleTalentSegmentUpdated = async () => {
+  console.log('Talent segment updated successfully')
+  // Reload talent segment data
+  await loadTalentSegment()
+}
+
 const createCampaignFromSegment = () => {
   // This method is kept for backward compatibility but now opens wizard
   showCampaignWizard.value = true
@@ -731,8 +746,13 @@ const getEngagementRate = () => {
 }
 
 const editTalentSegment = () => {
-  // Implementation for editing talent segment
-  router.push(`/talent-segments/${route.params.id}/edit`)
+  // Ensure we have loaded segment data before opening modal
+  if (Object.keys(talentSegment).length === 0) {
+    console.warn('Talent segment data not loaded yet')
+    return
+  }
+  // Open edit modal with current segment data
+  showEditTalentSegmentModal.value = true
 }
 
 const deleteTalentSegment = async () => {

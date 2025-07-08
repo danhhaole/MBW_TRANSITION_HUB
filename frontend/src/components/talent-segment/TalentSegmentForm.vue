@@ -152,15 +152,125 @@
                   <v-expansion-panel-text>
                     <v-row>
                       <v-col cols="12">
-                        <v-textarea
-                          v-model="formData.criteria"
-                          label="Tiêu chí AI"
-                          placeholder="Nhập tiêu chí dưới dạng JSON: {&quot;skills&quot;: [&quot;java&quot;, &quot;spring&quot;], &quot;experienceYears&quot;: &quot;>5&quot;}"
-                          variant="outlined"
-                          rows="3"
-                          auto-grow
-                          hint="AI sẽ sử dụng các tiêu chí này để tự động thêm ứng viên vào phân khúc"
-                        />
+                        <div class="mb-4">
+                          <h4 class="text-h6 mb-2">Tiêu chí AI</h4>
+                          <p class="text-caption text-medium-emphasis">
+                            Cấu hình các tiêu chí để AI tự động phân loại ứng viên
+                          </p>
+                        </div>
+                        
+                        <!-- Skills Selection -->
+                        <div class="mb-4">
+                          <label class="text-subtitle-2 font-weight-medium mb-2 d-block">
+                            Kỹ năng cần thiết
+                          </label>
+                          <v-combobox
+                            v-model="criteriaForm.skills"
+                            :items="skillOptions"
+                            label="Chọn hoặc nhập kỹ năng"
+                            placeholder="Ví dụ: Java, Spring, React..."
+                            variant="outlined"
+                            multiple
+                            chips
+                            closable-chips
+                            clearable
+                            hint="Nhấn Enter để thêm kỹ năng mới"
+                            persistent-hint
+                          />
+                        </div>
+
+                        <!-- Experience Years -->
+                        <div class="mb-4">
+                          <label class="text-subtitle-2 font-weight-medium mb-2 d-block">
+                            Kinh nghiệm làm việc
+                          </label>
+                          <v-row>
+                            <v-col cols="4">
+                              <v-select
+                                v-model="criteriaForm.experienceOperator"
+                                :items="experienceOperators"
+                                label="Điều kiện"
+                                variant="outlined"
+                                density="compact"
+                              />
+                            </v-col>
+                            <v-col cols="8">
+                              <v-text-field
+                                v-model.number="criteriaForm.experienceYears"
+                                label="Số năm kinh nghiệm"
+                                type="number"
+                                variant="outlined"
+                                density="compact"
+                                min="0"
+                                max="50"
+                                suffix="năm"
+                              />
+                            </v-col>
+                          </v-row>
+                        </div>
+
+                        <!-- Location -->
+                        <div class="mb-4">
+                          <label class="text-subtitle-2 font-weight-medium mb-2 d-block">
+                            Địa điểm làm việc
+                          </label>
+                          <v-combobox
+                            v-model="criteriaForm.locations"
+                            :items="locationOptions"
+                            label="Chọn hoặc nhập địa điểm"
+                            placeholder="Ví dụ: Hà Nội, TP.HCM..."
+                            variant="outlined"
+                            multiple
+                            chips
+                            closable-chips
+                            clearable
+                          />
+                        </div>
+
+                        <!-- Education Level -->
+                        <div class="mb-4">
+                          <label class="text-subtitle-2 font-weight-medium mb-2 d-block">
+                            Trình độ học vấn
+                          </label>
+                          <v-select
+                            v-model="criteriaForm.educationLevel"
+                            :items="educationLevels"
+                            label="Chọn trình độ học vấn"
+                            variant="outlined"
+                            clearable
+                          />
+                        </div>
+
+                        <!-- Salary Range -->
+                        <div class="mb-4">
+                          <label class="text-subtitle-2 font-weight-medium mb-2 d-block">
+                            Mức lương mong muốn (triệu VND)
+                          </label>
+                          <v-row>
+                            <v-col cols="6">
+                              <v-text-field
+                                v-model.number="criteriaForm.salaryMin"
+                                label="Từ"
+                                type="number"
+                                variant="outlined"
+                                density="compact"
+                                min="0"
+                                suffix="triệu"
+                              />
+                            </v-col>
+                            <v-col cols="6">
+                              <v-text-field
+                                v-model.number="criteriaForm.salaryMax"
+                                label="Đến"
+                                type="number"
+                                variant="outlined"
+                                density="compact"
+                                min="0"
+                                suffix="triệu"
+                              />
+                            </v-col>
+                          </v-row>
+                        </div>
                       </v-col>
                     </v-row>
                   </v-expansion-panel-text>
@@ -229,8 +339,90 @@ const formData = ref({
   criteria: '{}'
 })
 
+// Criteria form for better UX
+const criteriaForm = ref({
+  skills: [],
+  experienceOperator: '>=',
+  experienceYears: null,
+  locations: [],
+  educationLevel: '',
+  salaryMin: null,
+  salaryMax: null
+})
+
+// Options for form fields
+const skillOptions = ref([
+  'Java', 'JavaScript', 'Python', 'C#', 'PHP', 'C++', 'React', 'Angular', 'Vue.js',
+  'Node.js', 'Spring', 'Django', 'Laravel', 'ASP.NET', 'MySQL', 'PostgreSQL',
+  'MongoDB', 'Redis', 'Docker', 'Kubernetes', 'AWS', 'Azure', 'Git', 'Linux',
+  'HTML', 'CSS', 'TypeScript', 'GraphQL', 'REST API', 'Microservices'
+])
+
+const locationOptions = ref([
+  'Hà Nội', 'TP.HCM', 'Đà Nẵng', 'Cần Thơ', 'Hải Phòng', 'Bình Dương',
+  'Đồng Nai', 'Quảng Ninh', 'Thừa Thiên Huế', 'Khánh Hòa', 'Remote'
+])
+
+const experienceOperators = ref([
+  { title: 'Ít nhất', value: '>=' },
+  { title: 'Chính xác', value: '==' },
+  { title: 'Nhiều hơn', value: '>' },
+  { title: 'Ít hơn', value: '<' },
+  { title: 'Tối đa', value: '<=' }
+])
+
+const educationLevels = ref([
+  { title: 'Trung học phổ thông', value: 'high_school' },
+  { title: 'Trung cấp', value: 'vocational' },
+  { title: 'Cao đẳng', value: 'college' },
+  { title: 'Đại học', value: 'university' },
+  { title: 'Thạc sĩ', value: 'master' },
+  { title: 'Tiến sĩ', value: 'phd' }
+])
+
 // Computed
 const isEditing = computed(() => !!props.segment)
+
+// Convert form to JSON criteria
+const convertFormToCriteria = () => {
+  const criteria = {}
+  
+  // Add skills if any
+  if (criteriaForm.value.skills?.length > 0) {
+    criteria.skills = criteriaForm.value.skills
+  }
+  
+  // Add experience years if specified
+  if (criteriaForm.value.experienceYears !== null && criteriaForm.value.experienceYears !== '') {
+    criteria.experienceYears = `${criteriaForm.value.experienceOperator}${criteriaForm.value.experienceYears}`
+  }
+  
+  // Add locations if any
+  if (criteriaForm.value.locations?.length > 0) {
+    criteria.locations = criteriaForm.value.locations
+  }
+  
+  // Add education level if specified
+  if (criteriaForm.value.educationLevel) {
+    criteria.educationLevel = criteriaForm.value.educationLevel
+  }
+  
+  // Add salary range if specified
+  if (criteriaForm.value.salaryMin !== null || criteriaForm.value.salaryMax !== null) {
+    const salaryRange = {}
+    if (criteriaForm.value.salaryMin !== null && criteriaForm.value.salaryMin !== '') {
+      salaryRange.min = criteriaForm.value.salaryMin
+    }
+    if (criteriaForm.value.salaryMax !== null && criteriaForm.value.salaryMax !== '') {
+      salaryRange.max = criteriaForm.value.salaryMax
+    }
+    if (Object.keys(salaryRange).length > 0) {
+      criteria.salaryRange = salaryRange
+    }
+  }
+  
+  return JSON.stringify(criteria)
+}
 
 // Type options
 const typeOptions = [
@@ -288,6 +480,45 @@ const getAvatarText = (fullName) => {
   return fullName.split(' ').map(name => name[0]).join('').toUpperCase().substring(0, 2)
 }
 
+// Convert JSON criteria to form
+const parseCriteriaToForm = (criteriaJson) => {
+  try {
+    const criteria = JSON.parse(criteriaJson || '{}')
+    
+    criteriaForm.value = {
+      skills: criteria.skills || [],
+      experienceOperator: '>=',
+      experienceYears: null,
+      locations: criteria.locations || [],
+      educationLevel: criteria.educationLevel || '',
+      salaryMin: criteria.salaryRange?.min || null,
+      salaryMax: criteria.salaryRange?.max || null
+    }
+    
+    // Parse experience years
+    if (criteria.experienceYears) {
+      const expStr = criteria.experienceYears.toString()
+      const match = expStr.match(/^([><=]+)(.+)$/)
+      if (match) {
+        criteriaForm.value.experienceOperator = match[1]
+        criteriaForm.value.experienceYears = parseInt(match[2])
+      }
+    }
+  } catch (error) {
+    console.error('Error parsing criteria JSON:', error)
+    // Reset to default values if JSON is invalid
+    criteriaForm.value = {
+      skills: [],
+      experienceOperator: '>=',
+      experienceYears: null,
+      locations: [],
+      educationLevel: '',
+      salaryMin: null,
+      salaryMax: null
+    }
+  }
+}
+
 const resetForm = () => {
   formData.value = {
     title: '',
@@ -296,6 +527,16 @@ const resetForm = () => {
     owner_id: '',
     candidate_count: 0,
     criteria: '{}'
+  }
+  
+  criteriaForm.value = {
+    skills: [],
+    experienceOperator: '>=',
+    experienceYears: null,
+    locations: [],
+    educationLevel: '',
+    salaryMin: null,
+    salaryMax: null
   }
 }
 
@@ -319,13 +560,16 @@ const handleSubmit = async () => {
 
   loading.value = true
   try {
-    // Ensure criteria is valid JSON
-    const dataToSubmit = { ...formData.value }
-    if (!dataToSubmit.criteria || dataToSubmit.criteria.trim() === '') {
-      dataToSubmit.criteria = '{}'
+    // Convert form criteria to JSON
+    const criteriaJson = convertFormToCriteria()
+    
+    // Prepare data to submit
+    const dataToSubmit = { 
+      ...formData.value,
+      criteria: criteriaJson || '{}'
     }
     
-    // Validate JSON format
+    // Ensure criteria is valid JSON
     try {
       JSON.parse(dataToSubmit.criteria)
     } catch (e) {
@@ -361,7 +605,7 @@ const handleCancel = () => {
 
 // Watch for segment changes (editing mode)
 watch(() => props.segment, (newSegment) => {
-  if (newSegment && props.modelValue) {
+  if (newSegment && Object.keys(newSegment).length > 0) {
     formData.value = {
       title: newSegment.title || '',
       description: newSegment.description || '',
@@ -370,8 +614,10 @@ watch(() => props.segment, (newSegment) => {
       candidate_count: newSegment.candidate_count || 0,
       criteria: newSegment.criteria || '{}'
     }
+    // Parse criteria to form
+    parseCriteriaToForm(newSegment.criteria)
   }
-}, { immediate: true })
+}, { immediate: true, deep: true })
 
 // Watch for dialog open/close
 watch(() => props.modelValue, (isOpen) => {
@@ -379,6 +625,18 @@ watch(() => props.modelValue, (isOpen) => {
     loadUserOptions()
     if (!props.segment) {
       resetForm()
+    } else if (props.segment && Object.keys(props.segment).length > 0) {
+      // Populate form data when modal opens with existing segment
+      formData.value = {
+        title: props.segment.title || '',
+        description: props.segment.description || '',
+        type: props.segment.type || 'MANUAL',
+        owner_id: props.segment.owner_id || '',
+        candidate_count: props.segment.candidate_count || 0,
+        criteria: props.segment.criteria || '{}'
+      }
+      // Parse criteria to form
+      parseCriteriaToForm(props.segment.criteria)
     }
   }
 })
@@ -387,6 +645,16 @@ watch(() => props.modelValue, (isOpen) => {
 watch(() => formData.value.type, (newType) => {
   if (newType === 'MANUAL') {
     formData.value.criteria = '{}'
+    // Reset criteria form
+    criteriaForm.value = {
+      skills: [],
+      experienceOperator: '>=',
+      experienceYears: null,
+      locations: [],
+      educationLevel: '',
+      salaryMin: null,
+      salaryMax: null
+    }
   }
 })
 
