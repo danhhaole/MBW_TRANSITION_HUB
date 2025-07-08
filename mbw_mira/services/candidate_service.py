@@ -159,6 +159,7 @@ def insert_candidate_campaign(**kwargs):
 
     if not step:
         frappe.throw(_("No Campaign Step found for Campaign {}").format(campaign_id))
+        return
 
     step = step[0]
 
