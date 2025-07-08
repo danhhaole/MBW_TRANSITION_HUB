@@ -35,12 +35,21 @@ def track(candidate_id=None, action=None, type=None, url=None):
     return {"status": "ok"}
 
 @frappe.whitelist(allow_guest=True)
-def click_redirect(candidate_id=None, action=None, url=None, sig=None):
+def click_redirect():
+    candidate_id = frappe.form_dict.get("candidate_id")
+    action = frappe.form_dict.get("action")
+    url = frappe.form_dict.get("url")
+    sig = frappe.form_dict.get("sig")
+
     if not candidate_id or not sig:
         frappe.throw("Missing required parameters")
 
-    data_string = f"candidate_id={candidate_id}&action={action}" #&url={url}
-    if not verify_signature(data_string, sig):
+    params = {
+        "candidate_id": candidate_id,
+        "action": action,
+        "url":url
+    }
+    if not verify_signature(params, sig):
         frappe.throw("Invalid signature")
 
     track(candidate_id=candidate_id, action=action, type="EMAIL_CLICKED", url=url)
@@ -48,8 +57,12 @@ def click_redirect(candidate_id=None, action=None, url=None, sig=None):
     frappe.local.response["type"] = "redirect"
     frappe.local.response["location"] = url
 
+
 @frappe.whitelist(allow_guest=True)
-def tracking_pixel(candidate_id=None, action=None):
+def tracking_pixel():
+    candidate_id = frappe.form_dict.get("candidate_id")
+    action = frappe.form_dict.get("action")
+
     track(candidate_id=candidate_id, action=action, type="EMAIL_OPENED")
 
     # Return transparent GIF
@@ -61,13 +74,23 @@ def tracking_pixel(candidate_id=None, action=None):
         b"\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02L\x01\x00;"
     )
 
+
 @frappe.whitelist(allow_guest=True)
-def unsubscribe(candidate_id=None, action=None, sig=None):
+def unsubscribe():
+    candidate_id = frappe.form_dict.get("candidate_id")
+    action = frappe.form_dict.get("action")
+    sig = frappe.form_dict.get("sig")
+    url =  frappe.form_dict.get("url")
+
     if not candidate_id or not sig:
         frappe.throw("Missing parameters")
 
-    data_string = f"candidate_id={candidate_id}&action={action or ''}"
-    if not verify_signature(data_string, sig):
+    params = {
+        "candidate_id": candidate_id,
+        "action": action,
+        "url":url
+    }
+    if not verify_signature(params, sig):
         frappe.throw("Invalid signature")
 
     # 1. Log Interaction
@@ -81,7 +104,14 @@ def unsubscribe(candidate_id=None, action=None, sig=None):
 
     # 2. Flag Candidate as Unsubscribed
     if frappe.db.exists("Candidate", candidate_id):
-        frappe.db.set_value("Candidate", candidate_id, {"email_opt_out": 1,"last_interaction":now_datetime()})
+        frappe.db.set_value(
+            "Candidate",
+            candidate_id,
+            {
+                "email_opt_out": 1,
+                "last_interaction": now_datetime()
+            }
+        )
         frappe.db.commit()
 
     # 3. Show confirmation page (Website context)
@@ -96,3 +126,4 @@ def unsubscribe(candidate_id=None, action=None, sig=None):
     """
     frappe.local.response.type = 'text/html'
     frappe.local.response.message = html
+

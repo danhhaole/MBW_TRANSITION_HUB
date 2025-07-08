@@ -79,14 +79,14 @@ def execute_action_logic(action_id: str):
     try:
         result = None
         if step.action_type == "SEND_EMAIL":
-            result = send_email_to_candidate(candidate, step)
+            result = send_email_to_candidate(candidate, action, step)
             create_interaction(
                 candidate_id=candidate.name,
                 interaction_type="EMAIL_SENT",
                 source_action=action.name,
             )
         elif step.action_type == "SEND_SMS":
-            result = send_sms_to_candidate(candidate, step)
+            result = send_sms_to_candidate(candidate, action, step)
             create_interaction(
                 candidate_id=candidate.name,
                 interaction_type="SMS_SENT",
@@ -143,7 +143,7 @@ def process_step_result(action_id: str):
     cc.save()
 
 
-def send_email_to_candidate(candidate, step):
+def send_email_to_candidate(candidate, action,step):
     if not candidate.email:
         frappe.throw("Candidate does not have an email.")
     # Nếu ứng viên đã unsubcrible
@@ -152,7 +152,7 @@ def send_email_to_candidate(candidate, step):
         return
 
     subject = "Thông báo từ chiến dịch"
-    context = (candidate,step)
+    context = (candidate,action,step)
     message = render_template(step.template, context)
 
     frappe.enqueue(
@@ -168,14 +168,14 @@ def send_email_to_candidate(candidate, step):
     return {"queued_email": candidate.email, "subject": subject}
 
 
-def send_sms_to_candidate(candidate, step):
+def send_sms_to_candidate(candidate,action, step):
     if not candidate.phone:
         frappe.throw("Candidate does not have a phone number.")
 
     if candidate.email_opt_out:
         frappe.logger("campain").error("Candidate unsubcrible")
         return
-    context = (candidate,step)
+    context = (candidate,action, step)
     message = render_template(step.template, context)
 
     frappe.enqueue(
@@ -196,11 +196,12 @@ def render_template(template_str, context):
     from frappe.utils import get_url
     if not template_str:
         return "Xin chào bạn"
-    candidate, step = context
-    
+    candidate,action, step = context
+    base_url = get_url()
     params = {
         "candidate_id": candidate.name,
-        "action": step.name,
+        "action": action.name,
+        "url": f"{base_url}/mbw_mira/dashboard"
     }
 
     context_parse ={
@@ -212,7 +213,7 @@ def render_template(template_str, context):
     # dùng urllib để encode query string
     query = urlencode({**params, "sig": sig})
 
-    base_url = get_url()
+    
     context_parse["tracking_pixel_url"] = (
         f"{base_url}/api/method/mbw_mira.api.interaction.tracking_pixel?{query}"
     )
