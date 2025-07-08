@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import Home from '@/pages/Home.vue'
+
 import Login from '@/pages/Login.vue'
 import Dashboard from '@/pages/Dashboard.vue'
 import CampaignManagement from '@/pages/CampaignManagement.vue'
@@ -25,7 +25,7 @@ import LinkFieldDemo from './components/LinkFieldDemo.vue'
 const routes = [
   {
     path: '/',
-    component: Home,
+    redirect: '/dashboard', // Redirect trực tiếp đến dashboard
     meta: { layout: 'private' }
   },
   {
@@ -144,13 +144,20 @@ let router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const { isLoggedIn } = sessionStore()
   isLoggedIn && (await userResource.promise)
-  const isAuthenticated = true // kiểm tra login ở đây
-  if (to.meta.layout === 'private' && !isLoggedIn) {
-     next('/login')
-    //window.location.href = '/login?redirect-to=/mbw_mira'
-  }else{
-    next()
+  
+  // Nếu user đã login và đang truy cập trang login, redirect về dashboard
+  if (isLoggedIn && to.path === '/login') {
+    next('/dashboard')
+    return
   }
+  
+  // Nếu user chưa login và truy cập private route, redirect về login
+  if (to.meta.layout === 'private' && !isLoggedIn) {
+    next('/login')
+    return
+  }
+  
+  next()
 })
 
 export default router

@@ -226,7 +226,7 @@ const formData = ref({
   type: 'MANUAL',
   owner_id: '',
   candidate_count: 0,
-  criteria: ''
+  criteria: '{}'
 })
 
 // Computed
@@ -295,7 +295,7 @@ const resetForm = () => {
     type: 'MANUAL',
     owner_id: '',
     candidate_count: 0,
-    criteria: ''
+    criteria: '{}'
   }
 }
 
@@ -319,16 +319,32 @@ const handleSubmit = async () => {
 
   loading.value = true
   try {
+    // Ensure criteria is valid JSON
+    const dataToSubmit = { ...formData.value }
+    if (!dataToSubmit.criteria || dataToSubmit.criteria.trim() === '') {
+      dataToSubmit.criteria = '{}'
+    }
+    
+    // Validate JSON format
+    try {
+      JSON.parse(dataToSubmit.criteria)
+    } catch (e) {
+      console.error('Invalid JSON in criteria:', e)
+      dataToSubmit.criteria = '{}'
+    }
+
     let result
     if (isEditing.value) {
-      result = await talentSegmentService.save(formData.value, props.segment.name)
+      result = await talentSegmentService.save(dataToSubmit, props.segment.name)
     } else {
-      result = await talentSegmentService.save(formData.value)
+      result = await talentSegmentService.save(dataToSubmit)
     }
 
     if (result.success) {
       emit('success')
       handleCancel()
+    } else {
+      console.error('Error saving talent segment:', result.message)
     }
   } catch (error) {
     console.error('Error submitting form:', error)
@@ -352,7 +368,7 @@ watch(() => props.segment, (newSegment) => {
       type: newSegment.type || 'MANUAL',
       owner_id: newSegment.owner_id || '',
       candidate_count: newSegment.candidate_count || 0,
-      criteria: newSegment.criteria || ''
+      criteria: newSegment.criteria || '{}'
     }
   }
 }, { immediate: true })
@@ -364,6 +380,13 @@ watch(() => props.modelValue, (isOpen) => {
     if (!props.segment) {
       resetForm()
     }
+  }
+})
+
+// Watch for type changes
+watch(() => formData.value.type, (newType) => {
+  if (newType === 'MANUAL') {
+    formData.value.criteria = '{}'
   }
 })
 
@@ -437,4 +460,4 @@ onMounted(() => {
   text-transform: none;
   font-weight: 500;
 }
-</style> 
+</style>

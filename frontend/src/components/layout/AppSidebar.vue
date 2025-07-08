@@ -4,12 +4,12 @@ import SidebarBrand from './SidebarBrand.vue'
 defineProps({ mini: Boolean })
 
 const menuItems = [
-  {
-    id: 'product-introduction',
-    title: 'Product Introduction',
-    icon: 'mdi-information',
-    to: '/product-introduction'
-  },
+  // {
+  //   id: 'product-introduction',
+  //   title: 'Product Introduction',
+  //   icon: 'mdi-information',
+  //   to: '/product-introduction'
+  // },
   {
     id: 'dashboard',
     title: 'Dashboard',
