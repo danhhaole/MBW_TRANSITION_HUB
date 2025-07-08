@@ -126,13 +126,20 @@ def insert_candidate_segment(**kwargs) -> list[str]:
 def insert_candidate_campaign(**kwargs):
     campaign_id = kwargs.get("campaign")
     segment = kwargs.get("segment")    
-    print("=======================insert_candidate_campaign============================= ",campaign_id)
+
+    print("=======================insert_candidate_campaign============================= ", campaign_id)
+
     if not campaign_id or not segment:
         frappe.throw(_("Both 'campaign' and 'segment' are required."))
 
+    # lấy danh sách candidate từ segment
     candidate_ids = candidate_segment_by_campaign(segment)
-    
-    # lấy step trong Campaign theo campaign
+
+    if not candidate_ids:
+        frappe.msgprint(_("No candidates found in segment {}").format(segment))
+        return
+
+    # Lấy step đầu tiên trong Campaign theo campaign_id
     step = frappe.get_all(
         "CampaignStep",
         filters={"campaign": campaign_id},
@@ -148,8 +155,13 @@ def insert_candidate_campaign(**kwargs):
         order_by="step_order asc",
         page_length=1,
     )
+
+    if not step:
+        frappe.throw(_("No Campaign Step found for Campaign {}").format(campaign_id))
+
     step = step[0]
-    # tính next_action_at
+
+    # Tính toán next_action_at
     now = now_datetime()
     next_action_at = add_days(now, step["delay_in_days"] or 0)
 
@@ -159,34 +171,42 @@ def insert_candidate_campaign(**kwargs):
         filters={"campaign_id": campaign_id, "candidate_id": ["in", candidate_ids]},
         fields=["candidate_id"],
     )
+
     existing_candidate_ids = {x.candidate_id for x in existing_candidates}
+
     # Mặc định là active
     status = "ACTIVE"
-    enrolled_at = now_datetime()
+    enrolled_at = now
     current_step_order = step["step_order"] or 1
+
+    inserted_count = 0
+
     for candidate_id in candidate_ids:
         if candidate_id in existing_candidate_ids:
             # Bỏ qua nếu đã tồn tại
             continue
 
-        doc = frappe.get_doc(
-            {
-                "doctype": "CandidateCampaign",
-                "campaign_id":campaign_id,
-                "candidate_id": candidate_id,
-                "segment_id": campaign_id,
-                "status": status,
-                "enrolled_at": enrolled_at,
-                "current_step_order": current_step_order,
-                "next_action_at": next_action_at,
-            }
-        )
+        doc = frappe.get_doc({
+            "doctype": "CandidateCampaign",
+            "campaign_id": campaign_id,
+            "candidate_id": candidate_id,
+            "segment_id": segment,  # SỬA: segment_id đúng
+            "status": status,
+            "enrolled_at": enrolled_at,
+            "current_step_order": current_step_order,
+            "next_action_at": next_action_at,
+        })
         doc.insert(ignore_permissions=True)
 
-        # có thể publish realtime từng bản ghi hoặc gom lại
+        # Có thể publish realtime từng bản ghi hoặc gom lại
         frappe.publish_realtime("candidate_campaign_created", doc)
 
+        inserted_count += 1
+
     frappe.db.commit()
+
+    frappe.msgprint(_("Inserted {0} candidates into Campaign {1}").format(inserted_count, campaign_id))
+
 
 
 # lấy danh sách candidate từ CandidateSegment
@@ -202,8 +222,9 @@ def candidate_segment_by_campaign(segment) -> list[str]:
 def count_candidate_segment(segment):
     try:
         total_candidate = frappe.db.count("CandidateSegment",filters={"segment_id":segment})
-        if total_candidate:
+        if total_candidate and total_candidate > 0:
             frappe.db.set_value("TalentSegment","candidate_count",total_candidate)
+            frappe.db.commit()
     except Exception as e:
         pass
 
