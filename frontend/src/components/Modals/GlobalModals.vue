@@ -1,0 +1,34 @@
+<template>
+  <CreateDocumentModal
+    v-if="showCreateDocumentModal"
+    v-model="showCreateDocumentModal"
+    :doctype="createDocumentDoctype"
+    :data="createDocumentData"
+    @callback="(data) => createDocumentCallback(data)"
+  />
+  <QuickEntryModal
+    v-if="showQuickEntryModal"
+    v-model="showQuickEntryModal"
+    v-bind="quickEntryProps"
+  />
+  <ChangePasswordModal
+    v-if="showChangePasswordModal"
+    v-model="showChangePasswordModal"
+  />
+</template>
+<script setup>
+import ChangePasswordModal from '@/components/Modals/ChangePasswordModal.vue'
+import CreateDocumentModal from '@/components/Modals/CreateDocumentModal.vue'
+import QuickEntryModal from '@/components/Modals/QuickEntryModal.vue'
+import {
+  showCreateDocumentModal,
+  createDocumentDoctype,
+  createDocumentData,
+  createDocumentCallback,
+} from '@/composables/document'
+import {
+  showQuickEntryModal,
+  quickEntryProps,
+  showChangePasswordModal,
+} from '@/composables/modals'
+</script>

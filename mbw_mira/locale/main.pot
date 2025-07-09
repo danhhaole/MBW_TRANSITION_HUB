@@ -1,0 +1,983 @@
+(Foreign Key -> Campaign)
+(Foreign Key -> CampaignStep) Bước đã tạo ra hành động này.
+(Foreign Key -> Candidate)
+(Foreign Key -> CandidateCampaign)
+(Foreign Key -> TalentSegment) Phân khúc mục tiêu.
+(Phân khúc Nhân tài / Talent Pool)
+1 Currency = [?] Fraction|||For e.g. 1 USD = 100 Cent
+<div class="alert">Please don't update it as it can mess up your form. Use the Customize Form View and Custom Fields to set properties!</div>
+<div class="well">|||    Edit list of Series in the box. Rules:|||    <ul>|||        <li>Each Series Prefix on a new line.</li>|||        <li>Allowed special characters are "/" and "-"</li>|||        <li>|||            Optionally, set the number of digits in the series using dot (.)|||            followed by hashes (#). For example, ".####" means that the series|||            will have four digits. Default is five digits.|||        </li>|||        <li>|||            You can also use variables in the series name by putting them|||            between (.) dots|||            <br>|||            Supported Variables:|||            <ul>|||                <li><code>.YYYY.</code> - Year in 4 digits</li>|||                <li><code>.YY.</code> - Year in 2 digits</li>|||                <li><code>.MM.</code> - Month</li>|||                <li><code>.DD.</code> - Day of month</li>|||                <li><code>.WW.</code> - Week of the year</li>|||                <li><code>.FY.</code> - Fiscal Year</li>|||                <li>|||                    <code>.{fieldname}.</code> - fieldname on the document e.g.|||                    <code>branch</code>|||                </li>|||            </ul>|||        </li>|||    </ul>|||    Examples:|||    <ul>|||        <li>INV-</li>|||        <li>INV-10-</li>|||        <li>INVK-</li>|||        <li>INV-.YYYY.-.{branch}.-.MM.-.####</li>|||    </ul>|||</div>|||<br>|||
+<h3>Custom CSS Help</h3>||||||<p>Notes:</p>||||||<ol>|||<li>All field groups (label + value) are set attributes <code>data-fieldtype</code> and <code>data-fieldname</code></li>|||<li>All values are given class <code>value</code></li>|||<li>All Section Breaks are given class <code>section-break</code></li>|||<li>All Column Breaks are given class <code>column-break</code></li>|||</ol>||||||<h4>Examples</h4>||||||<p>1. Left align integers</p>||||||<pre><code>[data-fieldtype="Int"] .value { text-align: left; }</code></pre>||||||<p>1. Add border to sections except the last section</p>||||||<pre><code>.section-break { padding: 30px 0px; border-bottom: 1px solid #eee; }|||.section-break:last-child { padding-bottom: 0px; border-bottom: 0px;  }</code></pre>|||
+<h3>Print Format Help</h3>|||<hr>|||<h4>Introduction</h4>|||<p>Print Formats are rendered on the server side using the Jinja Templating Language. All forms have access to the <code>doc</code> object which contains information about the document that is being formatted. You can also access common utilities via the <code>frappe</code> module.</p>|||<p>For styling, the Boostrap CSS framework is provided and you can enjoy the full range of classes.</p>|||<hr>|||<h4>References</h4>|||<ol>|||	<li><a href="http://jinja.pocoo.org/docs/templates/" target="_blank">Jinja Templating Language</a></li>|||	<li><a href="http://getbootstrap.com" target="_blank">Bootstrap CSS Framework</a></li>|||</ol>|||<hr>|||<h4>Example</h4>|||<pre><code>&lt;h3&gt;{{ doc.select_print_heading or "Invoice" }}&lt;/h3&gt;|||&lt;div class="row"&gt;|||	&lt;div class="col-md-3 text-right"&gt;Customer Name&lt;/div&gt;|||	&lt;div class="col-md-9"&gt;{{ doc.customer_name }}&lt;/div&gt;|||&lt;/div&gt;|||&lt;div class="row"&gt;|||	&lt;div class="col-md-3 text-right"&gt;Date&lt;/div&gt;|||	&lt;div class="col-md-9"&gt;{{ doc.get_formatted("invoice_date") }}&lt;/div&gt;|||&lt;/div&gt;|||&lt;table class="table table-bordered"&gt;|||	&lt;tbody&gt;|||		&lt;tr&gt;|||			&lt;th&gt;Sr&lt;/th&gt;|||			&lt;th&gt;Item Name&lt;/th&gt;|||			&lt;th&gt;Description&lt;/th&gt;|||			&lt;th class="text-right"&gt;Qty&lt;/th&gt;|||			&lt;th class="text-right"&gt;Rate&lt;/th&gt;|||			&lt;th class="text-right"&gt;Amount&lt;/th&gt;|||		&lt;/tr&gt;|||		{%- for row in doc.items -%}|||		&lt;tr&gt;|||			&lt;td style="width: 3%;"&gt;{{ row.idx }}&lt;/td&gt;|||			&lt;td style="width: 20%;"&gt;|||				{{ row.item_name }}|||				{% if row.item_code != row.item_name -%}|||				&lt;br&gt;Item Code: {{ row.item_code}}|||				{%- endif %}|||			&lt;/td&gt;|||			&lt;td style="width: 37%;"&gt;|||				&lt;div style="border: 0px;"&gt;{{ row.description }}&lt;/div&gt;&lt;/td&gt;|||			&lt;td style="width: 10%; text-align: right;"&gt;{{ row.qty }} {{ row.uom or row.stock_uom }}&lt;/td&gt;|||			&lt;td style="width: 15%; text-align: right;"&gt;{{|||				row.get_formatted("rate", doc) }}&lt;/td&gt;|||			&lt;td style="width: 15%; text-align: right;"&gt;{{|||				row.get_formatted("amount", doc) }}&lt;/td&gt;|||		&lt;/tr&gt;|||		{%- endfor -%}|||	&lt;/tbody&gt;|||&lt;/table&gt;</code></pre>|||<hr>|||<h4>Common Functions</h4>|||<table class="table table-bordered">|||	<tbody>|||		<tr>|||			<td style="width: 30%;"><code>doc.get_formatted("[fieldname]", [parent_doc])</code></td>|||			<td>Get document value formatted as Date, Currency, etc. Pass parent <code>doc</code> for currency type fields.</td>|||		</tr>|||		<tr>|||			<td style="width: 30%;"><code>frappe.db.get_value("[doctype]", "[name]", "fieldname")</code></td>|||			<td>Get value from another document.</td>|||		</tr>|||	</tbody>|||</table>|||
+<h4>Default Template</h4>|||<p>Uses <a href="http://jinja.pocoo.org/docs/templates/">Jinja Templating</a> and all the fields of Address (including Custom Fields if any) will be available</p>|||<pre><code>{{ address_line1 }}&lt;br&gt;|||{% if address_line2 %}{{ address_line2 }}&lt;br&gt;{% endif -%}|||{{ city }}&lt;br&gt;|||{% if state %}{{ state }}&lt;br&gt;{% endif -%}|||{% if pincode %} PIN:  {{ pincode }}&lt;br&gt;{% endif -%}|||{{ country }}&lt;br&gt;|||{% if phone %}Phone: {{ phone }}&lt;br&gt;{% endif -%}|||{% if fax %}Fax: {{ fax }}&lt;br&gt;{% endif -%}|||{% if email_id %}Email: {{ email_id }}&lt;br&gt;{% endif -%}|||</code></pre>
+<h4>Email Reply Example</h4>||||||<pre>Order Overdue||||||Transaction {{ name }} has exceeded Due Date. Please take necessary action.||||||Details||||||- Customer: {{ customer }}|||- Amount: {{ grand_total }}|||</pre>||||||<h4>How to get fieldnames</h4>||||||<p>The fieldnames you can use in your email template are the fields in the document from which you are sending the email. You can find out the fields of any documents via Setup &gt; Customize Form View and selecting the document type (e.g. Sales Invoice)</p>||||||<h4>Templating</h4>||||||<p>Templates are compiled using the Jinja Templating Language. To learn more about Jinja, <a class="strong" href="http://jinja.pocoo.org/docs/dev/templates/">read this documentation.</a></p>|||
+<h5 class="text-muted uppercase">Or</h5>
+<h5>Message Example</h5>||||||<pre>&lt;h3&gt;Order Overdue&lt;/h3&gt;||||||&lt;p&gt;Transaction {{ doc.name }} has exceeded Due Date. Please take necessary action.&lt;/p&gt;||||||&lt;!-- show last comment --&gt;|||{% if comments %}|||Last comment: {{ comments[-1].comment }} by {{ comments[-1].by }}|||{% endif %}||||||&lt;h4&gt;Details&lt;/h4&gt;||||||&lt;ul&gt;|||&lt;li&gt;Customer: {{ doc.customer }}|||&lt;li&gt;Amount: {{ doc.grand_total }}|||&lt;/ul&gt;|||</pre>
+<p><strong>Condition Examples:</strong></p>|||<pre>doc.status=="Open"<br>doc.due_date==nowdate()<br>doc.total &gt; 40000|||</pre>
+<p><strong>Condition Examples:</strong></p>|||<pre>doc.status=="Open"<br>doc.due_date==nowdate()<br>doc.total &gt; 40000|||</pre>|||
+<p>Multiple webforms can be created for a single doctype. Add filters specific to this webform to display correct record after submission.</p><p>For Example:</p>|||<p>If you create a separate webform every year to capture feedback from employees add a ||| field named year in doctype and add a filter <b>year = 2023</b></p>|||
+<p>Set context before rendering a template. Example:</p><p>|||</p><div><pre><code>|||context.project = frappe.get_doc("Project", frappe.form_dict.name)|||</code></pre></div>
+<p>To interact with above HTML you will have to use `root_element` as a parent selector.</p><p>For example:</p><pre class="p-3 bg-gray-100 border-radius rounded-sm mb-0" style="width: fit-content;"><code>// here root_element is provided by default|||let some_class_element = root_element.querySelector('.some-class');|||some_class_element.textContent = "New content";|||</code></pre>
+<pre>*  *  *  *  *|||┬  ┬  ┬  ┬  ┬|||│  │  │  │  │|||│  │  │  │  └ day of week (0 - 6) (0 is Sunday)|||│  │  │  └───── month (1 - 12)|||│  │  └────────── day of month (1 - 31)|||│  └─────────────── hour (0 - 23)|||└──────────────────── minute (0 - 59)||||||---||||||* - Any value|||/ - Step values|||</pre>|||
+<pre><code>doc.grand_total &gt; 0</code></pre>||||||<p>Conditions should be written in simple Python. Please use properties available in the form only.</p>|||<p>Allowed functions:|||</p><ul>|||<li>frappe.db.get_value</li>|||<li>frappe.db.get_list</li>|||<li>frappe.session</li>|||<li>frappe.utils.now_datetime</li>|||<li>frappe.utils.get_datetime</li>|||<li>frappe.utils.add_to_date</li>|||<li>frappe.utils.now</li>|||</ul>|||<p>Example: </p><pre><code>doc.creation &gt; frappe.utils.add_to_date(frappe.utils.now_datetime(), days=-5, as_string=True, as_datetime=True) </code></pre><p></p>
+A0
+A1
+A2
+A3
+A5
+A6
+A7
+A8
+A9
+ACTIVE
+AI Summary
+API Key and Secret to interact with the relay server. These will be auto-generated when the first push notification is sent from any of the apps installed on this site.
+API Key cannot be regenerated
+APPLICATION_SUBMITTED
+ARCHIVED
+ATTRACTION
+About
+Access Control
+Account Deletion Settings
+Action Label
+Activate
+Active Directory
+Add Background Image
+Add Border at Bottom
+Add Border at Top
+Add Query Parameters
+Add Space at Bottom
+Add Space at Top
+Add Translate Data
+Add Video Conferencing
+Added At
+Added By
+Adds a custom client script to a DocType
+After Insert
+After Rename
+After Submission
+Align
+All possible Workflow States and roles of the workflow. Docstatus Options: 0 is "Saved", 1 is "Submitted" and 2 is "Cancelled"
+Allow Bulk Editing
+Allow Editing After Submit
+Allow Guest to comment
+Allow Multiple Responses
+Allow Older Web View Links (Insecure)
+Allow Sending Usage Data for Improving Applications
+Allow editing even if the doctype has a workflow set up.||||||Does nothing if a workflow isn't set up.
+Allow users to log in without a password, using a login link sent to their email
+Allowed File Extensions
+Allowed Modules
+Allowed Roles
+Allowed embedding domains
+Alternative Email ID
+Always BCC Address
+Always use this email address as sender address
+Always use this name as sender name
+Amend Counter
+Amended Document Naming Settings
+Amended Documents
+Amendment Naming Override
+An image with 1:1 & 2:1 ratio is preferred
+Announcement Widget
+Announcements
+Anonymization Matrix
+Anonymous responses
+App ID
+App Logo
+Append as communication against this DocType (must have fields: "Sender" and "Subject"). These fields can be defined in the email settings section of the appended doctype.
+Apply To
+Apply User Permission On
+Apps
+Arguments
+Assignee
+Attach Package
+Audience
+Audit System Hooks
+Audit Trail
+Authenticate as Service Principal
+Authorization URI
+Authorize API Access
+Auto Repeat Day
+Auto Reply
+Auto follow documents that are assigned to you
+Auto follow documents that are shared with you
+Auto follow documents that you Like
+Auto follow documents that you comment on
+Auto follow documents that you create
+Autocomplete
+Autoincrement
+Automated Message
+Automatic
+Automatically delete account within (hours)
+B0
+B1
+B10
+B2
+B3
+B4
+B5
+B6
+B7
+B8
+B9
+Background Image
+Background Jobs Check
+Background Jobs Queue
+Backups (MB)
+Banker's Rounding
+Banker's Rounding (legacy)
+Basic Info
+Before Print
+Before Rename
+Before Validate
+Binary Logging
+Blue
+Bottom Center
+Bottom Left
+Bottom Right
+Brand Logo
+Branding
+Browse by category
+Bufferpool Size
+Bulk Actions
+By "Naming Series" field
+By default, emails are only sent for failed backups.
+By fieldname
+By script
+C5E
+CALL_COMPLETED
+CALL_MISSED
+CHAT_COMPLETED
+CHAT_MESSAGE_SENT
+CHAT_STARTED
+CMD
+COMPLETED
+CSS selector for the element you want to highlight.
+Cache
+Call to Action
+Campaign
+Campaign Description (Optional)
+Campaign Name
+Campaign Step
+Campaign Step Name
+CampaignStep
+Can only list down the document types which has been linked to the User document type.
+Candidate
+Candidate Campaign
+Candidate Count
+CandidateCampaign
+CandidateSegment
+Card Break
+Change the starting / current sequence number of an existing series. <br>||||||Warning: Incorrectly updating counters can prevent documents from getting created. 
+Changelog Feed
+Child Doctype
+Chức danh hoặc mô tả ngắn gọn. VD: "Senior Software Engineer at ABC Corp"
+Clear Logs After (days)
+Client Id
+Client script
+Code Challenge
+Code challenge method
+Collapsible Depends On (JS)
+Column Field
+Comm10E
+Comment limit
+Comment limit per hour
+Commercial Rounding
+Committed
+Completed By Role
+Completed By User
+Compressed
+Condition JSON
+Condition description
+Config
+Configuration
+Configure how amended documents will be named.<br>||||||Default behaviour is to follow an amend counter which adds a number to the end of the original name indicating the amended version. <br>||||||Default Naming will make the amended document to behave same as new documents.
+Configure various aspects of how document naming works like naming series, current counter.
+Connected App
+Connected User
+Connections
+Constraints
+Controls whether new users can sign up using this Social Login Key. If unset, Website Settings is respected.
+Create and send emails to a specific group of subscribers periodically.
+Created At
+Criteria
+Currency list stores the currency value, its symbol and fraction unit
+Current Job ID
+Current Step Order
+Current Value
+Custom Block Name
+Custom Blocks
+Custom Document Types (Select Permission)
+Custom Footer
+Custom Group Search
+Custom HTML Block
+Custom Label
+Cyan
+Các tiêu chí dưới dạng cấu trúc để AI có thể sử dụng để tự động thêm ứng viên. VD: {"skills": ["java", "spring"], "experienceYears": ">5"}
+DELETE
+DLE
+DOCUMENT_UPLOADED
+DOWNLOAD_TRIGGERED
+DYNAMIC
+Dark
+Data Import Log
+Database
+Database Processes
+Database Storage Usage By Tables
+Database Version
+Debug Log
+Default Amendment Naming
+Default App
+Default Email Template
+Default Naming
+Default Template For Field
+Default User Role
+Default User Type
+Default View
+Default Workspace
+Default display currency
+Delay In Day
+Deletion Steps 
+Deny
+Dependencies
+Description to inform the user about any action that is going to be performed
+Desk Settings
+Desk Theme
+Desk User
+Directory Server
+Disable Automatic Recency Filters
+Disable Change Log Notification
+Disable Comment Count
+Disable Document Sharing
+Disable Likes
+Disable System Update Notification
+Disable Username/Password Login
+Disable signups
+Disclaimer: These indexes are suggested based on data and queries performed during this recording. These suggestions may or may not help.
+Discussion Reply
+Discussion Topic
+Display Depends On (JS)
+Do Not Create New User 
+Do not create new user if user with email does not exist in the system
+DocType Layout
+DocType Layout Field
+DocType State
+Document Linking
+Document Naming Settings
+Document Share Key
+Document Share Key Expiry (in Days)
+Document Types (Select Permissions Only)
+Document Types and Permissions
+Domain Name
+Don't encode HTML tags like &lt;script&gt; or just characters like &lt; or &gt;, as they could be intentionally used in this field
+Dropbox Refresh Token
+Dropdown Items
+Dynamic
+Dữ liệu có cấu trúc do AI bóc tách từ CV, bao gồm lịch sử công việc, học vấn.
+EMAIL_BOUNCED
+EMAIL_CLICKED
+EMAIL_DELIVERED
+EMAIL_OPENED
+EMAIL_REPLIED
+EMAIL_SENT
+EMAIL_UNSUBSCRIBED
+ENGAGED
+EXECUTED
+Element Selector
+Email Opt Out
+Email Retry Limit
+Email Sent At
+Email Threads on Assigned Document
+EmailLog
+Emails
+Enable Email Notification
+Enable Forecasting
+Enable Google indexing
+Enable Prepared Report
+Enable Push Notification Relay
+Enable Rate Limit
+Enable email notification for any comment or likes received on your Blog Post.
+Enable if on click|||opens modal.
+Enable in-app website tracking
+Enables Calendar and Gantt views.
+Enabling this will register your site on a central relay server to send push notifications for all installed apps through Firebase Cloud Messaging. This server only stores user tokens and error logs, and no messages are saved.
+Enabling this will register your site on a central relay server to send push notifications for all installed apps through Firebase Cloud Messaging. This server only stores user tokens and error logs, and no messages are saved. 
+Enabling this will submit documents in background
+Encrypt Backups
+Ended At
+Endpoints
+Enqueued By
+Enrolled At
+Enum|||Trạng thái của ứng viên trong vivu. Các giá trị: NEW, SOURCED, NURTURING, ENGAGED, ARCHIVED.||||||
+Errors
+Event Frequency
+Event Reminders
+Exact Copies
+Example: Setting this to 24:00 will log out a user if they are not active for 24:00 hours.
+Executed At
+Executive
+Expires On
+Export the data without any header notes and column descriptions
+Export without main header
+Expression
+Expression (old style)
+Extra Parameters
+FAILED
+FORM_SUBMITTED
+Failed Emails
+Failed Job Count
+Failed Jobs
+Failed Logins (Last 30 days)
+Failing Scheduled Jobs (last 7 days)
+Failure Rate
+Fallback
+Favicon
+Fetch on Save if Empty
+File Storage
+Filtered By
+Finished At
+First Day of the Week
+Folder Name
+Folio
+Footer "Powered By"
+Footer Based On
+Footer Content
+Footer Details
+Footer Image
+Footer Script
+For Links, enter the DocType as range.|||For Select, enter list of Options, each on a new line.
+For multiple addresses, enter the address on different line. e.g. test@test.com ⏎ test1@test.com
+Force Re-route to Default View
+Force Web Capture Mode for Uploads
+Form
+Form Builder
+Form Dict
+Form Script
+Form Tour
+Form Tour Step
+Frappe Support
+GET
+GNU Affero General Public License
+GNU General Public License
+Get a preview of generated names with a series.
+Get notified when an email is received on any of the documents assigned to you.
+Go to this URL after completing the form
+Google Analytics anonymise IP
+Google Drive Picker
+Google Drive Picker Enabled
+Google Meet Link
+Gray
+Green
+Grid Page Length
+Group By Field
+Group Object Class
+HEAD
+Handled Emails
+Has Next Condition
+Header Script
+Header, Robots
+Headline
+Help: To link to another record in the system, use "/app/note/[Note Name]" as the Link URL. (don't use "http://")
+Helpful
+Helvetica Neue
+Hidden Fields
+Hide Buttons
+Hide Descendants
+Hide Previous, Next and Close button on highlight dialog.
+Hide Sidebar, Menu, and Comments
+Hide descendant records of <b>For Value</b>.
+Hide footer signup
+Hành động hệ thống đã thực hiện dẫn đến tương tác này
+ID của Recruiter (người dùng) sở hữu hoặc quản lý phân khúc này.
+IDs must contain only alphanumeric characters, not contain spaces, and should be unique.
+IMAP Details
+IMAP Folder
+INTERVIEW_CONFIRMED
+INTERVIEW_RESCHEDULED
+If checked, negative numeric values of Currency, Quantity or Count would be shown as positive
+If enabled, all responses on the web form will be submitted anonymously
+If left empty, the default workspace will be the last visited workspace
+If set, only user with these roles can access this chart. If not set, DocType or Report permissions will be used.
+If the condition is satisfied user will be rewarded with the points. eg. doc.status == 'Closed'|||
+If unchecked, the value will always be re-fetched on save.
+Image Height
+Image Width
+Impersonate
+In List Filter
+Include Name Field
+Incoming (POP/IMAP) Settings
+Incoming Emails (Last 7 days)
+Incoming Server
+Incoming Settings
+Indexing authorization code
+Indexing refresh token
+Indicator Color
+Instructions
+Inter
+Interaction
+Interaction Type
+Intro Video URL
+Introspection URI
+Is Calendar and Gantt
+Is Custom
+Is Dynamic URL?
+Is Hidden
+Is Query Report
+Is Remote Request?
+Is System Generated
+Is Table Field
+Is Virtual
+It will make deal's "Expected Closure Date" mandatory to get accurate forecasting insights
+JS Message
+Job ID
+Job Id
+Job Info
+Job Name
+Job Status
+Kanban Columns
+Kanban Fields
+Keycloak
+LDAP Auth
+LDAP Custom Settings
+LDAP Group Member attribute
+LDAP Search and Paths
+LDAP Server Settings
+LDAP search path for Groups
+LDAP search path for Users
+Last 10 active users
+Last Heartbeat
+Last Interaction
+Last Reset Password Key Generated On
+Ledger
+Left Bottom
+Left Center
+Legal
+License Type
+Light
+Light Blue
+Like limit
+Like limit per hour
+Link CV
+Link Count
+Link Details
+Link Field Results Limit
+Link Filters
+Link Type
+Link that is the website home page. Standard Links (home, login, products, blog, about, contact)
+List / Search Settings
+List Columns
+List setting message
+Liên kết mà ứng viên đã nhấp vào (nếu có)
+Load Default Columns
+Log DocType
+Log Index
+Log out
+Login Methods
+Login Page
+Login required
+Login with email link
+Login with email link expiry (in minutes)
+Logo
+Logs To Clear
+Logs to Clear
+Loại hành vi của ứng viên được hệ thống ghi nhận
+Loại phân khúc: DYNAMIC (AI tự động cập nhật), MANUAL (người dùng tự quản lý).
+MANUAL
+MANUAL_CALL
+MANUAL_TASK
+MBW Mira
+MIT License
+Major
+Make Attachment Public (by default)
+Make Attachments Public by Default
+Make sure to configure a Social Login Key before disabling to prevent lockout
+Mandatory Depends On (JS)
+Map
+Margin Bottom
+Margin Left
+Margin Right
+Margin Top
+MariaDB Variables
+Marketing Campaign
+Max File Size (MB)
+Max Height
+Max attachment size
+Max auto email report per user
+Maximum points allowed after multiplying points with the multiplier value|||(Note: For no limit leave this field empty or set 0)
+Meets Condition?
+Memory Usage
+Message Type
+Message to be displayed on successful completion
+Messages
+Meta
+Meta description
+Meta image
+Meta title
+Mid Center
+Minor
+Mira Notification
+Mira Settings
+Mira View Settings
+Modal Trigger
+Module (for export)
+Module HTML
+Module Profile
+Module Profile Name
+Move to next step when clicked inside highlighted area.
+Mozilla doesn't support :has() so you can pass parent selector here as workaround
+Must be enclosed in '()' and include '{0}', which is a placeholder for the user/login name. i.e. (&(objectclass=user)(uid={0}))
+My Profile
+My Settings
+Mô tả chi tiết về tiêu chí, mục đích của phân khúc này.
+Mảng các kỹ năng được chuẩn hóa. VD: ["react", "nodejs", "aws"]
+NEW
+NOTE: This box is due for depreciation. Please re-setup LDAP to work with the newer settings
+NURTURING
+Naming Options:|||<ol><li><b>field:[fieldname]</b> - By Field</li><li><b>autoincrement</b> - Uses Databases' Auto Increment feature</li><li><b>naming_series:</b> - By Naming Series (field called naming_series must be present)</li><li><b>Prompt</b> - Prompt user for a name</li><li><b>[series]</b> - Series by prefix (separated by a dot); for example PRE.#####</li>|||<li><b>format:EXAMPLE-{MM}morewords{fieldname1}-{fieldname2}-{#####}</b> - Replace all braced words (fieldnames, date words (DD, MM, YY), series) with their value. Outside braces, any characters can be used.</li></ol>
+Naming Options:|||<ol><li><b>field:[fieldname]</b> - By Field</li><li><b>naming_series:</b> - By Naming Series (field called naming_series must be present)</li><li><b>Prompt</b> - Prompt user for a name</li><li><b>[series]</b> - Series by prefix (separated by a dot); for example PRE.#####</li>|||<li><b>format:EXAMPLE-{MM}morewords{fieldname1}-{fieldname2}-{#####}</b> - Replace all braced words (fieldnames, date words (DD, MM, YY), series) with their value. Outside braces, any characters can be used.</li></ol>
+Naming Rule
+Navigation Settings
+Network Printer Settings
+New Document Form
+New Users (Last 30 days)
+New users will have to be manually registered by system managers.
+Newsletter Attachment
+Next Action At
+Next Execution
+Next Form Tour
+Next Step Condition
+Next on Click
+Nguồn gốc của hồ sơ. VD: "ATS_2024", "LinkedIn_Sourcing", "Event_TechDay"
+Ngày và giờ của lần tương tác cuối cùng (gửi email, mở email, v.v.).
+Normalized Copies
+Normalized Query
+Not Helpful
+Notification Text
+Notification Type Doc
+Notification Type Doctype
+Number Card Name
+Number of Queries
+Number of days after which the document Web View link shared on email will be expired
+Number of keys
+Number of onsite backups
+OAuth
+OAuth Client Role
+OAuth Scope
+OPTIONS
+Occurrences
+Offset X
+Offset Y
+Oldest Unscheduled Job
+On Hold
+On Payment Authorization
+On checking this option, URL will be treated like a jinja template string
+Onboard
+Onboarding Status
+Only change this if you want to use other S3 compatible object storage backends.
+Only for
+OpenID Configuration
+OpenLDAP
+Orange
+Order By
+Outgoing (SMTP) Settings
+Outgoing Emails (Last 7 days)
+Outgoing Server
+Outgoing Settings
+Owner ID
+PAGE_VISITED
+PATCH
+PAUSED
+PDF Generator
+PDF Page Height (in mm)
+PDF Page Width (in mm)
+PENDING_MANUAL
+PID
+POST
+PUT
+Package
+Package Import
+Package Name
+Package Release
+Page Break
+Page Number
+Page Route
+Page Title
+Page to show on the website|||
+Parent DocType
+Parent Document Type
+Parent Element Selector
+Parent Field
+Parent Page
+Partial
+Partially Sent
+Pass
+Payload Count
+Peak Memory Usage
+Pending Emails
+Pending Jobs
+Permission Inspector
+Permission Query
+Permission Type
+Permitted Roles
+Personal Data Deletion Step
+Pink
+Pinned
+Placeholder
+Plain Text
+Please select the LDAP Directory being used
+Polling
+Popover Element
+Popover or Modal Description
+Posting Timestamp
+Prepared Report Analytics
+Preview Image
+Preview of generated names
+Print Format Builder Beta
+Print Format Field Template
+Print Heading
+Private Files (MB)
+Profile Data
+Protect Attached Files
+Provide a list of allowed file extensions for file uploads. Each line should contain one allowed file type. If unset, all file extensions are allowed. Example: <br>CSV<br>JPG<br>PNG
+Public Files (MB)
+Publish as a web page
+Publishing Dates
+Purple
+Push Notification Settings
+Python
+Query Parameters
+Queue
+Queue Status
+Queue Type(s)
+Queue in Background (BETA)
+Queue(s)
+Queued At
+Queued By
+Queues
+Quick List Filter
+Quick Lists
+RQ Job
+RQ Worker
+Random
+Rate Limiting
+Rate Limits
+Rate limit for email link login
+Read Only Depends On (JS)
+Readme
+Realtime (SocketIO)
+Recorder Query
+Recorder Suggested Index
+Red
+Redirect HTTP Status
+Redirect URI
+Redirect to the selected app after login
+Redirect to this URL after successful confirmation.
+Redirects
+Reference Doc
+Reference Document Name
+Relay Settings
+Release Notes
+Remind At
+Reminder
+Repeat Header and Footer
+Repeat on Days
+Report Ref DocType
+Request Body
+Request Description
+Request Headers
+Request ID
+Request Limit
+Request Method
+Request Timeout
+Requires any valid fdn path. i.e. ou=groups,dc=example,dc=com
+Requires any valid fdn path. i.e. ou=users,dc=example,dc=com
+Reset Password Link Expiry Duration
+Reset Password Template
+Response 
+Restore Defaults
+Result
+Revocation URI
+Right Bottom
+Right Center
+Roles & Permissions
+Rounding Method
+Route Name
+Route: Example "/app"
+Row Format
+Row Indexes
+Rows
+SCHEDULED
+SEND_EMAIL
+SEND_SMS
+SKIPPED
+SMS_DELIVERED
+SMS_REPLIED
+SMS_SENT
+SOURCED
+SQL
+SQL Explain
+SQL Output
+SQL Queries
+Save on Completion
+Schedule
+Schedule sending at a later time
+Scheduled Against
+Scheduled At
+Scheduled Sending
+Scheduler
+Scheduler Status
+Scope
+Scripting
+Scripting / Style
+Scripts
+Search Bar
+Section ID
+Segment
+Select Document
+Select List View
+Select Page
+Select Report
+Select Workspace
+Send Email At
+Send Email On State
+Send Email To Creator
+Send Web View Link
+Send email when document transitions to the state.
+Sender Email Field
+Sender Name
+Sender Name Field
+Sent Folder Name
+Sequence Id
+Session Expiry (idle timeout)
+Set Naming Series options on your transactions.
+Set by user
+Set only once
+Set size in MB
+Set the filters here. For example:|||<pre class="small text-muted"><code>|||[{|||	fieldname: "company",|||	label: __("Company"),|||	fieldtype: "Link",|||	options: "Company",|||	default: frappe.defaults.get_user_default("Company"),|||	reqd: 1|||},|||{|||	fieldname: "account",|||	label: __("Account"),|||	fieldtype: "Link",|||	options: "Account",|||	reqd: 1|||}]|||</code></pre>
+Set the path to a whitelisted function that will return the data for the number card in the format:||||||<pre class="small text-muted"><code>|||{|||	"value": value,|||	"fieldtype": "Currency",|||	"route_options": {"from_date": "2023-05-23"},|||	"route": ["query-report", "Permitted Documents For User"]|||}</code></pre>
+Settings to control blog categories and interactions like comments and likes
+Setup Series for transactions
+Show "Call to Action" in Blog
+Show Absolute Values
+Show Currency Symbol on Right Side
+Show First Document Tour
+Show Labels
+Show Language Picker
+Show List
+Show Only Failed Logs
+Show Processlist
+Show Title in Link Fields
+Show account deletion link in My Account page
+Show footer on login
+Show link to document
+Show on Timeline
+Sidebar
+Sign Up and Confirmation
+Sign ups
+Size (MB)
+Skills
+Skipped
+SocketIO Ping Check
+SocketIO Transport Mode
+Some mailboxes require a different Sent Folder Name e.g. "INBOX.Sent"
+Sort Options
+Source Action
+Specify a custom timeout, default timeout is 1500 seconds
+Specify the domains or origins that are permitted to embed this form. Enter one domain per line (e.g., https://example.com). If no domains are specified, the form can only be embedded on the same origin.
+Splash Image
+Stack Trace
+Started At
+Statistics
+Step Order
+Storage Usage (MB)
+Storage Usage By Table
+Store Attached PDF Document
+Stores the datetime when the last reset password key was generated.
+Strip EXIF tags from uploaded images
+Submission Queue
+Submit button label
+Submit on Creation
+Success URI
+Success message
+Success title
+Successful Job Count
+Suggested Indexes
+Sync events from Google as public
+System Health Report
+System Health Report Errors
+System Health Report Failing Jobs
+System Health Report Queue
+System Health Report Tables
+System Health Report Workers
+System Notifications
+Số lượng ứng viên hiện có trong phân khúc (dùng để hiển thị, được cập nhật định kỳ).
+Số điện thoại liên lạc. VD: "0912345678"
+TEST_COMPLETED
+TEST_STARTED
+Tab Break
+Table Fieldname
+Tabloid
+TalentSegment
+Target Segment
+Team Members Subtitle
+Telemetry
+Template File
+Test Job ID
+Tham chiếu đến order trong CampaignStep để xác định bước hiện tại.
+The Client ID obtained from the Google Cloud Console under <a href="https://console.cloud.google.com/apis/credentials">|||"APIs &amp; Services" &gt; "Credentials"|||</a>
+The application name will be used in the Login page.
+The browser API key obtained from the Google Cloud Console under <a href="https://console.cloud.google.com/apis/credentials">|||"APIs &amp; Services" &gt; "Credentials"|||</a>
+The document type selected is a child table, so the parent document type is required.
+The next tour will start from where the user left off.
+The number of seconds until the request expires
+The project number obtained from Google Cloud Console under <a href="https://console.cloud.google.com/iam-admin/settings">|||"IAM &amp; Admin" &gt; "Settings"|||</a>
+These announcements will appear inside a dismissible alert below the Navbar.
+These settings are required if 'Custom' LDAP Directory is used
+This field will appear only if the fieldname defined here has value OR the rules are true (examples):|||myfield|||eval:doc.myfield=='My Value'|||eval:doc.age&gt;18
+Thông tin bổ sung hoặc nội dung liên quan
+Thời điểm dự kiến cho hành động tiếp theo.
+Thời điểm ứng viên được thêm vào chiến dịch.
+Time Taken
+Time Window (Seconds)
+Time in Queries
+Timed Out
+Timeline
+Timeout
+Timeout (In Seconds)
+Tiêu đề email
+To add dynamic subject, use jinja tags like||||||<div><pre><code>New {{ doc.doctype }} #{{ doc.name }}</code></pre></div>
+To add dynamic subject, use jinja tags like||||||<div><pre><code>{{ doc.name }} Delivered</code></pre></div>
+To add dynamic values from the document, use jinja tags like||||||<div>|||<pre><code>{ "id": "{{ doc.name }}" }</code>|||</pre>|||</div>
+To begin the date range at the start of the chosen period. For example, if 'Year' is selected as the period, the report will start from January 1st of the current year.
+To print output use <code>print(text)</code>
+To use Google Indexing, enable <a href="/app/google-settings">Google Settings</a>.
+Toggle Full Width
+Toggle Theme
+Token Cache
+Token Type
+Token URI
+Top Center
+Top Errors
+Top Left
+Top Right
+Total Background Workers
+Total Errors (last 1 day)
+Total Outgoing Emails
+Total Recipients
+Total Users
+Total Views
+Total Working Time
+Trace ID
+Track Steps
+Track if your email has been opened by the recipient.|||<br>|||Note: If you're sending to multiple recipients, even if 1 recipient reads the email, it'll be considered "Opened"
+Translate Link Fields
+Try a Naming Series
+Tên hiển thị của phân khúc. VD: "Senior Java Developers (HN)", "Product Designers (Remote)"
+Tên đầy đủ của ứng viên. VD: "Nguyễn Văn An"
+UI Tour
+URIs for receiving authorization code once the user allows access, as well as failure responses. Typically a REST endpoint exposed by the Client App.|||<br>e.g. http://hostname/api/method/frappe.integrations.oauth2_logins.login_via_facebook
+URL (if any)
+Unhandled Emails
+Update Amendment Naming
+Update Series Counter
+Updates
+Use First Day of Period
+Use HTML
+Use Number Format from Currency
+Use STARTTLS
+Use different Email ID
+Use this, for example, if all sent emails should also be send to an archive.
+Used OAuth
+User Details
+User Document Type
+User Group
+User Group Member
+User Group Members
+User Id Field
+User Role
+User Select Document Type
+User Type Module
+Userinfo URI
+Users are only able to delete attached files if the document is either in draft or if the document is canceled and they are also able to delete the document.
+Utilization
+Utilization %
+View
+View Switcher
+Virtual
+Visibility
+Visitor ID
+Warning: Updating counter may lead to document name conflicts if not done properly
+Web Form List Column
+Webhook Request Log
+Website Search Field
+Website Theme image link
+Websocket
+Welcome URL
+WhatsApp
+When sending document using email, store the PDF on Communication. Warning: This can increase your storage usage.
+When uploading files, force the use of the web-based image capture. If this is unchecked, the default behavior is to use the mobile native camera when use from a mobile is detected.
+Will run scheduled jobs only once a day for inactive sites. Set it to 0 to avoid automatically disabling the scheduler.
+Worker Information
+Worker Name
+Workflow Action Permitted Role
+Workflow Builder
+Workflow Builder ID
+Workflow Data
+Workspace
+Workspace Chart
+Workspace Custom Block
+Workspace Link
+Workspace Manager
+Workspace Number Card
+Workspace Quick List
+Workspace Shortcut
+Workspaces
+Yellow
+You can set a high value here if multiple users will be logging in from the same network.
+amend
+cProfile Output
+cancel
+canceled
+create
+cyan
+default
+deferred
+delete
+export
+failed
+finished
+gray
+grey
+group_by
+import
+kanban
+light-blue
+long
+nonce
+notified
+pink
+plain
+print-format-builder-beta
+processlist
+queued
+read
+report
+s256
+scheduled
+select
+short
+started
+string value, i.e. group
+string value, i.e. member
+string value, i.e. {0} or uid={0},ou=users,dc=example,dc=com
+submit
+version_table
+via Google Meet
+when clicked on element it will focus popover if present.
+wkhtmltopdf
+write
+Đoạn văn bản tóm tắt điểm mạnh, yếu, tiềm năng do GenAI tạo ra.
+Đường dẫn đến file CV gốc (PDF, DOCX) trên cloud storage (S3, GCS).
+Đường dẫn đến ảnh đại diện (nếu có). VD: "https://.../avatar.jpg"
+Địa chỉ email chính, dùng để liên lạc. Phải là duy nhất. VD: "nguyen.van.an@email.com"

@@ -3,7 +3,7 @@ import { createResource } from 'frappe-ui'
 export default function translationPlugin(app) {
   app.config.globalProperties.__ = translate
   window.__ = translate
-  //if (!window.translatedMessages) fetchTranslations()
+  if (!window.translatedMessages) fetchTranslations()
 }
 
 function format(message, replace) {
@@ -37,7 +37,7 @@ function translate(message, replace, context = null) {
 
 function fetchTranslations(lang) {
   createResource({
-    url: 'crm.api.get_translations',
+    url: 'mbw_mira.api.get_translations',
     cache: 'translations',
     auto: true,
     transform: (data) => {

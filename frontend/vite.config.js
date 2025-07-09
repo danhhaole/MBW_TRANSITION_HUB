@@ -52,17 +52,6 @@ export default defineConfig({
 			'@': path.resolve(__dirname, 'src'),
 		},
 	},
-	css: {
-		preprocessorOptions: {
-			scss: {
-				additionalData: `
-          @use "vuetify/settings" with (
-            $color-pack: true
-          );
-        `,
-			},
-		},
-	},
 	optimizeDeps: {
 		include: [
 			'frappe-ui > feather-icons',
@@ -79,18 +68,5 @@ export default defineConfig({
 			mainFields: ['module', 'main'],
 			resolveExtensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json'],
 		},
-	},
-	build: {
-		outDir: '../mbw_mira/public/frontend',
-		emptyOutDir: true,
-		commonjsOptions: {
-			include: [/tailwind.config.js/, /node_modules/],
-		},
-		sourcemap: true,
-		rollupOptions: {
-			output: {
-				format: 'esm',
-			},
-		},
-	},
+	}
 })

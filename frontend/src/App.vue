@@ -1,24 +1,34 @@
 <template>
-  <component :is="layout" >
-    <router-view />
-  </component>
-  
-  <!-- Global Toast Container -->
-  <ToastContainer />
+  <FrappeUIProvider>
+    <Layout v-if="session().isLoggedIn">
+      <router-view />
+    </Layout>
+    <Dialogs />
+  </FrappeUIProvider>
 </template>
 
 <script setup>
-import { useRoute } from 'vue-router'
-import { computed } from 'vue'
+import { Dialogs } from '@/utils/dialogs'
 import { sessionStore as session } from '@/stores/session'
-import PublicLayout from './layouts/PublicLayout.vue'
-import PrivateLayout from './layouts/PrivateLayout.vue'
-import ToastContainer from '@/components/shared/ToastContainer.vue'
+import { FrappeUIProvider, setConfig } from 'frappe-ui'
+import { computed, defineAsyncComponent, onMounted } from 'vue'
 
-const route = useRoute()
-
-const layout = computed(() => {
-  const layoutType = route.meta.layout
-  return layoutType === 'private' && session().isLoggedIn ? PrivateLayout : PublicLayout
+const MobileLayout = defineAsyncComponent(
+  () => import('./components/Layouts/MobileLayout.vue'),
+)
+const DesktopLayout = defineAsyncComponent(
+  () => import('./components/Layouts/DesktopLayout.vue'),
+)
+const Layout = computed(() => {
+  
+  if (window.innerWidth < 640) {
+    return MobileLayout
+  } else {
+    return DesktopLayout
+  }
 })
+
+
+setConfig('systemTimezone', window.timezone?.system || null)
+setConfig('localTimezone', window.timezone?.user || null)
 </script>
