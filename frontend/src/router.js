@@ -4,6 +4,11 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { userResource } from '@/stores/user'
 import { sessionStore } from '@/stores/session'
 
+// Talent Segment
+import TalentSegments from './pages/TalentSegmentManagement.vue'
+import TalentSegmentDetail from './pages/TalentSegmentDetail.vue'
+import TalentSegmentDetailView from './pages/TalentSegmentDetailView.vue'
+
 const routes = [
   {
     path: '/',
@@ -38,6 +43,21 @@ const routes = [
     path: '/:invalidpath',
     name: 'Invalid Page',
     component: () => import('@/pages/InvalidPage.vue'),
+  },
+  {
+    path: '/talent-segments',
+    component: TalentSegments,
+    name: 'TalentSegments'
+  },
+  {
+    path: '/talent-segments/:id',
+    component: TalentSegmentDetail,
+    name: 'TalentSegmentDetail'
+  },
+  {
+    path: '/talent-segments/:id/detail',
+    component: TalentSegmentDetailView,
+    name: 'TalentSegmentDetailView'
   },
 ]
 

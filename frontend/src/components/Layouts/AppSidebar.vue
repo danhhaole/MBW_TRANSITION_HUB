@@ -158,7 +158,7 @@ const links = [
   {
     label: "TalentSegment",
     icon: DealsIcon,
-    to: 'TalentSegment',
+    to: 'TalentSegments',
   },
   {
     label: "Candidate",
