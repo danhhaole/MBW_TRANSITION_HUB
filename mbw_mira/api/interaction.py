@@ -31,7 +31,16 @@ def track(candidate_id=None, action=None, type=None, url=None):
     if frappe.db.exists("Candidate", candidate_id):
         frappe.db.set_value("Candidate", candidate_id, "last_interaction", now_datetime())
         frappe.db.commit()
-        
+
+    frappe.publish_realtime(
+        event="interaction_created",
+        message={
+            "candidate_id": candidate_id,
+            "interaction_type": type,
+            "action": action
+        },
+        user=frappe.session.user
+    )
     return {"status": "ok"}
 
 @frappe.whitelist(allow_guest=True)
@@ -119,7 +128,16 @@ def unsubscribe():
             }
         )
         frappe.db.commit()
-
+        
+    frappe.publish_realtime(
+        event="interaction_created",
+        message={
+            "candidate_id": candidate_id,
+            "interaction_type": "EMAIL_UNSUBSCRIBED",
+            "action": action
+        },
+        user=frappe.session.user
+    )
     # 3. Show confirmation page (Website context)
     html = """
     <html>

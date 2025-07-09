@@ -18,13 +18,13 @@ def handle_candidate_segment():
 
         # Mỗi campaign sẽ có thông tin segment,
         # lấy danh sách candidate từ CandidateSegment
-        candidate_ids = candidate_segment_by_campaign(campaign.target_segment)
+        #candidate_ids = candidate_segment_by_campaign(campaign.target_segment)
 
         #Lấy danh sách Candidate từ AI 
-        # candidate_ids = None
-        # candidate_segments = find_candidates_fuzzy(campaign.target_segment)
-        # if candidate_segments:
-        #     candidate_ids = [s.get("candidate_name") for s in candidate_segments]
+        candidate_ids = []
+        candidate_segments = find_candidates_fuzzy(campaign.target_segment)
+        if candidate_segments:
+            candidate_ids = [s.get("candidate_name") for s in candidate_segments]
         
         if not candidate_ids:
             frappe.logger("campaign").info(f"[SKIP] No candidates found for segment {campaign.target_segment}.")
@@ -74,9 +74,11 @@ def insert_candidate_segment(**kwargs) -> list[str]:
     print("=======================insert_candidate_segment============================= ",segment_id)
     if not segment_id or not candidate_ids:
         frappe.throw(_("Both 'segment' and 'candidates' are required."))
+        return []
 
     if not isinstance(candidate_ids, (list, tuple)):
         frappe.throw(_("Parameter 'candidates' must be a list."))
+        return []
 
     added_by = added_by or frappe.session.user
     added_at = now_datetime()
@@ -132,6 +134,7 @@ def insert_candidate_campaign(**kwargs):
 
     if not campaign_id or not segment:
         frappe.throw(_("Both 'campaign' and 'segment' are required."))
+        return
 
     # lấy danh sách candidate từ segment
     candidate_ids = candidate_segment_by_campaign(segment)
@@ -206,8 +209,6 @@ def insert_candidate_campaign(**kwargs):
         inserted_count += 1
 
     frappe.db.commit()
-
-    frappe.msgprint(_("Inserted {0} candidates into Campaign {1}").format(inserted_count, campaign_id))
 
 
 
