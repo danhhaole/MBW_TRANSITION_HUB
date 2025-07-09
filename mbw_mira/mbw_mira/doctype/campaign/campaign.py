@@ -7,3 +7,7 @@ from frappe.model.document import Document
 
 class Campaign(Document):
 	pass
+
+	def on_update(self):
+		"""Hook kiểm tra khi có 1 campain
+		"""

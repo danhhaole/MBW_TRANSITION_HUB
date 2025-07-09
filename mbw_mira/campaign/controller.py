@@ -52,15 +52,12 @@ def handle_step(candidate_campaign_id: str):
 # Process campaign tạo candidate segment
 def handle_campaign():
     from mbw_mira.services import candidate_service
-
-    frappe.logger("campaign").info(f"handle_campaign")
     candidate_service.handle_candidate_segment()
 
 
 # Process CandidateCampaign xử lý logic
 def handle_candidate_campaign():
     from mbw_mira.services import candidate_service
-
     candidate_service.handle_candidate_campaign()
 
 
