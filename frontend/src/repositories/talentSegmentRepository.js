@@ -11,7 +11,7 @@ export const getTalentSegments = async (filters = {}) => {
     
     const params = {
       doctype: 'TalentSegment',
-      fields: ['name', 'title', 'description', 'type', 'candidate_count', 'owner_id', 'creation', 'modified'],
+      fields: ['name', 'title', 'description', 'type', 'candidate_count', 'owner_id', 'creation', 'modified', "criteria"],
       order_by: 'modified desc',
       limit_page_length: 50
     }
@@ -142,11 +142,10 @@ export const searchTalentSegments = async (searchText) => {
     
     const result = await resource.fetch({
       doctype: 'TalentSegment',
-      fields: ['name', 'title', 'description', 'type', 'candidate_count', 'owner_id', 'creation', 'modified'],
+      fields: ['name', 'criteria', 'title', 'description', 'type', 'candidate_count', 'owner_id', 'creation', 'modified'],
       filters: [
         ['title', 'like', `%${searchText}%`],
-        'or',
-        ['description', 'like', `%${searchText}%`]
+        // ['description', 'like', `%${searchText}%`]
       ],
       order_by: 'modified desc',
       limit_page_length: 50
@@ -196,7 +195,7 @@ export const getTalentSegmentCandidates = async (segmentId, filters = {}) => {
       
       const candidates = await candidateResource.fetch({
         doctype: 'Candidate',
-        fields: ['name', 'first_name', 'last_name', 'email', 'phone', 'skills', 'status'],
+        fields: ['name', 'full_name', 'email', 'phone', 'skills', 'status'],
         filters: [['name', 'in', candidateIds]]
       })
       
