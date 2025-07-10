@@ -1,5 +1,5 @@
 @import './assets/Inter/inter.css';
-@import "frappe-ui/src/style.css";
+@import 'frappe-ui/src/style.css';
 
 @layer components {
 	.prose-f {
@@ -22,4 +22,45 @@
 			prose-th:p-2
 			prose-th:relative;
 	}
+}
+
+/* Áp dụng toàn cục hoặc qua class như `.smooth-scroll` */
+
+html,
+body,
+* {
+	scrollbar-width: thin;
+	/* Firefox - luôn chiếm chỗ nhưng mảnh */
+	scrollbar-color: transparent transparent;
+	transition: scrollbar-color 0.3s ease-in-out;
+}
+
+/* Chrome/Safari/Edge */
+*::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+*::-webkit-scrollbar-thumb {
+	background-color: transparent;
+	border-radius: 8px;
+	-webkit-transition: background-color 0.3s ease;
+	transition: background-color 0.3s ease;
+}
+
+*::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+/* Hover vào vùng có scrollbar */
+*:hover {
+	scrollbar-color: rgba(120, 120, 120, 0.4) transparent;
+}
+
+*:hover::-webkit-scrollbar-thumb {
+	background-color: rgba(120, 120, 120, 0.4);
+}
+
+*:hover::-webkit-scrollbar-thumb:hover {
+	background-color: rgba(120, 120, 120, 0.6);
 }

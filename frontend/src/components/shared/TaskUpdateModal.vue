@@ -1,35 +1,28 @@
 <template>
-  <v-dialog v-model="dialog" max-width="600" persistent>
-    <v-card rounded="lg">
-      <!-- Header -->
-      <v-card-title class="d-flex align-center justify-space-between pa-6 bg-primary">
-        <h2 class="text-h5 text-white font-weight-bold">
-          Cập nhật: {{ task?.title || 'Tác vụ' }}
-        </h2>
-        <v-btn 
-          icon="mdi-close" 
-          variant="text" 
-          color="white"
-          @click="closeModal"
-        ></v-btn>
-      </v-card-title>
-
-      <!-- Body -->
-      <v-card-text class="pa-6">
+  <Dialog
+    :model-value="dialog"
+    @update:model-value="dialog = $event"
+    :options="{
+      title: `Cập nhật: ${task?.title || 'Tác vụ'}`,
+      size: 'md',
+    }"
+  >
+    <template #body>
+      <div class="p-6">
         <!-- Task Info -->
         <div v-if="task" class="mb-6">
-          <div class="d-flex align-center ga-3 mb-4">
-            <v-avatar size="48" color="primary" variant="tonal">
-              <span class="text-h6 font-weight-bold">
-                {{ task.candidate?.charAt(0)?.toUpperCase() || 'U' }}
-              </span>
-            </v-avatar>
+          <div class="flex items-center space-x-3 mb-4">
+            <Avatar
+              :label="task.candidate?.charAt(0)?.toUpperCase() || 'U'"
+              size="lg"
+              class="bg-blue-100 text-blue-600"
+            />
             <div>
-              <div class="text-h6 font-weight-bold">{{ task.candidate }}</div>
-              <div class="text-subtitle-2 text-medium-emphasis">
+              <div class="text-lg font-semibold text-gray-900">{{ task.candidate }}</div>
+              <div class="text-sm text-gray-600">
                 Chiến dịch: {{ task.campaign }}
               </div>
-              <div class="text-caption text-medium-emphasis">
+              <div class="text-xs text-gray-500">
                 Trạng thái hiện tại: {{ getStatusLabel(task.status) }}
               </div>
             </div>
@@ -38,74 +31,76 @@
 
         <!-- Action Selection -->
         <div class="mb-4">
-          <v-label class="text-subtitle-1 font-weight-medium mb-3">
+          <label class="block text-sm font-medium text-gray-700 mb-3">
             Cập nhật trạng thái:
-          </v-label>
-          <div class="d-flex ga-1 flex-wrap gap-2 mb-4">
-            <v-chip
+          </label>
+          <div class="flex flex-wrap gap-2 mb-4">
+            <button
               v-for="action in actionOptions"
               :key="action.value"
-              :color="selectedAction === action.value ? action.color : 'default'"
-              :variant="selectedAction === action.value ? 'flat' : 'outlined'"
-              clickable
+              :class="[
+                'inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200',
+                selectedAction === action.value 
+                  ? getActionSelectedClass(action.color)
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300'
+              ]"
               @click="selectedAction = action.value"
             >
-              <v-icon :icon="action.icon" size="small" class="mr-1" />
+              <svg class="w-4 h-4 mr-1.5" :class="getActionIconClass(action.icon)" fill="currentColor" viewBox="0 0 20 20">
+                <path v-if="action.icon === 'mdi-check-circle'" fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                <path v-else-if="action.icon === 'mdi-calendar-clock'" fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+                <path v-else-if="action.icon === 'mdi-skip-next'" d="M4.555 5.168A1 1 0 003 6v8a1 1 0 001.555.832L10 11.202V14a1 1 0 001.555.832l6-4a1 1 0 000-1.664l-6-4A1 1 0 0010 6v2.798l-5.445-3.63z"/>
+                <path v-else-if="action.icon === 'mdi-alert-circle'" fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+              </svg>
               {{ action.label }}
-            </v-chip>
+            </button>
           </div>
         </div>
 
         <!-- Schedule Date for SCHEDULED status -->
         <div v-if="selectedAction === 'SCHEDULED'" class="mb-4">
-          <v-text-field
+          <FormControl
             v-model="scheduledDate"
-            label="Ngày lên lịch"
             type="datetime-local"
-            variant="outlined"
-            hide-details
+            label="Ngày lên lịch"
             :min="new Date().toISOString().slice(0, 16)"
           />
         </div>
 
         <!-- Notes -->
         <div class="mb-4">
-          <v-textarea
+          <FormControl
             v-model="notes"
+            type="textarea"
             label="Ghi chú chi tiết"
             placeholder="Nhập ghi chú về kết quả thực hiện tác vụ..."
-            rows="3"
-            variant="outlined"
-            hide-details
+            :rows="3"
           />
         </div>
-      </v-card-text>
+      </div>
 
-      <!-- Footer -->
-      <v-card-actions class="pa-6 pt-0">
-        <v-spacer />
-        <v-btn
-          variant="text"
+      <div class="flex justify-end space-x-3 p-6">
+        <Button
+          variant="outline"
           @click="closeModal"
         >
           Hủy
-        </v-btn>
-        <v-btn
-          color="primary"
-          variant="flat"
+        </Button>
+        <Button
           :disabled="!selectedAction || (selectedAction === 'SCHEDULED' && !scheduledDate)"
           :loading="loading"
           @click="updateTask"
         >
           {{ getActionButtonText() }}
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+        </Button>
+      </div>
+    </template>
+  </Dialog>
 </template>
 
 <script setup>
 import { ref, computed, watch } from 'vue'
+import { Dialog, Button, FormControl, Avatar } from 'frappe-ui'
 import moment from 'moment'
 
 const props = defineProps({
@@ -158,6 +153,21 @@ const actionOptions = computed(() => {
 })
 
 // Methods
+const getActionSelectedClass = (color) => {
+  const colorClasses = {
+    success: 'bg-green-100 text-green-800 border border-green-300',
+    info: 'bg-blue-100 text-blue-800 border border-blue-300',
+    warning: 'bg-yellow-100 text-yellow-800 border border-yellow-300',
+    error: 'bg-red-100 text-red-800 border border-red-300'
+  }
+  return colorClasses[color] || 'bg-blue-100 text-blue-800 border border-blue-300'
+}
+
+const getActionIconClass = (icon) => {
+  // Return empty class since we're using SVG paths directly
+  return ''
+}
+
 const closeModal = () => {
   resetForm()
   dialog.value = false
@@ -250,7 +260,11 @@ watch(() => dialog.value, (newVal) => {
 </script>
 
 <style scoped>
-.bg-primary {
-  background-color: rgb(var(--v-theme-primary)) !important;
+.task-modal button {
+  transition: all 0.2s ease-in-out;
+}
+
+.task-modal button:hover {
+  transform: translateY(-1px);
 }
 </style> 

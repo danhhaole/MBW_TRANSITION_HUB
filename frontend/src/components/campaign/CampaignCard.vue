@@ -1,181 +1,178 @@
 <template>
-  <v-card elevation="2" rounded="lg" class="campaign-card">
-    <v-card-text class="pb-0">
-      <div class="d-flex justify-space-between align-start mb-4">
-        <h3 class="text-h6 font-weight-bold">{{ campaign.name }}</h3>
-        <v-chip 
-          :color="campaign.status === 'active' ? 'success' : 'primary'"
-          size="small"
-          variant="flat"
-        >
-          {{ campaign.status === 'active' ? 'Đang chạy' : 'Hoàn thành' }}
-        </v-chip>
-      </div>
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 campaign-card hover:shadow-md transition-all duration-300">
+    <div class="flex justify-between items-start mb-6">
+      <h3 class="text-lg font-bold text-gray-900">{{ campaign.name }}</h3>
+      <span 
+        :class="campaign.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'"
+        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+      >
+        {{ campaign.status === 'active' ? 'Đang chạy' : 'Hoàn thành' }}
+      </span>
+    </div>
 
-      <v-row class="mt-4">
-        <!-- Donut Chart -->
-        <v-col cols="6" class="d-flex flex-column justify-center align-center">
-          <div class="position-relative donut-container">
-            <!-- SVG Donut Chart -->
-            <svg width="120" height="120" viewBox="0 0 120 120" class="donut-chart">
-              <!-- Outer glow/shadow -->
-              <defs>
-                <filter id="glow">
-                  <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-                  <feMerge> 
-                    <feMergeNode in="coloredBlur"/>
-                    <feMergeNode in="SourceGraphic"/>
-                  </feMerge>
-                </filter>
-                <linearGradient id="openRateGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
-                  <stop offset="100%" style="stop-color:#60a5fa;stop-opacity:1" />
-                </linearGradient>
-                <linearGradient id="clickRateGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
-                  <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
-                </linearGradient>
-              </defs>
-              
-              <!-- Background circle -->
-              <circle
-                cx="60"
-                cy="60"
-                r="45"
-                fill="transparent"
-                stroke="#f3f4f6"
-                stroke-width="8"
-              />
-              
-              <!-- Open rate circle -->
-              <circle
-                cx="60"
-                cy="60"
-                r="45"
-                fill="transparent"
-                stroke="url(#openRateGradient)"
-                stroke-width="8"
-                :stroke-dasharray="circumference"
-                :stroke-dashoffset="openRateOffset"
-                transform="rotate(-90 60 60)"
-                stroke-linecap="round"
-                class="progress-circle open-rate-circle"
-                filter="url(#glow)"
-              />
-              
-              <!-- Inner background circle -->
-              <circle
-                cx="60"
-                cy="60"
-                r="30"
-                fill="transparent"
-                stroke="#f3f4f6"
-                stroke-width="6"
-              />
-              
-              <!-- Click rate circle -->
-              <circle
-                cx="60"
-                cy="60"
-                r="30"
-                fill="transparent"
-                stroke="url(#clickRateGradient)"
-                stroke-width="6"
-                :stroke-dasharray="innerCircumference"
-                :stroke-dashoffset="clickRateOffset"
-                transform="rotate(-90 60 60)"
-                stroke-linecap="round"
-                class="progress-circle click-rate-circle"
-                filter="url(#glow)"
-              />
-            </svg>
+    <div class="grid grid-cols-2 gap-6 mt-4">
+      <!-- Donut Chart -->
+      <div class="flex flex-col justify-center items-center">
+        <div class="relative donut-container">
+          <!-- SVG Donut Chart -->
+          <svg width="120" height="120" viewBox="0 0 120 120" class="donut-chart">
+            <!-- Outer glow/shadow -->
+            <defs>
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                <feMerge> 
+                  <feMergeNode in="coloredBlur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+              <linearGradient id="openRateGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#60a5fa;stop-opacity:1" />
+              </linearGradient>
+              <linearGradient id="clickRateGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+              </linearGradient>
+            </defs>
             
-            <!-- Center content -->
-            <div class="donut-center">
-              <div class="center-number" :class="getNumberSizeClass(campaign.stats.newApplicants)">
-                {{ formatNumber(campaign.stats.newApplicants) }}
-              </div>
-            </div>
+            <!-- Background circle -->
+            <circle
+              cx="60"
+              cy="60"
+              r="45"
+              fill="transparent"
+              stroke="#f3f4f6"
+              stroke-width="8"
+            />
             
-            <!-- Floating icons -->
-            <div class="floating-icon open-icon" v-if="campaign.stats.openRate > 0">
-              <v-icon size="12" color="primary">mdi-email-open</v-icon>
-            </div>
-            <div class="floating-icon click-icon" v-if="campaign.stats.clickRate > 0">
-              <v-icon size="12" color="indigo">mdi-cursor-default-click</v-icon>
+            <!-- Open rate circle -->
+            <circle
+              cx="60"
+              cy="60"
+              r="45"
+              fill="transparent"
+              stroke="url(#openRateGradient)"
+              stroke-width="8"
+              :stroke-dasharray="circumference"
+              :stroke-dashoffset="openRateOffset"
+              transform="rotate(-90 60 60)"
+              stroke-linecap="round"
+              class="progress-circle open-rate-circle"
+              filter="url(#glow)"
+            />
+            
+            <!-- Inner background circle -->
+            <circle
+              cx="60"
+              cy="60"
+              r="30"
+              fill="transparent"
+              stroke="#f3f4f6"
+              stroke-width="6"
+            />
+            
+            <!-- Click rate circle -->
+            <circle
+              cx="60"
+              cy="60"
+              r="30"
+              fill="transparent"
+              stroke="url(#clickRateGradient)"
+              stroke-width="6"
+              :stroke-dasharray="innerCircumference"
+              :stroke-dashoffset="clickRateOffset"
+              transform="rotate(-90 60 60)"
+              stroke-linecap="round"
+              class="progress-circle click-rate-circle"
+              filter="url(#glow)"
+            />
+          </svg>
+          
+          <!-- Center content -->
+          <div class="donut-center">
+            <div class="center-number" :class="getNumberSizeClass(campaign.stats.newApplicants)">
+              {{ formatNumber(campaign.stats.newApplicants) }}
             </div>
           </div>
           
-          <!-- Label below chart -->
-          <div class="chart-label-simple">
-           Số lượng ứng tuyển
+          <!-- Floating icons -->
+          <div class="floating-icon open-icon" v-if="campaign.stats.openRate > 0">
+            <svg class="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+            </svg>
           </div>
-        </v-col>
+          <div class="floating-icon click-icon" v-if="campaign.stats.clickRate > 0">
+            <svg class="w-3 h-3 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path>
+            </svg>
+          </div>
+        </div>
+        
+        <!-- Label below chart -->
+        <div class="chart-label-simple">
+         Số lượng ứng tuyển
+        </div>
+      </div>
 
-        <!-- Stats -->
-        <v-col cols="6">
-          <div class="stats-container">
-            <div class="stat-item mb-3">
-              <div class="stat-header">
-                <v-icon size="16" color="medium-emphasis" class="mr-1">mdi-account-group</v-icon>
-                <span class="text-caption text-medium-emphasis">Ứng viên mục tiêu</span>
-              </div>
-              <div class="stat-value">{{ formatNumber(campaign.stats.candidates || campaign.stats.total || 0) }}</div>
-            </div>
-            
-            <div class="stat-item mb-3">
-              <div class="stat-header">
-                <v-icon size="16" color="primary" class="mr-1">mdi-email-open</v-icon>
-                <span class="text-caption text-medium-emphasis">Tỷ lệ mở</span>
-              </div>
-              <div class="stat-value text-primary">
-                {{ campaign.stats.openRate }}%
-                <v-progress-linear 
-                  :model-value="campaign.stats.openRate"
-                  color="primary"
-                  height="4"
-                  rounded
-                  class="mt-1"
-                  style="opacity: 0.7"
-                />
-              </div>
-            </div>
-            
-            <div class="stat-item">
-              <div class="stat-header">
-                <v-icon size="16" color="indigo" class="mr-1">mdi-cursor-default-click</v-icon>
-                <span class="text-caption text-medium-emphasis">Tỷ lệ nhấp</span>
-              </div>
-              <div class="stat-value text-indigo">
-                {{ campaign.stats.clickRate }}%
-                <v-progress-linear 
-                  :model-value="campaign.stats.clickRate"
-                  color="indigo"
-                  height="4"
-                  rounded
-                  class="mt-1"
-                  style="opacity: 0.7"
-                />
-              </div>
+      <!-- Stats -->
+      <div class="stats-container">
+        <div class="stat-item mb-3">
+          <div class="stat-header">
+            <svg class="w-4 h-4 text-gray-500 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            </svg>
+            <span class="text-xs text-gray-600">Ứng viên mục tiêu</span>
+          </div>
+          <div class="stat-value text-gray-900">{{ formatNumber(campaign.stats.candidates || campaign.stats.total || 0) }}</div>
+        </div>
+        
+        <div class="stat-item mb-3">
+          <div class="stat-header">
+            <svg class="w-4 h-4 text-blue-600 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+            </svg>
+            <span class="text-xs text-gray-600">Tỷ lệ mở</span>
+          </div>
+          <div class="stat-value text-blue-600">
+            {{ campaign.stats.openRate }}%
+            <div class="w-full bg-gray-200 rounded-full h-1 mt-1" style="opacity: 0.7">
+              <div 
+                class="bg-blue-600 h-1 rounded-full transition-all duration-300"
+                :style="{ width: campaign.stats.openRate + '%' }"
+              ></div>
             </div>
           </div>
-        </v-col>
-      </v-row>
-    </v-card-text>
+        </div>
+        
+        <div class="stat-item">
+          <div class="stat-header">
+            <svg class="w-4 h-4 text-indigo-600 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path>
+            </svg>
+            <span class="text-xs text-gray-600">Tỷ lệ nhấp</span>
+          </div>
+          <div class="stat-value text-indigo-600">
+            {{ campaign.stats.clickRate }}%
+            <div class="w-full bg-gray-200 rounded-full h-1 mt-1" style="opacity: 0.7">
+              <div 
+                class="bg-indigo-600 h-1 rounded-full transition-all duration-300"
+                :style="{ width: campaign.stats.clickRate + '%' }"
+              ></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <v-divider class="mx-4"></v-divider>
-    
-    <v-card-actions>
-      <v-btn 
-        variant="text" 
-        color="primary" 
-        block
+    <div class="border-t border-gray-200 mt-6 pt-4">
+      <button 
+        class="w-full text-center text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors duration-200"
         @click="viewDetails"
       >
         Xem chi tiết luồng
-      </v-btn>
-    </v-card-actions>
-  </v-card>
+      </button>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -372,14 +369,6 @@ const viewDetails = () => {
   font-size: 1.125rem;
   font-weight: 600;
   line-height: 1.2;
-}
-
-.text-primary {
-  color: #3b82f6 !important;
-}
-
-.text-indigo {
-  color: #6366f1 !important;
 }
 
 /* Responsive adjustments */

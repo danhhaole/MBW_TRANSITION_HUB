@@ -163,12 +163,12 @@ const links = [
   {
     label: "Candidate",
     icon: ContactsIcon,
-    to: 'Candidate',
+    to: 'CandidateManagement',
   },
   {
     label: "Campaigns",
     icon: OrganizationsIcon,
-    to: 'Campaigns',
+    to: 'CampaignManagement',
   },
   {
     label: "Report",
@@ -179,7 +179,22 @@ const links = [
     label: "Settings",
     icon: TaskIcon,
     to: 'Settings',
+  },
+  { label: "Interactions",
+    icon: PhoneIcon,
+    to: 'InteractionManagement',
+  },
+  {
+    label: "Actions",
+    icon: PinIcon,
+    to: 'ActionManagement',
+  },
+  {
+    label: "Email Logs",
+    icon: Email2Icon,
+    to: 'EmailLogManagement',
   }
+
 ]
 
 const allViews = computed(() => {

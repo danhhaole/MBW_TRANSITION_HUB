@@ -10,6 +10,6 @@
   import LayoutHeader from '@/components/LayoutHeader.vue'
   import { Breadcrumbs } from 'frappe-ui'
   let title = 'Candidate'
-  const breadcrumbs = [{ label: title, route: { name: 'Candidate' } }]
+  const breadcrumbs = [{ label: title, route: { name: 'CandidateManagement' } }]
   </script>
   

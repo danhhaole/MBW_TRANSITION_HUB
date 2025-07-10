@@ -1,179 +1,178 @@
 <template>
-  <v-container fluid class="pa-4">
-    <!-- Debug info -->
-    <div v-if="!loading && campaigns?.length === 0" class="text-center pa-8">
-      <v-alert type="info" text="Không có campaign nào để hiển thị" />
+  <div class="p-6">
+    <!-- No campaigns message -->
+    <div v-if="!loading && campaigns?.length === 0" class="text-center py-12">
+      <div class="mx-auto flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mb-4">
+        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+      </div>
+      <h3 class="text-lg font-medium text-gray-900 mb-2">Không có campaign nào để hiển thị</h3>
+      <p class="text-gray-500">Hãy tạo campaign đầu tiên của bạn</p>
     </div>
     
-    <v-row v-if="!loading && campaigns?.length > 0">
-      <v-col
+    <div v-if="!loading && campaigns?.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <!-- Campaign Cards -->
+      <div
         v-for="campaign in campaigns"
         :key="campaign.name"
-        cols="12"
-        sm="6"
-        md="4"
-        lg="3"
+        class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden campaign-card group hover:shadow-md transition-all duration-300"
       >
-        <v-card class="h-100 campaign-card">
-          <!-- Card Header với background màu -->
-          <div 
-            class="pa-3 d-flex justify-space-between align-center"
-            :class="getHeaderClass(campaign.status)"
+        <!-- Card Header -->
+        <div 
+          class="px-4 py-3 flex justify-between items-center"
+          :class="getHeaderClass(campaign.status)"
+        >
+          <span class="text-sm font-medium" :class="getHeaderTextClass(campaign.status)">
+            {{ campaign.type === 'NURTURING' ? 'Nuôi dưỡng' : 'Thu hút' }}
+          </span>
+          <span
+            :class="getStatusChipClass(campaign.status)"
+            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
           >
-            <span class="font-medium" :class="getHeaderTextClass(campaign.status)">
-              {{ campaign.type === 'NURTURING' ? 'Nuôi dưỡng' : 'Thu hút' }}
-            </span>
-            <v-chip
-              :color="getStatusColor(campaign.displayStatus || campaign.status)"
-              :class="getStatusChipClass(campaign.status)"
-              size="x-small"
-            >
-              {{ getStatusText(campaign.displayStatus || campaign.status) }}
-            </v-chip>
-          </div>
+            {{ getStatusText(campaign.displayStatus || campaign.status) }}
+          </span>
+        </div>
 
-          <!-- Card Content -->
-          <v-card-text class="pa-4">
-            <h3 class="text-h6 font-weight-semibold text-grey-darken-3 mb-2">
-              {{ campaign.campaign_name }}
-            </h3>
-            <p class="text-body-2 text-grey-darken-1 mb-4">
-              {{ campaign.description || 'Tuyển dụng cho vị trí quan trọng trong công ty.' }}
-            </p>
+        <!-- Card Content -->
+        <div class="p-4">
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">
+            {{ campaign.campaign_name }}
+          </h3>
+          <p class="text-sm text-gray-600 mb-4 line-clamp-2">
+            {{ campaign.description || 'Tuyển dụng cho vị trí quan trọng trong công ty.' }}
+          </p>
 
-            <!-- Progress section -->
-            <div class="mb-4">
-              <div class="d-flex justify-space-between align-center mb-2">
-                <span class="text-caption text-grey-darken-1">Tiến độ</span>
-                <span class="text-caption font-medium" :class="getProgressTextClass(campaign)">
-                  {{ getCampaignSteps(campaign) }}
-                </span>
+          <!-- Progress section -->
+          <div class="mb-4">
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-xs text-gray-500">Tiến độ</span>
+              <span class="text-xs font-medium" :class="getProgressTextClass(campaign)">
+                {{ getCampaignSteps(campaign) }}
+              </span>
+            </div>
+            
+            <!-- Progress bar -->
+            <div class="progress-container mb-4">
+              <div 
+                class="progress-bar transition-all duration-300 ease-out"
+                :style="{ width: getCampaignProgress(campaign) + '%' }"
+                :class="getProgressBarClass(campaign)"
+              ></div>
+            </div>
+
+            <!-- Timeline info -->
+            <div class="flex justify-between items-center text-xs mb-4">
+              <div class="flex items-center">
+                <svg class="w-4 h-4 text-gray-400 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                <span class="text-gray-600">{{ campaign.formattedStartDate || 'Chưa xác định' }}</span>
               </div>
               
-              <!-- Progress bar với design giống HTML -->
-              <div class="progress-container mb-4">
-                <div 
-                  class="progress-bar"
-                  :style="{ width: getCampaignProgress(campaign) + '%' }"
-                  :class="getProgressBarClass(campaign)"
-                ></div>
-              </div>
-
-              <!-- Timeline info -->
-              <div class="d-flex justify-space-between align-center text-caption mb-4">
-                <div class="d-flex align-center">
-                  <v-icon size="16" color="grey-lighten-1" class="mr-1">mdi-calendar</v-icon>
-                  <span class="text-grey-darken-1">{{ campaign.formattedStartDate || 'Chưa xác định' }}</span>
+              <!-- Owner avatars -->
+              <div class="flex items-center -space-x-2">
+                <div
+                  v-if="campaign.owner_id"
+                  class="w-6 h-6 rounded-full border-2 border-white flex items-center justify-center text-xs font-medium text-white"
+                  :class="getOwnerColor(campaign.owner_id)"
+                >
+                  {{ getInitials(campaign.owner_id) }}
                 </div>
-                
-                <!-- Owner avatars -->
-                <div class="d-flex" style="margin-left: -8px;">
-                  <v-avatar
-                    v-if="campaign.owner_id"
-                    size="24"
-                    :color="getOwnerColor(campaign.owner_id)"
-                    class="border-2 border-white"
-                    style="margin-left: -8px;"
-                  >
-                    <span class="text-caption font-medium text-white">
-                      {{ getInitials(campaign.owner_id) }}
-                    </span>
-                  </v-avatar>
-                  <v-avatar
-                    v-if="campaign.target_segment"
-                    size="24"
-                    color="purple-lighten-3"
-                    class="border-2 border-white"
-                    style="margin-left: -8px;"
-                  >
-                    <span class="text-caption font-medium text-purple-darken-2">
-                      {{ getInitials(campaign.target_segment) }}
-                    </span>
-                  </v-avatar>
-                  <v-avatar
-                    v-if="getTeamCount(campaign) > 2"
-                    size="24"
-                    color="green-lighten-3"
-                    class="border-2 border-white"
-                    style="margin-left: -8px;"
-                  >
-                    <span class="text-caption font-medium text-green-darken-2">
-                      +{{ getTeamCount(campaign) - 2 }}
-                    </span>
-                  </v-avatar>
+                <div
+                  v-if="campaign.target_segment"
+                  class="w-6 h-6 rounded-full bg-purple-200 border-2 border-white flex items-center justify-center text-xs font-medium text-purple-800"
+                >
+                  {{ getInitials(campaign.target_segment) }}
+                </div>
+                <div
+                  v-if="getTeamCount(campaign) > 2"
+                  class="w-6 h-6 rounded-full bg-green-200 border-2 border-white flex items-center justify-center text-xs font-medium text-green-800"
+                >
+                  +{{ getTeamCount(campaign) - 2 }}
                 </div>
               </div>
             </div>
-          </v-card-text>
-
-          <!-- Card Footer -->
-          <v-divider />
-          <div class="pa-3 bg-grey-lighten-5 d-flex justify-space-between align-center">
-            <v-btn
-              variant="text"
-              size="small"
-              color="grey-darken-1"
-              class="text-caption"
-              @click="$emit('view', campaign)"
-            >
-              <v-icon size="16" class="mr-1">mdi-eye</v-icon>
-              Chi tiết
-            </v-btn>
-            
-            <v-btn
-              variant="text"
-              size="small"
-              color="primary"
-              class="text-caption font-medium"
-              @click="$emit('view', campaign)"
-            >
-              Xem timeline →
-            </v-btn>
           </div>
-        </v-card>
-      </v-col>
+        </div>
+
+        <!-- Card Footer -->
+        <div class="border-t border-gray-100 bg-gray-50 px-4 py-3 flex justify-between items-center">
+          <button
+            @click="$emit('view', campaign)"
+            class="inline-flex items-center text-xs text-gray-600 hover:text-gray-900 transition-colors duration-200"
+          >
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+            </svg>
+            Chi tiết
+          </button>
+          
+          <button
+            @click="$emit('view', campaign)"
+            class="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors duration-200"
+          >
+            Xem timeline →
+          </button>
+        </div>
+      </div>
 
       <!-- Add new card -->
-      <v-col cols="12" sm="6" md="4" lg="3">
-        <v-card 
-          class="h-100 d-flex align-center justify-center create-card"
-          variant="outlined"
-          style="border-style: dashed;"
-          @click="$emit('create')"
-        >
-          <div class="text-center pa-8">
-            <div class="mx-auto mb-3 d-flex align-center justify-center">
-              <v-avatar size="48" color="primary" variant="tonal">
-                <v-icon size="24" color="primary">mdi-plus</v-icon>
-              </v-avatar>
-            </div>
-            <h3 class="text-h6 font-weight-semibold text-grey-darken-3 mb-1">
-              Tạo yêu cầu mới
-            </h3>
-            <p class="text-body-2 text-grey-darken-1">
-              Bắt đầu một yêu cầu tuyển dụng mới
-            </p>
+      <div 
+        class="bg-white rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-400 cursor-pointer transition-all duration-300 flex items-center justify-center min-h-[320px] create-card group"
+        @click="$emit('create')"
+      >
+        <div class="text-center p-8">
+          <div class="mx-auto mb-4 flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 group-hover:bg-blue-200 transition-colors duration-300">
+            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
           </div>
-        </v-card>
-      </v-col>
-    </v-row>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">
+            Tạo yêu cầu mới
+          </h3>
+          <p class="text-sm text-gray-600">
+            Bắt đầu một yêu cầu tuyển dụng mới
+          </p>
+        </div>
+      </div>
+    </div>
 
     <!-- Loading Skeleton -->
-    <v-row v-if="loading">
-      <v-col
+    <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div
         v-for="n in 8"
         :key="n"
-        cols="12"
-        sm="6"
-        md="4"
-        lg="3"
+        class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
       >
-        <v-card>
-          <v-skeleton-loader type="card" />
-        </v-card>
-      </v-col>
-    </v-row>
-  </v-container>
+        <!-- Header skeleton -->
+        <div class="h-12 bg-gray-100 animate-pulse"></div>
+        <!-- Content skeleton -->
+        <div class="p-4 space-y-3">
+          <div class="h-6 bg-gray-200 rounded animate-pulse"></div>
+          <div class="h-4 bg-gray-200 rounded animate-pulse"></div>
+          <div class="h-4 bg-gray-200 rounded w-3/4 animate-pulse"></div>
+          <div class="space-y-2">
+            <div class="h-3 bg-gray-200 rounded animate-pulse"></div>
+            <div class="h-2 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+          <div class="flex justify-between items-center">
+            <div class="h-4 bg-gray-200 rounded w-20 animate-pulse"></div>
+            <div class="flex -space-x-1">
+              <div class="w-6 h-6 bg-gray-200 rounded-full animate-pulse"></div>
+              <div class="w-6 h-6 bg-gray-200 rounded-full animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+        <!-- Footer skeleton -->
+        <div class="h-12 bg-gray-50 border-t border-gray-100 flex items-center justify-between px-4">
+          <div class="h-4 bg-gray-200 rounded w-16 animate-pulse"></div>
+          <div class="h-4 bg-gray-200 rounded w-20 animate-pulse"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -200,42 +199,32 @@ defineEmits(['edit', 'view', 'delete', 'create'])
 // Helper functions
 const getHeaderClass = (status) => {
   const classes = {
-    'DRAFT': 'bg-grey-lighten-4',
-    'ACTIVE': 'bg-blue-lighten-5',
-    'PAUSED': 'bg-yellow-lighten-5',
-    'ARCHIVED': 'bg-grey-lighten-4'
+    'DRAFT': 'bg-gray-100',
+    'ACTIVE': 'bg-blue-50',
+    'PAUSED': 'bg-yellow-50',
+    'ARCHIVED': 'bg-gray-100'
   }
-  return classes[status] || 'bg-grey-lighten-4'
+  return classes[status] || 'bg-gray-100'
 }
 
 const getHeaderTextClass = (status) => {
   const classes = {
-    'DRAFT': 'text-grey-darken-2',
-    'ACTIVE': 'text-blue-darken-2',
-    'PAUSED': 'text-yellow-darken-3',
-    'ARCHIVED': 'text-grey-darken-2'
+    'DRAFT': 'text-gray-600',
+    'ACTIVE': 'text-blue-700',
+    'PAUSED': 'text-yellow-700',
+    'ARCHIVED': 'text-gray-600'
   }
-  return classes[status] || 'text-grey-darken-2'
-}
-
-const getStatusColor = (status) => {
-  const colors = {
-    'DRAFT': 'grey',
-    'ACTIVE': 'blue',
-    'PAUSED': 'yellow-darken-1',
-    'ARCHIVED': 'green'
-  }
-  return colors[status] || 'grey'
+  return classes[status] || 'text-gray-600'
 }
 
 const getStatusChipClass = (status) => {
   const classes = {
-    'DRAFT': 'text-grey-darken-3',
-    'ACTIVE': 'text-blue-darken-3',
-    'PAUSED': 'text-yellow-darken-4',
-    'ARCHIVED': 'text-green-darken-3'
+    'DRAFT': 'bg-gray-100 text-gray-800',
+    'ACTIVE': 'bg-blue-100 text-blue-800',
+    'PAUSED': 'bg-yellow-100 text-yellow-800',
+    'ARCHIVED': 'bg-green-100 text-green-800'
   }
-  return classes[status] || 'text-grey-darken-3'
+  return classes[status] || 'bg-gray-100 text-gray-800'
 }
 
 const getStatusText = (status) => {
@@ -272,18 +261,18 @@ const getCampaignSteps = (campaign) => {
 
 const getProgressBarClass = (campaign) => {
   const progress = getCampaignProgress(campaign)
-  if (progress === 0) return 'bg-grey'
-  if (progress < 30) return 'bg-blue-darken-1'
-  if (progress < 70) return 'bg-yellow-darken-1'
-  return 'bg-green'
+  if (progress === 0) return 'bg-gray-300'
+  if (progress < 30) return 'bg-blue-500'
+  if (progress < 70) return 'bg-yellow-500'
+  return 'bg-green-500'
 }
 
 const getProgressTextClass = (campaign) => {
   const progress = getCampaignProgress(campaign)
-  if (progress === 0) return 'text-grey-darken-2'
-  if (progress < 30) return 'text-blue-darken-2'
-  if (progress < 70) return 'text-yellow-darken-3'
-  return 'text-green-darken-2'
+  if (progress === 0) return 'text-gray-500'
+  if (progress < 30) return 'text-blue-600'
+  if (progress < 70) return 'text-yellow-600'
+  return 'text-green-600'
 }
 
 const getInitials = (name) => {
@@ -292,7 +281,7 @@ const getInitials = (name) => {
 }
 
 const getOwnerColor = (owner) => {
-  const colors = ['blue-lighten-3', 'purple-lighten-3', 'green-lighten-3', 'orange-lighten-3']
+  const colors = ['bg-blue-400', 'bg-purple-400', 'bg-green-400', 'bg-orange-400', 'bg-red-400', 'bg-indigo-400']
   const hash = owner.split('').reduce((a, b) => {
     a = ((a << 5) - a) + b.charCodeAt(0)
     return a & a
@@ -310,28 +299,26 @@ const getTeamCount = (campaign) => {
 
 <style scoped>
 .campaign-card {
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .campaign-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
 .create-card {
-  transition: all 0.3s ease;
-  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .create-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
-  border-color: rgb(var(--v-theme-primary)) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
 .progress-container {
   height: 6px;
-  background-color: #e2e8f0;
+  background-color: #e5e7eb;
   border-radius: 3px;
   overflow: hidden;
 }
@@ -340,5 +327,26 @@ const getTeamCount = (campaign) => {
   height: 100%;
   border-radius: 3px;
   transition: width 0.3s ease;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 </style> 

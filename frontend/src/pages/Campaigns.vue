@@ -9,7 +9,6 @@
   <script setup>
   import LayoutHeader from '@/components/LayoutHeader.vue'
   import { Breadcrumbs } from 'frappe-ui'
-  let title = 'Campaigns'
-  const breadcrumbs = [{ label: title, route: { name: 'Campaigns' } }]
+
   </script>
   
