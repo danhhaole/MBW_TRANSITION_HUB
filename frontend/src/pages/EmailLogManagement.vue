@@ -575,6 +575,12 @@ const toggleSelectAll = () => {
 const getVisiblePages = () => {
   const current = pagination.page
   const total = pagination.pages
+  
+  // Handle case when there's only 1 page or no pages
+  if (total <= 1) {
+    return [1]
+  }
+  
   const delta = 2
   const range = []
   const rangeWithDots = []
@@ -593,11 +599,12 @@ const getVisiblePages = () => {
 
   if (current + delta < total - 1) {
     rangeWithDots.push('...', total)
-  } else {
+  } else if (total > 1) {
     rangeWithDots.push(total)
   }
 
-  return rangeWithDots.length === 1 ? [1] : rangeWithDots
+  // Remove duplicates and return
+  return [...new Set(rangeWithDots)]
 }
 
 const getStatusVariant = (status) => {
