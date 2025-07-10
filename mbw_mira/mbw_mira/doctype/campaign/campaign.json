@@ -9,6 +9,8 @@
   "type",
   "status",
   "target_segment",
+  "source",
+  "criteria",
   "description",
   "is_active",
   "owner_id",
@@ -66,12 +68,23 @@
    "fieldtype": "Link",
    "label": "Target Segment",
    "options": "TalentSegment"
+  },
+  {
+   "fieldname": "source",
+   "fieldtype": "Link",
+   "label": "Source",
+   "options": "CandidateDataSource"
+  },
+  {
+   "fieldname": "criteria",
+   "fieldtype": "JSON",
+   "label": "Criteria"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-06-30 08:18:17.919147",
+ "modified": "2025-07-10 17:38:17.306942",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Campaign",

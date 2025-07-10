@@ -9,57 +9,70 @@ from frappe.utils import now_datetime
 class CandidateCampaign(Document):
     pass
 
+    def validate(self):
+        # Check trùng campaign_id,candidate_id
+        validate_unique_candidate_campaign(self)
+
+
+def validate_unique_candidate_campaign(doc):
+    """
+    Kiểm tra xem đã tồn tại CandidateCampaign với cùng
+    campaign_id + candidate_id (ngoại trừ chính nó) hay chưa.
+    """
+    filters = {
+        "campaign_id": doc.campaign_id,
+        "candidate_id": doc.candidate_id,
+    }
+
+    existing = frappe.db.exists("CandidateCampaign", filters)
+
+    if existing and existing != doc.name:
+        frappe.throw(
+            frappe._(
+                "A CandidateCampaign with Campaign <b>{0}</b> and Candidate <b>{1}</b> already exists: <a href='/app/candidate-campaign/{2}'>{2}</a>"
+            ).format(doc.campaign_id, doc.candidate_id, existing),
+            title=frappe._("Duplicate CandidateCampaign"),
+        )
+
 
 @frappe.whitelist()
 def process_candidate_campaign_active():
-	"""Lấy danh sách CandidateCampaign
-	- Kiểm tra bản ghi thỏa mãn điều kiện để tạo ra Action
-	"""
-	candidate_campaigns = _get_active_candidate_campaigns()
-	action_names =[]
-	for can_campaign in candidate_campaigns:
-		segment = frappe.get_value(
-			"Campaign", can_campaign.campaign_id, "target_segment"
-		)
-		if not segment:
-			continue
-		# Lấy step theo Campaign
-		step = frappe.get_value(
-			"CampaignStep",
-			{
-				"campaign": can_campaign.campaign_id,
-				"step_order": can_campaign.current_step_order,
-			},
-			["*"],
-			as_dict=1,
-		)
-		#Format status action để phân loại tự động hay thủ công
-		status_action = (
-			"SCHEDULED"
-			if step.action_type in ["SEND_EMAIL", "SEND_SMS", "SEND_NOTIFICATION"]
-			else "PENDING_MANUAL"
-		)
+    """Lấy danh sách CandidateCampaign
+    - Kiểm tra bản ghi thỏa mãn điều kiện để tạo ra Action
+    """
+    candidate_campaigns = _get_active_candidate_campaigns()
+    action_names = []
+    for can_campaign in candidate_campaigns:
+        # Lấy step theo Campaign
+        step = frappe.get_value(
+            "CampaignStep",
+            {
+                "campaign": can_campaign.campaign_id,
+                "step_order": can_campaign.current_step_order,
+            },
+            ["*"],
+            as_dict=1,
+        )
+        # Format status action để phân loại tự động hay thủ công
+        status_action = (
+            "SCHEDULED"
+            if step.action_type in ["SEND_EMAIL", "SEND_SMS", "SEND_NOTIFICATION"]
+            else "PENDING_MANUAL"
+        )
 
-		if action_exists(can_campaign,step):
-			action = frappe.new_doc("Action")
-			action.update({
+        action = frappe.new_doc("Action")
+        action.update(
+            {
                 "candidate_campaign_id": can_campaign.name,
                 "campaign_step": step.name,
                 "status": status_action,
-                "scheduled_at": now_datetime()
-			})
-			action.insert(ignore_permissions=True)
-			action.reload()
-			action_names.append(action.name)
-	return action_names
-		
-        
-def action_exists(doc,step):
-    action_exists = frappe.db.exists("Action",{"candidate_campaign_id":doc.name,"campaign_step":step.name})
-    if action_exists:
-        return True
-    else:
-        return False
+                "scheduled_at": now_datetime(),
+            }
+        )
+        action.insert(ignore_permissions=True)
+        action.reload()
+        action_names.append(action.name)
+    return action_names
 
 
 def _get_active_candidate_campaigns() -> dict:

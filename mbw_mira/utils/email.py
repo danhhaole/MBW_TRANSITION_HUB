@@ -8,6 +8,7 @@ import os
 import boto3
 from frappe.query_builder import DocType, Query
 
+
 def send_email(
     recipients,
     subject,
@@ -64,17 +65,19 @@ def send_email(
                 content=content,
                 delayed=False
             )
+            status = "Fallback"
             frappe.logger().info(f"Email sent via Frappe to {recipients}")
         else:
             # Fallback to AWS SES
-            status = "Fallback"
+            
             sendmail_via_ses(
                 recipients=recipients,
                 subject=subject,
                 message=content
             )
+            status = "Fallback"
             frappe.logger().info(f"Email sent via AWS SES to {recipients}")
-
+        
     except Exception as e:
         status = "Failed"
         error = str(e)
@@ -95,6 +98,7 @@ def send_email(
             status=status,
             error=error
         )
+        return True if status == "Fallback" else False
 
 def normalize_emails(emails):
     if not emails:
@@ -273,3 +277,6 @@ def sender_email():
 
         if email_account := default_outgoing_email_account():
             return email_account
+
+
+#======================================BACKGROUND============================
