@@ -12,8 +12,32 @@ class Campaign(Document):
 	def on_update(self):
 		"""Hook kiểm tra khi có 1 campain
 		"""
-def process_campaign_from_candidate():
-	campaigns = _get_active_campaigns()
+def process_campaign_source_from_entry():
+	"""Chạy quét campaign từ nguồn nhập
+	"""
+	campaigns = _get_active_campaigns("Manual")
+
+
+def process_campaign_source_from_ats():
+	"""Chạy quét campaign từ nguồn ats
+	"""
+	campaigns = _get_active_campaigns("ATS")
+
+def process_campaign_source_from_jobboard():
+	"""Chạy quét campaign từ các sàn tuyển dụng
+	"""
+	campaigns =_get_active_campaigns("JobBoard")
+
+def process_campaign_source_from_social():
+	"""Chạy quét campaign từ các mạng xã hội
+	"""
+	campaigns =_get_active_campaigns("SocialNetwork")
+
+def process_campaign_source_from_other():
+	"""Chạy quét campaign từ các các nguồn khác
+	"""
+	campaigns =_get_active_campaigns("Other")
+
 
 def process_campaign_active():
 	"""Lấy danh sách Campaign active hiệu lực
@@ -66,6 +90,7 @@ def _get_active_campaigns(source):
     - is_active = 1
     - start_date <= hôm nay
     - end_date >= hôm nay
+    - source: ATS / JobBoard / SocialNetwork / Manual / Other
     """
     current_date = now()  # yyyy-mm-dd
     campaigns = frappe.get_all(
@@ -73,6 +98,7 @@ def _get_active_campaigns(source):
         filters={
             "status": "ACTIVE",
             "is_active": 1,
+            "source":source,
             "start_date": ["<=", current_date],
             "end_date": [">=", current_date]
         },
@@ -83,7 +109,8 @@ def _get_active_campaigns(source):
             "end_date",
             "status",
             "is_active",
-            "target_segment"
+            "target_segment",
+            "source"
         ],
         order_by="start_date asc"
     )

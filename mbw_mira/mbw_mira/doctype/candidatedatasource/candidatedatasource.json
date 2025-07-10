@@ -24,13 +24,13 @@
   {
    "fieldname": "source_name",
    "fieldtype": "Data",
-   "label": "Source"
+   "label": "Source Name"
   },
   {
    "fieldname": "source_type",
    "fieldtype": "Select",
    "label": "Source Type",
-   "options": "ATS\nJobBoard\nSocialNetwork\nOther"
+   "options": "ATS\nJobBoard\nSocialNetwork\nManual\nOther"
   },
   {
    "fieldname": "api_base_url",
@@ -96,7 +96,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-10 17:34:16.866830",
+ "modified": "2025-07-10 17:44:02.869362",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "CandidateDataSource",
