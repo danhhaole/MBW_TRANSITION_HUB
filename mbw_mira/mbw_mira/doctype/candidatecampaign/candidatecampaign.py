@@ -42,36 +42,37 @@ def process_candidate_campaign_active():
     """
     candidate_campaigns = _get_active_candidate_campaigns()
     action_names = []
-    for can_campaign in candidate_campaigns:
-        # Lấy step theo Campaign
-        step = frappe.get_value(
-            "CampaignStep",
-            {
-                "campaign": can_campaign.campaign_id,
-                "step_order": can_campaign.current_step_order,
-            },
-            ["*"],
-            as_dict=1,
-        )
-        # Format status action để phân loại tự động hay thủ công
-        status_action = (
-            "SCHEDULED"
-            if step.action_type in ["SEND_EMAIL", "SEND_SMS", "SEND_NOTIFICATION"]
-            else "PENDING_MANUAL"
-        )
+    if candidate_campaigns:
+        for can_campaign in candidate_campaigns:
+            # Lấy step theo Campaign
+            step = frappe.get_value(
+                "CampaignStep",
+                {
+                    "campaign": can_campaign.campaign_id,
+                    "step_order": can_campaign.current_step_order,
+                },
+                ["*"],
+                as_dict=1,
+            )
+            # Format status action để phân loại tự động hay thủ công
+            status_action = (
+                "SCHEDULED"
+                if step.action_type in ["SEND_EMAIL", "SEND_SMS", "SEND_NOTIFICATION"]
+                else "PENDING_MANUAL"
+            )
 
-        action = frappe.new_doc("Action")
-        action.update(
-            {
-                "candidate_campaign_id": can_campaign.name,
-                "campaign_step": step.name,
-                "status": status_action,
-                "scheduled_at": now_datetime(),
-            }
-        )
-        action.insert(ignore_permissions=True)
-        action.reload()
-        action_names.append(action.name)
+            action = frappe.new_doc("Action")
+            action.update(
+                {
+                    "candidate_campaign_id": can_campaign.name,
+                    "campaign_step": step.name,
+                    "status": status_action,
+                    "scheduled_at": now_datetime(),
+                }
+            )
+            action.insert(ignore_permissions=True)
+            action.reload()
+            action_names.append(action.name)
     return action_names
 
 

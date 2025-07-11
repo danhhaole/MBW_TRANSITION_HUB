@@ -52,15 +52,16 @@ def process_action_email_active():
 	"""Worker quét action là gửi email và status là Scheduled
 	"""
 	actions = get_action_worker("SEND_EMAIL")
-	for action in actions:
-		frappe.enqueue(
-			"mbw_mira.utils.send_email_job",
-			queue="short",
-			job_name="send_email_job",
-			candidate_id=action.candidate_campaign_id,
-			action_id=action.name,
-			step_id=action.campaign_step
-		)
+	if actions:
+		for action in actions:
+			frappe.enqueue(
+				"mbw_mira.utils.send_email_job",
+				queue="short",
+				job_name="send_email_job",
+				candidate_id=action.candidate_campaign_id,
+				action_id=action.name,
+				step_id=action.campaign_step
+			)
 	return True
 
 def process_action_sms_active():
@@ -68,15 +69,16 @@ def process_action_sms_active():
 	"""
 	result = None
 	actions = get_action_worker("SEND_SMS")
-	for action in actions:
-		frappe.enqueue(
-			"mbw_mira.utils.send_sms_job",
-			queue="short",
-			job_name="send_sms_job",
-			candidate_id=action.candidate_campaign_id,
-			action_id=action.name,
-			step_id=action.campaign_step
-		)
+	if actions:
+		for action in actions:
+			frappe.enqueue(
+				"mbw_mira.utils.send_sms_job",
+				queue="short",
+				job_name="send_sms_job",
+				candidate_id=action.candidate_campaign_id,
+				action_id=action.name,
+				step_id=action.campaign_step
+			)
 	return True
 
 #Hàm lấy ra action theo action_type trong step campaign

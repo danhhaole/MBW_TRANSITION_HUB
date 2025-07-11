@@ -18,7 +18,8 @@
   "last_sync_at",
   "sync_frequency_minutes",
   "notes",
-  "created_by"
+  "created_by",
+  "is_active"
  ],
  "fields": [
   {
@@ -91,12 +92,19 @@
    "fieldtype": "Link",
    "label": "Created By",
    "options": "User"
+  },
+  {
+   "default": "1",
+   "description": "K\u00edch h\u1ecdat / Kh\u00f4ng k\u00edch ho\u1ea1t",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "label": "Active"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-10 17:44:02.869362",
+ "modified": "2025-07-11 09:03:45.256362",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "CandidateDataSource",

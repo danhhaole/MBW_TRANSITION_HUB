@@ -144,21 +144,30 @@ def verify_signature(data, sig):
     return hmac.compare_digest(expected, sig)
 
 #Tìm candidate khớp với talentsegment
-def find_candidates_fuzzy(segment_name, min_score=50):
+def find_candidates_fuzzy(source, criteria, segment_name = None, min_score=50):
     """
     Tìm các ứng viên có mức độ khớp >= min_score (0–100) theo fuzzy matching
     giữa candidate.skills và talent_segment.criteria.skills.
     """
     try:
-        segment = frappe.get_doc("TalentSegment", segment_name)
-        criteria = json.loads(segment.criteria or "{}")
-        criteria_skills = criteria.get("skills", [])
+        criteria_skills =[]
+        #Nếu có segment
+        if segment_name:
+            segment = frappe.get_cached_doc("TalentSegment", segment_name)
+            criteria_segment = json.loads(segment.criteria or "{}")
+            if criteria_segment and hasattr(criteria_segment,"skills"):
+                criteria_skills = criteria_segment.get("skills", [])
+        elif criteria:
+            cret = json.loads(criteria or {})
+            if cret and hasattr(cret,"skills"):
+                criteria_skills = cret.get("skills",[])
         
-        if not criteria_skills:
+        if not len(criteria_skills) > 0:
             frappe.throw("No skills criteria defined in this Talent Segment.")
 
         candidates = frappe.get_all(
             "Candidate",
+            filters={"source":source},
             fields=["name", "full_name", "skills"]
         )
 

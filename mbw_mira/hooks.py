@@ -150,21 +150,18 @@ app_license = "agpl-3.0"
 
 scheduler_events = {
     "cron": {
-        "*/1 * * * *": [
-            "mbw_mira.tasks.do_campaign_scheduler"
-        ],
-        "*/5 * * * *": [
-            "mbw_mira.tasks.do_candidate_campaign_scheduler"
-        ],
-        "*/1 * * * *": [
-            "mbw_mira.tasks.do_action_scheduler"
-        ],
-        "*/1 * * * *": [
+         "*/1 * * * *": [
+            "mbw_mira.tasks.do_candidate_campaign_scheduler",
+            "mbw_mira.tasks.do_sms_scheduler",
             "mbw_mira.tasks.do_email_scheduler"
         ],
-        "*/1 * * * *": [
-            "mbw_mira.tasks.do_sms_scheduler"
-        ]
+        "*/5 * * * *": [
+            "mbw_mira.tasks.do_campaign_source_entry_scheduler",
+            "mbw_mira.tasks.do_campaign_sync_source_ats_scheduler",
+            "mbw_mira.tasks.do_campaign_sync_source_jobboard_scheduler",
+            "mbw_mira.tasks.do_campaign_sync_source_social_scheduler",
+            "mbw_mira.tasks.do_campaign_sync_source_other_scheduler"
+        ]       
     },
     # "daily": [],
     # "hourly": [],

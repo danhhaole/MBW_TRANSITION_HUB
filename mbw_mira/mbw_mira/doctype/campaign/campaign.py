@@ -3,7 +3,7 @@
 
 import frappe
 from frappe.model.document import Document
-from frappe.utils import now
+from frappe.utils import now, now_datetime, add_days
 from mbw_mira.utils import find_candidates_fuzzy
 
 class Campaign(Document):
@@ -12,76 +12,124 @@ class Campaign(Document):
 	def on_update(self):
 		"""Hook kiểm tra khi có 1 campain
 		"""
+
 def process_campaign_source_from_entry():
 	"""Chạy quét campaign từ nguồn nhập
+		- Nguồn có thể là empty hoặc Manual
+		- Đối với nguồn này thực hiện lấy dữ liệu trong Candidate tìm tiêu chí từ segment hoặc mô tả trong campaign lấy ra danh sách phù hợp
+		- Thực hiện xử lý trong queu
 	"""
-	campaigns = _get_active_campaigns("Manual")
+	campaigns = _get_active_campaigns("")
+	#Gọi hàm xử lý tìm ứng viên theo tiêu chí
+	if campaigns:
+		for campaign in campaigns:
+			frappe.enqueue(
+					run_candidate_by_criteria,
+					queue="default",
+					timeout=300,
+					source="",
+					campaign=campaign,
+					job_name = "run_candidate_by_criteria"
+				)
+		return True
+	else:
+		return False
 
-
-def process_campaign_source_from_ats():
-	"""Chạy quét campaign từ nguồn ats
+def process_campaign_sync_source_from_ats():
+	"""Chạy quét campaign từ nguồn ats lưu vào candidate
 	"""
-	campaigns = _get_active_campaigns("ATS")
+	config = get_datasource("ATS")
+	if config:
+		campaigns = _get_active_campaigns("ATS")
 
-def process_campaign_source_from_jobboard():
-	"""Chạy quét campaign từ các sàn tuyển dụng
+def process_campaign_sync_source_from_jobboard():
+	"""Chạy quét campaign từ các sàn tuyển dụng lưu vào candidate
 	"""
-	campaigns =_get_active_campaigns("JobBoard")
+	config = get_datasource("JobBoard")
+	if config:
+		campaigns =_get_active_campaigns("JobBoard")
 
-def process_campaign_source_from_social():
-	"""Chạy quét campaign từ các mạng xã hội
+def process_campaign_sync_source_from_social():
+	"""Chạy quét campaign từ các mạng xã hội lưu vào candidate
 	"""
-	campaigns =_get_active_campaigns("SocialNetwork")
+	config = get_datasource("SocialNetwork")
+	if config:
+		campaigns =_get_active_campaigns("SocialNetwork")
 
-def process_campaign_source_from_other():
-	"""Chạy quét campaign từ các các nguồn khác
+def process_campaign_sync_source_from_other():
+	"""Chạy quét campaign từ các các nguồn khác lưu vào candidate
 	"""
-	campaigns =_get_active_campaigns("Other")
+	config = get_datasource("Other")
+	if config:
+		campaigns =_get_active_campaigns("Other")
 
+#Lấy danh sách ứng viên theo tiêu chí từ các nguồn, xử lý trong queue do quét nhiều ứng viên
+def run_candidate_by_criteria(source,campaign:dict):
+    criteria = campaign.get("criteria",{})
+    segment_name = campaign.get("segment_name")
+    candidates = find_candidates_fuzzy(source,criteria,segment_name)
+    if candidates and len(candidates) > 0:
+        for can in candidates:
+            #Nếu chọn tiêu chỉ theo segment thì insert vào CandidateSegment
+            can_seg = frappe.get_doc("CandidateSegment")
+            can_seg.candidate_id = can.name
+            can_seg.segment_id = segment_name
+            can_seg.added_at = now_datetime()
+            can_seg.added_by = frappe.session.user
+            can_seg.save(ignore_permissions=True)
+            frappe.db.commit()
 
-def process_campaign_active():
-	"""Lấy danh sách Campaign active hiệu lực
-		Kiểm tra thông tin phân khúc lấy ra candidate theo phân khúc
-		Nếu có phân khúc được lưu từ talentsegment thì ưu tiên và tìm ứng viên theo phân khúc này, sau đó thêm vào CandidateSegment
-		Nếu chỉ có mô tả tiêu chỉ trong campaign thì quét tim
-	"""
-	from mbw_mira.utils import find_candidates_fuzzy
-	campaigns = _get_active_campaigns()
+            #Tạo CandidateCampaign
+            step = get_campaign_step(campaign.name)
+            if step:
+                can_campaign = frappe.get_doc("CandidateCampaign")
+                next_action_at = add_days(now_datetime, step["delay_in_days"] or 0)
+                status = "ACTIVE"
+                enrolled_at = now_datetime
+                current_step_order = step["step_order"] or 1
+                can_campaign.campaign_id = campaign.name
+                can_campaign.candidate_id = can.name
+                can_campaign.segment_id = segment_name or ""
+                can_campaign.status = status
+                can_campaign.enrolled_at = enrolled_at
+                can_campaign.current_step_order = current_step_order
+                can_campaign.next_action_at = next_action_at
+                can_campaign.save(ignore_permissions=True)
+                frappe.db.commit()
+            else:
+                continue
+    return True
+				
 
-	if not campaigns:
-		frappe.logger("campaign").info("[SKIP] No active campaigns found.")
-		return
+#Lấy Step từ CampaignStep, lấy step đầu tiên
+def get_campaign_step(campaign_id):
+    step = frappe.db.get_list(
+        "CampaignStep",
+        filters={"campaign": campaign_id},
+        fields=[
+            "name",
+            "campaign_step_name",
+            "step_order",
+            "action_type",
+            "delay_in_days",
+            "template",
+            "action_config",
+        ],
+        order_by="step_order asc",
+        page_length=1,
+    )
+    if step:
+        return step[0]
+    else:
+        return None
 
-	for campaign in campaigns:
-		if not campaign.target_segment:
-			frappe.logger("campaign").info(f"[SKIP] Campaign {campaign} has no target segment.")
-			continue
-
-		# Mỗi campaign sẽ có thông tin segment,
-		# lấy danh sách candidate từ CandidateSegment
-		#candidate_ids = candidate_segment_by_campaign(campaign.target_segment)
-
-		#Lấy danh sách Candidate từ AI 
-		candidate_ids = []
-		candidate_segments = find_candidates_fuzzy(campaign.target_segment)
-		if candidate_segments:
-			candidate_ids = [s.get("candidate_name") for s in candidate_segments]
-		
-		if not candidate_ids:
-			frappe.logger("campaign").info(f"[SKIP] No candidates found for segment {campaign.target_segment}.")
-			continue
-		print("=======================handle_candidate_segment============================= ",campaign.target_segment)
-		# Insert vào CandidateSegment
-		frappe.enqueue(
-			"mbw_mira.services.candidate_service.insert_candidate_segment",
-			queue="default",
-			timeout=300,
-			candidates=candidate_ids,
-			segment=campaign.target_segment,
-			campaign= campaign.name,
-			job_name = "insert_candidate_segment"
-		)
-
+#Lấy thông tin source kết nối để thực hiện đồng bộ nếu đã kết nối
+def get_datasource(source_id):
+	source = frappe.get_cached_doc("CandidateDataSource",{"name":source_id,"is_active":1})
+	if source:
+		return source
+	else:
+		return None
 
 def _get_active_campaigns(source):
     """
