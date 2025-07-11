@@ -23,7 +23,7 @@
         <!-- Search -->
         <div class="relative">
           <input v-model="searchQuery" type="text" placeholder="Search pools..."
-            class="w-80 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            class="w-80 pl-10 pr-4 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             :class="{ 'animate-pulse': isSearching }" @input="handleSearch">
           <svg xmlns="http://www.w3.org/2000/svg"
             class="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none"
@@ -41,7 +41,7 @@
         </div>
 
         <!-- Create Button -->
-        <Button variant="solid" theme="gray" @click="showCreateForm = true" :loading="loading" class="px-6 py-5">
+        <Button variant="solid" theme="gray" @click="showCreateForm = true" :loading="loading" class="px-6 py-4">
           <template #prefix>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">

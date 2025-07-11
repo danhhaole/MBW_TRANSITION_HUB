@@ -18,7 +18,7 @@
               v-model="searchText"
               type="text"
               placeholder="Tìm kiếm..."
-              class="block w-60 pl-10 pr-3 py-3 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              class="block w-60 pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               @input="setSearchText($event.target.value)"
             />
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -51,7 +51,7 @@
                 viewMode === 'list'
                   ? 'bg-black text-white'
                   : 'bg-white text-gray-700 hover:text-gray-500',
-                'relative inline-flex items-center px-4 py-3 rounded-l-md border border-gray-300 text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-black focus:border-black'
+                'relative inline-flex items-center px-4 py-2 rounded-l-md border border-gray-300 text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-black focus:border-black'
               ]"
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -80,7 +80,7 @@
             <select 
               v-model="statusFilter"
               @change="setStatusFilter($event.target.value)"
-              class="pl-10 pr-7 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
+              class="pl-10 pr-7 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
             >
               <option value="all">Tất cả trạng thái</option>
               <option value="ACTIVE">Đang hoạt động</option>
@@ -97,7 +97,7 @@
           <button 
             @click="handleRefresh"
             :disabled="loading"
-            class="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 flex items-center"
+            class="px-4 py-1 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 flex items-center"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" :class="{'animate-spin': loading}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
@@ -112,7 +112,7 @@
 						theme="gray"
 						@click="openCreateDialog"
 						:loading="loading"
-						class="px-6 py-[18px]"
+						class="px-6 py-3.5"
 					>
 						<template #prefix>
 							<svg

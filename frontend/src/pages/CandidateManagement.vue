@@ -23,7 +23,7 @@
 						theme="gray"
 						@click="openCreateModal"
 						:loading="loading"
-						class="px-6 py-5"
+						class="px-6 py-4"
 					>
 						<template #prefix>
 							<svg
