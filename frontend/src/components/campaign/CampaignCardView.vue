@@ -120,7 +120,7 @@
 
       <!-- Add new card -->
       <div 
-        class="bg-white rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-400 cursor-pointer transition-all duration-300 flex items-center justify-center min-h-[320px] create-card group"
+        class="bg-white rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-400 cursor-pointer transition-all duration-300 flex items-center justify-center h-full create-card group"
         @click="$emit('create')"
       >
         <div class="text-center p-8">
