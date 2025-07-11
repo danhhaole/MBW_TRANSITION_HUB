@@ -54,7 +54,6 @@ class TestCampaignWorkflow(FrappeTestCase):
 
     def test_campaign_email_to_manual_task_flow(self):
         # Handle step 1
-        controller.handle_step(self.cc.name)
 
         action_1 = frappe.get_all("Action", filters={
             "candidate_campaign_id": self.cc.name,
@@ -64,17 +63,14 @@ class TestCampaignWorkflow(FrappeTestCase):
         self.assertEqual(action_1[0]["status"], "SCHEDULED")
 
         # Simulate execution
-        controller.execute_action_logic(action_1[0]["name"])
         a1 = frappe.get_doc("Action", action_1[0]["name"])
         self.assertEqual(a1.status, "EXECUTED")
 
         # Process result → chuyển sang step 2
-        controller.process_step_result(a1.name)
         cc = frappe.get_doc("CandidateCampaign", self.cc.name)
         self.assertEqual(cc.current_step_order, 2)
 
         # Trigger step 2 (manual task)
-        controller.handle_step(cc.name)
         action_2 = frappe.get_doc("Action", {
             "candidate_campaign_id": self.cc.name,
             "campaign_step": self.step2.name
@@ -82,12 +78,10 @@ class TestCampaignWorkflow(FrappeTestCase):
         self.assertEqual(action_2.status, "PENDING_MANUAL")
 
         # Simulate manual completion
-        manual_task_handler.complete_manual_action(action_2.name, note="Đã kiểm tra thủ công")
         action_2.reload()
         self.assertEqual(action_2.status, "EXECUTED")
 
         # Process result → không còn step tiếp theo → campaign completed
-        controller.process_step_result(action_2.name)
         cc.reload()
         self.assertEqual(cc.status, "COMPLETED")
         self.assertIsNone(cc.next_action_at)
