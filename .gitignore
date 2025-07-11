@@ -5,3 +5,7 @@
 tags
 node_modules
 __pycache__
+mbw_mira/www/mbw_mira.html
+mbw_mira/mbw_mira/public
+frontend/components.d.ts
+mbw_mira/public
