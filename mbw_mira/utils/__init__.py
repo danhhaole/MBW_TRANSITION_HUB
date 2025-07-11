@@ -26,9 +26,14 @@ def send_email_job(candidate_id, action_id,step_id):
         logger.error("Candidate unsubcrible")
         return
 
-    subject = "Thông báo từ chiến dịch"
+    
     context = (candidate,action,step)
     message = render_template(step.template, context)
+    
+    config_step = json.loads(step.config)
+    subject = ""
+    if config_step and hasattr(config_step,'subject'):
+        subject = render_template(config_step.get("subject"), context)
     candidate_email = candidate.email
     candidate_id = candidate.name   
     template = None
@@ -155,30 +160,32 @@ def find_candidates_fuzzy(source, criteria, segment_name = None, min_score=50):
         if segment_name:
             segment = frappe.get_cached_doc("TalentSegment", segment_name)
             criteria_segment = json.loads(segment.criteria or "{}")
-            if criteria_segment and hasattr(criteria_segment,"skills"):
-                criteria_skills = criteria_segment.get("skills", [])
+            if criteria_segment:
+                criteria_skills = criteria_segment.get('skills')
         elif criteria:
             cret = json.loads(criteria or {})
-            if cret and hasattr(cret,"skills"):
-                criteria_skills = cret.get("skills",[])
-        
+            
+            if cret:
+                criteria_skills = cret.get('skills')
+                
         if not len(criteria_skills) > 0:
-            frappe.throw("No skills criteria defined in this Talent Segment.")
+            frappe.throw(f"No skills criteria defined.{str(criteria_skills)}")
 
+        
         candidates = frappe.get_all(
             "Candidate",
             filters={"source":source},
             fields=["name", "full_name", "skills"]
         )
-
         results = []
-
+        
         for c in candidates:
-            if not c.skills:
+            
+            if not c.get('skills'):
                 continue
             
             try:
-                candidate_skills = json.loads(c.skills)
+                candidate_skills = c.get('skills')
             except Exception:
                 continue
             
@@ -196,7 +203,7 @@ def find_candidates_fuzzy(source, criteria, segment_name = None, min_score=50):
                 total_score += best_score
 
             avg_score = total_score / len(criteria_skills)
-
+            frappe.log_error(str(avg_score),str(min_score))
             if avg_score >= min_score:
                 results.append({
                     "candidate_name": c.name,
