@@ -1,0 +1,63 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-07-11 14:58:00.882139",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "short_code",
+  "long_url",
+  "create_by",
+  "created_at"
+ ],
+ "fields": [
+  {
+   "fieldname": "short_code",
+   "fieldtype": "Data",
+   "label": "Short Code",
+   "unique": 1
+  },
+  {
+   "fieldname": "long_url",
+   "fieldtype": "Small Text",
+   "label": "Long URL"
+  },
+  {
+   "fieldname": "create_by",
+   "fieldtype": "Link",
+   "label": "Created By",
+   "options": "User"
+  },
+  {
+   "fieldname": "created_at",
+   "fieldtype": "Datetime",
+   "label": "Created At"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-07-11 15:02:16.245614",
+ "modified_by": "Administrator",
+ "module": "MBW Mira",
+ "name": "Short URL",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -88,7 +88,7 @@ def get_action_worker(step):
 	Args:
 		step (SEND_EMAIL/SEND_SMS): _description_
 	"""
-	actions = frappe.db.get_list("Action",filters={"status":"SCHEDULED", "scheduled_at":["<=", now_datetime()]})
+	actions = frappe.get_list("Action",filters={"status":"SCHEDULED", "scheduled_at":["<=", now_datetime()]})
 	#Duyệt danh sách actions, tìm step nào có action_type là gửi email
 	actions_name =[]
 	for action in actions:

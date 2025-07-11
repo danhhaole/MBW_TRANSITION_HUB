@@ -45,7 +45,7 @@ def process_candidate_campaign_active():
     if candidate_campaigns:
         for can_campaign in candidate_campaigns:
             # Lấy step theo Campaign
-            step = frappe.get_value(
+            step = frappe.db.get_value(
                 "CampaignStep",
                 {
                     "campaign": can_campaign.campaign_id,

@@ -155,7 +155,7 @@ scheduler_events = {
             "mbw_mira.tasks.do_sms_scheduler",
             "mbw_mira.tasks.do_email_scheduler"
         ],
-        "*/5 * * * *": [
+        "*/2 * * * *": [
             "mbw_mira.tasks.do_campaign_source_entry_scheduler",
             "mbw_mira.tasks.do_campaign_sync_source_ats_scheduler",
             "mbw_mira.tasks.do_campaign_sync_source_jobboard_scheduler",

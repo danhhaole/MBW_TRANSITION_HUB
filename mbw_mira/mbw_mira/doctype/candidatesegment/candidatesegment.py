@@ -6,11 +6,13 @@ from frappe.model.document import Document
 
 
 class CandidateSegment(Document):
-	pass
+    pass
 
-	def validate(self):
-		validate_unique_candidate_segment(self)
+    def validate(self):
+        validate_unique_candidate_segment(self)
 
+    def on_update(self):
+        count_candidate_segment(self.segment_id)
 
 def validate_unique_candidate_segment(doc):
     """
@@ -33,3 +35,13 @@ def validate_unique_candidate_segment(doc):
             ),
             title=frappe._("Duplicate CandidateSegment")
         )
+
+def count_candidate_segment(segment_id):
+    try:
+        total_candidate = frappe.db.count("CandidateSegment",filters={"segment_id":segment_id})
+        print("===========total_candidate==============",total_candidate)
+        if total_candidate and total_candidate > 0:
+            frappe.db.set_value("TalentSegment",segment_id,"candidate_count",total_candidate)
+            frappe.db.commit()
+    except Exception as e:
+        pass

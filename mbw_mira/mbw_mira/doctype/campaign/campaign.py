@@ -29,7 +29,7 @@ def process_campaign_source_from_entry():
 					timeout=300,
 					source="",
 					campaign=campaign,
-					job_name = "run_candidate_by_criteria"
+					job_name = f"run_candidate_by_criteria_{campaign.name}"
 				)
 		return True
 	else:
@@ -103,17 +103,11 @@ def run_candidate_by_criteria(source,campaign:dict):
 
 #Lấy Step từ CampaignStep, lấy step đầu tiên
 def get_campaign_step(campaign_id):
-    step = frappe.db.get_list(
+    step = frappe.get_list(
         "CampaignStep",
         filters={"campaign": campaign_id},
         fields=[
-            "name",
-            "campaign_step_name",
-            "step_order",
-            "action_type",
-            "delay_in_days",
-            "template",
-            "action_config",
+            "*",
         ],
         order_by="step_order asc",
         page_length=1,
@@ -141,7 +135,7 @@ def _get_active_campaigns(source):
     - source: ATS / JobBoard / SocialNetwork / Manual / Other
     """
     current_date = now()  # yyyy-mm-dd
-    campaigns = frappe.get_all(
+    campaigns = frappe.get_list(
         "Campaign",
         filters={
             "status": "ACTIVE",
@@ -151,14 +145,7 @@ def _get_active_campaigns(source):
             "end_date": [">=", current_date]
         },
         fields=[
-            "name",
-            "campaign_name",
-            "start_date",
-            "end_date",
-            "status",
-            "is_active",
-            "target_segment",
-            "source"
+            "*"            
         ],
         order_by="start_date asc"
     )
