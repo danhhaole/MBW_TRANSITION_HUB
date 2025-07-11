@@ -26,7 +26,7 @@
 							class="mr-4"
 						/>
 						<div>
-							<h1 class="text-3xl font-bold text-blue-600 mb-2">
+							<h1 class="text-3xl font-bold text-blaack mb-2">
 								{{ candidate.full_name || 'Loading...' }}
 							</h1>
 							<div class="flex items-center flex-wrap gap-2">
@@ -94,7 +94,7 @@
 			<div class="border-b border-gray-200 px-6 py-4">
 				<h3 class="text-lg font-medium text-gray-900 flex items-center">
 					<svg
-						class="w-5 h-5 mr-2 text-blue-600"
+						class="w-5 h-5 mr-2 text-black"
 						fill="currentColor"
 						viewBox="0 0 20 20"
 					>
@@ -195,7 +195,7 @@
 						:class="[
 							'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center',
 							activeTab === tab.key
-								? 'border-blue-500 text-blue-600'
+								? 'border-black text-black'
 								: 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
 						]"
 					>
@@ -767,39 +767,78 @@
 			:model-value="showCampaignModal"
 			@update:model-value="showCampaignModal = $event"
 			:options="{
-				title: 'Assign to Campaign',
 				size: 'md',
 			}"
 		>
 			<template #body>
-				<div class="space-y-4">
-					<FormControl
-						v-model="campaignFormData.campaign_id"
-						type="select"
-						label="Select Campaign"
-						:options="availableCampaigns"
-						:required="true"
-					/>
-					<FormControl
-						v-model="campaignFormData.status"
-						type="select"
-						label="Status"
-						:options="statusOptions"
-						:required="true"
-					/>
-					<FormControl
-						v-model="campaignFormData.current_step_order"
-						type="number"
-						label="Starting Step"
-						:value="1"
-						:min="1"
-					/>
-				</div>
-			</template>
-			<template #actions>
-				<div class="flex justify-end space-x-3">
-					<Button variant="outline" @click="closeCampaignModal"> Cancel </Button>
-					<Button :loading="savingCampaign" @click="assignToCampaign"> Assign </Button>
+				<div class="p-6 mb-2">
+					<div class="space-y-4">
+						<!-- Form Header -->
+						<div class="flex items-center justify-between border-b border-gray-200 pb-4 mb-2">
+							<div class="flex items-center">
+								<div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+									<svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+									</svg>
+								</div>
+								<div>
+									<h3 class="text-lg font-medium text-gray-900">Assign to Campaign</h3>
+									<p class="text-sm text-gray-500">Add candidate to a campaign</p>
+								</div>
+							</div>
+							<Button variant="outline" @click="closeCampaignModal">
+								<div class="flex items-center">
+									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+									</svg>
+								</div>
+							</Button>
+						</div>
+					</div>
+					<div class="space-y-6">
+						<div class="space-y-4">
+							<FormControl
+								v-model="campaignFormData.campaign_id"
+								type="select"
+								label="Select Campaign"
+								:options="availableCampaigns"
+								:required="true"
+							/>
+							<FormControl
+								v-model="campaignFormData.status"
+								type="select"
+								label="Status"
+								:options="statusOptions"
+								:required="true"
+							/>
+							<FormControl
+								v-model="campaignFormData.current_step_order"
+								type="number"
+								label="Starting Step"
+								:value="1"
+								:min="1"
+							/>
+						</div>
+					</div>
+					<div class="flex justify-between w-full mt-2">
+						<div class="flex items-center text-sm text-gray-500">
+							<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+								<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+							</svg>
+							Candidate will be assigned to campaign
+						</div>
+						<div class="flex space-x-3">
+							<Button variant="outline" @click="closeCampaignModal">Cancel</Button>
+							<Button :loading="savingCampaign" @click="assignToCampaign">
+								<div class="flex items-center">
+									<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+									</svg>
+									Assign
+								</div>
+							</Button>
+						</div>
+					</div>
 				</div>
 			</template>
 		</Dialog>
@@ -809,25 +848,64 @@
 			:model-value="showSegmentModal"
 			@update:model-value="showSegmentModal = $event"
 			:options="{
-				title: 'Add to Segment',
 				size: 'md',
 			}"
 		>
 			<template #body>
-				<div class="space-y-4">
-					<FormControl
-						v-model="segmentFormData.segment_id"
-						type="select"
-						label="Select Segment"
-						:options="availableSegments"
-						:required="true"
-					/>
-				</div>
-			</template>
-			<template #actions>
-				<div class="flex justify-end space-x-3">
-					<Button variant="outline" @click="closeSegmentModal"> Cancel </Button>
-					<Button :loading="savingSegment" @click="addToSegment"> Add </Button>
+				<div class="p-6 mb-2">
+					<div class="space-y-4">
+						<!-- Form Header -->
+						<div class="flex items-center justify-between border-b border-gray-200 pb-4 mb-2">
+							<div class="flex items-center">
+								<div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+									<svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+									</svg>
+								</div>
+								<div>
+									<h3 class="text-lg font-medium text-gray-900">Add to Segment</h3>
+									<p class="text-sm text-gray-500">Add candidate to a talent segment</p>
+								</div>
+							</div>
+							<Button variant="outline" @click="closeSegmentModal">
+								<div class="flex items-center">
+									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+									</svg>
+								</div>
+							</Button>
+						</div>
+					</div>
+					<div class="space-y-6">
+						<div class="space-y-4">
+							<FormControl
+								v-model="segmentFormData.segment_id"
+								type="select"
+								label="Select Segment"
+								:options="availableSegments"
+								:required="true"
+							/>
+						</div>
+					</div>
+					<div class="flex justify-between w-full mt-2">
+						<div class="flex items-center text-sm text-gray-500">
+							<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+								<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+							</svg>
+							Candidate will be added to segment
+						</div>
+						<div class="flex space-x-3">
+							<Button variant="outline" @click="closeSegmentModal">Cancel</Button>
+							<Button :loading="savingSegment" @click="addToSegment">
+								<div class="flex items-center">
+									<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+									</svg>
+									Add
+								</div>
+							</Button>
+						</div>
+					</div>
 				</div>
 			</template>
 		</Dialog>
@@ -837,36 +915,75 @@
 			:model-value="showInteractionModal"
 			@update:model-value="showInteractionModal = $event"
 			:options="{
-				title: 'Add Interaction',
 				size: 'md',
 			}"
 		>
 			<template #body>
-				<div class="space-y-4">
-					<FormControl
-						v-model="interactionFormData.interaction_type"
-						type="select"
-						label="Interaction Type"
-						:options="interactionTypeOptions"
-						:required="true"
-					/>
-					<FormControl
-						v-model="interactionFormData.description"
-						type="textarea"
-						label="Description"
-						:required="true"
-					/>
-					<FormControl
-						v-model="interactionFormData.url"
-						type="text"
-						label="URL (optional)"
-					/>
-				</div>
-			</template>
-			<template #actions>
-				<div class="flex justify-end space-x-3">
-					<Button variant="outline" @click="closeInteractionModal"> Cancel </Button>
-					<Button :loading="savingInteraction" @click="saveInteraction"> Save </Button>
+				<div class="p-6 mb-2">
+					<div class="space-y-4">
+						<!-- Form Header -->
+						<div class="flex items-center justify-between border-b border-gray-200 pb-4 mb-2">
+							<div class="flex items-center">
+								<div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+									<svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+									</svg>
+								</div>
+								<div>
+									<h3 class="text-lg font-medium text-gray-900">Add Interaction</h3>
+									<p class="text-sm text-gray-500">Record a new interaction with candidate</p>
+								</div>
+							</div>
+							<Button variant="outline" @click="closeInteractionModal">
+								<div class="flex items-center">
+									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+									</svg>
+								</div>
+							</Button>
+						</div>
+					</div>
+					<div class="space-y-6">
+						<div class="space-y-4">
+							<FormControl
+								v-model="interactionFormData.interaction_type"
+								type="select"
+								label="Interaction Type"
+								:options="interactionTypeOptions"
+								:required="true"
+							/>
+							<FormControl
+								v-model="interactionFormData.description"
+								type="textarea"
+								label="Description"
+								:required="true"
+							/>
+							<FormControl
+								v-model="interactionFormData.url"
+								type="text"
+								label="URL (optional)"
+							/>
+						</div>
+					</div>
+					<div class="flex justify-between w-full mt-2">
+						<div class="flex items-center text-sm text-gray-500">
+							<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+								<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+							</svg>
+							Interaction will be recorded
+						</div>
+						<div class="flex space-x-3">
+							<Button variant="outline" @click="closeInteractionModal">Cancel</Button>
+							<Button :loading="savingInteraction" @click="saveInteraction">
+								<div class="flex items-center">
+									<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+									</svg>
+									Save
+								</div>
+							</Button>
+						</div>
+					</div>
 				</div>
 			</template>
 		</Dialog>
@@ -876,40 +993,71 @@
 			:model-value="showDocumentModal"
 			@update:model-value="showDocumentModal = $event"
 			:options="{
-				title: 'Upload Document',
 				size: 'md',
 			}"
 		>
 			<template #body>
-				<div class="space-y-4">
-					<div>
-						<label class="block text-sm font-medium text-gray-700 mb-2"
-							>Select File</label
-						>
-						<input
-							ref="fileInput"
-							type="file"
-							@change="handleFileSelect"
-							class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-						/>
+				<div class="p-6 mb-2">
+					<div class="space-y-4">
+						<!-- Form Header -->
+						<div class="flex items-center justify-between border-b border-gray-200 pb-4 mb-2">
+							<div class="flex items-center">
+								<div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center mr-3">
+									<svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+									</svg>
+								</div>
+								<div>
+									<h3 class="text-lg font-medium text-gray-900">Upload Document</h3>
+									<p class="text-sm text-gray-500">Upload a document for this candidate</p>
+								</div>
+							</div>
+							<Button variant="outline" @click="closeDocumentModal">
+								<div class="flex items-center">
+									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+									</svg>
+								</div>
+							</Button>
+						</div>
 					</div>
-					<FormControl
-						v-model="documentFormData.description"
-						type="textarea"
-						label="Description (optional)"
-					/>
-				</div>
-			</template>
-			<template #actions>
-				<div class="flex justify-end space-x-3">
-					<Button variant="outline" @click="closeDocumentModal"> Cancel </Button>
-					<Button
-						:loading="uploadingDocument"
-						@click="saveDocument"
-						:disabled="!selectedFile"
-					>
-						Upload
-					</Button>
+					<div class="space-y-6">
+						<div class="space-y-4">
+							<div>
+								<label class="block text-sm font-medium text-gray-700 mb-2">Select File</label>
+								<input
+									ref="fileInput"
+									type="file"
+									@change="handleFileSelect"
+									class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+								/>
+							</div>
+							<FormControl
+								v-model="documentFormData.description"
+								type="textarea"
+								label="Description (optional)"
+							/>
+						</div>
+					</div>
+					<div class="flex justify-between w-full mt-2">
+						<div class="flex items-center text-sm text-gray-500">
+							<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+								<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+							</svg>
+							Document will be uploaded immediately
+						</div>
+						<div class="flex space-x-3">
+							<Button variant="outline" @click="closeDocumentModal">Cancel</Button>
+							<Button :loading="uploadingDocument" @click="saveDocument" :disabled="!selectedFile">
+								<div class="flex items-center">
+									<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+									</svg>
+									Upload
+								</div>
+							</Button>
+						</div>
+					</div>
 				</div>
 			</template>
 		</Dialog>
@@ -919,37 +1067,76 @@
 			:model-value="showEmailModal"
 			@update:model-value="showEmailModal = $event"
 			:options="{
-				title: 'Compose Email',
 				size: 'lg',
 			}"
 		>
 			<template #body>
-				<div class="space-y-4">
-					<FormControl
-						v-model="emailFormData.to"
-						type="text"
-						label="To"
-						:required="true"
-					/>
-					<FormControl
-						v-model="emailFormData.subject"
-						type="text"
-						label="Subject"
-						:required="true"
-					/>
-					<FormControl
-						v-model="emailFormData.content"
-						type="textarea"
-						label="Message"
-						:required="true"
-						:rows="8"
-					/>
-				</div>
-			</template>
-			<template #actions>
-				<div class="flex justify-end space-x-3">
-					<Button variant="outline" @click="closeEmailModal"> Cancel </Button>
-					<Button :loading="sendingEmail" @click="sendEmail"> Send Email </Button>
+				<div class="p-6 mb-2">
+					<div class="space-y-4">
+						<!-- Form Header -->
+						<div class="flex items-center justify-between border-b border-gray-200 pb-4 mb-2">
+							<div class="flex items-center">
+								<div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center mr-3">
+									<svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+									</svg>
+								</div>
+								<div>
+									<h3 class="text-lg font-medium text-gray-900">Compose Email</h3>
+									<p class="text-sm text-gray-500">Send an email to the candidate</p>
+								</div>
+							</div>
+							<Button variant="outline" @click="closeEmailModal">
+								<div class="flex items-center">
+									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+									</svg>
+								</div>
+							</Button>
+						</div>
+					</div>
+					<div class="space-y-6">
+						<div class="space-y-4">
+							<FormControl
+								v-model="emailFormData.to"
+								type="text"
+								label="To"
+								:required="true"
+							/>
+							<FormControl
+								v-model="emailFormData.subject"
+								type="text"
+								label="Subject"
+								:required="true"
+							/>
+							<FormControl
+								v-model="emailFormData.content"
+								type="textarea"
+								label="Message"
+								:required="true"
+								:rows="8"
+							/>
+						</div>
+					</div>
+					<div class="flex justify-between w-full mt-2">
+						<div class="flex items-center text-sm text-gray-500">
+							<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+								<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+							</svg>
+							Email will be sent immediately
+						</div>
+						<div class="flex space-x-3">
+							<Button variant="outline" @click="closeEmailModal">Cancel</Button>
+							<Button :loading="sendingEmail" @click="sendEmail">
+								<div class="flex items-center">
+									<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+									</svg>
+									Send Email
+								</div>
+							</Button>
+						</div>
+					</div>
 				</div>
 			</template>
 		</Dialog>

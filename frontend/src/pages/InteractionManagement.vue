@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-slate-50 p-4 md:p-6">
+  <div class="min-h-screen container mx-auto bg-slate-50 p-4 md:p-6">
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
       <div>
@@ -373,7 +373,6 @@
       <template #body-content>
         <div class="space-y-4">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {{ console.log(filterOptions) }}
             <FormControl
               type="select"
               label="Candidate"
@@ -468,7 +467,6 @@ const selected = ref([])
 const search = ref('')
 const showFormModal = ref(false)
 const showDeleteDialog = ref(false)
-const formValid = ref(false)
 const itemToDelete = ref(null)
 const showAdvancedFilters = ref(false)
 
@@ -553,6 +551,10 @@ const headers = [
 // Computed properties
 const hasActiveFilters = computed(() => {
   return Object.values(filters).some(value => value && value !== '')
+})
+
+const formValid = computed(() => {
+  return formData.candidate_id && formData.interaction_type
 })
 
 // Methods
@@ -725,7 +727,15 @@ const resetForm = () => {
 }
 
 const saveData = async () => {
-  if (!formValid.value) return
+  // Validate required fields
+  if (!formData.candidate_id) {
+    alert('Please select a candidate')
+    return
+  }
+  if (!formData.interaction_type) {
+    alert('Please select an interaction type')
+    return
+  }
 
   saving.value = true
   try {
@@ -735,9 +745,11 @@ const saveData = async () => {
       loadData()
     } else {
       console.error('Error saving data:', result.error)
+      alert('Error saving interaction: ' + (result.error || 'Unknown error'))
     }
   } catch (error) {
     console.error('Error saving data:', error)
+    alert('Error saving interaction: ' + (error.message || 'Unknown error'))
   } finally {
     saving.value = false
   }
@@ -756,12 +768,15 @@ const deleteData = async () => {
     const result = await interactionService.delete(itemToDelete.value.name)
     if (result.success) {
       showDeleteDialog.value = false
+      itemToDelete.value = null
       loadData()
     } else {
       console.error('Error deleting data:', result.error)
+      alert('Error deleting interaction: ' + (result.error || 'Unknown error'))
     }
   } catch (error) {
     console.error('Error deleting data:', error)
+    alert('Error deleting interaction: ' + (error.message || 'Unknown error'))
   } finally {
     deleting.value = false
   }

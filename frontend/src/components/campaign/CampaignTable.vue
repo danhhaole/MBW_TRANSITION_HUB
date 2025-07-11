@@ -90,7 +90,7 @@
                 <div class="flex space-x-2">
                   <button 
                     @click="handleView(campaign)"
-                    class="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                    class="text-black hover:text-gray-800 text-sm font-medium"
                   >
                     Xem timeline
                   </button>
@@ -191,7 +191,7 @@
             <button
               v-else
               @click="handlePageChange(page)"
-              :class="pagination.page === page ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+              :class="pagination.page === page ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
               class="px-3 py-1 rounded-md"
             >
               {{ page }}

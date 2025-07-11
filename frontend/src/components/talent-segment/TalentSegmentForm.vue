@@ -297,7 +297,7 @@
 				<Button variant="outline" theme="gray" @click="handleCancel" :disabled="loading">
 					Hủy
 				</Button>
-				<Button variant="solid" theme="blue" type="submit" :loading="loading">
+				<Button variant="solid" theme="gray" type="submit" :loading="loading">
 					{{ isEditing ? 'Cập nhật' : 'Tạo mới' }}
 				</Button>
 			</div>

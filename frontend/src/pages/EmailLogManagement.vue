@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-slate-50 p-4 md:p-6">
+  <div class="min-h-screen container mx-auto bg-slate-50 p-4 md:p-6">
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
       <div>
@@ -274,7 +274,7 @@
                 :class="[
                   'px-3 py-1 text-sm border rounded-md',
                   page === pagination.page
-                    ? 'bg-blue-600 text-white border-blue-600'
+                    ? 'bg-black text-white border-black'
                     : page === '...'
                     ? 'cursor-default border-slate-300'
                     : 'border-slate-300 hover:bg-slate-50'

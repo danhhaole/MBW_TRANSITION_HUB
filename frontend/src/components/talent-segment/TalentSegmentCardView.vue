@@ -9,9 +9,9 @@
         <div class="px-4 py-3 text-black bg-gray-200">
           <div class="flex justify-between items-center">
             <h3 class="font-semibold truncate">{{ segment.title }}</h3>
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-white bg-opacity-20 text-black">
+            <!-- <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-white bg-opacity-20 text-black">
               {{ segment.candidate_count || 0 }} candidates
-            </span>
+            </span> -->
           </div>
         </div>
 
@@ -82,7 +82,7 @@
               
               <!-- Right side: Action Buttons -->
               <div class="flex space-x-2">
-                <Button variant="ghost" theme="blue" size="sm" @click="$emit('view-details', segment)">
+                <Button variant="ghost" theme="gray" size="sm" @click="$emit('view-details', segment)">
                   Manage
                 </Button>
 

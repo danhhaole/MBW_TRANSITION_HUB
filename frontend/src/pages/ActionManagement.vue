@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-slate-50 p-4 md:p-6">
+  <div class="min-h-screen container mx-auto bg-slate-50 p-4 md:p-6">
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
       <div>
@@ -497,7 +497,6 @@ const selected = ref([])
 const search = ref('')
 const showFormModal = ref(false)
 const showDeleteDialog = ref(false)
-const formValid = ref(false)
 const itemToDelete = ref(null)
 const showAdvancedFilters = ref(false)
 
@@ -566,6 +565,10 @@ const headers = [
 // Computed properties
 const hasActiveFilters = computed(() => {
   return Object.values(filters).some(value => value && value !== '')
+})
+
+const formValid = computed(() => {
+  return formData.candidate_campaign_id && formData.campaign_step && formData.status
 })
 
 // Methods
@@ -732,7 +735,19 @@ const resetForm = () => {
 }
 
 const saveData = async () => {
-  if (!formValid.value) return
+  // Validate required fields
+  if (!formData.candidate_campaign_id) {
+    alert('Please select a candidate campaign')
+    return
+  }
+  if (!formData.campaign_step) {
+    alert('Please select a campaign step')
+    return
+  }
+  if (!formData.status) {
+    alert('Please select a status')
+    return
+  }
 
   saving.value = true
   try {
@@ -747,36 +762,22 @@ const saveData = async () => {
         // Try to parse as JSON to validate
         JSON.parse(dataToSave.result)
       } catch (e) {
-        // If it's not valid JSON, wrap it in quotes to make it a JSON string
-        dataToSave.result = JSON.stringify(dataToSave.result)
+        alert('Result field must be valid JSON or left empty')
+        return
       }
     }
-    
-    // Handle datetime fields - convert empty strings to null
-    if (dataToSave.scheduled_at === '') {
-      dataToSave.scheduled_at = null
-    }
-    if (dataToSave.executed_at === '') {
-      dataToSave.executed_at = null
-    }
-    
-    // Handle assignee - convert empty string to null
-    if (dataToSave.assignee_id === '') {
-      dataToSave.assignee_id = null
-    }
-    
-    // Extract name for update, or pass null for create
-    const nameForUpdate = dataToSave.name && dataToSave.name !== 'new' ? dataToSave.name : null
-    
-    const result = await actionService.save(dataToSave, nameForUpdate)
+
+    const result = await actionService.save(dataToSave)
     if (result.success) {
       closeFormModal()
       loadData()
     } else {
       console.error('Error saving data:', result.error)
+      alert('Error saving action: ' + (result.error || 'Unknown error'))
     }
   } catch (error) {
     console.error('Error saving data:', error)
+    alert('Error saving action: ' + (error.message || 'Unknown error'))
   } finally {
     saving.value = false
   }
@@ -795,12 +796,15 @@ const deleteData = async () => {
     const result = await actionService.delete(itemToDelete.value.name)
     if (result.success) {
       showDeleteDialog.value = false
+      itemToDelete.value = null
       loadData()
     } else {
       console.error('Error deleting data:', result.error)
+      alert('Error deleting action: ' + (result.error || 'Unknown error'))
     }
   } catch (error) {
     console.error('Error deleting data:', error)
+    alert('Error deleting action: ' + (error.message || 'Unknown error'))
   } finally {
     deleting.value = false
   }

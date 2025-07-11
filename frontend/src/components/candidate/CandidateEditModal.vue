@@ -139,12 +139,27 @@
                       </button>
                     </span>
                   </div>
-                  <FormControl
-                    type="text"
-                    v-model="newSkill"
-                    placeholder="Nhập kỹ năng và nhấn Enter"
-                    @keyup.enter="addSkill"
-                  />
+                  <div class="flex gap-2">
+                    <FormControl
+                      type="text"
+                      v-model="newSkill"
+                      placeholder="Nhập kỹ năng và nhấn Enter"
+                      @keyup.enter.stop="addSkill"
+                      @keydown.enter.prevent
+                      class="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      @click="addSkill"
+                      :disabled="!newSkill.trim()"
+                      class="px-3"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -562,7 +577,13 @@ const cancelEdit = () => {
 }
 
 // Skill management methods
-const addSkill = () => {
+const addSkill = (event) => {
+  // Prevent form submission if called from Enter key
+  if (event) {
+    event.preventDefault()
+    event.stopPropagation()
+  }
+  
   if (newSkill.value && newSkill.value.trim()) {
     const skill = newSkill.value.trim()
     if (!formData.value.skills.includes(skill)) {

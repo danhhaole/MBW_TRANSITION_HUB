@@ -200,7 +200,7 @@
             <button
               type="submit"
               :disabled="loading"
-              class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+              class="px-4 py-2 text-sm font-medium text-white bg-black border border-transparent rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
             >
               <span v-if="loading" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
               <span>{{ isEdit ? 'Cập nhật' : 'Tạo mới' }}</span>

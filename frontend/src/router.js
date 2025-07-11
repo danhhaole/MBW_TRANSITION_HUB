@@ -79,7 +79,7 @@ const routes = [
 	},
 	{
 		path: '/talent-segments/:id',
-		component: TalentSegmentDetail,
+		component: TalentSegmentDetailView,
 		name: 'TalentSegmentDetail',
 	},
 	{

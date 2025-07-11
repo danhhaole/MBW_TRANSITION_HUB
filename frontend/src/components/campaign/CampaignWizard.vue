@@ -535,7 +535,7 @@ const createCampaign = async () => {
       status: 'DRAFT',
       start_date: new Date().toISOString().split('T')[0],
       end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      target_segment: campaignData.value.target_segment,
+      target_segment: campaignData.value.target_segment?.value,
       is_active: false
     }
     

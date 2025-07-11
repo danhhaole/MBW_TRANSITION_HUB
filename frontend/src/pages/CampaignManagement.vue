@@ -44,14 +44,14 @@
           </div>
 
           <!-- View mode toggle -->
-          <div class="flex rounded-md shadow-sm">
+          <div class="flex rounded-md">
             <button
               @click="viewMode = 'list'"
               :class="[
                 viewMode === 'list'
-                  ? 'bg-blue-500 text-white'
+                  ? 'bg-black text-white'
                   : 'bg-white text-gray-700 hover:text-gray-500',
-                'relative inline-flex items-center px-4 py-3 rounded-l-md border border-gray-300 text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500'
+                'relative inline-flex items-center px-4 py-3 rounded-l-md border border-gray-300 text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-black focus:border-black'
               ]"
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -63,9 +63,9 @@
               @click="viewMode = 'card'"
               :class="[
                 viewMode === 'card'
-                  ? 'bg-blue-500 text-white'
+                  ? 'bg-black text-white'
                   : 'bg-white text-gray-700 hover:text-gray-500',
-                'relative inline-flex items-center px-4 py-2 rounded-r-md border border-gray-300 border-l-0 text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500'
+                'relative inline-flex items-center px-4 py-2 rounded-r-md border border-gray-300 border-l-0 text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-black focus:border-black'
               ]"
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -106,24 +106,37 @@
           </button>
 
           <!-- Create button -->
+
           <Button
-            variant="solid"
-            theme="gray"
-            @click="openCreateDialog"
-            class="py-3 px-4 text-sm font-medium flex items-center"
-          >
-            <template #prefix>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-            </template>
-            Tạo mới
-          </Button>
+						variant="solid"
+						theme="gray"
+						@click="openCreateDialog"
+						:loading="loading"
+						class="px-6 py-[18px]"
+					>
+						<template #prefix>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								class="h-5 w-5"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+								></path>
+							</svg>
+						</template>
+						{{ __('Tạo mới') }}
+					</Button>
         </div>
       </div>
 
       <!-- Main content -->
-      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div class="bg-white rounded-lg border border-gray-200">
         <!-- Table/Card view -->
         <campaign-table v-if="viewMode === 'list'" 
           :campaigns="campaigns" 

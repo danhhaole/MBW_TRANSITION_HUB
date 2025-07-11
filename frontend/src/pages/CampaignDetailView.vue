@@ -13,7 +13,7 @@
             </svg>
           </button>
           <div>
-            <h1 class="text-3xl font-bold text-blue-600 mb-2">
+            <h1 class="text-3xl font-bold text-black mb-2">
               {{ campaign.campaign_name || 'Loading...' }}
             </h1>
             <div class="flex items-center flex-wrap gap-4">
@@ -36,7 +36,7 @@
         <div class="flex items-center space-x-2">
           <button
             @click="editCampaign"
-            class="inline-flex items-center px-4 py-2 border border-blue-300 text-sm font-medium rounded-lg text-blue-700 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            class="inline-flex items-center px-4 py-2 border border-black text-sm font-medium rounded-lg text-black bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
@@ -134,8 +134,8 @@
     <!-- Tabbed Content -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200">
       <!-- Tabs Header -->
-      <div class="bg-blue-600 rounded-t-lg">
-        <nav class="flex space-x-8" aria-label="Tabs">
+      <div class="bg-white rounded-t-lg">
+        <nav class="flex px-2 border-b" aria-label="Tabs">
           <button
             v-for="tab in tabs"
             :key="tab.key"
@@ -143,8 +143,8 @@
             :class="[
               'flex items-center py-4 px-6 text-sm font-medium border-b-2',
               activeTab === tab.key
-                ? 'border-white text-white'
-                : 'border-transparent text-blue-100 hover:text-white hover:border-blue-200'
+                ? 'border-black text-black'
+                : 'border-transparent text-gray-600 hover:text-black hover:border-black'
             ]"
           >
             <!-- Chart Timeline Icon for Steps -->
@@ -176,7 +176,7 @@
             <h3 class="text-lg font-medium text-gray-900">Campaign Steps</h3>
             <button
               @click="openStepModal()"
-              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
@@ -210,7 +210,7 @@
                 </tr>
                 <tr v-else v-for="step in campaignSteps" :key="step.name" class="hover:bg-gray-50">
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-black">
                       Step {{ step.step_order }}
                     </span>
                   </td>
@@ -274,7 +274,7 @@
               </button>
               <button
                 @click="openCandidateModal()"
-                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
@@ -300,7 +300,7 @@
                 <tr v-if="loadingCandidates" class="text-center">
                   <td colspan="5" class="px-6 py-4 text-sm text-gray-500">
                     <div class="flex justify-center">
-                      <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                      <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-black"></div>
                     </div>
                   </td>
                 </tr>
@@ -391,7 +391,7 @@
             <h3 class="text-lg font-medium text-gray-900">Campaign Actions</h3>
             <button
               @click="openActionModal()"
-              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
