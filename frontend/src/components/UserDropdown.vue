@@ -150,7 +150,6 @@ function dropdownItemObj(item) {
       window.open(_item.route, _item.open_in_new_window ? '_blank' : ''),
   }
 }
-
 function getStandardItem(item) {
   switch (item.name1) {
     case 'app_selector':
