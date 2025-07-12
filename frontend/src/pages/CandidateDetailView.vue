@@ -64,7 +64,7 @@
 									d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
 								/>
 							</svg>
-							Edit Profile
+							{{ __('Edit Profile') }}
 						</div>
 					</Button>
 					<Button variant="outline" theme="red" @click="deleteCandidate">
@@ -82,7 +82,7 @@
 									d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
 								/>
 							</svg>
-							Delete
+							{{ __('Delete') }}
 						</div>
 					</Button>
 				</div>
@@ -104,7 +104,7 @@
 							clip-rule="evenodd"
 						/>
 					</svg>
-					Candidate Information
+					{{ __('Thông tin ứng viên') }}
 				</h3>
 			</div>
 			<div class="p-6">
@@ -112,25 +112,25 @@
 					<div class="space-y-4">
 						<div>
 							<label class="block text-sm font-medium text-gray-700 mb-1"
-								>Full Name</label
+								>{{ __('Full Name') }}</label
 							>
-							<p class="text-gray-900">{{ candidate.full_name || 'N/A' }}</p>
+							<p class="text-gray-900">{{ candidate.full_name || __('None') }}</p>
 						</div>
 						<div>
 							<label class="block text-sm font-medium text-gray-700 mb-1"
-								>Email</label
+								>{{ __('Email') }}</label
 							>
-							<p class="text-gray-900">{{ candidate.email || 'N/A' }}</p>
+							<p class="text-gray-900">{{ candidate.email || __('None') }}</p>
 						</div>
 						<div>
 							<label class="block text-sm font-medium text-gray-700 mb-1"
-								>Phone</label
+								>{{ __('Phone Number') }}</label
 							>
-							<p class="text-gray-900">{{ candidate.phone || 'N/A' }}</p>
+							<p class="text-gray-900">{{ candidate.phone || __('None') }}</p>
 						</div>
 						<div>
 							<label class="block text-sm font-medium text-gray-700 mb-1"
-								>Status</label
+								>{{ __('Status') }}</label
 							>
 							<span
 								v-if="candidate.status"
@@ -139,43 +139,43 @@
 							>
 								{{ candidate.status }}
 							</span>
-							<span v-else class="text-gray-500">N/A</span>
+							<span v-else class="text-gray-500">{{ __('None') }}</span>
 						</div>
 					</div>
 					<div class="space-y-4">
 						<div>
 							<label class="block text-sm font-medium text-gray-700 mb-1"
-								>Headline</label
+								>{{ __('Title') }}</label
 							>
-							<p class="text-gray-900">{{ candidate.headline || 'N/A' }}</p>
+							<p class="text-gray-900">{{ candidate.headline || __('None') }}</p>
 						</div>
 						<div>
 							<label class="block text-sm font-medium text-gray-700 mb-1"
-								>Source</label
+								>{{ __('Source') }}</label
 							>
-							<p class="text-gray-900">{{ candidate.source || 'N/A' }}</p>
+							<p class="text-gray-900">{{ candidate.source || __('None') }}</p>
 						</div>
 						<div>
 							<label class="block text-sm font-medium text-gray-700 mb-1"
-								>Last Interaction</label
+								>{{ __('Last Interaction') }}</label
 							>
-							<p class="text-gray-900">{{ formatDateTime(candidate.last_interaction) || 'N/A' }}</p>
+							<p class="text-gray-900">{{ formatDateTime(candidate.last_interaction) || __('None') }}</p>
 						</div>
 						<div>
 							<label class="block text-sm font-medium text-gray-700 mb-1"
-								>Email Opt Out</label
+								>{{ __('Email Subscription') }}</label
 							>
 							<span
 								v-if="candidate.email_opt_out"
 								class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"
 							>
-								Opted Out
+								{{ __('Unsubscribed') }}
 							</span>
 							<span
 								v-else
 								class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
 							>
-								Subscribed
+								{{ __('Subscribed') }}
 							</span>
 						</div>
 					</div>
@@ -1307,6 +1307,9 @@ import {
 } from '../services/universalService'
 import { processSkills, skillsToString } from '../services/candidateService'
 
+// Translation helper function
+const __ = (text) => text
+
 const route = useRoute()
 const router = useRouter()
 
@@ -1393,29 +1396,29 @@ const editFormData = reactive({
 
 // Options
 const statusOptions = [
-	{ label: 'Active', value: 'ACTIVE' },
-	{ label: 'Paused', value: 'PAUSED' },
-	{ label: 'Completed', value: 'COMPLETED' },
-	{ label: 'Cancelled', value: 'CANCELLED' },
+	{ label: __('Active'), value: 'ACTIVE' },
+	{ label: __('Paused'), value: 'PAUSED' },
+	{ label: __('Completed'), value: 'COMPLETED' },
+	{ label: __('Cancelled'), value: 'CANCELLED' },
 ]
 
 const candidateStatusOptions = [
-	{ label: 'New', value: 'NEW' },
-	{ label: 'Sourced', value: 'SOURCED' },
-	{ label: 'Nurturing', value: 'NURTURING' },
-	{ label: 'Engaged', value: 'ENGAGED' },
-	{ label: 'Archived', value: 'ARCHIVED' },
+	{ label: __('New'), value: 'NEW' },
+	{ label: __('Sourced'), value: 'SOURCED' },
+	{ label: __('Nurturing'), value: 'NURTURING' },
+	{ label: __('Engaged'), value: 'ENGAGED' },
+	{ label: __('Archived'), value: 'ARCHIVED' },
 ]
 
 const interactionTypeOptions = [
-	{ label: 'Email Sent', value: 'EMAIL_SENT' },
-	{ label: 'Email Delivered', value: 'EMAIL_DELIVERED' },
-	{ label: 'Email Bounced', value: 'EMAIL_BOUNCED' },
-	{ label: 'Email Opened', value: 'EMAIL_OPENED' },
-	{ label: 'Email Clicked', value: 'EMAIL_CLICKED' },
-	{ label: 'Phone Call', value: 'PHONE_CALL' },
-	{ label: 'Meeting', value: 'MEETING' },
-	{ label: 'Note', value: 'NOTE' },
+	{ label: __('Email Sent'), value: 'EMAIL_SENT' },
+	{ label: __('Email Delivered'), value: 'EMAIL_DELIVERED' },
+	{ label: __('Email Bounced'), value: 'EMAIL_BOUNCED' },
+	{ label: __('Email Opened'), value: 'EMAIL_OPENED' },
+	{ label: __('Email Clicked'), value: 'EMAIL_CLICKED' },
+	{ label: __('Phone Call'), value: 'PHONE_CALL' },
+	{ label: __('Meeting'), value: 'MEETING' },
+	{ label: __('Note'), value: 'NOTE' },
 ]
 
 const skillsOptions = [
@@ -1598,31 +1601,31 @@ const DocumentIcon = {
 const tabs = computed(() => [
 	{
 		key: 'campaigns',
-		label: 'Active Campaigns',
+					label: __('Active Campaigns'),
 		count: candidateCampaigns.value.length,
 		icon: CampaignIcon,
 	},
 	{
 		key: 'segments',
-		label: 'Segments',
+					label: __('Segments'),
 		count: candidateSegments.value.length,
 		icon: SegmentIcon,
 	},
 	{
 		key: 'interactions',
-		label: 'Interactions',
+					label: __('Interactions'),
 		count: interactions.value.length,
 		icon: InteractionIcon,
 	},
 	{
 		key: 'emails',
-		label: 'Email History',
+					label: __('Email History'),
 		count: emailLogs.value.length,
 		icon: EmailIcon,
 	},
 	{
 		key: 'documents',
-		label: 'Documents',
+					label: __('Documents'),
 		count: documents.value.length,
 		icon: DocumentIcon,
 	},

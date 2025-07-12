@@ -7,8 +7,8 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
       </div>
-      <h3 class="text-lg font-medium text-gray-900 mb-2">Không có campaign nào để hiển thị</h3>
-      <p class="text-gray-500">Hãy tạo campaign đầu tiên của bạn</p>
+      <h3 class="text-lg font-medium text-gray-900 mb-2">{{ __('No campaigns to display') }}</h3>
+      <p class="text-gray-500">{{ __('Create your first campaign') }}</p>
     </div>
     
     <div v-if="!loading && campaigns?.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -24,7 +24,7 @@
           :class="getHeaderClass(campaign.status)"
         >
           <span class="text-sm font-medium" :class="getHeaderTextClass(campaign.status)">
-            {{ campaign.type === 'NURTURING' ? 'Nuôi dưỡng' : 'Thu hút' }}
+            {{ campaign.type === 'NURTURING' ? __('Nurturing') : __('Attraction') }}
           </span>
           <span
             :class="getStatusChipClass(campaign.status)"
@@ -40,13 +40,13 @@
             {{ campaign.campaign_name }}
           </h3>
           <p class="text-sm text-gray-600 mb-4 line-clamp-2">
-            {{ campaign.description || 'Tuyển dụng cho vị trí quan trọng trong công ty.' }}
+            {{ campaign.description || __('Recruiting for important positions in the company.') }}
           </p>
 
           <!-- Progress section -->
           <div class="mb-4">
             <div class="flex justify-between items-center mb-2">
-              <span class="text-xs text-gray-500">Tiến độ</span>
+              <span class="text-xs text-gray-500">{{ __('Progress') }}</span>
               <span class="text-xs font-medium" :class="getProgressTextClass(campaign)">
                 {{ getCampaignSteps(campaign) }}
               </span>
@@ -67,7 +67,7 @@
                 <svg class="w-4 h-4 text-gray-400 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                 </svg>
-                <span class="text-gray-600">{{ campaign.formattedStartDate || 'Chưa xác định' }}</span>
+                <span class="text-gray-600">{{ campaign.formattedStartDate || __('Not determined') }}</span>
               </div>
               
               <!-- Owner avatars -->
@@ -106,14 +106,14 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
             </svg>
-            Chi tiết
+            {{ __('Details') }}
           </button>
           
           <button
             @click="$emit('view', campaign)"
             class="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors duration-200"
           >
-            Xem timeline →
+            {{ __('View timeline') }} →
           </button>
         </div>
       </div>
@@ -130,10 +130,10 @@
             </svg>
           </div>
           <h3 class="text-lg font-semibold text-gray-900 mb-2">
-            Tạo yêu cầu mới
+            {{ __('Create New Request') }}
           </h3>
           <p class="text-sm text-gray-600">
-            Bắt đầu một yêu cầu tuyển dụng mới
+            {{ __('Start a new recruitment request') }}
           </p>
         </div>
       </div>
@@ -177,6 +177,9 @@
 
 <script setup>
 import { computed } from 'vue'
+
+// Translation helper function
+const __ = (text) => text
 
 // Props
 const props = defineProps({
@@ -229,10 +232,10 @@ const getStatusChipClass = (status) => {
 
 const getStatusText = (status) => {
   const texts = {
-    'DRAFT': 'Nháp',
-    'ACTIVE': 'Đang tiến hành',
-    'PAUSED': 'Tạm dừng',
-    'ARCHIVED': 'Hoàn thành'
+    'DRAFT': __('Draft'),
+    'ACTIVE': __('In Progress'),
+    'PAUSED': __('Paused'),
+    'ARCHIVED': __('Completed')
   }
   return texts[status] || status
 }
@@ -256,7 +259,7 @@ const getCampaignSteps = (campaign) => {
   const progress = getCampaignProgress(campaign)
   const totalSteps = 5
   const currentStep = Math.ceil((progress / 100) * totalSteps)
-  return `${currentStep}/${totalSteps} bước`
+  return `${currentStep}/${totalSteps} ${__('steps')}`
 }
 
 const getProgressBarClass = (campaign) => {

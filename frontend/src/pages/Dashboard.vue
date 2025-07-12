@@ -4,9 +4,9 @@
 	>
 		<!-- Header -->
 		<header class="mb-8">
-			<h1 class="text-3xl font-extrabold text-slate-800">Dashboard Tổng quan</h1>
+			<h1 class="text-3xl font-extrabold text-slate-800">{{ __('Overview Dashboard') }}</h1>
 			<p class="text-slate-500 mt-1">
-				Chào mừng trở lại! Đây là tình hình các hoạt động của bạn hôm nay.
+				{{ __('Welcome back! Here is the status of your activities today.') }}
 			</p>
 			<div class="mt-4">
 				<Button variant="outline" :loading="loading" @click="refreshData">
@@ -20,7 +20,7 @@
 							/>
 						</svg>
 					</template>
-					Làm mới
+					{{ __('Refresh') }}
 				</Button>
 			</div>
 		</header>
@@ -31,7 +31,7 @@
 				<!-- My Tasks Section -->
 				<section class="fade-in" style="animation-delay: 100ms">
 					<h2 class="text-xl font-bold text-slate-800 mb-4">
-						Tác vụ của tôi (<span>{{ tasks.length }}</span
+						{{ __('My Tasks') }} (<span>{{ tasks.length }}</span
 						>)
 					</h2>
 
@@ -43,7 +43,7 @@
 								class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
 							></div>
 						</div>
-						<p class="text-slate-600">Đang tải dữ liệu...</p>
+						<p class="text-slate-600">{{ __('Loading data...') }}</p>
 					</div>
 
 					<div v-else-if="tasks.length === 0" class="text-center py-12">
@@ -65,7 +65,7 @@
 							</svg>
 						</div>
 						<p class="text-lg font-medium text-slate-900 mb-2">
-							Chúc mừng! Bạn đã hoàn thành tất cả các tác vụ.
+							{{ __('Congratulations! You have completed all tasks.') }}
 						</p>
 					</div>
 
@@ -116,7 +116,7 @@
 									}}</span>
 								</p>
 								<p class="text-xs text-slate-500">
-									Chiến dịch: {{ task.campaign }}
+									{{ __('Campaign:') }} {{ task.campaign }}
 								</p>
 							</div>
 
@@ -137,7 +137,7 @@
 									:disabled="loading"
 									class="mt-2 px-3 py-1.5 bg-indigo-600 text-black text-xs font-semibold rounded-lg hover:bg-indigo-700 disabled:opacity-50"
 								>
-									Cập nhật
+									{{ __('Update') }}
 								</Button>
 							</div>
 						</div>
@@ -147,7 +147,7 @@
 				<!-- Active Campaigns Section -->
 				<section class="fade-in" style="animation-delay: 200ms">
 					<h2 class="text-xl font-bold text-slate-800 mb-4">
-						Các chiến dịch đang hoạt động
+						{{ __('Active Campaigns') }}
 					</h2>
 
 					<div v-if="loading" class="text-center py-12">
@@ -158,7 +158,7 @@
 								class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
 							></div>
 						</div>
-						<p class="text-slate-600">Đang tải chiến dịch...</p>
+						<p class="text-slate-600">{{ __('Loading campaigns...') }}</p>
 					</div>
 
 					<div v-else-if="activeCampaigns.length === 0" class="text-center py-12">
@@ -179,7 +179,7 @@
 								/>
 							</svg>
 						</div>
-						<p class="text-slate-600">Chưa có chiến dịch nào đang hoạt động</p>
+						<p class="text-slate-600">{{ __('No active campaigns yet') }}</p>
 					</div>
 
 					<div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -194,7 +194,7 @@
 									<span
 										class="text-xs font-medium px-2 py-1 rounded-full bg-green-100 text-green-700"
 									>
-										Đang chạy
+										{{ __('Running') }}
 									</span>
 								</div>
 
@@ -266,25 +266,25 @@
 												}}</span>
 											</div>
 
-											<span class="flex justify-center text-xs text-slate-500">ứng tuyển</span>
+											<span class="flex justify-center text-xs text-slate-500">{{ __('applications') }}</span>
 										</div>
 									</div>
 
 									<div class="space-y-2 text-sm">
 										<div>
-											<p class="text-slate-500">Ứng viên mục tiêu</p>
+											<p class="text-slate-500">{{ __('Target Candidates') }}</p>
 											<p class="font-bold text-slate-800 text-lg">
 												{{ campaign.stats.candidates }}
 											</p>
 										</div>
 										<div>
-											<p class="text-blue-600 font-medium">Tỷ lệ mở</p>
+											<p class="text-blue-600 font-medium">{{ __('Open Rate') }}</p>
 											<p class="font-bold text-blue-600">
 												{{ campaign.stats.openRate }}%
 											</p>
 										</div>
 										<div>
-											<p class="text-purple-600 font-medium">Tỷ lệ nhấp</p>
+											<p class="text-purple-600 font-medium">{{ __('Click Rate') }}</p>
 											<p class="font-bold text-purple-600">
 												{{ campaign.stats.clickRate }}%
 											</p>
@@ -297,7 +297,7 @@
 								<button
 									class="w-full text-center text-sm font-semibold text-indigo-600 hover:text-indigo-700"
 								>
-									Xem chi tiết luồng
+									{{ __('View workflow details') }}
 								</button>
 							</div>
 						</div>
@@ -308,7 +308,7 @@
 			<!-- Sidebar: Completed Campaigns & Stats -->
 			<aside class="lg:col-span-1 space-y-6">
 				<section class="fade-in" style="animation-delay: 300ms">
-					<h2 class="text-xl font-bold text-slate-800 mb-4">Đã hoàn thành gần đây</h2>
+					<h2 class="text-xl font-bold text-slate-800 mb-4">{{ __('Recently Completed') }}</h2>
 
 					<div v-if="loading" class="text-center py-8">
 						<div
@@ -318,7 +318,7 @@
 								class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"
 							></div>
 						</div>
-						<p class="text-sm text-slate-600">Đang tải...</p>
+						<p class="text-sm text-slate-600">{{ __('Loading...') }}</p>
 					</div>
 
 					<div v-else-if="completedCampaigns.length === 0" class="text-center py-8">
@@ -340,7 +340,7 @@
 							</svg>
 						</div>
 						<p class="text-sm text-slate-600">
-							Chưa có chiến dịch nào hoàn thành gần đây
+							{{ __('No recently completed campaigns') }}
 						</p>
 					</div>
 
@@ -372,7 +372,7 @@
 							<div class="flex-1">
 								<p class="font-semibold text-slate-800">{{ campaign.name }}</p>
 								<p class="text-xs text-slate-500">
-									{{ campaign.stats.newApplicants }} ứng viên mới
+									{{ campaign.stats.newApplicants }} {{ __('new candidates') }}
 								</p>
 							</div>
 						</div>
@@ -411,6 +411,9 @@ import {
 	actionService,
 	candidateService,
 } from '../services/universalService'
+
+// Translation helper function
+const __ = (text) => text
 
 // Reactive data
 const tasks = ref([])
@@ -636,17 +639,17 @@ const closeToast = () => {
 
 const getActionTitle = (actionStatus) => {
 	const titles = {
-		SCHEDULED: 'Đã lên lịch',
-		EXECUTED: 'Đã hoàn thành',
-		SKIPPED: 'Đã bỏ qua',
-		FAILED: 'Thất bại',
-		PENDING_MANUAL: 'Chờ xác nhận',
+		SCHEDULED: __('Scheduled'),
+		EXECUTED: __('Completed'),
+		SKIPPED: __('Skipped'),
+		FAILED: __('Failed'),
+		PENDING_MANUAL: __('Pending Confirmation'),
 	}
-	return titles[actionStatus] || 'Tác vụ'
+	return titles[actionStatus] || __('Task')
 }
 
 const formatDueDate = (dueDate) => {
-	if (!dueDate) return 'Không xác định'
+	if (!dueDate) return __('Not specified')
 
 	const due = new Date(dueDate)
 	const today = new Date()
@@ -659,11 +662,11 @@ const formatDueDate = (dueDate) => {
 	tomorrow.setHours(0, 0, 0, 0)
 
 	if (due.getTime() === today.getTime()) {
-		return 'Hôm nay'
+		return __('Today')
 	} else if (due.getTime() === tomorrow.getTime()) {
-		return 'Ngày mai'
+		return __('Tomorrow')
 	} else if (due < today) {
-		return 'Quá hạn'
+		return __('Overdue')
 	} else {
 		return due.toLocaleDateString('vi-VN', {
 			day: '2-digit',
@@ -674,10 +677,10 @@ const formatDueDate = (dueDate) => {
 
 const getDueDateColor = (dueDate) => {
 	switch (dueDate) {
-		case 'Hôm nay':
-		case 'Quá hạn':
+		case __('Hôm nay'):
+		case __('Quá hạn'):
 			return 'error'
-		case 'Ngày mai':
+		case __('Ngày mai'):
 			return 'warning'
 		default:
 			return 'info'
@@ -686,10 +689,10 @@ const getDueDateColor = (dueDate) => {
 
 const getDueDateBadgeColor = (dueDate) => {
 	switch (dueDate) {
-		case 'Hôm nay':
-		case 'Quá hạn':
+		case __('Hôm nay'):
+		case __('Quá hạn'):
 			return 'bg-red-100 text-red-800'
-		case 'Ngày mai':
+		case __('Ngày mai'):
 			return 'bg-yellow-100 text-yellow-800'
 		default:
 			return 'bg-blue-100 text-blue-800'
@@ -698,10 +701,10 @@ const getDueDateBadgeColor = (dueDate) => {
 
 const getTaskColor = (dueDate) => {
 	switch (dueDate) {
-		case 'Hôm nay':
-		case 'Quá hạn':
+		case __('Hôm nay'):
+		case __('Quá hạn'):
 			return 'error'
-		case 'Ngày mai':
+		case __('Ngày mai'):
 			return 'warning'
 		default:
 			return 'grey-lighten-3'
@@ -710,10 +713,10 @@ const getTaskColor = (dueDate) => {
 
 const getTaskBgColor = (dueDate) => {
 	switch (dueDate) {
-		case 'Hôm nay':
-		case 'Quá hạn':
+		case __('Hôm nay'):
+		case __('Quá hạn'):
 			return 'bg-red-500'
-		case 'Ngày mai':
+		case __('Ngày mai'):
 			return 'bg-yellow-500'
 		default:
 			return 'bg-gray-400'
@@ -722,10 +725,10 @@ const getTaskBgColor = (dueDate) => {
 
 const getDueDateTextColor = (dueDate) => {
 	switch (dueDate) {
-		case 'Hôm nay':
-		case 'Quá hạn':
+		case __('Hôm nay'):
+		case __('Quá hạn'):
 			return 'text-red-600'
-		case 'Ngày mai':
+		case __('Ngày mai'):
 			return 'text-yellow-600'
 		default:
 			return 'text-slate-600'
@@ -827,19 +830,19 @@ const handleTaskCompleted = async (taskData) => {
 		}
 		// Show success message
 		const actionMessages = {
-			EXECUTED: 'Tác vụ đã được hoàn thành',
-			SCHEDULED: 'Tác vụ đã được lên lịch',
-			SKIPPED: 'Tác vụ đã được bỏ qua',
-			FAILED: 'Tác vụ đã được đánh dấu thất bại',
+			EXECUTED: 'Task completed',
+			SCHEDULED: 'Task scheduled',
+			SKIPPED: 'Task skipped',
+			FAILED: 'Task marked as failed',
 		}
 
-		showToastMessage(actionMessages[taskData.action] || 'Tác vụ đã được cập nhật', 'success')
+		showToastMessage(actionMessages[taskData.action] || 'Task updated', 'success')
 
 		// Refresh data
 		await refreshData()
 	} catch (error) {
 		console.error('Error updating task:', error)
-		showToastMessage('Không thể cập nhật tác vụ. Vui lòng thử lại.', 'error')
+		showToastMessage('Could not update task. Please try again.', 'error')
 	} finally {
 		loading.value = false
 	}
@@ -851,7 +854,7 @@ const refreshData = async () => {
 		await Promise.all([loadTasks(), loadActiveCampaigns(), loadCompletedCampaigns()])
 	} catch (error) {
 		console.error('Error refreshing data:', error)
-		showToastMessage('Không thể tải dữ liệu. Vui lòng thử lại.', 'error')
+		showToastMessage('Could not load data. Please try again.', 'error')
 	} finally {
 		loading.value = false
 	}

@@ -3,7 +3,7 @@
     <!-- Table Header -->
     <div class="bg-white border-b border-gray-200 px-6 py-4">
       <div class="flex items-center justify-between">
-        <h2 class="text-lg font-medium text-gray-900">Danh sách ứng viên</h2>
+        <h2 class="text-lg font-medium text-gray-900">{{ __('Candidate List') }}</h2>
         <slot name="toolbar-actions" />
       </div>
     </div>
@@ -13,14 +13,14 @@
       <table class="min-w-full divide-y divide-gray-300">
         <thead class="bg-gray-50">
           <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ứng viên</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Chức danh</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kỹ năng</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nguồn</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tương tác cuối</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Điểm tương tác</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
-            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Candidate') }}</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Position') }}</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Skills') }}</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Source') }}</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Last Interaction') }}</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Engagement Score') }}</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Status') }}</th>
+            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Actions') }}</th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
@@ -358,6 +358,9 @@ import {
   getEngagementColor
 } from '@/utils/candidateHelpers'
 
+// Translation helper function
+const __ = (text) => text
+
 // Props
 const props = defineProps({
   candidates: {
@@ -402,56 +405,56 @@ const emit = defineEmits([
 // Table headers
 const headers = [
   {
-    title: 'Ứng viên',
+    title: 'Candidate',
     key: 'candidate',
     align: 'start',
     sortable: false,
     width: '300px'
   },
   {
-    title: 'Chức danh',
+    title: 'Position',
     key: 'headline',
     align: 'start',
     sortable: false,
     width: '200px'
   },
   {
-    title: 'Kỹ năng',
+    title: 'Skills',
     key: 'skills',
     align: 'start',
     sortable: false,
     width: '200px'
   },
   {
-    title: 'Nguồn',
+    title: 'Source',
     key: 'source',
     align: 'start',
     sortable: false,
     width: '120px'
   },
   {
-    title: 'Tương tác cuối',
+    title: 'Last Interaction',
     key: 'last_interaction',
     align: 'start',
     sortable: false,
     width: '140px'
   },
   {
-    title: 'Điểm tương tác',
+    title: 'Engagement Score',
     key: 'engagement',
     align: 'start',
     sortable: false,
     width: '140px'
   },
   {
-    title: 'Trạng thái',
+    title: 'Status',
     key: 'status',
     align: 'start',
     sortable: false,
     width: '120px'
   },
   {
-    title: 'Thao tác',
+    title: 'Actions',
     key: 'actions',
     align: 'end',
     sortable: false,

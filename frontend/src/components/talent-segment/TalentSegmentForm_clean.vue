@@ -4,36 +4,36 @@
       <!-- Title -->
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">
-          Tên phân khúc <span class="text-red-500">*</span>
+          {{ __('Segment Name') }} <span class="text-red-500">*</span>
         </label>
         <input
           v-model="formData.title"
           type="text"
-          placeholder="Nhập tên phân khúc..."
+          :placeholder="__('Enter segment name...')"
           class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           :class="{ 'border-red-500': errors.title }"
           maxlength="100"
           required
         />
-        <p v-if="errors.title" class="mt-1 text-sm text-red-600">{{ errors.title }}</p>
-        <p class="mt-1 text-sm text-gray-500">Tên này sẽ được hiển thị trong danh sách phân khúc</p>
+        <p v-if="errors.title" class="mt-1 text-sm text-red-600">{{ __(errors.title) }}</p>
+        <p class="mt-1 text-sm text-gray-500">{{ __('This name will be displayed in the segment list') }}</p>
       </div>
 
       <!-- Description -->
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">
-          Mô tả
+          {{ __('Description') }}
         </label>
         <textarea
           v-model="formData.description"
           rows="3"
-          placeholder="Mô tả chi tiết về phân khúc này..."
+          :placeholder="__('Detailed description of this segment...')"
           class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           :class="{ 'border-red-500': errors.description }"
           maxlength="500"
         />
-        <p v-if="errors.description" class="mt-1 text-sm text-red-600">{{ errors.description }}</p>
-        <p class="mt-1 text-sm text-gray-500">Mô tả sẽ giúp người khác hiểu rõ mục đích của phân khúc</p>
+        <p v-if="errors.description" class="mt-1 text-sm text-red-600">{{ __(errors.description) }}</p>
+        <p class="mt-1 text-sm text-gray-500">{{ __('Description will help others understand the purpose of the segment') }}</p>
       </div>
 
       <!-- Type and Owner in a row -->
@@ -257,7 +257,7 @@
           @click="handleCancel"
           :disabled="loading"
         >
-          Hủy
+          {{ __('Cancel') }}
         </Button>
         <Button
           variant="solid"
@@ -265,7 +265,7 @@
           type="submit"
           :loading="loading"
         >
-          {{ isEditing ? 'Cập nhật' : 'Tạo mới' }}
+          {{ isEditing ? __('Update') : __('Create') }}
         </Button>
       </div>
     </form>
@@ -276,6 +276,9 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { Button } from 'frappe-ui'
 import { talentSegmentService, userService } from '@/services/universalService'
+
+// Translation helper function
+const __ = (text) => text
 
 // Props
 const props = defineProps({
@@ -321,11 +324,11 @@ const criteriaForm = ref({
 // Type options
 const typeOptions = [
   {
-    title: 'Thủ công',
+    title: 'Manual',
     value: 'MANUAL'
   },
   {
-    title: 'Tự động (AI)',
+    title: 'Automatic (AI)',
     value: 'DYNAMIC'
   }
 ]
@@ -338,23 +341,23 @@ const validateForm = () => {
   errors.value = {}
   
   if (!formData.value.title || formData.value.title.trim().length < 3) {
-    errors.value.title = 'Tên phân khúc phải có ít nhất 3 ký tự'
+    errors.value.title = 'Segment name must be at least 3 characters'
   }
   
   if (formData.value.title && formData.value.title.length > 100) {
-    errors.value.title = 'Tên phân khúc không được quá 100 ký tự'
+    errors.value.title = 'Segment name cannot exceed 100 characters'
   }
   
   if (formData.value.description && formData.value.description.length > 500) {
-    errors.value.description = 'Mô tả không được quá 500 ký tự'
+    errors.value.description = 'Description cannot exceed 500 characters'
   }
   
   if (!formData.value.type) {
-    errors.value.type = 'Loại phân khúc là bắt buộc'
+    errors.value.type = 'Segment type is required'
   }
   
   if (formData.value.candidate_count < 0) {
-    errors.value.candidate_count = 'Số lượng ứng viên phải >= 0'
+    errors.value.candidate_count = 'Number of candidates must be >= 0'
   }
   
   return Object.keys(errors.value).length === 0

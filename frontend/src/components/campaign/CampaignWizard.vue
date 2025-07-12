@@ -4,7 +4,7 @@
       <div class="bg-white">
         <!-- Header -->
         <div class="flex justify-between items-center p-6 border-b border-gray-200">
-          <h2 class="text-xl font-bold text-gray-900">{{ modalTitle }}</h2>
+          <h2 class="text-xl font-bold text-gray-900">{{ __(modalTitle) }}</h2>
           <Button
             theme="gray"
             variant="ghost"
@@ -47,12 +47,12 @@
           <div v-if="currentStep === 1" class="space-y-4 animate-fadeIn">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
-                Tên chiến dịch <span class="text-red-500">*</span>
+                {{ __('Campaign Name') }} <span class="text-red-500">*</span>
               </label>
               <input
                 v-model="campaignData.campaign_name"
                 type="text"
-                placeholder="Ví dụ: Nuôi dưỡng ứng viên React Quý 4/2024"
+                :placeholder="__('Example: React Candidate Nurturing Q4/2024')"
                 class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 :class="{ 'border-red-500': !campaignData.campaign_name && currentStep > 1 }"
               />
@@ -60,12 +60,12 @@
             
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
-                Mục tiêu <span class="text-red-500">*</span>
+                {{ __('Objective') }} <span class="text-red-500">*</span>
               </label>
               <textarea
                 v-model="campaignData.description"
                 rows="3"
-                placeholder="Mô tả ngắn gọn mục đích của chiến dịch..."
+                :placeholder="__('Brief description of campaign purpose...')"
                 class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 :class="{ 'border-red-500': !campaignData.description && currentStep > 1 }"
               />
@@ -117,7 +117,7 @@
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
               </div>
-              <p class="text-base text-gray-700">Đang xử lý...</p>
+              <p class="text-base text-gray-700">{{ __('Processing...') }}</p>
             </div>
 
             <!-- Candidate Selection -->
@@ -196,7 +196,7 @@
             @click="prevStep"
             :disabled="loading"
           >
-            Quay lại
+            {{ __('Back') }}
           </Button>
           
           <div v-else></div>
@@ -209,7 +209,7 @@
               @click="nextStep"
               :disabled="!canProceed"
             >
-              Tiếp tục
+              {{ __('Continue') }}
             </Button>
             
             <Button
@@ -220,7 +220,7 @@
               :loading="loading"
               :disabled="!selectedSource"
             >
-              {{ getSearchButtonText() }}
+              {{ __(getSearchButtonText()) }}
             </Button>
             
             <Button
@@ -229,7 +229,7 @@
               theme="gray"
               @click="nextStep"
             >
-              {{ selectedCandidates.size > 0 ? `Thêm ${selectedCandidates.size} ứng viên` : 'Bỏ qua bước này' }}
+              {{ selectedCandidates.size > 0 ? __(`Add ${selectedCandidates.size} candidates`) : __('Skip this step') }}
             </Button>
             
             <Button
@@ -239,7 +239,7 @@
               @click="createCampaign"
               :loading="activating"
             >
-              Tạo Chiến dịch
+              {{ __('Create Campaign') }}
             </Button>
           </div>
         </div>
@@ -302,32 +302,35 @@ const configData = ref({
 const selectedCandidates = ref(new Set())
 const realCandidates = ref([]) // Thay thế mockCandidates
 
+// Translation helper function
+const __ = (text) => text
+
 // Steps definition
 const steps = [
-  { number: 1, label: 'Thông tin' },
-  { number: 2, label: 'Nguồn' },
-  { number: 3, label: 'Lựa chọn' },
-  { number: 4, label: 'Kích hoạt' }
+  { number: 1, label: 'Information' },
+  { number: 2, label: 'Source' },
+  { number: 3, label: 'Selection' },
+  { number: 4, label: 'Activate' }
 ]
 
 // Source options
 const sources = [
   {
     key: 'pool',
-    title: 'Nguồn nhân tài',
-    description: 'Sử dụng dữ liệu có sẵn',
+    title: 'Talent Pool',
+    description: 'Use existing data',
     icon: 'mdi-account-group'
   },
   {
     key: 'ats',
-    title: 'Đồng bộ từ ATS',
-    description: 'Kết nối với hệ thống khác',
+    title: 'Sync from ATS',
+    description: 'Connect with other systems',
     icon: 'mdi-sync'
   },
   {
     key: 'web',
-    title: 'Thu thập từ Web',
-    description: 'Tìm kiếm trên Internet',
+    title: 'Collect from Web',
+    description: 'Search on Internet',
     icon: 'mdi-web'
   }
 ]
@@ -398,12 +401,12 @@ const dialogOptions = computed(() => ({
 // Computed
 const modalTitle = computed(() => {
   const titles = {
-    1: 'Tạo Chiến dịch mới',
-    2: 'Chọn nguồn dữ liệu',
-    3: 'Cấu hình và lựa chọn',
-    4: 'Kích hoạt chiến dịch'
+    1: 'Create New Campaign',
+    2: 'Select Data Source',
+    3: 'Configure and Select',
+    4: 'Activate Campaign'
   }
-  return titles[currentStep.value] || 'Tạo Chiến dịch mới'
+  return titles[currentStep.value] || 'Create New Campaign'
 })
 
 const step1Valid = computed(() => {

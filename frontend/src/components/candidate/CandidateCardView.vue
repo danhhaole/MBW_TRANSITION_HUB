@@ -59,7 +59,7 @@
                 {{ candidate.full_name }}
               </h3>
               <p class="text-sm text-gray-500 truncate">
-                {{ candidate.headline || 'Chưa có thông tin' }}
+                {{ candidate.headline || __('No information available') }}
               </p>
             </div>
           </div>
@@ -148,7 +148,7 @@
                 class="text-blue-600 hover:text-blue-800 text-xs font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors"
                 @click.stop="$emit('view-candidate', candidate)"
               >
-                Xem chi tiết
+                {{ __('View Details') }}
               </button>
               <div class="relative" v-if="false">
                 <button
@@ -173,7 +173,7 @@
                       <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                       </svg>
-                      Chỉnh sửa
+                      {{ __('Edit') }}
                     </button>
                     <button
                       class="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
@@ -182,7 +182,7 @@
                       <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                       </svg>
-                      Sao chép
+                      {{ __('Duplicate') }}
                     </button>
                     <div class="border-t border-gray-100"></div>
                     <button
@@ -192,7 +192,7 @@
                       <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
-                      Xóa
+                      {{ __('Delete') }}
                     </button>
                   </div>
                 </div>
@@ -213,12 +213,12 @@
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
       </svg>
       <h3 class="text-lg font-medium text-gray-900 mb-2">
-        {{ hasFilters ? 'Không tìm thấy ứng viên' : 'Chưa có ứng viên nào' }}
+        {{ hasFilters ? __('No candidates found') : __('No candidates yet') }}
       </h3>
       <p class="text-sm text-gray-500 max-w-sm mb-6">
         {{ hasFilters 
-          ? 'Thử thay đổi bộ lọc để tìm thấy ứng viên phù hợp.' 
-          : 'Bắt đầu bằng cách thêm ứng viên đầu tiên.' 
+          ? __('Try changing filters to find suitable candidates.') 
+          : __('Start by adding your first candidate.') 
         }}
       </p>
       <button
@@ -229,14 +229,14 @@
         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
         </svg>
-        Thêm ứng viên
+        {{ __('Add Candidate') }}
       </button>
       <button
         v-else
         class="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50 transition-colors"
         @click="$emit('clear-filters')"
       >
-        Xóa bộ lọc
+        {{ __('Clear Filters') }}
       </button>
     </div>
   </div>
@@ -253,6 +253,9 @@ import {
   getEngagementColor,
   processSkills
 } from '../../services/candidateService'
+
+// Translation helper function
+const __ = (text) => text
 
 // Props
 const props = defineProps({

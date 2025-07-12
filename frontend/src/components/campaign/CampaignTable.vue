@@ -4,7 +4,7 @@
       <!-- Loading State -->
       <div v-if="loading" class="text-center py-12">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-        <p class="mt-4 text-gray-600">Đang tải dữ liệu...</p>
+        <p class="mt-4 text-gray-600">{{ __('Loading data...') }}</p>
       </div>
 
       <!-- Table -->
@@ -12,12 +12,12 @@
         <table class="min-w-full bg-white rounded-lg overflow-hidden">
           <thead class="bg-gray-100">
             <tr>
-              <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Tên chiến dịch</th>
-              <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Trạng thái</th>
-              <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Tiến độ</th>
-              <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Ngày tạo</th>
-              <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Người phụ trách</th>
-              <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Hành động</th>
+              <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">{{ __('Campaign Name') }}</th>
+              <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">{{ __('Status') }}</th>
+              <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">{{ __('Progress') }}</th>
+              <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">{{ __('Created Date') }}</th>
+              <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">{{ __('Owner') }}</th>
+              <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">{{ __('Actions') }}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200">
@@ -216,6 +216,9 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { Dialog } from 'frappe-ui'
 
+// Translation helper function
+const __ = (text) => text
+
 // Props
 const props = defineProps({
   campaigns: {
@@ -262,10 +265,10 @@ const getStatusBadgeClass = (status) => {
 
 const getStatusText = (status) => {
   const texts = {
-    'DRAFT': 'Nháp',
-    'ACTIVE': 'Đang hoạt động', 
-    'PAUSED': 'Tạm dừng',
-    'ARCHIVED': 'Lưu trữ'
+    'DRAFT': 'Draft',
+    'ACTIVE': 'Active', 
+    'PAUSED': 'Paused',
+    'ARCHIVED': 'Archived'
   }
   return texts[status] || status
 }

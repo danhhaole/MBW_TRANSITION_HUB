@@ -2,7 +2,7 @@
   <Dialog
     v-model="dialog"
     :options="{
-      title: isEdit ? 'Chỉnh sửa chiến dịch' : 'Tạo chiến dịch mới',
+      title: isEdit ? 'Edit Campaign' : 'Create New Campaign',
       size: 'xl'
     }"
   >
@@ -17,49 +17,49 @@
           </div>
           <div>
             <h3 class="text-lg font-semibold text-gray-900">
-              {{ isEdit ? 'Chỉnh sửa chiến dịch' : 'Tạo chiến dịch mới' }}
+              {{ isEdit ? 'Edit Campaign' : 'Create New Campaign' }}
             </h3>
             <p class="text-sm text-gray-500">
-              {{ isEdit ? 'Cập nhật thông tin chiến dịch' : 'Tạo chiến dịch tuyển dụng mới' }}
+              {{ isEdit ? 'Update campaign information' : 'Create a new recruitment campaign' }}
             </p>
           </div>
         </div>
 
         <!-- Form -->
         <form @submit.prevent="handleSubmit" class="space-y-4">
-          <!-- Tên chiến dịch -->
+          <!-- Campaign Name -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">
-              Tên chiến dịch <span class="text-red-500">*</span>
+              Campaign Name <span class="text-red-500">*</span>
             </label>
             <input
               v-model="form.campaign_name"
               type="text"
-              placeholder="Nhập tên chiến dịch"
+              placeholder="Enter campaign name"
               maxlength="200"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
             />
-            <div class="text-xs text-gray-500 mt-1">Tối đa 200 ký tự</div>
+            <div class="text-xs text-gray-500 mt-1">Maximum 200 characters</div>
           </div>
 
-          <!-- Mô tả -->
+          <!-- Description -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Mô tả</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
             <textarea
               v-model="form.description"
               rows="3"
-              placeholder="Nhập mô tả chi tiết về chiến dịch..."
+              placeholder="Enter detailed campaign description..."
               maxlength="1000"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
             ></textarea>
-            <div class="text-xs text-gray-500 mt-1">Tối đa 1000 ký tự</div>
+            <div class="text-xs text-gray-500 mt-1">Maximum 1000 characters</div>
           </div>
 
-          <!-- Row 1: Trạng thái và Loại -->
+          <!-- Row 1: Status and Type -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Trạng thái</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
               <select
                 v-model="form.status"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -74,7 +74,7 @@
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Loại chiến dịch</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Campaign Type</label>
               <select
                 v-model="form.type"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -90,10 +90,10 @@
             </div>
           </div>
 
-          <!-- Row 2: Trạng thái hoạt động và Chủ sở hữu -->
+          <!-- Row 2: Active Status and Owner -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Trạng thái hoạt động</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Active Status</label>
               <select
                 v-model="form.is_active"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -108,12 +108,12 @@
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Chủ sở hữu</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Owner</label>
               <select
                 v-model="form.owner_id"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="">-- Chọn chủ sở hữu --</option>
+                <option value="">-- Select Owner --</option>
                 <option
                   v-for="user in users"
                   :key="user.value"
@@ -126,14 +126,14 @@
 
           </div>
 
-          <!-- Phân khúc mục tiêu -->
+          <!-- Target Segment -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Phân khúc mục tiêu</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Target Segment</label>
             <select
               v-model="form.target_segment"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              <option value="">-- Chọn phân khúc mục tiêu --</option>
+              <option value="">-- Select Target Segment --</option>
               <option
                 v-for="segment in talentSegments"
                 :key="segment.value"
@@ -144,10 +144,10 @@
             </select>
           </div>
 
-          <!-- Row 3: Ngày bắt đầu và Ngày kết thúc -->
+          <!-- Row 3: Start Date and End Date -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Ngày bắt đầu</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
               <input
                 v-model="form.start_date"
                 type="date"
@@ -155,7 +155,7 @@
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Ngày kết thúc</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
               <input
                 v-model="form.end_date"
                 type="date"
@@ -183,7 +183,7 @@
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
               </svg>
               <div class="ml-3">
-                <p class="text-sm text-green-800">Thao tác thành công!</p>
+                <p class="text-sm text-green-800">{{ __('Operation successful!') }}</p>
               </div>
             </div>
           </div>
@@ -195,7 +195,7 @@
               @click="handleCancel"
               class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
-              Hủy bỏ
+              {{ __('Cancel') }}
             </button>
             <button
               type="submit"
@@ -203,7 +203,7 @@
               class="px-4 py-2 text-sm font-medium text-white bg-black border border-transparent rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
             >
               <span v-if="loading" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
-              <span>{{ isEdit ? 'Cập nhật' : 'Tạo mới' }}</span>
+              <span>{{ isEdit ? __('Update') : __('Create') }}</span>
             </button>
           </div>
         </form>
@@ -216,6 +216,9 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { Dialog } from 'frappe-ui'
 import { useCampaignForm, useCampaignCRUD } from '@/composables/useCampaign.js'
+
+// Translation helper function
+const __ = (text) => text
 
 // Props
 const props = defineProps({
@@ -270,15 +273,15 @@ const {
 // Validate form
 const validateFormData = () => {
   if (!form.value.campaign_name || form.value.campaign_name.trim().length === 0) {
-    return 'Tên chiến dịch là bắt buộc'
+    return __('Campaign name is required')
   }
   if (form.value.campaign_name.length > 200) {
-    return 'Tên chiến dịch không được vượt quá 200 ký tự'
+    return __('Campaign name cannot exceed 200 characters')
   }
 
   if (form.value.start_date && form.value.end_date) {
     if (new Date(form.value.start_date) > new Date(form.value.end_date)) {
-      return 'Ngày bắt đầu không được sau ngày kết thúc'
+      return __('Start date cannot be after end date')
     }
   }
 
@@ -314,9 +317,9 @@ const handleSubmit = async () => {
         dialog.value = false
       }, 1000)
     }
-  } catch (err) {
-    error.value = 'Có lỗi xảy ra: ' + err.message
-  }
+      } catch (err) {
+      error.value = __('An error occurred: ') + err.message
+    }
 }
 
 const handleCancel = () => {
