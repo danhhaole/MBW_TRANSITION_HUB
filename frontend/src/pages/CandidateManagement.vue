@@ -1,5 +1,131 @@
 <template>
 	<div class="candidate-management-page container mx-auto w-full min-h-screen pt-10 bg-gray-50">
+		<!-- Header -->
+		<div class="flex justify-between items-center mb-6">
+			<div>
+				<h1 class="text-3xl font-bold text-gray-900">{{ __('Candidate Management') }}</h1>
+				<p class="text-gray-600 mt-2">{{ __('Manage and track recruitment candidates') }}</p>
+			</div>
+			<Button variant="solid" theme="blue" @click="showImportModal = true">
+				<template #prefix>
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+					</svg>
+				</template>
+				{{ __('Import Candidates') }}
+			</Button>
+		</div>
+
+		<!-- Search and Filter Bar -->
+		<div class="bg-white p-4 rounded-lg shadow mb-6">
+			<div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+				<!-- Search -->
+				<div class="md:col-span-2">
+					<div class="relative">
+						<input
+							v-model="searchQuery"
+							type="text"
+							:placeholder="__('Search candidates...')"
+							class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+						/>
+						<svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+						</svg>
+					</div>
+				</div>
+
+				<!-- Status Filter -->
+				<div>
+					<select v-model="statusFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+						<option value="">{{ __('All Statuses') }}</option>
+						<option value="NEW">{{ __('New') }}</option>
+						<option value="CONTACTED">{{ __('Contacted') }}</option>
+						<option value="SCREENING">{{ __('Screening') }}</option>
+						<option value="INTERVIEW">{{ __('Interview') }}</option>
+						<option value="QUALIFIED">{{ __('Qualified') }}</option>
+						<option value="REJECTED">{{ __('Rejected') }}</option>
+					</select>
+				</div>
+
+				<!-- Source Filter -->
+				<div>
+					<select v-model="sourceFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+						<option value="">{{ __('All Sources') }}</option>
+						<option value="LINKEDIN">{{ __('LinkedIn') }}</option>
+						<option value="EMAIL">{{ __('Email') }}</option>
+						<option value="REFERRAL">{{ __('Referral') }}</option>
+						<option value="WEBSITE">{{ __('Website') }}</option>
+					</select>
+				</div>
+
+				<!-- Clear Filters -->
+				<div>
+					<Button variant="outline" @click="clearFilters" class="w-full">
+						{{ __('Clear Filters') }}
+					</Button>
+				</div>
+			</div>
+		</div>
+
+		<!-- Statistics Cards -->
+		<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+			<div class="bg-white p-6 rounded-lg shadow">
+				<div class="flex items-center">
+					<div class="p-3 rounded-full bg-blue-100 mr-4">
+						<svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m3 5.197V9a3 3 0 00-3-3v4.354a4 4 0 00-3 .292M15 21V9a3 3 0 013-3v4.354a4 4 0 013 .292V21z"></path>
+						</svg>
+					</div>
+					<div>
+						<p class="text-sm font-medium text-gray-600">{{ __('Total Candidates') }}</p>
+						<p class="text-2xl font-bold text-gray-900">{{ totalCandidates }}</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="bg-white p-6 rounded-lg shadow">
+				<div class="flex items-center">
+					<div class="p-3 rounded-full bg-green-100 mr-4">
+						<svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+						</svg>
+					</div>
+					<div>
+						<p class="text-sm font-medium text-gray-600">{{ __('Qualified') }}</p>
+						<p class="text-2xl font-bold text-gray-900">{{ qualifiedCandidates }}</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="bg-white p-6 rounded-lg shadow">
+				<div class="flex items-center">
+					<div class="p-3 rounded-full bg-yellow-100 mr-4">
+						<svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+						</svg>
+					</div>
+					<div>
+						<p class="text-sm font-medium text-gray-600">{{ __('In Progress') }}</p>
+						<p class="text-2xl font-bold text-gray-900">{{ inProgressCandidates }}</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="bg-white p-6 rounded-lg shadow">
+				<div class="flex items-center">
+					<div class="p-3 rounded-full bg-red-100 mr-4">
+						<svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+						</svg>
+					</div>
+					<div>
+						<p class="text-sm font-medium text-gray-600">{{ __('Rejected') }}</p>
+						<p class="text-2xl font-bold text-gray-900">{{ rejectedCandidates }}</p>
+					</div>
+				</div>
+			</div>
+		</div>
+
 		<!-- Header Section -->
 		<div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
 			<div class="flex items-center justify-between">
@@ -10,10 +136,10 @@
 								d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"
 							/>
 						</svg>
-						Quản lý ứng viên
+						{{ __('Candidate Management') }}
 					</h1>
 					<p class="text-gray-600 mb-0">
-						Quản lý và theo dõi thông tin ứng viên trong hệ thống
+						{{ __('Manage and track candidate information in the system') }}
 					</p>
 				</div>
 
@@ -41,7 +167,7 @@
 								></path>
 							</svg>
 						</template>
-						{{ __('Thêm ứng viên') }}
+						{{ __('Add Candidate') }}
 					</Button>
 				</div>
 			</div>
@@ -56,7 +182,7 @@
 						<FormControl
 							v-model="filters.search"
 							type="text"
-							placeholder="Tìm kiếm ứng viên..."
+							:placeholder="__('Search candidates...')"
 							:prefix-icon="'search'"
 							@input="debouncedSearch"
 						/>
@@ -100,22 +226,22 @@
 						<button
 							@click="handleImport"
 							class="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 border border-blue-300 rounded-lg transition-colors duration-200"
-							title="Import ứng viên"
+							:title="__('Import Candidates')"
 						>
 							<svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
 							</svg>
-							Import
+							{{ __('Import') }}
 						</button>
 						<button
 							@click="handleExport"
 							class="inline-flex items-center px-3 py-2 text-sm font-medium text-green-600 hover:text-green-800 hover:bg-green-50 border border-green-300 rounded-lg transition-colors duration-200"
-							title="Export ứng viên"
+							:title="__('Export Candidates')"
 						>
 							<svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
 							</svg>
-							Export
+							{{ __('Export') }}
 						</button>
 					</div>
 
@@ -126,7 +252,7 @@
 							@click="clearFilters"
 							class="text-sm text-red-600 hover:text-red-800 font-medium px-3 py-2 rounded-lg hover:bg-red-50 transition-colors duration-200"
 						>
-							Xóa bộ lọc
+							{{ __('Clear Filters') }}
 						</button>
 					</div>
 				</div>
@@ -140,7 +266,7 @@
 			>
 				<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
 			</div>
-			<p class="text-gray-600">Đang tải danh sách ứng viên...</p>
+			<p class="text-gray-600">{{ __('Loading candidate list...') }}</p>
 		</div>
 
 		<!-- Content Views -->
@@ -573,6 +699,10 @@ import { useToast } from '@/composables/useToast'
 import { FormControl } from 'frappe-ui'
 import { CandidateViewModal, CandidateEditModal } from '@/components/candidate'
 import { Avatar } from 'frappe-ui'
+
+// Translation helper function
+const __ = (text) => text
+
 import {
 	calculateEngagementScore,
 	formatCandidateStatus,
@@ -652,40 +782,23 @@ const hasFilters = computed(() => {
 	)
 })
 
+// Filter Options
 const statusFilterOptions = computed(() => [
-	{ label: 'Tất cả trạng thái', value: '' },
-	{ label: 'Mới', value: 'NEW' },
-	{ label: 'Đã tìm thấy', value: 'SOURCED' },
-	{ label: 'Đang chăm sóc', value: 'NURTURING' },
-	{ label: 'Đã tương tác', value: 'ENGAGED' },
-	{ label: 'Đã lưu trữ', value: 'ARCHIVED' },
+	{ label: __('All Statuses'), value: '' },
+	{ label: __('New'), value: 'NEW' },
+	{ label: __('Sourced'), value: 'SOURCED' },
+	{ label: __('Nurturing'), value: 'NURTURING' },
+	{ label: __('Engaged'), value: 'ENGAGED' },
+	{ label: __('Archived'), value: 'ARCHIVED' }
 ])
 
-const sourceFilterOptions = computed(() => {
-	const defaultOptions = [
-		{ label: 'Tất cả nguồn', value: '' },
-		{ label: 'Thủ công', value: 'MANUAL' },
-		{ label: 'LinkedIn', value: 'LINKEDIN' },
-		{ label: 'Website', value: 'WEBSITE' },
-		{ label: 'Giới thiệu', value: 'REFERRAL' },
-		{ label: 'Job Board', value: 'JOB_BOARD' },
-	]
-
-	try {
-		if (!filterOptions.value || typeof filterOptions.value !== 'object') {
-			return defaultOptions
-		}
-
-		const apiOptions = filterOptions.value.source || []
-		if (Array.isArray(apiOptions)) {
-			return [...defaultOptions, ...apiOptions]
-		}
-		return defaultOptions
-	} catch (err) {
-		console.error('Error in sourceFilterOptions:', err)
-		return defaultOptions
-	}
-})
+const sourceFilterOptions = computed(() => [
+	{ label: __('All Sources'), value: '' },
+	{ label: __('Manual'), value: 'MANUAL' },
+	{ label: __('LinkedIn'), value: 'LINKEDIN' },
+	{ label: __('Email'), value: 'EMAIL' },
+	{ label: __('Referral'), value: 'REFERRAL' }
+])
 
 const skillFilterOptions = computed(() => {
 	return [
@@ -851,9 +964,9 @@ const confirmDelete = async () => {
 		deleteDialog.value.show = false
 		viewModal.value.show = false
 
-		showSuccess('Ứng viên đã được xóa thành công')
+		showSuccess('Candidate deleted successfully')
 	} catch (err) {
-		showError(`Lỗi khi xóa ứng viên: ${err.message}`)
+		showError(`Error deleting candidate: ${err.message}`)
 	} finally {
 		deleteDialog.value.loading = false
 		isDeleting = false
@@ -882,19 +995,19 @@ const handleSaveCandidate = async (candidateData) => {
 			// Update existing candidate
 			console.log('Updating candidate:', editModal.value.candidate.name)
 			await updateCandidate(editModal.value.candidate.name, candidateData)
-			showSuccess('Ứng viên đã được cập nhật thành công')
+			showSuccess('Candidate updated successfully')
 		} else {
 			// Create new candidate
 			console.log('Creating new candidate')
 			await createCandidate(candidateData)
-			showSuccess('Ứng viên mới đã được tạo thành công')
+			showSuccess('New candidate created successfully')
 		}
 
 		console.log('Closing modal')
 		editModal.value.show = false
 	} catch (err) {
 		console.error('Error in handleSaveCandidate:', err)
-		showError(`Lỗi khi lưu ứng viên: ${err.message}`)
+		showError(`Error saving candidate: ${err.message}`)
 	} finally {
 		console.log('Setting saving to false')
 		editModal.value.saving = false
@@ -906,7 +1019,7 @@ const handleDuplicateCandidate = (candidate) => {
 	// Create a copy without the unique fields
 	const duplicateData = {
 		...candidate,
-		full_name: `${candidate.full_name} (Bản sao)`,
+		full_name: `${candidate.full_name} (Copy)`,
 		email: `copy_${Date.now()}_${candidate.email}`,
 		name: undefined, // Let system generate new name
 	}
@@ -933,7 +1046,7 @@ const handleImport = () => {
 		const file = event.target.files[0]
 		if (file) {
 			// TODO: Implement actual import logic
-			showError('Chức năng import đang được phát triển')
+			showError('Import functionality is under development')
 			console.log('Selected file for import:', file.name)
 		}
 	}
@@ -947,7 +1060,7 @@ const handleExport = () => {
 	try {
 		// TODO: Implement actual export logic
 		// For now, just show a message
-		showError('Chức năng export đang được phát triển')
+		showError('Export functionality is under development')
 		console.log('Export candidates requested')
 		
 		// Sample CSV export structure (commented out until actual implementation)
@@ -973,7 +1086,7 @@ const handleExport = () => {
 		link.click()
 		*/
 	} catch (err) {
-		showError(`Lỗi khi export: ${err.message}`)
+		showError(`Error exporting: ${err.message}`)
 	}
 }
 
@@ -996,7 +1109,7 @@ onMounted(async () => {
 	try {
 		await initialize()
 	} catch (err) {
-		showError(`Lỗi khi tải dữ liệu: ${err.message}`)
+		showError(`Error loading data: ${err.message}`)
 	}
 })
 </script>

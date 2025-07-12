@@ -36,19 +36,19 @@
 						</Button>
 						<div>
 							<h1 class="text-3xl font-bold text-gray-900 mb-3">
-								{{ talentSegment.title || 'Loading...' }}
+								{{ talentSegment.title || __('Loading...') }}
 							</h1>
 							<div class="flex items-center flex-wrap gap-3">
 								<span
 									class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
 								>
-									{{ talentSegment.type || 'Active' }}
+									{{ talentSegment.type || __('Active') }}
 								</span>
 								<span class="text-sm text-gray-500">
-									Created: {{ formatDate(talentSegment.creation) }}
+									{{ __('Created:') }} {{ formatDate(talentSegment.creation) }}
 								</span>
 								<span class="text-sm text-gray-500">
-									Modified: {{ formatDate(talentSegment.modified) }}
+									{{ __('Modified:') }} {{ formatDate(talentSegment.modified) }}
 								</span>
 							</div>
 						</div>
@@ -73,7 +73,7 @@
 									/>
 								</svg>
 							</template>
-							Edit Segment
+							{{ __('Edit Segment') }}
 						</Button>
 						<Button variant="outline" theme="red" @click="$router.push('/talent-segments')">
 							<template #prefix>
@@ -92,7 +92,7 @@
 									/>
 								</svg>
 							</template>
-							Delete
+							{{ __('Delete') }}
 						</Button>
 					</div>
 				</div>
@@ -124,7 +124,7 @@
 							<div class="text-2xl font-bold text-blue-900">
 								{{ talentSegment.candidate_count || 0 }}
 							</div>
-							<div class="text-sm text-blue-700">Total Candidates</div>
+							<div class="text-sm text-blue-700">{{ __('Total Candidates') }}</div>
 						</div>
 					</div>
 				</div>
@@ -152,7 +152,7 @@
 							<div class="text-2xl font-bold text-green-900">
 								{{ candidates.filter(c => c.status === 'ACTIVE').length }}
 							</div>
-							<div class="text-sm text-green-700">Active Candidates</div>
+							<div class="text-sm text-green-700">{{ __('Active Candidates') }}</div>
 						</div>
 					</div>
 				</div>
@@ -180,7 +180,7 @@
 							<div class="text-2xl font-bold text-yellow-900">
 								{{ relatedCampaigns.length }}
 							</div>
-							<div class="text-sm text-yellow-700">Related Campaigns</div>
+							<div class="text-sm text-yellow-700">{{ __('Related Campaigns') }}</div>
 						</div>
 					</div>
 				</div>
@@ -208,7 +208,7 @@
 							<div class="text-2xl font-bold text-purple-900">
 								{{ candidates.length > 0 ? Math.round((candidates.filter(c => c.status === 'ACTIVE').length / candidates.length) * 100) : 0 }}%
 							</div>
-							<div class="text-sm text-purple-700">Engagement Rate</div>
+							<div class="text-sm text-purple-700">{{ __('Interaction Rate') }}</div>
 						</div>
 					</div>
 				</div>
@@ -233,7 +233,7 @@
 							/>
 						</svg>
 					</template>
-					Create Campaign
+					{{ __('Create Campaign') }}
 				</Button>
 
 				<Button variant="solid" theme="green" @click="showAddCandidateModal = true">
@@ -253,7 +253,7 @@
 							/>
 						</svg>
 					</template>
-					Add Candidates
+					{{ __('Add Candidate') }}
 				</Button>
 
 				<Button variant="solid" theme="gray" @click="showAnalytics = !showAnalytics">
@@ -273,7 +273,7 @@
 							/>
 						</svg>
 					</template>
-					Analytics
+					{{ __('Analytics') }}
 				</Button>
 			</div>
 
@@ -283,7 +283,7 @@
 				class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6"
 			>
 				<div class="flex items-center justify-between mb-6">
-					<h2 class="text-xl font-semibold text-gray-900">Segment Analytics</h2>
+					<h2 class="text-xl font-semibold text-gray-900">{{ __('Segment Analytics') }}</h2>
 					<Button variant="ghost" theme="gray" @click="showAnalytics = false">
 						<template #prefix>
 							<svg
@@ -301,7 +301,7 @@
 								/>
 							</svg>
 						</template>
-						Close
+						{{ __('Close') }}
 					</Button>
 				</div>
 
@@ -322,9 +322,9 @@
 								d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
 							/>
 						</svg>
-						<h4 class="text-lg font-medium text-gray-600 mb-2">Detailed Analytics</h4>
+						<h4 class="text-lg font-medium text-gray-600 mb-2">{{ __('Detailed Analysis') }}</h4>
 						<p class="text-gray-500">
-							Charts and detailed analytics will be implemented here
+							{{ __('Analysis and detailed charts will be implemented here') }}
 						</p>
 					</div>
 				</div>
@@ -335,14 +335,14 @@
 				<div class="p-6">
 					<div class="flex justify-between items-center mb-6">
 						<h3 class="text-lg font-medium text-gray-900">
-							Candidates in this Segment
+							{{ __('Candidates in this segment') }}
 						</h3>
 						<div class="flex items-center space-x-3">
 							<div class="relative">
 								<input
 									v-model="candidateSearch"
 									type="text"
-									placeholder="Search by full name..."
+									:placeholder="__('Search by name...')"
 									class="block w-80 pl-10 pr-8 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
 									@input="handleSearchInput"
 								/>
@@ -407,7 +407,7 @@
 										/>
 									</svg>
 								</template>
-								Add Candidate
+								{{ __('Add Candidate') }}
 							</Button>
 						</div>
 					</div>
@@ -423,34 +423,34 @@
 										scope="col"
 										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
 									>
-										Candidate
+										{{ __('Candidate') }}
 									</th>
 									<th
 										scope="col"
 										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
 									>
-										Skills
+										{{ __('Skills') }}
 									</th>
 									<th
 										scope="col"
 										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
 									>
-										Last Contact
+										{{ __('Last Contact') }}
 									</th>
 									<th
 										scope="col"
 										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
 									>
-										Status
+										{{ __('Status') }}
 									</th>
 									<th
 										scope="col"
 										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
 									>
-										Added At
+										{{ __('Added') }}
 									</th>
 									<th scope="col" class="relative px-6 py-3">
-										<span class="sr-only">Actions</span>
+										<span class="sr-only">{{ __('Actions') }}</span>
 									</th>
 								</tr>
 							</thead>
@@ -483,7 +483,7 @@
 								</tr>
 								<tr v-else-if="filteredCandidates.length === 0">
 									<td colspan="6" class="px-6 py-4 text-center text-gray-500">
-										No candidates found
+										{{ __('No candidates found') }}
 									</td>
 								</tr>
 								<tr
@@ -628,10 +628,10 @@
 					<div class="mb-6 flex items-center justify-between">
 						<div>
 							<h3 class="text-xl font-semibold leading-6 text-gray-900">
-								Add Candidate to Segment
+								{{ __('Add Candidate to Segment') }}
 							</h3>
 							<p class="mt-1 text-sm text-gray-500">
-								Select a candidate to add to "{{ talentSegment.title }}"
+								{{ __('Select candidate to add to') }} "{{ talentSegment.title }}"
 							</p>
 						</div>
 						<div class="flex items-center gap-1">
@@ -644,7 +644,7 @@
 					<div class="space-y-6">
 						<div>
 							<label class="block text-sm font-medium text-gray-700 mb-3">
-								Select Candidate <span class="text-red-500">*</span>
+								{{ __('Select Candidate') }} <span class="text-red-500">*</span>
 							</label>
 
 							<!-- Loading state -->
@@ -674,7 +674,7 @@
 										></path>
 									</svg>
 									<p class="text-sm text-gray-500">
-										Loading available candidates...
+										{{ __('Loading available candidates...') }}
 									</p>
 								</div>
 							</div>
@@ -684,13 +684,13 @@
 								<Autocomplete
 									v-model="candidateFormData.candidate_id"
 									:options="availableCandidates"
-									placeholder="Search and select a candidate..."
+									:placeholder="__('Search and select candidate...')"
 									@change="handleCandidateSelection"
 								/>
 							</div>
 
 							<p class="mt-2 text-xs text-gray-500">
-								Only candidates not already in this segment are shown
+								{{ __('Only display candidates not already in this segment') }}
 							</p>
 
 							<!-- No candidates available message -->
@@ -715,8 +715,7 @@
 									</svg>
 									<div class="ml-3">
 										<p class="text-sm text-yellow-800">
-											No candidates available to add. All candidates are
-											already in this segment.
+											{{ __('No available candidates to add. All candidates are already in this segment.') }}
 										</p>
 									</div>
 								</div>
@@ -746,7 +745,7 @@
 									<div class="text-base font-semibold text-gray-900">
 										{{
 											selectedCandidatePreview.candidate_name ||
-											'Unknown Candidate'
+											__('Candidate not specified')
 										}}
 									</div>
 									<div class="text-sm text-gray-600 flex items-center mt-1">
@@ -765,7 +764,7 @@
 											/>
 										</svg>
 										{{
-											selectedCandidatePreview.email || 'Email not available'
+											selectedCandidatePreview.email || __('No email')
 										}}
 									</div>
 									<div
@@ -777,7 +776,7 @@
 										class="mt-3"
 									>
 										<div class="text-xs font-medium text-gray-500 mb-2">
-											Skills:
+											{{ __('Skills:') }}
 										</div>
 										<div class="flex flex-wrap gap-1">
 											<span
@@ -800,7 +799,7 @@
 													processSkills(selectedCandidatePreview.skills)
 														.length - 4
 												}}
-												more
+												{{ __('other skills') }}
 											</span>
 										</div>
 									</div>
@@ -811,7 +810,7 @@
 				</div>
 				<div class="flex justify-end space-x-3 px-6 py-4 bg-gray-50">
 					<Button variant="outline" theme="gray" @click="closeAddCandidateModal">
-						Cancel
+						{{ __('Cancel') }}
 					</Button>
 					<Button
 						variant="solid"
@@ -827,7 +826,7 @@
 						<template #prefix>
 							<FeatherIcon name="user-plus" class="h-4 w-4" />
 						</template>
-						{{ savingCandidate ? 'Adding...' : 'Add to Segment' }}
+						{{ savingCandidate ? __('Adding...') : __('Add to Segment') }}
 					</Button>
 				</div>
 			</template>
@@ -847,7 +846,7 @@
 					<div class="mb-5 flex items-center justify-between">
 						<div>
 							<h3 class="text-2xl font-semibold leading-6 text-gray-900">
-								Edit Talent Pool
+								{{ __('Edit Talent Pool') }}
 							</h3>
 						</div>
 						<div class="flex items-center gap-1">
@@ -891,6 +890,9 @@ import CampaignWizard from '@/components/campaign/CampaignWizard.vue'
 import TalentSegmentForm from '@/components/talent-segment/TalentSegmentForm.vue'
 import moment from 'moment'
 
+// Translation helper function
+const __ = (text) => text
+
 const { getUser } = usersStore()
 const route = useRoute()
 const router = useRouter()
@@ -899,8 +901,8 @@ const router = useRouter()
 const breadcrumbs = computed(() => {
 	console.log('Breadcrumbs computed, route params:', route.params)
 	return [
-		{ label: 'Talent Pools', route: { name: 'TalentSegments' } },
-		{ label: 'Detail', route: { name: 'TalentSegmentDetail' } },
+		{ label: __('Talent Pools'), route: { name: 'TalentSegments' } },
+		{ label: __('Detail'), route: { name: 'TalentSegmentDetail' } },
 	]
 })
 
@@ -954,7 +956,7 @@ const filteredCandidates = computed(() => {
 
 // Dialog options
 const addCandidateDialogOptions = computed(() => ({
-	title: 'Add Candidate to Segment',
+	title: __('Add Candidate to Segment'),
 	size: 'lg',
 }))
 
@@ -969,7 +971,7 @@ const selectedCandidatePreview = computed(() => {
 
 // Dialog options
 const editSegmentDialogOptions = computed(() => ({
-	title: 'Edit Talent Pool',
+	title: __('Edit Talent Pool'),
 	size: '4xl',
 }))
 

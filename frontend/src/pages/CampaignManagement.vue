@@ -9,7 +9,7 @@
     <div class="container mx-auto px-6 py-6">
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
-        <h1 class="text-3xl font-bold text-gray-900">Danh sách yêu cầu tuyển dụng</h1>
+        <h1 class="text-3xl font-bold text-gray-900">{{ __('Campaign Management') }}</h1>
 
         <div class="flex items-center space-x-4">
           <!-- Search box -->
@@ -17,7 +17,7 @@
             <input
               v-model="searchText"
               type="text"
-              placeholder="Tìm kiếm..."
+              :placeholder="__('Search...')"
               class="block w-60 pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               @input="setSearchText($event.target.value)"
             />
@@ -57,7 +57,7 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
               </svg>
-              List
+              {{ __('List') }}
             </button>
             <button
               @click="viewMode = 'card'"
@@ -71,7 +71,7 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
               </svg>
-              Card
+              {{ __('Card') }}
             </button>
           </div>
 
@@ -82,11 +82,11 @@
               @change="setStatusFilter($event.target.value)"
               class="pl-10 pr-7 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
             >
-              <option value="all">Tất cả trạng thái</option>
-              <option value="ACTIVE">Đang hoạt động</option>
-              <option value="PAUSED">Tạm dừng</option>
-              <option value="ARCHIVED">Lưu trữ</option>
-              <option value="DRAFT">Nháp</option>
+              <option value="all">{{ __('All Statuses') }}</option>
+              <option value="ACTIVE">{{ __('Active') }}</option>
+              <option value="PAUSED">{{ __('Paused') }}</option>
+              <option value="ARCHIVED">{{ __('Archived') }}</option>
+              <option value="DRAFT">{{ __('Draft') }}</option>
             </select>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
@@ -130,7 +130,7 @@
 								></path>
 							</svg>
 						</template>
-						{{ __('Tạo mới') }}
+						{{ __('Create New') }}
 					</Button>
         </div>
       </div>
@@ -181,12 +181,15 @@ import { ToastContainer } from '@/components/shared'
 import { Button, Breadcrumbs } from 'frappe-ui'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 
+// Translation helper function
+const __ = (text) => text
+
 // Router
 const router = useRouter()
 
 // Breadcrumbs
 const breadcrumbs = [
-  { label: 'Campaigns', route: { name: 'CampaignManagement' } }
+  { label: __('Campaigns'), route: { name: 'CampaignManagement' } }
 ]
 
 // Page state
@@ -250,7 +253,7 @@ const debouncedSearch = (searchValue) => {
             // Show search feedback
             if (searchValue && searchValue.trim()) {
                 const resultCount = campaigns.value.length
-                showToast(`Tìm thấy ${resultCount} kết quả cho "${searchValue}"`, 'info', 3000)
+                showToast(__(`Found ${resultCount} results for "${searchValue}"`), 'info', 3000)
             }
         } finally {
             isSearching.value = false
@@ -300,7 +303,7 @@ const handleCreateSuccess = async (event) => {
     console.log('Campaigns after reload:', campaigns.value.length)
     
     // Show success message
-    showToast(`Đã tạo chiến dịch "${data.campaign_name}" thành công!`, 'success')
+    showToast(__(`Campaign "${data.campaign_name}" created successfully!`), 'success')
 }
 
 const handleEditSuccess = async (event) => {
@@ -319,7 +322,7 @@ const handleEditSuccess = async (event) => {
     console.log('Campaigns after reload:', campaigns.value.length)
     
     // Show success message
-    showToast(`Đã cập nhật chiến dịch "${data.campaign_name}" thành công!`, 'success')
+    showToast(__(`Campaign "${data.campaign_name}" updated successfully!`), 'success')
 }
 
 const handleFormCancel = () => {
@@ -337,7 +340,7 @@ const handleClearSearch = () => {
 const handleRefresh = async () => {
     await loadCampaigns()
 
-    showToast('Đã làm mới dữ liệu', 'info', 2000)
+    showToast(__('Data refreshed'), 'info', 2000)
 }
 
 const handleDelete = async (campaign) => {
@@ -345,13 +348,13 @@ const handleDelete = async (campaign) => {
         const success = await deleteCampaign(campaign.name, campaign.campaign_name)
 
         if (success) {
-            showToast(`Đã xóa chiến dịch "${campaign.campaign_name}"`, 'success')
+            showToast(__(`Campaign "${campaign.campaign_name}" deleted`), 'success')
             loadCampaigns()
         } else {
-            showToast('Có lỗi xảy ra khi xóa chiến dịch', 'error')
+            showToast(__('Error deleting campaign'), 'error')
         }
     } catch (error) {
-        showToast('Có lỗi xảy ra khi xóa chiến dịch', 'error')
+        showToast(__('Error deleting campaign'), 'error')
     }
 }
 

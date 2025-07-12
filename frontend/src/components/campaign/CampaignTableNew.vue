@@ -4,7 +4,7 @@
     <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
       <!-- Header with filters -->
       <div class="flex flex-wrap items-center justify-between mb-6">
-        <h2 class="text-xl font-bold text-gray-800">Danh sách chiến dịch tuyển dụng</h2>
+        <h2 class="text-xl font-bold text-gray-800">{{ __('Recruitment Campaign List') }}</h2>
         
         <div class="flex items-center space-x-4 mt-4 sm:mt-0">
           <!-- Search -->
@@ -13,7 +13,7 @@
               type="text" 
               :value="searchText"
               @input="handleSearch($event.target.value)"
-              placeholder="Tìm kiếm..." 
+              :placeholder="__('Search...')" 
               class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -283,6 +283,9 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { Dialog } from 'frappe-ui'
 
+// Translation helper function
+const __ = (text) => text
+
 // Props
 const props = defineProps({
   campaigns: {
@@ -351,10 +354,10 @@ const getStatusBadgeClass = (status) => {
 
 const getStatusText = (status) => {
   const texts = {
-    'DRAFT': 'Nháp',
-    'ACTIVE': 'Đang hoạt động', 
-    'PAUSED': 'Tạm dừng',
-    'ARCHIVED': 'Lưu trữ'
+    'DRAFT': 'Draft',
+    'ACTIVE': 'Active', 
+    'PAUSED': 'Paused',
+    'ARCHIVED': 'Archived'
   }
   return texts[status] || status
 }

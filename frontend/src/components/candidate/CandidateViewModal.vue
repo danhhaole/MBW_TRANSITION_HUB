@@ -3,7 +3,7 @@
     :model-value="modelValue"
     @update:model-value="$emit('update:modelValue', $event)"
     :options="{
-      title: 'Chi tiết ứng viên',
+      title: __('Candidate Details'),
       size: 'lg'
     }"
   >
@@ -26,7 +26,7 @@
               <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
             </svg>
           </div>
-          <p class="text-gray-600">{{ error }}</p>
+          <p class="text-gray-600">{{ __(error) }}</p>
         </div>
 
         <!-- Content -->
@@ -45,7 +45,7 @@
                 {{ candidate.full_name }}
               </h2>
               <div class="text-gray-600">
-                {{ candidate.headline || 'Chưa có thông tin chức danh' }}
+                {{ candidate.headline || __('No position information available') }}
               </div>
               <div class="mt-2 flex items-center space-x-4">
                 <span 
@@ -217,7 +217,7 @@
           variant="outline"
           @click="$emit('update:modelValue', false)"
         >
-          Đóng
+          {{ __('Close') }}
         </Button>
         <Button
           v-if="candidate"
@@ -227,7 +227,7 @@
           <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
             <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
           </svg>
-          Chỉnh sửa
+          {{ __('Edit') }}
         </Button>
       </div>
     </template>
@@ -243,6 +243,9 @@ import {
   getAvatarText,
   processSkills
 } from '../../services/candidateService'
+
+// Translation helper function
+const __ = (text) => text
 
 // Props
 const props = defineProps({

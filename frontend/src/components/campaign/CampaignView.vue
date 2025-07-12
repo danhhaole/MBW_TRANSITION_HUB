@@ -23,7 +23,7 @@
                   size="small"
                   class="mr-2"
                 >
-                  {{ getStatusText(campaign.displayStatus || campaign.status) }}
+                  {{ __(getStatusText(campaign.displayStatus || campaign.status)) }}
                 </v-chip>
                 <v-chip
                   :color="getTypeColor(campaign.type)"
@@ -31,14 +31,14 @@
                   size="small"
                   class="mr-2"
                 >
-                  {{ getTypeText(campaign.type) }}
+                  {{ __(getTypeText(campaign.type)) }}
                 </v-chip>
                 <v-chip
                   :color="campaign.is_active ? 'success' : 'error'"
                   variant="tonal"
                   size="small"
                 >
-                  {{ campaign.is_active ? 'Kích hoạt' : 'Vô hiệu' }}
+                  {{ campaign.is_active ? __('Active') : __('Inactive') }}
                 </v-chip>
               </div>
             </div>
@@ -137,14 +137,14 @@
             variant="outlined"
             @click="dialog = false"
           >
-            Đóng
+            {{ __('Close') }}
           </v-btn>
           <v-btn
             color="primary"
             variant="flat"
             @click="$emit('edit')"
           >
-            Chỉnh sửa
+            {{ __('Edit') }}
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -153,6 +153,9 @@
   
   <script setup>
   import { computed } from 'vue'
+
+  // Translation helper function
+  const __ = (text) => text
   
   // Props
   const props = defineProps({
@@ -196,10 +199,10 @@
   
   const getStatusText = (status) => {
     const texts = {
-      'DRAFT': 'Nháp',
-      'ACTIVE': 'Hoạt động',
-      'PAUSED': 'Tạm dừng',
-      'ARCHIVED': 'Lưu trữ'
+      'DRAFT': 'Draft',
+      'ACTIVE': 'Active',
+      'PAUSED': 'Paused',
+      'ARCHIVED': 'Archived'
     }
     return texts[status] || status
   }
@@ -214,8 +217,8 @@
   
   const getTypeText = (type) => {
     const texts = {
-      'NURTURING': 'Nuôi dưỡng',
-      'ATTRACTION': 'Thu hút'
+      'NURTURING': 'Nurturing',
+      'ATTRACTION': 'Attraction'
     }
     return texts[type] || type
   }

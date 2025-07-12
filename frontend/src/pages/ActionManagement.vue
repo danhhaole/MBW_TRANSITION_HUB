@@ -3,8 +3,8 @@
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
       <div>
-        <h1 class="text-3xl font-bold text-slate-800">Actions</h1>
-        <p class="text-slate-600 mt-1">Manage campaign actions and activities</p>
+        <h1 class="text-3xl font-bold text-slate-800">{{ __('Actions') }}</h1>
+        <p class="text-slate-600 mt-1">{{ __('Manage campaign actions and activities') }}</p>
       </div>
       <Button
         variant="solid"
@@ -15,7 +15,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
         </template>
-        Add New Action
+        {{ __('Add New Action') }}
       </Button>
     </div>
 
@@ -30,7 +30,7 @@
           </div>
           <div>
             <div class="text-2xl font-bold text-slate-800">{{ stats.total }}</div>
-            <div class="text-sm text-slate-500">Total Actions</div>
+            <div class="text-sm text-slate-500">{{ __('Total Actions') }}</div>
           </div>
         </div>
       </div>
@@ -43,7 +43,7 @@
           </div>
           <div>
             <div class="text-2xl font-bold text-slate-800">{{ stats.executed }}</div>
-            <div class="text-sm text-slate-500">Executed</div>
+            <div class="text-sm text-slate-500">{{ __('Executed') }}</div>
           </div>
         </div>
       </div>
@@ -56,7 +56,7 @@
           </div>
           <div>
             <div class="text-2xl font-bold text-slate-800">{{ stats.scheduled }}</div>
-            <div class="text-sm text-slate-500">Scheduled</div>
+            <div class="text-sm text-slate-500">{{ __('Scheduled') }}</div>
           </div>
         </div>
       </div>
@@ -69,7 +69,7 @@
           </div>
           <div>
             <div class="text-2xl font-bold text-slate-800">{{ stats.failed }}</div>
-            <div class="text-sm text-slate-500">Failed</div>
+            <div class="text-sm text-slate-500">{{ __('Failed') }}</div>
           </div>
         </div>
       </div>
@@ -82,7 +82,7 @@
           <FormControl
             type="text"
             v-model="search"
-            placeholder="Search actions..."
+            placeholder="{{ __('Search actions...') }}"
             class="flex-1"
             @update:model-value="debouncedSearch"
           >
@@ -101,7 +101,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
               </svg>
             </template>
-            Advanced Filters
+            {{ __('Advanced Filters') }}
             <template #suffix>
               <svg v-if="showAdvancedFilters" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
@@ -121,7 +121,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </template>
-            Clear
+            {{ __('Clear') }}
           </Button>
         </div>
         
@@ -132,28 +132,28 @@
               type="select"
               v-model="filters.status"
               :options="statusOptions"
-              placeholder="Status"
+              placeholder="{{ __('Status') }}"
               @change="applyFilters"
             />
             <FormControl
               type="select"
               v-model="filters.campaign_step"
               :options="filterOptions.campaignSteps"
-              placeholder="Campaign Step"
+              placeholder="{{ __('Campaign Step') }}"
               @change="applyFilters"
             />
             <FormControl
               type="select"
               v-model="filters.candidate_campaign_id"
               :options="filterOptions.candidateCampaigns"
-              placeholder="Candidate Campaign"
+              placeholder="{{ __('Candidate Campaign') }}"
               @change="applyFilters"
             />
             <FormControl
               type="select"
               v-model="filters.assignee_id"
               :options="filterOptions.assignees"
-              placeholder="Assignee"
+              placeholder="{{ __('Assignee') }}"
               @change="applyFilters"
             />
           </div>
@@ -164,7 +164,7 @@
     <!-- Data Table -->
     <div class="bg-white border border-slate-200 rounded-lg">
       <div class="flex justify-between items-center p-4 border-b border-slate-200">
-        <span class="text-lg font-semibold text-slate-800">Actions ({{ pagination.total }})</span>
+        <span class="text-lg font-semibold text-slate-800">{{ __('Actions') }} ({{ pagination.total }})</span>
         <div class="flex gap-2">
           <Button
             v-if="selected.length > 0"
@@ -177,7 +177,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M19 10a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </template>
-            Execute Selected ({{ selected.length }})
+            {{ __('Execute Selected') }} ({{ selected.length }})
           </Button>
           <Button
             v-if="selected.length > 0"
@@ -190,7 +190,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
               </svg>
             </template>
-            Delete Selected ({{ selected.length }})
+            {{ __('Delete Selected') }} ({{ selected.length }})
           </Button>
           <Button
             variant="outline"
@@ -201,7 +201,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </template>
-            Export
+            {{ __('Export') }}
           </Button>
         </div>
       </div>
@@ -220,13 +220,13 @@
                   @change="toggleSelectAll"
                 />
               </th>
-              <th class="text-left p-3 text-sm font-medium text-slate-600">Candidate Campaign</th>
-              <th class="text-left p-3 text-sm font-medium text-slate-600">Campaign Step</th>
-              <th class="text-left p-3 text-sm font-medium text-slate-600">Status</th>
-              <th class="text-left p-3 text-sm font-medium text-slate-600">Scheduled At</th>
-              <th class="text-left p-3 text-sm font-medium text-slate-600">Executed At</th>
-              <th class="text-left p-3 text-sm font-medium text-slate-600">Assignee</th>
-              <th class="text-left p-3 text-sm font-medium text-slate-600">Actions</th>
+              <th class="text-left p-3 text-sm font-medium text-slate-600">{{ __('Candidate Campaign') }}</th>
+              <th class="text-left p-3 text-sm font-medium text-slate-600">{{ __('Campaign Step') }}</th>
+              <th class="text-left p-3 text-sm font-medium text-slate-600">{{ __('Status') }}</th>
+              <th class="text-left p-3 text-sm font-medium text-slate-600">{{ __('Scheduled At') }}</th>
+              <th class="text-left p-3 text-sm font-medium text-slate-600">{{ __('Executed At') }}</th>
+              <th class="text-left p-3 text-sm font-medium text-slate-600">{{ __('Assignee') }}</th>
+              <th class="text-left p-3 text-sm font-medium text-slate-600">{{ __('Actions') }}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-200">
@@ -246,7 +246,7 @@
                   <svg class="w-12 h-12 text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
-                  <span>No actions found</span>
+                  <span>{{ __('No actions found') }}</span>
                 </div>
               </td>
             </tr>
@@ -355,7 +355,7 @@
       <!-- Pagination -->
       <div v-if="!loading && items.length > 0" class="flex justify-between items-center p-4 border-t border-slate-200">
         <div class="text-sm text-slate-600">
-          Showing {{ ((pagination.page - 1) * pagination.limit) + 1 }} to {{ Math.min(pagination.page * pagination.limit, pagination.total) }} of {{ pagination.total }} results
+          {{ __('Showing') }} {{ ((pagination.page - 1) * pagination.limit) + 1 }} {{ __('to') }} {{ Math.min(pagination.page * pagination.limit, pagination.total) }} {{ __('of') }} {{ pagination.total }} {{ __('results') }}
         </div>
         <div class="flex items-center gap-2">
           <Button
@@ -364,10 +364,10 @@
             :disabled="pagination.page <= 1"
             @click="pagination.page--; loadData()"
           >
-            Previous
+            {{ __('Previous') }}
           </Button>
           <span class="text-sm text-slate-600">
-            Page {{ pagination.page }} of {{ Math.ceil(pagination.total / pagination.limit) }}
+            {{ __('Page') }} {{ pagination.page }} {{ __('of') }} {{ Math.ceil(pagination.total / pagination.limit) }}
           </span>
           <Button
             variant="outline"
@@ -375,27 +375,27 @@
             :disabled="pagination.page >= Math.ceil(pagination.total / pagination.limit)"
             @click="pagination.page++; loadData()"
           >
-            Next
+            {{ __('Next') }}
           </Button>
         </div>
       </div>
     </div>
 
     <!-- Form Modal -->
-    <Dialog v-model="showFormModal" :options="{ title: formData.name ? 'Edit Action' : 'Add New Action', size: 'xl' }">
+    <Dialog v-model="showFormModal" :options="{ title: formData.name ? __('Edit Action') : __('Add New Action'), size: 'xl' }">
       <template #body-content>
         <div class="space-y-4">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormControl
               type="select"
-              label="Candidate Campaign"
+              label="{{ __('Candidate Campaign') }}"
               v-model="formData.candidate_campaign_id"
               :options="filterOptions.candidateCampaigns"
               :required="true"
             />
             <FormControl
               type="select"
-              label="Campaign Step"
+              label="{{ __('Campaign Step') }}"
               v-model="formData.campaign_step"
               :options="filterOptions.campaignSteps"
               :required="true"
@@ -405,14 +405,14 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormControl
               type="select"
-              label="Status"
+              label="{{ __('Status') }}"
               v-model="formData.status"
               :options="statusOptions"
               :required="true"
             />
             <FormControl
               type="select"
-              label="Assignee"
+              label="{{ __('Assignee') }}"
               v-model="formData.assignee_id"
               :options="filterOptions.assignees"
             />
@@ -421,32 +421,32 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormControl
               type="datetime-local"
-              label="Scheduled At"
+              label="{{ __('Scheduled At') }}"
               v-model="formData.scheduled_at"
             />
             <FormControl
               type="datetime-local"
-              label="Executed At"
+              label="{{ __('Executed At') }}"
               v-model="formData.executed_at"
             />
           </div>
 
           <FormControl
             type="textarea"
-            label="Result (JSON)"
+            label="{{ __('Result (JSON)') }}"
             v-model="formData.result"
-            placeholder="Enter result data as JSON or leave empty..."
+            placeholder="{{ __('Enter result data as JSON or leave empty...') }}"
             :rows="4"
-            help="Leave empty or enter valid JSON. Example: {key: value}"
+            help="{{ __('Leave empty or enter valid JSON. Example: {key: value}') }}"
           />
         </div>
       </template>
       <template #actions>
         <Button variant="ghost" @click="closeFormModal">
-          Cancel
+          {{ __('Cancel') }}
         </Button>
         <Button variant="solid" :loading="saving" @click="saveData">
-          {{ formData.name ? 'Update' : 'Create' }}
+          {{ formData.name ? __('Update') : __('Create') }}
         </Button>
       </template>
     </Dialog>
@@ -487,6 +487,9 @@ import { createResource } from 'frappe-ui'
 import { ToastContainer } from '@/components/shared'
 
 const router = useRouter()
+
+// Translation helper
+const __ = (text) => text
 
 // State
 const loading = ref(false)

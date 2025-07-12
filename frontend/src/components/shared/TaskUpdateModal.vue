@@ -3,7 +3,7 @@
     :model-value="dialog"
     @update:model-value="dialog = $event"
     :options="{
-      title: `Cập nhật: ${task?.title || 'Tác vụ'}`,
+      title: `${__('Update')}: ${task?.title || __('Task')}`,
       size: 'md',
     }"
   >
@@ -20,10 +20,10 @@
             <div>
               <div class="text-lg font-semibold text-gray-900">{{ task.candidate }}</div>
               <div class="text-sm text-gray-600">
-                Chiến dịch: {{ task.campaign }}
+                {{ __('Campaign') }}: {{ task.campaign }}
               </div>
               <div class="text-xs text-gray-500">
-                Trạng thái hiện tại: {{ getStatusLabel(task.status) }}
+                {{ __('Current status') }}: {{ getStatusLabel(task.status) }}
               </div>
             </div>
           </div>
@@ -32,7 +32,7 @@
         <!-- Action Selection -->
         <div class="mb-4">
           <label class="block text-sm font-medium text-gray-700 mb-3">
-            Cập nhật trạng thái:
+            {{ __('Update status') }}:
           </label>
           <div class="flex flex-wrap gap-2 mb-4">
             <button
@@ -103,6 +103,9 @@ import { ref, computed, watch } from 'vue'
 import { Dialog, Button, FormControl, Avatar } from 'frappe-ui'
 import moment from 'moment'
 
+// Translation helper function
+const __ = (text) => text
+
 const props = defineProps({
   modelValue: Boolean,
   task: Object
@@ -127,25 +130,25 @@ const actionOptions = computed(() => {
   return [
     { 
       value: 'EXECUTED', 
-      label: 'Hoàn thành', 
+      label: __('Complete'), 
       color: 'success',
       icon: 'mdi-check-circle'
     },
     { 
       value: 'SCHEDULED', 
-      label: 'Lên lịch', 
+      label: __('Schedule'), 
       color: 'info',
       icon: 'mdi-calendar-clock'
     },
     { 
       value: 'SKIPPED', 
-      label: 'Bỏ qua', 
+      label: __('Skip'), 
       color: 'warning',
       icon: 'mdi-skip-next'
     },
     { 
       value: 'FAILED', 
-      label: 'Thất bại', 
+      label: __('Failed'), 
       color: 'error',
       icon: 'mdi-alert-circle'
     }

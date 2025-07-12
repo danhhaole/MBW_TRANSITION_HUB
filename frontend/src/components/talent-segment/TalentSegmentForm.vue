@@ -4,12 +4,12 @@
 			<!-- Title -->
 			<div>
 				<label class="block text-sm font-medium text-gray-700 mb-2">
-					Tên phân khúc <span class="text-red-500">*</span>
+					Segment Name <span class="text-red-500">*</span>
 				</label>
 				<input
 					v-model="formData.title"
 					type="text"
-					placeholder="Nhập tên phân khúc..."
+					placeholder="Enter segment name..."
 					class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
 					:class="{ 'border-red-500': errors.title }"
 					maxlength="100"
@@ -17,17 +17,17 @@
 				/>
 				<p v-if="errors.title" class="mt-1 text-sm text-red-600">{{ errors.title }}</p>
 				<p class="mt-1 text-sm text-gray-500">
-					Tên này sẽ được hiển thị trong danh sách phân khúc
+					This name will be displayed in the segment list
 				</p>
 			</div>
 
 			<!-- Description -->
 			<div>
-				<label class="block text-sm font-medium text-gray-700 mb-2"> Mô tả </label>
+				<label class="block text-sm font-medium text-gray-700 mb-2"> Description </label>
 				<textarea
 					v-model="formData.description"
 					rows="3"
-					placeholder="Mô tả chi tiết về phân khúc này..."
+					placeholder="Detailed description of this segment..."
 					class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
 					:class="{ 'border-red-500': errors.description }"
 					maxlength="500"
@@ -36,7 +36,7 @@
 					{{ errors.description }}
 				</p>
 				<p class="mt-1 text-sm text-gray-500">
-					Mô tả sẽ giúp người khác hiểu rõ mục đích của phân khúc
+					Description will help others understand the purpose of the segment
 				</p>
 			</div>
 
@@ -45,7 +45,7 @@
 				<!-- Type -->
 				<div>
 					<label class="block text-sm font-medium text-gray-700 mb-2">
-						Loại phân khúc <span class="text-red-500">*</span>
+						Segment Type <span class="text-red-500">*</span>
 					</label>
 					<select
 						v-model="formData.type"
@@ -53,7 +53,7 @@
 						:class="{ 'border-red-500': errors.type }"
 						required
 					>
-						<option value="">Chọn loại phân khúc</option>
+						<option value="">Select segment type</option>
 						<option
 							v-for="option in typeOptions"
 							:key="option.value"
@@ -68,14 +68,14 @@
 				<!-- Owner -->
 				<div>
 					<label class="block text-sm font-medium text-gray-700 mb-2">
-						Người quản lý
+						Manager
 					</label>
 					<select
 						v-model="formData.owner_id"
 						class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
 						:class="{ 'border-red-500': errors.owner_id }"
 					>
-						<option value="">Chọn người quản lý</option>
+						<option value="">Select manager</option>
 						<option v-for="user in userOptions" :key="user.name" :value="user.name">
 							{{ user.full_name }}
 						</option>
@@ -89,7 +89,7 @@
 			<!-- Candidate Count (if editing) -->
 			<div v-if="isEditing">
 				<label class="block text-sm font-medium text-gray-700 mb-2">
-					Số lượng ứng viên
+					Number of Candidates
 				</label>
 				<input
 					v-model.number="formData.candidate_count"
@@ -103,7 +103,7 @@
 					{{ errors.candidate_count }}
 				</p>
 				<p class="mt-1 text-sm text-gray-500">
-					Số lượng ứng viên hiện tại trong phân khúc
+					Current number of candidates in the segment
 				</p>
 			</div>
 
@@ -124,16 +124,16 @@
 							d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
 						/>
 					</svg>
-					<h4 class="text-lg font-medium text-gray-900">Cấu hình AI (Tùy chọn)</h4>
+					<h4 class="text-lg font-medium text-gray-900">AI Configuration (Optional)</h4>
 				</div>
 				<p class="text-sm text-gray-600 mb-4">
-					Cấu hình các tiêu chí để AI tự động phân loại ứng viên
+					Configure criteria for AI to automatically classify candidates
 				</p>
 
 				<!-- Skills Selection -->
 				<div class="mb-4">
 					<label class="block text-sm font-medium text-gray-700 mb-2">
-						Kỹ năng cần thiết
+						Required Skills
 					</label>
 					<div class="space-y-2">
 						<div class="flex flex-wrap gap-2">
@@ -167,7 +167,7 @@
 							v-model="newSkill"
 							@keydown.enter.prevent="addSkill"
 							type="text"
-							placeholder="Nhập kỹ năng và nhấn Enter (VD: Java, Spring, React...)"
+							placeholder="Enter skill and press Enter (e.g. Java, Spring, React...)"
 							class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
 						/>
 					</div>
@@ -176,16 +176,16 @@
 				<!-- Experience Years -->
 				<div class="mb-4">
 					<label class="block text-sm font-medium text-gray-700 mb-2">
-						Kinh nghiệm làm việc
+						Work Experience
 					</label>
 					<div class="grid grid-cols-3 gap-3">
 						<select
 							v-model="criteriaForm.experienceOperator"
 							class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
 						>
-							<option value=">=">&gt;= Ít nhất</option>
-							<option value="=">=== Chính xác</option>
-							<option value="<=">&lt;= Tối đa</option>
+							<option value=">=">&gt;= At least</option>
+							<option value="=">=== Exactly</option>
+							<option value="<=">&lt;= Maximum</option>
 						</select>
 						<div class="col-span-2">
 							<input
@@ -193,7 +193,7 @@
 								type="number"
 								min="0"
 								max="50"
-								placeholder="Số năm kinh nghiệm"
+								placeholder="Years of experience"
 								class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
 							/>
 						</div>
@@ -203,25 +203,25 @@
 				<!-- Education Level -->
 				<div class="mb-4">
 					<label class="block text-sm font-medium text-gray-700 mb-2">
-						Trình độ học vấn
+						Education Level
 					</label>
 					<select
 						v-model="criteriaForm.educationLevel"
 						class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
 					>
-						<option value="">Không yêu cầu</option>
-						<option value="high_school">Trung học phổ thông</option>
-						<option value="diploma">Cao đẳng</option>
-						<option value="bachelor">Đại học</option>
-						<option value="master">Thạc sĩ</option>
-						<option value="phd">Tiến sĩ</option>
+						<option value="">No requirement</option>
+						<option value="high_school">High School</option>
+						<option value="diploma">Diploma</option>
+						<option value="bachelor">Bachelor's Degree</option>
+						<option value="master">Master's Degree</option>
+						<option value="phd">PhD</option>
 					</select>
 				</div>
 
 				<!-- Location -->
 				<div class="mb-4">
 					<label class="block text-sm font-medium text-gray-700 mb-2">
-						Địa điểm làm việc mong muốn
+						Preferred Work Location
 					</label>
 					<div class="space-y-2">
 						<div class="flex flex-wrap gap-2">
@@ -255,7 +255,7 @@
 							v-model="newLocation"
 							@keydown.enter.prevent="addLocation"
 							type="text"
-							placeholder="Nhập địa điểm và nhấn Enter (VD: Hà Nội, TP.HCM...)"
+							placeholder="Enter location and press Enter (e.g. Hanoi, Ho Chi Minh City...)"
 							class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
 						/>
 					</div>
@@ -265,27 +265,27 @@
 				<div class="grid grid-cols-2 gap-4">
 					<div>
 						<label class="block text-sm font-medium text-gray-700 mb-2">
-							Mức lương tối thiểu (triệu VND)
+							{{ __('Minimum Salary (million VND)') }}
 						</label>
 						<input
 							v-model.number="criteriaForm.salaryMin"
 							type="number"
 							min="0"
 							step="0.5"
-							placeholder="VD: 15"
+							:placeholder="__('e.g. 15')"
 							class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
 						/>
 					</div>
 					<div>
 						<label class="block text-sm font-medium text-gray-700 mb-2">
-							Mức lương tối đa (triệu VND)
+							{{ __('Maximum Salary (million VND)') }}
 						</label>
 						<input
 							v-model.number="criteriaForm.salaryMax"
 							type="number"
 							min="0"
 							step="0.5"
-							placeholder="VD: 30"
+							:placeholder="__('e.g. 30')"
 							class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
 						/>
 					</div>
@@ -295,10 +295,10 @@
 			<!-- Form Actions -->
 			<div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
 				<Button variant="outline" theme="gray" @click="handleCancel" :disabled="loading">
-					Hủy
+					{{ __('Cancel') }}
 				</Button>
 				<Button variant="solid" theme="gray" type="submit" :loading="loading">
-					{{ isEditing ? 'Cập nhật' : 'Tạo mới' }}
+					{{ isEditing ? __('Update') : __('Create') }}
 				</Button>
 			</div>
 		</form>
@@ -309,6 +309,9 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { Button } from 'frappe-ui'
 import { talentSegmentService, userService } from '@/services/universalService'
+
+// Translation helper function
+const __ = (text) => text
 
 // Props
 const props = defineProps({
@@ -358,11 +361,11 @@ const criteriaForm = ref({
 // Type options
 const typeOptions = [
 	{
-		title: 'Thủ công',
+		title: __('Manual'),
 		value: 'MANUAL',
 	},
 	{
-		title: 'Tự động (AI)',
+		title: __('Automatic (AI)'),
 		value: 'DYNAMIC',
 	},
 ]
@@ -375,23 +378,23 @@ const validateForm = () => {
 	errors.value = {}
 
 	if (!formData.value.title || formData.value.title.trim().length < 3) {
-		errors.value.title = 'Tên phân khúc phải có ít nhất 3 ký tự'
+		errors.value.title = __('Segment name must be at least 3 characters')
 	}
 
 	if (formData.value.title && formData.value.title.length > 100) {
-		errors.value.title = 'Tên phân khúc không được quá 100 ký tự'
+		errors.value.title = __('Segment name cannot exceed 100 characters')
 	}
 
 	if (formData.value.description && formData.value.description.length > 500) {
-		errors.value.description = 'Mô tả không được quá 500 ký tự'
+		errors.value.description = __('Description cannot exceed 500 characters')
 	}
 
 	if (!formData.value.type) {
-		errors.value.type = 'Loại phân khúc là bắt buộc'
+		errors.value.type = __('Segment type is required')
 	}
 
 	if (formData.value.candidate_count < 0) {
-		errors.value.candidate_count = 'Số lượng ứng viên phải >= 0'
+		errors.value.candidate_count = __('Number of candidates must be >= 0')
 	}
 
 	return Object.keys(errors.value).length === 0

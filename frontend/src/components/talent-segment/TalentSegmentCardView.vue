@@ -25,13 +25,13 @@
                 d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
             <span class="text-sm text-gray-600">
-              Last updated: {{ formatRelativeTime(segment.modified) }}
+              {{ __('Last updated: ') }}{{ formatRelativeTime(segment.modified) }}
             </span>
           </div>
 
           <!-- Top Skills - Always show this section -->
           <div class="mb-3">
-            <div class="text-xs text-gray-500 mb-1">Top Skills</div>
+            <div class="text-xs text-gray-500 mb-1">{{ __('Top Skills') }}</div>
             <div class="flex flex-wrap gap-1 min-h-[24px]">
               <template v-if="segment.topSkills && segment.topSkills.length">
                 <span v-for="skill in segment.topSkills.slice(0, 3)" :key="skill"
@@ -40,14 +40,14 @@
                 </span>
               </template>
               <template v-else>
-                <span class="text-xs text-gray-400 italic mt-2">Không có thông tin</span>
+                <span class="text-xs text-gray-400 italic mt-2">{{ __('No information') }}</span>
               </template>
             </div>
           </div>
 
           <!-- Engagement Rate -->
           <div class="mb-3">
-            <div class="text-xs text-gray-500 mb-1">Engagement Rate</div>
+            <div class="text-xs text-gray-500 mb-1">{{ __('Engagement Rate') }}</div>
             <div class="flex items-center">
               <div class="w-full bg-gray-200 rounded-full h-2 mr-2">
                 <div :class="getProgressBarClass(getEngagementRate(segment))"
@@ -76,14 +76,14 @@
                   </div>
                 </div>
                 <div v-else class="text-xs text-gray-400 italic">
-                  Chưa có ứng viên
+                  {{ __('No candidates yet') }}
                 </div>
               </div>
               
               <!-- Right side: Action Buttons -->
               <div class="flex space-x-2">
                 <Button variant="ghost" theme="gray" size="sm" @click="$emit('view-details', segment)">
-                  Manage
+                  {{ __('Manage') }}
                 </Button>
 
                 <Dropdown :options="getDropdownOptions(segment)" placement="bottom-end">
@@ -111,8 +111,8 @@
               </path>
             </svg>
           </div>
-          <h3 class="text-lg font-medium text-gray-900 mb-2">Create New Pool</h3>
-          <p class="text-sm text-gray-500">Define a new talent segment</p>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">{{ __('Create New Pool') }}</h3>
+          <p class="text-sm text-gray-500">{{ __('Define a new talent segment') }}</p>
         </div>
       </div>
     </div>
@@ -124,6 +124,9 @@ import { computed, ref, h } from 'vue'
 import { Button, Dropdown, FeatherIcon } from 'frappe-ui'
 import { calculateEngagementRate, formatDate, getSegmentTypeColor } from '@/services/talentSegmentService'
 import { processSkills } from '@/services/candidateService'
+
+// Translation helper function
+const __ = (text) => text
 
 // Props
 const props = defineProps({
@@ -191,25 +194,25 @@ const formatRelativeTime = (dateString) => {
 const getDropdownOptions = (segment) => {
   return [
     {
-      group: 'Actions',
+      group: __('Actions'),
       items: [
         {
-          label: 'Edit',
+          label: __('Edit'),
           icon: () => h(FeatherIcon, { name: "edit", class: "h-4 w-4" }),
           onClick: () => emit('edit', segment)
         },
         {
-          label: 'View Details',
+          label: __('View Details'),
           icon: () => h(FeatherIcon, { name: "eye", class: "h-4 w-4" }),
           onClick: () => emit('view-details', segment)
         },
       ],
     },
     {
-      group: 'Danger',
+      group: __('Danger'),
       items: [
         {
-          label: 'Delete',
+          label: __('Delete'),
           icon: () => h(FeatherIcon, { name: "trash-2", class: "h-4 w-4" }),
           onClick: () => emit('delete', segment)
         },

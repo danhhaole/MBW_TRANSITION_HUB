@@ -22,7 +22,7 @@
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <!-- Search -->
         <div class="relative">
-          <input v-model="searchQuery" type="text" placeholder="Search pools..."
+          <input v-model="searchQuery" type="text" :placeholder="__('Search talent pools...')"
             class="w-80 pl-10 pr-4 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             :class="{ 'animate-pulse': isSearching }" @input="handleSearch">
           <svg xmlns="http://www.w3.org/2000/svg"
@@ -62,7 +62,7 @@
             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
           </path>
         </svg>
-        <div class="text-gray-600">Đang tải dữ liệu...</div>
+        <div class="text-gray-600">{{ __('Loading data...') }}</div>
       </div>
 
       <!-- Empty State -->
@@ -73,8 +73,8 @@
             d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
           </path>
         </svg>
-        <h3 class="text-xl font-medium text-gray-900 mb-2">Chưa có talent pool nào</h3>
-        <p class="text-gray-500 mb-6">Tạo talent pool đầu tiên để bắt đầu quản lý ứng viên</p>
+        <h3 class="text-xl font-medium text-gray-900 mb-2">{{ __('No talent pools yet') }}</h3>
+        <p class="text-gray-500 mb-6">{{ __('Create your first talent pool to start managing candidates') }}</p>
         <Button variant="solid" theme="blue" @click="showCreateForm = true">
           <template #prefix>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
@@ -104,22 +104,22 @@
           <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6 rounded-lg shadow">
             <div class="flex-1 flex justify-between sm:hidden">
               <Button variant="outline" theme="gray" @click="previousPage" :disabled="pagination.currentPage <= 1">
-                Previous
+                {{ __('Previous') }}
               </Button>
               <Button variant="outline" theme="gray" @click="nextPage" :disabled="pagination.currentPage >= totalPages">
-                Next
+                {{ __('Next') }}
               </Button>
             </div>
             <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
               <div>
                 <p class="text-sm text-gray-700">
-                  Showing
+                  {{ __('Showing') }}
                   <span class="font-medium">{{ (pagination.currentPage - 1) * pagination.pageSize + 1 }}</span>
-                  to
+                  {{ __('to') }}
                   <span class="font-medium">{{ Math.min(pagination.currentPage * pagination.pageSize, filteredSegments.length) }}</span>
-                  of
+                  {{ __('of') }}
                   <span class="font-medium">{{ filteredSegments.length }}</span>
-                  results
+                  {{ __('results') }}
                 </p>
               </div>
               <div>
@@ -185,7 +185,7 @@
           <div class="mb-5 flex items-center justify-between">
             <div>
               <h3 class="text-2xl font-semibold leading-6 text-gray-900">
-                {{ editingSegment ? 'Edit Talent Pool' : 'Create New Talent Pool' }}
+                {{ editingSegment ? __('Edit Talent Pool') : __('Create New Talent Pool') }}
               </h3>
             </div>
             <div class="flex items-center gap-1">
@@ -208,7 +208,7 @@
           <div class="mb-5 flex items-center justify-between">
             <div>
               <h3 class="text-2xl font-semibold leading-6 text-gray-900">
-                Confirm Delete
+                {{ __('Confirm Delete') }}
               </h3>
             </div>
             <div class="flex items-center gap-1">
@@ -225,10 +225,10 @@
                 </svg>
               </div>
               <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                <h3 class="text-lg leading-6 font-medium text-gray-900">Delete Talent Pool</h3>
+                <h3 class="text-lg leading-6 font-medium text-gray-900">{{ __('Delete Talent Pool') }}</h3>
                 <div class="mt-2">
                   <p class="text-sm text-gray-500">
-                    Are you sure you want to delete "{{ deletingSegment?.title }}"? This action cannot be undone.
+                    {{ __('Are you sure you want to delete') }} "{{ deletingSegment?.title }}"? {{ __('This action cannot be undone.') }}
                   </p>
                 </div>
               </div>
@@ -238,10 +238,10 @@
         <div class="px-4 pb-7 pt-4 sm:px-6">
           <div class="space-y-2 flex justify-end gap-3">
             <Button variant="outline" theme="gray" @click="showDeleteDialog = false" :disabled="loading">
-              Cancel
+              {{ __('Cancel') }}
             </Button>
             <Button variant="solid" theme="red" @click="confirmDelete" :loading="loading">
-              Delete
+              {{ __('Delete') }}
             </Button>
           </div>
         </div>
@@ -259,7 +259,10 @@ import TalentSegmentForm from '@/components/talent-segment/TalentSegmentForm.vue
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import { Breadcrumbs } from 'frappe-ui'
 import TalentSegmentCardView from '@/components/talent-segment/TalentSegmentCardView.vue'
-let title = 'Talent Pools'
+// Translation helper function
+const __ = (text) => text
+
+let title = __('Talent Pools')
 const breadcrumbs = [{ label: title, route: { name: 'TalentSegments' } }]
 
 // Composables
@@ -526,7 +529,7 @@ const confirmDelete = async () => {
   if (result) {
     showDeleteDialog.value = false
     deletingSegment.value = null
-    showToast('Talent pool đã được xóa thành công', 'success')
+    showToast(__('Talent pool has been deleted successfully'), 'success')
   }
 }
 
@@ -534,7 +537,7 @@ const handleFormSuccess = async () => {
   showCreateForm.value = false
   editingSegment.value = null
   await loadSegments()
-  showToast('Talent pool đã được lưu thành công', 'success')
+  showToast(__('Talent pool has been saved successfully'), 'success')
 }
 
 const handleFormClose = () => {
@@ -581,7 +584,7 @@ watch(() => [error.value, success.value], ([errorVal, successVal]) => {
   if (errorVal) {
     showToast(errorVal, 'error')
   } else if (successVal) {
-    showToast('Thao tác thành công!', 'success')
+    showToast(__('Operation successful!'), 'success')
   }
 })
 

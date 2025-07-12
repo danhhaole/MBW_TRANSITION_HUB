@@ -23,7 +23,7 @@
             <div>
               <h3 class="text-h6 mb-0">{{ segment.title }}</h3>
               <div class="text-caption opacity-90">
-                Chi tiết phân khúc nhân tài
+                {{ __('Talent Segment Details') }}
               </div>
             </div>
           </div>
@@ -36,7 +36,7 @@
               class="mr-2"
             >
               <v-icon>mdi-pencil</v-icon>
-              <v-tooltip activator="parent" location="bottom">Chỉnh sửa</v-tooltip>
+              <v-tooltip activator="parent" location="bottom">{{ __('Edit') }}</v-tooltip>
             </v-btn>
             <v-btn
               variant="text"
@@ -317,9 +317,9 @@
                     <template v-slot:no-data>
                       <div class="text-center py-8">
                         <v-icon size="48" color="grey-lighten-2">mdi-account-outline</v-icon>
-                        <div class="text-h6 mt-2 mb-1">Chưa có ứng viên</div>
+                        <div class="text-h6 mt-2 mb-1">{{ __('No candidates yet') }}</div>
                         <div class="text-body-2 text-medium-emphasis mb-4">
-                          Phân khúc này chưa có ứng viên nào
+                          {{ __('This segment has no candidates yet') }}
                         </div>
                         <v-btn 
                           color="primary" 
@@ -327,7 +327,7 @@
                           @click="showAddCandidateDialog = true"
                           prepend-icon="mdi-plus"
                         >
-                          Thêm ứng viên đầu tiên
+                          {{ __('Add first candidate') }}
                         </v-btn>
                       </div>
                     </template>
@@ -346,14 +346,14 @@
           variant="text"
           @click="$emit('close')"
         >
-          Đóng
+          {{ __('Close') }}
         </v-btn>
         <v-btn
           color="primary"
           variant="elevated"
           @click="$emit('edit', segment)"
         >
-          Chỉnh sửa phân khúc
+          {{ __('Edit Segment') }}
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -361,13 +361,13 @@
     <!-- Add Candidate Dialog (placeholder) -->
     <v-dialog v-model="showAddCandidateDialog" max-width="600">
       <v-card>
-        <v-card-title>Thêm ứng viên vào phân khúc</v-card-title>
+        <v-card-title>{{ __('Add candidate to segment') }}</v-card-title>
         <v-card-text>
-          <p>Chức năng thêm ứng viên sẽ được phát triển trong phase sau.</p>
+          <p>{{ __('The add candidate feature will be developed in the next phase.') }}</p>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn variant="text" @click="showAddCandidateDialog = false">Đóng</v-btn>
+          <v-btn variant="text" @click="showAddCandidateDialog = false">{{ __('Close') }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -377,6 +377,9 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { getSegmentCandidates, calculateEngagementRate, formatDate } from '@/services/talentSegmentService'
+
+// Translation helper function
+const __ = (text) => text
 
 // Props
 const props = defineProps({
@@ -433,31 +436,31 @@ const sampleCandidates = [
 // Table headers for candidates
 const candidateHeaders = [
   {
-    title: 'Ứng viên',
+    title: 'Candidate',
     key: 'name',
     sortable: true,
     width: '30%'
   },
   {
-    title: 'Vị trí',
+    title: 'Position',
     key: 'position',
     sortable: true,
     width: '25%'
   },
   {
-    title: 'Trạng thái',
+    title: 'Status',
     key: 'status',
     sortable: true,
     width: '15%'
   },
   {
-    title: 'Điểm số',
+    title: 'Score',
     key: 'score',
     sortable: true,
     width: '15%'
   },
   {
-    title: 'Hành động',
+    title: 'Actions',
     key: 'actions',
     sortable: false,
     width: '15%',
@@ -471,7 +474,7 @@ const getTypeColor = (type) => {
 }
 
 const getTypeLabel = (type) => {
-  return type === 'DYNAMIC' ? 'Tự động (AI)' : 'Thủ công'
+  return type === 'DYNAMIC' ? 'Automatic (AI)' : 'Manual'
 }
 
 const getEngagementRate = (segment) => {
@@ -509,11 +512,11 @@ const getCandidateStatusColor = (status) => {
 
 const getCandidateStatusLabel = (status) => {
   const statusLabels = {
-    'ACTIVE': 'Hoạt động',
-    'POTENTIAL': 'Tiềm năng',
-    'INACTIVE': 'Không hoạt động'
+    'ACTIVE': 'Active',
+    'POTENTIAL': 'Potential',
+    'INACTIVE': 'Inactive'
   }
-  return statusLabels[status] || 'Không xác định'
+  return statusLabels[status] || 'Unknown'
 }
 
 const getScoreColor = (score) => {

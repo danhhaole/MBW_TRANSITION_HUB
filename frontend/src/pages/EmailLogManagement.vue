@@ -3,8 +3,8 @@
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
       <div>
-        <h1 class="text-3xl font-bold text-slate-800">Email Logs</h1>
-        <p class="text-slate-600 mt-1">Monitor email delivery and status</p>
+        <h1 class="text-3xl font-bold text-slate-800">{{ __('Email Logs') }}</h1>
+        <p class="text-slate-600 mt-1">{{ __('Monitor email delivery and status') }}</p>
       </div>
       <Button
         variant="solid"
@@ -15,7 +15,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
         </template>
-        Add New Log
+        {{ __('Add New Log') }}
       </Button>
     </div>
 
@@ -25,12 +25,12 @@
         <div class="flex items-center">
           <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
             <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 012 2z" />
             </svg>
           </div>
           <div>
             <div class="text-2xl font-bold text-slate-800">{{ stats.total }}</div>
-            <div class="text-sm text-slate-500">Total Emails</div>
+            <div class="text-sm text-slate-500">{{ __('Total Emails') }}</div>
           </div>
         </div>
       </div>
@@ -43,7 +43,7 @@
           </div>
           <div>
             <div class="text-2xl font-bold text-slate-800">{{ stats.success }}</div>
-            <div class="text-sm text-slate-500">Success</div>
+            <div class="text-sm text-slate-500">{{ __('Success') }}</div>
           </div>
         </div>
       </div>
@@ -56,7 +56,7 @@
           </div>
           <div>
             <div class="text-2xl font-bold text-slate-800">{{ stats.failed }}</div>
-            <div class="text-sm text-slate-500">Failed</div>
+            <div class="text-sm text-slate-500">{{ __('Failed') }}</div>
           </div>
         </div>
       </div>
@@ -69,7 +69,7 @@
           <FormControl
             type="text"
             v-model="search"
-            placeholder="Search emails..."
+            :placeholder="__('Search emails...')"
             class="md:col-span-2"
             @update:model-value="debouncedSearch"
           >
@@ -83,13 +83,13 @@
             type="select"
             v-model="filters.status"
             :options="statusOptions"
-            placeholder="Status"
+            :placeholder="__('Status')"
             @change="applyFilters"
           />
           <FormControl
             type="text"
             v-model="filters.sender"
-            placeholder="Sender"
+            :placeholder="__('Sender')"
             @update:model-value="applyFilters"
           />
         </div>
@@ -98,7 +98,7 @@
             variant="outline"
             @click="clearFilters"
           >
-            Clear Filters
+            {{ __('Clear Filters') }}
           </Button>
         </div>
       </div>
@@ -108,7 +108,7 @@
     <div class="bg-white border border-slate-200 rounded-lg">
       <div class="p-4 border-b border-slate-200">
         <div class="flex justify-between items-center">
-          <h3 class="text-lg font-medium text-slate-800">Email Logs ({{ pagination.total }})</h3>
+          <h3 class="text-lg font-medium text-slate-800">{{ __('Email Logs') }} ({{ pagination.total }})</h3>
           <div class="flex gap-2">
             <Button
               v-if="selected.length > 0"
@@ -121,7 +121,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
               </template>
-              Delete Selected ({{ selected.length }})
+              {{ __('Delete Selected') }} ({{ selected.length }})
             </Button>
             <Button
               variant="outline"
@@ -132,7 +132,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </template>
-              Export
+              {{ __('Export') }}
             </Button>
           </div>
         </div>
@@ -150,12 +150,12 @@
                   class="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                 />
               </th>
-              <th class="text-left p-3 font-medium text-slate-700">Subject</th>
-              <th class="text-left p-3 font-medium text-slate-700">Recipients</th>
-              <th class="text-left p-3 font-medium text-slate-700">Sender</th>
-              <th class="text-left p-3 font-medium text-slate-700">Status</th>
-              <th class="text-left p-3 font-medium text-slate-700">Modified</th>
-              <th class="text-left p-3 font-medium text-slate-700 w-32">Actions</th>
+              <th class="text-left p-3 font-medium text-slate-700">{{ __('Subject') }}</th>
+              <th class="text-left p-3 font-medium text-slate-700">{{ __('Recipients') }}</th>
+              <th class="text-left p-3 font-medium text-slate-700">{{ __('Sender') }}</th>
+              <th class="text-left p-3 font-medium text-slate-700">{{ __('Status') }}</th>
+              <th class="text-left p-3 font-medium text-slate-700">{{ __('Modified') }}</th>
+              <th class="text-left p-3 font-medium text-slate-700 w-32">{{ __('Actions') }}</th>
             </tr>
           </thead>
           <tbody v-if="!loading">
@@ -200,7 +200,7 @@
                   <button
                     @click="viewDetails(item)"
                     class="p-1 text-slate-400 hover:text-blue-600 transition-colors"
-                    title="View Details"
+                    :title="__('View Details')"
                   >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -210,7 +210,7 @@
                   <button
                     @click="openFormModal(item)"
                     class="p-1 text-slate-400 hover:text-blue-600 transition-colors"
-                    title="Edit"
+                    :title="__('Edit')"
                   >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -219,7 +219,7 @@
                   <button
                     @click="confirmDelete(item)"
                     class="p-1 text-slate-400 hover:text-red-600 transition-colors"
-                    title="Delete"
+                    :title="__('Delete')"
                   >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -238,17 +238,17 @@
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            Loading...
+            {{ __('Loading...') }}
           </div>
         </div>
 
         <!-- Empty State -->
         <div v-if="!loading && items.length === 0" class="p-8 text-center text-slate-500">
           <svg class="w-12 h-12 mx-auto mb-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 012 2z" />
           </svg>
-          <p class="text-lg font-medium mb-2">No email logs found</p>
-          <p class="text-sm">Create your first email log to get started.</p>
+          <p class="text-lg font-medium mb-2">{{ __('No email logs found') }}</p>
+          <p class="text-sm">{{ __('Create your first email log to get started.') }}</p>
         </div>
       </div>
 
@@ -256,7 +256,7 @@
       <div v-if="!loading && items.length > 0" class="p-4 border-t border-slate-200">
         <div class="flex items-center justify-between">
           <div class="text-sm text-slate-500">
-            Showing {{ pagination.showing_from }} to {{ pagination.showing_to }} of {{ pagination.total }} entries
+            {{ __('Showing') }} {{ pagination.showing_from }} {{ __('to') }} {{ pagination.showing_to }} {{ __('of') }} {{ pagination.total }} {{ __('items') }}
           </div>
           <div class="flex items-center gap-2">
             <button
@@ -264,7 +264,7 @@
               :disabled="pagination.page <= 1"
               class="px-3 py-1 text-sm border border-slate-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50"
             >
-              Previous
+              {{ __('Previous') }}
             </button>
             <div class="flex gap-1">
               <button
@@ -289,7 +289,7 @@
               :disabled="pagination.page >= pagination.pages"
               class="px-3 py-1 text-sm border border-slate-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50"
             >
-              Next
+              {{ __('Next') }}
             </button>
           </div>
         </div>
@@ -297,36 +297,36 @@
     </div>
 
     <!-- Form Modal -->
-    <Dialog v-model="showFormModal" :options="{ title: `${formData.name ? 'Edit' : 'Add'} Email Log`, size: '2xl' }">
+    <Dialog v-model="showFormModal" :options="{ title: `${formData.name ? __('Edit') : __('Add')} ${__('Email Log')}`, size: '2xl' }">
       <template #body-content>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="md:col-span-2">
             <FormControl
               type="text"
-              label="Subject"
+              :label="__('Subject')"
               v-model="formData.subject"
               :required="true"
-              placeholder="Enter email subject"
+              :placeholder="__('Enter email subject')"
             />
           </div>
           <div>
             <FormControl
               type="textarea"
-              label="Recipients"
+              :label="__('Recipients')"
               v-model="formData.recipients"
               :required="true"
-              placeholder="Enter recipients (comma-separated)"
+              :placeholder="__('Enter recipients (comma-separated)')"
               :rows="2"
             />
-            <p class="text-xs text-slate-500 mt-1">Separate multiple emails with commas</p>
+            <p class="text-xs text-slate-500 mt-1">{{ __('Separate multiple emails with commas') }}</p>
           </div>
           <div>
             <FormControl
               type="email"
-              label="Sender"
+              :label="__('Sender')"
               v-model="formData.sender"
               :required="true"
-              placeholder="Enter sender email"
+              :placeholder="__('Enter sender email')"
             />
           </div>
           <div>
@@ -334,25 +334,25 @@
               type="textarea"
               label="CC"
               v-model="formData.cc"
-              placeholder="Enter CC recipients"
+              :placeholder="__('Enter CC recipients')"
               :rows="2"
             />
-            <p class="text-xs text-slate-500 mt-1">Separate multiple emails with commas</p>
+            <p class="text-xs text-slate-500 mt-1">{{ __('Separate multiple emails with commas') }}</p>
           </div>
           <div>
             <FormControl
               type="textarea"
               label="BCC"
               v-model="formData.bcc"
-              placeholder="Enter BCC recipients"
+              :placeholder="__('Enter BCC recipients')"
               :rows="2"
             />
-            <p class="text-xs text-slate-500 mt-1">Separate multiple emails with commas</p>
+            <p class="text-xs text-slate-500 mt-1">{{ __('Separate multiple emails with commas') }}</p>
           </div>
           <div>
             <FormControl
               type="select"
-              label="Status"
+              :label="__('Status')"
               v-model="formData.status"
               :options="statusOptions"
               :required="true"
@@ -361,83 +361,83 @@
           <div>
             <FormControl
               type="textarea"
-              label="Attachments"
+              :label="__('Attachments')"
               v-model="formData.attachments"
-              placeholder="List of attachment file paths"
+              :placeholder="__('List of attachment paths')"
               :rows="2"
             />
           </div>
           <div class="md:col-span-2">
             <FormControl
               type="textarea"
-              label="Content"
+              :label="__('Content')"
               v-model="formData.content"
               :required="true"
-              placeholder="Enter email content"
+              :placeholder="__('Enter email content')"
               :rows="8"
             />
           </div>
           <div v-if="formData.status === 'Failed'" class="md:col-span-2">
             <FormControl
               type="textarea"
-              label="Error Details"
+              :label="__('Error Details')"
               v-model="formData.error"
-              placeholder="Enter error details"
+              :placeholder="__('Enter error details')"
               :rows="3"
             />
           </div>
         </div>
       </template>
       <template #actions>
-        <Button variant="ghost" @click="closeFormModal">Cancel</Button>
+        <Button variant="ghost" @click="closeFormModal">{{ __('Cancel') }}</Button>
         <Button
           variant="solid"
           :loading="saving"
           @click="saveForm"
         >
-          {{ formData.name ? 'Update' : 'Save' }}
+          {{ formData.name ? __('Update') : __('Save') }}
         </Button>
       </template>
     </Dialog>
 
     <!-- Delete Confirmation -->
-    <Dialog v-model="showDeleteDialog" :options="{ title: 'Confirm Delete', size: 'xs' }">
+    <Dialog v-model="showDeleteDialog" :options="{ title: __('Confirm Delete'), size: 'xs' }">
       <template #body-content>
-        <p class="text-slate-600">Are you sure you want to delete this email log? This action cannot be undone.</p>
+        <p class="text-slate-600">{{ __('Are you sure you want to delete this email log? This action cannot be undone.') }}</p>
       </template>
       <template #actions>
-        <Button variant="ghost" @click="showDeleteDialog = false">Cancel</Button>
+        <Button variant="ghost" @click="showDeleteDialog = false">{{ __('Cancel') }}</Button>
         <Button
           variant="solid"
           theme="red"
           :loading="deleting"
           @click="deleteItem"
         >
-          Delete
+          {{ __('Delete') }}
         </Button>
       </template>
     </Dialog>
 
     <!-- Detail Modal -->
-    <Dialog v-model="showDetailModal" :options="{ title: 'Email Log Details', size: '3xl' }">
+    <Dialog v-model="showDetailModal" :options="{ title: __('Email Log Details'), size: '3xl' }">
       <template #body-content>
         <div v-if="selectedItem" class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <div class="space-y-4">
               <div>
-                <dt class="text-sm font-medium text-slate-500">Subject</dt>
+                <dt class="text-sm font-medium text-slate-500">{{ __('Subject') }}</dt>
                 <dd class="mt-1 text-sm text-slate-900">{{ selectedItem.subject }}</dd>
               </div>
               <div>
-                <dt class="text-sm font-medium text-slate-500">Recipients</dt>
+                <dt class="text-sm font-medium text-slate-500">{{ __('Recipients') }}</dt>
                 <dd class="mt-1 text-sm text-slate-900">{{ selectedItem.recipients }}</dd>
               </div>
               <div>
-                <dt class="text-sm font-medium text-slate-500">Sender</dt>
+                <dt class="text-sm font-medium text-slate-500">{{ __('Sender') }}</dt>
                 <dd class="mt-1 text-sm text-slate-900">{{ selectedItem.sender }}</dd>
               </div>
               <div>
-                <dt class="text-sm font-medium text-slate-500">Status</dt>
+                <dt class="text-sm font-medium text-slate-500">{{ __('Status') }}</dt>
                 <dd class="mt-1">
                   <Badge :variant="getStatusVariant(selectedItem.status)">
                     {{ selectedItem.status }}
@@ -457,31 +457,31 @@
                 <dd class="mt-1 text-sm text-slate-900">{{ selectedItem.bcc }}</dd>
               </div>
               <div v-if="selectedItem.attachments">
-                <dt class="text-sm font-medium text-slate-500">Attachments</dt>
+                <dt class="text-sm font-medium text-slate-500">{{ __('Attachments') }}</dt>
                 <dd class="mt-1 text-sm text-slate-900">{{ selectedItem.attachments }}</dd>
               </div>
               <div>
-                <dt class="text-sm font-medium text-slate-500">Modified</dt>
+                <dt class="text-sm font-medium text-slate-500">{{ __('Modified') }}</dt>
                 <dd class="mt-1 text-sm text-slate-900">{{ formatDate(selectedItem.modified) }}</dd>
               </div>
             </div>
           </div>
           <div class="md:col-span-2">
             <div class="border-t border-slate-200 pt-6">
-              <h4 class="text-sm font-medium text-slate-900 mb-3">Content</h4>
+              <h4 class="text-sm font-medium text-slate-900 mb-3">{{ __('Content') }}</h4>
               <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 text-sm text-slate-900 whitespace-pre-wrap">{{ selectedItem.content }}</div>
             </div>
           </div>
           <div v-if="selectedItem.error && selectedItem.status === 'Failed'" class="md:col-span-2">
             <div class="border-t border-slate-200 pt-6">
-              <h4 class="text-sm font-medium text-red-600 mb-3">Error Details</h4>
+              <h4 class="text-sm font-medium text-red-600 mb-3">{{ __('Error Details') }}</h4>
               <div class="bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-900 whitespace-pre-wrap">{{ selectedItem.error }}</div>
             </div>
           </div>
         </div>
       </template>
       <template #actions>
-        <Button variant="solid" @click="showDetailModal = false">Close</Button>
+        <Button variant="solid" @click="showDetailModal = false">{{ __('Close') }}</Button>
       </template>
     </Dialog>
   </div>
@@ -493,6 +493,9 @@ import { useRouter } from 'vue-router'
 import { Button, FormControl, Dialog, Badge } from 'frappe-ui'
 import { emailLogService } from '../services/universalService'
 import { debounce } from 'lodash'
+
+// Translation helper function
+const __ = (text) => text
 
 const router = useRouter()
 
@@ -512,9 +515,9 @@ const selectedItem = ref(null)
 
 // Status options - using label/value format for Frappe UI
 const statusOptions = [
-  { label: 'Success', value: 'Success' },
-  { label: 'Failed', value: 'Failed' },
-  { label: 'Fallback', value: 'Fallback' }
+  { label: __('Success'), value: 'Success' },
+  { label: __('Failed'), value: 'Failed' },
+  { label: __('Fallback'), value: 'Fallback' }
 ]
 
 // Form data - matching EmailLog doctype fields

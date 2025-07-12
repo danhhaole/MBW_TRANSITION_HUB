@@ -3,8 +3,8 @@
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
       <div>
-        <h1 class="text-3xl font-bold text-slate-800">Interactions</h1>
-        <p class="text-slate-600 mt-1">Track and manage candidate interactions</p>
+            <h1 class="text-3xl font-bold text-slate-800">{{ __('Interactions') }}</h1>
+    <p class="text-slate-600 mt-1">{{ __('Track and manage candidate interactions') }}</p>
       </div>
       <Button
         variant="solid"
@@ -15,7 +15,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
         </template>
-        Add New Interaction
+        {{ __('Add New Interaction') }}
       </Button>
     </div>
 
@@ -30,7 +30,7 @@
           </div>
           <div>
             <div class="text-2xl font-bold text-slate-800">{{ stats.total }}</div>
-            <div class="text-sm text-slate-500">Total Interactions</div>
+            <div class="text-sm text-slate-500">{{ __('Total Interactions') }}</div>
           </div>
         </div>
       </div>
@@ -43,7 +43,7 @@
           </div>
           <div>
             <div class="text-2xl font-bold text-slate-800">{{ stats.emails }}</div>
-            <div class="text-sm text-slate-500">Email Interactions</div>
+            <div class="text-sm text-slate-500">{{ __('Email Interactions') }}</div>
           </div>
         </div>
       </div>
@@ -56,7 +56,7 @@
           </div>
           <div>
             <div class="text-2xl font-bold text-slate-800">{{ stats.calls }}</div>
-            <div class="text-sm text-slate-500">Call Interactions</div>
+            <div class="text-sm text-slate-500">{{ __('Call Interactions') }}</div>
           </div>
         </div>
       </div>
@@ -69,7 +69,7 @@
           </div>
           <div>
             <div class="text-2xl font-bold text-slate-800">{{ stats.today }}</div>
-            <div class="text-sm text-slate-500">Today</div>
+            <div class="text-sm text-slate-500">{{ __('Today') }}</div>
           </div>
         </div>
       </div>
@@ -455,6 +455,9 @@ import { useRouter } from 'vue-router'
 import { Button, Dialog, FormControl, Avatar, Badge } from 'frappe-ui'
 import { interactionService, candidateService, actionService } from '../services/universalService'
 import { debounce } from 'lodash'
+
+// Translation helper function
+const __ = (text) => text
 
 const router = useRouter()
 

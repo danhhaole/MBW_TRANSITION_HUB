@@ -6,18 +6,18 @@
         <svg class="w-5 h-5 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
         </svg>
-        Thông tin cơ bản
+        {{ __('Basic Information') }}
       </h3>
       
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="md:col-span-2">
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            Tên đầy đủ <span class="text-red-500">*</span>
+            {{ __('Full Name') }} <span class="text-red-500">*</span>
           </label>
           <FormControl
             type="text"
             v-model="formData.full_name"
-            placeholder="Nhập tên đầy đủ"
+            :placeholder="__('Enter full name')"
             :error="errors?.full_name"
             required
           />
@@ -25,12 +25,12 @@
         
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            Email <span class="text-red-500">*</span>
+            {{ __('Email') }} <span class="text-red-500">*</span>
           </label>
           <FormControl
             type="email"
             v-model="formData.email"
-            placeholder="Nhập địa chỉ email"
+            :placeholder="__('Enter email address')"
             :error="errors?.email"
             required
           />
@@ -38,12 +38,12 @@
         
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            Số điện thoại
+            {{ __('Phone Number') }}
           </label>
           <FormControl
             type="tel"
             v-model="formData.phone"
-            placeholder="Nhập số điện thoại"
+            :placeholder="__('Enter phone number')"
             :error="errors?.phone"
           />
         </div>
@@ -183,22 +183,22 @@
 
     <!-- Form Actions -->
     <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-      <Button
-        variant="outline"
-        type="button"
-        @click="$emit('cancel')"
-        :disabled="loading"
-      >
-        Hủy
-      </Button>
-      <Button
-        type="submit"
-        variant="solid"
-        :loading="loading"
-        :disabled="!isFormValid"
-      >
-        {{ isEdit ? 'Cập nhật' : 'Tạo mới' }}
-      </Button>
+              <Button
+          variant="outline"
+          type="button"
+          @click="$emit('cancel')"
+          :disabled="loading"
+        >
+          {{ __('Cancel') }}
+        </Button>
+        <Button
+          type="submit"
+          variant="solid"
+          :loading="loading"
+          :disabled="!isFormValid"
+        >
+          {{ isEdit ? __('Update') : __('Create') }}
+        </Button>
     </div>
   </form>
 </template>
@@ -206,6 +206,9 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { FormControl, Button } from 'frappe-ui'
+
+// Translation helper function
+const __ = (text) => text
 
 // Props
 const props = defineProps({
@@ -227,21 +230,21 @@ const props = defineProps({
   sourceOptions: {
     type: Array,
     default: () => [
-      { label: 'Thủ công', value: 'MANUAL' },
+      { label: 'Manual', value: 'MANUAL' },
       { label: 'LinkedIn', value: 'LINKEDIN' },
       { label: 'Website', value: 'WEBSITE' },
-      { label: 'Giới thiệu', value: 'REFERRAL' },
+      { label: 'Referral', value: 'REFERRAL' },
       { label: 'Job Board', value: 'JOB_BOARD' }
     ]
   },
   statusOptions: {
     type: Array,
     default: () => [
-      { label: 'Mới', value: 'NEW' },
-      { label: 'Đã tìm thấy', value: 'SOURCED' },
-      { label: 'Đang chăm sóc', value: 'NURTURING' },
-      { label: 'Đã tương tác', value: 'ENGAGED' },
-      { label: 'Đã lưu trữ', value: 'ARCHIVED' }
+      { label: 'New', value: 'NEW' },
+      { label: 'Sourced', value: 'SOURCED' },
+      { label: 'Nurturing', value: 'NURTURING' },
+      { label: 'Engaged', value: 'ENGAGED' },
+      { label: 'Archived', value: 'ARCHIVED' }
     ]
   },
   errors: {

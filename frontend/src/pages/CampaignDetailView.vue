@@ -24,10 +24,10 @@
                 {{ campaign.status }}
               </span>
               <span class="text-sm text-gray-500">
-                Created: {{ formatDate(campaign.creation) }}
+                				{{ __('Created:') }} {{ formatDate(campaign.creation) }}
               </span>
               <span class="text-sm text-gray-500">
-                Modified: {{ formatDate(campaign.modified) }}
+                				{{ __('Modified:') }} {{ formatDate(campaign.modified) }}
               </span>
             </div>
           </div>
@@ -41,7 +41,7 @@
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
             </svg>
-            Edit Campaign
+            				{{ __('Edit Campaign') }}
           </button>
           <button
             @click="deleteCampaign"
@@ -50,7 +50,7 @@
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
             </svg>
-            Delete
+            				{{ __('Delete') }}
           </button>
         </div>
       </div>
@@ -63,22 +63,22 @@
           <svg class="w-5 h-5 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
           </svg>
-          <h3 class="text-lg font-medium text-gray-900">Campaign Information</h3>
+          		<h3 class="text-lg font-medium text-gray-900">{{ __('Campaign Information') }}</h3>
         </div>
       </div>
       <div class="p-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="space-y-4">
             <div>
-              <label class="text-sm font-medium text-gray-700">Campaign Name</label>
-              <p class="mt-1 text-sm text-gray-900">{{ campaign.campaign_name || 'N/A' }}</p>
-            </div>
-            <div>
-              <label class="text-sm font-medium text-gray-700">Description</label>
-              <p class="mt-1 text-sm text-gray-900">{{ campaign.description || 'N/A' }}</p>
-            </div>
-            <div>
-              <label class="text-sm font-medium text-gray-700">Status</label>
+              			<label class="text-sm font-medium text-gray-700">{{ __('Campaign Name') }}</label>
+			<p class="mt-1 text-sm text-gray-900">{{ campaign.campaign_name || __('None') }}</p>
+		</div>
+		<div>
+			<label class="text-sm font-medium text-gray-700">{{ __('Description') }}</label>
+			<p class="mt-1 text-sm text-gray-900">{{ campaign.description || __('None') }}</p>
+		</div>
+		<div>
+			<label class="text-sm font-medium text-gray-700">{{ __('Status') }}</label>
               <div class="mt-1">
                 <span 
                   :class="getStatusClasses(campaign.status)"
@@ -89,7 +89,7 @@
               </div>
             </div>
             <div>
-              <label class="text-sm font-medium text-gray-700">Type</label>
+              			<label class="text-sm font-medium text-gray-700">{{ __('Type') }}</label>
               <div class="mt-1">
                 <span 
                   :class="getTypeClasses(campaign.type)"
@@ -102,19 +102,19 @@
           </div>
           <div class="space-y-4">
             <div>
-              <label class="text-sm font-medium text-gray-700">Start Date</label>
-              <p class="mt-1 text-sm text-gray-900">{{ formatDate(campaign.start_date) || 'N/A' }}</p>
-            </div>
-            <div>
-              <label class="text-sm font-medium text-gray-700">End Date</label>
-              <p class="mt-1 text-sm text-gray-900">{{ formatDate(campaign.end_date) || 'N/A' }}</p>
-            </div>
-            <div>
-              <label class="text-sm font-medium text-gray-700">Created By</label>
-              <p class="mt-1 text-sm text-gray-900">{{ campaign.owner_id || 'N/A' }}</p>
-            </div>
-            <div>
-              <label class="text-sm font-medium text-gray-700">Target Segment</label>
+              			<label class="text-sm font-medium text-gray-700">{{ __('Start Date') }}</label>
+			<p class="mt-1 text-sm text-gray-900">{{ formatDate(campaign.start_date) || __('None') }}</p>
+		</div>
+		<div>
+			<label class="text-sm font-medium text-gray-700">{{ __('End Date') }}</label>
+			<p class="mt-1 text-sm text-gray-900">{{ formatDate(campaign.end_date) || __('None') }}</p>
+		</div>
+		<div>
+			<label class="text-sm font-medium text-gray-700">{{ __('Created By') }}</label>
+			<p class="mt-1 text-sm text-gray-900">{{ campaign.owner_id || __('None') }}</p>
+		</div>
+		<div>
+			<label class="text-sm font-medium text-gray-700">{{ __('Target Segments') }}</label>
               <div class="mt-1 flex items-center">
                 <button
                   v-if="targetSegment"
@@ -123,7 +123,7 @@
                 >
                   {{ targetSegment.title }}
                 </button>
-                <span v-else class="text-sm text-gray-500">N/A</span>
+                				<span v-else class="text-sm text-gray-500">{{ __('None') }}</span>
               </div>
             </div>
           </div>
@@ -173,7 +173,7 @@
         <!-- Campaign Steps Tab -->
         <div v-if="activeTab === 'steps'">
           <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-medium text-gray-900">Campaign Steps</h3>
+            			<h3 class="text-lg font-medium text-gray-900">{{ __('Campaign Steps') }}</h3>
             <button
               @click="openStepModal()"
               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -181,7 +181,7 @@
               <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
               </svg>
-              Add Step
+              				{{ __('Add Step') }}
             </button>
           </div>
           
@@ -190,11 +190,11 @@
             <table class="min-w-full divide-y divide-gray-300">
               <thead class="bg-gray-50">
                 <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Step Order</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Step Name</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action Type</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Delay (Days)</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  				<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Order') }}</th>
+				<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Step Name') }}</th>
+				<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Action Type') }}</th>
+				<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Delay (Days)') }}</th>
+				<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Actions') }}</th>
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
@@ -889,6 +889,9 @@ import { Dialog } from 'frappe-ui'
 import CampaignForm from '@/components/campaign/CampaignForm.vue'
 import moment from 'moment'
 
+// Translation helper function
+const __ = (text) => text
+
 const route = useRoute()
 const router = useRouter()
 
@@ -951,25 +954,25 @@ const savingAction = ref(false)
 
 // Options
 const stepTypeOptions = [
-  { title: 'Send Email', value: 'SEND_EMAIL' },
-  { title: 'Send SMS', value: 'SEND_SMS' },
-  { title: 'Manual Call', value: 'MANUAL_CALL' },
-  { title: 'Manual Task', value: 'MANUAL_TASK' }
+  { title: __('Send Email'), value: 'SEND_EMAIL' },
+  { title: __('Send SMS'), value: 'SEND_SMS' },
+  { title: __('Manual Call'), value: 'MANUAL_CALL' },
+  { title: __('Manual Task'), value: 'MANUAL_TASK' }
 ]
 
 const statusOptions = [
-  { title: 'Active', value: 'ACTIVE' },
-  { title: 'Paused', value: 'PAUSED' },
-  { title: 'Completed', value: 'COMPLETED' },
-  { title: 'Cancelled', value: 'CANCELLED' }
+  { title: __('Active'), value: 'ACTIVE' },
+  { title: __('Paused'), value: 'PAUSED' },
+  { title: __('Completed'), value: 'COMPLETED' },
+  { title: __('Cancelled'), value: 'CANCELLED' }
 ]
 
 const actionStatusOptions = [
-  { title: 'Scheduled', value: 'SCHEDULED' },
-  { title: 'Executed', value: 'EXECUTED' },
-  { title: 'Skipped', value: 'SKIPPED' },
-  { title: 'Failed', value: 'FAILED' },
-  { title: 'Pending Manual', value: 'PENDING_MANUAL' }
+  { title: __('Scheduled'), value: 'SCHEDULED' },
+  { title: __('Executed'), value: 'EXECUTED' },
+  { title: __('Skipped'), value: 'SKIPPED' },
+  { title: __('Failed'), value: 'FAILED' },
+  { title: __('Pending Manual'), value: 'PENDING_MANUAL' }
 ]
 
 // Table headers
@@ -1001,22 +1004,22 @@ const actionHeaders = [
 const tabs = computed(() => [
   {
     key: 'steps',
-    label: 'Campaign Steps',
+    		label: __('Campaign Steps'),
     count: campaignSteps.value.length
   },
   {
     key: 'candidates',
-    label: 'Assigned Candidates',
+    		label: __('Assigned Candidates'),
     count: candidateCampaigns.value.length
   },
   {
     key: 'actions',
-    label: 'Actions',
+    		label: __('Actions'),
     count: actions.value.length
   },
   {
     key: 'analytics',
-    label: 'Analytics',
+    		label: __('Analytics'),
     count: 0
   }
 ])

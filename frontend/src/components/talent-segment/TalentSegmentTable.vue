@@ -8,8 +8,8 @@
       item-key="name"
       :items-per-page="15"
       :search="search"
-      loading-text="Đang tải dữ liệu..."
-      no-data-text="Không có dữ liệu"
+      :loading-text="__('Loading data...')"
+      :no-data-text="__('No data available')"
     >
       <!-- Title column -->
       <template v-slot:item.title="{ item }">
@@ -141,9 +141,9 @@
       <template v-slot:no-data>
         <div class="text-center py-8">
           <v-icon size="48" color="grey-lighten-2">mdi-account-group-outline</v-icon>
-          <div class="text-h6 mt-2 mb-1">Không có phân khúc nào</div>
+          <div class="text-h6 mt-2 mb-1">{{ __('No segments available') }}</div>
           <div class="text-body-2 text-medium-emphasis">
-            Hãy tạo phân khúc đầu tiên để bắt đầu
+            {{ __('Create your first segment to get started') }}
           </div>
         </div>
       </template>
@@ -169,6 +169,9 @@
 import { ref, computed } from 'vue'
 import { calculateEngagementRate, formatDate } from '@/services/talentSegmentService'
 
+// Translation helper function
+const __ = (text) => text
+
 // Props
 const props = defineProps({
   segments: {
@@ -190,37 +193,37 @@ const search = ref('')
 // Table headers
 const headers = [
   {
-    title: 'Tên phân khúc',
+    title: 'Segment Name',
     key: 'title',
     sortable: true,
     width: '30%'
   },
   {
-    title: 'Loại',
+    title: 'Type',
     key: 'type',
     sortable: true,
     width: '12%'
   },
   {
-    title: 'Tiến độ',
+    title: 'Progress',
     key: 'candidate_count',
     sortable: true,
     width: '15%'
   },
   {
-    title: 'Ngày cập nhật',
+    title: 'Updated Date',
     key: 'modified',
     sortable: true,
     width: '15%'
   },
   {
-    title: 'Người phụ trách',
+    title: 'Owner',
     key: 'owner_id',
     sortable: true,
     width: '18%'
   },
   {
-    title: 'Hành động',
+    title: 'Actions',
     key: 'actions',
     sortable: false,
     width: '10%',
@@ -234,7 +237,7 @@ const getTypeColor = (type) => {
 }
 
 const getTypeLabel = (type) => {
-  return type === 'DYNAMIC' ? 'Tự động (AI)' : 'Thủ công'
+  return type === 'DYNAMIC' ? 'Automatic (AI)' : 'Manual'
 }
 
 const getEngagementRate = (segment) => {

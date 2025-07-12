@@ -3,7 +3,7 @@
     :model-value="props.modelValue"
     @update:model-value="$emit('update:modelValue', $event)"
     :options="{
-      title: isEdit ? 'Chỉnh sửa ứng viên' : 'Thêm ứng viên mới',
+      title: isEdit ? __('Edit Candidate') : __('Add New Candidate'),
       size: 'lg'
     }"
   >
@@ -245,6 +245,9 @@
 import { ref, computed, watch, nextTick } from 'vue'
 import { Dialog, Button, FormControl } from 'frappe-ui'
 import { validateCandidateForm, processSkills, skillsToString } from '../../services/candidateService'
+
+// Translation helper function
+const __ = (text) => text
 
 // Props
 const props = defineProps({
