@@ -85,6 +85,18 @@ const dropdownItems = computed(() => {
       "is_standard":1,
       "type":"menu"
     },{
+      "icon":"globe",
+      "label":"Language",
+      "name1":"language",
+      "is_standard":0,
+      "type":"menu"
+    },{
+      "icon":"settings",
+      "label":"Settings",
+      "name1":"settings",
+      "is_standard":1,
+      "type":"menu"
+    },{
       "icon":"log-out",
       "label":"Logout",
       "name1":"logout",
