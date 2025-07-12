@@ -1,23 +1,40 @@
 <template>
-	<div class="candidate-detail-view container mx-auto w-full p-4 min-h-screen bg-gray-50">
+	<div class="min-h-screen bg-gray-50">
+		<LayoutHeader>
+			<template #left-header>
+				<Breadcrumbs :items="breadcrumbs" />
+			</template>
+		</LayoutHeader>
+
+		<div class="container mx-auto px-6 py-6">
 		<!-- Header with Candidate Info -->
-		<div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-			<div class="flex items-center justify-between">
-				<div class="flex items-center">
-					<button
+		<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+			<div class="flex justify-between items-start">
+				<div class="flex items-start">
+					<Button
+						variant="ghost"
+						theme="gray"
 						@click="$router.go(-1)"
-						class="mr-4 p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+						class="mr-4 mt-1"
 					>
-						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M15 19l-7-7 7-7"
-							/>
-						</svg>
-					</button>
-					<div class="flex items-center">
+						<template #prefix>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								class="h-5 w-5"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M15 19l-7-7 7-7"
+								/>
+							</svg>
+						</template>
+					</Button>
+					<div class="flex items-start">
 						<Avatar
 							:shape="'circle'"
 							:image="candidate.avatar"
@@ -26,10 +43,10 @@
 							class="mr-4"
 						/>
 						<div>
-							<h1 class="text-3xl font-bold text-blaack mb-2">
-								{{ candidate.full_name || 'Loading...' }}
+							<h1 class="text-3xl font-bold text-gray-900 mb-3">
+								{{ candidate.full_name || __('Loading...') }}
 							</h1>
-							<div class="flex items-center flex-wrap gap-2">
+							<div class="flex items-center flex-wrap gap-3">
 								<span
 									v-if="candidate.status"
 									class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
@@ -49,13 +66,14 @@
 				</div>
 
 				<div class="flex items-center space-x-3">
-					<Button variant="outline" @click="editCandidate">
-						<div class="flex items-center">
+					<Button variant="outline" theme="gray" @click="editCandidate">
+						<template #prefix>
 							<svg
-								class="w-4 h-4 mr-2"
+								xmlns="http://www.w3.org/2000/svg"
+								class="h-4 w-4"
 								fill="none"
-								stroke="currentColor"
 								viewBox="0 0 24 24"
+								stroke="currentColor"
 							>
 								<path
 									stroke-linecap="round"
@@ -64,26 +82,27 @@
 									d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
 								/>
 							</svg>
-							{{ __('Edit Profile') }}
-						</div>
+						</template>
+						{{ __('Edit Profile') }}
 					</Button>
-					<Button variant="outline" theme="red" @click="deleteCandidate">
-						<div class="flex items-center">
+					<Button variant="outline" theme="red" @click="$router.push('/candidates')">
+						<template #prefix>
 							<svg
-								class="w-4 h-4 mr-2"
+								xmlns="http://www.w3.org/2000/svg"
+								class="h-4 w-4"
 								fill="none"
-								stroke="currentColor"
 								viewBox="0 0 24 24"
+								stroke="currentColor"
 							>
 								<path
 									stroke-linecap="round"
 									stroke-linejoin="round"
 									stroke-width="2"
-									d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+									d="M9 5l7 7-7 7"
 								/>
 							</svg>
-							{{ __('Delete') }}
-						</div>
+						</template>
+						{{ __('Back to List') }}
 					</Button>
 				</div>
 			</div>
@@ -93,11 +112,7 @@
 		<div class="bg-white rounded-lg border border-gray-200 mb-6">
 			<div class="border-b border-gray-200 px-6 py-4">
 				<h3 class="text-lg font-medium text-gray-900 flex items-center">
-					<svg
-						class="w-5 h-5 mr-2 text-black"
-						fill="currentColor"
-						viewBox="0 0 20 20"
-					>
+					<svg class="w-5 h-5 mr-2 text-black" fill="currentColor" viewBox="0 0 20 20">
 						<path
 							fill-rule="evenodd"
 							d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z"
@@ -111,27 +126,27 @@
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 					<div class="space-y-4">
 						<div>
-							<label class="block text-sm font-medium text-gray-700 mb-1"
-								>{{ __('Full Name') }}</label
-							>
+							<label class="block text-sm font-medium text-gray-700 mb-1">{{
+								__('Full Name')
+							}}</label>
 							<p class="text-gray-900">{{ candidate.full_name || __('None') }}</p>
 						</div>
 						<div>
-							<label class="block text-sm font-medium text-gray-700 mb-1"
-								>{{ __('Email') }}</label
-							>
+							<label class="block text-sm font-medium text-gray-700 mb-1">{{
+								__('Email')
+							}}</label>
 							<p class="text-gray-900">{{ candidate.email || __('None') }}</p>
 						</div>
 						<div>
-							<label class="block text-sm font-medium text-gray-700 mb-1"
-								>{{ __('Phone Number') }}</label
-							>
+							<label class="block text-sm font-medium text-gray-700 mb-1">{{
+								__('Phone Number')
+							}}</label>
 							<p class="text-gray-900">{{ candidate.phone || __('None') }}</p>
 						</div>
 						<div>
-							<label class="block text-sm font-medium text-gray-700 mb-1"
-								>{{ __('Status') }}</label
-							>
+							<label class="block text-sm font-medium text-gray-700 mb-1">{{
+								__('Status')
+							}}</label>
 							<span
 								v-if="candidate.status"
 								class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
@@ -144,27 +159,29 @@
 					</div>
 					<div class="space-y-4">
 						<div>
-							<label class="block text-sm font-medium text-gray-700 mb-1"
-								>{{ __('Title') }}</label
-							>
+							<label class="block text-sm font-medium text-gray-700 mb-1">{{
+								__('Title')
+							}}</label>
 							<p class="text-gray-900">{{ candidate.headline || __('None') }}</p>
 						</div>
 						<div>
-							<label class="block text-sm font-medium text-gray-700 mb-1"
-								>{{ __('Source') }}</label
-							>
+							<label class="block text-sm font-medium text-gray-700 mb-1">{{
+								__('Source')
+							}}</label>
 							<p class="text-gray-900">{{ candidate.source || __('None') }}</p>
 						</div>
 						<div>
-							<label class="block text-sm font-medium text-gray-700 mb-1"
-								>{{ __('Last Interaction') }}</label
-							>
-							<p class="text-gray-900">{{ formatDateTime(candidate.last_interaction) || __('None') }}</p>
+							<label class="block text-sm font-medium text-gray-700 mb-1">{{
+								__('Last Interaction')
+							}}</label>
+							<p class="text-gray-900">
+								{{ formatDateTime(candidate.last_interaction) || __('None') }}
+							</p>
 						</div>
 						<div>
-							<label class="block text-sm font-medium text-gray-700 mb-1"
-								>{{ __('Email Subscription') }}</label
-							>
+							<label class="block text-sm font-medium text-gray-700 mb-1">{{
+								__('Email Subscription')
+							}}</label>
 							<span
 								v-if="candidate.email_opt_out"
 								class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"
@@ -774,22 +791,50 @@
 				<div class="p-6 mb-2">
 					<div class="space-y-4">
 						<!-- Form Header -->
-						<div class="flex items-center justify-between border-b border-gray-200 pb-4 mb-2">
+						<div
+							class="flex items-center justify-between border-b border-gray-200 pb-4 mb-2"
+						>
 							<div class="flex items-center">
-								<div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-									<svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+								<div
+									class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3"
+								>
+									<svg
+										class="w-5 h-5 text-blue-600"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+										/>
 									</svg>
 								</div>
 								<div>
-									<h3 class="text-lg font-medium text-gray-900">Assign to Campaign</h3>
-									<p class="text-sm text-gray-500">Add candidate to a campaign</p>
+									<h3 class="text-lg font-medium text-gray-900">
+										Assign to Campaign
+									</h3>
+									<p class="text-sm text-gray-500">
+										Add candidate to a campaign
+									</p>
 								</div>
 							</div>
 							<Button variant="outline" @click="closeCampaignModal">
 								<div class="flex items-center">
-									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+									<svg
+										class="w-4 h-4"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M6 18L18 6M6 6l12 12"
+										/>
 									</svg>
 								</div>
 							</Button>
@@ -823,7 +868,11 @@
 					<div class="flex justify-between w-full mt-2">
 						<div class="flex items-center text-sm text-gray-500">
 							<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-								<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+								<path
+									fill-rule="evenodd"
+									d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+									clip-rule="evenodd"
+								/>
 							</svg>
 							Candidate will be assigned to campaign
 						</div>
@@ -831,8 +880,18 @@
 							<Button variant="outline" @click="closeCampaignModal">Cancel</Button>
 							<Button :loading="savingCampaign" @click="assignToCampaign">
 								<div class="flex items-center">
-									<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+									<svg
+										class="w-4 h-4 mr-2"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M5 13l4 4L19 7"
+										/>
 									</svg>
 									Assign
 								</div>
@@ -855,22 +914,50 @@
 				<div class="p-6 mb-2">
 					<div class="space-y-4">
 						<!-- Form Header -->
-						<div class="flex items-center justify-between border-b border-gray-200 pb-4 mb-2">
+						<div
+							class="flex items-center justify-between border-b border-gray-200 pb-4 mb-2"
+						>
 							<div class="flex items-center">
-								<div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
-									<svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+								<div
+									class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3"
+								>
+									<svg
+										class="w-5 h-5 text-green-600"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+										/>
 									</svg>
 								</div>
 								<div>
-									<h3 class="text-lg font-medium text-gray-900">Add to Segment</h3>
-									<p class="text-sm text-gray-500">Add candidate to a talent segment</p>
+									<h3 class="text-lg font-medium text-gray-900">
+										Add to Segment
+									</h3>
+									<p class="text-sm text-gray-500">
+										Add candidate to a talent segment
+									</p>
 								</div>
 							</div>
 							<Button variant="outline" @click="closeSegmentModal">
 								<div class="flex items-center">
-									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+									<svg
+										class="w-4 h-4"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M6 18L18 6M6 6l12 12"
+										/>
 									</svg>
 								</div>
 							</Button>
@@ -890,7 +977,11 @@
 					<div class="flex justify-between w-full mt-2">
 						<div class="flex items-center text-sm text-gray-500">
 							<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-								<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+								<path
+									fill-rule="evenodd"
+									d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+									clip-rule="evenodd"
+								/>
 							</svg>
 							Candidate will be added to segment
 						</div>
@@ -898,8 +989,18 @@
 							<Button variant="outline" @click="closeSegmentModal">Cancel</Button>
 							<Button :loading="savingSegment" @click="addToSegment">
 								<div class="flex items-center">
-									<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+									<svg
+										class="w-4 h-4 mr-2"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+										/>
 									</svg>
 									Add
 								</div>
@@ -922,22 +1023,50 @@
 				<div class="p-6 mb-2">
 					<div class="space-y-4">
 						<!-- Form Header -->
-						<div class="flex items-center justify-between border-b border-gray-200 pb-4 mb-2">
+						<div
+							class="flex items-center justify-between border-b border-gray-200 pb-4 mb-2"
+						>
 							<div class="flex items-center">
-								<div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">
-									<svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+								<div
+									class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3"
+								>
+									<svg
+										class="w-5 h-5 text-purple-600"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+										/>
 									</svg>
 								</div>
 								<div>
-									<h3 class="text-lg font-medium text-gray-900">Add Interaction</h3>
-									<p class="text-sm text-gray-500">Record a new interaction with candidate</p>
+									<h3 class="text-lg font-medium text-gray-900">
+										Add Interaction
+									</h3>
+									<p class="text-sm text-gray-500">
+										Record a new interaction with candidate
+									</p>
 								</div>
 							</div>
 							<Button variant="outline" @click="closeInteractionModal">
 								<div class="flex items-center">
-									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+									<svg
+										class="w-4 h-4"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M6 18L18 6M6 6l12 12"
+										/>
 									</svg>
 								</div>
 							</Button>
@@ -968,16 +1097,32 @@
 					<div class="flex justify-between w-full mt-2">
 						<div class="flex items-center text-sm text-gray-500">
 							<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-								<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+								<path
+									fill-rule="evenodd"
+									d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+									clip-rule="evenodd"
+								/>
 							</svg>
 							Interaction will be recorded
 						</div>
 						<div class="flex space-x-3">
-							<Button variant="outline" @click="closeInteractionModal">Cancel</Button>
+							<Button variant="outline" @click="closeInteractionModal"
+								>Cancel</Button
+							>
 							<Button :loading="savingInteraction" @click="saveInteraction">
 								<div class="flex items-center">
-									<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+									<svg
+										class="w-4 h-4 mr-2"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M5 13l4 4L19 7"
+										/>
 									</svg>
 									Save
 								</div>
@@ -1000,22 +1145,50 @@
 				<div class="p-6 mb-2">
 					<div class="space-y-4">
 						<!-- Form Header -->
-						<div class="flex items-center justify-between border-b border-gray-200 pb-4 mb-2">
+						<div
+							class="flex items-center justify-between border-b border-gray-200 pb-4 mb-2"
+						>
 							<div class="flex items-center">
-								<div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center mr-3">
-									<svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+								<div
+									class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center mr-3"
+								>
+									<svg
+										class="w-5 h-5 text-orange-600"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+										/>
 									</svg>
 								</div>
 								<div>
-									<h3 class="text-lg font-medium text-gray-900">Upload Document</h3>
-									<p class="text-sm text-gray-500">Upload a document for this candidate</p>
+									<h3 class="text-lg font-medium text-gray-900">
+										Upload Document
+									</h3>
+									<p class="text-sm text-gray-500">
+										Upload a document for this candidate
+									</p>
 								</div>
 							</div>
 							<Button variant="outline" @click="closeDocumentModal">
 								<div class="flex items-center">
-									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+									<svg
+										class="w-4 h-4"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M6 18L18 6M6 6l12 12"
+										/>
 									</svg>
 								</div>
 							</Button>
@@ -1024,7 +1197,9 @@
 					<div class="space-y-6">
 						<div class="space-y-4">
 							<div>
-								<label class="block text-sm font-medium text-gray-700 mb-2">Select File</label>
+								<label class="block text-sm font-medium text-gray-700 mb-2"
+									>Select File</label
+								>
 								<input
 									ref="fileInput"
 									type="file"
@@ -1042,16 +1217,34 @@
 					<div class="flex justify-between w-full mt-2">
 						<div class="flex items-center text-sm text-gray-500">
 							<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-								<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+								<path
+									fill-rule="evenodd"
+									d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+									clip-rule="evenodd"
+								/>
 							</svg>
 							Document will be uploaded immediately
 						</div>
 						<div class="flex space-x-3">
 							<Button variant="outline" @click="closeDocumentModal">Cancel</Button>
-							<Button :loading="uploadingDocument" @click="saveDocument" :disabled="!selectedFile">
+							<Button
+								:loading="uploadingDocument"
+								@click="saveDocument"
+								:disabled="!selectedFile"
+							>
 								<div class="flex items-center">
-									<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+									<svg
+										class="w-4 h-4 mr-2"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+										/>
 									</svg>
 									Upload
 								</div>
@@ -1074,22 +1267,50 @@
 				<div class="p-6 mb-2">
 					<div class="space-y-4">
 						<!-- Form Header -->
-						<div class="flex items-center justify-between border-b border-gray-200 pb-4 mb-2">
+						<div
+							class="flex items-center justify-between border-b border-gray-200 pb-4 mb-2"
+						>
 							<div class="flex items-center">
-								<div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center mr-3">
-									<svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+								<div
+									class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center mr-3"
+								>
+									<svg
+										class="w-5 h-5 text-indigo-600"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+										/>
 									</svg>
 								</div>
 								<div>
-									<h3 class="text-lg font-medium text-gray-900">Compose Email</h3>
-									<p class="text-sm text-gray-500">Send an email to the candidate</p>
+									<h3 class="text-lg font-medium text-gray-900">
+										Compose Email
+									</h3>
+									<p class="text-sm text-gray-500">
+										Send an email to the candidate
+									</p>
 								</div>
 							</div>
 							<Button variant="outline" @click="closeEmailModal">
 								<div class="flex items-center">
-									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+									<svg
+										class="w-4 h-4"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M6 18L18 6M6 6l12 12"
+										/>
 									</svg>
 								</div>
 							</Button>
@@ -1121,7 +1342,11 @@
 					<div class="flex justify-between w-full mt-2">
 						<div class="flex items-center text-sm text-gray-500">
 							<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-								<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+								<path
+									fill-rule="evenodd"
+									d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+									clip-rule="evenodd"
+								/>
 							</svg>
 							Email will be sent immediately
 						</div>
@@ -1129,8 +1354,18 @@
 							<Button variant="outline" @click="closeEmailModal">Cancel</Button>
 							<Button :loading="sendingEmail" @click="sendEmail">
 								<div class="flex items-center">
-									<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+									<svg
+										class="w-4 h-4 mr-2"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+										/>
 									</svg>
 									Send Email
 								</div>
@@ -1174,22 +1409,21 @@
 								</div>
 							</div>
 							<Button variant="outline" @click="closeEditModal">
-                <div class="flex items-center">
-
-                  <svg
-                    class="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </div>
+								<div class="flex items-center">
+									<svg
+										class="w-4 h-4"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M6 18L18 6M6 6l12 12"
+										/>
+									</svg>
+								</div>
 							</Button>
 						</div>
 					</div>
@@ -1289,13 +1523,14 @@
 				</div>
 			</template>
 		</Dialog>
+		</div>
 	</div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted, computed, h } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Dialog, Button, FormControl, Avatar } from 'frappe-ui'
+import { Dialog, Button, FormControl, Avatar, Breadcrumbs } from 'frappe-ui'
 import {
 	candidateService,
 	candidateCampaignService,
@@ -1306,12 +1541,20 @@ import {
 	emailLogService,
 } from '../services/universalService'
 import { processSkills, skillsToString } from '../services/candidateService'
+import LayoutHeader from '../components/LayoutHeader.vue'
 
 // Translation helper function
 const __ = (text) => text
 
 const route = useRoute()
 const router = useRouter()
+
+// Breadcrumbs
+const breadcrumbs =  [
+		{ label: __('Candidates'), route: { name: 'CandidateManagement' } },
+		{ label: __('Detail'), route: { name: 'CandidateDetailView' } },
+	]
+
 
 // State
 const activeTab = ref('campaigns')
@@ -1435,7 +1678,7 @@ const skillsOptions = [
 	{ label: 'Ruby', value: 'ruby' },
 	{ label: 'Swift', value: 'swift' },
 	{ label: 'Kotlin', value: 'kotlin' },
-	
+
 	// Frontend Frameworks
 	{ label: 'React', value: 'react' },
 	{ label: 'Vue.js', value: 'vuejs' },
@@ -1443,7 +1686,7 @@ const skillsOptions = [
 	{ label: 'Next.js', value: 'nextjs' },
 	{ label: 'Nuxt.js', value: 'nuxtjs' },
 	{ label: 'Svelte', value: 'svelte' },
-	
+
 	// Backend Frameworks
 	{ label: 'Node.js', value: 'nodejs' },
 	{ label: 'Express.js', value: 'expressjs' },
@@ -1453,7 +1696,7 @@ const skillsOptions = [
 	{ label: 'Laravel', value: 'laravel' },
 	{ label: 'ASP.NET', value: 'aspnet' },
 	{ label: 'FastAPI', value: 'fastapi' },
-	
+
 	// Databases
 	{ label: 'MySQL', value: 'mysql' },
 	{ label: 'PostgreSQL', value: 'postgresql' },
@@ -1462,7 +1705,7 @@ const skillsOptions = [
 	{ label: 'SQLite', value: 'sqlite' },
 	{ label: 'Oracle', value: 'oracle' },
 	{ label: 'SQL Server', value: 'sqlserver' },
-	
+
 	// Cloud & DevOps
 	{ label: 'AWS', value: 'aws' },
 	{ label: 'Azure', value: 'azure' },
@@ -1472,7 +1715,7 @@ const skillsOptions = [
 	{ label: 'Jenkins', value: 'jenkins' },
 	{ label: 'CI/CD', value: 'cicd' },
 	{ label: 'Terraform', value: 'terraform' },
-	
+
 	// Tools & Technologies
 	{ label: 'Git', value: 'git' },
 	{ label: 'Linux', value: 'linux' },
@@ -1601,31 +1844,31 @@ const DocumentIcon = {
 const tabs = computed(() => [
 	{
 		key: 'campaigns',
-					label: __('Active Campaigns'),
+		label: __('Active Campaigns'),
 		count: candidateCampaigns.value.length,
 		icon: CampaignIcon,
 	},
 	{
 		key: 'segments',
-					label: __('Segments'),
+		label: __('Segments'),
 		count: candidateSegments.value.length,
 		icon: SegmentIcon,
 	},
 	{
 		key: 'interactions',
-					label: __('Interactions'),
+		label: __('Interactions'),
 		count: interactions.value.length,
 		icon: InteractionIcon,
 	},
 	{
 		key: 'emails',
-					label: __('Email History'),
+		label: __('Email History'),
 		count: emailLogs.value.length,
 		icon: EmailIcon,
 	},
 	{
 		key: 'documents',
-					label: __('Documents'),
+		label: __('Documents'),
 		count: documents.value.length,
 		icon: DocumentIcon,
 	},

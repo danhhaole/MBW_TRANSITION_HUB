@@ -1,463 +1,477 @@
 <template>
-  <div class="min-h-screen container mx-auto bg-slate-50 p-4 md:p-6">
-    <!-- Header -->
-    <div class="flex justify-between items-center mb-6">
-      <div>
-            <h1 class="text-3xl font-bold text-slate-800">{{ __('Interactions') }}</h1>
-    <p class="text-slate-600 mt-1">{{ __('Track and manage candidate interactions') }}</p>
-      </div>
-      <Button
-        variant="solid"
-        @click="openFormModal()"
-      >
-        <template #prefix>
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-        </template>
-        {{ __('Add New Interaction') }}
-      </Button>
-    </div>
+  <div class="min-h-screen bg-gray-50">
+    <LayoutHeader>
+      <template #left-header>
+        <Breadcrumbs :items="breadcrumbs" />
+      </template>
+    </LayoutHeader>
 
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-      <div class="bg-white border border-slate-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
-        <div class="flex items-center">
-          <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-          </div>
-          <div>
-            <div class="text-2xl font-bold text-slate-800">{{ stats.total }}</div>
-            <div class="text-sm text-slate-500">{{ __('Total Interactions') }}</div>
-          </div>
+    <div class="min-h-screen container mx-auto bg-slate-50 p-4 md:p-6">
+      <!-- Header -->
+      <div class="flex justify-between items-center mb-6">
+        <div>
+              <h1 class="text-3xl font-bold text-slate-800">{{ __('Interactions') }}</h1>
+      <p class="text-slate-600 mt-1">{{ __('Track and manage candidate interactions') }}</p>
         </div>
-      </div>
-      <div class="bg-white border border-slate-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
-        <div class="flex items-center">
-          <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
-            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        <Button
+          variant="solid"
+          @click="openFormModal()"
+        >
+          <template #prefix>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
-          </div>
-          <div>
-            <div class="text-2xl font-bold text-slate-800">{{ stats.emails }}</div>
-            <div class="text-sm text-slate-500">{{ __('Email Interactions') }}</div>
-          </div>
-        </div>
+          </template>
+          {{ __('Add New Interaction') }}
+        </Button>
       </div>
-      <div class="bg-white border border-slate-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
-        <div class="flex items-center">
-          <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
-            <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-            </svg>
-          </div>
-          <div>
-            <div class="text-2xl font-bold text-slate-800">{{ stats.calls }}</div>
-            <div class="text-sm text-slate-500">{{ __('Call Interactions') }}</div>
-          </div>
-        </div>
-      </div>
-      <div class="bg-white border border-slate-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
-        <div class="flex items-center">
-          <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-          </div>
-          <div>
-            <div class="text-2xl font-bold text-slate-800">{{ stats.today }}</div>
-            <div class="text-sm text-slate-500">{{ __('Today') }}</div>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <!-- Compact Filters -->
-    <div class="bg-white border border-slate-200 rounded-lg mb-6">
-      <div class="p-4">
-        <div class="flex gap-3 items-center">
-          <FormControl
-            type="text"
-            v-model="search"
-            placeholder="Search interactions..."
-            class="flex-1"
-            @update:model-value="debouncedSearch"
-          >
-            <template #prefix>
-              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white border border-slate-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
+          <div class="flex items-center">
+            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
-            </template>
-          </FormControl>
-          <Button
-            variant="outline"
-            @click="showAdvancedFilters = !showAdvancedFilters"
-          >
-            <template #prefix>
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-              </svg>
-            </template>
-            Advanced Filters
-            <template #suffix>
-              <svg v-if="showAdvancedFilters" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-              </svg>
-              <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </template>
-          </Button>
-          <Button
-            v-if="hasActiveFilters"
-            variant="ghost"
-            @click="clearFilters"
-          >
-            <template #prefix>
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </template>
-            Clear
-          </Button>
+            </div>
+            <div>
+              <div class="text-2xl font-bold text-slate-800">{{ stats.total }}</div>
+              <div class="text-sm text-slate-500">{{ __('Total Interactions') }}</div>
+            </div>
+          </div>
         </div>
-        
-        <!-- Advanced Filters (Collapsible) -->
-        <div v-if="showAdvancedFilters" class="mt-4 pt-4 border-t border-slate-200">
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <FormControl
-              type="select"
-              v-model="filters.interaction_type"
-              :options="interactionTypeOptions"
-              placeholder="Type"
-              @change="applyFilters"
-            />
-            <FormControl
-              type="select"
-              v-model="filters.candidate_id"
-              :options="filterOptions.candidates"
-              placeholder="Candidate"
-              @change="applyFilters"
-            />
-            <FormControl
-              type="select"
-              v-model="filters.action"
-              :options="filterOptions.actions"
-              placeholder="Source Action"
-              @change="applyFilters"
-            />
+        <div class="bg-white border border-slate-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
+          <div class="flex items-center">
+            <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+              <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div>
+              <div class="text-2xl font-bold text-slate-800">{{ stats.emails }}</div>
+              <div class="text-sm text-slate-500">{{ __('Email Interactions') }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
+          <div class="flex items-center">
+            <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
+              <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+              </svg>
+            </div>
+            <div>
+              <div class="text-2xl font-bold text-slate-800">{{ stats.calls }}</div>
+              <div class="text-sm text-slate-500">{{ __('Call Interactions') }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
+          <div class="flex items-center">
+            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div>
+              <div class="text-2xl font-bold text-slate-800">{{ stats.today }}</div>
+              <div class="text-sm text-slate-500">{{ __('Today') }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Compact Filters -->
+      <div class="bg-white border border-slate-200 rounded-lg mb-6">
+        <div class="p-4">
+          <div class="flex gap-3 items-center">
             <FormControl
               type="text"
-              v-model="filters.url"
-              placeholder="URL"
-              @update:model-value="applyFilters"
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Data Table -->
-    <div class="bg-white border border-slate-200 rounded-lg">
-      <div class="flex justify-between items-center p-4 border-b border-slate-200">
-        <span class="text-lg font-semibold text-slate-800">Interactions ({{ pagination.total }})</span>
-        <div class="flex gap-2">
-          <Button
-            v-if="selected.length > 0"
-            variant="outline"
-            theme="red"
-            @click="bulkDelete"
-          >
-            <template #prefix>
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-            </template>
-            Delete Selected ({{ selected.length }})
-          </Button>
-          <Button
-            variant="outline"
-            @click="exportData"
-          >
-            <template #prefix>
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </template>
-            Export
-          </Button>
-        </div>
-      </div>
-
-      <!-- Table Content -->
-      <div class="overflow-x-auto">
-        <table class="w-full">
-          <thead class="bg-slate-50 border-b border-slate-200">
-            <tr>
-              <th class="w-12 p-3">
-                <input
-                  type="checkbox"
-                  class="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                  :checked="selected.length === items.length && items.length > 0"
-                  :indeterminate="selected.length > 0 && selected.length < items.length"
-                  @change="toggleSelectAll"
-                />
-              </th>
-              <th class="text-left p-3 text-sm font-medium text-slate-600">Candidate</th>
-              <th class="text-left p-3 text-sm font-medium text-slate-600">Type</th>
-              <th class="text-left p-3 text-sm font-medium text-slate-600">Source Action</th>
-              <th class="text-left p-3 text-sm font-medium text-slate-600">URL</th>
-              <th class="text-left p-3 text-sm font-medium text-slate-600">Description</th>
-              <th class="text-left p-3 text-sm font-medium text-slate-600">Modified</th>
-              <th class="text-left p-3 text-sm font-medium text-slate-600">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-200">
-            <tr v-if="loading" v-for="i in 5" :key="i" class="animate-pulse">
-              <td class="p-3"><div class="w-4 h-4 bg-slate-200 rounded"></div></td>
-              <td class="p-3"><div class="h-4 bg-slate-200 rounded w-32"></div></td>
-              <td class="p-3"><div class="h-4 bg-slate-200 rounded w-20"></div></td>
-              <td class="p-3"><div class="h-4 bg-slate-200 rounded w-24"></div></td>
-              <td class="p-3"><div class="h-4 bg-slate-200 rounded w-16"></div></td>
-              <td class="p-3"><div class="h-4 bg-slate-200 rounded w-40"></div></td>
-              <td class="p-3"><div class="h-4 bg-slate-200 rounded w-24"></div></td>
-              <td class="p-3"><div class="h-4 bg-slate-200 rounded w-20"></div></td>
-            </tr>
-            <tr v-else-if="items.length === 0" class="text-center">
-              <td colspan="8" class="p-8 text-slate-500">
-                <div class="flex flex-col items-center">
-                  <svg class="w-12 h-12 text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
-                  <span>No interactions found</span>
-                </div>
-              </td>
-            </tr>
-            <tr
-              v-else
-              v-for="item in items"
-              :key="item.name"
-              class="hover:bg-slate-50 transition-colors"
-              :class="{ 'bg-blue-50': selected.includes(item) }"
+              v-model="search"
+              placeholder="Search interactions..."
+              class="flex-1"
+              @update:model-value="debouncedSearch"
             >
-              <td class="p-3 text-center">
-                <input
-                  type="checkbox"
-                  class="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                  :checked="selected.includes(item)"
-                  @change="toggleSelect(item)"
-                />
-              </td>
-              <td class="p-3">
-                <div class="flex items-center">
-                  <Avatar
-                    :label="item.candidate_id?.charAt(0)"
-                    size="sm"
-                    class="mr-2"
+              <template #prefix>
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </template>
+            </FormControl>
+            <Button
+              variant="outline"
+              @click="showAdvancedFilters = !showAdvancedFilters"
+            >
+              <template #prefix>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+              </template>
+              Advanced Filters
+              <template #suffix>
+                <svg v-if="showAdvancedFilters" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                </svg>
+                <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </template>
+            </Button>
+            <Button
+              v-if="hasActiveFilters"
+              variant="ghost"
+              @click="clearFilters"
+            >
+              <template #prefix>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </template>
+              Clear
+            </Button>
+          </div>
+          
+          <!-- Advanced Filters (Collapsible) -->
+          <div v-if="showAdvancedFilters" class="mt-4 pt-4 border-t border-slate-200">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <FormControl
+                type="select"
+                v-model="filters.interaction_type"
+                :options="interactionTypeOptions"
+                placeholder="Type"
+                @change="applyFilters"
+              />
+              <FormControl
+                type="select"
+                v-model="filters.candidate_id"
+                :options="filterOptions.candidates"
+                placeholder="Candidate"
+                @change="applyFilters"
+              />
+              <FormControl
+                type="select"
+                v-model="filters.action"
+                :options="filterOptions.actions"
+                placeholder="Source Action"
+                @change="applyFilters"
+              />
+              <FormControl
+                type="text"
+                v-model="filters.url"
+                placeholder="URL"
+                @update:model-value="applyFilters"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data Table -->
+      <div class="bg-white border border-slate-200 rounded-lg">
+        <div class="flex justify-between items-center p-4 border-b border-slate-200">
+          <span class="text-lg font-semibold text-slate-800">Interactions ({{ pagination.total }})</span>
+          <div class="flex gap-2">
+            <Button
+              v-if="selected.length > 0"
+              variant="outline"
+              theme="red"
+              @click="bulkDelete"
+            >
+              <template #prefix>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </template>
+              Delete Selected ({{ selected.length }})
+            </Button>
+            <Button
+              variant="outline"
+              @click="exportData"
+            >
+              <template #prefix>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </template>
+              Export
+            </Button>
+          </div>
+        </div>
+
+        <!-- Table Content -->
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-slate-50 border-b border-slate-200">
+              <tr>
+                <th class="w-12 p-3">
+                  <input
+                    type="checkbox"
+                    class="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                    :checked="selected.length === items.length && items.length > 0"
+                    :indeterminate="selected.length > 0 && selected.length < items.length"
+                    @change="toggleSelectAll"
                   />
-                  <span class="text-sm text-slate-800">{{ item.candidate_id }}</span>
-                </div>
-              </td>
-              <td class="p-3">
-                <Badge
-                  :variant="'subtle'"
-                  :theme="getInteractionTypeColor(item.interaction_type)"
-                  size="md"
-                >
-                  {{ item.interaction_type }}
-                </Badge>
-              </td>
-              <td class="p-3">
-                <Badge
-                  v-if="item.action"
-                  variant="outline"
-                  theme="gray"
-                  size="sm"
-                >
-                  {{ item.action }}
-                </Badge>
-                <span v-else class="text-slate-400 text-sm">-</span>
-              </td>
-              <td class="p-3">
-                <Button
-                  v-if="item.url"
-                  variant="ghost"
-                  size="sm"
-                  :link="item.url"
-                  target="_blank"
-                >
-                  <template #prefix>
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </th>
+                <th class="text-left p-3 text-sm font-medium text-slate-600">Candidate</th>
+                <th class="text-left p-3 text-sm font-medium text-slate-600">Type</th>
+                <th class="text-left p-3 text-sm font-medium text-slate-600">Source Action</th>
+                <th class="text-left p-3 text-sm font-medium text-slate-600">URL</th>
+                <th class="text-left p-3 text-sm font-medium text-slate-600">Description</th>
+                <th class="text-left p-3 text-sm font-medium text-slate-600">Modified</th>
+                <th class="text-left p-3 text-sm font-medium text-slate-600">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              <tr v-if="loading" v-for="i in 5" :key="i" class="animate-pulse">
+                <td class="p-3"><div class="w-4 h-4 bg-slate-200 rounded"></div></td>
+                <td class="p-3"><div class="h-4 bg-slate-200 rounded w-32"></div></td>
+                <td class="p-3"><div class="h-4 bg-slate-200 rounded w-20"></div></td>
+                <td class="p-3"><div class="h-4 bg-slate-200 rounded w-24"></div></td>
+                <td class="p-3"><div class="h-4 bg-slate-200 rounded w-16"></div></td>
+                <td class="p-3"><div class="h-4 bg-slate-200 rounded w-40"></div></td>
+                <td class="p-3"><div class="h-4 bg-slate-200 rounded w-24"></div></td>
+                <td class="p-3"><div class="h-4 bg-slate-200 rounded w-20"></div></td>
+              </tr>
+              <tr v-else-if="items.length === 0" class="text-center">
+                <td colspan="8" class="p-8 text-slate-500">
+                  <div class="flex flex-col items-center">
+                    <svg class="w-12 h-12 text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                     </svg>
-                  </template>
-                  Link
-                </Button>
-                <span v-else class="text-slate-400 text-sm">-</span>
-              </td>
-              <td class="p-3">
-                <div
-                  class="text-sm text-slate-600 max-w-xs truncate"
-                  :title="item.description || 'No description'"
-                >
-                  {{ item.description || '-' }}
-                </div>
-              </td>
-              <td class="p-3">
-                <div class="text-sm text-slate-600">
-                  {{ formatDate(item.modified) }}
-                </div>
-              </td>
-              <td class="p-3">
-                <div class="flex items-center gap-1">
+                    <span>No interactions found</span>
+                  </div>
+                </td>
+              </tr>
+              <tr
+                v-else
+                v-for="item in items"
+                :key="item.name"
+                class="hover:bg-slate-50 transition-colors"
+                :class="{ 'bg-blue-50': selected.includes(item) }"
+              >
+                <td class="p-3 text-center">
+                  <input
+                    type="checkbox"
+                    class="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                    :checked="selected.includes(item)"
+                    @change="toggleSelect(item)"
+                  />
+                </td>
+                <td class="p-3">
+                  <div class="flex items-center">
+                    <Avatar
+                      :label="item.candidate_id?.charAt(0)"
+                      size="sm"
+                      class="mr-2"
+                    />
+                    <span class="text-sm text-slate-800">{{ item.candidate_id }}</span>
+                  </div>
+                </td>
+                <td class="p-3">
+                  <Badge
+                    :variant="'subtle'"
+                    :theme="getInteractionTypeColor(item.interaction_type)"
+                    size="md"
+                  >
+                    {{ item.interaction_type }}
+                  </Badge>
+                </td>
+                <td class="p-3">
+                  <Badge
+                    v-if="item.action"
+                    variant="outline"
+                    theme="gray"
+                    size="sm"
+                  >
+                    {{ item.action }}
+                  </Badge>
+                  <span v-else class="text-slate-400 text-sm">-</span>
+                </td>
+                <td class="p-3">
                   <Button
+                    v-if="item.url"
                     variant="ghost"
                     size="sm"
-                    @click="openFormModal(item)"
+                    :link="item.url"
+                    target="_blank"
                   >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                    </svg>
+                    <template #prefix>
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </template>
+                    Link
                   </Button>
-                  <Button
-                    variant="ghost"
-                    theme="red"
-                    size="sm"
-                    @click="confirmDelete(item)"
+                  <span v-else class="text-slate-400 text-sm">-</span>
+                </td>
+                <td class="p-3">
+                  <div
+                    class="text-sm text-slate-600 max-w-xs truncate"
+                    :title="item.description || 'No description'"
                   >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </Button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                    {{ item.description || '-' }}
+                  </div>
+                </td>
+                <td class="p-3">
+                  <div class="text-sm text-slate-600">
+                    {{ formatDate(item.modified) }}
+                  </div>
+                </td>
+                <td class="p-3">
+                  <div class="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      @click="openFormModal(item)"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      theme="red"
+                      size="sm"
+                      @click="confirmDelete(item)"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </Button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div v-if="!loading && items.length > 0" class="flex justify-between items-center p-4 border-t border-slate-200">
+          <div class="text-sm text-slate-600">
+            Showing {{ ((pagination.page - 1) * pagination.limit) + 1 }} to {{ Math.min(pagination.page * pagination.limit, pagination.total) }} of {{ pagination.total }} results
+          </div>
+          <div class="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              :disabled="pagination.page <= 1"
+              @click="pagination.page--; loadData()"
+            >
+              Previous
+            </Button>
+            <span class="text-sm text-slate-600">
+              Page {{ pagination.page }} of {{ Math.ceil(pagination.total / pagination.limit) }}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              :disabled="pagination.page >= Math.ceil(pagination.total / pagination.limit)"
+              @click="pagination.page++; loadData()"
+            >
+              Next
+            </Button>
+          </div>
+        </div>
       </div>
 
-      <!-- Pagination -->
-      <div v-if="!loading && items.length > 0" class="flex justify-between items-center p-4 border-t border-slate-200">
-        <div class="text-sm text-slate-600">
-          Showing {{ ((pagination.page - 1) * pagination.limit) + 1 }} to {{ Math.min(pagination.page * pagination.limit, pagination.total) }} of {{ pagination.total }} results
-        </div>
-        <div class="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            :disabled="pagination.page <= 1"
-            @click="pagination.page--; loadData()"
-          >
-            Previous
+      <!-- Form Modal -->
+      <Dialog v-model="showFormModal" :options="{ title: formData.name ? 'Edit Interaction' : 'Add New Interaction', size: 'xl' }">
+        <template #body-content>
+          <div class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormControl
+                type="select"
+                label="Candidate"
+                v-model="formData.candidate_id"
+                :options="filterOptions.candidates"
+                :required="true"
+              />
+              <FormControl
+                type="select"
+                label="Interaction Type"
+                v-model="formData.interaction_type"
+                :options="interactionTypeOptions"
+                :required="true"
+              />
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormControl
+                type="select"
+                label="Source Action"
+                v-model="formData.action"
+                :options="filterOptions.actions"
+              />
+              <FormControl
+                type="text"
+                label="URL"
+                v-model="formData.url"
+                placeholder="https://example.com/page"
+              />
+            </div>
+
+            <FormControl
+              type="textarea"
+              label="Description"
+              v-model="formData.description"
+              placeholder="Enter detailed description of the interaction..."
+              :rows="4"
+            />
+          </div>
+        </template>
+        <template #actions>
+          <Button variant="ghost" @click="closeFormModal">
+            Cancel
           </Button>
-          <span class="text-sm text-slate-600">
-            Page {{ pagination.page }} of {{ Math.ceil(pagination.total / pagination.limit) }}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            :disabled="pagination.page >= Math.ceil(pagination.total / pagination.limit)"
-            @click="pagination.page++; loadData()"
-          >
-            Next
+          <Button variant="solid" :loading="saving" @click="saveData">
+            {{ formData.name ? 'Update' : 'Create' }}
           </Button>
-        </div>
-      </div>
+        </template>
+      </Dialog>
+
+      <!-- Delete Confirmation -->
+      <Dialog v-model="showDeleteDialog" :options="{ title: 'Confirm Delete', size: 'sm' }">
+        <template #body-content>
+          <div class="text-center">
+            <div class="w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+              <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.996-.833-2.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <p class="text-slate-600">
+              Are you sure you want to delete this interaction? This action cannot be undone.
+            </p>
+          </div>
+        </template>
+        <template #actions>
+          <Button variant="ghost" @click="showDeleteDialog = false">
+            Cancel
+          </Button>
+          <Button variant="solid" theme="red" :loading="deleting" @click="deleteData">
+            Delete
+          </Button>
+        </template>
+      </Dialog>
     </div>
-
-    <!-- Form Modal -->
-    <Dialog v-model="showFormModal" :options="{ title: formData.name ? 'Edit Interaction' : 'Add New Interaction', size: 'xl' }">
-      <template #body-content>
-        <div class="space-y-4">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormControl
-              type="select"
-              label="Candidate"
-              v-model="formData.candidate_id"
-              :options="filterOptions.candidates"
-              :required="true"
-            />
-            <FormControl
-              type="select"
-              label="Interaction Type"
-              v-model="formData.interaction_type"
-              :options="interactionTypeOptions"
-              :required="true"
-            />
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormControl
-              type="select"
-              label="Source Action"
-              v-model="formData.action"
-              :options="filterOptions.actions"
-            />
-            <FormControl
-              type="text"
-              label="URL"
-              v-model="formData.url"
-              placeholder="https://example.com/page"
-            />
-          </div>
-
-          <FormControl
-            type="textarea"
-            label="Description"
-            v-model="formData.description"
-            placeholder="Enter detailed description of the interaction..."
-            :rows="4"
-          />
-        </div>
-      </template>
-      <template #actions>
-        <Button variant="ghost" @click="closeFormModal">
-          Cancel
-        </Button>
-        <Button variant="solid" :loading="saving" @click="saveData">
-          {{ formData.name ? 'Update' : 'Create' }}
-        </Button>
-      </template>
-    </Dialog>
-
-    <!-- Delete Confirmation -->
-    <Dialog v-model="showDeleteDialog" :options="{ title: 'Confirm Delete', size: 'sm' }">
-      <template #body-content>
-        <div class="text-center">
-          <div class="w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
-            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.996-.833-2.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
-            </svg>
-          </div>
-          <p class="text-slate-600">
-            Are you sure you want to delete this interaction? This action cannot be undone.
-          </p>
-        </div>
-      </template>
-      <template #actions>
-        <Button variant="ghost" @click="showDeleteDialog = false">
-          Cancel
-        </Button>
-        <Button variant="solid" theme="red" :loading="deleting" @click="deleteData">
-          Delete
-        </Button>
-      </template>
-    </Dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { Button, Dialog, FormControl, Avatar, Badge } from 'frappe-ui'
+import { Button, Dialog, FormControl, Avatar, Badge, Breadcrumbs } from 'frappe-ui'
 import { interactionService, candidateService, actionService } from '../services/universalService'
 import { debounce } from 'lodash'
+import LayoutHeader from '@/components/LayoutHeader.vue'
 
 // Translation helper function
 const __ = (text) => text
+
+// Breadcrumbs
+const breadcrumbs = [
+  { label: __('Interactions'), route: { name: 'InteractionManagement' } }
+]
 
 const router = useRouter()
 

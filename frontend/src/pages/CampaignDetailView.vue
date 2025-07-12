@@ -1,22 +1,44 @@
 <template>
-  <div class="campaign-detail-view max-w-7xl mx-auto p-6">
+  <div class="min-h-screen bg-gray-50">
+    <LayoutHeader>
+      <template #left-header>
+        <Breadcrumbs :items="breadcrumbs" />
+      </template>
+    </LayoutHeader>
+
+    <div class="container mx-auto px-6 py-6">
     <!-- Header with Campaign Info -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center">
-          <button
+      <div class="flex justify-between items-start">
+        <div class="flex items-start">
+          <Button
+            variant="ghost"
+            theme="gray"
             @click="$router.go(-1)"
-            class="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-100 mr-3"
+            class="mr-4 mt-1"
           >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-            </svg>
-          </button>
+            <template #prefix>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+            </template>
+          </Button>
           <div>
-            <h1 class="text-3xl font-bold text-black mb-2">
-              {{ campaign.campaign_name || 'Loading...' }}
+            <h1 class="text-3xl font-bold text-gray-900 mb-3">
+              {{ campaign.campaign_name || __('Loading...') }}
             </h1>
-            <div class="flex items-center flex-wrap gap-4">
+            <div class="flex items-center flex-wrap gap-3">
               <span 
                 :class="getStatusClasses(campaign.status)"
                 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
@@ -24,34 +46,54 @@
                 {{ campaign.status }}
               </span>
               <span class="text-sm text-gray-500">
-                				{{ __('Created:') }} {{ formatDate(campaign.creation) }}
+                {{ __('Created:') }} {{ formatDate(campaign.creation) }}
               </span>
               <span class="text-sm text-gray-500">
-                				{{ __('Modified:') }} {{ formatDate(campaign.modified) }}
+                {{ __('Modified:') }} {{ formatDate(campaign.modified) }}
               </span>
             </div>
           </div>
         </div>
         
-        <div class="flex items-center space-x-2">
-          <button
-            @click="editCampaign"
-            class="inline-flex items-center px-4 py-2 border border-black text-sm font-medium rounded-lg text-black bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-            </svg>
-            				{{ __('Edit Campaign') }}
-          </button>
-          <button
-            @click="deleteCampaign"
-            class="inline-flex items-center px-4 py-2 border border-red-300 text-sm font-medium rounded-lg text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-          >
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-            </svg>
-            				{{ __('Delete') }}
-          </button>
+        <div class="flex items-center space-x-3">
+          <Button variant="outline" theme="gray" @click="editCampaign">
+            <template #prefix>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                />
+              </svg>
+            </template>
+            {{ __('Edit Campaign') }}
+          </Button>
+          <Button variant="outline" theme="red" @click="$router.push('/campaigns')">
+            <template #prefix>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </template>
+            {{ __('Back to List') }}
+          </Button>
         </div>
       </div>
     </div>
@@ -870,6 +912,7 @@
       :campaign="campaign"
       @success="handleCampaignUpdated"
     />
+    </div>
   </div>
 </template>
 
@@ -885,8 +928,9 @@ import {
   talentSegmentService,
   actionService
 } from '../services/universalService'
-import { Dialog } from 'frappe-ui'
+import { Dialog, Breadcrumbs, Button } from 'frappe-ui'
 import CampaignForm from '@/components/campaign/CampaignForm.vue'
+import LayoutHeader from '@/components/LayoutHeader.vue'
 import moment from 'moment'
 
 // Translation helper function
@@ -894,6 +938,13 @@ const __ = (text) => text
 
 const route = useRoute()
 const router = useRouter()
+
+// Breadcrumbs
+const breadcrumbs =  [
+    { label: __('Campaigns'), route: { name: 'CampaignManagement' } },
+    { label: __('Detail'), route: { name: 'CampaignDetailView' } },
+]
+
 
 // State
 const activeTab = ref('steps')

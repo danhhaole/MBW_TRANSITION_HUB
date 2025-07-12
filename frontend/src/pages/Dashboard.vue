@@ -1,86 +1,64 @@
 <template>
-	<div
-		class="dashboard-page container mx-auto w-full min-h-screen p-4 md:p-6 bg-slate-50 text-slate-900"
-	>
-		<!-- Header -->
-		<header class="mb-8">
-			<h1 class="text-3xl font-extrabold text-slate-800">{{ __('Overview Dashboard') }}</h1>
-			<p class="text-slate-500 mt-1">
-				{{ __('Welcome back! Here is the status of your activities today.') }}
-			</p>
-			<div class="mt-4">
-				<Button variant="outline" :loading="loading" @click="refreshData">
-					<template #prefix>
-						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-							/>
-						</svg>
-					</template>
-					{{ __('Refresh') }}
-				</Button>
-			</div>
-		</header>
+	<div class="min-h-screen bg-gray-50">
+		<LayoutHeader>
+			<template #left-header>
+				<Breadcrumbs :items="breadcrumbs" />
+			</template>
+		</LayoutHeader>
 
-		<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-			<!-- Main Content -->
-			<main class="lg:col-span-2 space-y-6">
-				<!-- My Tasks Section -->
-				<section class="fade-in" style="animation-delay: 100ms">
-					<h2 class="text-xl font-bold text-slate-800 mb-4">
-						{{ __('My Tasks') }} (<span>{{ tasks.length }}</span
-						>)
-					</h2>
-
-					<div v-if="loading" class="text-center py-12">
-						<div
-							class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4"
-						>
-							<div
-								class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
-							></div>
-						</div>
-						<p class="text-slate-600">{{ __('Loading data...') }}</p>
-					</div>
-
-					<div v-else-if="tasks.length === 0" class="text-center py-12">
-						<div
-							class="flex items-center justify-center w-20 h-20 mx-auto mb-4 bg-green-100 rounded-full"
-						>
-							<svg
-								class="w-10 h-10 text-green-600"
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-							>
+		<div
+			class="dashboard-page container mx-auto w-full min-h-screen p-4 md:p-6 bg-slate-50 text-slate-900"
+		>
+			<!-- Header -->
+			<header class="mb-8">
+				<h1 class="text-3xl font-extrabold text-slate-800">{{ __('Overview Dashboard') }}</h1>
+				<p class="text-slate-500 mt-1">
+					{{ __('Welcome back! Here is the status of your activities today.') }}
+				</p>
+				<div class="mt-4">
+					<Button variant="outline" :loading="loading" @click="refreshData">
+						<template #prefix>
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path
 									stroke-linecap="round"
 									stroke-linejoin="round"
 									stroke-width="2"
-									d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M19 10a9 9 0 11-18 0 9 9 0 0118 0z"
+									d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
 								/>
 							</svg>
-						</div>
-						<p class="text-lg font-medium text-slate-900 mb-2">
-							{{ __('Congratulations! You have completed all tasks.') }}
-						</p>
-					</div>
+						</template>
+						{{ __('Refresh') }}
+					</Button>
+				</div>
+			</header>
 
-					<div v-else class="space-y-3">
-						<div
-							v-for="task in tasks"
-							:key="task.id"
-							class="bg-white border border-slate-200 rounded-lg p-4 flex items-center gap-4"
-						>
+			<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+				<!-- Main Content -->
+				<main class="lg:col-span-2 space-y-6">
+					<!-- My Tasks Section -->
+					<section class="fade-in" style="animation-delay: 100ms">
+						<h2 class="text-xl font-bold text-slate-800 mb-4">
+							{{ __('My Tasks') }} (<span>{{ tasks.length }}</span
+							>)
+						</h2>
+
+						<div v-if="loading" class="text-center py-12">
 							<div
-								class="flex-shrink-0 w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center"
+								class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4"
+							>
+								<div
+									class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
+								></div>
+							</div>
+							<p class="text-slate-600">{{ __('Loading data...') }}</p>
+						</div>
+
+						<div v-else-if="tasks.length === 0" class="text-center py-12">
+							<div
+								class="flex items-center justify-center w-20 h-20 mx-auto mb-4 bg-green-100 rounded-full"
 							>
 								<svg
-									v-if="task.status === 'PENDING_MANUAL'"
-									class="w-5 h-5 text-slate-500"
+									class="w-10 h-10 text-green-600"
 									fill="none"
 									stroke="currentColor"
 									viewBox="0 0 24 24"
@@ -89,312 +67,342 @@
 										stroke-linecap="round"
 										stroke-linejoin="round"
 										stroke-width="2"
-										d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-									/>
-								</svg>
-								<svg
-									v-else
-									class="w-5 h-5 text-slate-500"
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
-								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+										d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M19 10a9 9 0 11-18 0 9 9 0 0118 0z"
 									/>
 								</svg>
 							</div>
-
-							<div class="flex-1">
-								<p class="font-semibold text-slate-800">
-									{{ task.title }}:
-									<span class="font-normal text-slate-600">{{
-										task.candidate
-									}}</span>
-								</p>
-								<p class="text-xs text-slate-500">
-									{{ __('Campaign:') }} {{ task.campaign }}
-								</p>
-							</div>
-
-							<div class="text-right flex-shrink-0">
-								<p
-									:class="[
-										'text-xs font-semibold',
-										getDueDateTextColor(task.dueDate),
-									]"
-								>
-									{{ task.dueDate }}
-								</p>
-								<Button
-									@click="openTaskModal(task)"
-									:variant="'outline'"
-									:ref_for="true"
-									theme="gray"
-									:disabled="loading"
-									class="mt-2 px-3 py-1.5 bg-indigo-600 text-black text-xs font-semibold rounded-lg hover:bg-indigo-700 disabled:opacity-50"
-								>
-									{{ __('Update') }}
-								</Button>
-							</div>
+							<p class="text-lg font-medium text-slate-900 mb-2">
+								{{ __('Congratulations! You have completed all tasks.') }}
+							</p>
 						</div>
-					</div>
-				</section>
 
-				<!-- Active Campaigns Section -->
-				<section class="fade-in" style="animation-delay: 200ms">
-					<h2 class="text-xl font-bold text-slate-800 mb-4">
-						{{ __('Active Campaigns') }}
-					</h2>
-
-					<div v-if="loading" class="text-center py-12">
-						<div
-							class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4"
-						>
+						<div v-else class="space-y-3">
 							<div
-								class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
-							></div>
-						</div>
-						<p class="text-slate-600">{{ __('Loading campaigns...') }}</p>
-					</div>
-
-					<div v-else-if="activeCampaigns.length === 0" class="text-center py-12">
-						<div
-							class="flex items-center justify-center w-20 h-20 mx-auto mb-4 bg-slate-100 rounded-full"
-						>
-							<svg
-								class="w-10 h-10 text-slate-400"
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
+								v-for="task in tasks"
+								:key="task.id"
+								class="bg-white border border-slate-200 rounded-lg p-4 flex items-center gap-4"
 							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
-								/>
-							</svg>
-						</div>
-						<p class="text-slate-600">{{ __('No active campaigns yet') }}</p>
-					</div>
-
-					<div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6">
-						<div
-							v-for="campaign in activeCampaigns"
-							:key="campaign.id"
-							class="bg-white border border-slate-200 rounded-xl shadow-sm p-5 flex flex-col"
-						>
-							<div class="flex-1">
-								<div class="flex justify-between items-start">
-									<h3 class="font-bold text-slate-800">{{ campaign.name }}</h3>
-									<span
-										class="text-xs font-medium px-2 py-1 rounded-full bg-green-100 text-green-700"
+								<div
+									class="flex-shrink-0 w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center"
+								>
+									<svg
+										v-if="task.status === 'PENDING_MANUAL'"
+										class="w-5 h-5 text-slate-500"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
 									>
-										{{ __('Running') }}
-									</span>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+										/>
+									</svg>
+									<svg
+										v-else
+										class="w-5 h-5 text-slate-500"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+										/>
+									</svg>
 								</div>
 
-								<div class="mt-4 grid grid-cols-2 gap-4">
-									<div class="flex items-center justify-center">
-										<div class="relative w-24 h-24">
-											<!-- Outer Progress Ring - Tỷ lệ mở (Xanh) -->
-											<svg class="w-full h-full" viewBox="0 0 47 47">
-												<circle
-													class="stroke-current text-blue-200"
-													cx="23.5"
-													cy="23.5"
-													r="20"
-													fill="transparent"
-													stroke-width="4"
-												/>
-												<circle
-													class="progress-ring-circle stroke-current text-blue-600"
-													cx="23.5"
-													cy="23.5"
-													r="20"
-													fill="transparent"
-													stroke-width="4"
-													:stroke-dasharray="125.66"
-													:stroke-dashoffset="
-														125.66 -
-														(125.66 * campaign.stats.openRate) / 100
-													"
-													transform="rotate(-90 23.5 23.5)"
-													stroke-linecap="round"
-												/>
-											</svg>
-
-											<!-- Inner Progress Ring - Tỷ lệ nhấp (Tím) -->
-											<svg
-												class="w-full h-full absolute inset-0"
-												viewBox="0 0 31 31"
-											>
-												<circle
-													class="stroke-current text-purple-200"
-													cx="15.5"
-													cy="15.5"
-													r="11"
-													fill="transparent"
-													stroke-width="4"
-												/>
-												<circle
-													class="progress-ring-circle stroke-current text-purple-600"
-													cx="15.5"
-													cy="15.5"
-													r="11"
-													fill="transparent"
-													stroke-width="4"
-													:stroke-dasharray="69.12"
-													:stroke-dashoffset="
-														69.12 -
-														(69.12 * campaign.stats.clickRate) / 100
-													"
-													transform="rotate(-90 15.5 15.5)"
-													stroke-linecap="round"
-												/>
-											</svg>
-
-											<div
-												class="absolute inset-0 flex flex-col items-center justify-center"
-											>
-												<span class="text-2xl font-bold text-slate-800">{{
-													campaign.stats.newApplicants
-												}}</span>
-											</div>
-
-											<span class="flex justify-center text-xs text-slate-500">{{ __('applications') }}</span>
-										</div>
-									</div>
-
-									<div class="space-y-2 text-sm">
-										<div>
-											<p class="text-slate-500">{{ __('Target Candidates') }}</p>
-											<p class="font-bold text-slate-800 text-lg">
-												{{ campaign.stats.candidates }}
-											</p>
-										</div>
-										<div>
-											<p class="text-blue-600 font-medium">{{ __('Open Rate') }}</p>
-											<p class="font-bold text-blue-600">
-												{{ campaign.stats.openRate }}%
-											</p>
-										</div>
-										<div>
-											<p class="text-purple-600 font-medium">{{ __('Click Rate') }}</p>
-											<p class="font-bold text-purple-600">
-												{{ campaign.stats.clickRate }}%
-											</p>
-										</div>
-									</div>
+								<div class="flex-1">
+									<p class="font-semibold text-slate-800">
+										{{ task.title }}:
+										<span class="font-normal text-slate-600">{{
+											task.candidate
+										}}</span>
+									</p>
+									<p class="text-xs text-slate-500">
+										{{ __('Campaign:') }} {{ task.campaign }}
+									</p>
 								</div>
-							</div>
 
-							<div class="mt-4 pt-4 border-t border-slate-200">
-								<button
-									class="w-full text-center text-sm font-semibold text-indigo-600 hover:text-indigo-700"
-								>
-									{{ __('View workflow details') }}
-								</button>
+								<div class="text-right flex-shrink-0">
+									<p
+										:class="[
+											'text-xs font-semibold',
+											getDueDateTextColor(task.dueDate),
+										]"
+									>
+										{{ task.dueDate }}
+									</p>
+									<Button
+										@click="openTaskModal(task)"
+										:variant="'outline'"
+										:ref_for="true"
+										theme="gray"
+										:disabled="loading"
+										class="mt-2 px-3 py-1.5 bg-indigo-600 text-black text-xs font-semibold rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+									>
+										{{ __('Update') }}
+									</Button>
+								</div>
 							</div>
 						</div>
-					</div>
-				</section>
-			</main>
+					</section>
 
-			<!-- Sidebar: Completed Campaigns & Stats -->
-			<aside class="lg:col-span-1 space-y-6">
-				<section class="fade-in" style="animation-delay: 300ms">
-					<h2 class="text-xl font-bold text-slate-800 mb-4">{{ __('Recently Completed') }}</h2>
+					<!-- Active Campaigns Section -->
+					<section class="fade-in" style="animation-delay: 200ms">
+						<h2 class="text-xl font-bold text-slate-800 mb-4">
+							{{ __('Active Campaigns') }}
+						</h2>
 
-					<div v-if="loading" class="text-center py-8">
-						<div
-							class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 mb-4"
-						>
+						<div v-if="loading" class="text-center py-12">
 							<div
-								class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"
-							></div>
-						</div>
-						<p class="text-sm text-slate-600">{{ __('Loading...') }}</p>
-					</div>
-
-					<div v-else-if="completedCampaigns.length === 0" class="text-center py-8">
-						<div
-							class="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full"
-						>
-							<svg
-								class="w-8 h-8 text-slate-400"
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
+								class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4"
 							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-								/>
-							</svg>
+								<div
+									class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
+								></div>
+							</div>
+							<p class="text-slate-600">{{ __('Loading campaigns...') }}</p>
 						</div>
-						<p class="text-sm text-slate-600">
-							{{ __('No recently completed campaigns') }}
-						</p>
-					</div>
 
-					<div v-else class="space-y-4">
-						<div
-							v-for="campaign in completedCampaigns"
-							:key="campaign.id"
-							class="bg-white border border-slate-200 rounded-lg p-4 flex items-center gap-4"
-						>
+						<div v-else-if="activeCampaigns.length === 0" class="text-center py-12">
 							<div
-								class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center"
+								class="flex items-center justify-center w-20 h-20 mx-auto mb-4 bg-slate-100 rounded-full"
 							>
 								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									width="20"
-									height="20"
-									viewBox="0 0 24 24"
+									class="w-10 h-10 text-slate-400"
 									fill="none"
 									stroke="currentColor"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									class="text-blue-600"
+									viewBox="0 0 24 24"
 								>
-									<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-									<polyline points="22 4 12 14.01 9 11.01" />
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
+									/>
 								</svg>
 							</div>
-							<div class="flex-1">
-								<p class="font-semibold text-slate-800">{{ campaign.name }}</p>
-								<p class="text-xs text-slate-500">
-									{{ campaign.stats.newApplicants }} {{ __('new candidates') }}
-								</p>
+							<p class="text-slate-600">{{ __('No active campaigns yet') }}</p>
+						</div>
+
+						<div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6">
+							<div
+								v-for="campaign in activeCampaigns"
+								:key="campaign.id"
+								class="bg-white border border-slate-200 rounded-xl shadow-sm p-5 flex flex-col"
+							>
+								<div class="flex-1">
+									<div class="flex justify-between items-start">
+										<h3 class="font-bold text-slate-800">{{ campaign.name }}</h3>
+										<span
+											class="text-xs font-medium px-2 py-1 rounded-full bg-green-100 text-green-700"
+										>
+											{{ __('Running') }}
+										</span>
+									</div>
+
+									<div class="mt-4 grid grid-cols-2 gap-4">
+										<div class="flex items-center justify-center">
+											<div class="relative w-24 h-24">
+												<!-- Outer Progress Ring - Tỷ lệ mở (Xanh) -->
+												<svg class="w-full h-full" viewBox="0 0 47 47">
+													<circle
+														class="stroke-current text-blue-200"
+														cx="23.5"
+														cy="23.5"
+														r="20"
+														fill="transparent"
+														stroke-width="4"
+													/>
+													<circle
+														class="progress-ring-circle stroke-current text-blue-600"
+														cx="23.5"
+														cy="23.5"
+														r="20"
+														fill="transparent"
+														stroke-width="4"
+														:stroke-dasharray="125.66"
+														:stroke-dashoffset="
+															125.66 -
+															(125.66 * campaign.stats.openRate) / 100
+														"
+														transform="rotate(-90 23.5 23.5)"
+														stroke-linecap="round"
+													/>
+												</svg>
+
+												<!-- Inner Progress Ring - Tỷ lệ nhấp (Tím) -->
+												<svg
+													class="w-full h-full absolute inset-0"
+													viewBox="0 0 31 31"
+												>
+													<circle
+														class="stroke-current text-purple-200"
+														cx="15.5"
+														cy="15.5"
+														r="11"
+														fill="transparent"
+														stroke-width="4"
+													/>
+													<circle
+														class="progress-ring-circle stroke-current text-purple-600"
+														cx="15.5"
+														cy="15.5"
+														r="11"
+														fill="transparent"
+														stroke-width="4"
+														:stroke-dasharray="69.12"
+														:stroke-dashoffset="
+															69.12 -
+															(69.12 * campaign.stats.clickRate) / 100
+														"
+														transform="rotate(-90 15.5 15.5)"
+														stroke-linecap="round"
+													/>
+												</svg>
+
+												<div
+													class="absolute inset-0 flex flex-col items-center justify-center"
+												>
+													<span class="text-2xl font-bold text-slate-800">{{
+														campaign.stats.newApplicants
+													}}</span>
+												</div>
+
+												<span class="flex justify-center text-xs text-slate-500">{{ __('applications') }}</span>
+											</div>
+										</div>
+
+										<div class="space-y-2 text-sm">
+											<div>
+												<p class="text-slate-500">{{ __('Target Candidates') }}</p>
+												<p class="font-bold text-slate-800 text-lg">
+													{{ campaign.stats.candidates }}
+												</p>
+											</div>
+											<div>
+												<p class="text-blue-600 font-medium">{{ __('Open Rate') }}</p>
+												<p class="font-bold text-blue-600">
+													{{ campaign.stats.openRate }}%
+												</p>
+											</div>
+											<div>
+												<p class="text-purple-600 font-medium">{{ __('Click Rate') }}</p>
+												<p class="font-bold text-purple-600">
+													{{ campaign.stats.clickRate }}%
+												</p>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<div class="mt-4 pt-4 border-t border-slate-200">
+									<button
+										class="w-full text-center text-sm font-semibold text-indigo-600 hover:text-indigo-700"
+									>
+										{{ __('View workflow details') }}
+									</button>
+								</div>
 							</div>
 						</div>
-					</div>
-				</section>
-			</aside>
+					</section>
+				</main>
+
+				<!-- Sidebar: Completed Campaigns & Stats -->
+				<aside class="lg:col-span-1 space-y-6">
+					<section class="fade-in" style="animation-delay: 300ms">
+						<h2 class="text-xl font-bold text-slate-800 mb-4">{{ __('Recently Completed') }}</h2>
+
+						<div v-if="loading" class="text-center py-8">
+							<div
+								class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 mb-4"
+							>
+								<div
+									class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"
+								></div>
+							</div>
+							<p class="text-sm text-slate-600">{{ __('Loading...') }}</p>
+						</div>
+
+						<div v-else-if="completedCampaigns.length === 0" class="text-center py-8">
+							<div
+								class="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full"
+							>
+								<svg
+									class="w-8 h-8 text-slate-400"
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+									/>
+								</svg>
+							</div>
+							<p class="text-sm text-slate-600">
+								{{ __('No recently completed campaigns') }}
+							</p>
+						</div>
+
+						<div v-else class="space-y-4">
+							<div
+								v-for="campaign in completedCampaigns"
+								:key="campaign.id"
+								class="bg-white border border-slate-200 rounded-lg p-4 flex items-center gap-4"
+							>
+								<div
+									class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center"
+								>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="20"
+										height="20"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										class="text-blue-600"
+									>
+										<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+										<polyline points="22 4 12 14.01 9 11.01" />
+									</svg>
+								</div>
+								<div class="flex-1">
+									<p class="font-semibold text-slate-800">{{ campaign.name }}</p>
+									<p class="text-xs text-slate-500">
+										{{ campaign.stats.newApplicants }} {{ __('new candidates') }}
+									</p>
+								</div>
+							</div>
+						</div>
+					</section>
+				</aside>
+			</div>
+
+			<!-- Task Update Modal -->
+			<TaskUpdateModal
+				v-model="taskModal"
+				:task="selectedTask"
+				@update:completed="handleTaskCompleted"
+			/>
+
+			<!-- Toast Container -->
+			<ToastContainer
+				:show="showToast"
+				:message="toastMessage"
+				:type="toastType"
+				@close="closeToast"
+			/>
 		</div>
-
-		<!-- Task Update Modal -->
-		<TaskUpdateModal
-			v-model="taskModal"
-			:task="selectedTask"
-			@update:completed="handleTaskCompleted"
-		/>
-
-		<!-- Toast Container -->
-		<ToastContainer
-			:show="showToast"
-			:message="toastMessage"
-			:type="toastType"
-			@close="closeToast"
-		/>
 	</div>
 </template>
 
@@ -411,6 +419,8 @@ import {
 	actionService,
 	candidateService,
 } from '../services/universalService'
+import LayoutHeader from '@/components/LayoutHeader.vue'
+import { Breadcrumbs } from 'frappe-ui'
 
 // Translation helper function
 const __ = (text) => text
@@ -436,6 +446,11 @@ const urgentTasks = computed(() => {
 			task.status === 'PENDING_MANUAL',
 	)
 })
+
+// Breadcrumbs
+const breadcrumbs = [
+	{ label: __('Dashboard'), route: { name: 'Dashboard' } }
+]
 
 // Load Tasks from Action doctype
 const loadTasks = async () => {
