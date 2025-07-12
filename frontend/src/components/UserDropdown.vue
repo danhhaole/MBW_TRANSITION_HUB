@@ -76,32 +76,31 @@ const { getUser } = usersStore()
 const user = computed(() => getUser() || {})
 
 const dropdownItems = computed(() => {
-  if (!settings.value?.dropdown_items) return []
+  //if (!settings.value?.dropdown_items) return []
 
-  let items = settings.value.dropdown_items
+  let items = [{
+      "icon":"",
+      "label":"Apps",
+      "name1":"app_selector",
+      "is_standard":1,
+      "type":"menu"
+    },{
+      "icon":"log-out",
+      "label":"Logout",
+      "name1":"logout",
+      "is_standard":1,
+      "type":"menu"
+    }];//settings.value.dropdown_items
  
   let _dropdownItems = [
     {
       group: 'Dropdown Items',
       hideLabel: true,
-      items: [{
-      "icon":"",
-      "label":"",
-      "name1":"app_selector",
-      "is_standard":1,
-      "type":"menu"
-    },{
-      "icon":"",
-      "label":"",
-      "name1":"logout",
-      "is_standard":1,
-      "type":"menu"
-    }],
+      items: [],
     },
   ]
 
   items.forEach((item) => {
-    console.log(item)
     if (item.hidden) return
     if (item.type !== 'Separator') {
       _dropdownItems[_dropdownItems.length - 1].items.push(

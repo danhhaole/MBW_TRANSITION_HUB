@@ -36,7 +36,7 @@ export const sessionStore = defineStore('mira-session', () => {
     onSuccess() {
       userResource.reset()
       user.value = null
-      router.replace({ path: '/login' })
+      router.replace({ path: '/' })
     },
   })
 

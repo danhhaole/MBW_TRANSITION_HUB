@@ -115,9 +115,29 @@ const routes = [
 	},
 ]
 
+const scrollBehavior = (to, from, savedPosition) => {
+	if (to.name === from.name) {
+		to.meta?.scrollPos && (to.meta.scrollPos.top = 0);
+		return { left: 0, top: 0 };
+	}
+	const scrollpos = to.meta?.scrollPos || { left: 0, top: 0 };
+
+	if (scrollpos.top > 0) {
+		setTimeout(() => {
+			let el = document.querySelector("#list-rows");
+			el.scrollTo({
+				top: scrollpos.top,
+				left: scrollpos.left,
+				behavior: "smooth",
+			});
+		}, 300);
+	}
+};
+
 let router = createRouter({
 	history: createWebHistory('/mbw_mira'),
 	routes,
+	scrollBehavior
 })
 
 router.beforeEach(async (to, from, next) => {
@@ -126,7 +146,7 @@ router.beforeEach(async (to, from, next) => {
 
 	// Nếu user đã login và đang truy cập trang login, redirect về dashboard
 	if (!isLoggedIn) {
-		next('/login')
+		window.location.href = "/login?redirect-to=/mbw_mira/";
 		return
 	} else if (['Test'].includes(to.name) && !to.hash) {
 		let storageKey = to.name === 'Test' ? 'lastTestTab' : 'lastTestTab'

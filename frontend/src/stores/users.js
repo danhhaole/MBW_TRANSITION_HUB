@@ -27,7 +27,7 @@ export const usersStore = defineStore('mira-users', () => {
     onError(error) {
       console.log(error)
       if (error && error.exc_type === 'AuthenticationError') {
-        router.push('/login')
+        window.location.href = "/login?redirect-to=/mbw_mira/";
       }
     },
   })
