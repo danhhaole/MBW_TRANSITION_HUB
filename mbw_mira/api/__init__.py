@@ -1,6 +1,5 @@
 import frappe
 import json
-from mbw_mira.campaign import background_jobs
 from bs4 import BeautifulSoup
 from frappe.core.api.file import get_max_file_size
 from frappe.translate import get_all_translations
@@ -16,7 +15,6 @@ def create_candidate_segment():
     data = json.loads(frappe.request.data)
     if not data:
         frappe.throw("Data require")
-    background_jobs.add_candidate_to_talentsegment(data)
     
     return {
         "status": "queued",
@@ -33,7 +31,6 @@ def complete_manual_action():
         frappe.throw("action_id require")
     note = data.get("note",None)
     user = data.get("user",None)
-    background_jobs.complete_manual(action_id,note,user)
     return {
         "status": "queued",
         "message": "CandidateSegment creation has been queued."
@@ -66,7 +63,7 @@ def create_campaign_with_steps_bg():
         frappe.throw(frappe._("No JSON payload found in request"))
 
     # enqueue job
-    background_jobs.process_campaign_with_steps(data)
+
 
     return {
         "status": "queued",
