@@ -1,0 +1,1 @@
+#Gửi báo cáo hàng tuần về số lượng ứng viên mới, tỷ lệ chuyển đổi, v.v. cho quản lý.

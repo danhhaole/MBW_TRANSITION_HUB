@@ -1,0 +1,1 @@
+#Phân khúc đối tượng cho campaign dựa trên kỹ năng, kinh nghiệm, vị trí địa lý, v.v.

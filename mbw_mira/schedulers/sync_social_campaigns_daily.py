@@ -1,0 +1,1 @@
+#Đồng bộ dữ liệu campaign từ Social Media hàng ngày.
