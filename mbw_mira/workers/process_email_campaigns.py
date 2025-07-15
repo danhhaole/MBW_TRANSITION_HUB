@@ -1,1 +1,0 @@
-#Xử lý và gửi các email marketing đã được lên lịch

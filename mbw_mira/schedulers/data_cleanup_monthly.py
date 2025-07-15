@@ -1,0 +1,1 @@
+#Xóa ứng viên không hoạt động

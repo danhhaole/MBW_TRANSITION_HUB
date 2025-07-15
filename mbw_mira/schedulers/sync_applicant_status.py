@@ -1,0 +1,1 @@
+#Đồng bộ trạng thái applicant từ hệ thống ATS hoặc hệ thống quản lý tuyển dụng khác vào DocType "Action".
