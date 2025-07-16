@@ -163,10 +163,24 @@ scheduler_events = {
             "mbw_mira.tasks.do_campaign_sync_source_other_scheduler"
         ]       
     },
-    # "daily": [],
-    # "hourly": [],
-    # "weekly": [],
-    # "monthly": [],
+    "daily": [
+        "mbw_mira.schedulers.ats.sync_ats_campaigns_daily",
+        "mbw_mira.schedulers.jobboard.sync_jobboard_campaigns_daily",
+        "mbw_mira.schedulers.social.sync_linkedin_campaigns_daily",
+        "mbw_mira.schedulers.social.sync_facebook_campaigns_daily",
+        "mbw_mira.schedulers.check_pending_actions"
+        ],
+    "hourly": [
+        "mbw_mira.schedulers.schedule_campaign_actions",
+        ],
+    "weekly": [
+        "mbw_mira.schedulers.social.update_linkedin_weekly",
+        "mbw_mira.schedulers.social.update_facebook_weekly",
+        "mbw_mira.schedulers.generate_weekly_campaign_reports",
+        ],
+    "monthly": [
+        "mbw_mira.schedulers.data_cleanup_monthly",
+        ],
     
 }
 

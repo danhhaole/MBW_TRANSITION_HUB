@@ -1,0 +1,81 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-07-16 16:45:02.606218",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "applicant_id",
+  "shortlist_date",
+  "evaluation_score",
+  "interview_feedback",
+  "status",
+  "hired_date",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "applicant_id",
+   "fieldtype": "Link",
+   "label": "Applicant",
+   "options": "ApplicantPool"
+  },
+  {
+   "fieldname": "shortlist_date",
+   "fieldtype": "Date",
+   "label": "Shortlist Date"
+  },
+  {
+   "fieldname": "evaluation_score",
+   "fieldtype": "Float",
+   "label": "Evaluation Score"
+  },
+  {
+   "fieldname": "interview_feedback",
+   "fieldtype": "Text",
+   "label": "Interview Feedback"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Shortlisted\nOffered\nHired\nRejected"
+  },
+  {
+   "fieldname": "hired_date",
+   "fieldtype": "Date",
+   "label": "Hired Date"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Text",
+   "label": "Notes"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-07-16 16:48:28.670015",
+ "modified_by": "Administrator",
+ "module": "MBW Mira",
+ "name": "CandidatePool",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
