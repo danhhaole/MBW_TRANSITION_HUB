@@ -7,7 +7,7 @@ def enroll_talent_for_campaign(campaign_id):
     Worker: tìm ứng viên từ TalentPool theo campaign và tạo TalentCampaign.
     """
 
-    frappe.logger().info(f"🎯 [Worker] Enrolling from TalentPool for campaign: {campaign_id}")
+    frappe.logger().info(f"[Worker] Enrolling from TalentPool for campaign: {campaign_id}")
 
     talents = get_talents_for_campaign(campaign_id)
 
@@ -24,7 +24,7 @@ def enroll_talent_for_campaign(campaign_id):
             create_talent_campaign(campaign_id, talent, first_step)
             count += 1
 
-    frappe.logger().info(f"✅ [Worker] Created {count} TalentCampaign(s) for campaign {campaign_id}")
+    frappe.logger().info(f"[Worker] Created {count} TalentCampaign(s) for campaign {campaign_id}")
 
 
 def get_talents_for_campaign(campaign_id):

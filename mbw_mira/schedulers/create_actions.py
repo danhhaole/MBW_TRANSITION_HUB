@@ -19,7 +19,7 @@ def run():
 
     for tc in campaigns:
         frappe.enqueue(
-            method="mbw_mira.workers.create_action_for_talent_campaign",
+            method="mbw_mira.workers.create_action_for_talent.create_action_for_talent_campaign",
             talent_campaign_id=tc.name,
             queue="default",
             timeout=300
