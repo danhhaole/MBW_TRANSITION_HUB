@@ -171,7 +171,12 @@ scheduler_events = {
         "mbw_mira.schedulers.check_pending_actions"
         ],
     "hourly": [
-        "mbw_mira.schedulers.schedule_campaign_actions",
+        #"mbw_mira.schedulers.schedule_campaign_actions",
+        "mbw_mira.schedulers.fetch_ats_mbw_campaigns.run",
+        "mbw_mira.schedulers.fetch_jobboard_topcv_campaigns.run",
+        "mbw_mira.schedulers.fetch_jobboard_vietnamworks_campaigns.run",
+        "mbw_mira.schedulers.fetch_social_facebook_campaigns.run"
+        "mbw_mira.schedulers.fetch_social_linkedin_campaigns.run"
         ],
     "weekly": [
         "mbw_mira.schedulers.social.update_linkedin_weekly",

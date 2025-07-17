@@ -1,1 +1,0 @@
-#Đồng bộ dữ liệu campaign từ Job Board hàng ngày.

@@ -1,1 +1,0 @@
-#Theo dõi và cập nhật trạng thái của application (ví dụ: từ "Submitted" sang "Reviewing", "Interview", v.v.) từ hệ thống ATS hoặc hệ thống quản lý tuyển dụng khác, và cập nhật vào DocType "Action".

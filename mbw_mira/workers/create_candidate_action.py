@@ -1,1 +1,0 @@
-#Tạo một hành động mới cho ứng viên dựa trên các bước đã được định nghĩa trong campaign.

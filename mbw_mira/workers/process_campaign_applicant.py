@@ -1,1 +1,0 @@
-#Xử lý thông tin ứng viên ứng tuyển từ campaign (tạo hồ sơ, thêm vào Talent Pool, gửi email xác nhận)
