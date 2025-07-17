@@ -6,26 +6,26 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-    "source_name",
-    "source_type",
-    "api_base_url",
-    "auth_method",
-    "client_id",
-    "client_secret",
-    "api_key",
-    "api_secret",
-    "access_token",
-    "refresh_token",
-    "token_expires_at",
-    "doctype_to_sync",
-    "sync_direction",
-    "status",
-    "last_sync_at",
-    "sync_frequency_minutes",
-    "last_error",
-    "notes",
-    "created_by",
-    "is_active"
+  "source_name",
+  "source_type",
+  "api_base_url",
+  "auth_method",
+  "client_id",
+  "client_secret",
+  "api_key",
+  "api_secret",
+  "access_token",
+  "refresh_token",
+  "token_expires_at",
+  "doctype_to_sync",
+  "sync_direction",
+  "status",
+  "last_sync_at",
+  "sync_frequency_minutes",
+  "last_error",
+  "notes",
+  "created_by",
+  "is_active"
  ],
  "fields": [
   {
@@ -45,6 +45,7 @@
    "label": "API Base URL"
   },
   {
+   "description": "auth_method = API Key v\u00e0 \u0111i\u1ec1n api_key/api_secret.\nauth_method = OAuth2 v\u00e0 \u0111i\u1ec1n client_id/client_secret + access_token + refresh_token",
    "fieldname": "auth_method",
    "fieldtype": "Select",
    "label": "Auth Method",
@@ -86,11 +87,13 @@
    "label": "Token Expires At"
   },
   {
+   "description": "doctype_to_sync gi\u00fap b\u1ea1n bi\u1ebft b\u1ea1n \u0111ang \u0111\u1ed3ng b\u1ed9 v\u1edbi Doctype n\u00e0o \u1edf site kia.",
    "fieldname": "doctype_to_sync",
    "fieldtype": "Data",
    "label": "Doctype To Sync"
   },
   {
+   "description": "sync_direction x\u00e1c \u0111\u1ecbnh b\u1ea1n ch\u1ec9 l\u1ea5y d\u1eef li\u1ec7u (Pull), ch\u1ec9 \u0111\u1ea9y d\u1eef li\u1ec7u (Push) hay c\u1ea3 2.",
    "fieldname": "sync_direction",
    "fieldtype": "Select",
    "label": "Sync Direction",
@@ -103,25 +106,25 @@
    "options": "Active\nInactive"
   },
   {
-   "description": "Lần đồng bộ gần nhất",
+   "description": "L\u1ea7n \u0111\u1ed3ng b\u1ed9 g\u1ea7n nh\u1ea5t",
    "fieldname": "last_sync_at",
    "fieldtype": "Datetime",
    "label": "Last Sync At"
   },
   {
-   "description": "Khoảng thời gian giữa các lần đồng bộ (phút)",
+   "description": "Kho\u1ea3ng th\u1eddi gian gi\u1eefa c\u00e1c l\u1ea7n \u0111\u1ed3ng b\u1ed9 (ph\u00fat)",
    "fieldname": "sync_frequency_minutes",
    "fieldtype": "Int",
    "label": "Sync Frequency Minutes"
   },
   {
-   "description": "Thông tin lỗi gần nhất khi đồng bộ",
+   "description": "Th\u00f4ng tin l\u1ed7i g\u1ea7n nh\u1ea5t khi \u0111\u1ed3ng b\u1ed9",
    "fieldname": "last_error",
    "fieldtype": "Small Text",
    "label": "Last Error"
   },
   {
-   "description": "Ghi chú, mô tả",
+   "description": "Ghi ch\u00fa, m\u00f4 t\u1ea3",
    "fieldname": "notes",
    "fieldtype": "Small Text",
    "label": "Notes"
@@ -134,7 +137,7 @@
   },
   {
    "default": "1",
-   "description": "Kích hoạt / Không kích hoạt",
+   "description": "K\u00edch ho\u1ea1t / Kh\u00f4ng k\u00edch ho\u1ea1t",
    "fieldname": "is_active",
    "fieldtype": "Check",
    "label": "Active"
@@ -143,7 +146,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-11 09:03:45.256362",
+ "modified": "2025-07-17 11:28:12.216879",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "CandidateDataSource",
