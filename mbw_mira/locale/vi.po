@@ -1,4 +1,4 @@
-# Translations template for MBW Mira.
+# Vietnamese translations for MBW Mira.
 # Copyright (C) 2025 MBWCloud Co.
 # This file is distributed under the same license as the MBW Mira project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
@@ -10,7 +10,9 @@ msgstr ""
 "POT-Creation-Date: 2025-07-17 22:51+0642\n"
 "PO-Revision-Date: 2025-07-17 22:51+0642\n"
 "Last-Translator: dev@mbw.vn\n"
+"Language: vi\n"
 "Language-Team: dev@mbw.vn\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
