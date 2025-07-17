@@ -6,7 +6,7 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "candidate_campaign_id",
+  "talent_campaign_id",
   "campaign_step",
   "status",
   "scheduled_at",
@@ -44,23 +44,23 @@
    "label": "Result"
   },
   {
-   "description": "(Foreign Key -> CandidateCampaign)",
-   "fieldname": "candidate_campaign_id",
-   "fieldtype": "Link",
-   "label": "Candidate Campaign",
-   "options": "CandidateCampaign"
-  },
-  {
    "fieldname": "assignee_id",
    "fieldtype": "Link",
    "label": "Assignee",
    "options": "User"
+  },
+  {
+   "description": "(Foreign Key -> CandidateCampaign)",
+   "fieldname": "talent_campaign_id",
+   "fieldtype": "Link",
+   "label": "Talent Campaign",
+   "options": "TalentCampaign"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-07 13:32:32.612770",
+ "modified": "2025-07-17 17:30:27.727284",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Action",

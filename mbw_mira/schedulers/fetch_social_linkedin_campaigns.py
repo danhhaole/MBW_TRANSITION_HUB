@@ -20,12 +20,12 @@ def run():
     for c in campaigns:
         if is_linkedin_source(c.source):
             frappe.enqueue(
-                method="myapp.tasks.fetch_linkedin_data",
+                method="mbw_mira.schedulers.social.fetch_linkedin_data",
                 campaign_name=c.name,
-                queue="medium",
+                queue="default",
                 timeout=600
             )
             frappe.logger().info(f"Enqueued LinkedIn fetch for campaign: {c.campaign_name}")
 
 def is_linkedin_source(source):
-    return frappe.db.get_value("CandidateDataSource", source, "name") == "LinkedIn"
+    return frappe.db.get_value("CandidateDataSource", source, "source_name") == "LinkedIn"

@@ -20,12 +20,12 @@ def run():
     for c in campaigns:
         if is_facebook_source(c.source):
             frappe.enqueue(
-                method="myapp.tasks.fetch_facebook_data",
+                method="mbw_mira.schedulers.social.fetch_facebook_data",
                 campaign_name=c.name,
-                queue="medium",
+                queue="default",
                 timeout=600
             )
             frappe.logger().info(f"Enqueued Facebook fetch for campaign: {c.campaign_name}")
 
 def is_facebook_source(source):
-    return frappe.db.get_value("CandidateDataSource", source, "name") == "Facebook"
+    return frappe.db.get_value("CandidateDataSource", source, "source_name") == "Facebook"

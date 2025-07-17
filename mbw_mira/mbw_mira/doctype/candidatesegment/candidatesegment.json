@@ -5,7 +5,7 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "candidate_id",
+  "talent_id",
   "segment_id",
   "added_at",
   "added_by"
@@ -23,26 +23,26 @@
    "options": "User"
   },
   {
-   "fieldname": "candidate_id",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Candidate",
-   "options": "Candidate",
-   "reqd": 1
-  },
-  {
    "fieldname": "segment_id",
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Segment",
    "options": "TalentSegment",
    "reqd": 1
+  },
+  {
+   "fieldname": "talent_id",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Talent",
+   "options": "TalentPool",
+   "reqd": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-06-30 10:27:22.534745",
+ "modified": "2025-07-17 17:29:18.218599",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "CandidateSegment",

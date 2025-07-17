@@ -6,38 +6,38 @@ from frappe.model.document import Document
 from frappe.utils import now_datetime
 
 
-class CandidateCampaign(Document):
+class TalentCampaign(Document):
     pass
 
     def validate(self):
-        # Check trùng campaign_id,candidate_id
+        # Check trùng talent_id,candidate_id
         validate_unique_candidate_campaign(self)
 
 
 def validate_unique_candidate_campaign(doc):
     """
-    Kiểm tra xem đã tồn tại CandidateCampaign với cùng
-    campaign_id + candidate_id (ngoại trừ chính nó) hay chưa.
+    Kiểm tra xem đã tồn tại TalentCampaign với cùng
+    talent_id + candidate_id (ngoại trừ chính nó) hay chưa.
     """
     filters = {
-        "campaign_id": doc.campaign_id,
+        "talent_id": doc.talent_id,
         "candidate_id": doc.candidate_id,
     }
 
-    existing = frappe.db.exists("CandidateCampaign", filters)
+    existing = frappe.db.exists("TalentCampaign", filters)
 
     if existing and existing != doc.name:
         frappe.throw(
             frappe._(
-                "A CandidateCampaign with Campaign <b>{0}</b> and Candidate <b>{1}</b> already exists: <a href='/app/candidate-campaign/{2}'>{2}</a>"
-            ).format(doc.campaign_id, doc.candidate_id, existing),
-            title=frappe._("Duplicate CandidateCampaign"),
+                "A TalentCampaign with Campaign <b>{0}</b> and Candidate <b>{1}</b> already exists: <a href='/app/candidate-campaign/{2}'>{2}</a>"
+            ).format(doc.talent_id, doc.candidate_id, existing),
+            title=frappe._("Duplicate TalentCampaign"),
         )
 
 
 @frappe.whitelist()
 def process_candidate_campaign_active():
-    """Lấy danh sách CandidateCampaign
+    """Lấy danh sách TalentCampaign
     - Kiểm tra bản ghi thỏa mãn điều kiện để tạo ra Action
     """
     candidate_campaigns = _get_active_candidate_campaigns()
@@ -78,13 +78,13 @@ def process_candidate_campaign_active():
 
 def _get_active_candidate_campaigns() -> dict:
     """
-    Lấy danh sách CandidateCampaign:
+    Lấy danh sách TalentCampaign:
     - status = ACTIVE
     - next_action_at <= hôm nay
     """
 
     candidate_campaigns = frappe.get_all(
-        "CandidateCampaign",
+        "TalentCampaign",
         filters={"status": "ACTIVE", "next_action_at": ["<=", now_datetime()]},
         fields=["*"],
     )

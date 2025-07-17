@@ -15,37 +15,37 @@ class Action(Document):
 		"""Khi có event update xử lý các luồng
 		"""
 		if self.status in ["EXECUTED","FAILED"]:
-			update_step_result_candidate_campaign(self)
+			update_step_result_talent_campaign(self)
 
 
-def update_step_result_candidate_campaign(doc):
-	"""Update trạng thái CandidateCampaign khi action đã thực hiện
+def update_step_result_talent_campaign(doc):
+	"""Update trạng thái TalentCampaign khi action đã thực hiện
 
 	Args:
 		doc (dict): _description_
 	""" 
-	#Action có 2 trạng thái này thì update CandidateCampaign
-	candidate_campaign = frappe.get_doc("CandidateCampaign", doc.candidate_campaign_id)
-	if candidate_campaign.status != "ACTIVE":
+	#Action có 2 trạng thái này thì update TalentCampaign
+	talent_campaign = frappe.get_doc("TalentCampaign", doc.talent_campaign_id)
+	if talent_campaign.status != "ACTIVE":
 		return
 
-	current_order = candidate_campaign.current_step_order
+	current_order = talent_campaign.current_step_order
 	next_step = frappe.get_all(
 		"CampaignStep",
-		filters={"campaign": candidate_campaign.campaign_id, "step_order": current_order + 1},
+		filters={"campaign": talent_campaign.campaign_id, "step_order": current_order + 1},
 		fields=["name", "step_order", "delay_in_days"],
 		limit=1,
 	)
 
 	if not next_step:
-		candidate_campaign.status = "COMPLETED"
-		candidate_campaign.next_action_at = None
+		talent_campaign.status = "COMPLETED"
+		talent_campaign.next_action_at = None
 	else:
 		step_info = next_step[0]
-		candidate_campaign.current_step_order = step_info.step_order
-		candidate_campaign.next_action_at = add_days(now_datetime(), step_info.delay_in_days or 0)
+		talent_campaign.current_step_order = step_info.step_order
+		talent_campaign.next_action_at = add_days(now_datetime(), step_info.delay_in_days or 0)
 
-	candidate_campaign.save()
+	talent_campaign.save()
 	return True
 
 
@@ -69,7 +69,7 @@ def get_action_worker(step):
 
 def check_duplicate_action(doc):
     filters = {
-        "candidate_campaign_id": doc.candidate_campaign_id,
+        "talent_campaign_id": doc.talent_campaign_id,
         "campaign_step": doc.campaign_step,
     }
 
@@ -78,7 +78,7 @@ def check_duplicate_action(doc):
     if existing:
         frappe.throw(
             frappe._("An Action with Candidate Campaign <b>{0}</b> and Campaign Step <b>{1}</b> already exists: <a href='/app/action/{2}'>{2}</a>").format(
-                doc.candidate_campaign_id,
+                doc.talent_campaign_id,
                 doc.campaign_step,
                 existing
             ),

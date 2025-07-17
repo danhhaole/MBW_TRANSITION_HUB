@@ -7,20 +7,13 @@
  "engine": "InnoDB",
  "field_order": [
   "campaign_id",
-  "candidate_id",
+  "talent_id",
   "status",
   "enrolled_at",
   "current_step_order",
   "next_action_at"
  ],
  "fields": [
-  {
-   "description": "(Foreign Key -> Candidate)",
-   "fieldname": "candidate_id",
-   "fieldtype": "Link",
-   "label": "Candidate",
-   "options": "Candidate"
-  },
   {
    "fieldname": "status",
    "fieldtype": "Select",
@@ -51,15 +44,22 @@
    "fieldtype": "Link",
    "label": "Campaign",
    "options": "Campaign"
+  },
+  {
+   "description": "(Foreign Key -> Candidate)",
+   "fieldname": "talent_id",
+   "fieldtype": "Link",
+   "label": "Talent",
+   "options": "TalentPool"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-07 15:38:17.232755",
+ "modified": "2025-07-17 17:26:29.407149",
  "modified_by": "Administrator",
  "module": "MBW Mira",
- "name": "CandidateCampaign",
+ "name": "TalentCampaign",
  "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [

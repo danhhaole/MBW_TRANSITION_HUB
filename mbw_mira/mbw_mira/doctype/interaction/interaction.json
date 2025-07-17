@@ -6,19 +6,13 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "candidate_id",
+  "talent_id",
   "interaction_type",
   "action",
   "url",
   "description"
  ],
  "fields": [
-  {
-   "fieldname": "candidate_id",
-   "fieldtype": "Link",
-   "label": "Candidate",
-   "options": "Candidate"
-  },
   {
    "description": "Lo\u1ea1i h\u00e0nh vi c\u1ee7a \u1ee9ng vi\u00ean \u0111\u01b0\u1ee3c h\u1ec7 th\u1ed1ng ghi nh\u1eadn",
    "fieldname": "interaction_type",
@@ -44,12 +38,18 @@
    "fieldname": "description",
    "fieldtype": "Text",
    "label": "Description"
+  },
+  {
+   "fieldname": "talent_id",
+   "fieldtype": "Link",
+   "label": "Talent",
+   "options": "Candidate"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-07 13:33:24.107413",
+ "modified": "2025-07-17 17:30:56.527143",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Interaction",
