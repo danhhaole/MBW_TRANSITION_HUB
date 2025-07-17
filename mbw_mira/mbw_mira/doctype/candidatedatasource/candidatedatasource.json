@@ -6,20 +6,26 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "source_name",
-  "source_type",
-  "api_base_url",
-  "client_id",
-  "client_secret",
-  "access_token",
-  "refresh_token",
-  "token_expires_at",
-  "status",
-  "last_sync_at",
-  "sync_frequency_minutes",
-  "notes",
-  "created_by",
-  "is_active"
+    "source_name",
+    "source_type",
+    "api_base_url",
+    "auth_method",
+    "client_id",
+    "client_secret",
+    "api_key",
+    "api_secret",
+    "access_token",
+    "refresh_token",
+    "token_expires_at",
+    "doctype_to_sync",
+    "sync_direction",
+    "status",
+    "last_sync_at",
+    "sync_frequency_minutes",
+    "last_error",
+    "notes",
+    "created_by",
+    "is_active"
  ],
  "fields": [
   {
@@ -36,7 +42,13 @@
   {
    "fieldname": "api_base_url",
    "fieldtype": "Small Text",
-   "label": "API Base Url"
+   "label": "API Base URL"
+  },
+  {
+   "fieldname": "auth_method",
+   "fieldtype": "Select",
+   "label": "Auth Method",
+   "options": "API Key\nOAuth2\nBasic"
   },
   {
    "fieldname": "client_id",
@@ -47,6 +59,16 @@
    "fieldname": "client_secret",
    "fieldtype": "Password",
    "label": "Client Secret"
+  },
+  {
+   "fieldname": "api_key",
+   "fieldtype": "Data",
+   "label": "API Key"
+  },
+  {
+   "fieldname": "api_secret",
+   "fieldtype": "Password",
+   "label": "API Secret"
   },
   {
    "fieldname": "access_token",
@@ -64,25 +86,42 @@
    "label": "Token Expires At"
   },
   {
+   "fieldname": "doctype_to_sync",
+   "fieldtype": "Data",
+   "label": "Doctype To Sync"
+  },
+  {
+   "fieldname": "sync_direction",
+   "fieldtype": "Select",
+   "label": "Sync Direction",
+   "options": "Pull\nPush\nBoth"
+  },
+  {
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
    "options": "Active\nInactive"
   },
   {
-   "description": "L\u1ea7n \u0111\u1ed3ng b\u1ed9 g\u1ea7n nh\u1ea5t",
+   "description": "Lần đồng bộ gần nhất",
    "fieldname": "last_sync_at",
    "fieldtype": "Datetime",
    "label": "Last Sync At"
   },
   {
-   "description": "Kho\u1ea3ng th\u1eddi gian gi\u1eefa c\u00e1c l\u1ea7n \u0111\u1ed3ng b\u1ed9 (ph\u00fat)",
+   "description": "Khoảng thời gian giữa các lần đồng bộ (phút)",
    "fieldname": "sync_frequency_minutes",
    "fieldtype": "Int",
    "label": "Sync Frequency Minutes"
   },
   {
-   "description": "Ghi ch\u00fa, m\u00f4 t\u1ea3",
+   "description": "Thông tin lỗi gần nhất khi đồng bộ",
+   "fieldname": "last_error",
+   "fieldtype": "Small Text",
+   "label": "Last Error"
+  },
+  {
+   "description": "Ghi chú, mô tả",
    "fieldname": "notes",
    "fieldtype": "Small Text",
    "label": "Notes"
@@ -95,7 +134,7 @@
   },
   {
    "default": "1",
-   "description": "K\u00edch h\u1ecdat / Kh\u00f4ng k\u00edch ho\u1ea1t",
+   "description": "Kích hoạt / Không kích hoạt",
    "fieldname": "is_active",
    "fieldtype": "Check",
    "label": "Active"
