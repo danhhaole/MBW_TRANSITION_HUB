@@ -4,6 +4,27 @@
 			<template #left-header>
 				<Breadcrumbs :items="breadcrumbs" />
 			</template>
+			<template #right-header>
+				<Button variant="outline" theme="gray" @click="editCandidate">
+						<template #prefix>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								class="h-4 w-4"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+								/>
+							</svg>
+						</template>
+						{{ __('Edit Profile') }}
+					</Button>
+			</template>
 		</LayoutHeader>
 
 		<div class="container mx-auto px-6 py-6">
@@ -66,44 +87,8 @@
 				</div>
 
 				<div class="flex items-center space-x-3">
-					<Button variant="outline" theme="gray" @click="editCandidate">
-						<template #prefix>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								class="h-4 w-4"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-								/>
-							</svg>
-						</template>
-						{{ __('Edit Profile') }}
-					</Button>
-					<Button variant="outline" theme="red" @click="$router.push('/candidates')">
-						<template #prefix>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								class="h-4 w-4"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M9 5l7 7-7 7"
-								/>
-							</svg>
-						</template>
-						{{ __('Back to List') }}
-					</Button>
+
+				
 				</div>
 			</div>
 		</div>

@@ -4,12 +4,27 @@
 			<template #left-header>
 				<Breadcrumbs :items="breadcrumbs" />
 			</template>
+			<template #right-header>
+				<div class="flex items-center">
+						<Button variant="solid" theme="gray" @click="openCreateModal" :loading="loading"
+							class="px-6 py-4">
+							<template #prefix>
+								<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+									stroke="currentColor">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+										d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+								</svg>
+							</template>
+							{{ __('Add Candidate') }}
+						</Button>
+					</div>
+			</template>
 		</LayoutHeader>
 
 		<div class="candidate-management-page container mx-auto w-full min-h-screen pt-10 bg-gray-50">
 
 			<!-- Header Section -->
-			<div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+			<!-- <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
 				<div class="flex items-center justify-between">
 					<div>
 						<h1 class="text-3xl font-bold text-black mb-2 flex items-center">
@@ -24,21 +39,9 @@
 						</p>
 					</div>
 
-					<div class="flex items-center">
-						<Button variant="solid" theme="gray" @click="openCreateModal" :loading="loading"
-							class="px-6 py-4">
-							<template #prefix>
-								<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-									stroke="currentColor">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-										d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-								</svg>
-							</template>
-							{{ __('Add Candidate') }}
-						</Button>
-					</div>
+					
 				</div>
-			</div>
+			</div> -->
 
 			<!-- Filters and Controls -->
 			<div class="bg-white rounded-lg border border-gray-200 mb-6">

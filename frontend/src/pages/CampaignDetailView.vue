@@ -4,11 +4,32 @@
       <template #left-header>
         <Breadcrumbs :items="breadcrumbs" />
       </template>
+      <template #right-header>
+        <Button variant="outline" theme="gray" @click="editCampaign">
+            <template #prefix>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                />
+              </svg>
+            </template>
+            {{ __('Edit Campaign') }}
+          </Button>
+      </template>
     </LayoutHeader>
 
     <div class="container mx-auto px-6 py-6">
     <!-- Header with Campaign Info -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+    <!-- <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
       <div class="flex justify-between items-start">
         <div class="flex items-start">
           <Button
@@ -56,47 +77,10 @@
         </div>
         
         <div class="flex items-center space-x-3">
-          <Button variant="outline" theme="gray" @click="editCampaign">
-            <template #prefix>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                />
-              </svg>
-            </template>
-            {{ __('Edit Campaign') }}
-          </Button>
-          <Button variant="outline" theme="red" @click="$router.push('/campaigns')">
-            <template #prefix>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </template>
-            {{ __('Back to List') }}
-          </Button>
+        
         </div>
       </div>
-    </div>
+    </div> -->
 
     <!-- Campaign Details Card -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
@@ -938,12 +922,13 @@ const __ = (text) => text
 
 const route = useRoute()
 const router = useRouter()
+const campaign = reactive({})
 
 // Breadcrumbs
-const breadcrumbs =  [
+const breadcrumbs = computed(() => [
     { label: __('Campaigns'), route: { name: 'CampaignManagement' } },
-    { label: __('Detail'), route: { name: 'CampaignDetailView' } },
-]
+    { label: campaign.campaign_name || __('Loading...'), route: { name: 'CampaignDetailView' } },
+])
 
 
 // State
@@ -954,7 +939,7 @@ const loadingCandidates = ref(false)
 const loadingActions = ref(false)
 
 // Campaign data
-const campaign = reactive({})
+
 const targetSegment = ref(null)
 const campaignSteps = ref([])
 const candidateCampaigns = ref([])

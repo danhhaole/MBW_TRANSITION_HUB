@@ -4,15 +4,7 @@
       <template #left-header>
         <Breadcrumbs :items="breadcrumbs" />
       </template>
-    </LayoutHeader>
-
-    <div class="min-h-screen container mx-auto bg-slate-50 p-4 md:p-6">
-      <!-- Header -->
-      <div class="flex justify-between items-center mb-6">
-        <div>
-          <h1 class="text-3xl font-bold text-slate-800">{{ __('Email Logs') }}</h1>
-          <p class="text-slate-600 mt-1">{{ __('Monitor email delivery and status') }}</p>
-        </div>
+      <template #right-header>
         <Button
           variant="solid"
           @click="openFormModal()"
@@ -24,7 +16,12 @@
           </template>
           {{ __('Add New Log') }}
         </Button>
-      </div>
+      </template>
+    </LayoutHeader>
+
+    <div class="min-h-screen container mx-auto bg-slate-50 p-4 md:p-6">
+      <!-- Header -->
+
 
       <!-- Stats Cards -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">

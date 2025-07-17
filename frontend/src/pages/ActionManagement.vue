@@ -4,15 +4,7 @@
       <template #left-header>
         <Breadcrumbs :items="breadcrumbs" />
       </template>
-    </LayoutHeader>
-
-    <div class="min-h-screen container mx-auto bg-slate-50 p-4 md:p-6">
-      <!-- Header -->
-      <div class="flex justify-between items-center mb-6">
-        <div>
-          <h1 class="text-3xl font-bold text-slate-800">{{ __('Actions') }}</h1>
-          <p class="text-slate-600 mt-1">{{ __('Manage campaign actions and activities') }}</p>
-        </div>
+      <template #right-header>
         <Button
           variant="solid"
           @click="openFormModal()"
@@ -24,7 +16,11 @@
           </template>
           {{ __('Add New Action') }}
         </Button>
-      </div>
+      </template>
+    </LayoutHeader>
+
+    <div class="min-h-screen container mx-auto bg-slate-50 p-4 md:p-6">
+
 
       <!-- Stats Cards -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -89,7 +85,7 @@
             <FormControl
               type="text"
               v-model="search"
-              placeholder="{{ __('Search actions...') }}"
+              :placeholder="__('Search actions...')"
               class="flex-1"
               @update:model-value="debouncedSearch"
             >
@@ -139,28 +135,28 @@
                 type="select"
                 v-model="filters.status"
                 :options="statusOptions"
-                placeholder="{{ __('Status') }}"
+                :placeholder="__('Status')"
                 @change="applyFilters"
               />
               <FormControl
                 type="select"
                 v-model="filters.campaign_step"
                 :options="filterOptions.campaignSteps"
-                placeholder="{{ __('Campaign Step') }}"
+                :placeholder="__('Campaign Step')"
                 @change="applyFilters"
               />
               <FormControl
                 type="select"
                 v-model="filters.candidate_campaign_id"
                 :options="filterOptions.candidateCampaigns"
-                placeholder="{{ __('Candidate Campaign') }}"
+                :placeholder="__('Candidate Campaign')"
                 @change="applyFilters"
               />
               <FormControl
                 type="select"
                 v-model="filters.assignee_id"
                 :options="filterOptions.assignees"
-                placeholder="{{ __('Assignee') }}"
+                :placeholder="__('Assignee')"
                 @change="applyFilters"
               />
             </div>
@@ -395,14 +391,14 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormControl
                 type="select"
-                label="{{ __('Candidate Campaign') }}"
+                :label="__('Candidate Campaign')"
                 v-model="formData.candidate_campaign_id"
                 :options="filterOptions.candidateCampaigns"
                 :required="true"
               />
               <FormControl
                 type="select"
-                label="{{ __('Campaign Step') }}"
+                :label="__('Campaign Step')"
                 v-model="formData.campaign_step"
                 :options="filterOptions.campaignSteps"
                 :required="true"
@@ -412,14 +408,14 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormControl
                 type="select"
-                label="{{ __('Status') }}"
+                :label="__('Status')"
                 v-model="formData.status"
                 :options="statusOptions"
                 :required="true"
               />
               <FormControl
                 type="select"
-                label="{{ __('Assignee') }}"
+                :label="__('Assignee')"
                 v-model="formData.assignee_id"
                 :options="filterOptions.assignees"
               />
@@ -428,21 +424,21 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormControl
                 type="datetime-local"
-                label="{{ __('Scheduled At') }}"
+                :label="__('Scheduled At')"
                 v-model="formData.scheduled_at"
               />
               <FormControl
                 type="datetime-local"
-                label="{{ __('Executed At') }}"
+                :label="__('Executed At')"
                 v-model="formData.executed_at"
               />
             </div>
 
             <FormControl
               type="textarea"
-              label="{{ __('Result (JSON)') }}"
+              :label="__('Result (JSON)')"
               v-model="formData.result"
-              placeholder="{{ __('Enter result data as JSON or leave empty...') }}"
+              :placeholder="__('Enter result data as JSON or leave empty...')"
               :rows="4"
               help="{{ __('Leave empty or enter valid JSON. Example: {key: value}') }}"
             />
