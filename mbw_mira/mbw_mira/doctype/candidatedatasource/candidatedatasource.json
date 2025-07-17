@@ -8,6 +8,7 @@
  "field_order": [
   "source_name",
   "source_type",
+  "same_site",
   "api_base_url",
   "auth_method",
   "client_id",
@@ -42,10 +43,17 @@
    "description": "Chọn loại nguồn: ATS, JobBoard, SocialNetwork, Manual hoặc Other"
   },
   {
+   "fieldname": "same_site",
+   "fieldtype": "Check",
+   "label": "Same Site?",
+   "description": "Đánh dấu nếu ATS này chạy cùng site với hệ thống hiện tại (không cần nhập API Base URL)"
+  },
+  {
    "fieldname": "api_base_url",
    "fieldtype": "Small Text",
    "label": "API Base URL",
-   "description": "Địa chỉ API endpoint của nhà cung cấp (ví dụ: https://partner.topcv.vn)"
+   "depends_on": "eval:!(doc.same_site)",
+   "description": "Địa chỉ API endpoint của nhà cung cấp (bỏ trống nếu Same Site)"
   },
   {
    "fieldname": "auth_method",
