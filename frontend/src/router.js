@@ -25,6 +25,12 @@ import ActionManagement from './pages/ActionManagement.vue'
 // Email Log Management
 import EmailLogManagement from './pages/EmailLogManagement.vue'
 
+// Candidate Data Source Management
+import CandidateDataSourceManagement from './pages/CandidateDataSourceManagement.vue'
+
+// Candidate Data Source Management Direct
+import CandidateDataSourceManagementDirect from './pages/CandidateDataSourceManagementDirect.vue'
+
 const routes = [
 	{
 		path: '/',
@@ -112,6 +118,16 @@ const routes = [
 		path: '/email-logs',
 		component: EmailLogManagement,
 		name: 'EmailLogManagement',
+	},
+	{
+		path: '/data-sources',
+		component: CandidateDataSourceManagement,
+		name: 'CandidateDataSourceManagement',
+	},
+	{
+		path: '/data-sources-direct',
+		component: CandidateDataSourceManagementDirect,
+		name: 'CandidateDataSourceManagementDirect',
 	},
 ]
 

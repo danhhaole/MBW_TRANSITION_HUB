@@ -1,5 +1,5 @@
 // Universal service sử dụng repository chung
-import { candidateSegmentRepository, candidateCampaignRepository, actionRepository, interactionRepository, emailLogRepository, talentSegmentRepository, candidateRepository, campaignRepository, campaignStepRepository, userRepository } from '../repositories/universalRepository'
+import { candidateSegmentRepository, candidateCampaignRepository, actionRepository, interactionRepository, emailLogRepository, talentSegmentRepository, candidateRepository, campaignRepository, campaignStepRepository, userRepository, candidateDataSourceRepository } from '../repositories/universalRepository'
 
 class UniversalService {
   constructor(repository) {
@@ -151,5 +151,6 @@ export const candidateService = new UniversalService(candidateRepository)
 export const campaignService = new UniversalService(campaignRepository)
 export const campaignStepService = new UniversalService(campaignStepRepository)
 export const userService = new UniversalService(userRepository)
+export const candidateDataSourceService = new UniversalService(candidateDataSourceRepository)
 
 export default UniversalService

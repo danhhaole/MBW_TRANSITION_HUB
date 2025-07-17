@@ -6,7 +6,7 @@
     "
     :class="[
       isActive
-        ? 'bg-primary-50 text-primary-700 font-semibold'
+        ? 'bg-gray-100 text-gray-900 font-semibold'
         : 'hover:bg-gray-100 text-gray-600',
       'px-2 py-1.5'
     ]"

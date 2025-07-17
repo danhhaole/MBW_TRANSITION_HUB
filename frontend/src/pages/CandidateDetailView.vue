@@ -1535,10 +1535,10 @@ const route = useRoute()
 const router = useRouter()
 
 // Breadcrumbs
-const breadcrumbs =  [
+const breadcrumbs = computed(() => [
 		{ label: __('Candidates'), route: { name: 'CandidateManagement' } },
-		{ label: __('Detail'), route: { name: 'CandidateDetailView' } },
-	]
+		{ label: candidate.full_name || __('Loading...'), route: { name: 'CandidateDetailView' } },
+	])
 
 
 // State
