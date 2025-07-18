@@ -34,7 +34,7 @@ def import_candidates_from_file(campaign_id: str):
         logger.error(f"Failed to parse source_config JSON: {e}", exc_info=True)
         return
 
-    file_name = source_config.get("file_name")
+    file_name = campaign.source_file.split("/").pop()
     field_mapping = source_config.get("field_mapping", [])
 
     if not file_name or not field_mapping:
