@@ -52,15 +52,10 @@ class CandidateDataSourceDirectService {
     const { filters = {}, search_text, ...otherOptions } = options
     let enhancedFilters = { ...filters }
 
-    // Xử lý search text - tìm trong multiple fields
+    // Xử lý search text - chỉ search trong source_name (Frappe không support $or)
     if (search_text && search_text.trim()) {
       const searchTerm = search_text.trim()
-      enhancedFilters['$or'] = [
-        { 'source_name': ['like', `%${searchTerm}%`] },
-        { 'source_type': ['like', `%${searchTerm}%`] },
-        { 'api_base_url': ['like', `%${searchTerm}%`] },
-        { 'notes': ['like', `%${searchTerm}%`] }
-      ]
+      enhancedFilters['source_name'] = ['like', `%${searchTerm}%`]
     }
 
     return {
@@ -228,54 +223,54 @@ class CandidateDataSourceDirectService {
   validateDataSource(data, action = 'create') {
     const errors = []
 
-    // Required fields
-    if (!data.source_name?.trim()) {
-      errors.push('Source Name is required')
-    }
+    // // Required fields
+    // if (!data.source_name?.trim()) {
+    //   errors.push('Source Name is required')
+    // }
 
-    if (!data.source_type) {
-      errors.push('Source Type is required')
-    }
+    // if (!data.source_type) {
+    //   errors.push('Source Type is required')
+    // }
 
-    if (!data.auth_method) {
-      errors.push('Auth Method is required')
-    }
+    // if (!data.auth_method) {
+    //   errors.push('Auth Method is required')
+    // }
 
-    // Business rules validation
-    if (data.source_name && data.source_name.length > 200) {
-      errors.push('Source name cannot exceed 200 characters')
-    }
+    // // Business rules validation
+    // if (data.source_name && data.source_name.length > 200) {
+    //   errors.push('Source name cannot exceed 200 characters')
+    // }
 
-    // Auth method specific validation
-    if (data.auth_method === 'OAuth2') {
-      if (!data.client_id?.trim()) {
-        errors.push('Client ID is required for OAuth2')
-      }
-      if (!data.client_secret?.trim()) {
-        errors.push('Client Secret is required for OAuth2')
-      }
-    }
+    // // Auth method specific validation
+    // if (data.auth_method === 'OAuth2') {
+    //   if (!data.client_id?.trim()) {
+    //     errors.push('Client ID is required for OAuth2')
+    //   }
+    //   if (!data.client_secret?.trim()) {
+    //     errors.push('Client Secret is required for OAuth2')
+    //   }
+    // }
 
-    if (data.auth_method === 'API Key') {
-      if (!data.api_key?.trim()) {
-        errors.push('API Key is required for API Key authentication')
-      }
-    }
+    // if (data.auth_method === 'API Key') {
+    //   if (!data.api_key?.trim()) {
+    //     errors.push('API Key is required for API Key authentication')
+    //   }
+    // }
 
-    // URL validation
-    if (data.api_base_url && data.api_base_url.trim()) {
-      try {
-        new URL(data.api_base_url)
-      } catch {
-        errors.push('Invalid API Base URL format')
-      }
-    }
+    // // URL validation
+    // if (data.api_base_url && data.api_base_url.trim()) {
+    //   try {
+    //     new URL(data.api_base_url)
+    //   } catch {
+    //     errors.push('Invalid API Base URL format')
+    //   }
+    // }
 
-    // Sync frequency validation
-    if (data.sync_frequency_minutes && 
-        (isNaN(data.sync_frequency_minutes) || data.sync_frequency_minutes < 1)) {
-      errors.push('Sync frequency must be a positive number')
-    }
+    // // Sync frequency validation
+    // if (data.sync_frequency_minutes && 
+    //     (isNaN(data.sync_frequency_minutes) || data.sync_frequency_minutes < 1)) {
+    //   errors.push('Sync frequency must be a positive number')
+    // }
 
     return errors
   }

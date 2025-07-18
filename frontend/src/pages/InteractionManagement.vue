@@ -462,8 +462,7 @@ import { interactionService, candidateService, actionService } from '../services
 import { debounce } from 'lodash'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 
-// Translation helper function
-const __ = (text) => text
+
 
 // Breadcrumbs
 const breadcrumbs = [

@@ -81,7 +81,7 @@
           field.fieldtype == 'Link' ? field.options : data[field.options]
         "
         :filters="field.filters"
-        @change="(v) => fieldChange(v, field)"
+        @change="(v) => (data[field.fieldname] = v)"
         :placeholder="getPlaceholder(field)"
         :onCreate="field.create"
       />
@@ -101,7 +101,6 @@
       v-else-if="field.fieldtype === 'Table MultiSelect'"
       v-model="data[field.fieldname]"
       :doctype="field.options"
-      @change="(v) => fieldChange(v, field)"
     />
 
     <Link
@@ -110,7 +109,7 @@
       :value="data[field.fieldname] && getUser(data[field.fieldname]).full_name"
       :doctype="field.options"
       :filters="field.filters"
-      @change="(v) => fieldChange(v, field)"
+      @change="(v) => (data[field.fieldname] = v)"
       :placeholder="getPlaceholder(field)"
       :hideMe="true"
     >
@@ -135,36 +134,32 @@
     </Link>
     <DateTimePicker
       v-else-if="field.fieldtype === 'Datetime'"
-      :value="data[field.fieldname]"
+      v-model="data[field.fieldname]"
       :formatter="(date) => getFormat(date, '', true, true)"
       :placeholder="getPlaceholder(field)"
       input-class="border-none"
-      @change="(v) => fieldChange(v, field)"
     />
     <DatePicker
       v-else-if="field.fieldtype === 'Date'"
-      :value="data[field.fieldname]"
+      v-model="data[field.fieldname]"
       :formatter="(date) => getFormat(date, '', true)"
       :placeholder="getPlaceholder(field)"
       input-class="border-none"
-      @change="(v) => fieldChange(v, field)"
     />
     <FormControl
       v-else-if="
         ['Small Text', 'Text', 'Long Text', 'Code'].includes(field.fieldtype)
       "
       type="textarea"
-      :value="data[field.fieldname]"
       :placeholder="getPlaceholder(field)"
       :description="field.description"
-      @change="fieldChange($event.target.value, field)"
+      v-model="data[field.fieldname]"
     />
     <Password
       v-else-if="field.fieldtype === 'Password'"
-      :value="data[field.fieldname]"
       :placeholder="getPlaceholder(field)"
       :description="field.description"
-      @change="fieldChange($event.target.value, field)"
+      v-model="data[field.fieldname]"
     />
     <FormattedInput
       v-else-if="field.fieldtype === 'Int'"
@@ -206,10 +201,9 @@
       v-else
       type="text"
       :placeholder="getPlaceholder(field)"
-      :value="getDataValue(data[field.fieldname], field)"
+      v-model="data[field.fieldname]"
       :disabled="Boolean(field.read_only)"
       :description="field.description"
-      @change="fieldChange($event.target.value, field)"
     />
   </div>
 </template>
@@ -234,6 +228,8 @@ import { computed, provide, inject } from 'vue'
 const props = defineProps({
   field: Object,
 })
+
+console.log('field', props.field)
 
 const data = inject('data')
 const doctype = inject('doctype')

@@ -159,8 +159,7 @@ import { ToastContainer } from '@/components/shared'
 import { Button, Breadcrumbs } from 'frappe-ui'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 
-// Translation helper function
-const __ = (text) => text
+
 
 // Router
 const router = useRouter()

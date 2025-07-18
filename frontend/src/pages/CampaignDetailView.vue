@@ -917,8 +917,7 @@ import CampaignForm from '@/components/campaign/CampaignForm.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import moment from 'moment'
 
-// Translation helper function
-const __ = (text) => text
+
 
 const route = useRoute()
 const router = useRouter()

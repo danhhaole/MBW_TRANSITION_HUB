@@ -22,7 +22,7 @@
 									/>
 								</svg>
 							</template>
-							{{ __('Edit Segment') }}
+							{{ __('Edit Pool') }}
 						</Button>
 						<Button variant="outline" theme="red" @click="$router.push('/talent-segments')">
 							<template #prefix>
@@ -850,7 +850,7 @@
 					<div class="mb-5 flex items-center justify-between">
 						<div>
 							<h3 class="text-2xl font-semibold leading-6 text-gray-900">
-								{{ __('Edit Talent Pool') }}
+								{{ __('Edit Pool') }}
 							</h3>
 						</div>
 						<div class="flex items-center gap-1">
@@ -894,8 +894,7 @@ import CampaignWizard from '@/components/campaign/CampaignWizard.vue'
 import TalentSegmentForm from '@/components/talent-segment/TalentSegmentForm.vue'
 import moment from 'moment'
 
-// Translation helper function
-const __ = (text) => text
+
 
 const { getUser } = usersStore()
 const route = useRoute()
@@ -905,7 +904,7 @@ const router = useRouter()
 const breadcrumbs = computed(() => {
 	console.log('Breadcrumbs computed, route params:', route.params)
 	return [
-		{ label: __('Talent Pools'), route: { name: 'TalentSegments' } },
+		{ label: __('Applicant Pools'), route: { name: 'TalentSegments' } },
 		{ label: talentSegment.title || __('Loading...'), route: { name: 'TalentSegmentDetail' } },
 	]
 })
@@ -975,7 +974,7 @@ const selectedCandidatePreview = computed(() => {
 
 // Dialog options
 const editSegmentDialogOptions = computed(() => ({
-	title: __('Edit Talent Pool'),
+	title: __('Edit Applicant Pool'),
 	size: '4xl',
 }))
 

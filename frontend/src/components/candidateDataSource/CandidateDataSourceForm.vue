@@ -197,8 +197,7 @@ import { Dialog } from 'frappe-ui'
 import FieldLayout from '@/components/FieldLayout/FieldLayout.vue'
 import { candidateDataSourceService } from '@/services/candidateDataSourceService.js'
 
-// Translation helper function
-const __ = (text) => text
+
 
 // Props
 const props = defineProps({

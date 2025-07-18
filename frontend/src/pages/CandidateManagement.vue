@@ -15,7 +15,7 @@
 										d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
 								</svg>
 							</template>
-							{{ __('Add Candidate') }}
+							{{ __('Add Talent Pool') }}
 						</Button>
 					</div>
 			</template>
@@ -49,7 +49,7 @@
 					<div class="grid grid-cols-1 md:grid-cols-8 gap-4 items-center">
 						<!-- Search -->
 						<div class="md:col-span-2">
-							<FormControl v-model="filters.search" type="text" :placeholder="__('Search candidates...')"
+							<FormControl v-model="filters.search" type="text" :placeholder="__('Search pools...')"
 								:prefix-icon="'search'" @input="debouncedSearch" />
 						</div>
 
@@ -130,27 +130,27 @@
 								<tr>
 									<th
 										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-										Ứng viên
+										{{ __('Talent Pool') }}
 									</th>
 									<th
 										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-										Thông tin liên hệ
+										{{ __('Contact Info') }}
 									</th>
 									<th
 										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-										Kỹ năng
+										{{ __('Skills') }}
 									</th>
 									<th
 										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-										Trạng thái
+										{{ __('Status') }}
 									</th>
 									<th
 										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-										Điểm tương tác
+										{{ __('Engagement Score') }}
 									</th>
 									<th
 										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-										Thao tác
+										{{ __('Actions') }}
 									</th>
 								</tr>
 							</thead>
@@ -319,24 +319,24 @@
 														d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
 												</svg>
 												<h3 class="text-lg font-medium text-gray-900 mb-2">
-													{{ hasFilters ? 'Không tìm thấy ứng viên' : 'Chưa có ứng viên nào'
+													{{ hasFilters ? __('No talent pool found') : __('No talent pool found')
 													}}
 												</h3>
 												<p class="text-sm text-gray-500 max-w-sm mb-6">
 													{{ hasFilters
-														? 'Thử thay đổi bộ lọc để tìm thấy ứng viên phù hợp.'
-														: 'Bắt đầu bằng cách thêm ứng viên đầu tiên.'
+														? __('Try changing the filter to find a suitable talent pool.')
+														: __('Start by adding the first talent pool.')
 													}}
 												</p>
 												<button v-if="!hasFilters"
-													class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
+													class="inline-flex items-center px-4 py-2 bg-black text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
 													@click="openCreateModal">
 													<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor"
 														viewBox="0 0 24 24">
 														<path stroke-linecap="round" stroke-linejoin="round"
 															stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
 													</svg>
-													Thêm ứng viên
+													{{ __('Add Talent Pool') }}
 												</button>
 												<button v-else
 													class="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50 transition-colors"
@@ -484,8 +484,7 @@ import { CandidateViewModal, CandidateEditModal } from '@/components/candidate'
 import { Avatar } from 'frappe-ui'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 
-// Translation helper function
-const __ = (text) => text
+
 
 import {
 	calculateEngagementScore,
@@ -494,7 +493,7 @@ import {
 	processSkills
 } from '@/services/candidateService'
 
-const breadcrumbs = [{ label: __('Candidates'), route: { name: 'CandidateManagement' } }]
+const breadcrumbs = [{ label: __('Talent Pools'), route: { name: 'CandidateManagement' } }]
 
 // Router
 const router = useRouter()

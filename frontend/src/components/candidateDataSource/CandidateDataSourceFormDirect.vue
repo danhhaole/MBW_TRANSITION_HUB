@@ -2,27 +2,36 @@
   <Dialog
     v-model="dialog"
     :options="{
-      title: isEdit ? 'Chỉnh sửa nguồn dữ liệu' : 'Thêm nguồn dữ liệu mới',
+      title: isEdit ? __('Edit Data Source') : __('Add New Data Source'),
       size: 'xl'
     }"
   >
     <template #body>
       <div class="p-6">
         <!-- Header -->
-        <div class="flex items-center space-x-3 mb-6">
-          <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2m0 0V9a2 2 0 012-2h8a2 2 0 012 2v4M6 13h12"></path>
-            </svg>
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+              <FeatherIcon name="database" class="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900">
+                {{ isEdit ? __('Edit Data Source') : __('Add New Data Source') }}
+              </h3>
+              <p class="text-sm text-gray-500">
+                {{ isEdit ? __('Update data source information') : __('Create a new data source for the system') }}
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 class="text-lg font-semibold text-gray-900">
-              {{ isEdit ? 'Chỉnh sửa nguồn dữ liệu' : 'Thêm nguồn dữ liệu mới' }}
-            </h3>
-            <p class="text-sm text-gray-500">
-              {{ isEdit ? 'Cập nhật thông tin nguồn dữ liệu' : 'Tạo nguồn dữ liệu mới cho hệ thống' }}
-            </p>
-          </div>
+          <!-- Close Button -->
+          <Button
+            variant="ghost"
+            size="sm"
+            @click="handleCancel"
+            class="text-gray-400 hover:text-gray-600"
+          >
+            <FeatherIcon name="x" class="h-5 w-5" />
+          </Button>
         </div>
 
         <!-- Loading Form Fields -->
@@ -32,7 +41,7 @@
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <span>Đang tải form...</span>
+            <span>{{ __('Loading form...') }}</span>
           </div>
         </div>
 
@@ -47,7 +56,7 @@
           
           <!-- Additional computed fields display -->
           <div v-if="isEdit && formData.display_status" class="mt-6 p-4 bg-gray-50 rounded-lg">
-            <h4 class="text-sm font-medium text-gray-700 mb-3">Trạng thái kết nối</h4>
+            <h4 class="text-sm font-medium text-gray-700 mb-3">{{ __('Connection Status') }}</h4>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div class="flex items-center space-x-2">
                 <div class="w-3 h-3 rounded-full" :class="{
@@ -74,17 +83,17 @@
         <div v-else class="space-y-6">
           <!-- Thông tin cơ bản -->
           <div class="bg-white border border-gray-200 rounded-lg p-4">
-            <h4 class="text-md font-medium text-gray-800 mb-4">Thông tin cơ bản</h4>
+            <h4 class="text-md font-medium text-gray-800 mb-4">{{ __('Basic Information') }}</h4>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <!-- Source Name -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Tên nguồn <span class="text-red-500">*</span>
+                  {{ __('Source Name') }} <span class="text-red-500">*</span>
                 </label>
                 <input
                   v-model="formData.source_name"
                   type="text"
-                  placeholder="Nhập tên nguồn dữ liệu"
+                  :placeholder="__('Enter data source name')"
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 />
@@ -93,25 +102,25 @@
               <!-- Source Type -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Loại nguồn <span class="text-red-500">*</span>
+                  {{ __('Source Type') }} <span class="text-red-500">*</span>
                 </label>
                 <select
                   v-model="formData.source_type"
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 >
-                  <option value="">-- Chọn loại nguồn --</option>
-                  <option value="ATS">ATS</option>
-                  <option value="JobBoard">Job Board</option>
-                  <option value="SocialNetwork">Social Network</option>
-                  <option value="Manual">Manual</option>
-                  <option value="Other">Other</option>
+                  <option value="">{{ __('-- Select source type --') }}</option>
+                  <option value="ATS">{{ __('ATS') }}</option>
+                  <option value="JobBoard">{{ __('Job Board') }}</option>
+                  <option value="SocialNetwork">{{ __('Social Network') }}</option>
+                  <option value="Manual">{{ __('Manual') }}</option>
+                  <option value="Other">{{ __('Other') }}</option>
                 </select>
               </div>
 
               <!-- API Base URL -->
               <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-2">API Base URL</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('API Base URL') }}</label>
                 <input
                   v-model="formData.api_base_url"
                   type="url"
@@ -124,22 +133,22 @@
 
           <!-- Authentication -->
           <div class="bg-white border border-gray-200 rounded-lg p-4">
-            <h4 class="text-md font-medium text-gray-800 mb-4">Xác thực</h4>
+            <h4 class="text-md font-medium text-gray-800 mb-4">{{ __('Authentication') }}</h4>
             <div class="space-y-4">
               <!-- Auth Method -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Phương thức xác thực <span class="text-red-500">*</span>
+                  {{ __('Authentication Method') }} <span class="text-red-500">*</span>
                 </label>
                 <select
                   v-model="formData.auth_method"
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 >
-                  <option value="">-- Chọn phương thức --</option>
-                  <option value="API Key">API Key</option>
-                  <option value="OAuth2">OAuth2</option>
-                  <option value="Basic">Basic</option>
+                  <option value="">{{ __('-- Select method --') }}</option>
+                  <option value="API Key">{{ __('API Key') }}</option>
+                  <option value="OAuth2">{{ __('OAuth2') }}</option>
+                  <option value="Basic">{{ __('Basic') }}</option>
                 </select>
               </div>
 
@@ -147,7 +156,7 @@
               <div v-if="formData.auth_method === 'OAuth2'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Client ID <span class="text-red-500">*</span>
+                    {{ __('Client ID') }} <span class="text-red-500">*</span>
                   </label>
                   <input
                     v-model="formData.client_id"
@@ -157,7 +166,7 @@
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Client Secret <span class="text-red-500">*</span>
+                    {{ __('Client Secret') }} <span class="text-red-500">*</span>
                   </label>
                   <input
                     v-model="formData.client_secret"
@@ -171,7 +180,7 @@
               <div v-if="formData.auth_method === 'API Key'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-2">
-                    API Key <span class="text-red-500">*</span>
+                    {{ __('API Key') }} <span class="text-red-500">*</span>
                   </label>
                   <input
                     v-model="formData.api_key"
@@ -180,7 +189,7 @@
                   />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">API Secret</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('API Secret') }}</label>
                   <input
                     v-model="formData.api_secret"
                     type="password"
@@ -193,23 +202,23 @@
 
           <!-- Configuration -->
           <div class="bg-white border border-gray-200 rounded-lg p-4">
-            <h4 class="text-md font-medium text-gray-800 mb-4">Cấu hình</h4>
+            <h4 class="text-md font-medium text-gray-800 mb-4">{{ __('Configuration') }}</h4>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <!-- Status -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Trạng thái</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('Status') }}</label>
                 <select
                   v-model="formData.status"
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="Active">Active</option>
-                  <option value="Inactive">Inactive</option>
+                  <option value="Active">{{ __('Active') }}</option>
+                  <option value="Inactive">{{ __('Inactive') }}</option>
                 </select>
               </div>
 
               <!-- Sync Frequency -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Tần suất đồng bộ (phút)</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('Sync Frequency (minutes)') }}</label>
                 <input
                   v-model.number="formData.sync_frequency_minutes"
                   type="number"
@@ -221,11 +230,11 @@
 
               <!-- Notes -->
               <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Ghi chú</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('Notes') }}</label>
                 <textarea
                   v-model="formData.notes"
                   rows="3"
-                  placeholder="Ghi chú về nguồn dữ liệu..."
+                  :placeholder="__('Notes about the data source...')"
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                 ></textarea>
               </div>
@@ -237,7 +246,7 @@
                   type="checkbox"
                   class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
                 />
-                <label class="text-sm font-medium text-gray-700">Kích hoạt nguồn dữ liệu</label>
+                <label class="text-sm font-medium text-gray-700">{{ __('Activate data source') }}</label>
               </div>
             </div>
           </div>
@@ -262,7 +271,7 @@
               <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
             </svg>
             <div class="ml-3">
-              <p class="text-sm text-green-800">{{ __('Thao tác thành công!') }}</p>
+              <p class="text-sm text-green-800">{{ __('Operation successful!') }}</p>
             </div>
           </div>
         </div>
@@ -271,38 +280,35 @@
         <div class="flex justify-between items-center pt-6 border-t border-gray-200 mt-6">
           <div>
             <!-- Test Connection Button (chỉ hiện khi edit) -->
-            <button
+            <Button
               v-if="isEdit"
-              type="button"
+              variant="outline"
+              theme="blue"
               @click="handleTestConnection"
-              :disabled="testing"
-              class="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+              :loading="testing"
             >
-              <span v-if="testing" class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-700"></span>
-              <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-              <span>{{ testing ? 'Đang kiểm tra...' : 'Kiểm tra kết nối' }}</span>
-            </button>
+              <template #prefix>
+                <FeatherIcon name="wifi" class="h-4 w-4" />
+              </template>
+              {{ testing ? __('Testing...') : __('Test Connection') }}
+            </Button>
           </div>
 
           <div class="flex space-x-3">
-            <button
-              type="button"
+            <Button
+              variant="outline"
               @click="handleCancel"
-              class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
-              {{ __('Hủy') }}
-            </button>
-            <button
-              type="button"
+              {{ __('Cancel') }}
+            </Button>
+            <Button
+              variant="solid"
+              theme="gray"
               @click="handleSubmit"
-              :disabled="loading"
-              class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+              :loading="loading"
             >
-              <span v-if="loading" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
-              <span>{{ isEdit ? __('Cập nhật') : __('Tạo mới') }}</span>
-            </button>
+              {{ isEdit ? __('Update') : __('Create') }}
+            </Button>
           </div>
         </div>
       </div>
@@ -312,12 +318,12 @@
 
 <script setup>
 import { ref, computed, watch, reactive } from 'vue'
-import { Dialog } from 'frappe-ui'
+import { Dialog, Button, FeatherIcon } from 'frappe-ui'
 import FieldLayout from '@/components/FieldLayout/FieldLayout.vue'
 import { candidateDataSourceDirectService } from '@/services/candidateDataSourceDirectService.js'
+import { useDocument } from '@/data/document'
 
-// Translation helper function
-const __ = (text) => text
+
 
 // Props
 const props = defineProps({
@@ -372,6 +378,8 @@ const formData = reactive({
   auth_method_display: ''
 })
 
+const { document: data, triggerOnBeforeCreate } = useDocument('CandidateDataSource')
+
 // Computed
 const dialog = computed({
   get: () => props.modelValue,
@@ -407,7 +415,8 @@ const resetForm = () => {
     connection_status: '',
     last_sync_formatted: '',
     type_display: '',
-    auth_method_display: ''
+    auth_method_display: '',
+    same_site: 0
   })
 }
 
@@ -449,47 +458,47 @@ const validateForm = () => {
   const errors = []
 
   if (!formData.source_name?.trim()) {
-    errors.push('Tên nguồn là bắt buộc')
+    errors.push(__('Source name is required'))
   }
 
   if (!formData.source_type) {
-    errors.push('Loại nguồn là bắt buộc')
+    errors.push(__('Source type is required'))
   }
 
   if (!formData.auth_method) {
-    errors.push('Phương thức xác thực là bắt buộc')
+    errors.push(__('Authentication method is required'))
   }
 
   if (formData.auth_method === 'OAuth2') {
     if (!formData.client_id?.trim()) {
-      errors.push('Client ID là bắt buộc cho OAuth2')
+      errors.push(__('Client ID is required for OAuth2'))
     }
     if (!formData.client_secret?.trim()) {
-      errors.push('Client Secret là bắt buộc cho OAuth2')
+      errors.push(__('Client Secret is required for OAuth2'))
     }
   }
 
   if (formData.auth_method === 'API Key' && !formData.api_key?.trim()) {
-    errors.push('API Key là bắt buộc cho phương thức API Key')
+    errors.push(__('API Key is required for API Key method'))
   }
 
   if (formData.api_base_url && formData.api_base_url.trim()) {
     try {
       new URL(formData.api_base_url)
     } catch {
-      errors.push('Định dạng API Base URL không hợp lệ')
+      errors.push(__('Invalid API Base URL format'))
     }
   }
-
-  return errors
 }
+
+
 
 const handleSubmit = async () => {
   error.value = null
   success.value = false
 
   const validationErrors = validateForm()
-  if (validationErrors.length > 0) {
+  if (validationErrors?.length > 0) {
     error.value = validationErrors.join(', ')
     return
   }
@@ -516,10 +525,10 @@ const handleSubmit = async () => {
         dialog.value = false
       }, 1000)
     } else {
-      error.value = result.error || 'Có lỗi xảy ra'
+      error.value = result.error || __('An error occurred')
     }
   } catch (err) {
-    error.value = 'Có lỗi xảy ra: ' + err.message
+    error.value = __('An error occurred: {0}', [err.message])
   } finally {
     loading.value = false
   }
@@ -538,10 +547,10 @@ const handleTestConnection = async () => {
       success.value = true
       setTimeout(() => { success.value = false }, 3000)
     } else {
-      error.value = 'Test connection failed: ' + result.error
+      error.value = __('Test connection failed: {0}', [result.error])
     }
   } catch (err) {
-    error.value = 'Test connection error: ' + err.message
+    error.value = __('Test connection error: {0}', [err.message])
   } finally {
     testing.value = false
   }

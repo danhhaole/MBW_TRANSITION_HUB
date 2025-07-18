@@ -23,8 +23,8 @@
             <div v-if="!hide"
               class="flex cursor-pointer gap-1.5 px-1 text-base font-medium text-ink-gray-5 transition-all duration-300 ease-in-out"
               :class="isSidebarCollapsed
-                  ? 'ml-0 h-0 overflow-hidden opacity-0'
-                  : 'ml-2 mt-4 h-7 w-auto opacity-100'
+                ? 'ml-0 h-0 overflow-hidden opacity-0'
+                : 'ml-2 mt-4 h-7 w-auto opacity-100'
                 " @click="toggle()">
               <FeatherIcon name="chevron-right" class="h-4 text-ink-gray-9 transition-all duration-300 ease-in-out"
                 :class="{ 'rotate-90': opened }" />
@@ -49,11 +49,10 @@
                   ]">
                   <!-- Icon của menu chính -->
                   <div class="flex-shrink-0">
-                    <component :is="link.icon" class="h-4 w-4"
-                      :class="[
-                        isSidebarCollapsed ? '' : 'mr-3',
-                        hasActiveSubmenuItem(link.submenu) ? 'text-gray-800' : 'text-ink-gray-7'
-                      ]" />
+                    <component :is="link.icon" class="h-4 w-4" :class="[
+                      isSidebarCollapsed ? '' : 'mr-3',
+                      hasActiveSubmenuItem(link.submenu) ? 'text-gray-800' : 'text-ink-gray-7'
+                    ]" />
                   </div>
 
                   <!-- Label và chevron (chỉ hiện khi sidebar mở) -->
@@ -91,8 +90,8 @@
                   <div class="py-1">
                     <router-link v-for="sublink in link.submenu" :key="sublink.label" :to="sublink.to"
                       class="block px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-50 transition-colors duration-200"
-                      :class="{ 
-                        'bg-gray-100 text-gray-900 font-semibold': $route.name === sublink.to 
+                      :class="{
+                        'bg-gray-100 text-gray-900 font-semibold': $route.name === sublink.to
                       }">
                       {{ __(sublink.label) }}
                     </router-link>
@@ -197,8 +196,19 @@ const links = [
     icon: LeadsIcon,
     to: 'Dashboard',
   },
+
   {
-    label: "TalentSegment",
+    label: "Campaigns",
+    icon: OrganizationsIcon,
+    to: 'CampaignManagement',
+  },
+  {
+    label: "Talent Pools",
+    icon: ContactsIcon,
+    to: 'CandidateManagement',
+  },
+  {
+    label: "Applicant Pools",
     icon: DealsIcon,
     to: 'TalentSegments',
   },
@@ -207,45 +217,51 @@ const links = [
     icon: ContactsIcon,
     to: 'CandidateManagement',
   },
-  {
-    label: "Campaigns",
-    icon: OrganizationsIcon,
-    to: 'CampaignManagement',
-  },
   // {
   //   label: "Report",
   //   icon: NoteIcon,
   //   to: 'Report',
   // },
 
-  {
-    label: "Interactions",
-    icon: PhoneIcon,
-    to: 'InteractionManagement',
 
-  },
+
+
+  // {
+  //   label: "Data Sources",
+  //   icon: PinIcon,
+  //   to: 'CandidateDataSourceManagement',
+  //   submenu: [
+  //     {
+  //       label: "Universal Pattern",
+  //       to: 'CandidateDataSourceManagement'
+  //     },
+  //     {
+  //       label: "Direct Pattern",
+  //       to: 'CandidateDataSourceManagementDirect'
+  //     },
+  //   ]
+  // },
+
   {
-    label: "Actions",
-    icon: PinIcon,
-    to: 'ActionManagement',
-  },
-  {
-    label: "Email Logs",
-    icon: Email2Icon,
-    to: 'EmailLogManagement',
-  },
-  {
-    label: "Data Sources",
-    icon: PinIcon,
-    to: 'CandidateDataSourceManagement',
+    label: "Report",
+    icon: NoteIcon,
+    to: 'Report',
     submenu: [
       {
-        label: "Universal Pattern",
-        to: 'CandidateDataSourceManagement'
+        label: "Interactions",
+        icon: PhoneIcon,
+        to: 'InteractionManagement',
+
       },
       {
-        label: "Direct Pattern",
-        to: 'CandidateDataSourceManagementDirect'
+        label: "Actions",
+        icon: PinIcon,
+        to: 'ActionManagement',
+      },
+      {
+        label: "Email Logs",
+        icon: Email2Icon,
+        to: 'EmailLogManagement',
       },
     ]
   },
@@ -255,9 +271,10 @@ const links = [
     to: 'Settings',
     submenu: [
       {
-        label: "All Campaigns",
-        to: 'CampaignManagement'
+        label: "Data Sources ",
+        to: 'CandidateDataSourceManagementDirect'
       },
+
     ]
   },
 
@@ -370,24 +387,31 @@ watch(() => route.name, () => {
 
 /* Submenu item styling - không override active state */
 .submenu-item {
-  font-size: 0.875rem; /* text-sm */
+  font-size: 0.875rem;
+  /* text-sm */
 }
 
 /* Override default colors cho submenu khi KHÔNG active */
 .submenu-item:not(.bg-gray-100) {
-  color: #4b5563; /* text-gray-600 */
+  color: #4b5563;
+  /* text-gray-600 */
 }
 
 .submenu-item:not(.bg-gray-100):hover {
-  background-color: #f9fafb; /* bg-gray-50 */
-  color: #1f2937; /* text-gray-800 */
+  background-color: #f9fafb;
+  /* bg-gray-50 */
+  color: #1f2937;
+  /* text-gray-800 */
 }
 
 /* Đảm bảo active submenu item có styling đúng */
 .submenu-item.bg-gray-100 {
-  background-color: #f3f4f6; /* bg-gray-100 */
-  color: #111827; /* text-gray-900 */
-  font-weight: 600; /* font-semibold */
+  background-color: #f3f4f6;
+  /* bg-gray-100 */
+  color: #111827;
+  /* text-gray-900 */
+  font-weight: 600;
+  /* font-semibold */
 }
 
 /* Border indicator cho parent menu có submenu active */
@@ -397,10 +421,12 @@ watch(() => route.name, () => {
 
 /* Hover state cho parent menu */
 .parent-menu-item:hover {
-  background-color: #f9fafb; /* bg-gray-50 */
+  background-color: #f9fafb;
+  /* bg-gray-50 */
 }
 
 .parent-menu-item.has-active-submenu {
-  background-color: #f3f4f6; /* bg-gray-100 */
+  background-color: #f3f4f6;
+  /* bg-gray-100 */
 }
 </style>

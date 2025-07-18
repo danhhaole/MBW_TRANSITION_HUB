@@ -134,10 +134,11 @@ class CandidateDataSourceDirectRepository {
    */
   async update(name, data) {
     try {
+      // Sử dụng set_value để cập nhật trực tiếp mà không cần get trước
       const response = await call('frappe.client.set_value', {
         doctype: this.doctype,
         name: name,
-        values: data
+        fieldname: data
       })
 
       return {
