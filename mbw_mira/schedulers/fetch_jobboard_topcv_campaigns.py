@@ -10,6 +10,7 @@ def run():
         "Campaign",
         filters={
             "is_active": 1,
+            "source_type":"DataSource",
             "status": "ACTIVE",
             "start_date": ("<=", today),
             "end_date": (">=", today)

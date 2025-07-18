@@ -11,6 +11,7 @@ def run():
         filters={
             "is_active": 1,
             "status": "ACTIVE",
+            "source_type":"DataSource",
             "start_date": ("<=", today),
             "end_date": (">=", today)
         },

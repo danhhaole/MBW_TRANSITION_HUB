@@ -3,50 +3,25 @@ from datetime import date
 
 def run():
     """
-    Quét các chiến dịch ACTIVE có nguồn từ Excel/CSV và enqueue worker import.
+    Scan ACTIVE campaigns with source = File and enqueue data fetching.
     """
     today = date.today()
     campaigns = frappe.get_all(
         "Campaign",
         filters={
             "is_active": 1,
+            "source_type":"File",
             "status": "ACTIVE",
             "start_date": ("<=", today),
             "end_date": (">=", today)
         },
-        fields=["name", "campaign_name"]
+        fields=["name", "campaign_name", "source"]
     )
-
-    logger = frappe.logger("campaign_enqueuer")
-    count = 0
-
     for c in campaigns:
-        # Tìm source config kèm file
-        source_config = frappe.db.get_value(
-            "Source Config",
-            {"campaign": c.name},
-            ["file_name"],
-            as_dict=True
-        )
-
-        if not source_config:
-            logger.warning(f"Campaign '{c.campaign_name}' has no Source Config.")
-            continue
-
-        file_name = source_config.file_name
-        if not file_name or not file_name.endswith((".csv", ".xls", ".xlsx")):
-            logger.warning(f"Campaign '{c.campaign_name}' file not supported: {file_name}")
-            continue
-
-        # Enqueue xử lý file
         frappe.enqueue(
             "mbw_mira.workers.import_excel_for_talent.import_candidates_from_file",
-            campaign_id=c.name,
+            campaign_name=c.name,
             job_name=c.name,
-            queue="default"
+            queue="short"
         )
-
-        logger.info(f"Enqueued import from Excel for campaign: {c.campaign_name}")
-        count += 1
-
-    logger.info(f"🎯 Total campaigns enqueued: {count}")
+        frappe.logger().info(f"Enqueued MBW ATS fetch for campaign: {c.campaign_name}")

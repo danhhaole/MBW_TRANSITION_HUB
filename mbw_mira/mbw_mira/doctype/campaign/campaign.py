@@ -13,56 +13,6 @@ class Campaign(Document):
 		"""Hook kiểm tra khi có 1 campain
 		"""
 
-def process_campaign_source_from_entry():
-	"""Chạy quét campaign từ nguồn nhập
-		- Nguồn có thể là empty hoặc Manual
-		- Đối với nguồn này thực hiện lấy dữ liệu trong Candidate tìm tiêu chí từ segment hoặc mô tả trong campaign lấy ra danh sách phù hợp
-		- Thực hiện xử lý trong queu
-	"""
-	campaigns = _get_active_campaigns("")
-	#Gọi hàm xử lý tìm ứng viên theo tiêu chí
-	if campaigns:
-		for campaign in campaigns:
-			frappe.enqueue(
-					run_candidate_by_criteria,
-					queue="default",
-					timeout=300,
-					source="",
-					campaign=campaign,
-					job_name = f"run_candidate_by_criteria_{campaign.name}"
-				)
-		return True
-	else:
-		return False
-
-def process_campaign_sync_source_from_ats():
-	"""Chạy quét campaign từ nguồn ats lưu vào candidate
-	"""
-	config = get_datasource("ATS")
-	if config:
-		campaigns = _get_active_campaigns("ATS")
-
-def process_campaign_sync_source_from_jobboard():
-	"""Chạy quét campaign từ các sàn tuyển dụng lưu vào candidate
-	"""
-	config = get_datasource("JobBoard")
-	if config:
-		campaigns =_get_active_campaigns("JobBoard")
-
-def process_campaign_sync_source_from_social():
-	"""Chạy quét campaign từ các mạng xã hội lưu vào candidate
-	"""
-	config = get_datasource("SocialNetwork")
-	if config:
-		campaigns =_get_active_campaigns("SocialNetwork")
-
-def process_campaign_sync_source_from_other():
-	"""Chạy quét campaign từ các các nguồn khác lưu vào candidate
-	"""
-	config = get_datasource("Other")
-	if config:
-		campaigns =_get_active_campaigns("Other")
-
 #Lấy danh sách ứng viên theo tiêu chí từ các nguồn, xử lý trong queue do quét nhiều ứng viên
 def run_candidate_by_criteria(source,campaign:dict):
     criteria = campaign.get("criteria",{})
