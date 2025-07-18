@@ -1527,7 +1527,7 @@ import { processSkills, skillsToString } from '../services/candidateService'
 import LayoutHeader from '../components/LayoutHeader.vue'
 
 // Translation helper function
-const __ = (text) => text
+
 
 const route = useRoute()
 const router = useRouter()

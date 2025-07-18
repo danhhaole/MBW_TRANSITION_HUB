@@ -1,29 +1,34 @@
-import UniversalRepository from './universalRepository.js'
+import { call } from 'frappe-ui'
 
-// Repository for CandidateDataSource doctype
-class CandidateDataSourceRepository extends UniversalRepository {
-  constructor() {
-    super('CandidateDataSource')
-  }
+/**
+ * Repository for CandidateDataSource API
+ */
 
-  // Get list with default fields for CandidateDataSource
-  async getList(options = {}) {
-    const defaultFields = [
-      'name', 'source_name', 'source_type', 'api_base_url', 'auth_method', 
-      'status', 'last_sync_at', 'sync_frequency_minutes', 'last_error', 
-      'notes', 'created_by', 'is_active', 'modified', 'creation'
-    ]
-    
-    return await super.getList({
-      fields: defaultFields,
-      ...options
-    })
-  }
-
-  // Get form data for create/edit with field metadata
-  async getFormData(name = null) {
-    return await super.getFormData(name)
-  }
+// Get all active data sources for campaign wizard
+export const getDataSources = () => {
+  return call('mbw_mira.api.candidate_data_source.get_data_sources')
 }
 
-export const candidateDataSourceRepository = new CandidateDataSourceRepository() 
+// Test connection to a data source
+export const testConnection = (name) => {
+  return call('mbw_mira.api.candidate_data_source.test_connection', {
+    name
+  })
+}
+
+// Sync data from a data source
+export const syncData = (name) => {
+  return call('mbw_mira.api.candidate_data_source.sync_data', {
+    name
+  })
+}
+
+// Named export for service usage
+export const candidateDataSourceRepository = {
+  getDataSources,
+  testConnection,
+  syncData
+}
+
+// Default export for backward compatibility
+export default candidateDataSourceRepository 

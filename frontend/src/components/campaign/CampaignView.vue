@@ -155,7 +155,7 @@
   import { computed } from 'vue'
 
   // Translation helper function
-  const __ = (text) => text
+  
   
   // Props
   const props = defineProps({

@@ -218,7 +218,7 @@ import { Dialog } from 'frappe-ui'
 import { useCampaignForm, useCampaignCRUD } from '@/composables/useCampaign.js'
 
 // Translation helper function
-const __ = (text) => text
+
 
 // Props
 const props = defineProps({

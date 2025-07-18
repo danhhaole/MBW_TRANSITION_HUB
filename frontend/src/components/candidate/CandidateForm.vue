@@ -203,7 +203,7 @@ import { ref, computed, watch } from 'vue'
 import { FormControl, Button } from 'frappe-ui'
 
 // Translation helper function
-const __ = (text) => text
+
 
 // Props
 const props = defineProps({

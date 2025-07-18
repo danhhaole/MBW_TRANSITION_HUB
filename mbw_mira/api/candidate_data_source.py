@@ -92,4 +92,30 @@ def sync_data(name):
         return {
             "success": False,
             "error": str(e)
+        }
+
+
+@frappe.whitelist()
+def get_data_sources():
+    """
+    Lấy danh sách các data source để hiển thị trong campaign wizard
+    """
+    try:
+        data_sources = frappe.get_list(
+            'CandidateDataSource',
+            fields=['name', 'source_name', 'source_type', 'description', 'is_active'],
+            filters={'is_active': 1},
+            order_by='source_name asc'
+        )
+        
+        return {
+            "success": True,
+            "data_sources": data_sources
+        }
+        
+    except Exception as e:
+        frappe.log_error(f"Error getting data sources: {str(e)}")
+        return {
+            "success": False,
+            "error": str(e)
         } 

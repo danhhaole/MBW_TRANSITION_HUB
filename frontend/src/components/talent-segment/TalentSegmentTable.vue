@@ -170,7 +170,7 @@ import { ref, computed } from 'vue'
 import { calculateEngagementRate, formatDate } from '@/services/talentSegmentService'
 
 // Translation helper function
-const __ = (text) => text
+
 
 // Props
 const props = defineProps({

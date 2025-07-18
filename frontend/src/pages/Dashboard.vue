@@ -423,7 +423,7 @@ import LayoutHeader from '@/components/LayoutHeader.vue'
 import { Breadcrumbs } from 'frappe-ui'
 
 // Translation helper function
-const __ = (text) => text
+
 
 // Reactive data
 const tasks = ref([])

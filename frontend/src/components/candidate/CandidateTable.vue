@@ -359,7 +359,7 @@ import {
 } from '@/utils/candidateHelpers'
 
 // Translation helper function
-const __ = (text) => text
+
 
 // Props
 const props = defineProps({

@@ -11,7 +11,7 @@
   import { Breadcrumbs } from 'frappe-ui'
   
   // Translation helper function
-  const __ = (text) => text
+  
   
   let title = __('Talent Segments')
   const breadcrumbs = [{ label: title, route: { name: 'TalentSegment' } }]

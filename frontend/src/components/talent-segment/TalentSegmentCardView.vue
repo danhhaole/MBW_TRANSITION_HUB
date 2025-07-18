@@ -126,7 +126,7 @@ import { calculateEngagementRate, formatDate, getSegmentTypeColor } from '@/serv
 import { processSkills } from '@/services/candidateService'
 
 // Translation helper function
-const __ = (text) => text
+
 
 // Props
 const props = defineProps({

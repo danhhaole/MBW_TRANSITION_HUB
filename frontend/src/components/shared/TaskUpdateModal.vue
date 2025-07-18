@@ -104,7 +104,7 @@ import { Dialog, Button, FormControl, Avatar } from 'frappe-ui'
 import moment from 'moment'
 
 // Translation helper function
-const __ = (text) => text
+
 
 const props = defineProps({
   modelValue: Boolean,

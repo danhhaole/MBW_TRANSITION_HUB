@@ -43,7 +43,7 @@
 
         <!-- Step Content -->
         <div class="p-6">
-          <!-- Step 1: Thông tin chiến dịch -->
+          <!-- Step 1: Campaign Information -->
           <div v-if="currentStep === 1" class="space-y-4 animate-fadeIn">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -72,7 +72,7 @@
             </div>
           </div>
 
-          <!-- Step 2: Chọn nguồn -->
+          <!-- Step 2: Select Source -->
           <div v-if="currentStep === 2" class="animate-fadeIn">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div
@@ -95,7 +95,7 @@
             </div>
           </div>
 
-          <!-- Step 3: Cấu hình và lựa chọn -->
+          <!-- Step 3: Configuration and Selection -->
           <div v-if="currentStep === 3" class="animate-fadeIn">
             <!-- Configuration Form -->
             <div v-if="!showCandidates" class="space-y-4">
@@ -103,10 +103,79 @@
                 {{ sourceConfigs[selectedSource]?.description }}
               </p>
               
-              <component
-                :is="getConfigComponent(selectedSource)"
-                v-model="configData"
-              />
+              <!-- Data Source Type Selection (when Data Source is selected) -->
+              <div v-if="selectedSource === 'datasource' && !selectedDataSourceType" class="space-y-4">
+                <h4 class="text-lg font-medium text-gray-900 mb-4">{{ __('Select Data Source Type') }}</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div
+                    v-for="sourceType in dataSourceTypes"
+                    :key="sourceType.key"
+                    class="border rounded-lg p-4 text-center cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg border-gray-200 hover:border-gray-300"
+                    @click="selectDataSourceType(sourceType.key)"
+                  >
+                    <FeatherIcon :name="sourceType.icon" class="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                    <div class="text-sm font-medium mb-1 text-gray-900">
+                      {{ sourceType.title }}
+                    </div>
+                    <div class="text-xs text-gray-500">
+                      {{ sourceType.description }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Specific Data Source Selection (when type is selected) -->
+              <div v-else-if="selectedSource === 'datasource' && selectedDataSourceType && !selectedDataSourceId" class="space-y-4">
+                <div class="flex items-center justify-between mb-4">
+                  <h4 class="text-lg font-medium text-gray-900">
+                    {{ __('Select {0} Source', [selectedDataSourceType]) }}
+                  </h4>
+                  <Button variant="ghost" theme="gray" @click="selectedDataSourceType = ''" class="text-sm">
+                    <FeatherIcon name="arrow-left" class="h-4 w-4 mr-1" />
+                    {{ __('Back') }}
+                  </Button>
+                </div>
+                
+                <div v-if="filteredDataSources.length === 0" class="text-center py-8">
+                  <div class="text-gray-500 mb-2">{{ __('No {0} sources available', [selectedDataSourceType]) }}</div>
+                  <Button variant="outline" theme="gray" @click="selectedDataSourceType = ''" class="text-sm">
+                    {{ __('Choose Different Type') }}
+                  </Button>
+                </div>
+                
+                <div v-else class="grid grid-cols-1 gap-3">
+                  <div
+                    v-for="dataSource in filteredDataSources"
+                    :key="dataSource.name"
+                    class="border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md border-gray-200 hover:border-gray-300"
+                    @click="selectSpecificDataSource(dataSource)"
+                  >
+                    <div class="flex items-center">
+                      <FeatherIcon :name="getDataSourceIcon(dataSource.source_type)" class="h-6 w-6 mr-3 text-gray-400" />
+                      <div class="flex-1">
+                        <div class="text-sm font-medium text-gray-900">
+                          {{ dataSource.source_name }}
+                        </div>
+                        <div class="text-xs text-gray-500">
+                          {{ dataSource.description || `${dataSource.source_type} data source` }}
+                        </div>
+                      </div>
+                      <span class="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded">
+                        {{ dataSource.source_type }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Standard Configuration Components -->
+              <div v-else>
+                <component
+                  :is="getConfigComponent(selectedSource)"
+                  v-model="configData"
+                  :selected-data-source="configData.selectedDataSource"
+                />
+              </div>
             </div>
 
             <!-- Loading -->
@@ -123,7 +192,7 @@
             <!-- Candidate Selection -->
             <div v-if="showCandidates && !loading" class="space-y-4">
               <h4 class="text-lg font-semibold mb-4">
-                Kết quả ({{ mockCandidates.length }} ứng viên)
+                {{ __('Results ({0} candidates)', [mockCandidates.length]) }}
               </h4>
               
               <div class="border border-gray-200 rounded-lg p-2 max-h-80 overflow-y-auto">
@@ -162,26 +231,24 @@
             </div>
           </div>
 
-          <!-- Step 4: Kích hoạt -->
+          <!-- Step 4: Activation -->
           <div v-if="currentStep === 4" class="text-center py-6 animate-fadeIn">
             <div class="text-6xl mb-4">🎉</div>
-            <h3 class="text-xl font-bold mb-4 text-gray-900">Chiến dịch đã sẵn sàng!</h3>
+            <h3 class="text-xl font-bold mb-4 text-gray-900">{{ __('Campaign Ready!') }}</h3>
             <p class="text-base mb-2 text-gray-700">
               <template v-if="selectedCandidates.size > 0">
-                Bạn sắp thêm <strong>{{ selectedCandidates.size }} ứng viên</strong> 
-                vào chiến dịch <strong>"{{ campaignData.campaign_name }}"</strong>.
+                {{ __('You are about to add {0} candidates to campaign "{1}".', [selectedCandidates.size, campaignData.campaign_name]) }}
               </template>
               <template v-else>
-                Bạn sắp tạo chiến dịch <strong>"{{ campaignData.campaign_name }}"</strong> 
-                với trạng thái nháp để bổ sung ứng viên sau.
+                {{ __('You are about to create campaign "{0}" as draft to add candidates later.', [campaignData.campaign_name]) }}
               </template>
             </p>
             <p class="text-xs text-gray-500">
               <template v-if="selectedCandidates.size > 0">
-                Sau khi tạo, chiến dịch sẽ ở trạng thái nháp để bạn có thể chỉnh sửa và kích hoạt sau.
+                {{ __('After creation, the campaign will be in draft status for you to edit and activate later.') }}
               </template>
               <template v-else>
-                Bạn có thể thêm ứng viên và kích hoạt chiến dịch sau khi tạo.
+                {{ __('You can add candidates and activate the campaign after creation.') }}
               </template>
             </p>
           </div>
@@ -218,7 +285,7 @@
               theme="gray"
               @click="handleSearch"
               :loading="loading"
-              :disabled="!selectedSource"
+              :disabled="!canProceedToSearch"
             >
               {{ __(getSearchButtonText()) }}
             </Button>
@@ -249,11 +316,12 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { Dialog, Button, FeatherIcon } from 'frappe-ui'
 import PoolConfig from './PoolConfig.vue'
 import AtsConfig from './AtsConfig.vue'
 import WebConfig from './WebConfig.vue'
+import FileConfig from './FileConfig.vue'
 import { submitNewCampaign, searchCandidates } from '@/services/campaignService'
 import { 
   campaignService, 
@@ -263,6 +331,7 @@ import {
   candidateCampaignService 
 } from '@/services/universalService'
 import { processSkills } from '@/services/candidateService'
+import candidateDataSourceRepository from '@/repositories/candidateDataSourceRepository'
 import moment from 'moment'
 
 // Props & Emits
@@ -285,6 +354,7 @@ const currentStep = ref(1)
 const loading = ref(false)
 const activating = ref(false)
 const showCandidates = ref(false)
+const loadingDataSources = ref(false)
 
 // Form data
 const campaignData = ref({
@@ -292,18 +362,27 @@ const campaignData = ref({
   description: '',
   type: 'NURTURING',
   status: 'DRAFT',
-  target_segment: props.preselectedSegment || ''
+  target_segment: props.preselectedSegment || '',
+  source_type: '', // New field: 'DataSource', 'File', 'Search'
+  source_file: '', // For File type
+  data_source_id: '' // For DataSource type
 })
 
-const selectedSource = ref(props.preselectedSegment ? 'pool' : '')
+const selectedSource = ref(props.preselectedSegment ? 'search' : '')
+const selectedDataSourceType = ref('') // ATS, JobBoard, SocialNetwork, TalentPool
+const selectedDataSourceId = ref('') // Specific data source ID
 const configData = ref({
-  selectedSegment: props.preselectedSegment || ''
+  selectedSegment: props.preselectedSegment || '',
+  selectedDataSource: '',
+  selectedFile: null
 })
 const selectedCandidates = ref(new Set())
-const realCandidates = ref([]) // Thay thế mockCandidates
+const realCandidates = ref([]) // Replace mockCandidates
+const dataSources = ref([]) // All data sources from API
+const filteredDataSources = ref([]) // Filtered by type
 
 // Translation helper function
-const __ = (text) => text
+
 
 // Steps definition
 const steps = [
@@ -313,40 +392,65 @@ const steps = [
   { number: 4, label: 'Activate' }
 ]
 
-// Source options
-const sources = [
+// Source options - 3 fixed choices only
+const sources = computed(() => [
   {
-    key: 'pool',
-    title: 'Talent Pool',
-    description: 'Use existing data',
-    icon: 'mdi-account-group'
+    key: 'search',
+    title: 'Search',
+    description: 'Search and select candidates',
+    icon: 'search',
+    type: 'fixed',
+    source_type: 'Search'
   },
   {
-    key: 'ats',
-    title: 'Sync from ATS',
-    description: 'Connect with other systems',
-    icon: 'mdi-sync'
+    key: 'file',
+    title: 'File Import',
+    description: 'Import from CSV/Excel file',
+    icon: 'upload',
+    type: 'fixed',
+    source_type: 'File'
   },
   {
-    key: 'web',
-    title: 'Collect from Web',
-    description: 'Search on Internet',
-    icon: 'mdi-web'
+    key: 'datasource',
+    title: 'Data Source',
+    description: 'Import from external data sources',
+    icon: 'database',
+    type: 'fixed',
+    source_type: 'DataSource'
   }
-]
+])
+
+// Data source type options
+const dataSourceTypes = computed(() => [
+  { key: 'ATS', title: 'ATS', description: 'Applicant Tracking System', icon: 'briefcase' },
+  { key: 'JobBoard', title: 'Job Board', description: 'Job posting platforms', icon: 'clipboard' },
+  { key: 'SocialNetwork', title: 'Social Network', description: 'LinkedIn, Facebook, etc.', icon: 'users' },
+  { key: 'TalentPool', title: 'Talent Pool', description: 'External talent pools', icon: 'user-check' }
+])
+
+// Helper function for data source icons
+const getDataSourceIcon = (sourceType) => {
+  const iconMap = {
+    'ATS': 'database',
+    'JobBoard': 'briefcase',
+    'SocialNetwork': 'users',
+    'TalentPool': 'user-check'
+  }
+  return iconMap[sourceType] || 'server'
+}
 
 // Source configurations
-const sourceConfigs = {
-  pool: {
-    description: 'Chọn phân khúc nhân tài có sẵn để tạo chiến dịch.'
+const sourceConfigs = computed(() => ({
+  search: {
+    description: __('Search and select candidates from existing talent pools.')
   },
-  ats: {
-    description: 'Chọn hệ thống ATS và thiết lập quy tắc để đồng bộ.'
+  file: {
+    description: __('Import candidates from CSV or Excel files.')
   },
-  web: {
-    description: 'Nhập từ khóa và chọn nguồn để bắt đầu thu thập dữ liệu.'
+  datasource: {
+    description: __('Import candidates from external data sources (ATS, Job Board, Social Network, etc.).')
   }
-}
+}))
 
 // Mock candidates (will be updated by search)
 const mockCandidates = ref([])
@@ -387,9 +491,24 @@ const loadCandidatesFromSegment = async (segmentId) => {
   }
 }
 
+// Load candidates from data source
+const loadCandidatesFromDataSource = async (dataSourceId) => {
+  try {
+    // TODO: Implement this function to find TalentPool records with matching data_source_id
+    // and convert them to candidates format
+    console.log('Loading candidates from data source:', dataSourceId)
+    
+    // For now, return empty array - this will be implemented later
+    return []
+  } catch (error) {
+    console.error('Error loading candidates from data source:', error)
+    return []
+  }
+}
+
 // Validation rules
 const rules = {
-  required: value => !!value || 'Trường này là bắt buộc'
+  required: value => !!value || __('This field is required')
 }
 
 // Dialog options
@@ -419,6 +538,16 @@ const canProceed = computed(() => {
   return true
 })
 
+const canProceedToSearch = computed(() => {
+  if (!selectedSource.value) return false
+  
+  if (selectedSource.value === 'datasource') {
+    return !!(selectedDataSourceType.value && selectedDataSourceId.value)
+  }
+  
+  return true
+})
+
 // Methods
 const getStepClass = (stepNumber) => {
   if (stepNumber < currentStep.value) return 'completed'
@@ -426,13 +555,34 @@ const getStepClass = (stepNumber) => {
   return ''
 }
 
-const getConfigComponent = (source) => {
-  const components = {
-    pool: PoolConfig,
-    ats: AtsConfig,
-    web: WebConfig
+// Load data sources from API
+const loadDataSources = async () => {
+  loadingDataSources.value = true
+  try {
+    const response = await candidateDataSourceRepository.getDataSources()
+    if (response.success) {
+      dataSources.value = response.data_sources || []
+    }
+  } catch (error) {
+    console.error('Error loading data sources:', error)
+  } finally {
+    loadingDataSources.value = false
   }
-  return components[source] || null
+}
+
+const getConfigComponent = (source) => {
+  if (source === 'search') return PoolConfig // Use pool config for search
+  if (source === 'file') return FileConfig
+  if (source === 'datasource' && selectedDataSourceId.value) {
+    // Show appropriate config based on data source type
+    const dataSource = configData.value.selectedDataSource
+    if (dataSource && dataSource.source_type === 'ATS') {
+      return AtsConfig
+    }
+    // Add other config components for different data source types as needed
+    return AtsConfig // Default to ATS config for now
+  }
+  return null
 }
 
 // Styling methods for Tailwind CSS
@@ -459,6 +609,42 @@ const getSourceIcon = (sourceKey) => {
 
 const selectSource = (sourceKey) => {
   selectedSource.value = sourceKey
+  
+  // Reset data source selections
+  selectedDataSourceType.value = ''
+  selectedDataSourceId.value = ''
+  filteredDataSources.value = []
+  
+  // Find selected source info
+  const source = sources.value.find(s => s.key === sourceKey)
+  if (source) {
+    campaignData.value.source_type = source.source_type
+    
+    if (source.source_type !== 'DataSource') {
+      campaignData.value.data_source_id = ''
+      configData.value.selectedDataSource = ''
+    }
+    
+    if (source.source_type === 'File') {
+      // Reset file selection
+      campaignData.value.source_file = ''
+      configData.value.selectedFile = null
+    }
+  }
+}
+
+const selectDataSourceType = (sourceType) => {
+  selectedDataSourceType.value = sourceType
+  selectedDataSourceId.value = ''
+  
+  // Filter data sources by type
+  filteredDataSources.value = dataSources.value.filter(ds => ds.source_type === sourceType)
+}
+
+const selectSpecificDataSource = (dataSource) => {
+  selectedDataSourceId.value = dataSource.name
+  campaignData.value.data_source_id = dataSource.name
+  configData.value.selectedDataSource = dataSource
 }
 
 const nextStep = () => {
@@ -478,23 +664,62 @@ const prevStep = () => {
 }
 
 const handleSearch = async () => {
+  // For data source selection, handle step by step
+  if (selectedSource.value === 'datasource') {
+    if (!selectedDataSourceType.value) {
+      // This shouldn't happen due to disabled state, but just in case
+      return
+    }
+    if (!selectedDataSourceId.value) {
+      // This shouldn't happen due to disabled state, but just in case
+      return
+    }
+  }
+  
   loading.value = true
   
   try {
     let candidates = []
     
-    if (selectedSource.value === 'pool') {
-      // Load candidates from selected segment
-      const segmentId = configData.value.selectedSegment || props.preselectedSegment
-      if (segmentId) {
-        candidates = await loadCandidatesFromSegment(segmentId)
+    switch (selectedSource.value) {
+      case 'search':
+        // Load candidates from selected segment (old pool logic)
+        const segmentId = configData.value.selectedSegment || props.preselectedSegment
+        if (segmentId) {
+          candidates = await loadCandidatesFromSegment(segmentId)
+          campaignData.value.target_segment = segmentId
+        }
+        break
         
-        // Set target_segment in campaign data
-        campaignData.value.target_segment = segmentId
-      }
-    } else {
-      // For ATS and Web, use the existing search API
-      candidates = await searchCandidates(selectedSource.value, configData.value)
+      case 'file':
+        // Handle file import
+        if (configData.value.uploadedFileUrl) {
+          // File has been uploaded successfully
+          console.log('Processing uploaded file:', configData.value.uploadedFileUrl)
+          
+          // TODO: Parse CSV/Excel file from URL and extract candidates
+          // For now, show empty candidates list until file parsing is implemented
+          candidates = []
+          
+          console.log('File uploaded successfully, URL:', configData.value.uploadedFileUrl)
+        } else {
+          console.log('No file uploaded yet')
+          candidates = []
+        }
+        break
+        
+      case 'datasource':
+        // Handle data source sync
+        if (selectedDataSourceId.value) {
+          console.log('Syncing from data source:', selectedDataSourceId.value)
+          // TODO: Find TalentPools with matching data source and load candidates
+          candidates = await loadCandidatesFromDataSource(selectedDataSourceId.value)
+        }
+        break
+        
+      default:
+        // Fallback to existing search API for compatibility
+        candidates = await searchCandidates(selectedSource.value, configData.value)
     }
     
     // Update candidates list
@@ -505,7 +730,7 @@ const handleSearch = async () => {
   } catch (error) {
     console.error('Error searching candidates:', error)
     loading.value = false
-    alert('Có lỗi khi tìm kiếm ứng viên. Vui lòng thử lại.')
+    alert(__('Error searching candidates. Please try again.'))
   }
 }
 
@@ -518,12 +743,14 @@ const toggleCandidate = (candidateId) => {
 }
 
 const getSearchButtonText = () => {
-  const texts = {
-    pool: 'Tìm kiếm',
-    ats: 'Bắt đầu Đồng bộ',
-    web: 'Bắt đầu Thu thập'
+  if (selectedSource.value === 'search') return __('Search')
+  if (selectedSource.value === 'file') return __('Process File')
+  if (selectedSource.value === 'datasource') {
+    if (!selectedDataSourceType.value) return __('Select Source Type')
+    if (!selectedDataSourceId.value) return __('Select Specific Source')
+    return __('Sync Data')
   }
-  return texts[selectedSource.value] || 'Tìm kiếm'
+  return __('Continue')
 }
 
 const createCampaign = async () => {
@@ -539,7 +766,23 @@ const createCampaign = async () => {
       start_date: new Date().toISOString().split('T')[0],
       end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       target_segment: campaignData.value.target_segment?.value,
-      is_active: false
+      is_active: false,
+      source_type: campaignData.value.source_type,
+      source_file: campaignData.value.source_file,
+      data_source_id: campaignData.value.data_source_id
+    }
+
+    // Set source field based on source_type
+    if (campaignData.value.source_type === 'DataSource' && configData.value.selectedDataSource) {
+      // Save only the data source record name (ID) in source field
+      campaignPayload.source = configData.value.selectedDataSource.name
+    } else if (campaignData.value.source_type === 'File' && configData.value.uploadedFileUrl) {
+      // For File: only save source_file, leave source empty
+      campaignPayload.source_file = configData.value.uploadedFileUrl
+      // source field is not used for File type
+    } else if (campaignData.value.source_type === 'Search' && campaignData.value.target_segment) {
+      // For search, source is the segment info
+      campaignPayload.source = campaignData.value.target_segment
     }
     
     console.log('Creating campaign with payload:', campaignPayload)
@@ -578,14 +821,14 @@ const createCampaign = async () => {
   } catch (error) {
     console.error('Error creating campaign:', error)
     
-    let errorMessage = 'Có lỗi xảy ra khi tạo chiến dịch'
+    let errorMessage = __('An error occurred while creating the campaign')
     
     if (error.message.includes('campaign_name')) {
-      errorMessage = 'Tên chiến dịch không hợp lệ hoặc đã tồn tại'
+      errorMessage = __('Campaign name is invalid or already exists')
     } else if (error.message.includes('validation')) {
-      errorMessage = 'Dữ liệu nhập vào không đúng định dạng'
+      errorMessage = __('Input data is not in the correct format')
     } else if (error.message.includes('network') || error.message.includes('fetch')) {
-      errorMessage = 'Lỗi kết nối mạng, vui lòng thử lại'
+      errorMessage = __('Network connection error, please try again')
     } else if (error.message) {
       errorMessage = error.message
     }
@@ -605,12 +848,23 @@ const closeWizard = () => {
     description: '',
     type: 'NURTURING',
     status: 'DRAFT',
-    target_segment: props.preselectedSegment || ''
+    target_segment: props.preselectedSegment || '',
+    source_type: '',
+    source_file: '',
+    data_source_id: ''
   }
-  selectedSource.value = props.preselectedSegment ? 'pool' : ''
+  selectedSource.value = props.preselectedSegment ? 'search' : ''
+  selectedDataSourceType.value = ''
+  selectedDataSourceId.value = ''
   configData.value = {
-    selectedSegment: props.preselectedSegment || ''
+    selectedSegment: props.preselectedSegment || '',
+    selectedDataSource: '',
+    selectedFile: null,
+    uploadedFileUrl: '',
+    filePreview: [],
+    fileHeaders: []
   }
+  filteredDataSources.value = []
   selectedCandidates.value.clear()
   showCandidates.value = false
   loading.value = false
@@ -619,6 +873,11 @@ const closeWizard = () => {
   // Reset candidates
   mockCandidates.value = []
 }
+
+// Load data sources on component mount
+onMounted(() => {
+  loadDataSources()
+})
 
 // Watchers
 watch(() => props.modelValue, (newVal) => {

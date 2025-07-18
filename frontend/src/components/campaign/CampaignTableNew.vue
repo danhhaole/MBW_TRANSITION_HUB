@@ -284,7 +284,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { Dialog } from 'frappe-ui'
 
 // Translation helper function
-const __ = (text) => text
+
 
 // Props
 const props = defineProps({

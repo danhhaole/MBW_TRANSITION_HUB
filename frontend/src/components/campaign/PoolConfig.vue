@@ -2,7 +2,7 @@
   <div class="pool-config space-y-4">
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-2">
-        Chọn phân khúc nhân tài <span class="text-red-500">*</span>
+        Chọn phân khúc nhân tài
       </label>
       <Autocomplete
         v-model="data.selectedSegment"

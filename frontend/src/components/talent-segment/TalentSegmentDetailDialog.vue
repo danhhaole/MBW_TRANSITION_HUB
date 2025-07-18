@@ -379,7 +379,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { getSegmentCandidates, calculateEngagementRate, formatDate } from '@/services/talentSegmentService'
 
 // Translation helper function
-const __ = (text) => text
+
 
 // Props
 const props = defineProps({

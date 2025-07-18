@@ -83,7 +83,7 @@ import { candidateDataSourceService } from '@/services/candidateDataSourceServic
 const router = useRouter()
 
 // Translation helper
-const __ = (text) => text
+
 
 // Reactive state
 const loading = ref(false)

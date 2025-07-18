@@ -270,7 +270,7 @@ import { Dialog, Button, FormControl } from 'frappe-ui'
 import { validateCandidateForm, processSkills, skillsToString } from '../../services/candidateService'
 
 // Translation helper function
-const __ = (text) => text
+
 
 // Props
 const props = defineProps({

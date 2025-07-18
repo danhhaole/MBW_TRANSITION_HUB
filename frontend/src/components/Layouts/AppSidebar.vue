@@ -276,7 +276,7 @@ const links = [
     to: 'Settings',
     submenu: [
       {
-        label: "Data Sources ",
+        label: "integrations",
         to: 'CandidateDataSourceManagementDirect'
       },
 

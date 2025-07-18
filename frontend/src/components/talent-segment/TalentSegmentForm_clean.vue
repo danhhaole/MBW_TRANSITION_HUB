@@ -278,7 +278,7 @@ import { Button } from 'frappe-ui'
 import { talentSegmentService, userService } from '@/services/universalService'
 
 // Translation helper function
-const __ = (text) => text
+
 
 // Props
 const props = defineProps({

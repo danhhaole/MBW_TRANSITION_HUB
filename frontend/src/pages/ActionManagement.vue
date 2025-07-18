@@ -494,7 +494,7 @@ import LayoutHeader from '@/components/LayoutHeader.vue'
 const router = useRouter()
 
 // Translation helper
-const __ = (text) => text
+
 
 // Breadcrumbs
 const breadcrumbs = [

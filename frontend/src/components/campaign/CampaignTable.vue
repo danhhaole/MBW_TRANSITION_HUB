@@ -92,7 +92,7 @@
                     @click="handleView(campaign)"
                     class="text-black hover:text-gray-800 text-sm font-medium"
                   >
-                    Xem timeline
+                    {{ __('View Timeline') }}
                   </button>
                   <div class="relative">
                     <button 
@@ -217,7 +217,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { Dialog } from 'frappe-ui'
 
 // Translation helper function
-const __ = (text) => text
+
 
 // Props
 const props = defineProps({
