@@ -58,7 +58,7 @@
 					<div class="flex items-start">
 						<Avatar
 							:shape="'circle'"
-							:image="candidate.avatar"
+							:image="null"
 							:label="getAvatarText(candidate.full_name)"
 							size="3xl"
 							class="mr-4"
@@ -80,6 +80,9 @@
 								</span>
 								<span class="text-sm text-gray-500">
 									{{ candidate.phone }}
+								</span>
+								<span v-if="candidate.location" class="text-sm text-gray-500">
+									📍 {{ candidate.location }}
 								</span>
 							</div>
 						</div>
@@ -145,9 +148,9 @@
 					<div class="space-y-4">
 						<div>
 							<label class="block text-sm font-medium text-gray-700 mb-1">{{
-								__('Title')
+								__('Current Position')
 							}}</label>
-							<p class="text-gray-900">{{ candidate.headline || __('None') }}</p>
+							<p class="text-gray-900">{{ candidate.current_position || __('None') }}</p>
 						</div>
 						<div>
 							<label class="block text-sm font-medium text-gray-700 mb-1">{{
@@ -157,28 +160,17 @@
 						</div>
 						<div>
 							<label class="block text-sm font-medium text-gray-700 mb-1">{{
-								__('Last Interaction')
+								__('Experience Years')
 							}}</label>
 							<p class="text-gray-900">
-								{{ formatDateTime(candidate.last_interaction) || __('None') }}
+								{{ candidate.experience_years ? `${candidate.experience_years} năm` : __('None') }}
 							</p>
 						</div>
 						<div>
 							<label class="block text-sm font-medium text-gray-700 mb-1">{{
-								__('Email Subscription')
+								__('Location')
 							}}</label>
-							<span
-								v-if="candidate.email_opt_out"
-								class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"
-							>
-								{{ __('Unsubscribed') }}
-							</span>
-							<span
-								v-else
-								class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
-							>
-								{{ __('Subscribed') }}
-							</span>
+							<p class="text-gray-900">{{ candidate.location || __('None') }}</p>
 						</div>
 					</div>
 				</div>
@@ -1434,14 +1426,20 @@
 									label="Phone"
 								/>
 								<FormControl
-									v-model="editFormData.headline"
+									v-model="editFormData.current_position"
 									type="text"
-									label="Headline"
+									label="Current Position"
 								/>
 								<FormControl
-									v-model="editFormData.cv_original_url"
+									v-model="editFormData.location"
 									type="text"
-									label="CV Link"
+									label="Location"
+								/>
+								<FormControl
+									v-model="editFormData.experience_years"
+									type="number"
+									label="Experience Years"
+									:min="0"
 								/>
 								<FormControl
 									v-model="editFormData.status"
@@ -1456,9 +1454,9 @@
 								/>
 							</div>
 							<FormControl
-								v-model="editFormData.ai_summary"
+								v-model="editFormData.notes"
 								type="textarea"
-								label="AI Summary"
+								label="Notes"
 								:rows="3"
 							/>
 							<FormControl
@@ -1614,11 +1612,12 @@ const editFormData = reactive({
 	full_name: '',
 	email: '',
 	phone: '',
-	headline: '',
-	cv_original_url: '',
+	current_position: '',
+	location: '',
+	experience_years: '',
 	status: '',
 	source: '',
-	ai_summary: '',
+	notes: '',
 	skills: '',
 })
 
@@ -1631,11 +1630,8 @@ const statusOptions = [
 ]
 
 const candidateStatusOptions = [
-	{ label: __('New'), value: 'NEW' },
-	{ label: __('Sourced'), value: 'SOURCED' },
-	{ label: __('Nurturing'), value: 'NURTURING' },
-	{ label: __('Engaged'), value: 'ENGAGED' },
-	{ label: __('Archived'), value: 'ARCHIVED' },
+	{ label: __('Active'), value: 'Active' },
+	{ label: __('Inactive'), value: 'Inactive' }
 ]
 
 const interactionTypeOptions = [
@@ -1871,11 +1867,8 @@ const getStatusClasses = (status) => {
 		PAUSED: 'bg-yellow-100 text-yellow-800',
 		COMPLETED: 'bg-blue-100 text-blue-800',
 		CANCELLED: 'bg-red-100 text-red-800',
-		NEW: 'bg-blue-100 text-blue-800',
-		SOURCED: 'bg-yellow-100 text-yellow-800',
-		NURTURING: 'bg-orange-100 text-orange-800',
-		ENGAGED: 'bg-green-100 text-green-800',
-		ARCHIVED: 'bg-gray-100 text-gray-800',
+		Active: 'bg-green-100 text-green-800',
+		Inactive: 'bg-gray-100 text-gray-800',
 	}
 	return statusClasses[status] || 'bg-gray-100 text-gray-800'
 }
@@ -2333,11 +2326,12 @@ const editCandidate = () => {
 		full_name: candidate.full_name || '',
 		email: candidate.email || '',
 		phone: candidate.phone || '',
-		headline: candidate.headline || '',
-		cv_original_url: candidate.cv_original_url || '',
+		current_position: candidate.current_position || '',
+		location: candidate.location || '',
+		experience_years: candidate.experience_years || '',
 		status: candidate.status || '',
 		source: candidate.source || '',
-		ai_summary: candidate.ai_summary || '',
+		notes: candidate.notes || '',
 		skills: processSkills(candidate.skills),
 	})
 	showEditModal.value = true

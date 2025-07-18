@@ -49,7 +49,7 @@
    "options": "MBW ATS\nTopCV\nVietnamWorks\nFacebook\nLinkedIn"
   },
   {
-   "default": "0",
+   "default": "false",
    "description": "\u0110\u00e1nh d\u1ea5u n\u1ebfu ATS n\u00e0y ch\u1ea1y c\u00f9ng site v\u1edbi h\u1ec7 th\u1ed1ng hi\u1ec7n t\u1ea1i (kh\u00f4ng c\u1ea7n nh\u1eadp API Base URL)",
    "fieldname": "same_site",
    "fieldtype": "Check",
@@ -182,7 +182,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-18 10:14:06.331817",
+ "modified": "2025-07-18 10:51:51.780940",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "CandidateDataSource",

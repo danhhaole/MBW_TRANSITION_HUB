@@ -213,10 +213,15 @@ const links = [
     to: 'TalentSegments',
   },
   {
-    label: "Candidate",
-    icon: ContactsIcon,
-    to: 'CandidateManagement',
+    label: "Candidate Pools",
+    icon: TaskIcon,
+    to: 'CandidatePoolManagement',
   },
+  // {
+  //   label: "Candidate",
+  //   icon: ContactsIcon,
+  //   to: 'CandidateManagement',
+  // },
   // {
   //   label: "Report",
   //   icon: NoteIcon,

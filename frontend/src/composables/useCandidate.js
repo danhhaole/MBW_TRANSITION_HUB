@@ -24,8 +24,8 @@ function debounce(func, wait) {
 }
 
 /**
- * Candidate Composable
- * Quản lý state và logic cho Candidate management
+ * Talent Pool Composable
+ * Quản lý state và logic cho TalentPool management
  */
 export function useCandidate() {
   // State
@@ -101,8 +101,8 @@ export function useCandidate() {
         }
       }
     } catch (err) {
-      error.value = err.message || 'Failed to fetch candidates'
-      console.error('Error fetching candidates:', err)
+      error.value = err.message || 'Failed to fetch talent pools'
+      console.error('Error fetching talent pools:', err)
     } finally {
       loading.value = false
     }
@@ -164,8 +164,8 @@ export function useCandidate() {
       }
       return null
     } catch (err) {
-      error.value = err.message || 'Failed to fetch candidate'
-      console.error('Error fetching candidate:', err)
+      error.value = err.message || 'Failed to fetch talent pool'
+      console.error('Error fetching talent pool:', err)
       return null
     } finally {
       loading.value = false
@@ -192,8 +192,8 @@ export function useCandidate() {
       }
       return null
     } catch (err) {
-      error.value = err.message || 'Failed to create candidate'
-      console.error('Error creating candidate:', err)
+      error.value = err.message || 'Failed to create talent pool'
+      console.error('Error creating talent pool:', err)
       throw err
     } finally {
       loading.value = false
@@ -224,8 +224,8 @@ export function useCandidate() {
       }
       return null
     } catch (err) {
-      error.value = err.message || 'Failed to update candidate'
-      console.error('Error updating candidate:', err)
+      error.value = err.message || 'Failed to update talent pool'
+      console.error('Error updating talent pool:', err)
       throw err
     } finally {
       loading.value = false
@@ -255,8 +255,8 @@ export function useCandidate() {
       
       return true
     } catch (err) {
-      error.value = err.message || 'Failed to delete candidate'
-      console.error('Error deleting candidate:', err)
+      error.value = err.message || 'Failed to delete talent pool'
+      console.error('Error deleting talent pool:', err)
       throw err
     } finally {
       loading.value = false

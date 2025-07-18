@@ -212,7 +212,7 @@
 														{{ candidate.full_name }}
 													</div>
 													<div class="text-sm text-gray-500 truncate">
-														{{ candidate.headline || 'Chưa có thông tin' }}
+														{{ candidate.current_position || 'Chưa có thông tin' }}
 													</div>
 												</div>
 											</div>
@@ -224,7 +224,7 @@
 												{{ candidate.email }}
 											</div>
 											<div class="text-sm text-gray-500">
-												{{ getLocation(candidate) }}
+												{{ candidate.location || 'Chưa có thông tin' }}
 											</div>
 										</td>
 
@@ -571,19 +571,18 @@ const hasFilters = computed(() => {
 // Filter Options
 const statusFilterOptions = computed(() => [
 	{ label: __('All Statuses'), value: '' },
-	{ label: __('New'), value: 'NEW' },
-	{ label: __('Sourced'), value: 'SOURCED' },
-	{ label: __('Nurturing'), value: 'NURTURING' },
-	{ label: __('Engaged'), value: 'ENGAGED' },
-	{ label: __('Archived'), value: 'ARCHIVED' }
+	{ label: __('Active'), value: 'Active' },
+	{ label: __('Inactive'), value: 'Inactive' }
 ])
 
 const sourceFilterOptions = computed(() => [
 	{ label: __('All Sources'), value: '' },
-	{ label: __('Manual'), value: 'MANUAL' },
-	{ label: __('LinkedIn'), value: 'LINKEDIN' },
-	{ label: __('Email'), value: 'EMAIL' },
-	{ label: __('Referral'), value: 'REFERRAL' }
+	{ label: __('Manual'), value: 'Manual' },
+	{ label: __('LinkedIn'), value: 'LinkedIn' },
+	{ label: __('Email'), value: 'Email' },
+	{ label: __('Referral'), value: 'Referral' },
+	{ label: __('ATS Import'), value: 'ATS Import' },
+	{ label: __('Website'), value: 'Website' }
 ])
 
 const skillFilterOptions = computed(() => {
@@ -662,14 +661,23 @@ const itemsPerPageOptions = [
 
 // Helper methods for candidate list display
 const getTopSkills = (skills, limit) => {
-	const skillsArray = processSkills(skills)
+	if (!skills) return []
+	
+	// Handle JSON skills from TalentPool
+	let skillsArray = []
+	if (typeof skills === 'string') {
+		try {
+			skillsArray = JSON.parse(skills)
+		} catch (e) {
+			skillsArray = skills.split(',').map(s => s.trim()).filter(s => s)
+		}
+	} else if (Array.isArray(skills)) {
+		skillsArray = skills
+	} else if (typeof skills === 'object' && skills !== null) {
+		skillsArray = Object.values(skills)
+	}
+	
 	return skillsArray.slice(0, limit || 3)
-}
-
-const getLocation = (candidate) => {
-	// Mock location data - in real app this would come from candidate profile
-	const locations = ['Ho Chi Minh City', 'Ha Noi', 'Da Nang', 'Can Tho']
-	return candidate.location || locations[Math.floor(Math.random() * locations.length)]
 }
 
 const getStatusClasses = (status) => {

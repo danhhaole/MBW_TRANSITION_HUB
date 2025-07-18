@@ -141,28 +141,35 @@ export const getCandidateStatsService = async () => {
 
 // Helper Functions
 
-// Calculate engagement score based on last interaction
+// Calculate engagement score based on various factors
 export const calculateEngagementScore = (candidate) => {
-  if (!candidate.last_interaction) return 0
+  let score = 0
   
-  const lastInteraction = new Date(candidate.last_interaction)
-  const now = new Date()
-  const daysDiff = Math.floor((now - lastInteraction) / (1000 * 60 * 60 * 24))
+  // Base score for having complete profile
+  if (candidate.full_name) score += 20
+  if (candidate.email) score += 20
+  if (candidate.phone) score += 10
+  if (candidate.location) score += 10
+  if (candidate.current_position) score += 15
   
-  if (daysDiff <= 7) return 90
-  if (daysDiff <= 30) return 70
-  if (daysDiff <= 90) return 50
-  return 20
+  // Skills score
+  const skills = processSkills(candidate.skills)
+  if (skills.length > 0) score += Math.min(skills.length * 5, 25)
+  
+  // Experience score
+  if (candidate.experience_years) {
+    if (candidate.experience_years >= 5) score += 10
+    else if (candidate.experience_years >= 2) score += 5
+  }
+  
+  return Math.min(score, 100)
 }
 
-// Format candidate status for display
+// Format talent pool status for display
 export const formatCandidateStatus = (status) => {
   const statusMap = {
-    'NEW': { text: 'Mới', color: 'blue' },
-    'SOURCED': { text: 'Đã tìm thấy', color: 'green' },
-    'NURTURING': { text: 'Đang chăm sóc', color: 'orange' },
-    'ENGAGED': { text: 'Đã tương tác', color: 'purple' },
-    'ARCHIVED': { text: 'Đã lưu trữ', color: 'grey' }
+    'Active': { text: 'Hoạt động', color: 'green' },
+    'Inactive': { text: 'Không hoạt động', color: 'grey' }
   }
   
   return statusMap[status] || { text: status, color: 'grey' }
@@ -226,16 +233,13 @@ export const getAvatarText = (name) => {
 // Get status chip color
 export const getStatusChipColor = (status) => {
   const colorMap = {
-    'NEW': 'blue',
-    'SOURCED': 'green', 
-    'NURTURING': 'orange',
-    'ENGAGED': 'purple',
-    'ARCHIVED': 'grey'
+    'Active': 'green',
+    'Inactive': 'grey'
   }
   return colorMap[status] || 'grey'
 }
 
-// Validate candidate form data
+// Validate talent pool form data
 export const validateCandidateForm = (data) => {
   const errors = {}
   
@@ -254,6 +258,10 @@ export const validateCandidateForm = (data) => {
   
   if (data.phone && !/^[+\d\s\-()]+$/.test(data.phone)) {
     errors.phone = 'Số điện thoại không hợp lệ'
+  }
+  
+  if (data.experience_years && (isNaN(data.experience_years) || data.experience_years < 0)) {
+    errors.experience_years = 'Số năm kinh nghiệm không hợp lệ'
   }
 
   console.log(errors)

@@ -69,14 +69,37 @@
                 />
               </div>
               
-              <div class="md:col-span-2">
+              <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Chức danh/Vị trí
+                  Vị trí hiện tại
                 </label>
                 <FormControl
                   type="text"
-                  v-model="formData.headline"
+                  v-model="formData.current_position"
                   placeholder="VD: Senior Software Engineer"
+                />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Địa điểm
+                </label>
+                <FormControl
+                  type="text"
+                  v-model="formData.location"
+                  placeholder="VD: Ho Chi Minh City"
+                />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Năm kinh nghiệm
+                </label>
+                <FormControl
+                  type="number"
+                  v-model="formData.experience_years"
+                  placeholder="Nhập số năm kinh nghiệm"
+                  :min="0"
                 />
               </div>
             </div>
@@ -298,13 +321,13 @@ const formData = ref({
   full_name: '',
   email: '',
   phone: '',
-  headline: '',
-  source: 'MANUAL',
-  status: 'NEW',
+  current_position: '',
+  location: '',
+  experience_years: '',
+  source: 'Manual',
+  status: 'Active',
   skills: [],
-  cv_original_url: '',
-  ai_summary: '',
-  email_opt_out: 0
+  notes: ''
 })
 
 // Computed
@@ -313,11 +336,8 @@ const isEdit = computed(() => !!props.candidate)
 const statusOptions = computed(() => {
   try {
     const baseOptions = [
-      { label: 'Mới', value: 'NEW' },
-      { label: 'Đã tìm thấy', value: 'SOURCED' },
-      { label: 'Đang chăm sóc', value: 'NURTURING' },
-      { label: 'Đã tương tác', value: 'ENGAGED' },
-      { label: 'Đã lưu trữ', value: 'ARCHIVED' }
+      { label: 'Hoạt động', value: 'Active' },
+      { label: 'Không hoạt động', value: 'Inactive' }
     ]
     
     const filterOptions = props.filterOptions || {}
@@ -331,11 +351,8 @@ const statusOptions = computed(() => {
   } catch (error) {
     console.error('Error in statusOptions:', error)
     return [
-      { label: 'Mới', value: 'NEW' },
-      { label: 'Đã tìm thấy', value: 'SOURCED' },
-      { label: 'Đang chăm sóc', value: 'NURTURING' },
-      { label: 'Đã tương tác', value: 'ENGAGED' },
-      { label: 'Đã lưu trữ', value: 'ARCHIVED' }
+      { label: 'Hoạt động', value: 'Active' },
+      { label: 'Không hoạt động', value: 'Inactive' }
     ]
   }
 })
@@ -343,11 +360,13 @@ const statusOptions = computed(() => {
 const sourceOptions = computed(() => {
   try {
     const baseOptions = [
-      { label: 'Thủ công', value: 'MANUAL' },
-      { label: 'LinkedIn', value: 'LINKEDIN' },
-      { label: 'Website', value: 'WEBSITE' },
-      { label: 'Giới thiệu', value: 'REFERRAL' },
-      { label: 'Job Board', value: 'JOB_BOARD' }
+      { label: 'Thủ công', value: 'Manual' },
+      { label: 'LinkedIn', value: 'LinkedIn' },
+      { label: 'Website', value: 'Website' },
+      { label: 'Giới thiệu', value: 'Referral' },
+      { label: 'Job Board', value: 'Job Board' },
+      { label: 'ATS Import', value: 'ATS Import' },
+      { label: 'Email', value: 'Email' }
     ]
     
     const filterOptions = props.filterOptions || {}
@@ -361,11 +380,11 @@ const sourceOptions = computed(() => {
   } catch (error) {
     console.error('Error in sourceOptions:', error)
     return [
-      { label: 'Thủ công', value: 'MANUAL' },
-      { label: 'LinkedIn', value: 'LINKEDIN' },
-      { label: 'Website', value: 'WEBSITE' },
-      { label: 'Giới thiệu', value: 'REFERRAL' },
-      { label: 'Job Board', value: 'JOB_BOARD' }
+      { label: 'Thủ công', value: 'Manual' },
+      { label: 'LinkedIn', value: 'LinkedIn' },
+      { label: 'Website', value: 'Website' },
+      { label: 'Giới thiệu', value: 'Referral' },
+      { label: 'Job Board', value: 'Job Board' }
     ]
   }
 })
@@ -459,13 +478,13 @@ const resetForm = () => {
       full_name: '',
       email: '',
       phone: '',
-      headline: '',
-      source: 'MANUAL',
-      status: 'NEW',
+      current_position: '',
+      location: '',
+      experience_years: '',
+      source: 'Manual',
+      status: 'Active',
       skills: [],
-      cv_original_url: '',
-      ai_summary: '',
-      email_opt_out: 0
+      notes: ''
     }
     validationErrors.value = {}
   } catch (error) {
@@ -480,13 +499,13 @@ const loadCandidateData = () => {
         full_name: props.candidate.full_name || '',
         email: props.candidate.email || '',
         phone: props.candidate.phone || '',
-        headline: props.candidate.headline || '',
-        source: props.candidate.source || 'MANUAL',
-        status: props.candidate.status || 'NEW',
+        current_position: props.candidate.current_position || '',
+        location: props.candidate.location || '',
+        experience_years: props.candidate.experience_years || '',
+        source: props.candidate.source || 'Manual',
+        status: props.candidate.status || 'Active',
         skills: processSkills(props.candidate.skills) || [],
-        cv_original_url: props.candidate.cv_original_url || '',
-        ai_summary: props.candidate.ai_summary || '',
-        email_opt_out: props.candidate.email_opt_out || 0
+        notes: props.candidate.notes || ''
       }
     } else {
       resetForm()

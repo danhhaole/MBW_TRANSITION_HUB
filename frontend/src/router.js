@@ -31,6 +31,9 @@ import CandidateDataSourceManagement from './pages/CandidateDataSourceManagement
 // Candidate Data Source Management Direct
 import CandidateDataSourceManagementDirect from './pages/CandidateDataSourceManagementDirect.vue'
 
+// Candidate Pool Management
+import CandidatePoolManagement from './pages/CandidatePoolManagement.vue'
+
 const routes = [
 	{
 		path: '/',
@@ -128,6 +131,11 @@ const routes = [
 		path: '/data-sources-direct',
 		component: CandidateDataSourceManagementDirect,
 		name: 'CandidateDataSourceManagementDirect',
+	},
+	{
+		path: '/candidate-pools',
+		component: CandidatePoolManagement,
+		name: 'CandidatePoolManagement',
 	},
 ]
 

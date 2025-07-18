@@ -48,14 +48,37 @@
           />
         </div>
         
-        <div class="md:col-span-2">
+        <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            Chức danh/Vị trí
+            Vị trí hiện tại
           </label>
           <FormControl
             type="text"
-            v-model="formData.headline"
+            v-model="formData.current_position"
             placeholder="VD: Senior Software Engineer"
+          />
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Địa điểm
+          </label>
+          <FormControl
+            type="text"
+            v-model="formData.location"
+            placeholder="VD: Ho Chi Minh City"
+          />
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Năm kinh nghiệm
+          </label>
+          <FormControl
+            type="number"
+            v-model="formData.experience_years"
+            placeholder="Nhập số năm kinh nghiệm"
+            :min="0"
           />
         </div>
       </div>
@@ -141,42 +164,14 @@
       <div class="space-y-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            URL CV
-          </label>
-          <FormControl
-            type="url"
-            v-model="formData.cv_original_url"
-            placeholder="https://example.com/cv.pdf"
-            :error="errors?.cv_original_url"
-          />
-        </div>
-        
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            Tóm tắt AI
+            Ghi chú
           </label>
           <FormControl
             type="textarea"
-            v-model="formData.ai_summary"
-            placeholder="Tóm tắt thông tin ứng viên bằng AI..."
+            v-model="formData.notes"
+            placeholder="Ghi chú về ứng viên..."
             :rows="4"
           />
-        </div>
-        
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            Cài đặt email
-          </label>
-          <div class="flex items-center">
-            <FormControl
-              type="checkbox"
-              v-model="formData.email_opt_out"
-              class="mr-2"
-            />
-            <label class="text-sm text-gray-700">
-              Từ chối email marketing
-            </label>
-          </div>
         </div>
       </div>
     </div>
@@ -218,33 +213,26 @@ const props = defineProps({
       full_name: '',
       email: '',
       phone: '',
-      headline: '',
-      source: 'MANUAL',
-      status: 'NEW',
+      current_position: '',
+      location: '',
+      experience_years: '',
+      source: '',
+      status: 'Active',
       skills: [],
-      cv_original_url: '',
-      ai_summary: '',
-      email_opt_out: false
+      notes: ''
     })
   },
   sourceOptions: {
     type: Array,
     default: () => [
-      { label: 'Manual', value: 'MANUAL' },
-      { label: 'LinkedIn', value: 'LINKEDIN' },
-      { label: 'Website', value: 'WEBSITE' },
-      { label: 'Referral', value: 'REFERRAL' },
-      { label: 'Job Board', value: 'JOB_BOARD' }
+ 
     ]
   },
   statusOptions: {
     type: Array,
     default: () => [
-      { label: 'New', value: 'NEW' },
-      { label: 'Sourced', value: 'SOURCED' },
-      { label: 'Nurturing', value: 'NURTURING' },
-      { label: 'Engaged', value: 'ENGAGED' },
-      { label: 'Archived', value: 'ARCHIVED' }
+      { label: 'Active', value: 'Active' },
+      { label: 'Inactive', value: 'Inactive' }
     ]
   },
   errors: {
