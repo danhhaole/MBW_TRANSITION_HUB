@@ -11,7 +11,7 @@ def import_candidates_from_file(campaign_id: str):
     campaign = frappe.db.get_value(
         "Campaign",
         campaign_id,
-        ["campaign_name", "is_active", "status", "start_date", "end_date", "target_segment", "source_config"],
+        ["campaign_name", "is_active", "status", "start_date", "end_date", "target_segment","source_file", "source_config"],
         as_dict=True
     )
 
