@@ -1,7 +1,6 @@
 import frappe
 import unittest
 from frappe.utils import now_datetime, add_days
-from mbw_mira.campaign import controller, manual_task_handler
 from frappe.tests.utils import FrappeTestCase
 
 

@@ -150,29 +150,25 @@ app_license = "agpl-3.0"
 
 scheduler_events = {
     "cron": {
-         "*/1 * * * *": [
-          
+        "0/1 * * * *": [
+            "mbw_mira.schedulers.fetch_ats_mbw_campaigns.run",
+            "mbw_mira.schedulers.excel_source_campaigns.run",
         ],
-        "*/2 * * * *": [
-        ]       
     },
     "daily": [
         "mbw_mira.schedulers.fetch_ats_mbw_campaigns.run",
         "mbw_mira.schedulers.fetch_jobboard_topcv_campaigns.run",
         "mbw_mira.schedulers.fetch_jobboard_vietnamworks_campaigns.run",
         "mbw_mira.schedulers.fetch_social_facebook_campaigns.run",
-        "mbw_mira.schedulers.fetch_social_linkedin_campaigns.run"
-        ],
+        "mbw_mira.schedulers.fetch_social_linkedin_campaigns.run",
+        "mbw_mira.schedulers.excel_source_campaigns.run",
+    ],
     "hourly": [
         "mbw_mira.schedulers.enroll_talent_campaign.run",
         "mbw_mira.schedulers.create_actions.run",
-        
-        ],
-    "weekly": [
-        ],
-    "monthly": [
-        ],
-    
+    ],
+    "weekly": [],
+    "monthly": [],
 }
 
 
@@ -268,5 +264,4 @@ website_route_rules = [
     },
     {"from_route": "/track/event", "to_route": "mbw_mira.api.interaction.track"},
     {"from_route": "/unsubscribe", "to_route": "mbw_mira.api.email.unsubscribe"},
-    
 ]

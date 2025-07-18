@@ -12,10 +12,12 @@
   "source",
   "criteria",
   "description",
+  "column_break_kxph",
   "is_active",
   "owner_id",
   "start_date",
-  "end_date"
+  "end_date",
+  "source_config"
  ],
  "fields": [
   {
@@ -79,12 +81,21 @@
    "fieldname": "criteria",
    "fieldtype": "JSON",
    "label": "Criteria"
+  },
+  {
+   "fieldname": "column_break_kxph",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "source_config",
+   "fieldtype": "JSON",
+   "label": "Config"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-10 17:38:17.306942",
+ "modified": "2025-07-18 08:52:01.276158",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Campaign",

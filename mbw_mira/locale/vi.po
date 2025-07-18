@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MBW Mira VERSION\n"
 "Report-Msgid-Bugs-To: dev@mbw.vn\n"
-"POT-Creation-Date: 2025-07-17 22:51+0642\n"
+"POT-Creation-Date: 2025-07-18 09:35+0707\n"
 "PO-Revision-Date: 2025-07-17 22:51+0642\n"
 "Last-Translator: dev@mbw.vn\n"
 "Language: vi\n"
@@ -92,19 +92,18 @@ msgstr ""
 msgid "ACTIVE"
 msgstr ""
 
-#. Label of the ai_summary (Long Text) field in DocType 'Candidate'
+#. Label of a Long Text field in DocType 'Candidate'
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
 msgid "AI Summary"
 msgstr ""
 
-#. Label of the api_base_url (Small Text) field in DocType
-#. 'CandidateDataSource'
+#. Label of a Small Text field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "API Base URL"
 msgstr ""
 
 #. Option for the 'Auth Method' (Select) field in DocType 'CandidateDataSource'
-#. Label of the api_key (Data) field in DocType 'CandidateDataSource'
+#. Label of a Data field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "API Key"
 msgstr ""
@@ -114,7 +113,7 @@ msgstr ""
 msgid "API Key do nhà cung cấp cấp khi đăng ký ứng dụng (ví dụ: TopCV)"
 msgstr ""
 
-#. Label of the api_secret (Password) field in DocType 'CandidateDataSource'
+#. Label of a Password field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "API Secret"
 msgstr ""
@@ -147,8 +146,7 @@ msgstr ""
 msgid "ATTRACTION"
 msgstr ""
 
-#. Label of the access_token (Small Text) field in DocType
-#. 'CandidateDataSource'
+#. Label of a Small Text field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Access Token"
 msgstr ""
@@ -164,7 +162,7 @@ msgstr ""
 msgid "Action"
 msgstr ""
 
-#. Label of the action_type (Select) field in DocType 'CampaignStep'
+#. Label of a Select field in DocType 'CampaignStep'
 #: frontend/src/pages/CampaignDetailView.vue:221
 #: mbw_mira/mbw_mira/doctype/campaignstep/campaignstep.json
 msgid "Action Type"
@@ -186,9 +184,9 @@ msgstr ""
 msgid "Actions"
 msgstr ""
 
-#. Label of the is_active (Check) field in DocType 'Campaign'
+#. Label of a Check field in DocType 'Campaign'
 #. Option for the 'Status' (Select) field in DocType 'CandidateDataSource'
-#. Label of the is_active (Check) field in DocType 'CandidateDataSource'
+#. Label of a Check field in DocType 'CandidateDataSource'
 #. Option for the 'Status' (Select) field in DocType 'TalentPool'
 #: frontend/src/components/campaign/CampaignView.vue:41
 #: frontend/src/pages/CampaignDetailView.vue:1000
@@ -233,6 +231,7 @@ msgstr ""
 #: frontend/src/components/Controls/GridFieldsEditorModal.vue:58
 #: frontend/src/components/FieldLayoutEditor.vue:173
 #: frontend/src/components/SidePanelLayoutEditor.vue:98
+#: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:13
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:12
 msgid "Add Field"
 msgstr ""
@@ -307,12 +306,12 @@ msgstr ""
 msgid "Added"
 msgstr ""
 
-#. Label of the added_at (Datetime) field in DocType 'CandidateSegment'
+#. Label of a Datetime field in DocType 'CandidateSegment'
 #: mbw_mira/mbw_mira/doctype/candidatesegment/candidatesegment.json
 msgid "Added At"
 msgstr ""
 
-#. Label of the added_by (Link) field in DocType 'CandidateSegment'
+#. Label of a Link field in DocType 'CandidateSegment'
 #: mbw_mira/mbw_mira/doctype/candidatesegment/candidatesegment.json
 msgid "Added By"
 msgstr ""
@@ -375,7 +374,7 @@ msgstr ""
 msgid "And"
 msgstr ""
 
-#. Label of the applicant_id (Link) field in DocType 'CandidatePool'
+#. Label of a Link field in DocType 'CandidatePool'
 #: mbw_mira/mbw_mira/doctype/candidatepool/candidatepool.json
 msgid "Applicant"
 msgstr ""
@@ -385,12 +384,12 @@ msgstr ""
 msgid "ApplicantPool"
 msgstr ""
 
-#. Label of the application_date (Datetime) field in DocType 'ApplicantPool'
+#. Label of a Datetime field in DocType 'ApplicantPool'
 #: mbw_mira/mbw_mira/doctype/applicantpool/applicantpool.json
 msgid "Application Date"
 msgstr ""
 
-#. Label of the position (Data) field in DocType 'ApplicantPool'
+#. Label of a Data field in DocType 'ApplicantPool'
 #: mbw_mira/mbw_mira/doctype/applicantpool/applicantpool.json
 msgid "Application Position"
 msgstr ""
@@ -399,12 +398,13 @@ msgstr ""
 msgid "Applications Count"
 msgstr ""
 
-#. Label of the view (Select) field in DocType 'Form Script'
+#. Label of a Select field in DocType 'Form Script'
 #: mbw_mira/mbw_mira/doctype/form_script/form_script.json
 msgid "Apply To"
 msgstr ""
 
 #: frontend/src/components/Apps.vue:19
+#: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:2
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:1
 msgid "Apps"
 msgstr ""
@@ -428,6 +428,7 @@ msgid "Are you sure you want to delete {0} linked item(s)?"
 msgstr ""
 
 #: frontend/src/composables/frappecloud.js:24
+#: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:2
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:1
 msgid "Are you sure you want to login to your Frappe Cloud dashboard?"
 msgstr ""
@@ -445,7 +446,7 @@ msgstr ""
 msgid "Assigned Candidates"
 msgstr ""
 
-#. Label of the assignee_id (Link) field in DocType 'Action'
+#. Label of a Link field in DocType 'Action'
 #: frontend/src/pages/ActionManagement.vue:159
 #: frontend/src/pages/ActionManagement.vue:231
 #: frontend/src/pages/ActionManagement.vue:418
@@ -467,6 +468,7 @@ msgid "Assignment rule"
 msgstr ""
 
 #: frontend/src/components/Controls/GridFieldsEditorModal.vue:176
+#: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:13
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:12
 msgid "At least one field is required"
 msgstr ""
@@ -476,7 +478,7 @@ msgstr ""
 msgid "Attach"
 msgstr ""
 
-#. Label of the attachments (Long Text) field in DocType 'EmailLog'
+#. Label of a Long Text field in DocType 'EmailLog'
 #: frontend/src/pages/EmailLogManagement.vue:368
 #: frontend/src/pages/EmailLogManagement.vue:464
 #: mbw_mira/mbw_mira/doctype/emaillog/emaillog.json
@@ -487,7 +489,7 @@ msgstr ""
 msgid "Attraction"
 msgstr ""
 
-#. Label of the auth_method (Select) field in DocType 'CandidateDataSource'
+#. Label of a Select field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Auth Method"
 msgstr ""
@@ -496,12 +498,12 @@ msgstr ""
 msgid "Automatic (AI)"
 msgstr ""
 
-#. Label of the avatar (Small Text) field in DocType 'Candidate'
+#. Label of a Small Text field in DocType 'Candidate'
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
 msgid "Avatar"
 msgstr ""
 
-#. Label of the bcc (Small Text) field in DocType 'EmailLog'
+#. Label of a Small Text field in DocType 'EmailLog'
 #: mbw_mira/mbw_mira/doctype/emaillog/emaillog.json
 msgid "BCC"
 msgstr ""
@@ -542,7 +544,7 @@ msgstr ""
 msgid "Both 'segment' and 'candidates' are required."
 msgstr ""
 
-#. Label of the branding_tab (Tab Break) field in DocType 'Mira Settings'
+#. Label of a Tab Break field in DocType 'Mira Settings'
 #: mbw_mira/mbw_mira/doctype/mira_settings/mira_settings.json
 msgid "Branding"
 msgstr ""
@@ -570,7 +572,7 @@ msgstr ""
 msgid "CANCELLED"
 msgstr ""
 
-#. Label of the cc (Small Text) field in DocType 'EmailLog'
+#. Label of a Small Text field in DocType 'EmailLog'
 #: mbw_mira/mbw_mira/doctype/emaillog/emaillog.json
 msgid "CC"
 msgstr ""
@@ -615,11 +617,11 @@ msgstr ""
 msgid "Camera"
 msgstr ""
 
-#. Label of the campaign_id (Link) field in DocType 'ApplicantPool'
+#. Label of a Link field in DocType 'ApplicantPool'
 #. Name of a DocType
-#. Label of the campaign (Link) field in DocType 'CampaignStep'
-#. Label of the campaign_id (Link) field in DocType 'TalentCampaign'
-#. Label of the campaign_id (Link) field in DocType 'TalentPool'
+#. Label of a Link field in DocType 'CampaignStep'
+#. Label of a Link field in DocType 'TalentCampaign'
+#. Label of a Link field in DocType 'TalentPool'
 #: frontend/src/components/shared/TaskUpdateModal.vue:23
 #: mbw_mira/mbw_mira/doctype/applicantpool/applicantpool.json
 #: mbw_mira/mbw_mira/doctype/campaign/campaign.json
@@ -633,7 +635,7 @@ msgstr ""
 msgid "Campaign Information"
 msgstr ""
 
-#. Label of the campaign_name (Data) field in DocType 'Campaign'
+#. Label of a Data field in DocType 'Campaign'
 #: frontend/src/components/campaign/CampaignTable.vue:15
 #: frontend/src/components/campaign/CampaignWizard.vue:50
 #: frontend/src/pages/CampaignDetailView.vue:99
@@ -641,7 +643,7 @@ msgstr ""
 msgid "Campaign Name"
 msgstr ""
 
-#. Label of the campaign_step (Link) field in DocType 'Action'
+#. Label of a Link field in DocType 'Action'
 #: frontend/src/pages/ActionManagement.vue:145
 #: frontend/src/pages/ActionManagement.vue:227
 #: frontend/src/pages/ActionManagement.vue:401
@@ -649,7 +651,7 @@ msgstr ""
 msgid "Campaign Step"
 msgstr ""
 
-#. Label of the campaign_step_name (Data) field in DocType 'CampaignStep'
+#. Label of a Data field in DocType 'CampaignStep'
 #: mbw_mira/mbw_mira/doctype/campaignstep/campaignstep.json
 msgid "Campaign Step Name"
 msgstr ""
@@ -721,7 +723,7 @@ msgstr ""
 msgid "Candidate Campaign"
 msgstr ""
 
-#. Label of the candidate_count (Int) field in DocType 'TalentSegment'
+#. Label of a Int field in DocType 'TalentSegment'
 #: mbw_mira/mbw_mira/doctype/talentsegment/talentsegment.json
 msgid "Candidate Count"
 msgstr ""
@@ -841,7 +843,7 @@ msgstr ""
 msgid "Click Rate"
 msgstr ""
 
-#. Label of the client_id (Data) field in DocType 'CandidateDataSource'
+#. Label of a Data field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Client ID"
 msgstr ""
@@ -851,7 +853,7 @@ msgstr ""
 msgid "Client ID (OAuth2), lấy từ Developer Portal của nhà cung cấp"
 msgstr ""
 
-#. Label of the client_secret (Password) field in DocType 'CandidateDataSource'
+#. Label of a Password field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Client Secret"
 msgstr ""
@@ -870,11 +872,13 @@ msgstr ""
 #: frontend/src/pages/EmailLogManagement.vue:488
 #: frontend/src/pages/TalentSegmentDetailView.vue:308
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
+#: mbw_mira/public/frontend/assets/DesktopLayout-62cc0e1f.js:1
 msgid "Close"
 msgstr ""
 
 #: frontend/src/components/Layouts/AppSidebar.vue:114
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
+#: mbw_mira/public/frontend/assets/DesktopLayout-62cc0e1f.js:1
 msgid "Collapse"
 msgstr ""
 
@@ -886,18 +890,18 @@ msgstr ""
 msgid "Column"
 msgstr ""
 
-#. Label of the column_field (Data) field in DocType 'Mira View Settings'
+#. Label of a Data field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Column Field"
 msgstr ""
 
-#. Label of the columns (Code) field in DocType 'Mira View Settings'
+#. Label of a Code field in DocType 'Mira View Settings'
 #: frontend/src/components/ColumnSettings.vue:4
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Columns"
 msgstr ""
 
-#. Label of the comment (Link) field in DocType 'Mira Notification'
+#. Label of a Link field in DocType 'Mira Notification'
 #: frontend/src/components/CommentBox.vue:80
 #: frontend/src/components/CommunicationArea.vue:19
 #: mbw_mira/mbw_mira/doctype/mira_notification/mira_notification.json
@@ -917,12 +921,15 @@ msgstr ""
 msgid "Completed"
 msgstr ""
 
-#. Label of the action_config (JSON) field in DocType 'CampaignStep'
+#. Label of a JSON field in DocType 'Campaign'
+#. Label of a JSON field in DocType 'CampaignStep'
+#: mbw_mira/mbw_mira/doctype/campaign/campaign.json
 #: mbw_mira/mbw_mira/doctype/campaignstep/campaignstep.json
 msgid "Config"
 msgstr ""
 
 #: frontend/src/composables/frappecloud.js:29
+#: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:2
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:1
 msgid "Confirm"
 msgstr ""
@@ -948,7 +955,7 @@ msgstr ""
 msgid "Contact Us"
 msgstr ""
 
-#. Label of the content (Long Text) field in DocType 'EmailLog'
+#. Label of a Long Text field in DocType 'EmailLog'
 #: frontend/src/pages/EmailLogManagement.vue:377
 #: frontend/src/pages/EmailLogManagement.vue:475
 #: mbw_mira/mbw_mira/doctype/emaillog/emaillog.json
@@ -1049,13 +1056,13 @@ msgstr ""
 msgid "Create your first task"
 msgstr ""
 
-#. Label of the created_at (Datetime) field in DocType 'Short URL'
+#. Label of a Datetime field in DocType 'Short URL'
 #: mbw_mira/mbw_mira/doctype/short_url/short_url.json
 msgid "Created At"
 msgstr ""
 
-#. Label of the created_by (Link) field in DocType 'CandidateDataSource'
-#. Label of the create_by (Link) field in DocType 'Short URL'
+#. Label of a Link field in DocType 'CandidateDataSource'
+#. Label of a Link field in DocType 'Short URL'
 #: frontend/src/pages/CampaignDetailView.vue:139
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 #: mbw_mira/mbw_mira/doctype/short_url/short_url.json
@@ -1071,19 +1078,19 @@ msgstr ""
 msgid "Created:"
 msgstr ""
 
-#. Label of the criteria (JSON) field in DocType 'Campaign'
-#. Label of the criteria (JSON) field in DocType 'TalentSegment'
+#. Label of a JSON field in DocType 'Campaign'
+#. Label of a JSON field in DocType 'TalentSegment'
 #: mbw_mira/mbw_mira/doctype/campaign/campaign.json
 #: mbw_mira/mbw_mira/doctype/talentsegment/talentsegment.json
 msgid "Criteria"
 msgstr ""
 
-#. Label of the current_position (Data) field in DocType 'TalentPool'
+#. Label of a Data field in DocType 'TalentPool'
 #: mbw_mira/mbw_mira/doctype/talentpool/talentpool.json
 msgid "Current Position"
 msgstr ""
 
-#. Label of the current_step_order (Int) field in DocType 'TalentCampaign'
+#. Label of a Int field in DocType 'TalentCampaign'
 #: mbw_mira/mbw_mira/doctype/talentcampaign/talentcampaign.json
 msgid "Current Step Order"
 msgstr ""
@@ -1183,7 +1190,7 @@ msgstr ""
 msgid "Delay (Days)"
 msgstr ""
 
-#. Label of the delay_in_days (Int) field in DocType 'CampaignStep'
+#. Label of a Int field in DocType 'CampaignStep'
 #: mbw_mira/mbw_mira/doctype/campaignstep/campaignstep.json
 msgid "Delay In Day"
 msgstr ""
@@ -1242,9 +1249,9 @@ msgstr ""
 msgid "Delete {0} items"
 msgstr ""
 
-#. Label of the description (Small Text) field in DocType 'Campaign'
-#. Label of the description (Text) field in DocType 'Interaction'
-#. Label of the description (Small Text) field in DocType 'TalentSegment'
+#. Label of a Small Text field in DocType 'Campaign'
+#. Label of a Text field in DocType 'Interaction'
+#. Label of a Small Text field in DocType 'TalentSegment'
 #: frontend/src/components/talent-segment/TalentSegmentForm_clean.vue:25
 #: frontend/src/pages/CampaignDetailView.vue:103
 #: mbw_mira/mbw_mira/doctype/campaign/campaign.json
@@ -1262,6 +1269,7 @@ msgid "Description will help others understand the purpose of the segment"
 msgstr ""
 
 #: frontend/src/components/Apps.vue:63
+#: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:2
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:1
 msgid "Desk"
 msgstr ""
@@ -1290,18 +1298,14 @@ msgstr ""
 msgid "Discard"
 msgstr ""
 
-#. Label of the dt (Link) field in DocType 'Form Script'
-#. Label of the dt (Link) field in DocType 'Mira View Settings'
+#. Label of a Link field in DocType 'Form Script'
+#. Label of a Link field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/form_script/form_script.json
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "DocType"
 msgstr ""
 
-#: mbw_mira/api/api_old/link_search.py:91
-msgid "DocType {0} does not exist"
-msgstr ""
-
-#. Label of the doctype_to_sync (Data) field in DocType 'CandidateDataSource'
+#. Label of a Data field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Doctype To Sync"
 msgstr ""
@@ -1331,7 +1335,7 @@ msgstr ""
 msgid "Drop files here"
 msgstr ""
 
-#. Label of the dropdown_items_tab (Tab Break) field in DocType 'Mira Settings'
+#. Label of a Tab Break field in DocType 'Mira Settings'
 #: mbw_mira/mbw_mira/doctype/mira_settings/mira_settings.json
 msgid "Dropdown Items"
 msgstr ""
@@ -1439,6 +1443,7 @@ msgid "Edit Data Fields Layout"
 msgstr ""
 
 #: frontend/src/components/Controls/GridFieldsEditorModal.vue:7
+#: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:13
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:12
 msgid "Edit Grid Fields Layout"
 msgstr ""
@@ -1470,8 +1475,8 @@ msgstr ""
 msgid "Editing Row {0}"
 msgstr ""
 
-#. Label of the email (Data) field in DocType 'Candidate'
-#. Label of the email (Data) field in DocType 'TalentPool'
+#. Label of a Data field in DocType 'Candidate'
+#. Label of a Data field in DocType 'TalentPool'
 #: frontend/src/components/candidate/CandidateForm.vue:28
 #: frontend/src/pages/CandidateDetailView.vue:121
 #: frontend/src/pages/CandidateManagement.vue:586
@@ -1517,7 +1522,7 @@ msgstr ""
 msgid "Email Opened"
 msgstr ""
 
-#. Label of the email_opt_out (Check) field in DocType 'Candidate'
+#. Label of a Check field in DocType 'Candidate'
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
 msgid "Email Opt Out"
 msgstr ""
@@ -1555,17 +1560,17 @@ msgstr ""
 msgid "Enable"
 msgstr ""
 
-#. Label of the enable_forecasting (Check) field in DocType 'Mira Settings'
+#. Label of a Check field in DocType 'Mira Settings'
 #: mbw_mira/mbw_mira/doctype/mira_settings/mira_settings.json
 msgid "Enable Forecasting"
 msgstr ""
 
-#. Label of the enabled (Check) field in DocType 'Form Script'
+#. Label of a Check field in DocType 'Form Script'
 #: mbw_mira/mbw_mira/doctype/form_script/form_script.json
 msgid "Enabled"
 msgstr ""
 
-#. Label of the end_date (Date) field in DocType 'Campaign'
+#. Label of a Date field in DocType 'Campaign'
 #: frontend/src/pages/CampaignDetailView.vue:135
 #: mbw_mira/mbw_mira/doctype/campaign/campaign.json
 msgid "End Date"
@@ -1584,7 +1589,7 @@ msgstr ""
 msgid "Engagement Score"
 msgstr ""
 
-#. Label of the enrolled_at (Datetime) field in DocType 'TalentCampaign'
+#. Label of a Datetime field in DocType 'TalentCampaign'
 #: mbw_mira/mbw_mira/doctype/talentcampaign/talentcampaign.json
 msgid "Enrolled At"
 msgstr ""
@@ -1659,7 +1664,7 @@ msgstr ""
 msgid "Equals"
 msgstr ""
 
-#. Label of the error (Long Text) field in DocType 'EmailLog'
+#. Label of a Long Text field in DocType 'EmailLog'
 #: mbw_mira/mbw_mira/doctype/emaillog/emaillog.json
 msgid "Error"
 msgstr ""
@@ -1678,7 +1683,7 @@ msgstr ""
 msgid "Error updating document"
 msgstr ""
 
-#. Label of the evaluation_score (Float) field in DocType 'CandidatePool'
+#. Label of a Float field in DocType 'CandidatePool'
 #: mbw_mira/mbw_mira/doctype/candidatepool/candidatepool.json
 msgid "Evaluation Score"
 msgstr ""
@@ -1701,7 +1706,7 @@ msgstr ""
 msgid "Executed"
 msgstr ""
 
-#. Label of the executed_at (Datetime) field in DocType 'Action'
+#. Label of a Datetime field in DocType 'Action'
 #: frontend/src/pages/ActionManagement.vue:230
 #: frontend/src/pages/ActionManagement.vue:432
 #: mbw_mira/mbw_mira/doctype/action/action.json
@@ -1714,10 +1719,11 @@ msgstr ""
 
 #: frontend/src/components/Layouts/AppSidebar.vue:114
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
+#: mbw_mira/public/frontend/assets/DesktopLayout-62cc0e1f.js:1
 msgid "Expand"
 msgstr ""
 
-#. Label of the experience_years (Float) field in DocType 'TalentPool'
+#. Label of a Float field in DocType 'TalentPool'
 #: mbw_mira/mbw_mira/doctype/talentpool/talentpool.json
 msgid "Experience Years"
 msgstr ""
@@ -1773,6 +1779,7 @@ msgid "Failed to load form controller: {0}"
 msgstr ""
 
 #: frontend/src/components/Modals/ChangePasswordModal.vue:94
+#: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:2
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:1
 msgid "Failed to update password"
 msgstr ""
@@ -1787,7 +1794,7 @@ msgstr ""
 msgid "Fallback"
 msgstr ""
 
-#. Label of the favicon (Attach) field in DocType 'Mira Settings'
+#. Label of a Attach field in DocType 'Mira Settings'
 #: mbw_mira/mbw_mira/doctype/mira_settings/mira_settings.json
 msgid "Favicon"
 msgstr ""
@@ -1797,6 +1804,7 @@ msgid "Field"
 msgstr ""
 
 #: frontend/src/components/Controls/GridFieldsEditorModal.vue:19
+#: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:13
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:12
 msgid "Fields Order"
 msgstr ""
@@ -1817,8 +1825,8 @@ msgstr ""
 msgid "Filter"
 msgstr ""
 
-#. Label of the filters (Code) field in DocType 'Mira View Settings'
-#. Label of the filters_tab (Tab Break) field in DocType 'Mira View Settings'
+#. Label of a Code field in DocType 'Mira View Settings'
+#. Label of a Tab Break field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Filters"
 msgstr ""
@@ -1848,13 +1856,13 @@ msgstr ""
 msgid "Frappe CRM mobile"
 msgstr ""
 
-#. Label of the from_user (Link) field in DocType 'Mira Notification'
+#. Label of a Link field in DocType 'Mira Notification'
 #: mbw_mira/mbw_mira/doctype/mira_notification/mira_notification.json
 msgid "From User"
 msgstr ""
 
-#. Label of the full_name (Data) field in DocType 'Candidate'
-#. Label of the full_name (Data) field in DocType 'TalentPool'
+#. Label of a Data field in DocType 'Candidate'
+#. Label of a Data field in DocType 'TalentPool'
 #: frontend/src/components/candidate/CandidateForm.vue:15
 #: frontend/src/pages/CandidateDetailView.vue:115
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
@@ -1868,14 +1876,14 @@ msgstr ""
 msgid "Ghi chú, mô tả bổ sung"
 msgstr ""
 
-#. Label of the group_by_tab (Tab Break) field in DocType 'Mira View Settings'
+#. Label of a Tab Break field in DocType 'Mira View Settings'
 #: frontend/src/components/ViewControls.vue:379
 #: frontend/src/components/ViewControls.vue:611 frontend/src/utils/view.js:16
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Group By"
 msgstr ""
 
-#. Label of the group_by_field (Data) field in DocType 'Mira View Settings'
+#. Label of a Data field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Group By Field"
 msgstr ""
@@ -1884,7 +1892,7 @@ msgstr ""
 msgid "Group By: "
 msgstr ""
 
-#. Label of the headline (Data) field in DocType 'Candidate'
+#. Label of a Data field in DocType 'Candidate'
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
 msgid "Headline"
 msgstr ""
@@ -1898,6 +1906,7 @@ msgid "Hi John, \\n\\nCan you please provide more details on this..."
 msgstr ""
 
 #: frontend/src/components/Controls/Password.vue:19
+#: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:2
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:1
 msgid "Hide Password"
 msgstr ""
@@ -1921,7 +1930,7 @@ msgstr ""
 msgid "Hired"
 msgstr ""
 
-#. Label of the hired_date (Date) field in DocType 'CandidatePool'
+#. Label of a Date field in DocType 'CandidatePool'
 #: mbw_mira/mbw_mira/doctype/candidatepool/candidatepool.json
 msgid "Hired Date"
 msgstr ""
@@ -1961,7 +1970,7 @@ msgstr ""
 msgid "INTERVIEW_RESCHEDULED"
 msgstr ""
 
-#. Label of the icon (Data) field in DocType 'Mira View Settings'
+#. Label of a Data field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Icon"
 msgstr ""
@@ -1998,7 +2007,7 @@ msgstr ""
 msgid "Integration"
 msgstr ""
 
-#. Label of the interaction (Link) field in DocType 'ApplicantPool'
+#. Label of a Link field in DocType 'ApplicantPool'
 #. Name of a DocType
 #: mbw_mira/mbw_mira/doctype/applicantpool/applicantpool.json
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
@@ -2009,7 +2018,7 @@ msgstr ""
 msgid "Interaction Rate"
 msgstr ""
 
-#. Label of the interaction_type (Select) field in DocType 'Interaction'
+#. Label of a Select field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "Interaction Type"
 msgstr ""
@@ -2019,7 +2028,7 @@ msgstr ""
 msgid "Interactions"
 msgstr ""
 
-#. Label of the interview_feedback (Text) field in DocType 'CandidatePool'
+#. Label of a Text field in DocType 'CandidatePool'
 #: mbw_mira/mbw_mira/doctype/candidatepool/candidatepool.json
 msgid "Interview Feedback"
 msgstr ""
@@ -2046,13 +2055,13 @@ msgstr ""
 msgid "Is"
 msgstr ""
 
-#. Label of the is_default (Check) field in DocType 'Mira View Settings'
+#. Label of a Check field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Is Default"
 msgstr ""
 
-#. Label of the is_standard (Check) field in DocType 'Form Script'
-#. Label of the is_standard (Check) field in DocType 'Mira View Settings'
+#. Label of a Check field in DocType 'Form Script'
+#. Label of a Check field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/form_script/form_script.json
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Is Standard"
@@ -2074,19 +2083,19 @@ msgstr ""
 msgid "John Doe"
 msgstr ""
 
-#. Label of the kanban_tab (Tab Break) field in DocType 'Mira View Settings'
+#. Label of a Tab Break field in DocType 'Mira View Settings'
 #: frontend/src/components/ViewControls.vue:384
 #: frontend/src/components/ViewControls.vue:600 frontend/src/utils/view.js:20
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Kanban"
 msgstr ""
 
-#. Label of the kanban_columns (Code) field in DocType 'Mira View Settings'
+#. Label of a Code field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Kanban Columns"
 msgstr ""
 
-#. Label of the kanban_fields (Code) field in DocType 'Mira View Settings'
+#. Label of a Code field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Kanban Fields"
 msgstr ""
@@ -2097,12 +2106,20 @@ msgstr ""
 msgid "Khoảng thời gian giữa các lần đồng bộ (phút)"
 msgstr ""
 
+#: mbw_mira/api/file_parser.py:50
+msgid "Không tìm thấy DocType '{0}'"
+msgstr ""
+
+#: mbw_mira/api/file_parser.py:20
+msgid "Không tìm thấy file với tên: {0}"
+msgstr ""
+
 #. Description of the 'Active' (Check) field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Kích hoạt hoặc tắt nguồn dữ liệu này"
 msgstr ""
 
-#. Label of the label (Data) field in DocType 'Mira View Settings'
+#. Label of a Data field in DocType 'Mira View Settings'
 #: frontend/src/components/ColumnSettings.vue:109
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Label"
@@ -2116,12 +2133,12 @@ msgstr ""
 msgid "Last Contact"
 msgstr ""
 
-#. Label of the last_error (Small Text) field in DocType 'CandidateDataSource'
+#. Label of a Small Text field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Last Error"
 msgstr ""
 
-#. Label of the last_interaction (Datetime) field in DocType 'Candidate'
+#. Label of a Datetime field in DocType 'Candidate'
 #: frontend/src/components/candidate/CandidateTable.vue:20
 #: frontend/src/pages/CandidateDetailView.vue:160
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
@@ -2136,7 +2153,7 @@ msgstr ""
 msgid "Last Quarter"
 msgstr ""
 
-#. Label of the last_sync_at (Datetime) field in DocType 'CandidateDataSource'
+#. Label of a Datetime field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Last Sync At"
 msgstr ""
@@ -2177,7 +2194,7 @@ msgstr ""
 msgid "Link"
 msgstr ""
 
-#. Label of the cv_original_url (Small Text) field in DocType 'Candidate'
+#. Label of a Small Text field in DocType 'Candidate'
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
 msgid "Link CV"
 msgstr ""
@@ -2189,7 +2206,7 @@ msgid "LinkedIn"
 msgstr ""
 
 #. Option for the 'Apply To' (Select) field in DocType 'Form Script'
-#. Label of the list_tab (Tab Break) field in DocType 'Mira View Settings'
+#. Label of a Tab Break field in DocType 'Mira View Settings'
 #: frontend/src/components/ViewControls.vue:374
 #: frontend/src/components/ViewControls.vue:589
 #: frontend/src/pages/CampaignManagement.vue:71 frontend/src/utils/view.js:12
@@ -2207,8 +2224,7 @@ msgstr ""
 msgid "Liên kết mà ứng viên đã nhấp vào (nếu có)"
 msgstr ""
 
-#. Label of the load_default_columns (Check) field in DocType 'Mira View
-#. Settings'
+#. Label of a Check field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Load Default Columns"
 msgstr ""
@@ -2243,22 +2259,23 @@ msgstr ""
 msgid "Loading..."
 msgstr ""
 
-#. Label of the location (Data) field in DocType 'TalentPool'
+#. Label of a Data field in DocType 'TalentPool'
 #: mbw_mira/mbw_mira/doctype/talentpool/talentpool.json
 msgid "Location"
 msgstr ""
 
 #: frontend/src/composables/frappecloud.js:23
+#: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:2
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:1
 msgid "Login to Frappe Cloud?"
 msgstr ""
 
-#. Label of the brand_logo (Attach) field in DocType 'Mira Settings'
+#. Label of a Attach field in DocType 'Mira Settings'
 #: mbw_mira/mbw_mira/doctype/mira_settings/mira_settings.json
 msgid "Logo"
 msgstr ""
 
-#. Label of the long_url (Small Text) field in DocType 'Short URL'
+#. Label of a Small Text field in DocType 'Short URL'
 #: mbw_mira/mbw_mira/doctype/short_url/short_url.json
 msgid "Long URL"
 msgstr ""
@@ -2329,6 +2346,7 @@ msgstr ""
 
 #: frontend/src/components/Notifications.vue:19
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
+#: mbw_mira/public/frontend/assets/DesktopLayout-62cc0e1f.js:1
 msgid "Mark all as read"
 msgstr ""
 
@@ -2349,13 +2367,17 @@ msgstr ""
 msgid "Mention"
 msgstr ""
 
-#. Label of the message (HTML Editor) field in DocType 'Mira Notification'
+#. Label of a HTML Editor field in DocType 'Mira Notification'
 #: mbw_mira/mbw_mira/doctype/mira_notification/mira_notification.json
 msgid "Message"
 msgstr ""
 
 #: frontend/src/components/talent-segment/TalentSegmentForm.vue:268
 msgid "Minimum Salary (million VND)"
+msgstr ""
+
+#: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:2
+msgid "Mira"
 msgstr ""
 
 #. Name of a DocType
@@ -2430,7 +2452,7 @@ msgstr ""
 msgid "NURTURING"
 msgstr ""
 
-#. Label of the brand_name (Data) field in DocType 'Mira Settings'
+#. Label of a Data field in DocType 'Mira Settings'
 #: frontend/src/components/ViewControls.vue:779
 #: mbw_mira/mbw_mira/doctype/mira_settings/mira_settings.json
 msgid "Name"
@@ -2471,7 +2493,7 @@ msgstr ""
 msgid "Next 6 Months"
 msgstr ""
 
-#. Label of the next_action_at (Datetime) field in DocType 'TalentCampaign'
+#. Label of a Datetime field in DocType 'TalentCampaign'
 #: mbw_mira/mbw_mira/doctype/talentcampaign/talentcampaign.json
 msgid "Next Action At"
 msgstr ""
@@ -2588,6 +2610,7 @@ msgstr ""
 
 #: frontend/src/components/Notifications.vue:83
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
+#: mbw_mira/public/frontend/assets/DesktopLayout-62cc0e1f.js:1
 msgid "No new notifications"
 msgstr ""
 
@@ -2660,6 +2683,7 @@ msgstr ""
 #: frontend/src/components/Controls/GridRowFieldsModal.vue:10
 #: frontend/src/components/Modals/DataFieldsModal.vue:10
 #: frontend/src/components/Modals/QuickEntryModal.vue:10
+#: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:13
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:12
 msgid "Not Saved"
 msgstr ""
@@ -2677,10 +2701,10 @@ msgstr ""
 msgid "Note"
 msgstr ""
 
-#. Label of the notes (Text) field in DocType 'ApplicantPool'
-#. Label of the notes (Small Text) field in DocType 'CandidateDataSource'
-#. Label of the notes (Text) field in DocType 'CandidatePool'
-#. Label of the notes (Text) field in DocType 'TalentPool'
+#. Label of a Text field in DocType 'ApplicantPool'
+#. Label of a Small Text field in DocType 'CandidateDataSource'
+#. Label of a Text field in DocType 'CandidatePool'
+#. Label of a Text field in DocType 'TalentPool'
 #: mbw_mira/mbw_mira/doctype/applicantpool/applicantpool.json
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 #: mbw_mira/mbw_mira/doctype/candidatepool/candidatepool.json
@@ -2692,19 +2716,17 @@ msgstr ""
 msgid "Notification"
 msgstr ""
 
-#. Label of the notification_text (Text) field in DocType 'Mira Notification'
+#. Label of a Text field in DocType 'Mira Notification'
 #: mbw_mira/mbw_mira/doctype/mira_notification/mira_notification.json
 msgid "Notification Text"
 msgstr ""
 
-#. Label of the notification_type_doc (Dynamic Link) field in DocType 'Mira
-#. Notification'
+#. Label of a Dynamic Link field in DocType 'Mira Notification'
 #: mbw_mira/mbw_mira/doctype/mira_notification/mira_notification.json
 msgid "Notification Type Doc"
 msgstr ""
 
-#. Label of the notification_type_doctype (Link) field in DocType 'Mira
-#. Notification'
+#. Label of a Link field in DocType 'Mira Notification'
 #: mbw_mira/mbw_mira/doctype/mira_notification/mira_notification.json
 msgid "Notification Type Doctype"
 msgstr ""
@@ -2713,6 +2735,8 @@ msgstr ""
 #: frontend/src/components/Mobile/MobileSidebar.vue:23
 #: frontend/src/components/Notifications.vue:17
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
+#: mbw_mira/public/frontend/assets/DesktopLayout-62cc0e1f.js:1
+#: mbw_mira/public/frontend/assets/MobileLayout-39580b5a.js:1
 #: mbw_mira/public/frontend/assets/MobileLayout-3bbdcb8b.js:1
 msgid "Notifications"
 msgstr ""
@@ -2767,8 +2791,8 @@ msgstr ""
 msgid "Order"
 msgstr ""
 
-#. Label of the order_by_tab (Tab Break) field in DocType 'Mira View Settings'
-#. Label of the order_by (Code) field in DocType 'Mira View Settings'
+#. Label of a Tab Break field in DocType 'Mira View Settings'
+#. Label of a Code field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Order By"
 msgstr ""
@@ -2793,8 +2817,8 @@ msgstr ""
 msgid "Owner"
 msgstr ""
 
-#. Label of the owner_id (Link) field in DocType 'Campaign'
-#. Label of the owner_id (Data) field in DocType 'TalentSegment'
+#. Label of a Link field in DocType 'Campaign'
+#. Label of a Data field in DocType 'TalentSegment'
 #: mbw_mira/mbw_mira/doctype/campaign/campaign.json
 #: mbw_mira/mbw_mira/doctype/talentsegment/talentsegment.json
 msgid "Owner ID"
@@ -2826,6 +2850,7 @@ msgid "Parameter 'candidates' must be a list."
 msgstr ""
 
 #: frontend/src/components/Modals/ChangePasswordModal.vue:87
+#: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:2
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:1
 msgid "Password updated successfully"
 msgstr ""
@@ -2845,8 +2870,8 @@ msgstr ""
 msgid "Pending Manual"
 msgstr ""
 
-#. Label of the phone (Data) field in DocType 'Candidate'
-#. Label of the phone (Data) field in DocType 'TalentPool'
+#. Label of a Data field in DocType 'Candidate'
+#. Label of a Data field in DocType 'TalentPool'
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
 #: mbw_mira/mbw_mira/doctype/talentpool/talentpool.json
 msgid "Phone"
@@ -2871,7 +2896,7 @@ msgstr ""
 msgid "Pin View"
 msgstr ""
 
-#. Label of the pinned (Check) field in DocType 'Mira View Settings'
+#. Label of a Check field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Pinned"
 msgstr ""
@@ -2910,7 +2935,7 @@ msgstr ""
 msgid "Profile"
 msgstr ""
 
-#. Label of the profile_data (JSON) field in DocType 'Candidate'
+#. Label of a JSON field in DocType 'Candidate'
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
 msgid "Profile Data"
 msgstr ""
@@ -2920,7 +2945,7 @@ msgstr ""
 msgid "Progress"
 msgstr ""
 
-#. Label of the public (Check) field in DocType 'Mira View Settings'
+#. Label of a Check field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Public"
 msgstr ""
@@ -2959,7 +2984,7 @@ msgstr ""
 msgid "Quá hạn"
 msgstr ""
 
-#. Label of the read (Check) field in DocType 'Mira Notification'
+#. Label of a Check field in DocType 'Mira Notification'
 #: mbw_mira/mbw_mira/doctype/mira_notification/mira_notification.json
 msgid "Read"
 msgstr ""
@@ -2968,7 +2993,7 @@ msgstr ""
 msgid "Recently Completed"
 msgstr ""
 
-#. Label of the recipients (Small Text) field in DocType 'EmailLog'
+#. Label of a Small Text field in DocType 'EmailLog'
 #: frontend/src/pages/EmailLogManagement.vue:158
 #: frontend/src/pages/EmailLogManagement.vue:319
 #: frontend/src/pages/EmailLogManagement.vue:436
@@ -2984,13 +3009,12 @@ msgstr ""
 msgid "Recruitment Campaign List"
 msgstr ""
 
-#. Label of the reference_name (Dynamic Link) field in DocType 'Mira
-#. Notification'
+#. Label of a Dynamic Link field in DocType 'Mira Notification'
 #: mbw_mira/mbw_mira/doctype/mira_notification/mira_notification.json
 msgid "Reference Doc"
 msgstr ""
 
-#. Label of the reference_doctype (Link) field in DocType 'Mira Notification'
+#. Label of a Link field in DocType 'Mira Notification'
 #: mbw_mira/mbw_mira/doctype/mira_notification/mira_notification.json
 msgid "Reference Doctype"
 msgstr ""
@@ -3005,8 +3029,7 @@ msgstr ""
 msgid "Refresh"
 msgstr ""
 
-#. Label of the refresh_token (Small Text) field in DocType
-#. 'CandidateDataSource'
+#. Label of a Small Text field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Refresh Token"
 msgstr ""
@@ -3056,6 +3079,7 @@ msgstr ""
 #: frontend/src/components/Controls/GridRowFieldsModal.vue:30
 #: frontend/src/components/Modals/DataFieldsModal.vue:30
 #: frontend/src/components/Modals/QuickEntryModal.vue:30
+#: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:13
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:12
 msgid "Reset"
 msgstr ""
@@ -3072,13 +3096,13 @@ msgstr ""
 msgid "Restore"
 msgstr ""
 
-#. Label of the restore_defaults (Button) field in DocType 'Mira Settings'
+#. Label of a Button field in DocType 'Mira Settings'
 #: mbw_mira/mbw_mira/doctype/mira_settings/mira_settings.js:13
 #: mbw_mira/mbw_mira/doctype/mira_settings/mira_settings.json
 msgid "Restore Defaults"
 msgstr ""
 
-#. Label of the result (JSON) field in DocType 'Action'
+#. Label of a JSON field in DocType 'Action'
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "Result"
 msgstr ""
@@ -3087,7 +3111,7 @@ msgstr ""
 msgid "Result (JSON)"
 msgstr ""
 
-#. Label of the resume (Attach) field in DocType 'ApplicantPool'
+#. Label of a Attach field in DocType 'ApplicantPool'
 #: mbw_mira/mbw_mira/doctype/applicantpool/applicantpool.json
 msgid "Resume"
 msgstr ""
@@ -3096,12 +3120,12 @@ msgstr ""
 msgid "Retake"
 msgstr ""
 
-#. Label of the route_name (Data) field in DocType 'Mira View Settings'
+#. Label of a Data field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Route Name"
 msgstr ""
 
-#. Label of the rows (Code) field in DocType 'Mira View Settings'
+#. Label of a Code field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Rows"
 msgstr ""
@@ -3165,7 +3189,7 @@ msgstr ""
 msgid "Sales User"
 msgstr ""
 
-#. Label of the same_site (Check) field in DocType 'CandidateDataSource'
+#. Label of a Check field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Same Site?"
 msgstr ""
@@ -3177,6 +3201,7 @@ msgstr ""
 #: frontend/src/components/Modals/QuickEntryModal.vue:26
 #: frontend/src/components/ViewControls.vue:123
 #: frontend/src/pages/EmailLogManagement.vue:402
+#: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:13
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:12
 msgid "Save"
 msgstr ""
@@ -3204,14 +3229,14 @@ msgstr ""
 msgid "Scheduled"
 msgstr ""
 
-#. Label of the scheduled_at (Datetime) field in DocType 'Action'
+#. Label of a Datetime field in DocType 'Action'
 #: frontend/src/pages/ActionManagement.vue:229
 #: frontend/src/pages/ActionManagement.vue:427
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "Scheduled At"
 msgstr ""
 
-#. Label of the script (Code) field in DocType 'Form Script'
+#. Label of a Code field in DocType 'Form Script'
 #: mbw_mira/mbw_mira/doctype/form_script/form_script.json
 msgid "Script"
 msgstr ""
@@ -3249,8 +3274,8 @@ msgstr ""
 msgid "Section"
 msgstr ""
 
-#. Label of the segment_id (Link) field in DocType 'CandidateSegment'
-#. Label of the segment_id (Link) field in DocType 'TalentPool'
+#. Label of a Link field in DocType 'CandidateSegment'
+#. Label of a Link field in DocType 'TalentPool'
 #: mbw_mira/mbw_mira/doctype/candidatesegment/candidatesegment.json
 #: mbw_mira/mbw_mira/doctype/talentpool/talentpool.json
 msgid "Segment"
@@ -3304,7 +3329,7 @@ msgstr ""
 msgid "Send email"
 msgstr ""
 
-#. Label of the sender (Data) field in DocType 'EmailLog'
+#. Label of a Data field in DocType 'EmailLog'
 #: frontend/src/pages/EmailLogManagement.vue:96
 #: frontend/src/pages/EmailLogManagement.vue:159
 #: frontend/src/pages/EmailLogManagement.vue:330
@@ -3339,7 +3364,7 @@ msgstr ""
 msgid "Setting up"
 msgstr ""
 
-#. Label of the defaults_tab (Tab Break) field in DocType 'Mira Settings'
+#. Label of a Tab Break field in DocType 'Mira Settings'
 #: mbw_mira/mbw_mira/doctype/mira_settings/mira_settings.json
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Settings"
@@ -3349,7 +3374,7 @@ msgstr ""
 msgid "Setup your password"
 msgstr ""
 
-#. Label of the short_code (Data) field in DocType 'Short URL'
+#. Label of a Data field in DocType 'Short URL'
 #: mbw_mira/mbw_mira/doctype/short_url/short_url.json
 msgid "Short Code"
 msgstr ""
@@ -3359,7 +3384,7 @@ msgstr ""
 msgid "Short URL"
 msgstr ""
 
-#. Label of the shortlist_date (Date) field in DocType 'CandidatePool'
+#. Label of a Date field in DocType 'CandidatePool'
 #: mbw_mira/mbw_mira/doctype/candidatepool/candidatepool.json
 msgid "Shortlist Date"
 msgstr ""
@@ -3372,6 +3397,7 @@ msgid "Shortlisted"
 msgstr ""
 
 #: frontend/src/components/Controls/Password.vue:19
+#: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:2
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:1
 msgid "Show Password"
 msgstr ""
@@ -3396,8 +3422,8 @@ msgstr ""
 msgid "Showing"
 msgstr ""
 
-#. Label of the skills (Small Text) field in DocType 'Candidate'
-#. Label of the skills (JSON) field in DocType 'TalentPool'
+#. Label of a Small Text field in DocType 'Candidate'
+#. Label of a JSON field in DocType 'TalentPool'
 #: frontend/src/components/candidate/CandidateTable.vue:18
 #: frontend/src/pages/TalentSegmentDetailView.vue:436
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
@@ -3432,9 +3458,9 @@ msgstr ""
 msgid "Sort"
 msgstr ""
 
-#. Label of the source (Link) field in DocType 'Campaign'
-#. Label of the source (Data) field in DocType 'Candidate'
-#. Label of the source (Link) field in DocType 'TalentPool'
+#. Label of a Link field in DocType 'Campaign'
+#. Label of a Data field in DocType 'Candidate'
+#. Label of a Link field in DocType 'TalentPool'
 #: frontend/src/components/Modals/EditValueModal.vue:10
 #: frontend/src/components/candidate/CandidateTable.vue:19
 #: frontend/src/pages/CandidateDetailView.vue:154
@@ -3444,17 +3470,17 @@ msgstr ""
 msgid "Source"
 msgstr ""
 
-#. Label of the action (Link) field in DocType 'Interaction'
+#. Label of a Link field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "Source Action"
 msgstr ""
 
-#. Label of the source_name (Select) field in DocType 'CandidateDataSource'
+#. Label of a Select field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Source Name"
 msgstr ""
 
-#. Label of the source_type (Select) field in DocType 'CandidateDataSource'
+#. Label of a Select field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Source Type"
 msgstr ""
@@ -3472,7 +3498,7 @@ msgstr ""
 msgid "Standard Views"
 msgstr ""
 
-#. Label of the start_date (Date) field in DocType 'Campaign'
+#. Label of a Date field in DocType 'Campaign'
 #: frontend/src/pages/CampaignDetailView.vue:131
 #: mbw_mira/mbw_mira/doctype/campaign/campaign.json
 msgid "Start Date"
@@ -3490,15 +3516,15 @@ msgstr ""
 msgid "Start date cannot be after end date"
 msgstr ""
 
-#. Label of the status (Select) field in DocType 'Action'
-#. Label of the application_status (Select) field in DocType 'ApplicantPool'
-#. Label of the status (Select) field in DocType 'Campaign'
-#. Label of the status (Select) field in DocType 'Candidate'
-#. Label of the status (Select) field in DocType 'CandidateDataSource'
-#. Label of the status (Select) field in DocType 'CandidatePool'
-#. Label of the status (Select) field in DocType 'EmailLog'
-#. Label of the status (Select) field in DocType 'TalentCampaign'
-#. Label of the status (Select) field in DocType 'TalentPool'
+#. Label of a Select field in DocType 'Action'
+#. Label of a Select field in DocType 'ApplicantPool'
+#. Label of a Select field in DocType 'Campaign'
+#. Label of a Select field in DocType 'Candidate'
+#. Label of a Select field in DocType 'CandidateDataSource'
+#. Label of a Select field in DocType 'CandidatePool'
+#. Label of a Select field in DocType 'EmailLog'
+#. Label of a Select field in DocType 'TalentCampaign'
+#. Label of a Select field in DocType 'TalentPool'
 #: frontend/src/components/campaign/CampaignTable.vue:16
 #: frontend/src/components/candidate/CandidateTable.vue:22
 #: frontend/src/pages/ActionManagement.vue:138
@@ -3527,12 +3553,12 @@ msgstr ""
 msgid "Step Name"
 msgstr ""
 
-#. Label of the step_order (Int) field in DocType 'CampaignStep'
+#. Label of a Int field in DocType 'CampaignStep'
 #: mbw_mira/mbw_mira/doctype/campaignstep/campaignstep.json
 msgid "Step Order"
 msgstr ""
 
-#. Label of the subject (Data) field in DocType 'EmailLog'
+#. Label of a Data field in DocType 'EmailLog'
 #: frontend/src/pages/EmailLogManagement.vue:157
 #: frontend/src/pages/EmailLogManagement.vue:310
 #: frontend/src/pages/EmailLogManagement.vue:432
@@ -3555,18 +3581,17 @@ msgstr ""
 msgid "Switch camera"
 msgstr ""
 
-#. Label of the sync_direction (Select) field in DocType 'CandidateDataSource'
+#. Label of a Select field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Sync Direction"
 msgstr ""
 
-#. Label of the sync_frequency_minutes (Int) field in DocType
-#. 'CandidateDataSource'
+#. Label of a Int field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Sync Frequency Minutes"
 msgstr ""
 
-#. Label of the synced_at (Datetime) field in DocType 'TalentPool'
+#. Label of a Datetime field in DocType 'TalentPool'
 #: mbw_mira/mbw_mira/doctype/talentpool/talentpool.json
 msgid "Synced At"
 msgstr ""
@@ -3611,10 +3636,10 @@ msgstr ""
 msgid "TEST_STARTED"
 msgstr ""
 
-#. Label of the talent_id (Link) field in DocType 'ApplicantPool'
-#. Label of the talent_id (Link) field in DocType 'CandidateSegment'
-#. Label of the talent_id (Link) field in DocType 'Interaction'
-#. Label of the talent_id (Link) field in DocType 'TalentCampaign'
+#. Label of a Link field in DocType 'ApplicantPool'
+#. Label of a Link field in DocType 'CandidateSegment'
+#. Label of a Link field in DocType 'Interaction'
+#. Label of a Link field in DocType 'TalentCampaign'
 #: mbw_mira/mbw_mira/doctype/applicantpool/applicantpool.json
 #: mbw_mira/mbw_mira/doctype/candidatesegment/candidatesegment.json
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
@@ -3622,7 +3647,7 @@ msgstr ""
 msgid "Talent"
 msgstr ""
 
-#. Label of the talent_campaign_id (Link) field in DocType 'Action'
+#. Label of a Link field in DocType 'Action'
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "Talent Campaign"
 msgstr ""
@@ -3630,7 +3655,7 @@ msgstr ""
 #: frontend/src/pages/TalentSegmentDetailView.vue:908
 #: frontend/src/pages/TalentSegmentManagement.vue:268
 msgid "Talent Pools"
-msgstr ""
+msgstr "Nguồn nhân tài"
 
 #: frontend/src/components/talent-segment/TalentSegmentDetailDialog.vue:26
 msgid "Talent Segment Details"
@@ -3638,7 +3663,7 @@ msgstr ""
 
 #: frontend/src/pages/TalentSegment.vue:16
 msgid "Talent Segments"
-msgstr ""
+msgstr "Phân khúc"
 
 #: frontend/src/pages/TalentSegmentManagement.vue:535
 msgid "Talent pool has been deleted successfully"
@@ -3670,7 +3695,7 @@ msgstr ""
 msgid "Target Candidates"
 msgstr ""
 
-#. Label of the target_segment (Link) field in DocType 'Campaign'
+#. Label of a Link field in DocType 'Campaign'
 #: mbw_mira/mbw_mira/doctype/campaign/campaign.json
 msgid "Target Segment"
 msgstr ""
@@ -3699,7 +3724,7 @@ msgstr ""
 msgid "Task updated successfully"
 msgstr ""
 
-#. Label of the template (Long Text) field in DocType 'CampaignStep'
+#. Label of a Long Text field in DocType 'CampaignStep'
 #: mbw_mira/mbw_mira/doctype/campaignstep/campaignstep.json
 msgid "Template"
 msgstr ""
@@ -3763,6 +3788,14 @@ msgstr ""
 msgid "This will restore (if not exist) all the default statuses, custom fields and layouts. Delete & Restore will delete default layouts and then restore them."
 msgstr ""
 
+#: mbw_mira/api/file_parser.py:12
+msgid "Thiếu 'file_name' trong request."
+msgstr ""
+
+#: mbw_mira/api/file_parser.py:15
+msgid "Thiếu 'meta_doctype' trong request."
+msgstr ""
+
 #. Description of the 'Description' (Text) field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "Thông tin bổ sung hoặc nội dung liên quan"
@@ -3806,13 +3839,13 @@ msgstr ""
 msgid "Timespan"
 msgstr ""
 
-#. Label of the title (Data) field in DocType 'TalentSegment'
+#. Label of a Data field in DocType 'TalentSegment'
 #: frontend/src/pages/CandidateDetailView.vue:148
 #: mbw_mira/mbw_mira/doctype/talentsegment/talentsegment.json
 msgid "Title"
 msgstr ""
 
-#. Label of the title_field (Data) field in DocType 'Mira View Settings'
+#. Label of a Data field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Title Field"
 msgstr ""
@@ -3822,7 +3855,7 @@ msgstr ""
 msgid "Tiêu đề email"
 msgstr ""
 
-#. Label of the to_user (Link) field in DocType 'Mira Notification'
+#. Label of a Link field in DocType 'Mira Notification'
 #: mbw_mira/mbw_mira/doctype/mira_notification/mira_notification.json
 msgid "To User"
 msgstr ""
@@ -3832,8 +3865,7 @@ msgstr ""
 msgid "Today"
 msgstr ""
 
-#. Label of the token_expires_at (Datetime) field in DocType
-#. 'CandidateDataSource'
+#. Label of a Datetime field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Token Expires At"
 msgstr ""
@@ -3875,10 +3907,10 @@ msgstr ""
 msgid "Twilio"
 msgstr ""
 
-#. Label of the type (Select) field in DocType 'Campaign'
-#. Label of the type (Select) field in DocType 'Mira Notification'
-#. Label of the type (Select) field in DocType 'Mira View Settings'
-#. Label of the type (Select) field in DocType 'TalentSegment'
+#. Label of a Select field in DocType 'Campaign'
+#. Label of a Select field in DocType 'Mira Notification'
+#. Label of a Select field in DocType 'Mira View Settings'
+#. Label of a Select field in DocType 'TalentSegment'
 #: frontend/src/pages/CampaignDetailView.vue:118
 #: mbw_mira/mbw_mira/doctype/campaign/campaign.json
 #: mbw_mira/mbw_mira/doctype/mira_notification/mira_notification.json
@@ -3924,7 +3956,7 @@ msgstr ""
 msgid "Tạo mới"
 msgstr ""
 
-#. Label of the url (Data) field in DocType 'Interaction'
+#. Label of a Data field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "URL (if any)"
 msgstr ""
@@ -3971,6 +4003,7 @@ msgstr ""
 #: frontend/src/components/Modals/CreateDocumentModal.vue:8
 #: frontend/src/components/Section.vue:21
 #: frontend/src/components/SidePanelLayoutEditor.vue:19
+#: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:2
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:1
 msgid "Untitled"
 msgstr ""
@@ -4002,7 +4035,7 @@ msgstr ""
 msgid "Upload"
 msgstr ""
 
-#. Label of the user (Link) field in DocType 'Mira View Settings'
+#. Label of a Link field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "User"
 msgstr ""
@@ -4128,6 +4161,7 @@ msgid "in {0} days"
 msgstr ""
 
 #: frontend/src/utils/index.js:100
+#: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:13
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:12
 msgid "in {0} h"
 msgstr ""
@@ -4137,6 +4171,7 @@ msgid "in {0} hours"
 msgstr ""
 
 #: frontend/src/utils/index.js:98
+#: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:13
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:12
 msgid "in {0} m"
 msgstr ""
@@ -4189,6 +4224,7 @@ msgstr ""
 
 #: frontend/src/components/Notifications.vue:65
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
+#: mbw_mira/public/frontend/assets/DesktopLayout-62cc0e1f.js:1
 msgid "mentioned you in {0}"
 msgstr ""
 
@@ -4201,6 +4237,7 @@ msgid "next"
 msgstr ""
 
 #: frontend/src/utils/index.js:96 frontend/src/utils/index.js:116
+#: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:13
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:12
 msgid "now"
 msgstr ""
@@ -4236,6 +4273,7 @@ msgid "to"
 msgstr ""
 
 #: frontend/src/utils/index.js:104 frontend/src/utils/index.js:150
+#: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:13
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:12
 msgid "tomorrow"
 msgstr ""
@@ -4322,6 +4360,10 @@ msgstr ""
 #. Description of the 'Email' (Data) field in DocType 'Candidate'
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
 msgid "Địa chỉ email chính, dùng để liên lạc. Phải là duy nhất. VD: \"nguyen.van.an@email.com\""
+msgstr ""
+
+#: mbw_mira/api/file_parser.py:31
+msgid "Định dạng file không hỗ trợ."
 msgstr ""
 
 #: frontend/src/data/script.js:330
