@@ -23,9 +23,10 @@ def run():
         step = frappe.get_value("CampaignStep", a.campaign_step, "action_type")
         if step not in ("SEND_EMAIL", "SEND_SMS"):
             frappe.enqueue(
-                method="your_app.workers.process_action.check_pending_action",
+                "mbw_mira.workers.process_action.check_pending_action",
                 queue="short",
                 timeout=120,
+                job_name=a.name,
                 action_name=a.name
             )
             frappe.logger().warn(f"Pending too long: {a.name} ({step})")

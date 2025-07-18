@@ -16,6 +16,7 @@ def fetch_mbw_ats_data(campaign_name):
     campaign = frappe.get_doc("Campaign", campaign_name)
     source_name = campaign.source
     segment_id = campaign.target_segment
+    print("[MBW ATS] Start fetching data for campaign",campaign)
 
     with FrappeSiteProvider(source_name) as provider:
         if provider.sync_direction not in ("Pull", "Both"):
@@ -29,13 +30,13 @@ def fetch_mbw_ats_data(campaign_name):
 
         try:
             filters = criteria.get("filters", {})
-            fields = criteria.get("fields", ["name", "can_full_name", "can_email", "can_phone"])
+            fields = criteria.get("fields", ["name", "can_full_name", "can_email", "can_phone","candidate_skill"])
             logger.info(f"[MBW ATS] Fetching candidates with filters={filters}, fields={fields}")
-            candidates = provider.get_list("Candidate", filters=filters, fields=fields)
+            candidates = provider.get_list("ATS_Candidate", filters=filters, fields=fields)
+            if candidates:
+                save_candidates_to_talent_pool(candidates, campaign, source_name, segment_id)
 
-            save_candidates_to_talent_pool(candidates, campaign, source_name, segment_id)
-
-            logger.info(f"[MBW ATS] Done fetching & saving {len(candidates)} candidates for campaign: {campaign.campaign_name}")
+                logger.info(f"[MBW ATS] Done fetching & saving {len(candidates)} candidates for campaign: {campaign.campaign_name}")
 
         except Exception as e:
             logger.error(f"[MBW ATS] Failed fetching data for campaign: {campaign.campaign_name} — {str(e)}", exc_info=True)
@@ -46,21 +47,22 @@ def save_candidates_to_talent_pool(candidates, campaign, source_name, segment_id
     Chuẩn hóa & lưu danh sách ứng viên vào TalentPool
     """
     count = 0
-    for record in candidates:
-        doc_data = map_mbw_ats_to_talentpool(
-            record,
-            campaign_name=campaign.name,
-            source_name=source_name,
-            segment_id=segment_id
-        )
-        try:
-            doc = frappe.get_doc(doc_data)
-            doc.insert()
-            frappe.db.commit()
-            logger.info(f"[TalentPool] Inserted: {doc.full_name} / {doc.email}")
-            count += 1
-        except Exception as e:
-            logger.error(f"[TalentPool] Failed to save {doc_data.get('full_name')} — {str(e)}", exc_info=True)
+    if candidates:
+        for record in candidates:
+            doc_data = map_mbw_ats_to_talentpool(
+                record,
+                campaign_name=campaign.name,
+                source_name=source_name,
+                segment_id=segment_id
+            )
+            try:
+                doc = frappe.get_doc(doc_data)
+                doc.insert()
+                frappe.db.commit()
+                logger.info(f"[TalentPool] Inserted: {doc.full_name} / {doc.email}")
+                count += 1
+            except Exception as e:
+                logger.error(f"[TalentPool] Failed to save {doc_data.get('full_name')} — {str(e)}", exc_info=True)
     logger.info(f"[TalentPool] Total inserted: {count}")
 
 
@@ -70,6 +72,7 @@ def map_mbw_ats_to_talentpool(record, campaign_name, source_name, segment_id=Non
     """
     status = "Active" if record.get("status") == "Ứng tuyển" else "Inactive"
 
+    # Gộp ghi chú
     notes_parts = []
     if record.get("can_referral"):
         notes_parts.append(f"Referral: {record['can_referral']}")
@@ -77,9 +80,10 @@ def map_mbw_ats_to_talentpool(record, campaign_name, source_name, segment_id=Non
         notes_parts.append(f"CV: {record['can_cv']}")
     notes = "\n".join(notes_parts)
 
+    # Kỹ năng: nếu chỉ có một skill thì vẫn chuyển về list, rồi join
     skills = []
-    if record.get("major_id"):
-        skills.append(record["major_id"])
+    if record.get("candidate_skill"):
+        skills.append(record["candidate_skill"])
 
     current_position = record.get("can_last_workplace") or record.get("major_id")
 
@@ -89,7 +93,7 @@ def map_mbw_ats_to_talentpool(record, campaign_name, source_name, segment_id=Non
         "email": record.get("can_email"),
         "phone": record.get("can_phone"),
         "source": source_name,
-        "skills": skills,
+        "skills": ", ".join(skills) if skills else "",
         "location": record.get("can_address") or record.get("can_region"),
         "experience_years": 0,
         "current_position": current_position,
@@ -97,5 +101,5 @@ def map_mbw_ats_to_talentpool(record, campaign_name, source_name, segment_id=Non
         "campaign_id": campaign_name,
         "segment_id": segment_id,
         "synced_at": datetime.now(),
-        "notes": notes
+        "notes": notes,
     }

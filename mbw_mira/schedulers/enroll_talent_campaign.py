@@ -24,10 +24,11 @@ def run():
             continue
 
         frappe.enqueue(
-            method="mbw_mira.workers.talent_enrollment.enroll_talent_for_campaign",
+            "mbw_mira.workers.talent_enrollment.enroll_talent_for_campaign",
             campaign_id=c.name,
+            job_name=c.name,
             queue="default",
-            timeout=600
+            
         )
 
         frappe.logger().info(f"🕒 Enqueued enrollment worker for campaign: {c.campaign_name}")

@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MBW Mira VERSION\n"
 "Report-Msgid-Bugs-To: dev@mbw.vn\n"
-"POT-Creation-Date: 2025-07-18 09:39+0707\n"
-"PO-Revision-Date: 2025-07-18 09:39+0707\n"
+"POT-Creation-Date: 2025-07-18 10:31+0707\n"
+"PO-Revision-Date: 2025-07-18 10:31+0707\n"
 "Last-Translator: dev@mbw.vn\n"
 "Language-Team: dev@mbw.vn\n"
 "MIME-Version: 1.0\n"
@@ -878,7 +878,7 @@ msgstr ""
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 #: mbw_mira/public/frontend/assets/DesktopLayout-62cc0e1f.js:1
 msgid "Collapse"
-msgstr ""
+msgstr "Thu gọn"
 
 #: frontend/src/components/FieldLayoutEditor.vue:350
 msgid "Collapsible"

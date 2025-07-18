@@ -20,10 +20,11 @@ def run():
     for c in campaigns:
         if is_vietnamworks_source(c.source):
             frappe.enqueue(
-                method="mbw_mira.schedulers.jobboard.fetch_vietnamworks_data",
+                "mbw_mira.schedulers.jobboard.fetch_vietnamworks_data.fetch_vietnamworks_data",
                 campaign_name=c.name,
                 queue="default",
-                timeout=600
+                job_name=c.name,
+                
             )
             frappe.logger().info(f"Enqueued VietnamWorks fetch for campaign: {c.campaign_name}")
 

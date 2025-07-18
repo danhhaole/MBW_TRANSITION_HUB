@@ -16,14 +16,13 @@ def run():
         },
         fields=["name", "campaign_name", "source"]
     )
-
     for c in campaigns:
         if is_mbw_ats_source(c.source):
             frappe.enqueue(
-                method="mbw_mira.schedulers.ats.fetch_mbw_ats_data",
+                "mbw_mira.workers.ats.fetch_mbw_ats_data.fetch_mbw_ats_data",
                 campaign_name=c.name,
-                queue="default",
-                timeout=600
+                job_name=c.name,
+                queue="short"
             )
             frappe.logger().info(f"Enqueued MBW ATS fetch for campaign: {c.campaign_name}")
 

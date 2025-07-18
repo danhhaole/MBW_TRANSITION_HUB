@@ -20,10 +20,11 @@ def run():
     for c in campaigns:
         if is_linkedin_source(c.source):
             frappe.enqueue(
-                method="mbw_mira.schedulers.social.fetch_linkedin_data",
+                "mbw_mira.workers.social.fetch_linkedin_data.fetch_linkedin_data",
                 campaign_name=c.name,
                 queue="default",
-                timeout=600
+                job_name=c.name,
+                
             )
             frappe.logger().info(f"Enqueued LinkedIn fetch for campaign: {c.campaign_name}")
 

@@ -21,7 +21,7 @@ def run():
         step = frappe.get_value("CampaignStep", a.campaign_step, "action_type")
         if step == "SEND_SMS":
             frappe.enqueue(
-                method="your_app.workers.process_action.process_sms_action",
+                "your_app.workers.process_action.process_sms_action",
                 queue="short",
                 timeout=300,
                 action_name=a.name

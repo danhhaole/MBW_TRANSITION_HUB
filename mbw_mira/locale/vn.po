@@ -1,4 +1,4 @@
-# Vietnamese translations for MBW Mira.
+# vn translations for MBW Mira.
 # Copyright (C) 2025 MBWCloud Co.
 # This file is distributed under the same license as the MBW Mira project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
@@ -7,12 +7,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MBW Mira VERSION\n"
 "Report-Msgid-Bugs-To: dev@mbw.vn\n"
-"POT-Creation-Date: 2025-07-18 10:31+0707\n"
-"PO-Revision-Date: 2025-07-17 22:51+0642\n"
+"POT-Creation-Date: 2025-07-18 10:07+0707\n"
+"PO-Revision-Date: 2025-07-18 10:07+0707\n"
 "Last-Translator: dev@mbw.vn\n"
-"Language: vi\n"
+"Language: vn\n"
 "Language-Team: dev@mbw.vn\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -874,13 +873,13 @@ msgstr ""
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 #: mbw_mira/public/frontend/assets/DesktopLayout-62cc0e1f.js:1
 msgid "Close"
-msgstr "Đóng"
+msgstr ""
 
 #: frontend/src/components/Layouts/AppSidebar.vue:114
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 #: mbw_mira/public/frontend/assets/DesktopLayout-62cc0e1f.js:1
 msgid "Collapse"
-msgstr "Thu gọn"
+msgstr ""
 
 #: frontend/src/components/FieldLayoutEditor.vue:350
 msgid "Collapsible"
@@ -888,7 +887,7 @@ msgstr ""
 
 #: frontend/src/components/FieldLayoutEditor.vue:423
 msgid "Column"
-msgstr "Cột"
+msgstr ""
 
 #. Label of a Data field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
@@ -1213,11 +1212,11 @@ msgstr ""
 #: frontend/src/pages/TalentSegmentDetailView.vue:44
 #: frontend/src/pages/TalentSegmentManagement.vue:247
 msgid "Delete"
-msgstr "Xóa"
+msgstr ""
 
 #: mbw_mira/mbw_mira/doctype/mira_settings/mira_settings.js:26
 msgid "Delete & Restore"
-msgstr "Xóa và khôi phục"
+msgstr ""
 
 #: frontend/src/pages/ActionManagement.vue:196
 #: frontend/src/pages/EmailLogManagement.vue:128
@@ -3655,7 +3654,7 @@ msgstr ""
 #: frontend/src/pages/TalentSegmentDetailView.vue:908
 #: frontend/src/pages/TalentSegmentManagement.vue:268
 msgid "Talent Pools"
-msgstr "Nguồn nhân tài"
+msgstr ""
 
 #: frontend/src/components/talent-segment/TalentSegmentDetailDialog.vue:26
 msgid "Talent Segment Details"
@@ -3663,7 +3662,7 @@ msgstr ""
 
 #: frontend/src/pages/TalentSegment.vue:16
 msgid "Talent Segments"
-msgstr "Phân khúc"
+msgstr ""
 
 #: frontend/src/pages/TalentSegmentManagement.vue:535
 msgid "Talent pool has been deleted successfully"

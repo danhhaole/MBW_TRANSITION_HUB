@@ -24,7 +24,7 @@ def run():
         step = frappe.get_value("CampaignStep", a.campaign_step, "action_type")
         if step == "SEND_EMAIL":
             frappe.enqueue(
-                method="mbw_mira.workers.process_action.process_email_action",
+                "mbw_mira.workers.process_action.process_email_action",
                 queue="short",
                 timeout=300,
                 action_name=a.name

@@ -62,44 +62,45 @@ def import_candidates_from_file(campaign_id: str):
         logger.error(f"Error reading file {file_name}: {str(e)}", exc_info=True)
         return
 
-    logger.info(f"Loaded {len(df)} rows from {file_name}")
 
     inserted = 0
-    for _, row in df.iterrows():
-        # 6. Map dữ liệu theo cấu hình
-        raw_data = {}
-        for mapping in field_mapping:
-            source_col = mapping.get("column_name")
-            target_field = mapping.get("field_name")
-            raw_data[target_field] = row.get(source_col)
+    if df and df.iterrows():
+        for _, row in df.iterrows():
+            # 6. Map dữ liệu theo cấu hình
+            raw_data = {}
+            for mapping in field_mapping:
+                source_col = mapping.get("column_name")
+                target_field = mapping.get("field_name")
+                raw_data[target_field] = row.get(source_col)
 
-        # 7. Chuẩn hóa field cho TalentPool
-        doc_data = {
-            "doctype": "TalentPool",
-            "full_name": raw_data.get("full_name"),
-            "email": raw_data.get("email"),
-            "phone": raw_data.get("phone"),
-            "source": raw_data.get("source") or "Excel Import",  # nếu không ánh xạ được thì gán mặc định
-            "skills": [raw_data.get("skills")] if raw_data.get("skills") else [],
-            "location": raw_data.get("location"),
-            "experience_years": float(raw_data.get("experience_years") or 0),
-            "current_position": raw_data.get("current_position") or raw_data.get("major_id"),
-            "status": raw_data.get("status") if raw_data.get("status") in ["Active", "Inactive"] else "Inactive",
-            "campaign_id": campaign_id,
-            "segment_id": campaign.target_segment,
-            "synced_at": datetime.now(),
-            "notes": raw_data.get("notes") 
-        }
+                    # 7. Chuẩn hóa field cho TalentPool
+            doc_data = {
+                "doctype": "TalentPool",
+                "full_name": raw_data.get("full_name"),
+                "email": raw_data.get("email"),
+                "phone": raw_data.get("phone"),
+                "source": raw_data.get("source") or "Excel Import",
+                "skills": raw_data.get("skills") or "",  # CHỈ sửa dòng này
+                "location": raw_data.get("location"),
+                "experience_years": float(raw_data.get("experience_years") or 0),
+                "current_position": raw_data.get("current_position") or raw_data.get("major_id"),
+                "status": raw_data.get("status") if raw_data.get("status") in ["Active", "Inactive"] else "Inactive",
+                "campaign_id": campaign_id,
+                "segment_id": campaign.target_segment,
+                "synced_at": datetime.now(),
+                "notes": raw_data.get("notes")
+            }
 
-        # 8. Insert
-        try:
-            doc = frappe.get_doc(doc_data)
-            doc.insert()
-            frappe.db.commit()
-            logger.info(f"[TalentPool] Inserted: {doc.full_name} / {doc.email}")
-            inserted += 1
-        except Exception as e:
-            logger.error(f"[TalentPool] Failed: {doc_data.get('full_name')} — {str(e)}", exc_info=True)
 
-    logger.info(f"[TalentPool] Total inserted from '{file_name}': {inserted}")
+            # 8. Insert
+            try:
+                doc = frappe.get_doc(doc_data)
+                doc.insert()
+                frappe.db.commit()
+                logger.info(f"[TalentPool] Inserted: {doc.full_name} / {doc.email}")
+                inserted += 1
+            except Exception as e:
+                logger.error(f"[TalentPool] Failed: {doc_data.get('full_name')} — {str(e)}", exc_info=True)
+
+        logger.info(f"[TalentPool] Total inserted from '{file_name}': {inserted}")
 

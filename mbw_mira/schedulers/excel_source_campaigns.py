@@ -40,10 +40,10 @@ def run():
 
         # Enqueue xử lý file
         frappe.enqueue(
-            method="mbw_mira.workers.import_excel_for_talent.import_candidates_from_file",
+            "mbw_mira.workers.import_excel_for_talent.import_candidates_from_file",
             campaign_id=c.name,
-            queue="default",
-            timeout=600
+            job_name=c.name,
+            queue="default"
         )
 
         logger.info(f"Enqueued import from Excel for campaign: {c.campaign_name}")
