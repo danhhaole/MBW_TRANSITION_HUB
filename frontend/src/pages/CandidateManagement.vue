@@ -72,29 +72,57 @@
 						<div class="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
 							<!-- Import/Export/Refresh Buttons -->
 							<div class="flex flex-wrap items-center gap-2">
-								<Button @click="handleImport"
-									class="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 border border-blue-300 rounded-lg transition-colors duration-200"
-									:title="__('Import Candidates')">
-									<div class="flex items-center">
-										<FeatherIcon name="download" class="w-4 h-4 mr-1.5 text-blue-500" />
-										<span class="text-blue-500">{{ __('Import') }}</span>
-									</div>
+								<Button
+									variant="outline"
+									theme="blue"
+									@click="handleImport"
+									:title="__('Import Candidates')"
+								>
+									<template #prefix>
+										<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+										</svg>
+									</template>
+									{{ __('Import') }}
 								</Button>
-								<Button @click="handleExport"
-									class="inline-flex items-center px-3 py-2 text-sm font-medium text-green-600 hover:text-green-800 hover:bg-green-50 border border-green-300 rounded-lg transition-colors duration-200"
-									:title="__('Export Candidates')">
-									<div class="flex items-center">
-										<FeatherIcon name="upload" class="w-4 h-4 mr-1.5 text-green-500" />
-										<span class="text-green-500">{{ __('Export') }}</span>
-									</div>
+								<Button
+									variant="outline"
+									theme="green"
+									@click="handleExport"
+									:title="__('Export Candidates')"
+								>
+									<template #prefix>
+										<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+										</svg>
+									</template>
+									{{ __('Export') }}
 								</Button>
-								<Button @click="handleRefresh" :disabled="loading"
-									class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 border border-gray-300 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-									:title="__('Refresh Data')">
-									<div class="flex items-center">
-										<FeatherIcon name="refresh-cw" class="w-4 h-4 mr-1.5" :class="{ 'animate-spin': loading }" />
-										<span>{{ __('Refresh') }}</span>
-									</div>
+								<Button
+									variant="outline"
+									theme="gray"
+									@click="handleRefresh"
+									:loading="loading"
+									:title="__('Refresh Data')"
+								>
+									<template #prefix>
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											class="h-4 w-4"
+											:class="{ 'animate-spin': loading }"
+											fill="none"
+											viewBox="0 0 24 24"
+											stroke="currentColor"
+										>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+											/>
+										</svg>
+									</template>
+									{{ __('Refresh') }}
 								</Button>
 							</div>
 
@@ -478,7 +506,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCandidate } from '@/composables/useCandidate'
 import { useToast } from '@/composables/useToast'
-import { FormControl, Breadcrumbs } from 'frappe-ui'
+import { FormControl, Breadcrumbs, Button } from 'frappe-ui'
 import { CandidateViewModal, CandidateEditModal } from '@/components/candidate'
 import { Avatar } from 'frappe-ui'
 import LayoutHeader from '@/components/LayoutHeader.vue'

@@ -34,23 +34,18 @@
       <!-- Actions Bar -->
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <!-- Search -->
-        <div class="relative">
-          <input v-model="searchQuery" type="text" :placeholder="__('Search talent pools...')"
-            class="w-80 pl-10 pr-4 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            :class="{ 'animate-pulse': isSearching }" @input="handleSearch">
-          <svg xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none"
-            viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
-          <button v-if="searchQuery" @click="clearSearch"
-            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+        <div class="w-80">
+          <FormControl
+            v-model="searchQuery"
+            type="text"
+            :placeholder="__('Search talent pools...')"
+            :prefix-icon="'search'"
+            :suffix-icon="searchQuery ? 'x' : undefined"
+            @input="handleSearch"
+            @click-suffix="clearSearch"
+            :class="{ 'animate-pulse': isSearching }"
+            variant="outline"
+          />
         </div>
 
         <!-- Actions -->
@@ -286,7 +281,7 @@
 import { ref, computed, onMounted, watch, onUnmounted, h } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTalentSegment } from '@/composables/useTalentSegment'
-import { Button, Dialog, Dropdown, FeatherIcon } from 'frappe-ui'
+import { Button, Dialog, Dropdown, FeatherIcon, FormControl } from 'frappe-ui'
 import TalentSegmentForm from '@/components/talent-segment/TalentSegmentForm.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import { Breadcrumbs } from 'frappe-ui'
