@@ -9,7 +9,7 @@
   "talent_id",
   "campaign_id",
   "segment_id",
-  "interaction",
+  "interaction_id",
   "application_date",
   "position",
   "resume",
@@ -34,12 +34,6 @@
    "fieldname": "notes",
    "fieldtype": "Text",
    "label": "Notes"
-  },
-  {
-   "fieldname": "interaction",
-   "fieldtype": "Link",
-   "label": "Interaction",
-   "options": "Interaction"
   },
   {
    "fieldname": "talent_id",
@@ -79,12 +73,18 @@
    "fieldtype": "Link",
    "label": "Segment",
    "options": "TalentSegment"
+  },
+  {
+   "fieldname": "interaction_id",
+   "fieldtype": "Link",
+   "label": "Interaction",
+   "options": "Interaction"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-19 11:03:35.277896",
+ "modified": "2025-07-19 11:06:54.408093",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "ApplicantPool",
