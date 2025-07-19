@@ -4,15 +4,15 @@ from frappe.utils import now_datetime
 
 def enroll_talent_for_campaign(campaign_id):
     """
-    Worker: tìm ứng viên từ TalentPool theo campaign và tạo TalentProfilesCampaign.
+    Worker: tìm ứng viên từ TalentProfiles theo campaign và tạo TalentProfilesCampaign.
     """
 
-    frappe.logger().info(f"[Worker] Enrolling from TalentPool for campaign: {campaign_id}")
+    frappe.logger().info(f"[Worker] Enrolling from TalentProfiles for campaign: {campaign_id}")
 
     talents = get_talents_for_campaign(campaign_id)
 
     if not talents:
-        frappe.logger().info(f"No talents found in TalentPool for campaign {campaign_id}")
+        frappe.logger().info(f"No talents found in TalentProfiles for campaign {campaign_id}")
         return
 
     # tìm bước đầu tiên trong CampaignStep (nếu có)
@@ -29,10 +29,10 @@ def enroll_talent_for_campaign(campaign_id):
 
 def get_talents_for_campaign(campaign_id):
     """
-    Lấy danh sách bản ghi TalentPool theo campaign_id
+    Lấy danh sách bản ghi TalentProfiles theo campaign_id
     """
     return frappe.get_all(
-        "TalentPool",
+        "TalentProfiles",
         filters={"campaign_id": campaign_id},
         fields=["name", "segment_id", "full_name", "email"]
     )

@@ -11,7 +11,11 @@ def import_candidates_from_file(campaign_id: str):
     campaign = frappe.db.get_value(
         "Campaign",
         campaign_id,
-        ["campaign_name", "is_active", "status", "start_date", "end_date", "target_segment","source_file", "source_config"],
+        [
+            "campaign_name", "is_active", "status",
+            "start_date", "end_date", "target_segment",
+            "source_file", "source_config"
+        ],
         as_dict=True
     )
 
@@ -34,7 +38,7 @@ def import_candidates_from_file(campaign_id: str):
         logger.error(f"Failed to parse source_config JSON: {e}", exc_info=True)
         return
 
-    file_name = campaign.source_file.split("/").pop()
+    file_name = campaign.source_file.split("/")[-1]
     field_mapping = source_config.get("field_mapping", [])
 
     if not file_name or not field_mapping:
@@ -62,9 +66,8 @@ def import_candidates_from_file(campaign_id: str):
         logger.error(f"Error reading file {file_name}: {str(e)}", exc_info=True)
         return
 
-
     inserted = 0
-    if df and df.iterrows():
+    if df is not None and not df.empty:
         for _, row in df.iterrows():
             # 6. Map dữ liệu theo cấu hình
             raw_data = {}
@@ -73,34 +76,51 @@ def import_candidates_from_file(campaign_id: str):
                 target_field = mapping.get("field_name")
                 raw_data[target_field] = row.get(source_col)
 
-                    # 7. Chuẩn hóa field cho TalentPool
+            # 7. Chuẩn hóa dữ liệu theo TalentProfiles mới
+            skills_raw = raw_data.get("skills")
+            if isinstance(skills_raw, str):
+                skills_list = [skill.strip() for skill in skills_raw.split(",") if skill.strip()]
+            elif isinstance(skills_raw, list):
+                skills_list = skills_raw
+            else:
+                skills_list = []
+
+            status_map = {
+                "Ứng tuyển": "ENGAGED",
+                "Tiềm năng": "NURTURING",
+                "Mới": "NEW",
+                "Đã liên hệ": "SOURCED",
+                "Không phù hợp": "ARCHIVED",
+                "Active": "ENGAGED",
+                "Inactive": "ARCHIVED"
+            }
+            status = status_map.get(raw_data.get("status"), "NEW")
+
             doc_data = {
-                "doctype": "TalentPool",
+                "doctype": "TalentProfiles",
                 "full_name": raw_data.get("full_name"),
                 "email": raw_data.get("email"),
                 "phone": raw_data.get("phone"),
                 "source": raw_data.get("source") or "Excel Import",
-                "skills": raw_data.get("skills") or "",  # CHỈ sửa dòng này
-                "location": raw_data.get("location"),
-                "experience_years": float(raw_data.get("experience_years") or 0),
-                "current_position": raw_data.get("current_position") or raw_data.get("major_id"),
-                "status": raw_data.get("status") if raw_data.get("status") in ["Active", "Inactive"] else "Inactive",
-                "campaign_id": campaign_id,
-                "segment_id": campaign.target_segment,
-                "synced_at": datetime.now(),
-                "notes": raw_data.get("notes")
+                "skills": json.dumps(skills_list),
+                "avatar": raw_data.get("avatar"),
+                "headline": raw_data.get("current_position") or raw_data.get("major_id"),
+                "cv_original_url": raw_data.get("cv_original_url"),
+                "profile_data": raw_data.get("profile_data"),  # đảm bảo đây là JSON string hoặc dict
+                "ai_summary": raw_data.get("notes"),
+                "status": status,
+                "last_interaction": datetime.now(),
+                "email_opt_out": int(raw_data.get("email_opt_out") or 0)
             }
-
 
             # 8. Insert
             try:
                 doc = frappe.get_doc(doc_data)
                 doc.insert()
                 frappe.db.commit()
-                logger.info(f"[TalentPool] Inserted: {doc.full_name} / {doc.email}")
+                logger.info(f"[TalentProfiles] Inserted: {doc.full_name} / {doc.email}")
                 inserted += 1
             except Exception as e:
-                logger.error(f"[TalentPool] Failed: {doc_data.get('full_name')} — {str(e)}", exc_info=True)
+                logger.error(f"[TalentProfiles] Failed: {doc_data.get('full_name')} — {str(e)}", exc_info=True)
 
-        logger.info(f"[TalentPool] Total inserted from '{file_name}': {inserted}")
-
+        logger.info(f"[TalentProfiles] Total inserted from '{file_name}': {inserted}")

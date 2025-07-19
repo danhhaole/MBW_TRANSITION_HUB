@@ -3,12 +3,13 @@ import frappe
 import logging
 from mbw_mira.integrations.ats.frappe_site_provider import FrappeSiteProvider
 from datetime import datetime
+import json
 
 logger = logging.getLogger(__name__)
 
 def fetch_mbw_ats_data(campaign_name):
     """
-    Worker: Fetch ACTIVE campaign data from MBW ATS and save to TalentPool.
+    Worker: Fetch ACTIVE campaign data from MBW ATS and save to TalentProfiles.
     """
     logger.info(f"[MBW ATS] Start fetching data for campaign: {campaign_name}")
 
@@ -44,12 +45,12 @@ def fetch_mbw_ats_data(campaign_name):
 
 def save_candidates_to_talent_pool(candidates, campaign, source_name, segment_id):
     """
-    Chuẩn hóa & lưu danh sách ứng viên vào TalentPool
+    Chuẩn hóa & lưu danh sách ứng viên vào TalentProfiles
     """
     count = 0
     if candidates:
         for record in candidates:
-            doc_data = map_mbw_ats_to_talentpool(
+            doc_data = map_mbw_ats_to_talentprofiles(
                 record,
                 campaign_name=campaign.name,
                 source_name=source_name,
@@ -59,47 +60,59 @@ def save_candidates_to_talent_pool(candidates, campaign, source_name, segment_id
                 doc = frappe.get_doc(doc_data)
                 doc.insert()
                 frappe.db.commit()
-                logger.info(f"[TalentPool] Inserted: {doc.full_name} / {doc.email}")
+                logger.info(f"[TalentProfiles] Inserted: {doc.full_name} / {doc.email}")
                 count += 1
             except Exception as e:
-                logger.error(f"[TalentPool] Failed to save {doc_data.get('full_name')} — {str(e)}", exc_info=True)
-    logger.info(f"[TalentPool] Total inserted: {count}")
+                logger.error(f"[TalentProfiles] Failed to save {doc_data.get('full_name')} — {str(e)}", exc_info=True)
+    logger.info(f"[TalentProfiles] Total inserted: {count}")
 
 
-def map_mbw_ats_to_talentpool(record, campaign_name, source_name, segment_id=None):
+def map_mbw_ats_to_talentprofiles(record, campaign_name, source_name, segment_id=None):
     """
-    Chuẩn hóa dữ liệu từ MBW ATS → TalentPool
+    Chuẩn hóa dữ liệu từ MBW ATS → TalentProfiles
     """
-    status = "Active" if record.get("status") == "Ứng tuyển" else "Inactive"
 
-    # Gộp ghi chú
-    notes_parts = []
+    # Chuyển đổi status
+    status_map = {
+        "Ứng tuyển": "ENGAGED",
+        "Tiềm năng": "NURTURING",
+        "Mới": "NEW",
+        "Đã liên hệ": "SOURCED",
+        "Không phù hợp": "ARCHIVED",
+    }
+    status = status_map.get(record.get("status"), "NEW")
+
+    # Gộp ghi chú thành ai_summary nếu muốn giữ lại
+    ai_summary_parts = []
     if record.get("can_referral"):
-        notes_parts.append(f"Referral: {record['can_referral']}")
+        ai_summary_parts.append(f"Referral: {record['can_referral']}")
     if record.get("can_cv"):
-        notes_parts.append(f"CV: {record['can_cv']}")
-    notes = "\n".join(notes_parts)
+        ai_summary_parts.append(f"CV: {record['can_cv']}")
+    ai_summary = "\n".join(ai_summary_parts) or None
 
-    # Kỹ năng: nếu chỉ có một skill thì vẫn chuyển về list, rồi join
+    # Kỹ năng
     skills = []
     if record.get("candidate_skill"):
         skills.append(record["candidate_skill"])
+    skills_json_string = json.dumps(skills) if skills else "[]"
 
-    current_position = record.get("can_last_workplace") or record.get("major_id")
+    # Headline (current position)
+    headline = record.get("can_last_workplace") or record.get("major_id")
 
     return {
-        "doctype": "TalentPool",
+        "doctype": "TalentProfiles",
         "full_name": record.get("can_full_name"),
         "email": record.get("can_email"),
         "phone": record.get("can_phone"),
         "source": source_name,
-        "skills": ", ".join(skills) if skills else "",
-        "location": record.get("can_address") or record.get("can_region"),
-        "experience_years": 0,
-        "current_position": current_position,
+        "skills": skills_json_string,
+        "avatar": None,
+        "headline": headline,
+        "cv_original_url": None,
+        "profile_data": None,
+        "ai_summary": ai_summary,
         "status": status,
-        "campaign_id": campaign_name,
-        "segment_id": segment_id,
-        "synced_at": datetime.now(),
-        "notes": notes,
+        "last_interaction": datetime.now(),
+        "email_opt_out": 0
+        # Các field như campaign_name hay segment_id bạn có thể gắn thêm bằng cách mở rộng doctype nếu cần
     }
