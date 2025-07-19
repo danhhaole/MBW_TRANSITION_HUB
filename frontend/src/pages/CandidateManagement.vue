@@ -7,7 +7,7 @@
 			<template #right-header>
 				<div class="flex items-center">
 						<Button variant="solid" theme="gray" @click="openCreateModal" :loading="loading"
-							class="px-6 py-4">
+							class="">
 							<template #prefix>
 								<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
 									stroke="currentColor">
@@ -46,66 +46,65 @@
 			<!-- Filters and Controls -->
 			<div class="bg-white rounded-lg border border-gray-200 mb-6">
 				<div class="p-4">
-					<div class="grid grid-cols-1 md:grid-cols-8 gap-4 items-center">
-						<!-- Search -->
-						<div class="md:col-span-2">
-							<FormControl v-model="filters.search" type="text" :placeholder="__('Search pools...')"
-								:prefix-icon="'search'" @input="debouncedSearch" />
+					<div class="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
+						<!-- Left side: Filters -->
+						<div class="flex flex-col sm:flex-row gap-4 flex-1 min-w-0">
+							<!-- Search -->
+							<div class="flex-1 min-w-0 sm:max-w-xs">
+								<FormControl v-model="filters.search" type="text" :placeholder="__('Search pools...')"
+									:prefix-icon="'search'" @input="debouncedSearch" />
+							</div>
+
+							<!-- Status Filter -->
+							<div class="sm:w-40">
+								<FormControl v-model="filters.status" type="select" :options="statusFilterOptions"
+									@change="updateStatus(filters.status)" />
+							</div>
+
+							<!-- Source Filter -->
+							<div class="sm:w-48">
+								<FormControl v-model="filters.source" type="select" :options="sourceFilterOptions"
+									@change="updateSource(filters.source)" />
+							</div>
 						</div>
 
-						<!-- Status Filter -->
-						<div>
-							<FormControl v-model="filters.status" type="select" :options="statusFilterOptions"
-								@change="updateStatus(filters.status)" />
-						</div>
+						<!-- Right side: Action buttons -->
+						<div class="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+							<!-- Import/Export/Refresh Buttons -->
+							<div class="flex flex-wrap items-center gap-2">
+								<Button @click="handleImport"
+									class="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 border border-blue-300 rounded-lg transition-colors duration-200"
+									:title="__('Import Candidates')">
+									<div class="flex items-center">
+										<FeatherIcon name="download" class="w-4 h-4 mr-1.5 text-blue-500" />
+										<span class="text-blue-500">{{ __('Import') }}</span>
+									</div>
+								</Button>
+								<Button @click="handleExport"
+									class="inline-flex items-center px-3 py-2 text-sm font-medium text-green-600 hover:text-green-800 hover:bg-green-50 border border-green-300 rounded-lg transition-colors duration-200"
+									:title="__('Export Candidates')">
+									<div class="flex items-center">
+										<FeatherIcon name="upload" class="w-4 h-4 mr-1.5 text-green-500" />
+										<span class="text-green-500">{{ __('Export') }}</span>
+									</div>
+								</Button>
+								<Button @click="handleRefresh" :disabled="loading"
+									class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 border border-gray-300 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+									:title="__('Refresh Data')">
+									<div class="flex items-center">
+										<FeatherIcon name="refresh-cw" class="w-4 h-4 mr-1.5" :class="{ 'animate-spin': loading }" />
+										<span>{{ __('Refresh') }}</span>
+									</div>
+								</Button>
+							</div>
 
-						<!-- Source Filter -->
-						<div>
-							<FormControl v-model="filters.source" type="select" :options="sourceFilterOptions"
-								@change="updateSource(filters.source)" />
-						</div>
-
-						<!-- Skills Filter -->
-						<!-- <div>
-            <FormControl
-              v-model="filters.skills"
-              type="autocomplete"
-              placeholder="Chọn kỹ năng..."
-              :options="skillFilterOptions"
-              multiple
-              :allow-custom="true"
-              @change="updateSkills(filters.skills)"
-            />
-          </div> -->
-
-						<!-- Import/Export Buttons -->
-						<div class="flex items-center space-x-2">
-							<button @click="handleImport"
-								class="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 border border-blue-300 rounded-lg transition-colors duration-200"
-								:title="__('Import Candidates')">
-								<svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-										d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
-								</svg>
-								{{ __('Import') }}
-							</button>
-							<button @click="handleExport"
-								class="inline-flex items-center px-3 py-2 text-sm font-medium text-green-600 hover:text-green-800 hover:bg-green-50 border border-green-300 rounded-lg transition-colors duration-200"
-								:title="__('Export Candidates')">
-								<svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-										d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-								</svg>
-								{{ __('Export') }}
-							</button>
-						</div>
-
-						<!-- Clear Filters -->
-						<div class="flex justify-end">
-							<button v-if="hasFilters" @click="clearFilters"
-								class="text-sm text-red-600 hover:text-red-800 font-medium px-3 py-2 rounded-lg hover:bg-red-50 transition-colors duration-200">
-								{{ __('Clear Filters') }}
-							</button>
+							<!-- Clear Filters -->
+							<div v-if="hasFilters">
+								<button @click="clearFilters"
+									class="text-sm text-red-600 hover:text-red-800 font-medium px-3 py-2 rounded-lg hover:bg-red-50 transition-colors duration-200">
+									{{ __('Clear Filters') }}
+								</button>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -341,7 +340,7 @@
 												<button v-else
 													class="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50 transition-colors"
 													@click="clearFilters">
-													Xóa bộ lọc
+													{{ __('Clear Filters') }}
 												</button>
 											</div>
 										</td>
@@ -881,6 +880,15 @@ const handleExport = () => {
 		*/
 	} catch (err) {
 		showError(`Error exporting: ${err.message}`)
+	}
+}
+
+const handleRefresh = async () => {
+	try {
+		await fetchCandidates()
+		showSuccess(__('Data refreshed successfully'))
+	} catch (err) {
+		showError(`Error refreshing data: ${err.message}`)
 	}
 }
 

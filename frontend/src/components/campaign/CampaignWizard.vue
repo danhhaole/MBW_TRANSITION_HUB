@@ -131,8 +131,10 @@
                     {{ __('Select {0} Source', [selectedDataSourceType]) }}
                   </h4>
                   <Button variant="ghost" theme="gray" @click="selectedDataSourceType = ''" class="text-sm">
+                    <div class="flex items-center">
                     <FeatherIcon name="arrow-left" class="h-4 w-4 mr-1" />
                     {{ __('Back') }}
+                    </div>
                   </Button>
                 </div>
                 

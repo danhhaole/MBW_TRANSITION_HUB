@@ -27,18 +27,18 @@
               <svg class="w-5 h-5 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
               </svg>
-              Thông tin cơ bản
+              {{ __('Basic Information') }}
             </h3>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Tên đầy đủ <span class="text-red-500">*</span>
+                  {{ __('Full Name') }} <span class="text-red-500">*</span>
                 </label>
                 <FormControl
                   type="text"
                   v-model="formData.full_name"
-                  placeholder="Nhập tên đầy đủ"
+                  :placeholder="__('Enter full name')"
                   :error="validationErrors?.full_name"
                   required
                 />
@@ -51,7 +51,7 @@
                 <FormControl
                   type="email"
                   v-model="formData.email"
-                  placeholder="Nhập địa chỉ email"
+                  :placeholder="__('Enter email address')"
                   :error="validationErrors?.email"
                   required
                 />
@@ -59,46 +59,46 @@
               
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Số điện thoại
+                  {{ __('Phone Number') }}
                 </label>
                 <FormControl
                   type="tel"
                   v-model="formData.phone"
-                  placeholder="Nhập số điện thoại"
+                  :placeholder="__('Enter phone number')"
                   :error="validationErrors?.phone"
                 />
               </div>
               
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Vị trí hiện tại
+                  {{ __('Current Position') }}
                 </label>
                 <FormControl
                   type="text"
                   v-model="formData.current_position"
-                  placeholder="VD: Senior Software Engineer"
+                  :placeholder="__('Enter current position')"
                 />
               </div>
               
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Địa điểm
+                  {{ __('Location') }}
                 </label>
                 <FormControl
                   type="text"
                   v-model="formData.location"
-                  placeholder="VD: Ho Chi Minh City"
+                  :placeholder="__('Enter location')"
                 />
               </div>
               
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Năm kinh nghiệm
+                  {{ __('Experience Years') }}
                 </label>
                 <FormControl
                   type="number"
                   v-model="formData.experience_years"
-                  placeholder="Nhập số năm kinh nghiệm"
+                  :placeholder="__('Enter experience years')"
                   :min="0"
                 />
               </div>
@@ -111,37 +111,37 @@
               <svg class="w-5 h-5 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/>
               </svg>
-              Thông tin nghề nghiệp
+              {{ __('Professional Information') }}
             </h3>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Nguồn
+                  {{ __('Source') }}
                 </label>
                 <FormControl
                   type="select"
                   v-model="formData.source"
                   :options="sourceOptions"
-                  placeholder="Chọn nguồn"
+                  :placeholder="__('Select source')"
                 />
               </div>
               
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Trạng thái
+                  {{ __('Status') }}
                 </label>
                 <FormControl
                   type="select"
                   v-model="formData.status"
                   :options="statusOptions"
-                  placeholder="Chọn trạng thái"
+                  :placeholder="__('Select status')"
                 />
               </div>
               
               <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Kỹ năng
+                  {{ __('Skills') }}
                 </label>
                 <div class="space-y-2">
                   <div class="flex flex-wrap gap-2">
@@ -166,7 +166,7 @@
                     <FormControl
                       type="text"
                       v-model="newSkill"
-                      placeholder="Nhập kỹ năng và nhấn Enter"
+                      :placeholder="__('Enter skill and press Enter')"
                       @keyup.enter.stop="addSkill"
                       @keydown.enter.prevent
                       class="flex-1"
@@ -194,37 +194,37 @@
               <svg class="w-5 h-5 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
               </svg>
-              Thông tin bổ sung
+              {{ __('Additional Information') }}
             </h3>
             
             <div class="space-y-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  URL CV
+                  {{ __('CV URL') }}
                 </label>
                 <FormControl
                   type="url"
                   v-model="formData.cv_original_url"
-                  placeholder="https://example.com/cv.pdf"
+                  :placeholder="__('Enter CV URL')"
                   :error="validationErrors?.cv_original_url"
                 />
               </div>
               
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Tóm tắt AI
+                  {{ __('AI Summary') }}
                 </label>
                 <FormControl
                   type="textarea"
                   v-model="formData.ai_summary"
-                  placeholder="Tóm tắt thông tin ứng viên bằng AI..."
+                  :placeholder="__('Enter AI summary')"
                   :rows="4"
                 />
               </div>
               
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Cài đặt email
+                  {{ __('Email Settings') }}
                 </label>
                 <div class="flex items-center">
                   <FormControl
@@ -233,7 +233,7 @@
                     class="mr-2"
                   />
                   <label class="text-sm text-gray-700">
-                    Từ chối email marketing
+                    {{ __('Opt out from marketing emails') }}
                   </label>
                 </div>
               </div>
@@ -247,7 +247,7 @@
               @click="cancelEdit"
               :disabled="saving"
             >
-              Hủy
+              {{ __('Cancel') }}
             </Button>
             <Button
               type="submit"
@@ -255,7 +255,7 @@
               :loading="saving"
               :disabled="!isFormValid"
             >
-              {{ isEdit ? 'Cập nhật' : 'Tạo mới' }}
+              {{ isEdit ? __('Update') : __('Create') }}
             </Button>
           </div>
         </form>

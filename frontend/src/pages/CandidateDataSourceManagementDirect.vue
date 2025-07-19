@@ -8,7 +8,7 @@
       <template #right-header>
         <!-- Create button -->
 
-        <Button variant="solid" theme="gray" @click="handleCreate" :loading="loading" class="px-6 py-3.5">
+        <Button variant="solid" theme="gray" @click="handleCreate" :loading="loading" class="">
           <template #prefix>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">

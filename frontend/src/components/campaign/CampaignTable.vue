@@ -87,59 +87,28 @@
 
               <!-- Actions -->
               <td class="py-4 px-4">
-                <div class="flex space-x-2">
+                <div class="flex items-center space-x-2">
                   <button 
                     @click="handleView(campaign)"
-                    class="text-black hover:text-gray-800 text-sm font-medium"
+                    class="text-gray-600 hover:text-blue-600 p-2 rounded-md hover:bg-blue-50 transition-colors"
+                    :title="__('View Details')"
                   >
-                    {{ __('View Timeline') }}
+                    <FeatherIcon name="eye" class="h-4 w-4" />
                   </button>
-                  <div class="relative">
-                    <button 
-                      @click="toggleDropdown(campaign.name || campaign.id)"
-                      class="text-gray-600 hover:text-gray-800 text-sm"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
-                      </svg>
-                    </button>
-                    <!-- Dropdown Menu -->
-                    <div 
-                      v-if="dropdownOpen === (campaign.name || campaign.id)"
-                      class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200"
-                    >
-                      <div class="py-1">
-                        <button 
-                          @click="handleEdit(campaign); closeDropdown()"
-                          class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
-                        >
-                          <span class="flex items-center">
-                            <span class="mr-2">✏️</span>
-                            Chỉnh sửa
-                          </span>
-                        </button>
-                        <button 
-                          @click="handleView(campaign); closeDropdown()"
-                          class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
-                        >
-                          <span class="flex items-center">
-                            <span class="mr-2">👁️</span>
-                            Xem chi tiết
-                          </span>
-                        </button>
-                        <div class="border-t border-gray-100"></div>
-                        <button 
-                          @click="handleDelete(campaign); closeDropdown()"
-                          class="block px-4 py-2 text-sm text-red-700 hover:bg-red-50 w-full text-left"
-                        >
-                          <span class="flex items-center">
-                            <span class="mr-2">🗑️</span>
-                            Xóa
-                          </span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                  <button 
+                    @click="handleEdit(campaign)"
+                    class="text-gray-600 hover:text-green-600 p-2 rounded-md hover:bg-green-50 transition-colors"
+                    :title="__('Edit')"
+                  >
+                    <FeatherIcon name="edit" class="h-4 w-4" />
+                  </button>
+                  <button 
+                    @click="handleDelete(campaign)"
+                    class="text-gray-600 hover:text-red-600 p-2 rounded-md hover:bg-red-50 transition-colors"
+                    :title="__('Delete')"
+                  >
+                    <FeatherIcon name="trash-2" class="h-4 w-4" />
+                  </button>
                 </div>
               </td>
             </tr>
@@ -154,20 +123,20 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
           </svg>
         </div>
-        <h3 class="text-lg font-medium text-gray-900 mb-2">Không có chiến dịch nào</h3>
-        <p class="text-gray-500 mb-4">Bắt đầu tạo chiến dịch tuyển dụng đầu tiên của bạn</p>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">{{ __('No campaigns found') }}</h3>
+        <p class="text-gray-500 mb-4">{{ __('Start creating your first recruitment campaign') }}</p>
         <button 
           @click="$emit('create')"
           class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
         >
-          Tạo chiến dịch mới
+          {{ __('Create Campaign') }}
         </button>
       </div>
 
       <!-- Pagination -->
       <div v-if="campaigns?.length > 0 && pagination.total > 0" class="flex items-center justify-between mt-6 p-6 border-t border-gray-200 ">
         <div class="text-sm text-gray-600">
-          Hiển thị {{ pagination.showing_from || 1 }}-{{ pagination.showing_to || campaigns.length }} của {{ pagination.total || campaigns.length }} chiến dịch
+          {{ __('Display') }} {{ pagination.showing_from || 1 }}-{{ pagination.showing_to || campaigns.length }} {{ __('of') }} {{ pagination.total || campaigns.length }} {{ __('campaigns') }}
         </div>
         <div class="flex space-x-1">
           <button 
@@ -210,11 +179,45 @@
         </div>
       </div>
   </div>
+
+  <!-- Delete Confirmation Dialog -->
+  <Dialog v-model="showDeleteDialog" :options="{ title: __('Confirm Delete'), size: 'sm' }">
+    <template #body-content>
+      <div class="text-center">
+        <div class="w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+          <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.996-.833-2.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
+          </svg>
+        </div>
+        <p class="text-slate-600 mb-2">
+          {{ __('Are you sure you want to delete campaign?') }}
+        </p>
+        <p class="font-medium text-gray-900">
+          "{{ itemToDelete?.campaign_name || itemToDelete?.name }}"
+        </p>
+        <p class="text-sm text-red-600 mt-2">
+          {{ __('This action cannot be undone!') }}
+        </p>
+      </div>
+    </template>
+    <template #actions>
+      <div class="flex justify-end">
+
+        <Button variant="ghost" @click="showDeleteDialog = false">
+          {{ __('Cancel') }}
+        </Button>
+        <Button variant="solid" theme="red" @click="confirmDelete">
+          {{ __('Delete') }}
+        </Button>
+      </div>
+    </template>
+  </Dialog>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { Dialog } from 'frappe-ui'
+import { ref, computed } from 'vue'
+import { Dialog, Button, FeatherIcon } from 'frappe-ui'
 
 // Translation helper function
 
@@ -250,7 +253,8 @@ const emit = defineEmits([
 ])
 
 // Refs
-const dropdownOpen = ref(null)
+const showDeleteDialog = ref(false)
+const itemToDelete = ref(null)
 
 // Methods for UI
 const getStatusBadgeClass = (status) => {
@@ -321,14 +325,6 @@ const getInitials = (name) => {
   return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
 }
 
-const toggleDropdown = (itemId) => {
-  dropdownOpen.value = dropdownOpen.value === itemId ? null : itemId
-}
-
-const closeDropdown = () => {
-  dropdownOpen.value = null
-}
-
 const getPaginationRange = () => {
   const totalPages = props.pagination?.pages || 1
   const currentPage = props.pagination?.page || 1
@@ -361,45 +357,22 @@ const handleView = (item) => {
 }
 
 const handleDelete = (item) => {
-  // Using Frappe UI Dialog
-  const dialog = new Dialog({
-    title: 'Xác nhận xóa',
-    message: `Bạn có chắc chắn muốn xóa chiến dịch "${item.campaign_name || item.name}"? Hành động này không thể hoàn tác!`,
-    actions: [
-      {
-        label: 'Hủy bỏ',
-        variant: 'ghost'
-      },
-      {
-        label: 'Xóa',
-        variant: 'solid',
-        theme: 'red',
-        onClick: () => {
-          emit('delete', item)
-          dialog.hide()
-        }
-      }
-    ]
-  })
-  dialog.show()
+  // Set the item to delete and show dialog
+  itemToDelete.value = item
+  showDeleteDialog.value = true
+}
+
+const confirmDelete = () => {
+  if (itemToDelete.value) {
+    emit('delete', itemToDelete.value)
+    showDeleteDialog.value = false
+    itemToDelete.value = null
+  }
 }
 
 const handlePageChange = (page) => {
   emit('page-change', page)
 }
-
-// Click outside to close dropdown
-onMounted(() => {
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('.relative')) {
-      dropdownOpen.value = null
-    }
-  })
-})
-
-onUnmounted(() => {
-  document.removeEventListener('click', closeDropdown)
-})
 </script>
 
 <style scoped>

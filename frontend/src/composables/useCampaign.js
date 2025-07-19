@@ -294,22 +294,22 @@ export const useCampaignForm = (initialData = null) => {
 
   // Type options
   const typeOptions = [
-    { title: 'Nuôi dưỡng', value: 'NURTURING' },
-    { title: 'Thu hút', value: 'ATTRACTION' }
+    { label: 'Nuôi dưỡng', value: 'NURTURING' },
+    { label: 'Thu hút', value: 'ATTRACTION' }
   ]
 
   // Status options  
   const statusOptions = [
-    { title: 'Nháp', value: 'DRAFT' },
-    { title: 'Hoạt động', value: 'ACTIVE' },
-    { title: 'Tạm dừng', value: 'PAUSED' },
-    { title: 'Lưu trữ', value: 'ARCHIVED' }
+    { label: 'Nháp', value: 'DRAFT' },
+    { label: 'Hoạt động', value: 'ACTIVE' },
+    { label: 'Tạm dừng', value: 'PAUSED' },
+    { label: 'Lưu trữ', value: 'ARCHIVED' }
   ]
 
   // Active options
   const activeOptions = [
-    { title: 'Kích hoạt', value: 1 },
-    { title: 'Vô hiệu hóa', value: 0 }
+    { label: 'Kích hoạt', value: 1 },
+    { label: 'Vô hiệu hóa', value: 0 }
   ]
 
   // Load options data
@@ -322,13 +322,13 @@ export const useCampaignForm = (initialData = null) => {
       ])
       
       users.value = usersData.map(user => ({
-        title: user.full_name || user.name,
+        label: user.full_name || user.name,
         value: user.name,
         subtitle: user.email
       }))
       
       talentSegments.value = segmentsData.map(segment => ({
-        title: segment.title || segment.name,
+        label: segment.title || segment.name,
         value: segment.name
       }))
     } catch (error) {

@@ -17,151 +17,90 @@
           </div>
           <div>
             <h3 class="text-lg font-semibold text-gray-900">
-              {{ isEdit ? 'Edit Campaign' : 'Create New Campaign' }}
+              {{ isEdit ? __('Edit Campaign') : __('Create New Campaign') }}
             </h3>
             <p class="text-sm text-gray-500">
-              {{ isEdit ? 'Update campaign information' : 'Create a new recruitment campaign' }}
+              {{ isEdit ? __('Update campaign information') : __('Create a new recruitment campaign') }}
             </p>
           </div>
         </div>
 
         <!-- Form -->
-        <form @submit.prevent="handleSubmit" class="space-y-4">
+        <div class="space-y-4">
           <!-- Campaign Name -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              Campaign Name <span class="text-red-500">*</span>
-            </label>
-            <input
-              v-model="form.campaign_name"
-              type="text"
-              placeholder="Enter campaign name"
-              maxlength="200"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-            />
-            <div class="text-xs text-gray-500 mt-1">Maximum 200 characters</div>
-          </div>
+          <FormControl
+            v-model="form.campaign_name"
+            type="text"
+            :label="__('Campaign Name')"
+            :placeholder="__('Enter campaign name')"
+            :maxlength="200"
+            :required="true"
+            :help="__('Maximum 200 characters')"
+          />
 
           <!-- Description -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
-            <textarea
-              v-model="form.description"
-              rows="3"
-              placeholder="Enter detailed campaign description..."
-              maxlength="1000"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-            ></textarea>
-            <div class="text-xs text-gray-500 mt-1">Maximum 1000 characters</div>
-          </div>
+          <FormControl
+            v-model="form.description"
+            type="textarea"
+            :label="__('Description')"
+            :placeholder="__('Enter detailed campaign description...')"
+            :rows="3"
+            :maxlength="1000"
+            :help="__('Maximum 1000 characters')"
+          />
 
           <!-- Row 1: Status and Type -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-              <select
-                v-model="form.status"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option
-                  v-for="option in statusOptions"
-                  :key="option.value"
-                  :value="option.value"
-                >
-                  {{ option.title }}
-                </option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Campaign Type</label>
-              <select
-                v-model="form.type"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option
-                  v-for="option in typeOptions"
-                  :key="option.value"
-                  :value="option.value"
-                >
-                  {{ option.title }}
-                </option>
-              </select>
-            </div>
+            <FormControl
+              v-model="form.status"
+              type="select"
+              :label="__('Status')"
+              :options="statusOptions"
+            />
+            <FormControl
+              v-model="form.type"
+              type="select"
+              :label="__('Campaign Type')"
+              :options="typeOptions"
+            />
           </div>
 
           <!-- Row 2: Active Status and Owner -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Active Status</label>
-              <select
-                v-model="form.is_active"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option
-                  v-for="option in activeOptions"
-                  :key="option.value"
-                  :value="option.value"
-                >
-                  {{ option.title }}
-                </option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Owner</label>
-              <select
-                v-model="form.owner_id"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">-- Select Owner --</option>
-                <option
-                  v-for="user in users"
-                  :key="user.value"
-                  :value="user.value"
-                >
-                  {{ user.title }}
-                </option>
-              </select>
-            </div>
-
+            <FormControl
+              v-model="form.is_active"
+              type="select"
+              :label="__('Active Status')"
+              :options="activeOptions"
+            />
+            <FormControl
+              v-model="form.owner_id"
+              type="select"
+              :label="__('Owner')"
+              :options="[{ label: __('Select Owner'), value: '' }, ...users]"
+            />
           </div>
 
           <!-- Target Segment -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Target Segment</label>
-            <select
-              v-model="form.target_segment"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="">-- Select Target Segment --</option>
-              <option
-                v-for="segment in talentSegments"
-                :key="segment.value"
-                :value="segment.value"
-              >
-                {{ segment.title }}
-              </option>
-            </select>
-          </div>
+          <FormControl
+            v-model="form.target_segment"
+            type="select"
+            :label="__('Target Segment')"
+            :options="[{ label: __('Select Target Segment'), value: '' }, ...talentSegments]"
+          />
 
           <!-- Row 3: Start Date and End Date -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
-              <input
-                v-model="form.start_date"
-                type="date"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
-              <input
-                v-model="form.end_date"
-                type="date"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
+            <FormControl
+              v-model="form.start_date"
+              type="date"
+              :label="__('Start Date')"
+            />
+            <FormControl
+              v-model="form.end_date"
+              type="date"
+              :label="__('End Date')"
+            />
           </div>
 
           <!-- Error Message -->
@@ -190,23 +129,23 @@
 
           <!-- Buttons -->
           <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-            <button
-              type="button"
+            <Button
+              variant="outline"
+              theme="gray"
               @click="handleCancel"
-              class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               {{ __('Cancel') }}
-            </button>
-            <button
-              type="submit"
-              :disabled="loading"
-              class="px-4 py-2 text-sm font-medium text-white bg-black border border-transparent rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+            </Button>
+            <Button
+              variant="solid"
+              theme="gray"
+              :loading="loading"
+              @click="handleSubmit"
             >
-              <span v-if="loading" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
-              <span>{{ isEdit ? __('Update') : __('Create') }}</span>
-            </button>
+              {{ isEdit ? __('Update') : __('Create') }}
+            </Button>
           </div>
-        </form>
+        </div>
       </div>
     </template>
   </Dialog>
@@ -214,7 +153,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import { Dialog } from 'frappe-ui'
+import { Dialog, FormControl, Button } from 'frappe-ui'
 import { useCampaignForm, useCampaignCRUD } from '@/composables/useCampaign.js'
 
 // Translation helper function

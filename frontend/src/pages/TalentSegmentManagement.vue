@@ -16,7 +16,7 @@
       </template>
       <template #right-header>
         <!-- Create Button -->
-        <Button variant="solid" theme="gray" @click="showCreateForm = true" :loading="loading" class="px-6 py-4">
+        <Button variant="solid" theme="gray" @click="showCreateForm = true" :loading="loading" class="">
           <template #prefix>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">
@@ -53,7 +53,36 @@
           </button>
         </div>
 
-
+        <!-- Actions -->
+        <div class="flex items-center space-x-3">
+          <!-- Refresh Button -->
+          <Button
+            variant="outline"
+            theme="gray"
+            @click="handleRefresh"
+            :loading="loading"
+            class="flex items-center"
+          >
+            <template #prefix>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4"
+                :class="{ 'animate-spin': loading }"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+            </template>
+            {{ __('Refresh') }}
+          </Button>
+        </div>
       </div>
 
       <!-- Loading State -->
@@ -546,6 +575,11 @@ const handleFormClose = () => {
   showCreateForm.value = false
   // Reset editing segment to trigger form reset
   editingSegment.value = null
+}
+
+const handleRefresh = async () => {
+  await loadSegments()
+  showToast(__('Data refreshed'), 'info', 2000)
 }
 
 const showToast = (message, type = 'success') => {

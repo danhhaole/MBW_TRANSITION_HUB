@@ -33,8 +33,37 @@
 							</span>
 						</div>
 
-						<!-- Clear Filters -->
-						<div class="flex justify-end">
+						<!-- Actions -->
+						<div class="flex items-center justify-end space-x-3">
+							<!-- Refresh Button -->
+							<Button
+								variant="outline"
+								theme="gray"
+								@click="handleRefresh"
+								:loading="loading"
+								class="flex items-center"
+							>
+								<template #prefix>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										class="h-4 w-4"
+										:class="{ 'animate-spin': loading }"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke="currentColor"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+										/>
+									</svg>
+								</template>
+								{{ __('Refresh') }}
+							</Button>
+
+							<!-- Clear Filters -->
 							<button v-if="hasFilters" @click="clearFilters"
 								class="text-sm text-red-600 hover:text-red-800 font-medium px-3 py-2 rounded-lg hover:bg-red-50 transition-colors duration-200">
 								{{ __('Clear Filters') }}
@@ -306,7 +335,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCandidatePool } from '@/composables/useCandidatePool'
 import { useToast } from '@/composables/useToast'
-import { FormControl, Breadcrumbs, Avatar } from 'frappe-ui'
+import { FormControl, Breadcrumbs, Avatar, Button } from 'frappe-ui'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import CandidatePoolViewModal from '@/components/candidate-pool/CandidatePoolViewModal.vue'
 
@@ -398,6 +427,15 @@ const getScoreBarColor = (color) => {
 }
 
 // Methods
+const handleRefresh = async () => {
+	try {
+		await fetchCandidatePools()
+		showSuccess(__('Data refreshed'))
+	} catch (err) {
+		showError(`Error refreshing data: ${err.message}`)
+	}
+}
+
 const openViewModal = async (pool) => {
 	viewModal.value = {
 		show: true,

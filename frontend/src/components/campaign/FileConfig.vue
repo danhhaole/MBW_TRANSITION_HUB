@@ -7,87 +7,124 @@
           {{ __('Select File') }} <span class="text-red-500">*</span>
         </label>
         
-        <!-- Use Frappe UI FileUploader -->
-        <div class="border border-gray-300 rounded-lg p-4">
-          <FileUploader
-            :fileTypes="['.csv', '.xlsx', '.xls']"
-            :upload-args="{
-              doctype: 'Campaign',
-              docname: 'temp',
-              private: false,
+        <!-- Use Frappe UI FileUploader with Custom UI -->
+        <FileUploader
+          :fileTypes="['.csv', '.xlsx', '.xls']"
+          :upload-args="{
+            doctype: 'Campaign',
+            docname: 'temp',
+            private: false,
+          }"
+          v-model="uploadedFileUrl"
+          @success="handleFileUploadSuccess"
+        >
+          <template
+            v-slot="{
+              file,
+              uploading,
+              progress,
+              uploaded,
+              message,
+              error,
+              total,
+              success,
+              openFileSelector,
             }"
-            v-model="uploadedFileUrl"
-            @success="handleFileUploadSuccess"
           >
-            <template
-              v-slot="{
-                file,
-                uploading,
-                progress,
-                uploaded,
-                message,
-                error,
-                total,
-                success,
-                openFileSelector,
-              }"
-            >
-              <div class="space-y-3">
-                <!-- Current file display -->
-                <div v-if="uploadedFileUrl" class="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
-                  <div class="flex items-center space-x-3">
-                    <svg class="h-8 w-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <!-- Current file display (when uploaded) -->
+            <div v-if="uploadedFileUrl" class="space-y-4">
+              <div class="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div class="flex items-center space-x-3">
+                  <div class="flex-shrink-0">
+                    <svg class="h-10 w-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    <div>
-                      <a
-                        :href="uploadedFileUrl"
-                        target="_blank"
-                        class="text-sm font-medium text-green-900 hover:text-green-700 underline"
-                      >
-                        {{ uploadedFileUrl.split("/").pop() }}
-                      </a>
-                      <div v-if="selectedFile" class="text-xs text-green-700">
-                        {{ formatFileSize(selectedFile.size) }}
-                      </div>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <a
+                      :href="uploadedFileUrl"
+                      target="_blank"
+                      class="text-sm font-medium text-green-900 hover:text-green-700 underline block truncate"
+                    >
+                      {{ uploadedFileUrl.split("/").pop() }}
+                    </a>
+                    <div v-if="selectedFile" class="text-xs text-green-700 mt-1">
+                      {{ formatFileSize(selectedFile.size) }} • {{ __('Click to download') }}
                     </div>
                   </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <Button variant="outline" theme="gray" @click="openFileSelector()" class="text-xs px-2 py-1">
+                    {{ __('Change') }}
+                  </Button>
                   <button
                     type="button"
                     @click="removeFile"
-                    class="text-red-500 hover:text-red-700"
+                    class="text-red-500 hover:text-red-700 p-1"
                   >
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
                 </div>
-                
-                <!-- Upload button -->
-                <div class="text-center">
-                  <Button 
-                    variant="outline" 
-                    @click="openFileSelector()" 
-                    :loading="uploading"
-                    class="w-full"
-                  >
-                    <div class="flex items-center justify-center gap-2">
-                      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                      </svg>
-                      {{ uploading ? `${__('Uploading')} ${progress}%` : (uploadedFileUrl ? __('Change File') : __('Upload File')) }}
+              </div>
+            </div>
+            
+            <!-- Upload area (when no file) -->
+            <div v-else>
+              <!-- Progress bar during upload -->
+              <div v-if="uploading" class="space-y-4">
+                <div class="border-2 border-dashed border-blue-300 rounded-lg p-8 text-center bg-blue-50">
+                  <svg class="mx-auto h-12 w-12 text-blue-500 animate-pulse" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  <div class="mt-4">
+                    <p class="text-sm font-medium text-blue-900">{{ __('Uploading...') }}</p>
+                    <div class="mt-2 w-full bg-blue-200 rounded-full h-2">
+                      <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" :style="`width: ${progress}%`"></div>
+                    </div>
+                    <p class="text-xs text-blue-700 mt-1">{{ progress }}%</p>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Upload drop zone -->
+              <div v-else class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors cursor-pointer group" @click="openFileSelector()">
+                <svg class="mx-auto h-12 w-12 text-gray-400 group-hover:text-gray-500" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                  <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <div class="mt-4">
+                  <p class="text-sm font-medium text-gray-900 group-hover:text-gray-700">
+                    {{ __('Click to upload or drag and drop') }}
+                  </p>
+                  <p class="text-xs text-gray-500 mt-1">
+                    {{ __('CSV, XLSX files up to 10MB') }}
+                  </p>
+                </div>
+                <div class="mt-4">
+                  <Button variant="solid" theme="gray" class="inline-flex items-center">
+                    <div class="flex items-center">
+                    <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                    </svg>
+                    {{ __('Select File') }}
                     </div>
                   </Button>
                 </div>
-                
-                <!-- Error message -->
-                <div v-if="error" class="text-red-600 text-sm text-center">
-                  {{ error }}
-                </div>
               </div>
-            </template>
-          </FileUploader>
-        </div>
+            </div>
+            
+            <!-- Error message -->
+            <div v-if="error" class="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <div class="flex items-center">
+                <svg class="h-5 w-5 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span class="text-red-700 text-sm">{{ error }}</span>
+              </div>
+            </div>
+          </template>
+        </FileUploader>
       </div>
       
       <!-- File Instructions -->
@@ -154,6 +191,14 @@ const filePreview = ref([])
 const fileHeaders = ref([])
 
 // Translation helper
+const __ = (text, params = []) => {
+  if (params.length === 0) return text
+  
+  // Simple parameter replacement for {0}, {1}, etc.
+  return text.replace(/\{(\d+)\}/g, (match, index) => {
+    return params[parseInt(index)] || match
+  })
+}
 
 
 // Handle file upload success

@@ -547,103 +547,72 @@
           <h3 class="text-lg font-medium text-gray-900 mb-4">
             {{ stepFormData.name ? 'Edit Campaign Step' : 'Add Campaign Step' }}
           </h3>
-          <form @submit.prevent="saveStep" class="space-y-4">
+          <div class="space-y-4">
             <!-- Step Name -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Step Name <span class="text-red-500">*</span>
-              </label>
-              <input
-                v-model="stepFormData.campaign_step_name"
-                type="text"
-                required
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter step name"
-              />
-            </div>
+            <FormControl
+              v-model="stepFormData.campaign_step_name"
+              type="text"
+              :label="__('Step Name')"
+              :placeholder="__('Enter step name')"
+              :required="true"
+            />
 
             <!-- Step Order -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Step Order <span class="text-red-500">*</span>
-              </label>
-              <input
-                v-model="stepFormData.step_order"
-                type="number"
-                required
-                min="1"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter step order"
-              />
-            </div>
+            <FormControl
+              v-model="stepFormData.step_order"
+              type="number"
+              :label="__('Step Order')"
+              :placeholder="__('Enter step order')"
+              :required="true"
+              :min="1"
+            />
 
             <!-- Action Type -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Action Type <span class="text-red-500">*</span>
-              </label>
-              <select
-                v-model="stepFormData.action_type"
-                required
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Select action type</option>
-                <option
-                  v-for="option in stepTypeOptions"
-                  :key="option.value"
-                  :value="option.value"
-                >
-                  {{ option.title }}
-                </option>
-              </select>
-            </div>
+            <FormControl
+              v-model="stepFormData.action_type"
+              type="select"
+              :label="__('Action Type')"
+              :required="true"
+              :options="[{ label: __('Select action type'), value: '' }, ...stepTypeOptions]"
+            />
 
             <!-- Delay in Days -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Delay in Days
-              </label>
-              <input
-                v-model="stepFormData.delay_in_days"
-                type="number"
-                min="0"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter delay in days"
-              />
-            </div>
+            <FormControl
+              v-model="stepFormData.delay_in_days"
+              type="number"
+              :label="__('Delay in Days')"
+              :placeholder="__('Enter delay in days')"
+              :min="0"
+            />
 
             <!-- Template -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Template
-              </label>
-              <textarea
-                v-model="stepFormData.template"
-                rows="3"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                placeholder="Enter template content"
-              ></textarea>
-            </div>
+            <FormControl
+              v-model="stepFormData.template"
+              type="textarea"
+              :label="__('Template')"
+              :placeholder="__('Enter template content')"
+              :rows="3"
+            />
 
             <!-- Buttons -->
             <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-              <button
-                type="button"
+              <Button
+                variant="outline"
+                theme="gray"
                 @click="closeStepModal"
-                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                :disabled="savingStep"
-                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                {{ __('Cancel') }}
+              </Button>
+              <Button
+                variant="solid"
+                theme="gray"
+                :loading="savingStep"
+                @click="saveStep"
               >
-                <span v-if="savingStep" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
-                <span>{{ stepFormData.name ? 'Update' : 'Save' }}</span>
-              </button>
+                {{ stepFormData.name ? __('Update') : __('Save') }}
+              </Button>
             </div>
-          </form>
+          </div>
         </div>
       </template>
     </Dialog>
@@ -658,96 +627,56 @@
     >
       <template #body>
         <div class="p-6">
-          <form @submit.prevent="assignCandidate" class="space-y-4">
+          <div class="space-y-4">
             <!-- Candidate Selection -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Select Candidate <span class="text-red-500">*</span>
-              </label>
-              <select
-                v-model="candidateFormData.candidate_id"
-                required
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Choose a candidate</option>
-                <option
-                  v-for="candidate in availableCandidates"
-                  :key="candidate.value"
-                  :value="candidate.value"
-                >
-                  {{ candidate.title }}
-                </option>
-              </select>
-              <p v-if="availableCandidates.length === 0" class="mt-2 text-sm text-gray-500">
-                No available candidates found.
-                <span v-if="campaign.target_segment">
-                  All candidates from the target segment are already assigned.
-                </span>
-              </p>
-            </div>
+            <FormControl
+              v-model="candidateFormData.candidate_id"
+              type="select"
+              :label="__('Select Candidate')"
+              :required="true"
+              :options="[{ label: __('Choose a candidate'), value: '' }, ...availableCandidates]"
+              :help="availableCandidates.length === 0 ? (campaign.target_segment ? __('No available candidates found. All candidates from the target segment are already assigned.') : __('No available candidates found.')) : ''"
+            />
 
             <!-- Status -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Initial Status <span class="text-red-500">*</span>
-              </label>
-              <select
-                v-model="candidateFormData.status"
-                required
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option
-                  v-for="option in statusOptions"
-                  :key="option.value"
-                  :value="option.value"
-                >
-                  {{ option.title }}
-                </option>
-              </select>
-            </div>
+            <FormControl
+              v-model="candidateFormData.status"
+              type="select"
+              :label="__('Initial Status')"
+              :required="true"
+              :options="statusOptions"
+            />
 
             <!-- Starting Step -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Starting Step <span class="text-red-500">*</span>
-              </label>
-              <select
-                v-model="candidateFormData.current_step_order"
-                required
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option
-                  v-for="step in campaignSteps"
-                  :key="step.step_order"
-                  :value="step.step_order"
-                >
-                  Step {{ step.step_order }}: {{ step.campaign_step_name }}
-                </option>
-              </select>
-              <p v-if="campaignSteps.length === 0" class="mt-2 text-sm text-gray-500">
-                No campaign steps found. Please add steps first.
-              </p>
-            </div>
+            <FormControl
+              v-model="candidateFormData.current_step_order"
+              type="select"
+              :label="__('Starting Step')"
+              :required="true"
+              :options="campaignSteps.map(step => ({ label: `Step ${step.step_order}: ${step.campaign_step_name}`, value: step.step_order }))"
+              :help="campaignSteps.length === 0 ? __('No campaign steps found. Please add steps first.') : ''"
+            />
 
             <!-- Buttons -->
             <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-              <button
-                type="button"
+              <Button
+                variant="outline"
+                theme="gray"
                 @click="closeCandidateModal"
-                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                :disabled="savingCandidate || !candidateFormData.candidate_id || campaignSteps.length === 0"
-                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                {{ __('Cancel') }}
+              </Button>
+              <Button
+                variant="solid"
+                theme="gray"
+                :loading="savingCandidate"
+                :disabled="!candidateFormData.candidate_id || campaignSteps.length === 0"
+                @click="assignCandidate"
               >
-                <span v-if="savingCandidate" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
-                <span>Assign Candidate</span>
-              </button>
+                {{ __('Assign Candidate') }}
+              </Button>
             </div>
-          </form>
+          </div>
         </div>
       </template>
     </Dialog>
@@ -767,126 +696,77 @@
               {{ actionFormData.name ? 'Edit Action' : 'Add Action' }}
             </h3>
           </div>
-          <form @submit.prevent="saveAction" class="space-y-4">
+          <div class="space-y-4">
             <!-- Campaign Step -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Campaign Step <span class="text-red-500">*</span>
-              </label>
-              <select
-                v-model="actionFormData.campaign_step"
-                required
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Select campaign step</option>
-                <option
-                  v-for="step in campaignSteps"
-                  :key="step.name"
-                  :value="step.name"
-                >
-                  Step {{ step.step_order }}: {{ step.campaign_step_name }}
-                </option>
-              </select>
-            </div>
+            <FormControl
+              v-model="actionFormData.campaign_step"
+              type="select"
+              :label="__('Campaign Step')"
+              :required="true"
+              :options="[{ label: __('Select campaign step'), value: '' }, ...campaignSteps.map(step => ({ label: `Step ${step.step_order}: ${step.campaign_step_name}`, value: step.name }))]"
+            />
 
             <!-- Candidate Campaign -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Candidate <span class="text-red-500">*</span>
-              </label>
-              <select
-                v-model="actionFormData.candidate_campaign_id"
-                required
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Select candidate</option>
-                <option
-                  v-for="candidateCampaign in candidateCampaigns"
-                  :key="candidateCampaign.name"
-                  :value="candidateCampaign.name"
-                >
-                  {{ candidateCampaign.candidate_id }}
-                </option>
-              </select>
-            </div>
+            <FormControl
+              v-model="actionFormData.candidate_campaign_id"
+              type="select"
+              :label="__('Candidate')"
+              :required="true"
+              :options="[{ label: __('Select candidate'), value: '' }, ...candidateCampaigns.map(cc => ({ label: cc.candidate_id, value: cc.name }))]"
+            />
 
             <!-- Status -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Status <span class="text-red-500">*</span>
-              </label>
-              <select
-                v-model="actionFormData.status"
-                required
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Select status</option>
-                <option
-                  v-for="option in actionStatusOptions"
-                  :key="option.value"
-                  :value="option.value"
-                >
-                  {{ option.title }}
-                </option>
-              </select>
-            </div>
+            <FormControl
+              v-model="actionFormData.status"
+              type="select"
+              :label="__('Status')"
+              :required="true"
+              :options="[{ label: __('Select status'), value: '' }, ...actionStatusOptions]"
+            />
 
             <!-- Scheduled At -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Scheduled At
-              </label>
-              <input
-                v-model="actionFormData.scheduled_at"
-                type="datetime-local"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
+            <FormControl
+              v-model="actionFormData.scheduled_at"
+              type="datetime-local"
+              :label="__('Scheduled At')"
+            />
 
             <!-- Executed At -->
-            <div v-if="actionFormData.status === 'EXECUTED'">
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Executed At
-              </label>
-              <input
-                v-model="actionFormData.executed_at"
-                type="datetime-local"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
+            <FormControl
+              v-if="actionFormData.status === 'EXECUTED'"
+              v-model="actionFormData.executed_at"
+              type="datetime-local"
+              :label="__('Executed At')"
+            />
 
             <!-- Notes -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Notes
-              </label>
-              <textarea
-                v-model="actionFormData.notes"
-                rows="3"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                placeholder="Enter any notes about this action"
-              ></textarea>
-            </div>
+            <FormControl
+              v-model="actionFormData.notes"
+              type="textarea"
+              :label="__('Notes')"
+              :placeholder="__('Enter any notes about this action')"
+              :rows="3"
+            />
 
             <!-- Buttons -->
             <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-              <button
-                type="button"
+              <Button
+                variant="outline"
+                theme="gray"
                 @click="closeActionModal"
-                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                :disabled="savingAction"
-                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                {{ __('Cancel') }}
+              </Button>
+              <Button
+                variant="solid"
+                theme="gray"
+                :loading="savingAction"
+                @click="saveAction"
               >
-                <span v-if="savingAction" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
-                <span>{{ actionFormData.name ? 'Update' : 'Save' }}</span>
-              </button>
+                {{ actionFormData.name ? __('Update') : __('Save') }}
+              </Button>
             </div>
-          </form>
+          </div>
         </div>
       </template>
     </Dialog>
@@ -912,7 +792,7 @@ import {
   talentSegmentService,
   actionService
 } from '../services/universalService'
-import { Dialog, Breadcrumbs, Button } from 'frappe-ui'
+import { Dialog, Breadcrumbs, Button, FormControl } from 'frappe-ui'
 import CampaignForm from '@/components/campaign/CampaignForm.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import moment from 'moment'
@@ -989,50 +869,50 @@ const savingAction = ref(false)
 
 // Options
 const stepTypeOptions = [
-  { title: __('Send Email'), value: 'SEND_EMAIL' },
-  { title: __('Send SMS'), value: 'SEND_SMS' },
-  { title: __('Manual Call'), value: 'MANUAL_CALL' },
-  { title: __('Manual Task'), value: 'MANUAL_TASK' }
+  { label: __('Send Email'), value: 'SEND_EMAIL' },
+  { label: __('Send SMS'), value: 'SEND_SMS' },
+  { label: __('Manual Call'), value: 'MANUAL_CALL' },
+  { label: __('Manual Task'), value: 'MANUAL_TASK' }
 ]
 
 const statusOptions = [
-  { title: __('Active'), value: 'ACTIVE' },
-  { title: __('Paused'), value: 'PAUSED' },
-  { title: __('Completed'), value: 'COMPLETED' },
-  { title: __('Cancelled'), value: 'CANCELLED' }
+  { label: __('Active'), value: 'ACTIVE' },
+  { label: __('Paused'), value: 'PAUSED' },
+  { label: __('Completed'), value: 'COMPLETED' },
+  { label: __('Cancelled'), value: 'CANCELLED' }
 ]
 
 const actionStatusOptions = [
-  { title: __('Scheduled'), value: 'SCHEDULED' },
-  { title: __('Executed'), value: 'EXECUTED' },
-  { title: __('Skipped'), value: 'SKIPPED' },
-  { title: __('Failed'), value: 'FAILED' },
-  { title: __('Pending Manual'), value: 'PENDING_MANUAL' }
+  { label: __('Scheduled'), value: 'SCHEDULED' },
+  { label: __('Executed'), value: 'EXECUTED' },
+  { label: __('Skipped'), value: 'SKIPPED' },
+  { label: __('Failed'), value: 'FAILED' },
+  { label: __('Pending Manual'), value: 'PENDING_MANUAL' }
 ]
 
 // Table headers
 const stepHeaders = [
-  { title: 'Step Order', key: 'step_order' },
-  { title: 'Step Name', key: 'campaign_step_name' },
-  { title: 'Action Type', key: 'action_type' },
-  { title: 'Delay (Days)', key: 'delay_in_days' },
-  { title: 'Actions', key: 'actions', sortable: false }
+  { label: 'Step Order', key: 'step_order' },
+  { label: 'Step Name', key: 'campaign_step_name' },
+  { label: 'Action Type', key: 'action_type' },
+  { label: 'Delay (Days)', key: 'delay_in_days' },
+  { label: 'Actions', key: 'actions', sortable: false }
 ]
 
 const candidateHeaders = [
-  { title: 'Candidate', key: 'candidate_id' },
-  { title: 'Status', key: 'status' },
-  { title: 'Current Step', key: 'current_step_order' },
-  { title: 'Enrolled At', key: 'enrolled_at' },
-  { title: 'Actions', key: 'actions', sortable: false }
+  { label: 'Candidate', key: 'candidate_id' },
+  { label: 'Status', key: 'status' },
+  { label: 'Current Step', key: 'current_step_order' },
+  { label: 'Enrolled At', key: 'enrolled_at' },
+  { label: 'Actions', key: 'actions', sortable: false }
 ]
 
 const actionHeaders = [
-  { title: 'Campaign Step', key: 'campaign_step' },
-  { title: 'Status', key: 'status' },
-  { title: 'Scheduled At', key: 'scheduled_at' },
-  { title: 'Executed At', key: 'executed_at' },
-  { title: 'Actions', key: 'actions', sortable: false }
+  { label: 'Campaign Step', key: 'campaign_step' },
+  { label: 'Status', key: 'status' },
+  { label: 'Scheduled At', key: 'scheduled_at' },
+  { label: 'Executed At', key: 'executed_at' },
+  { label: 'Actions', key: 'actions', sortable: false }
 ]
 
 // Computed properties
@@ -1208,7 +1088,7 @@ const loadAvailableCandidates = async () => {
       })
       if (result.success) {
         availableCandidates.value = result.data.map(item => ({
-          title: item.candidate_name || item.name,
+          label: item.candidate_name || item.name,
           value: item.name
         }))
       }
