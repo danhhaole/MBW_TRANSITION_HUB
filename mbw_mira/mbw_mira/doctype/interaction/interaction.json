@@ -42,14 +42,14 @@
   {
    "fieldname": "talent_id",
    "fieldtype": "Link",
-   "label": "Talent",
-   "options": "Candidate"
+   "label": "Talent Profile",
+   "options": "TalentProfiles"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-17 17:30:56.527143",
+ "modified": "2025-07-19 11:03:53.047703",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Interaction",

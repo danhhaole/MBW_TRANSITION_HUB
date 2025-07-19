@@ -8,12 +8,15 @@
  "field_order": [
   "talent_id",
   "campaign_id",
+  "segment_id",
   "interaction",
   "application_date",
   "position",
   "resume",
   "application_status",
-  "notes"
+  "notes",
+  "score",
+  "result"
  ],
  "fields": [
   {
@@ -41,8 +44,8 @@
   {
    "fieldname": "talent_id",
    "fieldtype": "Link",
-   "label": "Talent",
-   "options": "TalentPool"
+   "label": "Talent Profile",
+   "options": "TalentProfiles"
   },
   {
    "fieldname": "campaign_id",
@@ -59,12 +62,29 @@
    "fieldname": "position",
    "fieldtype": "Data",
    "label": "Application Position"
+  },
+  {
+   "fieldname": "score",
+   "fieldtype": "Float",
+   "label": "Score"
+  },
+  {
+   "fieldname": "result",
+   "fieldtype": "Select",
+   "label": "Result",
+   "options": "Pass\nFail"
+  },
+  {
+   "fieldname": "segment_id",
+   "fieldtype": "Link",
+   "label": "Segment",
+   "options": "TalentSegment"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-16 16:42:05.479633",
+ "modified": "2025-07-19 11:03:35.277896",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "ApplicantPool",

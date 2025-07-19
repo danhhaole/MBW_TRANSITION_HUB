@@ -4,16 +4,16 @@ from frappe.utils import now_datetime
 
 def create_action_for_talent_campaign(talent_campaign_id):
     """
-    Worker: Tạo Action cho TalentCampaign ở bước hiện tại.
+    Worker: Tạo Action cho TalentProfilesCampaign ở bước hiện tại.
     """
-    tc = frappe.get_doc("TalentCampaign", talent_campaign_id)
+    tc = frappe.get_doc("TalentProfilesCampaign", talent_campaign_id)
 
     # lấy CampaignStep hiện tại
     step = get_campaign_step(tc.campaign_id, tc.current_step_order)
 
     if not step:
         frappe.logger().warning(
-            f"⚠ No CampaignStep found for TalentCampaign {tc.name} at order {tc.current_step_order}"
+            f"⚠ No CampaignStep found for TalentProfilesCampaign {tc.name} at order {tc.current_step_order}"
         )
         return
 
@@ -37,7 +37,7 @@ def create_action_for_talent_campaign(talent_campaign_id):
     frappe.db.commit()
 
     frappe.logger().info(
-        f"✨ Created Action {action.name} for TalentCampaign {tc.name} | Step: {step.name}"
+        f"✨ Created Action {action.name} for TalentProfilesCampaign {tc.name} | Step: {step.name}"
     )
 
 

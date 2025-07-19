@@ -1,0 +1,136 @@
+{
+ "actions": [],
+ "autoname": "format:TLP-{YY}{MM}-{#####}",
+ "creation": "2025-06-26 13:45:35.507165",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_zprz",
+  "full_name",
+  "email",
+  "phone",
+  "avatar",
+  "headline",
+  "source",
+  "cv_original_url",
+  "profile_data",
+  "skills",
+  "ai_summary",
+  "status",
+  "last_interaction",
+  "email_opt_out"
+ ],
+ "fields": [
+  {
+   "description": "T\u00ean \u0111\u1ea7y \u0111\u1ee7 c\u1ee7a \u1ee9ng vi\u00ean. VD: \"Nguy\u1ec5n V\u0103n An\"",
+   "fieldname": "full_name",
+   "fieldtype": "Data",
+   "label": "Full Name"
+  },
+  {
+   "description": "\u0110\u1ecba ch\u1ec9 email ch\u00ednh, d\u00f9ng \u0111\u1ec3 li\u00ean l\u1ea1c. Ph\u1ea3i l\u00e0 duy nh\u1ea5t. VD: \"nguyen.van.an@email.com\"",
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "label": "Email"
+  },
+  {
+   "description": "S\u1ed1 \u0111i\u1ec7n tho\u1ea1i li\u00ean l\u1ea1c. VD: \"0912345678\"",
+   "fieldname": "phone",
+   "fieldtype": "Data",
+   "label": "Phone"
+  },
+  {
+   "description": "\u0110\u01b0\u1eddng d\u1eabn \u0111\u1ebfn \u1ea3nh \u0111\u1ea1i di\u1ec7n (n\u1ebfu c\u00f3). VD: \"https://.../avatar.jpg\"",
+   "fieldname": "avatar",
+   "fieldtype": "Small Text",
+   "label": "Avatar"
+  },
+  {
+   "description": "Ch\u1ee9c danh ho\u1eb7c m\u00f4 t\u1ea3 ng\u1eafn g\u1ecdn. VD: \"Senior Software Engineer at ABC Corp\"",
+   "fieldname": "headline",
+   "fieldtype": "Data",
+   "label": "Headline"
+  },
+  {
+   "description": "Ngu\u1ed3n g\u1ed1c c\u1ee7a h\u1ed3 s\u01a1. VD: \"ATS_2024\", \"LinkedIn_Sourcing\", \"Event_TechDay\"",
+   "fieldname": "source",
+   "fieldtype": "Data",
+   "label": "Source"
+  },
+  {
+   "description": "\u0110\u01b0\u1eddng d\u1eabn \u0111\u1ebfn file CV g\u1ed1c (PDF, DOCX) tr\u00ean cloud storage (S3, GCS).",
+   "fieldname": "cv_original_url",
+   "fieldtype": "Small Text",
+   "label": "Link CV"
+  },
+  {
+   "description": "D\u1eef li\u1ec7u c\u00f3 c\u1ea5u tr\u00fac do AI b\u00f3c t\u00e1ch t\u1eeb CV, bao g\u1ed3m l\u1ecbch s\u1eed c\u00f4ng vi\u1ec7c, h\u1ecdc v\u1ea5n.",
+   "fieldname": "profile_data",
+   "fieldtype": "JSON",
+   "label": "Profile Data"
+  },
+  {
+   "description": "M\u1ea3ng c\u00e1c k\u1ef9 n\u0103ng \u0111\u01b0\u1ee3c chu\u1ea9n h\u00f3a. VD: [\"react\", \"nodejs\", \"aws\"]",
+   "fieldname": "skills",
+   "fieldtype": "Small Text",
+   "label": "Skills"
+  },
+  {
+   "description": "\u0110o\u1ea1n v\u0103n b\u1ea3n t\u00f3m t\u1eaft \u0111i\u1ec3m m\u1ea1nh, y\u1ebfu, ti\u1ec1m n\u0103ng do GenAI t\u1ea1o ra.",
+   "fieldname": "ai_summary",
+   "fieldtype": "Long Text",
+   "label": "AI Summary"
+  },
+  {
+   "description": "Enum\nTr\u1ea1ng th\u00e1i c\u1ee7a \u1ee9ng vi\u00ean trong C\u00e1c gi\u00e1 tr\u1ecb: NEW, SOURCED, NURTURING, ENGAGED, ARCHIVED.\n\n",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "NEW\nSOURCED\nNURTURING\nENGAGED\nARCHIVED"
+  },
+  {
+   "description": "Ng\u00e0y v\u00e0 gi\u1edd c\u1ee7a l\u1ea7n t\u01b0\u01a1ng t\u00e1c cu\u1ed1i c\u00f9ng (g\u1eedi email, m\u1edf email, v.v.).",
+   "fieldname": "last_interaction",
+   "fieldtype": "Datetime",
+   "label": "Last Interaction"
+  },
+  {
+   "default": "0",
+   "fieldname": "email_opt_out",
+   "fieldtype": "Check",
+   "label": "Email Opt Out"
+  },
+  {
+   "description": "H\u1ed3 S\u01a1 \u1ee8ng Vi\u00ean Ti\u1ec1m N\u0103ng, l\u00e0 n\u01a1i l\u01b0u tr\u1eef th\u00f4ng tin chi ti\u1ebft v\u1ec1 c\u00e1c \u1ee9ng vi\u00ean c\u00f3 ti\u1ec1m n\u0103ng, k\u1ec3 c\u1ea3 khi h\u1ecd kh\u00f4ng ch\u1ee7 \u0111\u1ed9ng t\u00ecm vi\u1ec7c.",
+   "fieldname": "section_break_zprz",
+   "fieldtype": "Section Break"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-07-19 10:22:01.031213",
+ "modified_by": "Administrator",
+ "module": "MBW Mira",
+ "name": "TalentProfiles",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -49,17 +49,17 @@
    "description": "(Foreign Key -> Candidate)",
    "fieldname": "talent_id",
    "fieldtype": "Link",
-   "label": "Talent",
-   "options": "TalentPool"
+   "label": "Talent Profile",
+   "options": "TalentProfiles"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-17 17:26:29.407149",
+ "modified": "2025-07-19 11:03:21.212739",
  "modified_by": "Administrator",
  "module": "MBW Mira",
- "name": "TalentCampaign",
+ "name": "TalentProfilesCampaign",
  "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [

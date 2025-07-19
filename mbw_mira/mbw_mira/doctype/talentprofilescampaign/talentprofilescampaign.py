@@ -6,7 +6,7 @@ from frappe.model.document import Document
 from frappe.utils import now_datetime
 
 
-class TalentCampaign(Document):
+class TalentProfilesCampaign(Document):
     pass
 
     def validate(self):
@@ -16,7 +16,7 @@ class TalentCampaign(Document):
 
 def validate_unique_candidate_campaign(doc):
     """
-    Kiểm tra xem đã tồn tại TalentCampaign với cùng
+    Kiểm tra xem đã tồn tại TalentProfilesCampaign với cùng
     talent_id + candidate_id (ngoại trừ chính nó) hay chưa.
     """
     filters = {
@@ -24,20 +24,20 @@ def validate_unique_candidate_campaign(doc):
         "candidate_id": doc.candidate_id,
     }
 
-    existing = frappe.db.exists("TalentCampaign", filters)
+    existing = frappe.db.exists("TalentProfilesCampaign", filters)
 
     if existing and existing != doc.name:
         frappe.throw(
             frappe._(
-                "A TalentCampaign with Campaign <b>{0}</b> and Candidate <b>{1}</b> already exists: <a href='/app/candidate-campaign/{2}'>{2}</a>"
+                "A TalentProfilesCampaign with Campaign <b>{0}</b> and Candidate <b>{1}</b> already exists: <a href='/app/candidate-campaign/{2}'>{2}</a>"
             ).format(doc.talent_id, doc.candidate_id, existing),
-            title=frappe._("Duplicate TalentCampaign"),
+            title=frappe._("Duplicate TalentProfilesCampaign"),
         )
 
 
 @frappe.whitelist()
 def process_candidate_campaign_active():
-    """Lấy danh sách TalentCampaign
+    """Lấy danh sách TalentProfilesCampaign
     - Kiểm tra bản ghi thỏa mãn điều kiện để tạo ra Action
     """
     candidate_campaigns = _get_active_candidate_campaigns()
@@ -78,13 +78,13 @@ def process_candidate_campaign_active():
 
 def _get_active_candidate_campaigns() -> dict:
     """
-    Lấy danh sách TalentCampaign:
+    Lấy danh sách TalentProfilesCampaign:
     - status = ACTIVE
     - next_action_at <= hôm nay
     """
 
     candidate_campaigns = frappe.get_all(
-        "TalentCampaign",
+        "TalentProfilesCampaign",
         filters={"status": "ACTIVE", "next_action_at": ["<=", now_datetime()]},
         fields=["*"],
     )

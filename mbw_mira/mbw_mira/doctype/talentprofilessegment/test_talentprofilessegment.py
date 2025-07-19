@@ -5,12 +5,12 @@ import frappe
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestCandidateSegment(FrappeTestCase):
+class TestTalentProfilesSegment(FrappeTestCase):
 	pass
 
 	def test_duplicate_candidate_segment(self):
 			doc1 = frappe.get_doc({
-				"doctype": "CandidateSegment",
+				"doctype": "TalentProfilesSegment",
 				"candidate_id": "CAN-2506-00005",
 				"segment_id": "SEG-250630-00006",
 				"added_by": "Administrator"
@@ -18,7 +18,7 @@ class TestCandidateSegment(FrappeTestCase):
 
 			with self.assertRaises(frappe.ValidationError):
 				doc2 = frappe.get_doc({
-					"doctype": "CandidateSegment",
+					"doctype": "TalentProfilesSegment",
 					"candidate_id": "CAN-2506-00005",
 					"segment_id": "SEG-250630-00006",
 					"added_by": "Administrator"

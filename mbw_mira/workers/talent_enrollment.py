@@ -4,7 +4,7 @@ from frappe.utils import now_datetime
 
 def enroll_talent_for_campaign(campaign_id):
     """
-    Worker: tìm ứng viên từ TalentPool theo campaign và tạo TalentCampaign.
+    Worker: tìm ứng viên từ TalentPool theo campaign và tạo TalentProfilesCampaign.
     """
 
     frappe.logger().info(f"[Worker] Enrolling from TalentPool for campaign: {campaign_id}")
@@ -24,7 +24,7 @@ def enroll_talent_for_campaign(campaign_id):
             create_talent_campaign(campaign_id, talent, first_step)
             count += 1
 
-    frappe.logger().info(f"[Worker] Created {count} TalentCampaign(s) for campaign {campaign_id}")
+    frappe.logger().info(f"[Worker] Created {count} TalentProfilesCampaign(s) for campaign {campaign_id}")
 
 
 def get_talents_for_campaign(campaign_id):
@@ -40,10 +40,10 @@ def get_talents_for_campaign(campaign_id):
 
 def already_enrolled(campaign_id, talent_id):
     """
-    Kiểm tra đã có TalentCampaign chưa.
+    Kiểm tra đã có TalentProfilesCampaign chưa.
     """
     return frappe.db.exists(
-        "TalentCampaign",
+        "TalentProfilesCampaign",
         {"campaign_id": campaign_id, "talent_id": talent_id}
     )
 
@@ -64,10 +64,10 @@ def get_first_campaign_step(campaign_id):
 
 def create_talent_campaign(campaign_id, talent, first_step):
     """
-    Tạo mới TalentCampaign, chỉ set current_step_order nếu có
+    Tạo mới TalentProfilesCampaign, chỉ set current_step_order nếu có
     """
     doc = frappe.get_doc({
-        "doctype": "TalentCampaign",
+        "doctype": "TalentProfilesCampaign",
         "campaign_id": campaign_id,
         "talent_id": talent.name,
         "status": "ACTIVE",
@@ -79,5 +79,5 @@ def create_talent_campaign(campaign_id, talent, first_step):
     frappe.db.commit()
 
     frappe.logger().info(
-        f"✨ Created TalentCampaign: {talent.full_name} → step_order: {first_step['step_order'] if first_step else 0}"
+        f"✨ Created TalentProfilesCampaign: {talent.full_name} → step_order: {first_step['step_order'] if first_step else 0}"
     )

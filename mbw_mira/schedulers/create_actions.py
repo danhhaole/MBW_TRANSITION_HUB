@@ -4,12 +4,12 @@ from frappe.utils import now_datetime
 
 def run():
     """
-    Quét TalentCampaign ACTIVE đến hạn và enqueue worker tạo Action.
+    Quét TalentProfilesCampaign ACTIVE đến hạn và enqueue worker tạo Action.
     """
     now = now_datetime()
 
     campaigns = frappe.get_all(
-        "TalentCampaign",
+        "TalentProfilesCampaign",
         filters={
             "status": "ACTIVE",
             "next_action_at": ("<=", now)
@@ -27,5 +27,5 @@ def run():
         )
 
         frappe.logger().info(
-            f"🕒 Enqueued action creation for TalentCampaign: {tc.name} (step: {tc.current_step_order})"
+            f"🕒 Enqueued action creation for TalentProfilesCampaign: {tc.name} (step: {tc.current_step_order})"
         )
