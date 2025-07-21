@@ -382,7 +382,7 @@
 					class="bg-white rounded-lg border border-gray-200 p-4 mt-6 flex items-center justify-between">
 					<!-- Items per page selector -->
 					<div class="flex items-center space-x-2">
-						<span class="text-sm text-gray-700">Số items mỗi trang:</span>
+						<span class="text-sm text-gray-700">{{ __('Items per page') }}</span>
 						<div class="w-20">
 							<FormControl :model-value="pagination.limit" type="select" :options="itemsPerPageOptions"
 								@change="changeItemsPerPage" />
@@ -391,8 +391,7 @@
 
 					<!-- Page info -->
 					<div class="text-sm text-gray-600">
-						Hiển thị {{ pagination.showing_from }} đến {{ pagination.showing_to }} trong
-						tổng số {{ pagination.total }} ứng viên
+						{{ __('Showing') }} {{ pagination.showing_from }} {{ __('to') }} {{ pagination.showing_to }} {{ __('of') }} {{ pagination.total }} {{ __('candidates') }}
 					</div>
 
 					<!-- Page navigation -->

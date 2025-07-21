@@ -5,7 +5,7 @@
 				<Breadcrumbs :items="breadcrumbs" />
 			</template>
 			<template #right-header>
-				<Button variant="outline" theme="gray" @click="showEditTalentSegmentModal = true">
+				<Button variant="outline" theme="gray" @click="openEditModal">
 							<template #prefix>
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
@@ -884,8 +884,8 @@ import {
 	candidateSegmentService,
 	candidateCampaignService,
 	campaignService,
+	candidateService,
 } from '../services/universalService'
-import * as candidateService from '../services/candidateService'
 import { processSkills } from '../services/candidateService'
 import { usersStore } from '@/stores/users'
 import { Button, Dialog, Breadcrumbs, FeatherIcon, Autocomplete } from 'frappe-ui'
@@ -1007,6 +1007,18 @@ watch(showAddCandidateModal, async (newValue) => {
 	}
 })
 
+// Watch edit modal state and data
+watch(showEditTalentSegmentModal, (newValue) => {
+	console.log('Edit modal state changed:', newValue)
+	if (newValue) {
+		console.log('Edit modal opened with data:', editingSegmentData.value)
+	}
+})
+
+watch(editingSegmentData, (newValue) => {
+	console.log('editingSegmentData changed:', newValue)
+}, { deep: true })
+
 // Methods
 const handleSearchInput = async (event) => {
 	console.log('Search input event:', event.target.value)
@@ -1069,14 +1081,18 @@ const loadCandidates = async () => {
 		if (candidateSegmentResult.success && candidateSegmentResult.data.length > 0) {
 			// Get candidate IDs from the relationship
 			const candidateIds = candidateSegmentResult.data.map((cs) => cs.talent_id)
+			console.log('TalentProfilesSegment records found:', candidateSegmentResult.data)
+			console.log('Extracted talent_ids:', candidateIds)
 
-			// Then get the actual candidate data
-			const candidateResult = await candidateService.getFilteredCandidates({
+			// Then get the actual candidate data using universal service
+			const candidateResult = await candidateService.getList({
 				filters: { name: ['in', candidateIds] },
-				limit: 1000,
+				page_length: 1000,
+				fields: ['name', 'full_name', 'email', 'phone', 'status', 'skills', 'headline', 'last_interaction']
 			})
+			console.log('TalentProfiles API result:', candidateResult)
 
-			if (candidateResult && candidateResult.data) {
+			if (candidateResult && candidateResult.success && candidateResult.data) {
 				// Merge the data - add segment relationship info to candidate data
 				candidates.value = candidateResult.data.map((candidate) => {
 					const segmentRelation = candidateSegmentResult.data.find(
@@ -1151,11 +1167,12 @@ const loadAvailableCandidates = async () => {
 	loadingAvailableCandidates.value = true
 	try {
 		// Get all candidates with more fields for preview
-		const allCandidatesResult = await candidateService.getFilteredCandidates({
-			limit: 1000,
+		const allCandidatesResult = await candidateService.getList({
+			page_length: 1000,
+			fields: ['name', 'full_name', 'email', 'phone', 'status', 'skills', 'headline']
 		})
 
-		if (allCandidatesResult && allCandidatesResult.data) {
+		if (allCandidatesResult && allCandidatesResult.success && allCandidatesResult.data) {
 			// Get candidates already in this segment
 			const existingCandidateSegments = await candidateSegmentService.getList({
 				filters: { segment_id: route.params.id },
@@ -1282,17 +1299,18 @@ const searchCandidatesAPI = async (searchQuery) => {
 			const candidateIds = candidateSegmentResult.data.map((cs) => cs.talent_id)
 
 			// Search candidates with API filters - search by full_name only
-			const searchResult = await candidateService.getFilteredCandidates({
-				search: searchQuery,
+			const searchResult = await candidateService.getList({
 				filters: { 
-					name: ['in', candidateIds]
+					name: ['in', candidateIds],
+					full_name: ['like', `%${searchQuery}%`]
 				},
-				limit: 1000,
+				page_length: 1000,
+				fields: ['name', 'full_name', 'email', 'phone', 'status', 'skills', 'headline', 'last_interaction']
 			})
 
 			console.log('Search API result:', searchResult)
 
-			if (searchResult && searchResult.data) {
+			if (searchResult && searchResult.success && searchResult.data) {
 				// Merge with segment relationship data
 				searchResults.value = searchResult.data.map((candidate) => {
 					const segmentRelation = candidateSegmentResult.data.find(
@@ -1336,6 +1354,14 @@ const handleTalentSegmentUpdated = async () => {
 
 const handleEditModalClose = () => {
 	showEditTalentSegmentModal.value = false
+}
+
+const openEditModal = () => {
+	// Set the current talent segment data to the editing variable
+	editingSegmentData.value = JSON.parse(JSON.stringify(talentSegment))
+	console.log('Opening edit modal with data:', editingSegmentData.value)
+	console.log('Original talentSegment:', talentSegment)
+	showEditTalentSegmentModal.value = true
 }
 
 // Lifecycle
