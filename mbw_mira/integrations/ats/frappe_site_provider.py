@@ -19,7 +19,7 @@ class FrappeSiteProvider:
     + CRUD + sync_direction
     """
 
-    def __init__(self, source_name, timeout=10, max_retries=3):
+    def __init__(self, source_name, timeout=120, max_retries=3):
         self.source_doc = frappe.get_doc("CandidateDataSource", source_name)
         self.timeout = timeout
         self.max_retries = max_retries

@@ -150,14 +150,15 @@ app_license = "agpl-3.0"
 
 scheduler_events = {
     "cron": {
-        "*/1 * * * *": [
+        "0/1 * * * *": [
             "mbw_mira.schedulers.fetch_ats_mbw_campaigns.run",
-            "mbw_mira.schedulers.excel_source_campaigns.run"
+            "mbw_mira.schedulers.excel_source_campaigns.run",
+            "mbw_mira.schedulers.auto_segment_talent_profiles.run"
         ],
-        "*/2 * * * *": [
+        "0/2 * * * *": [
             "mbw_mira.schedulers.enroll_talent_campaign.run",
             "mbw_mira.schedulers.create_actions.run"
-        ]
+        ],
     },
     "daily": [
         "mbw_mira.schedulers.fetch_ats_mbw_campaigns.run",
@@ -169,8 +170,9 @@ scheduler_events = {
     ],
     "hourly": [
         "mbw_mira.schedulers.enroll_talent_campaign.run",
-        "mbw_mira.schedulers.create_actions.run"
-    ],
+        "mbw_mira.schedulers.create_actions.run",
+        "mbw_mira.schedulers.auto_segment_talent_profiles.run"
+    ]
     # "weekly": [],
     # "monthly": [],
 }

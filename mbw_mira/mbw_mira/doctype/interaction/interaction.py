@@ -8,6 +8,16 @@ from frappe.model.document import Document
 class Interaction(Document):
 	pass
 
+	def on_update(self):
+		#Nếu có tương tác thì update trạng thái trong ứng viên
+		if self.interaction_type == 'EMAIL_CLICKED':
+			frappe.db.set_value("TalentProfiles",self.talent_id,"status","ENGAGED")
+			frappe.db.commit()
+
+
+
+
+
 def create_interaction(args):
 	"""Tạo interaction
 		talent_id: str,

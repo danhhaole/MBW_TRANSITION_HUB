@@ -1,7 +1,7 @@
 #Nhập campaign từ Job Board
 import frappe
 import logging
-from myapp.topcv_provider import TopCVProvider
+from mbw_mira.integrations.jobboard.topcv_provider import TopCVProvider
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ def save_candidates(candidates, campaign_name, provider_name):
                     "source_campaign": campaign_name,
                     "source_provider": provider_name
                 })
-                doc.insert()
+                doc.insert(ignore_permissions=True)
                 logger.info(f"[TopCV] Inserted candidate {c['name']}")
             else:
                 logger.info(f"[TopCV] Candidate {c['name']} already exists — skipped.")

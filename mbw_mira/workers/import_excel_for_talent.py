@@ -116,7 +116,7 @@ def import_candidates_from_file(campaign_id: str):
             # 8. Insert
             try:
                 doc = frappe.get_doc(doc_data)
-                doc.insert()
+                doc.insert(ignore_permissions=True)
                 frappe.db.commit()
                 logger.info(f"[TalentProfiles] Inserted: {doc.full_name} / {doc.email}")
                 inserted += 1

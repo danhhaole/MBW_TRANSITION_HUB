@@ -11,7 +11,6 @@ def fetch_mbw_ats_data(campaign_name):
     """
     Worker: Fetch ACTIVE campaign data from MBW ATS and save to TalentProfiles.
     """
-    logger.info(f"[MBW ATS] Start fetching data for campaign: {campaign_name}")
 
     # Lấy thông tin Campaign
     campaign = frappe.get_doc("Campaign", campaign_name)
@@ -26,30 +25,28 @@ def fetch_mbw_ats_data(campaign_name):
 
         criteria = campaign.criteria or {}
         if isinstance(criteria, str):
-            import json
             criteria = json.loads(criteria)
 
         try:
             filters = criteria.get("filters", {})
-            fields = criteria.get("fields", ["name", "can_full_name", "can_email", "can_phone","candidate_skill"])
+            fields = criteria.get("fields", ["name"])
             logger.info(f"[MBW ATS] Fetching candidates with filters={filters}, fields={fields}")
             candidates = provider.get_list("ATS_Candidate", filters=filters, fields=fields)
+            
             if candidates:
-                save_candidates_to_talent_pool(candidates, campaign, source_name, segment_id)
-
-                logger.info(f"[MBW ATS] Done fetching & saving {len(candidates)} candidates for campaign: {campaign.campaign_name}")
-
+                save_candidates_to_talent_pool(provider,candidates, campaign, source_name, segment_id)
         except Exception as e:
             logger.error(f"[MBW ATS] Failed fetching data for campaign: {campaign.campaign_name} — {str(e)}", exc_info=True)
 
 
-def save_candidates_to_talent_pool(candidates, campaign, source_name, segment_id):
+def save_candidates_to_talent_pool(provider,candidates, campaign, source_name, segment_id):
     """
     Chuẩn hóa & lưu danh sách ứng viên vào TalentProfiles
     """
     count = 0
     if candidates:
         for record in candidates:
+            record = provider.get_doc("ATS_Candidate",record.get('name'))
             doc_data = map_mbw_ats_to_talentprofiles(
                 record,
                 campaign_name=campaign.name,
@@ -58,13 +55,11 @@ def save_candidates_to_talent_pool(candidates, campaign, source_name, segment_id
             )
             try:
                 doc = frappe.get_doc(doc_data)
-                doc.insert()
+                doc.insert(ignore_permissions=True)
                 frappe.db.commit()
-                logger.info(f"[TalentProfiles] Inserted: {doc.full_name} / {doc.email}")
                 count += 1
             except Exception as e:
                 logger.error(f"[TalentProfiles] Failed to save {doc_data.get('full_name')} — {str(e)}", exc_info=True)
-    logger.info(f"[TalentProfiles] Total inserted: {count}")
 
 
 def map_mbw_ats_to_talentprofiles(record, campaign_name, source_name, segment_id=None):
@@ -80,7 +75,7 @@ def map_mbw_ats_to_talentprofiles(record, campaign_name, source_name, segment_id
         "Đã liên hệ": "SOURCED",
         "Không phù hợp": "ARCHIVED",
     }
-    status = status_map.get(record.get("status"), "NEW")
+    status = "NEW"
 
     # Gộp ghi chú thành ai_summary nếu muốn giữ lại
     ai_summary_parts = []
@@ -93,7 +88,8 @@ def map_mbw_ats_to_talentprofiles(record, campaign_name, source_name, segment_id
     # Kỹ năng
     skills = []
     if record.get("candidate_skill"):
-        skills.append(record["candidate_skill"])
+        for skill in record["candidate_skill"]:
+            skills.append(skill.get("can_skill_name"))
     skills_json_string = json.dumps(skills) if skills else "[]"
 
     # Headline (current position)
@@ -105,6 +101,7 @@ def map_mbw_ats_to_talentprofiles(record, campaign_name, source_name, segment_id
         "email": record.get("can_email"),
         "phone": record.get("can_phone"),
         "source": source_name,
+        "dob":record.get("can_dob"),
         "skills": skills_json_string,
         "avatar": None,
         "headline": headline,
@@ -114,5 +111,4 @@ def map_mbw_ats_to_talentprofiles(record, campaign_name, source_name, segment_id
         "status": status,
         "last_interaction": datetime.now(),
         "email_opt_out": 0
-        # Các field như campaign_name hay segment_id bạn có thể gắn thêm bằng cách mở rộng doctype nếu cần
     }

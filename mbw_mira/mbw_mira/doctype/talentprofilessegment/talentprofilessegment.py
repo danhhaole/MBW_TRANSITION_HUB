@@ -13,6 +13,9 @@ class TalentProfilesSegment(Document):
 
     def on_update(self):
         count_candidate_segment(self.segment_id)
+        #Cập nhật phân trạng thái CATEGORIZED vào thông tin hồ sơ
+        update_status_talent_profile(self.talent_id)
+        
 
 def validate_unique_candidate_segment(doc):
     """
@@ -45,3 +48,8 @@ def count_candidate_segment(segment_id):
             frappe.db.commit()
     except Exception as e:
         pass
+
+def update_status_talent_profile(talent_id):
+    #Trạng thái đã được phân loại
+    frappe.db.set_value("TalentProfiles",talent_id,"status","CATEGORIZED")
+    frappe.db.commit()

@@ -149,7 +149,7 @@ def verify_signature(data, sig):
     return hmac.compare_digest(expected, sig)
 
 #Tìm candidate khớp với talentsegment
-def find_candidates_fuzzy(source, criteria, segment_name = None, min_score=50):
+def find_candidates_fuzzy(criteria, segment_name = None, min_score=50):
     """
     Tìm các ứng viên có mức độ khớp >= min_score (0–100) theo fuzzy matching
     giữa candidate.skills và talent_segment.criteria.skills.
@@ -169,17 +169,17 @@ def find_candidates_fuzzy(source, criteria, segment_name = None, min_score=50):
                 criteria_skills = cret.get('skills')
                 
         if not len(criteria_skills) > 0:
-            frappe.throw(f"No skills criteria defined.{str(criteria_skills)}")
+            frappe.throw(f"{segment_name} No skills criteria defined.{str(criteria_skills)}")
 
         
-        candidates = frappe.get_all(
-            "Candidate",
-            filters={"source":source},
+        talent_profiles = frappe.get_all(
+            "TalentProfiles",
+            filters={"status":"NEW"},
             fields=["name", "full_name", "skills"]
         )
         results = []
         
-        for c in candidates:
+        for c in talent_profiles:
             
             if not c.get('skills'):
                 continue
@@ -206,7 +206,7 @@ def find_candidates_fuzzy(source, criteria, segment_name = None, min_score=50):
             frappe.log_error(str(avg_score),str(min_score))
             if avg_score >= min_score:
                 results.append({
-                    "candidate_name": c.name,
+                    "name": c.name,
                     "full_name": c.full_name,
                     "skills": candidate_skills,
                     "criteria_skills": criteria_skills,

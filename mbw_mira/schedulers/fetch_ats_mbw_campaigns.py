@@ -4,6 +4,7 @@ from datetime import date
 def run():
     """
     Scan ACTIVE campaigns with ATS source = MBW ATS and enqueue data fetching.
+    e780ec0fa468879
     """
     today = date.today()
     campaigns = frappe.get_all(
@@ -17,12 +18,13 @@ def run():
         },
         fields=["name", "campaign_name", "source"]
     )
+    #from mbw_mira.workers.ats import fetch_mbw_ats_data
     for c in campaigns:
-        if is_mbw_ats_source(c.source):
+        #fetch_mbw_ats_data.fetch_mbw_ats_data(campaign_name=c.name)
+        if is_mbw_ats_source(c.source):            
             frappe.enqueue(
                 "mbw_mira.workers.ats.fetch_mbw_ats_data.fetch_mbw_ats_data",
                 campaign_name=c.name,
-                job_name=c.name,
                 queue="short"
             )
             frappe.logger().info(f"Enqueued MBW ATS fetch for campaign: {c.campaign_name}")

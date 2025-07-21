@@ -1,6 +1,6 @@
 import frappe
 import logging
-from myapp.vietnamworks_provider import VietnamWorksProvider
+from mbw_mira.integrations.jobboard.vietnamworks_provider import VietnamWorksProvider
 
 logger = logging.getLogger(__name__)
 

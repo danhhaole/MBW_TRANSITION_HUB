@@ -41,25 +41,6 @@ def handle_candidate_segment():
             job_name = "insert_candidate_segment"
         )
 
-def handle_candidate_campaign():
-    candidate_campaigns = _get_active_candidate_campaigns()
-    if not candidate_campaigns:
-        frappe.logger("candidate_campaigns").info("[SKIP] No active candidate_campaigns found.")
-        return
-
-    for can_campaign in candidate_campaigns:
-        segment = frappe.get_value("Campaign", can_campaign.campaign_id, "target_segment")
-        if not segment:
-            continue
-        frappe.enqueue(
-            "mbw_mira.campaign.background_jobs.process_next_step",
-            candidate_campaign_id=can_campaign.name,
-            queue="default",
-            timeout=300,
-            job_name = "process_next_step"
-        )           
-
-
 def insert_candidate_segment(**kwargs) -> list[str]:
     """
     Thêm nhiều CandidateSegment từ dữ liệu,
