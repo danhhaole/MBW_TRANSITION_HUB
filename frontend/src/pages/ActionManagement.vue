@@ -171,7 +171,7 @@
               />
               <FormControl
                 type="select"
-                v-model="filters.candidate_campaign_id"
+                v-model="filters.talent_campaign_id"
                 :options="filterOptions.candidateCampaigns"
                 :placeholder="__('Candidate Campaign')"
                 @change="applyFilters"
@@ -298,7 +298,7 @@
                     theme="blue"
                     size="sm"
                   >
-                    {{ item.candidate_campaign_id }}
+                    {{ item.talent_campaign_id }}
                   </Badge>
                 </td>
                 <td class="p-3">
@@ -416,7 +416,7 @@
               <FormControl
                 type="select"
                 :label="__('Candidate Campaign')"
-                v-model="formData.candidate_campaign_id"
+                v-model="formData.talent_campaign_id"
                 :options="filterOptions.candidateCampaigns"
                 :required="true"
               />
@@ -549,7 +549,7 @@ const statusOptions = [
 // Form data matching doctype fields
 const formData = reactive({
   name: '',
-  candidate_campaign_id: '',
+  talent_campaign_id: '',
   campaign_step: '',
   status: 'SCHEDULED',
   scheduled_at: null,
@@ -562,7 +562,7 @@ const formData = reactive({
 const filters = reactive({
   status: '',
   campaign_step: '',
-  candidate_campaign_id: '',
+  talent_campaign_id: '',
   assignee_id: ''
 })
 
@@ -590,7 +590,7 @@ const stats = reactive({
 
 // Table headers matching doctype fields
 const headers = [
-  { title: 'Candidate Campaign', key: 'candidate_campaign_id', sortable: true },
+  { title: 'Candidate Campaign', key: 'talent_campaign_id', sortable: true },
   { title: 'Campaign Step', key: 'campaign_step', sortable: true },
   { title: 'Status', key: 'status', sortable: true },
   { title: 'Scheduled At', key: 'scheduled_at', sortable: true },
@@ -605,7 +605,7 @@ const hasActiveFilters = computed(() => {
 })
 
 const formValid = computed(() => {
-  return formData.candidate_campaign_id && formData.campaign_step && formData.status
+  return formData.talent_campaign_id && formData.campaign_step && formData.status
 })
 
 // Methods
@@ -625,7 +625,7 @@ const loadData = async () => {
     // Prepare search conditions
     const searchConditions = []
     if (search.value && search.value.trim() !== '') {
-      searchConditions.push(['candidate_campaign_id', 'like', `%${search.value}%`])
+      searchConditions.push(['talent_campaign_id', 'like', `%${search.value}%`])
       searchConditions.push(['campaign_step', 'like', `%${search.value}%`])
       searchConditions.push(['assignee_id', 'like', `%${search.value}%`])
     }
@@ -635,7 +635,7 @@ const loadData = async () => {
       page_length: pagination.limit,
       start: (pagination.page - 1) * pagination.limit,
       order_by: 'scheduled_at desc',
-      fields: ['name', 'candidate_campaign_id', 'campaign_step', 'status', 'scheduled_at', 'executed_at', 'result', 'assignee_id', 'modified']
+      fields: ['name', 'talent_campaign_id', 'campaign_step', 'status', 'scheduled_at', 'executed_at', 'result', 'assignee_id', 'modified']
     }
     
     // Add search conditions if any
@@ -670,12 +670,12 @@ const loadFilterOptions = async () => {
   try {
     // Load candidate campaigns
     const candidateCampaignResult = await candidateCampaignService.getList({
-      fields: ['name', 'candidate_id', 'campaign_id'],
+      fields: ['name', 'talent_id', 'campaign_id'],
       page_length: 1000
     })
     if (candidateCampaignResult.success) {
       filterOptions.candidateCampaigns = candidateCampaignResult.data.map(item => ({
-        label: `${item.name} (${item.candidate_id} - ${item.campaign_id})`,
+        label: `${item.name} (${item.talent_id} - ${item.campaign_id})`,
         value: item.name
       }))
     }
@@ -771,7 +771,7 @@ const closeFormModal = () => {
 const resetForm = () => {
   Object.assign(formData, {
     name: '',
-    candidate_campaign_id: '',
+    talent_campaign_id: '',
     campaign_step: '',
     status: 'SCHEDULED',
     scheduled_at: null,
@@ -783,7 +783,7 @@ const resetForm = () => {
 
 const saveData = async () => {
   // Validate required fields
-  if (!formData.candidate_campaign_id) {
+  if (!formData.talent_campaign_id) {
     alert('Please select a candidate campaign')
     return
   }
@@ -916,7 +916,7 @@ const exportData = async () => {
   try {
     const result = await actionService.export({
       filters: filters,
-      fields: ['name', 'candidate_campaign_id', 'campaign_step', 'status', 'scheduled_at', 'executed_at', 'result', 'assignee_id']
+      fields: ['name', 'talent_campaign_id', 'campaign_step', 'status', 'scheduled_at', 'executed_at', 'result', 'assignee_id']
     })
     if (result.success) {
       // Handle export (download file)

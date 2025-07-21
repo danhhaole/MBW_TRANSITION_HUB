@@ -10,13 +10,13 @@ class Interaction(Document):
 
 def create_interaction(args):
 	"""Tạo interaction
-		candidate_id: str,
+		talent_id: str,
 		interaction_type: str,
 		source_action: str = None,
 		url: str = None,
 		description: str = None,
 	"""
-	candidate_id = args.get('candidate_id')
+	talent_id = args.get('talent_id')
 	interaction_type = args.get('interaction_type')
 	source_action = args.get('source_action',"")
 	url = args.get('url', "")
@@ -24,7 +24,7 @@ def create_interaction(args):
 	frappe.get_doc(
 		{
 			"doctype": "Interaction",
-			"candidate_id": candidate_id,
+			"talent_id": talent_id,
 			"interaction_type": interaction_type,
 			"action": source_action,
 			"url": url,

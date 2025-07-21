@@ -165,7 +165,7 @@
               />
               <FormControl
                 type="select"
-                v-model="filters.candidate_id"
+                v-model="filters.talent_id"
                 :options="filterOptions.candidates"
                 placeholder="Candidate"
                 @change="applyFilters"
@@ -282,11 +282,11 @@
                 <td class="p-3">
                   <div class="flex items-center">
                     <Avatar
-                      :label="item.candidate_id?.charAt(0)"
+                      :label="item.talent_id?.charAt(0)"
                       size="sm"
                       class="mr-2"
                     />
-                    <span class="text-sm text-slate-800">{{ item.candidate_id }}</span>
+                    <span class="text-sm text-slate-800">{{ item.talent_id }}</span>
                   </div>
                 </td>
                 <td class="p-3">
@@ -404,7 +404,7 @@
               <FormControl
                 type="select"
                 label="Candidate"
-                v-model="formData.candidate_id"
+                v-model="formData.talent_id"
                 :options="filterOptions.candidates"
                 :required="true"
               />
@@ -538,7 +538,7 @@ const interactionTypeOptions = [
 // Form data matching doctype fields
 const formData = reactive({
   name: '',
-  candidate_id: '',
+  talent_id: '',
   interaction_type: '',
   action: '',
   url: '',
@@ -548,7 +548,7 @@ const formData = reactive({
 // Filters
 const filters = reactive({
   interaction_type: '',
-  candidate_id: '',
+  talent_id: '',
   action: '',
   url: ''
 })
@@ -576,7 +576,7 @@ const stats = reactive({
 
 // Table headers matching doctype fields
 const headers = [
-  { title: 'Candidate', key: 'candidate_id', sortable: true },
+  { title: 'Candidate', key: 'talent_id', sortable: true },
   { title: 'Type', key: 'interaction_type', sortable: true },
   { title: 'Source Action', key: 'action', sortable: true },
   { title: 'URL', key: 'url', sortable: false },
@@ -591,7 +591,7 @@ const hasActiveFilters = computed(() => {
 })
 
 const formValid = computed(() => {
-  return formData.candidate_id && formData.interaction_type
+  return formData.talent_id && formData.interaction_type
 })
 
 // Methods
@@ -611,7 +611,7 @@ const loadData = async () => {
     // Prepare search conditions
     const searchConditions = []
     if (search.value && search.value.trim() !== '') {
-      searchConditions.push(['candidate_id', 'like', `%${search.value}%`])
+      searchConditions.push(['talent_id', 'like', `%${search.value}%`])
       searchConditions.push(['interaction_type', 'like', `%${search.value}%`])
       searchConditions.push(['description', 'like', `%${search.value}%`])
     }
@@ -621,7 +621,7 @@ const loadData = async () => {
       page_length: pagination.limit,
       start: (pagination.page - 1) * pagination.limit,
       order_by: 'modified desc',
-      fields: ['name', 'candidate_id', 'interaction_type', 'action', 'url', 'description', 'modified']
+      fields: ['name', 'talent_id', 'interaction_type', 'action', 'url', 'description', 'modified']
     }
     
     // Add search conditions if any
@@ -737,7 +737,7 @@ const exportData = async () => {
   try {
     const result = await interactionService.export({
       filters: filters,
-      fields: ['name', 'candidate_id', 'interaction_type', 'action', 'url', 'description', 'modified']
+      fields: ['name', 'talent_id', 'interaction_type', 'action', 'url', 'description', 'modified']
     })
     if (result.success) {
       // Handle export (download file)
@@ -765,7 +765,7 @@ const closeFormModal = () => {
 const resetForm = () => {
   Object.assign(formData, {
     name: '',
-    candidate_id: '',
+    talent_id: '',
     interaction_type: '',
     action: '',
     url: '',
@@ -775,7 +775,7 @@ const resetForm = () => {
 
 const saveData = async () => {
   // Validate required fields
-  if (!formData.candidate_id) {
+  if (!formData.talent_id) {
     alert('Please select a candidate')
     return
   }
