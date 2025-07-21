@@ -17,10 +17,10 @@ class TalentProfilesSegment(Document):
 def validate_unique_candidate_segment(doc):
     """
     Kiểm tra xem đã tồn tại TalentProfilesSegment với cùng
-    candidate_id + segment_id (ngoại trừ chính nó) hay chưa.
+    talent_id + segment_id (ngoại trừ chính nó) hay chưa.
     """
     filters = {
-        "candidate_id": doc.candidate_id,
+        "talent_id": doc.talent_id,
         "segment_id": doc.segment_id,
     }
 
@@ -29,7 +29,7 @@ def validate_unique_candidate_segment(doc):
     if existing and existing != doc.name:
         frappe.throw(
             frappe._("A TalentProfilesSegment with Candidate <b>{0}</b> and Segment <b>{1}</b> already exists: <a href='/app/candidate-segment/{2}'>{2}</a>").format(
-                doc.candidate_id,
+                doc.talent_id,
                 doc.segment_id,
                 existing
             ),

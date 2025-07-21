@@ -460,14 +460,14 @@ const mockCandidates = ref([])
 // Load candidates from segment
 const loadCandidatesFromSegment = async (segmentId) => {
   try {
-    // Get candidates from target segment through CandidateSegment
+    // Get candidates from target segment through TalentProfilesSegment
     const candidateSegmentResult = await candidateSegmentService.getList({
       filters: { segment_id: segmentId },
-      fields: ['candidate_id']
+      fields: ['talent_id']
     })
     
     if (candidateSegmentResult.success && candidateSegmentResult.data.length > 0) {
-      const candidateIds = candidateSegmentResult.data.map(cs => cs.candidate_id)
+      const candidateIds = candidateSegmentResult.data.map(cs => cs.talent_id)
       
       // Get the actual candidate data
       const candidateResult = await candidateService.getList({
@@ -795,11 +795,11 @@ const createCampaign = async () => {
     if (campaignResult.success) {
       const campaignId = campaignResult.data.name
       
-      // Create CandidateCampaign records for selected candidates (only if any candidates are selected)
+      // Create TalentProfilesCampaign records for selected candidates (only if any candidates are selected)
       if (selectedCandidates.value.size > 0) {
         const candidateCampaignPromises = Array.from(selectedCandidates.value).map(candidateId => 
           candidateCampaignService.save({
-            candidate_id: candidateId,
+            talent_id: candidateId,
             campaign_id: campaignId,
             status: 'DRAFT',
             current_step_order: 1,

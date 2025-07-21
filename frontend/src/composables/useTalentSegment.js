@@ -67,7 +67,7 @@ export const useTalentSegment = () => {
         }
       }
       
-      // Get candidates for this segment from CandidateSegment records
+      // Get candidates for this segment from TalentProfilesSegment records
       const candidateSegmentData = await getSegmentCandidates(segment.name)
       console.log(candidateSegmentData)
       // Extract candidate info for team members display

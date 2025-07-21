@@ -239,7 +239,7 @@
 														{{ candidate.full_name }}
 													</div>
 													<div class="text-sm text-gray-500 truncate">
-														{{ candidate.current_position || 'Chưa có thông tin' }}
+														{{ candidate.headline || 'Chưa có thông tin' }}
 													</div>
 												</div>
 											</div>
@@ -250,9 +250,7 @@
 											<div class="text-sm text-gray-900 truncate">
 												{{ candidate.email }}
 											</div>
-											<div class="text-sm text-gray-500">
-												{{ candidate.location || 'Chưa có thông tin' }}
-											</div>
+											<!-- Đã bỏ dòng location vì không còn trường này trong TalentProfiles -->
 										</td>
 
 										<!-- Skills -->
@@ -598,8 +596,11 @@ const hasFilters = computed(() => {
 // Filter Options
 const statusFilterOptions = computed(() => [
 	{ label: __('All Statuses'), value: '' },
-	{ label: __('Active'), value: 'Active' },
-	{ label: __('Inactive'), value: 'Inactive' }
+	{ label: 'NEW', value: 'NEW' },
+	{ label: 'SOURCED', value: 'SOURCED' },
+	{ label: 'NURTURING', value: 'NURTURING' },
+	{ label: 'ENGAGED', value: 'ENGAGED' },
+	{ label: 'ARCHIVED', value: 'ARCHIVED' }
 ])
 
 const sourceFilterOptions = computed(() => [

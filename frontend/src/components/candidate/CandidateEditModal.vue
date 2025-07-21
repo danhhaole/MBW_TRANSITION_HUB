@@ -71,35 +71,23 @@
               
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  {{ __('Current Position') }}
+                  {{ __('Headline') }}
                 </label>
                 <FormControl
                   type="text"
-                  v-model="formData.current_position"
-                  :placeholder="__('Enter current position')"
+                  v-model="formData.headline"
+                  :placeholder="__('Enter current position/title')"
                 />
               </div>
               
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  {{ __('Location') }}
+                  {{ __('Avatar URL') }}
                 </label>
                 <FormControl
-                  type="text"
-                  v-model="formData.location"
-                  :placeholder="__('Enter location')"
-                />
-              </div>
-              
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  {{ __('Experience Years') }}
-                </label>
-                <FormControl
-                  type="number"
-                  v-model="formData.experience_years"
-                  :placeholder="__('Enter experience years')"
-                  :min="0"
+                  type="url"
+                  v-model="formData.avatar"
+                  :placeholder="__('Enter avatar URL')"
                 />
               </div>
             </div>
@@ -200,24 +188,12 @@
             <div class="space-y-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  {{ __('CV URL') }}
-                </label>
-                <FormControl
-                  type="url"
-                  v-model="formData.cv_original_url"
-                  :placeholder="__('Enter CV URL')"
-                  :error="validationErrors?.cv_original_url"
-                />
-              </div>
-              
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
                   {{ __('AI Summary') }}
                 </label>
                 <FormControl
                   type="textarea"
                   v-model="formData.ai_summary"
-                  :placeholder="__('Enter AI summary')"
+                  :placeholder="__('Enter AI-generated summary')"
                   :rows="4"
                 />
               </div>
@@ -321,13 +297,13 @@ const formData = ref({
   full_name: '',
   email: '',
   phone: '',
-  current_position: '',
-  location: '',
-  experience_years: '',
+  headline: '',
+  avatar: '',
   source: 'Manual',
-  status: 'Active',
+  status: 'NEW',
   skills: [],
-  notes: ''
+  ai_summary: '',
+  email_opt_out: false
 })
 
 // Computed
@@ -336,23 +312,29 @@ const isEdit = computed(() => !!props.candidate)
 const statusOptions = computed(() => {
   try {
     const baseOptions = [
-      { label: 'Hoạt động', value: 'Active' },
-      { label: 'Không hoạt động', value: 'Inactive' }
+      { label: 'NEW', value: 'NEW' },
+      { label: 'SOURCED', value: 'SOURCED' },
+      { label: 'NURTURING', value: 'NURTURING' },
+      { label: 'ENGAGED', value: 'ENGAGED' },
+      { label: 'ARCHIVED', value: 'ARCHIVED' }
     ]
     
     const filterOptions = props.filterOptions || {}
     const statusFromAPI = filterOptions.status || []
     
     if (Array.isArray(statusFromAPI)) {
-      return [...baseOptions, ...statusFromAPI]
+      return [...statusFromAPI]
     }
     
     return baseOptions
   } catch (error) {
     console.error('Error in statusOptions:', error)
     return [
-      { label: 'Hoạt động', value: 'Active' },
-      { label: 'Không hoạt động', value: 'Inactive' }
+      { label: 'NEW', value: 'NEW' },
+      { label: 'SOURCED', value: 'SOURCED' },
+      { label: 'NURTURING', value: 'NURTURING' },
+      { label: 'ENGAGED', value: 'ENGAGED' },
+      { label: 'ARCHIVED', value: 'ARCHIVED' }
     ]
   }
 })
@@ -478,13 +460,13 @@ const resetForm = () => {
       full_name: '',
       email: '',
       phone: '',
-      current_position: '',
-      location: '',
-      experience_years: '',
+      headline: '',
+      avatar: '',
       source: 'Manual',
-      status: 'Active',
+      status: 'NEW',
       skills: [],
-      notes: ''
+      ai_summary: '',
+      email_opt_out: false
     }
     validationErrors.value = {}
   } catch (error) {
@@ -499,13 +481,13 @@ const loadCandidateData = () => {
         full_name: props.candidate.full_name || '',
         email: props.candidate.email || '',
         phone: props.candidate.phone || '',
-        current_position: props.candidate.current_position || '',
-        location: props.candidate.location || '',
-        experience_years: props.candidate.experience_years || '',
+        headline: props.candidate.headline || '',
+        avatar: props.candidate.avatar || '',
         source: props.candidate.source || 'Manual',
-        status: props.candidate.status || 'Active',
+        status: props.candidate.status || 'NEW',
         skills: processSkills(props.candidate.skills) || [],
-        notes: props.candidate.notes || ''
+        ai_summary: props.candidate.ai_summary || '',
+        email_opt_out: !!props.candidate.email_opt_out
       }
     } else {
       resetForm()

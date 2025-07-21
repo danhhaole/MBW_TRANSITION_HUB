@@ -171,8 +171,8 @@ export const getTalentSegmentCandidates = async (segmentId, filters = {}) => {
     })
     
     const params = {
-      doctype: 'CandidateSegment',
-      fields: ['candidate_id', 'added_at', 'added_by'],
+      doctype: 'TalentProfilesSegment',
+      fields: ['talent_id', 'added_at', 'added_by'],
       filters: { segment_id: segmentId },
       order_by: 'added_at desc',
       limit_page_length: 50
@@ -186,7 +186,7 @@ export const getTalentSegmentCandidates = async (segmentId, filters = {}) => {
     
     // Lấy thông tin chi tiết ứng viên nếu có kết quả
     if (result && result.length > 0) {
-      const candidateIds = result.map(item => item.candidate_id)
+      const candidateIds = result.map(item => item.talent_id)
       const candidateResource = createResource({
         url: 'frappe.client.get_list',
         method: 'POST',
@@ -194,14 +194,14 @@ export const getTalentSegmentCandidates = async (segmentId, filters = {}) => {
       })
       
       const candidates = await candidateResource.fetch({
-        doctype: 'Candidate',
+        doctype: 'TalentProfiles',
         fields: ['name', 'full_name', 'email', 'phone', 'skills', 'status'],
         filters: [['name', 'in', candidateIds]]
       })
       
       // Kết hợp thông tin
       const combinedData = result.map(segmentCandidate => {
-        const candidate = candidates.find(c => c.name === segmentCandidate.candidate_id)
+        const candidate = candidates.find(c => c.name === segmentCandidate.talent_id)
         return {
           ...segmentCandidate,
           candidate: candidate
@@ -233,9 +233,9 @@ export const addCandidateToSegment = async (segmentId, candidateId) => {
     
     const result = await resource.fetch({
       doc: {
-        doctype: 'CandidateSegment',
+        doctype: 'TalentProfilesSegment',
         segment_id: segmentId,
-        candidate_id: candidateId,
+        talent_id: candidateId,
         added_at: new Date().toISOString(),
         added_by: 'Administrator' // TODO: Get current user
       }
@@ -254,7 +254,7 @@ export const addCandidateToSegment = async (segmentId, candidateId) => {
 // Xóa ứng viên khỏi phân khúc
 export const removeCandidateFromSegment = async (segmentId, candidateId) => {
   try {
-    // Tìm record CandidateSegment
+    // Tìm record TalentProfilesSegment
     const resource = createResource({
       url: 'frappe.client.get_list',
       method: 'POST',
@@ -262,11 +262,11 @@ export const removeCandidateFromSegment = async (segmentId, candidateId) => {
     })
     
     const segments = await resource.fetch({
-      doctype: 'CandidateSegment',
+      doctype: 'TalentProfilesSegment',
       fields: ['name'],
       filters: {
         segment_id: segmentId,
-        candidate_id: candidateId
+        talent_id: candidateId
       }
     })
 
@@ -278,7 +278,7 @@ export const removeCandidateFromSegment = async (segmentId, candidateId) => {
       })
       
       await deleteResource.fetch({
-        doctype: 'CandidateSegment',
+        doctype: 'TalentProfilesSegment',
         name: segments[0].name
       })
       return { success: true, message: 'Xóa ứng viên khỏi phân khúc thành công' }

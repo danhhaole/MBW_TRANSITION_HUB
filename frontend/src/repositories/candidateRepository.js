@@ -1,14 +1,14 @@
 import { createResource } from 'frappe-ui'
 
 /**
- * Candidate Repository
- * Xử lý tất cả các API calls liên quan đến Candidate
+ * TalentProfiles Repository
+ * Xử lý tất cả các API calls liên quan đến TalentProfiles
  */
 
-// Get paginated candidates with filters and search
+// Get paginated talent profiles with filters and search
 export const getCandidates = (params = {}) => {
   const resource = createResource({
-    url: 'mbw_mira.api.candidate.get_candidates_paginated',
+    url: 'mbw_mira.api.talentprofiles.get_talent_profiles_paginated',
     method: 'POST',
     auto: false
   })
@@ -22,7 +22,7 @@ export const getCandidates = (params = {}) => {
     // Handle response structure
     if (response && typeof response === 'object') {
       return {
-        data: response.data || [],
+        data: response.talent_profiles || [],
         pagination: response.pagination || {
           page: 1,
           limit: 10,
@@ -56,129 +56,192 @@ export const getCandidates = (params = {}) => {
   })
 }
 
-// Get candidate statistics
+// Get talent profile statistics
 export const getCandidateStats = () => {
   const resource = createResource({
-    url: 'mbw_mira.api.candidate.get_candidate_stats',
+    url: 'mbw_mira.api.talentprofiles.get_talent_profile_stats',
     method: 'GET',
     auto: false
   })
   
-  return resource.fetch().catch(error => {
-    console.error('Error fetching candidate stats:', error)
+  return resource.fetch().then(response => {
+    if (response && response.success) {
+      return response.stats
+    }
+    return {}
+  }).catch(error => {
+    console.error('Error fetching stats:', error)
     return {}
   })
 }
 
-// Search candidates for autocomplete
+// Search talent profiles for autocomplete
 export const searchCandidates = (query, limit = 10) => {
   const resource = createResource({
-    url: 'mbw_mira.api.candidate.search_candidates',
-    method: 'POST',
+    url: 'mbw_mira.api.talentprofiles.search_talent_profiles',
+    method: 'GET',
     auto: false
   })
   
-  return resource.fetch({
-    query,
-    limit
-  }).then(response => {
-    return Array.isArray(response) ? response : []
+  return resource.fetch({ query, limit }).then(response => {
+    if (response && response.success) {
+      return response.talent_profiles || []
+    }
+    return []
   }).catch(error => {
     console.error('Error searching candidates:', error)
     return []
   })
 }
 
-// Get candidate by ID/name
-export const getCandidateByName = (name) => {
+// Get single talent profile by name
+export const getCandidate = (name) => {
   const resource = createResource({
-    url: 'mbw_mira.api.candidate.get_candidate_by_name',
-    method: 'POST',
+    url: 'mbw_mira.api.talentprofiles.get_talent_profile_by_name',
+    method: 'GET',
     auto: false
   })
   
-  return resource.fetch({ name }).catch(error => {
-    console.error('Error fetching candidate by name:', error)
+  return resource.fetch({ name }).then(response => {
+    if (response && response.success) {
+      return response.talent_profile
+    }
+    return null
+  }).catch(error => {
+    console.error('Error fetching candidate:', error)
     throw error
   })
 }
 
-// Create new candidate
+// Create new talent profile
 export const createCandidate = (candidateData) => {
   const resource = createResource({
-    url: 'mbw_mira.api.candidate.create_candidate',
+    url: 'mbw_mira.api.talentprofiles.create_talent_profile',
     method: 'POST',
     auto: false
   })
   
-  return resource.fetch({ data: candidateData }).catch(error => {
+  return resource.fetch({ data: candidateData }).then(response => {
+    if (response && response.success) {
+      return response.talent_profile
+    }
+    throw new Error(response?.error || 'Failed to create talent profile')
+  }).catch(error => {
     console.error('Error creating candidate:', error)
     throw error
   })
 }
 
-// Update candidate
+// Update talent profile
 export const updateCandidate = (name, candidateData) => {
   const resource = createResource({
-    url: 'mbw_mira.api.candidate.update_candidate',
+    url: 'mbw_mira.api.talentprofiles.update_talent_profile',
     method: 'POST',
     auto: false
   })
   
-  return resource.fetch({
-    name,
-    data: candidateData
+  return resource.fetch({ name, data: candidateData }).then(response => {
+    if (response && response.success) {
+      return response.talent_profile
+    }
+    throw new Error(response?.error || 'Failed to update talent profile')
   }).catch(error => {
     console.error('Error updating candidate:', error)
     throw error
   })
 }
 
-// Delete candidate
+// Delete talent profile
 export const deleteCandidate = (name) => {
   const resource = createResource({
-    url: 'mbw_mira.api.candidate.delete_candidate',
-    method: 'POST',
+    url: 'mbw_mira.api.talentprofiles.delete_talent_profile',
+    method: 'DELETE',
     auto: false
   })
   
-  return resource.fetch({ name }).catch(error => {
+  return resource.fetch({ name }).then(response => {
+    if (response && response.success) {
+      return true
+    }
+    throw new Error(response?.error || 'Failed to delete talent profile')
+  }).catch(error => {
     console.error('Error deleting candidate:', error)
     throw error
   })
 }
 
-// Get filter options (statuses, sources, skills)
+// Get filter options
 export const getFilterOptions = () => {
   const resource = createResource({
-    url: 'mbw_mira.api.candidate.get_filter_options',
+    url: 'mbw_mira.api.talentprofiles.get_talent_profile_filter_options',
     method: 'GET',
     auto: false
   })
   
   return resource.fetch().then(response => {
+    if (response && response.success) {
+      return response.options
+    }
     return {
-      statuses: response?.statuses || [],
-      sources: response?.sources || [],
-      skills: response?.skills || []
+      status: [],
+      source: [],
+      skills: []
     }
   }).catch(error => {
     console.error('Error fetching filter options:', error)
     return {
-      statuses: [],
-      sources: [],
+      status: [],
+      source: [],
       skills: []
     }
   })
 }
 
-export default {
-  getCandidates,
-  getCandidateStats,
-  searchCandidates,
-  getCandidateByName,
-  createCandidate,
-  updateCandidate,
-  deleteCandidate,
-  getFilterOptions
-} 
+// Resource exports for composables
+export const getCandidatesResource = createResource({
+  url: 'mbw_mira.api.talentprofiles.get_talent_profiles_paginated',
+  method: 'POST',
+  auto: false
+})
+
+export const getCandidateStatsResource = createResource({
+  url: 'mbw_mira.api.talentprofiles.get_talent_profile_stats',
+  method: 'GET',
+  auto: false
+})
+
+export const searchCandidatesResource = createResource({
+  url: 'mbw_mira.api.talentprofiles.search_talent_profiles',
+  method: 'GET',
+  auto: false
+})
+
+export const getCandidateResource = createResource({
+  url: 'mbw_mira.api.talentprofiles.get_talent_profile_by_name',
+  method: 'GET',
+  auto: false
+})
+
+export const createCandidateResource = createResource({
+  url: 'mbw_mira.api.talentprofiles.create_talent_profile',
+  method: 'POST',
+  auto: false
+})
+
+export const updateCandidateResource = createResource({
+  url: 'mbw_mira.api.talentprofiles.update_talent_profile',
+  method: 'POST',
+  auto: false
+})
+
+export const deleteCandidateResource = createResource({
+  url: 'mbw_mira.api.talentprofiles.delete_talent_profile',
+  method: 'DELETE',
+  auto: false
+})
+
+export const getFilterOptionsResource = createResource({
+  url: 'mbw_mira.api.talentprofiles.get_talent_profile_filter_options',
+  method: 'GET',
+  auto: false
+}) 

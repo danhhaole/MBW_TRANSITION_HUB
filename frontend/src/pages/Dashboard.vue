@@ -482,7 +482,7 @@ const loadTasks = async () => {
 					)
 					if (ccResult.success) {
 						const candidateResult = await candidateService.getFormData(
-							ccResult.data.candidate_id,
+							ccResult.data.talent_id,
 						)
 						const campaignResult = await campaignService.getFormData(
 							ccResult.data.campaign_id,

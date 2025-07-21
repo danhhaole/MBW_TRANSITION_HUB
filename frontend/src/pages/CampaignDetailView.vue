@@ -339,12 +339,12 @@
                       <div class="flex-shrink-0 h-8 w-8">
                         <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
                           <span class="text-sm font-medium text-blue-600">
-                            {{ candidate.candidate_id?.charAt(0)?.toUpperCase() || 'C' }}
+                            							{{ candidate.talent_id?.charAt(0)?.toUpperCase() || 'C' }}
                           </span>
                         </div>
                       </div>
                       <div class="ml-3">
-                        <div class="text-sm font-medium text-gray-900">{{ candidate.candidate_id }}</div>
+                        						<div class="text-sm font-medium text-gray-900">{{ candidate.talent_id }}</div>
                         <div class="text-sm text-gray-500">Candidate</div>
                       </div>
                     </div>
@@ -630,7 +630,7 @@
           <div class="space-y-4">
             <!-- Candidate Selection -->
             <FormControl
-              v-model="candidateFormData.candidate_id"
+              v-model="candidateFormData.talent_id"
               type="select"
               :label="__('Select Candidate')"
               :required="true"
@@ -670,7 +670,7 @@
                 variant="solid"
                 theme="gray"
                 :loading="savingCandidate"
-                :disabled="!candidateFormData.candidate_id || campaignSteps.length === 0"
+                :disabled="!candidateFormData.talent_id || campaignSteps.length === 0"
                 @click="assignCandidate"
               >
                 {{ __('Assign Candidate') }}
@@ -712,7 +712,7 @@
               type="select"
               :label="__('Candidate')"
               :required="true"
-              :options="[{ label: __('Select candidate'), value: '' }, ...candidateCampaigns.map(cc => ({ label: cc.candidate_id, value: cc.name }))]"
+              									:options="[{ label: __('Select candidate'), value: '' }, ...candidateCampaigns.map(cc => ({ label: cc.talent_id, value: cc.name }))]"
             />
 
             <!-- Status -->
@@ -831,7 +831,7 @@ const showCandidateModal = ref(false)
 const showEditCampaignModal = ref(false)
 const showActionModal = ref(false)
 const stepFormValid = ref(false)
-const candidateFormValid = ref(false)
+
 const savingStep = ref(false)
 const savingCandidate = ref(false)
 const assigningAll = ref(false)
@@ -848,7 +848,7 @@ const stepFormData = reactive({
 })
 
 const candidateFormData = reactive({
-  candidate_id: '',
+  talent_id: '',
   campaign_id: route.params.id,
   status: 'ACTIVE',
   current_step_order: 1
@@ -900,7 +900,7 @@ const stepHeaders = [
 ]
 
 const candidateHeaders = [
-  { label: 'Candidate', key: 'candidate_id' },
+  	{ label: 'Candidate', key: 'talent_id' },
   { label: 'Status', key: 'status' },
   { label: 'Current Step', key: 'current_step_order' },
   { label: 'Enrolled At', key: 'enrolled_at' },
@@ -1035,7 +1035,7 @@ const loadCandidateCampaigns = async () => {
   try {
     const result = await candidateCampaignService.getList({
       filters: { campaign_id: route.params.id },
-      fields: ['name', 'candidate_id', 'status', 'current_step_order', 'enrolled_at']
+      			fields: ['name', 'talent_id', 'status', 'current_step_order', 'enrolled_at']
     })
     if (result.success) {
       candidateCampaigns.value = result.data
@@ -1050,7 +1050,7 @@ const loadCandidateCampaigns = async () => {
 const loadActions = async () => {
   loadingActions.value = true
   try {
-    // Load actions for this campaign through CandidateCampaign
+    // Load actions for this campaign through TalentProfilesCampaign
     const candidateCampaignsResult = await candidateCampaignService.getList({
       filters: { campaign_id: route.params.id },
       fields: ['name']
@@ -1093,23 +1093,23 @@ const loadAvailableCandidates = async () => {
         }))
       }
     } else {
-      // Get candidates from target segment through CandidateSegment
+      // Get candidates from target segment through TalentProfilesSegment
       const candidateSegmentResult = await candidateSegmentService.getList({
         filters: { segment_id: campaign.target_segment },
-        fields: ['candidate_id']
+        fields: ['talent_id']
       })
       
       if (candidateSegmentResult.success && candidateSegmentResult.data.length > 0) {
-        const candidateIds = candidateSegmentResult.data.map(cs => cs.candidate_id)
+        const candidateIds = candidateSegmentResult.data.map(cs => cs.talent_id)
         
         // Get candidates already in this campaign
         const existingCandidateCampaigns = await candidateCampaignService.getList({
           filters: { campaign_id: route.params.id },
-          fields: ['candidate_id']
+          					fields: ['talent_id']
         })
         
-        const existingCandidateIds = existingCandidateCampaigns.success 
-          ? existingCandidateCampaigns.data.map(cc => cc.candidate_id)
+                const existingCandidateIds = existingCandidateCampaigns.success
+          ? existingCandidateCampaigns.data.map(cc => cc.talent_id)
           : []
         
         // Filter out candidates already in campaign
@@ -1211,7 +1211,8 @@ const closeCandidateModal = () => {
 }
 
 const assignCandidate = async () => {
-  if (!candidateFormValid.value) return
+  console.log('Assigning candidate:', candidateFormData)
+  if (!candidateFormData.talent_id) return
 
   savingCandidate.value = true
   try {
@@ -1269,7 +1270,7 @@ const unassignCandidate = async (item) => {
 }
 
 const viewCandidateDetails = (item) => {
-  router.push(`/candidates/${item.candidate_id}`)
+  		router.push(`/candidates/${item.talent_id}`)
 }
 
 // Assign all candidates from segment
@@ -1280,10 +1281,10 @@ const assignAllFromSegment = async () => {
   
   assigningAll.value = true
   try {
-    // Create CandidateCampaign records for all available candidates
+            // Create TalentProfilesCampaign records for all available candidates
     const promises = availableCandidates.value.map(candidate => 
       candidateCampaignService.save({
-        candidate_id: candidate.value,
+        talent_id: candidate.value,
         campaign_id: route.params.id,
         status: 'ACTIVE',
         current_step_order: 1,

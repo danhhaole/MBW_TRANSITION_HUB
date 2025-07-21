@@ -502,14 +502,14 @@
 												<div
 													class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center"
 												>
-													<span class="text-xs font-medium text-white">{{
-														candidate.candidate_name?.charAt(0) || '?'
-													}}</span>
+																									<span class="text-xs font-medium text-white">{{
+													candidate.full_name?.charAt(0) || '?'
+												}}</span>
 												</div>
 											</div>
 											<div class="ml-3">
 												<div class="text-sm font-medium text-gray-900">
-													{{ candidate.candidate_name }}
+													{{ candidate.full_name }}
 												</div>
 												<div class="text-sm text-gray-500">
 													{{ candidate.email }}
@@ -529,7 +529,7 @@
 										</div>
 									</td>
 									<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-										{{ formatDateTime(candidate.last_contact) }}
+										{{ formatDateTime(candidate.last_interaction) }}
 									</td>
 									<td class="px-6 py-4 whitespace-nowrap">
 										<span
@@ -738,7 +738,7 @@
 									>
 										<span class="text-lg font-medium text-white">
 											{{
-												selectedCandidatePreview.candidate_name
+												selectedCandidatePreview.full_name
 													?.charAt(0)
 													?.toUpperCase() || '?'
 											}}
@@ -748,7 +748,7 @@
 								<div class="flex-grow min-w-0">
 									<div class="text-base font-semibold text-gray-900">
 										{{
-											selectedCandidatePreview.candidate_name ||
+											selectedCandidatePreview.full_name ||
 											__('Candidate not specified')
 										}}
 									</div>
@@ -883,9 +883,9 @@ import {
 	talentSegmentService,
 	candidateSegmentService,
 	candidateCampaignService,
-	candidateService,
 	campaignService,
 } from '../services/universalService'
+import * as candidateService from '../services/candidateService'
 import { processSkills } from '../services/candidateService'
 import { usersStore } from '@/stores/users'
 import { Button, Dialog, Breadcrumbs, FeatherIcon, Autocomplete } from 'frappe-ui'
@@ -999,6 +999,14 @@ watch(candidateSearch, (newValue) => {
 	}, 500)
 })
 
+// Watch modal state to load available candidates when modal opens
+watch(showAddCandidateModal, async (newValue) => {
+	if (newValue) {
+		console.log('Modal opened, loading available candidates...')
+		await loadAvailableCandidates()
+	}
+})
+
 // Methods
 const handleSearchInput = async (event) => {
 	console.log('Search input event:', event.target.value)
@@ -1050,29 +1058,29 @@ const loadCandidates = async () => {
 	loadingCandidates.value = true
 	console.log('loadCandidates called with segment ID:', route.params.id)
 	try {
-		// First, get all CandidateSegment records for this segment
+		// First, get all TalentProfilesSegment records for this segment
 		console.log('Fetching candidate segments...')
 		const candidateSegmentResult = await candidateSegmentService.getList({
 			filters: { segment_id: route.params.id },
-			fields: ['name', 'candidate_id', 'added_at', 'added_by'],
+			fields: ['name', 'talent_id', 'added_at', 'added_by'],
 		})
-		console.log('CandidateSegment API result:', candidateSegmentResult)
+		console.log('TalentProfilesSegment API result:', candidateSegmentResult)
 
 		if (candidateSegmentResult.success && candidateSegmentResult.data.length > 0) {
 			// Get candidate IDs from the relationship
-			const candidateIds = candidateSegmentResult.data.map((cs) => cs.candidate_id)
+			const candidateIds = candidateSegmentResult.data.map((cs) => cs.talent_id)
 
 			// Then get the actual candidate data
-			const candidateResult = await candidateService.getList({
+			const candidateResult = await candidateService.getFilteredCandidates({
 				filters: { name: ['in', candidateIds] },
-				fields: ['name', 'candidate_name', 'email', 'skills', 'last_contact', 'status'],
+				limit: 1000,
 			})
 
-			if (candidateResult.success) {
+			if (candidateResult && candidateResult.data) {
 				// Merge the data - add segment relationship info to candidate data
 				candidates.value = candidateResult.data.map((candidate) => {
 					const segmentRelation = candidateSegmentResult.data.find(
-						(cs) => cs.candidate_id === candidate.name,
+						(cs) => cs.talent_id === candidate.name,
 					)
 					return {
 						...candidate,
@@ -1101,15 +1109,15 @@ const loadRelatedCampaigns = async () => {
 		// First get candidates in this segment
 		const candidateSegmentResult = await candidateSegmentService.getList({
 			filters: { segment_id: route.params.id },
-			fields: ['candidate_id'],
+			fields: ['talent_id'],
 		})
 
 		if (candidateSegmentResult.success && candidateSegmentResult.data.length > 0) {
-			const candidateIds = candidateSegmentResult.data.map((cs) => cs.candidate_id)
+			const candidateIds = candidateSegmentResult.data.map((cs) => cs.talent_id)
 
-			// Then get campaigns that have these candidates through CandidateCampaign
+			// Then get campaigns that have these candidates through TalentProfilesCampaign
 			const candidateCampaignResult = await candidateCampaignService.getList({
-				filters: { candidate_id: ['in', candidateIds] },
+				filters: { talent_id: ['in', candidateIds] },
 				fields: ['campaign_id'],
 			})
 
@@ -1143,20 +1151,19 @@ const loadAvailableCandidates = async () => {
 	loadingAvailableCandidates.value = true
 	try {
 		// Get all candidates with more fields for preview
-		const allCandidatesResult = await candidateService.getList({
-			fields: ['name', 'candidate_name', 'email', 'skills'],
-			page_length: 1000,
+		const allCandidatesResult = await candidateService.getFilteredCandidates({
+			limit: 1000,
 		})
 
-		if (allCandidatesResult.success) {
+		if (allCandidatesResult && allCandidatesResult.data) {
 			// Get candidates already in this segment
 			const existingCandidateSegments = await candidateSegmentService.getList({
 				filters: { segment_id: route.params.id },
-				fields: ['candidate_id'],
+				fields: ['talent_id'],
 			})
 
 			const existingCandidateIds = existingCandidateSegments.success
-				? existingCandidateSegments.data.map((cs) => cs.candidate_id)
+				? existingCandidateSegments.data.map((cs) => cs.talent_id)
 				: []
 
 			// Filter out candidates already in the segment
@@ -1169,9 +1176,11 @@ const loadAvailableCandidates = async () => {
 
 			// Create options for autocomplete
 			availableCandidates.value = availableCandidatesFiltered.map((item) => ({
-				title: item.candidate_name || item.name,
+				title: item.full_name || item.name,
 				value: item.name,
 			}))
+
+			console.log('Available candidates:', availableCandidates.value)
 		}
 	} catch (error) {
 		console.error('Error loading candidates:', error)
@@ -1190,16 +1199,17 @@ const closeAddCandidateModal = () => {
 	candidateFormData.candidate_id = ''
 	availableCandidates.value = []
 	availableCandidatesData.value = []
+	console.log('Modal closed, cleared candidate data')
 }
 
 const addCandidateToSegment = async () => {
 	if (!candidateFormData.candidate_id) return
-
+	console.log('Adding candidate to segment:', candidateFormData.candidate_id)
 	savingCandidate.value = true
 	try {
-		// Create a new CandidateSegment relationship
+		// Create a new TalentProfilesSegment relationship
 		const candidateSegmentData = {
-			candidate_id: candidateFormData.candidate_id.title,
+			talent_id: candidateFormData.candidate_id?.value,
 			segment_id: route.params.id,
 			added_at: moment().format('YYYY-MM-DD HH:mm:ss'),
 			added_by: getUser()?.name || 'Administrator',
@@ -1208,7 +1218,7 @@ const addCandidateToSegment = async () => {
 		const result = await candidateSegmentService.save(candidateSegmentData)
 		if (result.success) {
 			// Show success message
-			const candidateName = selectedCandidatePreview.value?.candidate_name || 'Candidate'
+			const candidateName = selectedCandidatePreview.value?.full_name || 'Candidate'
 			console.log(`${candidateName} has been successfully added to the segment!`)
 
 			closeAddCandidateModal()
@@ -1236,7 +1246,7 @@ const contactCandidate = (candidate) => {
 const removeFromSegment = async (candidate) => {
 	if (confirm('Are you sure you want to remove this candidate from the segment?')) {
 		try {
-			// Delete the CandidateSegment relationship
+			// Delete the TalentProfilesSegment relationship
 			if (candidate.candidate_segment_id) {
 				const result = await candidateSegmentService.delete(candidate.candidate_segment_id)
 				if (result.success) {
@@ -1262,31 +1272,31 @@ const searchCandidatesAPI = async (searchQuery) => {
 	console.log('Searching candidates via API with query:', searchQuery)
 	
 	try {
-		// Get all CandidateSegment records for this segment first
+		// Get all TalentProfilesSegment records for this segment first
 		const candidateSegmentResult = await candidateSegmentService.getList({
 			filters: { segment_id: route.params.id },
-			fields: ['name', 'candidate_id', 'added_at', 'added_by'],
+			fields: ['name', 'talent_id', 'added_at', 'added_by'],
 		})
 
 		if (candidateSegmentResult.success && candidateSegmentResult.data.length > 0) {
-			const candidateIds = candidateSegmentResult.data.map((cs) => cs.candidate_id)
+			const candidateIds = candidateSegmentResult.data.map((cs) => cs.talent_id)
 
 			// Search candidates with API filters - search by full_name only
-			const searchResult = await candidateService.getList({
+			const searchResult = await candidateService.getFilteredCandidates({
+				search: searchQuery,
 				filters: { 
-					name: ['in', candidateIds],
-					full_name: ['like', `%${searchQuery}%`]
+					name: ['in', candidateIds]
 				},
-				fields: ['name', 'candidate_name', 'email', 'skills', 'last_contact', 'status'],
+				limit: 1000,
 			})
 
 			console.log('Search API result:', searchResult)
 
-			if (searchResult.success) {
+			if (searchResult && searchResult.data) {
 				// Merge with segment relationship data
 				searchResults.value = searchResult.data.map((candidate) => {
 					const segmentRelation = candidateSegmentResult.data.find(
-						(cs) => cs.candidate_id === candidate.name,
+						(cs) => cs.talent_id === candidate.name,
 					)
 					return {
 						...candidate,
@@ -1296,7 +1306,7 @@ const searchCandidatesAPI = async (searchQuery) => {
 					}
 				})
 			} else {
-				console.error('Search API failed:', searchResult.error)
+				console.error('Search API failed:', searchResult?.error || 'No data returned')
 				searchResults.value = []
 			}
 		} else {

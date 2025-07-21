@@ -81,8 +81,8 @@
 								<span class="text-sm text-gray-500">
 									{{ candidate.phone }}
 								</span>
-								<span v-if="candidate.location" class="text-sm text-gray-500">
-									📍 {{ candidate.location }}
+								<span v-if="candidate.headline" class="text-sm text-gray-500">
+									💼 {{ candidate.headline }}
 								</span>
 							</div>
 						</div>
@@ -148,9 +148,9 @@
 					<div class="space-y-4">
 						<div>
 							<label class="block text-sm font-medium text-gray-700 mb-1">{{
-								__('Current Position')
+								__('Headline')
 							}}</label>
-							<p class="text-gray-900">{{ candidate.current_position || __('None') }}</p>
+							<p class="text-gray-900">{{ candidate.headline || __('None') }}</p>
 						</div>
 						<div>
 							<label class="block text-sm font-medium text-gray-700 mb-1">{{
@@ -160,17 +160,24 @@
 						</div>
 						<div>
 							<label class="block text-sm font-medium text-gray-700 mb-1">{{
-								__('Experience Years')
+								__('Skills')
 							}}</label>
-							<p class="text-gray-900">
-								{{ candidate.experience_years ? `${candidate.experience_years} năm` : __('None') }}
-							</p>
+							<div v-if="candidateSkills.length > 0" class="flex flex-wrap gap-2">
+								<Badge
+									v-for="skill in candidateSkills"
+									:key="skill"
+									:label="skill"
+									theme="blue"
+									variant="subtle"
+								/>
+							</div>
+							<p v-else class="text-gray-500">{{ __('None') }}</p>
 						</div>
 						<div>
 							<label class="block text-sm font-medium text-gray-700 mb-1">{{
-								__('Location')
+								__('CV Link')
 							}}</label>
-							<p class="text-gray-900">{{ candidate.location || __('None') }}</p>
+							<p class="text-gray-900">{{ candidate.cv_original_url || __('None') }}</p>
 						</div>
 					</div>
 				</div>
@@ -1354,158 +1361,15 @@
 		</Dialog>
 
 		<!-- Edit Candidate Modal -->
-		<Dialog
-			:model-value="showEditModal"
-			@update:model-value="showEditModal = $event"
-			:options="{
-				size: 'xl',
-			}"
-		>
-			<template #body>
-				<div class="p-6 mb-2">
-					<div class="space-y-4">
-						<!-- Form Header -->
-						<div
-							class="flex items-center justify-between border-b border-gray-200 pb-4 mb-2"
-						>
-							<div class="flex items-center">
-								<Avatar
-									:shape="'circle'"
-									:image="candidate.full_name"
-									:label="getAvatarText(candidate.full_name)"
-									size="lg"
-									class="mr-4"
-								/>
-								<div>
-									<h3 class="text-lg font-medium text-gray-900">
-										{{ candidate.full_name || 'Candidate' }}
-									</h3>
-									<p class="text-sm text-gray-500">
-										Update candidate information
-									</p>
-								</div>
-							</div>
-							<Button variant="outline" @click="closeEditModal">
-								<div class="flex items-center">
-									<svg
-										class="w-4 h-4"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-									>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M6 18L18 6M6 6l12 12"
-										/>
-									</svg>
-								</div>
-							</Button>
-						</div>
-					</div>
-					<div class="space-y-6">
-						<!-- Form Fields -->
-						<div class="space-y-4">
-							<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-								<FormControl
-									v-model="editFormData.full_name"
-									type="text"
-									label="Full Name"
-									:required="true"
-								/>
-								<FormControl
-									v-model="editFormData.email"
-									type="email"
-									label="Email"
-									:required="true"
-								/>
-								<FormControl
-									v-model="editFormData.phone"
-									type="text"
-									label="Phone"
-								/>
-								<FormControl
-									v-model="editFormData.current_position"
-									type="text"
-									label="Current Position"
-								/>
-								<FormControl
-									v-model="editFormData.location"
-									type="text"
-									label="Location"
-								/>
-								<FormControl
-									v-model="editFormData.experience_years"
-									type="number"
-									label="Experience Years"
-									:min="0"
-								/>
-								<FormControl
-									v-model="editFormData.status"
-									type="select"
-									label="Status"
-									:options="candidateStatusOptions"
-								/>
-								<FormControl
-									v-model="editFormData.source"
-									type="text"
-									label="Source"
-								/>
-							</div>
-							<FormControl
-								v-model="editFormData.notes"
-								type="textarea"
-								label="Notes"
-								:rows="3"
-							/>
-							<FormControl
-								v-model="editFormData.skills"
-								type="autocomplete"
-								label="Skills"
-								placeholder="Type to search or add skills..."
-								:options="skillsOptions"
-								multiple
-								:allow-custom="true"
-							/>
-						</div>
-					</div>
-					<div class="flex justify-between w-full mt-2">
-						<div class="flex items-center text-sm text-gray-500">
-							<svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-								<path
-									fill-rule="evenodd"
-									d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-									clip-rule="evenodd"
-								/>
-							</svg>
-							Changes will be saved immediately
-						</div>
-						<div class="flex space-x-3">
-							<Button variant="outline" @click="closeEditModal"> Cancel </Button>
-							<Button :loading="savingCandidate" @click="saveCandidate">
-								<div class="flex items-center">
-									<svg
-										class="w-4 h-4 mr-2"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-									>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M5 13l4 4L19 7"
-										/>
-									</svg>
-									Save Changes
-								</div>
-							</Button>
-						</div>
-					</div>
-				</div>
-			</template>
-		</Dialog>
+		<CandidateEditModal
+			v-model="showEditModal"
+			:candidate="editFormData"
+			:loading="false"
+			:saving="savingCandidate"
+			:filter-options="{ status: candidateStatusOptions, source: [], skills: skillsOptions }"
+			@save-candidate="saveCandidate"
+			@cancel="closeEditModal"
+		/>
 		</div>
 	</div>
 </template>
@@ -1513,7 +1377,7 @@
 <script setup>
 import { ref, reactive, onMounted, computed, h } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Dialog, Button, FormControl, Avatar, Breadcrumbs } from 'frappe-ui'
+import { Dialog, Button, FormControl, Avatar, Breadcrumbs, Badge } from 'frappe-ui'
 import {
 	candidateService,
 	candidateCampaignService,
@@ -1525,6 +1389,7 @@ import {
 } from '../services/universalService'
 import { processSkills, skillsToString } from '../services/candidateService'
 import LayoutHeader from '../components/LayoutHeader.vue'
+import CandidateEditModal from '../components/candidate/CandidateEditModal.vue'
 
 // Translation helper function
 
@@ -1579,26 +1444,26 @@ const selectedFile = ref(null)
 
 // Form data
 const campaignFormData = reactive({
-	candidate_id: route.params.id,
+	talent_id: route.params.id,
 	campaign_id: '',
 	status: 'ACTIVE',
 	current_step_order: 1,
 })
 
 const segmentFormData = reactive({
-	candidate_id: route.params.id,
+	talent_id: route.params.id,
 	segment_id: '',
 })
 
 const interactionFormData = reactive({
-	candidate_id: route.params.id,
+	talent_id: route.params.id,
 	interaction_type: '',
 	description: '',
 	url: '',
 })
 
 const documentFormData = reactive({
-	candidate_id: route.params.id,
+	talent_id: route.params.id,
 	description: '',
 })
 
@@ -1612,13 +1477,13 @@ const editFormData = reactive({
 	full_name: '',
 	email: '',
 	phone: '',
-	current_position: '',
-	location: '',
-	experience_years: '',
+	headline: '',
+	avatar: '',
 	status: '',
 	source: '',
-	notes: '',
-	skills: '',
+	ai_summary: '',
+	skills: [],
+	email_opt_out: false,
 })
 
 // Options
@@ -1630,8 +1495,11 @@ const statusOptions = [
 ]
 
 const candidateStatusOptions = [
-	{ label: __('Active'), value: 'Active' },
-	{ label: __('Inactive'), value: 'Inactive' }
+	{ label: 'NEW', value: 'NEW' },
+	{ label: 'SOURCED', value: 'SOURCED' },
+	{ label: 'NURTURING', value: 'NURTURING' },
+	{ label: 'ENGAGED', value: 'ENGAGED' },
+	{ label: 'ARCHIVED', value: 'ARCHIVED' }
 ]
 
 const interactionTypeOptions = [
@@ -1822,6 +1690,30 @@ const DocumentIcon = {
 }
 
 // Computed
+const candidateSkills = computed(() => {
+	if (!candidate.skills) return []
+	
+	// Handle different skill formats
+	let skills = candidate.skills
+	if (typeof skills === 'string') {
+		try {
+			// Try to parse as JSON first
+			skills = JSON.parse(skills)
+		} catch (e) {
+			// If not JSON, split by comma
+			skills = skills.split(',').map(s => s.trim()).filter(s => s)
+		}
+	}
+	
+	if (Array.isArray(skills)) {
+		return skills.filter(skill => skill && skill.trim())
+	} else if (typeof skills === 'object' && skills !== null) {
+		return Object.values(skills).filter(skill => skill && skill.trim())
+	}
+	
+	return []
+})
+
 const tabs = computed(() => [
 	{
 		key: 'campaigns',
@@ -2060,7 +1952,7 @@ const loadCandidateCampaigns = async () => {
 	loadingCampaigns.value = true
 	try {
 		const result = await candidateCampaignService.getList({
-			filters: { candidate_id: route.params.id },
+			filters: { talent_id: route.params.id },
 			fields: [
 				'name',
 				'campaign_id',
@@ -2084,7 +1976,7 @@ const loadCandidateSegments = async () => {
 	loadingSegments.value = true
 	try {
 		const candidateSegmentResult = await candidateSegmentService.getList({
-			filters: { candidate_id: route.params.id },
+			filters: { talent_id: route.params.id },
 			fields: ['name', 'segment_id', 'added_at', 'added_by'],
 		})
 
@@ -2124,7 +2016,7 @@ const loadInteractions = async () => {
 	loadingInteractions.value = true
 	try {
 		const result = await interactionService.getList({
-			filters: { candidate_id: route.params.id },
+			filters: { talent_id: route.params.id },
 			fields: ['name', 'interaction_type', 'description', 'url', 'creation'],
 			order_by: 'creation desc',
 		})
@@ -2204,7 +2096,7 @@ const loadAvailableSegments = async () => {
 // Campaign methods
 const openCampaignModal = () => {
 	Object.keys(campaignFormData).forEach((key) => {
-		if (key !== 'candidate_id') {
+		if (key !== 'talent_id') {
 			campaignFormData[key] = ''
 		}
 	})
@@ -2326,13 +2218,13 @@ const editCandidate = () => {
 		full_name: candidate.full_name || '',
 		email: candidate.email || '',
 		phone: candidate.phone || '',
-		current_position: candidate.current_position || '',
-		location: candidate.location || '',
-		experience_years: candidate.experience_years || '',
+		headline: candidate.headline || '',
+		avatar: candidate.avatar || '',
 		status: candidate.status || '',
 		source: candidate.source || '',
-		notes: candidate.notes || '',
-		skills: processSkills(candidate.skills),
+		ai_summary: candidate.ai_summary || '',
+		skills: processSkills(candidate.skills) || [],
+		email_opt_out: !!candidate.email_opt_out,
 	})
 	showEditModal.value = true
 }
@@ -2341,21 +2233,19 @@ const closeEditModal = () => {
 	showEditModal.value = false
 }
 
-const saveCandidate = async () => {
+const saveCandidate = async (candidateData) => {
 	savingCandidate.value = true
 	try {
-		// Prepare data for saving
-		const saveData = { ...editFormData }
-
-		// Convert skills array to text string for backend storage
-		saveData.skills = skillsToString(saveData.skills)
+		// Use the data passed from the modal
+		const saveData = candidateData || editFormData
 
 		const result = await candidateService.save(saveData, route.params.id)
 		if (result.success) {
 			// Update local candidate data
 			Object.assign(candidate, result.data)
 			closeEditModal()
-			// Show success message
+			// Reload candidate data to get fresh data
+			await loadCandidate()
 			console.log('Candidate updated successfully')
 		}
 	} catch (error) {
@@ -2381,7 +2271,7 @@ const deleteCandidate = async () => {
 // Interaction methods
 const openInteractionModal = () => {
 	Object.keys(interactionFormData).forEach((key) => {
-		if (key !== 'candidate_id') {
+		if (key !== 'talent_id') {
 			interactionFormData[key] = ''
 		}
 	})

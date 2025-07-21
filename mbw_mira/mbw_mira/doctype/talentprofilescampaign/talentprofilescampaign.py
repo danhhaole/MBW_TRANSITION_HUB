@@ -10,18 +10,18 @@ class TalentProfilesCampaign(Document):
     pass
 
     def validate(self):
-        # Check trùng talent_id,candidate_id
+        # Check trùng talent_id + campaign_id
         validate_unique_candidate_campaign(self)
 
 
 def validate_unique_candidate_campaign(doc):
     """
     Kiểm tra xem đã tồn tại TalentProfilesCampaign với cùng
-    talent_id + candidate_id (ngoại trừ chính nó) hay chưa.
+    talent_id + campaign_id (ngoại trừ chính nó) hay chưa.
     """
     filters = {
         "talent_id": doc.talent_id,
-        "candidate_id": doc.candidate_id,
+        "campaign_id": doc.campaign_id,
     }
 
     existing = frappe.db.exists("TalentProfilesCampaign", filters)
@@ -30,7 +30,7 @@ def validate_unique_candidate_campaign(doc):
         frappe.throw(
             frappe._(
                 "A TalentProfilesCampaign with Campaign <b>{0}</b> and Candidate <b>{1}</b> already exists: <a href='/app/candidate-campaign/{2}'>{2}</a>"
-            ).format(doc.talent_id, doc.candidate_id, existing),
+            ).format(doc.campaign_id, doc.talent_id, existing),
             title=frappe._("Duplicate TalentProfilesCampaign"),
         )
 

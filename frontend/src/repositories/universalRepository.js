@@ -116,13 +116,13 @@ class UniversalRepository {
 }
 
 // Tạo instances cho tất cả doctype
-export const candidateSegmentRepository = new UniversalRepository('CandidateSegment')
-export const candidateCampaignRepository = new UniversalRepository('CandidateCampaign')
+export const candidateSegmentRepository = new UniversalRepository('TalentProfilesSegment')
+export const candidateCampaignRepository = new UniversalRepository('TalentProfilesCampaign')
 export const actionRepository = new UniversalRepository('Action')
 export const interactionRepository = new UniversalRepository('Interaction')
 export const emailLogRepository = new UniversalRepository('EmailLog')
 export const talentSegmentRepository = new UniversalRepository('TalentSegment')
-export const candidateRepository = new UniversalRepository('Candidate')
+export const candidateRepository = new UniversalRepository('TalentProfiles')
 export const campaignRepository = new UniversalRepository('Campaign')
 export const campaignStepRepository = new UniversalRepository('CampaignStep')
 export const userRepository = new UniversalRepository('User')
