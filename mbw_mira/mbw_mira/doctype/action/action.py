@@ -75,15 +75,18 @@ def check_duplicate_action(doc):
 
     existing = frappe.db.exists("Action", filters)
 
-    if existing:
+    if existing and existing != doc.name:  # ← tránh trùng với chính mình khi update
         frappe.throw(
-            frappe._("An Action with Candidate Campaign <b>{0}</b> and Campaign Step <b>{1}</b> already exists: <a href='/app/action/{2}'>{2}</a>").format(
+            frappe._(
+                "An Action with Candidate Campaign <b>{0}</b> and Campaign Step <b>{1}</b> already exists: <a href='/app/action/{2}'>{2}</a>"
+            ).format(
                 doc.talent_campaign_id,
                 doc.campaign_step,
                 existing
             ),
             title=frappe._("Duplicate Action")
         )
+
 
 	
 		

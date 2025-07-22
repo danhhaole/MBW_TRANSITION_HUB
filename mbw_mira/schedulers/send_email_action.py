@@ -20,7 +20,6 @@ def run():
 
     for a in actions:
         step = frappe.db.get_value("CampaignStep", a.campaign_step, "action_type")
-        frappe.log_error(f"{step}")
         if step == "SEND_EMAIL":
             frappe.enqueue(
                 "mbw_mira.workers.process_action.process_email_action",

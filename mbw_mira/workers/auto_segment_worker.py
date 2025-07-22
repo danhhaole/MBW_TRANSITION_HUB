@@ -16,17 +16,24 @@ def process_segment(segment_id: str):
         
         if matches:
             for profile in matches:
-                frappe.get_doc({
-                    "doctype": "TalentProfilesSegment",
-                    "segment_id": segment_id,
-                    "talent_id": profile.get("name"),
-                    "added_at": now(),
-                    "added_by": frappe.session.user  # hoặc seg.owner_id
-                }).insert(ignore_permissions=True)
-                frappe.db.commit()
+                if not check_exists(segment_id,profile.get("name")):
+                    frappe.get_doc({
+                        "doctype": "TalentProfilesSegment",
+                        "segment_id": segment_id,
+                        "talent_id": profile.get("name"),
+                        "added_at": now(),
+                        "added_by": frappe.session.user  # hoặc seg.owner_id
+                    }).insert(ignore_permissions=True)
+                    frappe.db.commit()
         return matches
     except Exception as e:
         frappe.log_error(frappe.get_traceback(), f"[AutoSegment Error] Segment {segment_id}")
         return None
 
 
+def check_exists(segment_id,talent_id):
+    talent_degment_exists = frappe.db.exists("TalentProfilesSegment",{"segment_id":segment_id,"talent_id":talent_id})
+    if talent_degment_exists:
+        return True
+    else:
+        return False

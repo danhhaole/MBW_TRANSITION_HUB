@@ -64,21 +64,30 @@ def create_talent_campaign(campaign_id, profile, first_step):
     """
     try:
         next_action_at = add_days(now_datetime(), first_step.get("delay_in_days") or 0)
-        
-        doc = frappe.get_doc(
-            {
-                "doctype": "TalentProfilesCampaign",
-                "campaign_id": campaign_id,
-                "talent_id": profile.get("talent_id"),
-                "status": "ACTIVE",
-                "enrolled_at": now_datetime(),
-                "current_step_order": first_step.get("step_order")  or 1,
-                "next_action_at": next_action_at,
-            }
-        )
-        doc.insert(ignore_permissions=True)
-        frappe.db.commit()
-        return doc.name
+        if not check_exists(campaign_id,profile.get("talent_id")):
+            doc = frappe.get_doc(
+                {
+                    "doctype": "TalentProfilesCampaign",
+                    "campaign_id": campaign_id,
+                    "talent_id": profile.get("talent_id"),
+                    "status": "ACTIVE",
+                    "enrolled_at": now_datetime(),
+                    "current_step_order": first_step.get("step_order")  or 1,
+                    "next_action_at": next_action_at,
+                }
+            )
+            doc.insert(ignore_permissions=True)
+            frappe.db.commit()
+            return doc.name
+        else:
+            return None
     except Exception as e:
         #frappe.log_error(f"talent_profiles {e}")
         return None
+
+def check_exists(campaign_id,talent_id):
+    talent_campaign_exists = frappe.db.exists("TalentProfilesCampaign",{"campaign_id":campaign_id,"talent_id":talent_id})
+    if talent_campaign_exists:
+        return True
+    else:
+        return False

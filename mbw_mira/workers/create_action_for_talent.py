@@ -21,24 +21,33 @@ def create_action_for_talent_campaign(talent_campaign_id):
                     else "PENDING_MANUAL"
                 )
         # tạo Action
-        action = frappe.get_doc({
-            "doctype": "Action",
-            "talent_campaign_id": tc.name,
-            "campaign_step": step.name,
-            "status": status_action,
-            "scheduled_at": now_datetime(),
-            "executed_at": None,
-            "result": None,
-            "assignee_id": None  # optional: nếu muốn phân công tự động
-        })
-        action.insert(ignore_permissions=True)
-        frappe.db.commit()
-        return action.name
+        if not check_exists(tc.name,step.name):
+            action = frappe.get_doc({
+                "doctype": "Action",
+                "talent_campaign_id": tc.name,
+                "campaign_step": step.name,
+                "status": status_action,
+                "scheduled_at": now_datetime(),
+                "executed_at": None,
+                "result": None,
+                "assignee_id": frappe.session.user  # optional: nếu muốn phân công tự động
+            })
+            action.insert(ignore_permissions=True)
+            frappe.db.commit()
+            return action.name
+        else:
+            return None
+        
     except Exception as e:
         frappe.log_error(str(e))
         return None
 
-    
+def check_exists(talent_campaign_id,campaign_step):
+    action_exists = frappe.db.exists("Action",{"talent_campaign_id":talent_campaign_id,"campaign_step":campaign_step})
+    if action_exists:
+        return True
+    else:
+        return False
 
 
 def get_campaign_step(campaign_id, step_order):

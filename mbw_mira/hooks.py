@@ -157,24 +157,26 @@ scheduler_events = {
         ],
         "0/2 * * * *": [
             "mbw_mira.schedulers.enroll_talent_campaign.run",
-            "mbw_mira.schedulers.create_actions.run"
+            "mbw_mira.schedulers.create_actions.run",
+            "mbw_mira.schedulers.send_email_action.run",
+            "mbw_mira.schedulers.send_sms_action.run"
         ],
     },
     "daily": [
-        "mbw_mira.schedulers.fetch_ats_mbw_campaigns.run",
+        #"mbw_mira.schedulers.fetch_ats_mbw_campaigns.run",
         "mbw_mira.schedulers.fetch_jobboard_topcv_campaigns.run",
         "mbw_mira.schedulers.fetch_jobboard_vietnamworks_campaigns.run",
         "mbw_mira.schedulers.fetch_social_facebook_campaigns.run",
-        "mbw_mira.schedulers.fetch_social_linkedin_campaigns.run",
-        "mbw_mira.schedulers.excel_source_campaigns.run"
+        "mbw_mira.schedulers.fetch_social_linkedin_campaigns.run"
     ],
     "hourly": [
-        "mbw_mira.schedulers.enroll_talent_campaign.run",
-        "mbw_mira.schedulers.send_email_action.run",
-        "mbw_mira.schedulers.send_sms_action.run",
-        "mbw_mira.schedulers.create_actions.run",
-        "mbw_mira.schedulers.auto_segment_talent_profiles.run"
-    ]
+        # "mbw_mira.schedulers.enroll_talent_campaign.run",
+        # "mbw_mira.schedulers.send_email_action.run",
+        # "mbw_mira.schedulers.send_sms_action.run",
+        # "mbw_mira.schedulers.create_actions.run",
+        # "mbw_mira.schedulers.auto_segment_talent_profiles.run",
+        # "mbw_mira.schedulers.excel_source_campaigns.run"
+    ],
     # "weekly": [],
     # "monthly": [],
 }

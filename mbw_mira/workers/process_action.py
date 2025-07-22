@@ -1,6 +1,6 @@
 import frappe
 from frappe.utils import now_datetime
-from mbw_mira.utils import send_email_job
+from mbw_mira.utils import send_email_job, send_sms_job
 
 def process_email_action(action_name):
     """
@@ -27,12 +27,13 @@ def process_sms_action(action_name):
     Worker: thực hiện SEND_SMS action
     """
     now = now_datetime()
-    action = frappe.get_doc("Action", action_name)
+    action = frappe.db.get_value("Action", action_name,["name","talent_campaign_id","campaign_step"],as_dict=1)
     try:
 
         # TODO: Thực hiện gửi SMS ở đây
         # Ví dụ: gọi API SMS gateway
-
+        talent_id = frappe.db.get_value("TalentProfilesCampaign", action.talent_campaign_id,"talent_id")
+        send_sms_job(talent_id,action_name,action.campaign_step)
 
         return True
 

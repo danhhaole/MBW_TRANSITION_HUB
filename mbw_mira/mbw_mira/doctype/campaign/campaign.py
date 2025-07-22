@@ -12,45 +12,6 @@ class Campaign(Document):
 	def on_update(self):
 		"""Hook kiểm tra khi có 1 campain
 		"""
-
-#Lấy danh sách ứng viên theo tiêu chí từ các nguồn, xử lý trong queue do quét nhiều ứng viên
-def run_candidate_by_criteria(source,campaign:dict):
-    criteria = campaign.get("criteria",{})
-    segment_name = campaign.get("segment_name")
-    candidates = find_candidates_fuzzy(source,criteria,segment_name)
-    if candidates and len(candidates) > 0:
-        for can in candidates:
-            #Nếu chọn tiêu chỉ theo segment thì insert vào CandidateSegment
-            can_seg = frappe.get_doc("CandidateSegment")
-            can_seg.candidate_id = can.name
-            can_seg.segment_id = segment_name
-            can_seg.added_at = now_datetime()
-            can_seg.added_by = frappe.session.user
-            can_seg.save(ignore_permissions=True)
-            frappe.db.commit()
-
-            #Tạo CandidateCampaign
-            step = get_campaign_step(campaign.name)
-            if step:
-                can_campaign = frappe.get_doc("CandidateCampaign")
-                next_action_at = add_days(now_datetime, step["delay_in_days"] or 0)
-                status = "ACTIVE"
-                enrolled_at = now_datetime
-                current_step_order = step["step_order"] or 1
-                can_campaign.campaign_id = campaign.name
-                can_campaign.candidate_id = can.name
-                can_campaign.segment_id = segment_name or ""
-                can_campaign.status = status
-                can_campaign.enrolled_at = enrolled_at
-                can_campaign.current_step_order = current_step_order
-                can_campaign.next_action_at = next_action_at
-                can_campaign.save(ignore_permissions=True)
-                frappe.db.commit()
-            else:
-                continue
-    return True
-				
-
 #Lấy Step từ CampaignStep, lấy step đầu tiên
 def get_campaign_step(campaign_id):
     step = frappe.get_list(

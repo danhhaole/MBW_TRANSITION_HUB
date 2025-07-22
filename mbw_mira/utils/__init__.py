@@ -4,20 +4,21 @@ import hashlib
 import json
 from rapidfuzz import fuzz
 from frappe.utils import now_datetime
-from mbw_mira.mbw_mira.doctype.interaction.interaction import (create_interaction)
+from mbw_mira.mbw_mira.doctype.interaction.interaction import create_interaction
 
-def send_email_job(talentprofile_id, action_id,step_id):
+
+def send_email_job(talentprofile_id, action_id, step_id):
     from mbw_mira.utils.email import send_email
+
     """
     Gửi email cho ứng viên, hỗ trợ cả message raw hoặc template.
     """
 
-    #Lấy thông tin candidate
-    talentprofiles = frappe.get_cached_doc("TalentProfiles",talentprofile_id)
-    action = frappe.get_doc("Action",action_id)
-    step = frappe.get_cached_doc("CampaignStep",step_id)
+    # Lấy thông tin candidate
+    talentprofiles = frappe.get_cached_doc("TalentProfiles", talentprofile_id)
+    action = frappe.get_doc("Action", action_id)
+    step = frappe.get_cached_doc("CampaignStep", step_id)
 
-    
     logger = frappe.logger("campaign")
     if not talentprofiles.email:
         frappe.throw("Candidate does not have an email.")
@@ -26,18 +27,16 @@ def send_email_job(talentprofile_id, action_id,step_id):
         logger.error("Candidate unsubcrible")
         return
 
-    
-    context = (talentprofiles,action,step)
+    context = (talentprofiles, action, step)
     message = render_template(step.template, context)
 
     config_step = {}
-    if step and hasattr(step,"config"):
+    if step and hasattr(step, "config"):
         config_step = json.loads(step.config)
-    subject = ""
-    if config_step and hasattr(config_step,'subject'):
+    subject = "Thông báo"
+    if config_step and hasattr(config_step, "subject"):
         subject = render_template(config_step.get("subject"), context)
     talent_email = talentprofiles.email
-    talent_id = talentprofiles.name   
     template = None
     template_args = None
     if not talent_email:
@@ -48,10 +47,12 @@ def send_email_job(talentprofile_id, action_id,step_id):
         logger.error(f"[EMAIL ERROR] Missing subject for {talent_email}")
         return
 
-    if not message and not template:
-        logger.error(f"[EMAIL ERROR] Neither message nor template provided for {talent_email}")
+    if not message:
+        logger.error(
+            f"[EMAIL ERROR] Neither message nor template provided for {talent_email}"
+        )
         return
-    
+
     action.executed_at = now_datetime()
     try:
         result = send_email(
@@ -59,22 +60,27 @@ def send_email_job(talentprofile_id, action_id,step_id):
             subject=subject,
             content=message if not template else None,
             template=template,
-            template_args=template_args
+            template_args=template_args,
         )
         create_interaction(
-                talent_id=talent_id,
-                interaction_type="EMAIL_SENT",
-                source_action=action.name,
-            )
+            {
+                "talent_id": talentprofile_id,
+                "interaction_type": "EMAIL_SENT",
+                "source_action": action.name,
+            }
+        )
         if result:
             action.status = "EXECUTED"
-            action.result={
-                    "status": "Success",
-                    "message": f"[EMAIL] Sent to {talent_id} — step: {step} — candidate: {talent_id}"
-                }
+            action.result = {
+                "status": "Success",
+                "message": f"[EMAIL] Sent to {talentprofile_id} — step: {step} — candidate: {talentprofile_id}",
+            }
         else:
             action.status = "FAILED"
-            action.result = {"error": f"[EMAIL] Error Sent to {talent_email} — step: {step} — candidate: {talent_id}", "traceback": frappe.get_traceback()}
+            action.result = {
+                "error": f"[EMAIL] Error Sent to {talent_email} — step: {step} — candidate: {talentprofile_id}",
+                "traceback": frappe.get_traceback(),
+            }
         action.save(ignore_permissions=True)
         frappe.db.commit()
     except Exception as e:
@@ -85,57 +91,69 @@ def send_email_job(talentprofile_id, action_id,step_id):
         frappe.db.commit()
         raise
 
-def send_sms_job(candidate,action, step):
+
+def send_sms_job(talentprofile_id, action_id, step_id):
     try:
+        talentprofiles = frappe.get_cached_doc("TalentProfiles", talentprofile_id)
+        action = frappe.get_doc("Action", action_id)
+        step = frappe.get_cached_doc("CampaignStep", step_id)
         # Gửi thật nếu có provider
-        phone = candidate.phone
+        phone = talentprofiles.phone
         message = None
-        candidate_id = candidate.name
+        talent_id = talentprofiles.name
 
         create_interaction(
-                talent_id=candidate_id,
-                interaction_type="SMS_SENT",
-                source_action=action.name,
-            )
-        
-        if not candidate.phone:
+            {
+                "talent_id": talent_id,
+                "interaction_type": "SMS_SENT",
+                "source_action": action.name,
+            }
+        )
+
+        if not talentprofiles.phone:
             frappe.throw("Candidate does not have a phone number.")
 
-        
+        action.status = "EXECUTED"
+        action.result = {
+            "status": "Success",
+            "message": f"[EMAIL] Sent to {talentprofile_id} — step: {step} — candidate: {talentprofile_id}",
+        }
+
+        action.save(ignore_permissions=True)
+        frappe.db.commit()
     except Exception as e:
         frappe.logger("campaign").error(f"[SMS ERROR] {phone} — {str(e)}")
         raise
 
+
 def render_template(template_str, context):
     from urllib.parse import urlencode
     from frappe.utils import get_url
+
     if not template_str:
         return "Xin chào bạn"
-    candidate,action, step = context
+    candidate, action, step = context
     base_url = get_url()
     params = {
         "candidate_id": candidate.name,
         "action": action.name,
-        "url": f"{base_url}/mbw_mira/"
+        "url": f"{base_url}/mbw_mira/",
     }
 
-    context_parse ={
-        "candidate_name":candidate.full_name
-        }
-    
+    context_parse = {"candidate_name": candidate.full_name}
+
     sig = make_signature(params)
 
     # dùng urllib để encode query string
     query = urlencode({**params, "sig": sig})
 
-    
     context_parse["tracking_pixel_url"] = (
         f"{base_url}/api/method/mbw_mira.api.interaction.tracking_pixel?{query}"
     )
     context_parse["tracking_link"] = (
         f"{base_url}/api/method/mbw_mira.api.interaction.click_redirect?{query}"
     )
-    context_parse['url_link'] = (
+    context_parse["url_link"] = (
         f"{base_url}/api/method/mbw_mira.api.interaction.unsubscribe?{query}"
     )
 
@@ -143,14 +161,22 @@ def render_template(template_str, context):
 
 
 def make_signature(data) -> str:
-    #data = f"candidate_id={candidate_id}&action={action}&url={url}"
-    SECRET_KEY = frappe.conf.get("tracking_secret_key") or "email_track_aff07b5a10af788e14e6fedb38ce39d9"
-    return hmac.new(SECRET_KEY.encode(), json.dumps(data).encode(), hashlib.sha256).hexdigest()
+    # data = f"candidate_id={candidate_id}&action={action}&url={url}"
+    SECRET_KEY = (
+        frappe.conf.get("tracking_secret_key")
+        or "email_track_aff07b5a10af788e14e6fedb38ce39d9"
+    )
+    return hmac.new(
+        SECRET_KEY.encode(), json.dumps(data).encode(), hashlib.sha256
+    ).hexdigest()
+
+
 def verify_signature(data, sig):
     expected = make_signature(data)
     return hmac.compare_digest(expected, sig)
 
-#Tìm candidate khớp với talentsegment
+
+# Tìm candidate khớp với talentsegment
 def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50):
     """
     Tìm các ứng viên có mức độ khớp >= min_score (0–100) theo fuzzy matching
@@ -176,13 +202,15 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50):
                 return []
 
         if not criteria_skills:
-            frappe.throw(f"Không tìm thấy kỹ năng trong tiêu chí segment '{segment_name}'")
+            frappe.throw(
+                f"Không tìm thấy kỹ năng trong tiêu chí segment '{segment_name}'"
+            )
 
         # --- Lấy danh sách ứng viên ---
         talent_profiles = frappe.get_all(
             "TalentProfiles",
             filters={"status": "NEW"},
-            fields=["name", "email", "full_name", "skills"]
+            fields=["name", "email", "full_name", "skills"],
         )
 
         results = []
@@ -204,22 +232,27 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50):
             total_score = 0
             for crit_skill in criteria_skills:
                 best_score = max(
-                    [fuzz.token_sort_ratio(crit_skill, cand_skill) for cand_skill in candidate_skills],
-                    default=0
+                    [
+                        fuzz.token_sort_ratio(crit_skill, cand_skill)
+                        for cand_skill in candidate_skills
+                    ],
+                    default=0,
                 )
                 total_score += best_score
 
             avg_score = total_score / len(criteria_skills)
             # frappe.log_error(f"Score {avg_score}")
             if avg_score >= min_score:
-                results.append({
-                    "name": c.name,
-                    "email": c.email,
-                    "full_name": c.full_name,
-                    "skills": candidate_skills,
-                    "criteria_skills": criteria_skills,
-                    "score": round(avg_score, 2)
-                })
+                results.append(
+                    {
+                        "name": c.name,
+                        "email": c.email,
+                        "full_name": c.full_name,
+                        "skills": candidate_skills,
+                        "criteria_skills": criteria_skills,
+                        "score": round(avg_score, 2),
+                    }
+                )
 
         # Sắp xếp theo điểm giảm dần
         results.sort(key=lambda x: x["score"], reverse=True)

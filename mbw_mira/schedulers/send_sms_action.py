@@ -6,7 +6,6 @@ def run():
     Process scheduled SEND_SMS actions.
     """
     now = datetime.now()
-    frappe.logger().info(f"[SEND_SMS Scheduler] Running at {now}")
 
     actions = frappe.get_all(
         "Action",
