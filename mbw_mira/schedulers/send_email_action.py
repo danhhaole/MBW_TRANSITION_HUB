@@ -9,8 +9,6 @@ def run():
     - Enqueue worker job
     """
     now = datetime.now()
-    frappe.logger().info(f"[SEND_EMAIL Scheduler] Running at {now}")
-
     actions = frappe.get_all(
         "Action",
         filters={
@@ -21,7 +19,8 @@ def run():
     )
 
     for a in actions:
-        step = frappe.get_value("CampaignStep", a.campaign_step, "action_type")
+        step = frappe.db.get_value("CampaignStep", a.campaign_step, "action_type")
+        frappe.log_error(f"{step}")
         if step == "SEND_EMAIL":
             frappe.enqueue(
                 "mbw_mira.workers.process_action.process_email_action",
@@ -29,4 +28,4 @@ def run():
                 timeout=300,
                 action_name=a.name
             )
-            frappe.logger().info(f"Enqueued SEND_EMAIL Action: {a.name}")
+    return True

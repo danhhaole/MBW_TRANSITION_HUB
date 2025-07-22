@@ -26,6 +26,4 @@ def run():
             timeout=300
         )
 
-        frappe.logger().info(
-            f"🕒 Enqueued action creation for TalentProfilesCampaign: {tc.name} (step: {tc.current_step_order})"
-        )
+    return True

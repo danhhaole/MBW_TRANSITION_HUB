@@ -16,7 +16,6 @@ def fetch_mbw_ats_data(campaign_name):
     campaign = frappe.get_doc("Campaign", campaign_name)
     source_name = campaign.source
     segment_id = campaign.target_segment
-    print("[MBW ATS] Start fetching data for campaign",campaign)
 
     with FrappeSiteProvider(source_name) as provider:
         if provider.sync_direction not in ("Pull", "Both"):
@@ -26,17 +25,19 @@ def fetch_mbw_ats_data(campaign_name):
         criteria = campaign.criteria or {}
         if isinstance(criteria, str):
             criteria = json.loads(criteria)
-
+        total =0
         try:
             filters = criteria.get("filters", {})
             fields = criteria.get("fields", ["name"])
-            logger.info(f"[MBW ATS] Fetching candidates with filters={filters}, fields={fields}")
             candidates = provider.get_list("ATS_Candidate", filters=filters, fields=fields)
             
             if candidates:
-                save_candidates_to_talent_pool(provider,candidates, campaign, source_name, segment_id)
+                total = save_candidates_to_talent_pool(provider,candidates, campaign, source_name, segment_id)
+
+            return total
         except Exception as e:
             logger.error(f"[MBW ATS] Failed fetching data for campaign: {campaign.campaign_name} — {str(e)}", exc_info=True)
+            return total
 
 
 def save_candidates_to_talent_pool(provider,candidates, campaign, source_name, segment_id):
@@ -60,6 +61,8 @@ def save_candidates_to_talent_pool(provider,candidates, campaign, source_name, s
                 count += 1
             except Exception as e:
                 logger.error(f"[TalentProfiles] Failed to save {doc_data.get('full_name')} — {str(e)}", exc_info=True)
+                continue
+    return count
 
 
 def map_mbw_ats_to_talentprofiles(record, campaign_name, source_name, segment_id=None):

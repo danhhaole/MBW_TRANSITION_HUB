@@ -170,6 +170,8 @@ scheduler_events = {
     ],
     "hourly": [
         "mbw_mira.schedulers.enroll_talent_campaign.run",
+        "mbw_mira.schedulers.send_email_action.run",
+        "mbw_mira.schedulers.send_sms_action.run",
         "mbw_mira.schedulers.create_actions.run",
         "mbw_mira.schedulers.auto_segment_talent_profiles.run"
     ]

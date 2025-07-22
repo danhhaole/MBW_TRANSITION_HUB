@@ -27,7 +27,7 @@ def run():
                 campaign_name=c.name,
                 queue="short"
             )
-            frappe.logger().info(f"Enqueued MBW ATS fetch for campaign: {c.campaign_name}")
+    return True
 
 def is_mbw_ats_source(source):
     return frappe.db.get_value("CandidateDataSource", source, "source_name") == "MBW ATS"

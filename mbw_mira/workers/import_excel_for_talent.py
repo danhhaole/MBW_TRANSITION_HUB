@@ -28,7 +28,6 @@ def import_candidates_from_file(campaign_id: str):
     if not campaign.is_active or campaign.status != "ACTIVE" \
             or not campaign.start_date or not campaign.end_date \
             or campaign.start_date > today or campaign.end_date < today:
-        logger.warning(f"Campaign '{campaign.campaign_name}' is not currently valid for import")
         return
 
     # 3. Parse source_config JSON
@@ -42,13 +41,11 @@ def import_candidates_from_file(campaign_id: str):
     field_mapping = source_config.get("field_mapping", [])
 
     if not file_name or not field_mapping:
-        logger.warning(f"Campaign '{campaign.campaign_name}' is missing file_name or field_mapping in source_config")
         return
 
     # 4. Tìm file đã upload trong File doctype
     file_url = frappe.db.get_value("File", {"file_name": file_name}, "file_url")
     if not file_url:
-        logger.warning(f"File not found in File doctype: {file_name}")
         return
 
     file_path = frappe.get_site_path("public", file_url.lstrip("/"))
@@ -60,7 +57,6 @@ def import_candidates_from_file(campaign_id: str):
         elif file_name.endswith((".xls", ".xlsx")):
             df = pd.read_excel(file_path)
         else:
-            logger.warning(f"Unsupported file format: {file_name}")
             return
     except Exception as e:
         logger.error(f"Error reading file {file_name}: {str(e)}", exc_info=True)
@@ -118,9 +114,8 @@ def import_candidates_from_file(campaign_id: str):
                 doc = frappe.get_doc(doc_data)
                 doc.insert(ignore_permissions=True)
                 frappe.db.commit()
-                logger.info(f"[TalentProfiles] Inserted: {doc.full_name} / {doc.email}")
                 inserted += 1
             except Exception as e:
                 logger.error(f"[TalentProfiles] Failed: {doc_data.get('full_name')} — {str(e)}", exc_info=True)
 
-        logger.info(f"[TalentProfiles] Total inserted from '{file_name}': {inserted}")
+        return True

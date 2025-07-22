@@ -24,4 +24,4 @@ def run():
             job_name=c.name,
             queue="short"
         )
-        frappe.logger().info(f"Enqueued MBW ATS fetch for campaign: {c.campaign_name}")
+    return True

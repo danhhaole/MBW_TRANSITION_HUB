@@ -18,12 +18,12 @@ def run():
     )
 
     for a in actions:
-        step = frappe.get_value("CampaignStep", a.campaign_step, "action_type")
+        step = frappe.db.get_value("CampaignStep", a.campaign_step, "action_type")
         if step == "SEND_SMS":
             frappe.enqueue(
-                "your_app.workers.process_action.process_sms_action",
+                "mbw_mira.workers.process_action.process_sms_action",
                 queue="short",
                 timeout=300,
                 action_name=a.name
             )
-            frappe.logger().info(f"Enqueued SEND_SMS Action: {a.name}")
+    return True

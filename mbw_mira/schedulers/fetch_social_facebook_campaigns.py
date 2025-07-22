@@ -27,7 +27,7 @@ def run():
                 job_name=c.name,
                 
             )
-            frappe.logger().info(f"Enqueued Facebook fetch for campaign: {c.campaign_name}")
+    return True
 
 def is_facebook_source(source):
     return frappe.db.get_value("CandidateDataSource", source, "source_name") == "Facebook"

@@ -1,28 +1,26 @@
 import frappe
 from frappe.utils import now_datetime
+from mbw_mira.utils import send_email_job
 
 def process_email_action(action_name):
     """
     Worker: thực hiện SEND_EMAIL action
     """
     now = now_datetime()
-    action = frappe.get_doc("Action", action_name)
+    action = frappe.db.get_value("Action", action_name,["name","talent_campaign_id","campaign_step"],as_dict=1)
     try:
-        frappe.logger().info(f"[Worker] Processing SEND_EMAIL action: {action.name}")
 
         # TODO: Thực hiện gửi email ở đây
         # Ví dụ:
         # frappe.sendmail(recipients=..., subject=..., message=...)
-
-        action.db_set("status", "EXECUTED")
-        action.db_set("executed_at", now)
-
-        frappe.logger().info(f"[Worker] SEND_EMAIL action executed: {action.name}")
+        #Lấy talentprofile 
+        talent_id = frappe.db.get_value("TalentProfilesCampaign", action.talent_campaign_id,"talent_id")
+        send_email_job(talent_id,action_name,action.campaign_step)
+        return True
 
     except Exception as e:
         frappe.log_error(f"Error processing SEND_EMAIL action {action.name}: {e}")
-        action.db_set("status", "FAILED")
-        action.db_set("executed_at", now)
+        return True
 
 def process_sms_action(action_name):
     """
@@ -31,20 +29,16 @@ def process_sms_action(action_name):
     now = now_datetime()
     action = frappe.get_doc("Action", action_name)
     try:
-        frappe.logger().info(f"[Worker] Processing SEND_SMS action: {action.name}")
 
         # TODO: Thực hiện gửi SMS ở đây
         # Ví dụ: gọi API SMS gateway
 
-        action.db_set("status", "EXECUTED")
-        action.db_set("executed_at", now)
 
-        frappe.logger().info(f"[Worker] SEND_SMS action executed: {action.name}")
+        return True
 
     except Exception as e:
         frappe.log_error(f"Error processing SEND_SMS action {action.name}: {e}")
-        action.db_set("status", "FAILED")
-        action.db_set("executed_at", now)
+        return True
 
 def check_pending_action(action_name):
     """
@@ -53,13 +47,11 @@ def check_pending_action(action_name):
     action = frappe.get_doc("Action", action_name)
     step_type = frappe.get_value("CampaignStep", action.campaign_step, "action_type")
     try:
-        frappe.logger().warn(
-            f"[Worker] ⚠️ Action {action.name} ({step_type}) "
-            f"has been pending too long (since {action.scheduled_at})"
-        )
+        return step_type
 
         # Optionally: gửi email/notification cảnh báo
         # frappe.sendmail(...)
 
     except Exception as e:
         frappe.log_error(f"Error while checking pending Action {action.name}: {e}")
+        return True

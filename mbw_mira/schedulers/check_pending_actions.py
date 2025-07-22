@@ -29,4 +29,5 @@ def run():
                 job_name=a.name,
                 action_name=a.name
             )
-            frappe.logger().warn(f"Pending too long: {a.name} ({step})")
+
+    return True

@@ -20,15 +20,14 @@ def run():
 
     for c in campaigns:
         if not c.target_segment:
-            frappe.logger().warning(f"⚠ Campaign {c.campaign_name} has no target segment.")
             continue
 
         frappe.enqueue(
-            "mbw_mira.workers.talent_enrollment.enroll_talent_for_campaign",
+            "mbw_mira.workers.talent_campaign_enrollment.enroll_talent_for_campaign",
             campaign_id=c.name,
             job_name=c.name,
             queue="default",
             
         )
+    return True
 
-        frappe.logger().info(f"🕒 Enqueued enrollment worker for campaign: {c.campaign_name}")

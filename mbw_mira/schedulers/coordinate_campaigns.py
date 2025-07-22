@@ -45,4 +45,4 @@ def run():
 
         if updated:
             frappe.db.commit()
-
+    return True

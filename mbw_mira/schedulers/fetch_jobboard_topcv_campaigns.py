@@ -27,7 +27,7 @@ def run():
                 job_name=c.name,
                 
             )
-            frappe.logger().info(f"Enqueued TopCV fetch for campaign: {c.campaign_name}")
+    return True
 
 def is_topcv_source(source):
     return frappe.db.get_value("CandidateDataSource", source, "source_name") == "TopCV"
