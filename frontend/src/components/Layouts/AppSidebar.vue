@@ -196,27 +196,22 @@ const links = [
     icon: LeadsIcon,
     to: 'Dashboard',
   },
-
+  {
+    label: "Talent Pools",
+    icon: DealsIcon,
+    to: 'TalentSegments',
+  },
   {
     label: "Campaigns",
     icon: OrganizationsIcon,
     to: 'CampaignManagement',
   },
-  {
-    label: "Talent Pools",
-    icon: ContactsIcon,
-    to: 'CandidateManagement',
-  },
-  {
-    label: "Applicant Pools",
-    icon: DealsIcon,
-    to: 'TalentSegments',
-  },
-  {
-    label: "Candidate Pools",
-    icon: TaskIcon,
-    to: 'CandidatePoolManagement',
-  },
+
+  // {
+  //   label: "Candidate Pools",
+  //   icon: TaskIcon,
+  //   to: 'CandidatePoolManagement',
+  // },
   // {
   //   label: "Candidate",
   //   icon: ContactsIcon,
@@ -253,6 +248,11 @@ const links = [
     to: 'Report',
     submenu: [
       {
+        label: "Talent Profiles",
+        icon: ContactsIcon,
+        to: 'CandidateManagement',
+      },
+      {
         label: "Interactions",
         icon: PhoneIcon,
         to: 'InteractionManagement',
@@ -278,6 +278,10 @@ const links = [
       {
         label: "integrations",
         to: 'CandidateDataSourceManagementDirect'
+      },
+      {
+        label: "Campaign Templates",
+        to: 'CampaignTemplateManagement'
       },
 
     ]

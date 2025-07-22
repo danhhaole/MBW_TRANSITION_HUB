@@ -465,3 +465,24 @@ export function runSequentially(functions) {
     return promise.then(() => fn())
   }, Promise.resolve())
 }
+
+export function createToast({
+  message,
+  type = 'success', // 'success' | 'error' | 'warning' | 'info'
+  icon = null,
+  iconColor = '',
+  duration = 4000,
+  closable = true,
+  position = 'bottom-right', // 'top-right', 'bottom-right', etc.
+  action = null // { label, altText, onClick }
+}) {
+  toast[type]({
+    text: message,
+    duration,
+    closable,
+    position,
+    icon,
+    iconClasses: iconColor,
+    action
+  })
+}

@@ -904,7 +904,7 @@ const router = useRouter()
 const breadcrumbs = computed(() => {
 	console.log('Breadcrumbs computed, route params:', route.params)
 	return [
-		{ label: __('Applicant Pools'), route: { name: 'TalentSegments' } },
+		{ label: __('Talent Pools'), route: { name: 'TalentSegments' } },
 		{ label: talentSegment.title || __('Loading...'), route: { name: 'TalentSegmentDetail' } },
 	]
 })
@@ -974,7 +974,7 @@ const selectedCandidatePreview = computed(() => {
 
 // Dialog options
 const editSegmentDialogOptions = computed(() => ({
-	title: __('Edit Applicant Pool'),
+	title: __('Edit Talent Pool'),
 	size: '4xl',
 }))
 

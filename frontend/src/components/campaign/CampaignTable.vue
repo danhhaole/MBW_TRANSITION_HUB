@@ -35,7 +35,7 @@
                     </svg>
                   </div>
                   <div>
-                    <div class="font-medium text-gray-800">{{ campaign.campaign_name || campaign.name }}</div>
+                    <div class="font-medium text-base text-gray-800">{{ campaign.campaign_name || campaign.name }}</div>
                     <div class="text-xs text-gray-500">{{ campaign.description || 'Tuyển dụng' }}</div>
                   </div>
                 </div>

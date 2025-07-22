@@ -288,7 +288,7 @@ import { Breadcrumbs } from 'frappe-ui'
 import TalentSegmentCardView from '@/components/talent-segment/TalentSegmentCardView.vue'
 
 
-let title = __('Applicant Pools')
+let title = __('Talent Pools')
 const breadcrumbs = [{ label: title, route: { name: 'TalentSegments' } }]
 
 // Composables

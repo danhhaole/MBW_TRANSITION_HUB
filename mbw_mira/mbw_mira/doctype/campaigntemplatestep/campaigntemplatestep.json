@@ -1,0 +1,89 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:CTS-{YY}{MM}{DD}-{#####}",
+ "creation": "2025-07-21 16:31:58.551169",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "template",
+  "step_order",
+  "campaign_step_name",
+  "action_type",
+  "delay_in_days",
+  "template_content",
+  "action_config"
+ ],
+ "fields": [
+  {
+   "fieldname": "template",
+   "fieldtype": "Link",
+   "label": "Template",
+   "options": "CampaignTemplate",
+   "reqd": 1
+  },
+  {
+   "fieldname": "step_order",
+   "fieldtype": "Int",
+   "label": "Step Order",
+   "reqd": 1
+  },
+  {
+   "fieldname": "campaign_step_name",
+   "fieldtype": "Data",
+   "label": "Campaign Step Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "action_type",
+   "fieldtype": "Select",
+   "label": "Action Type",
+   "options": "SEND_EMAIL\nSEND_SMS\nMANUAL_CALL\nMANUAL_TASK",
+   "reqd": 1
+  },
+  {
+   "fieldname": "delay_in_days",
+   "fieldtype": "Int",
+   "label": "Delay In Days",
+   "default": 0
+  },
+  {
+   "fieldname": "template_content",
+   "fieldtype": "Long Text",
+   "label": "Template Content"
+  },
+  {
+   "fieldname": "action_config",
+   "fieldtype": "JSON",
+   "label": "Action Config"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-07-21 16:31:58.551169",
+ "modified_by": "Administrator",
+ "module": "MBW Mira",
+ "name": "CampaignTemplateStep",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

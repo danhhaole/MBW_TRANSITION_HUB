@@ -133,6 +133,16 @@ const routes = [
 		name: 'CandidateDataSourceManagementDirect',
 	},
 	{
+		path: '/campaign-templates',
+		component: () => import('@/pages/CampaignTemplateManagement.vue'),
+		name: 'CampaignTemplateManagement',
+	},
+	{
+		path: '/campaign-template/:id',
+		component: () => import('@/pages/CampaignTemplateDetail.vue'),
+		name: 'CampaignTemplateDetail',
+	},
+	{
 		path: '/candidate-pools',
 		component: CandidatePoolManagement,
 		name: 'CandidatePoolManagement',

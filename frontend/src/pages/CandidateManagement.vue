@@ -15,7 +15,7 @@
 										d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
 								</svg>
 							</template>
-							{{ __('Add Talent Pool') }}
+							{{ __('Add Talent Profile') }}
 						</Button>
 					</div>
 			</template>
@@ -157,7 +157,7 @@
 								<tr>
 									<th
 										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-										{{ __('Talent Pool') }}
+										{{ __('Talent Profile') }}
 									</th>
 									<th
 										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -344,13 +344,13 @@
 														d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
 												</svg>
 												<h3 class="text-lg font-medium text-gray-900 mb-2">
-													{{ hasFilters ? __('No talent pool found') : __('No talent pool found')
+													{{ hasFilters ? __('No talent profile found') : __('No talent profile found')
 													}}
 												</h3>
 												<p class="text-sm text-gray-500 max-w-sm mb-6">
 													{{ hasFilters
-														? __('Try changing the filter to find a suitable talent pool.')
-														: __('Start by adding the first talent pool.')
+														? __('Try changing the filter to find a suitable talent profile.')
+														: __('Start by adding the first talent profile.')
 													}}
 												</p>
 												<button v-if="!hasFilters"
@@ -361,7 +361,7 @@
 														<path stroke-linecap="round" stroke-linejoin="round"
 															stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
 													</svg>
-													{{ __('Add Talent Pool') }}
+													{{ __('Add Talent Profile') }}
 												</button>
 												<button v-else
 													class="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50 transition-colors"
@@ -517,7 +517,7 @@ import {
 	processSkills
 } from '@/services/candidateService'
 
-const breadcrumbs = [{ label: __('Talent Pools'), route: { name: 'CandidateManagement' } }]
+const breadcrumbs = [{ label: __('Talent Profiles'), route: { name: 'CandidateManagement' } }]
 
 // Router
 const router = useRouter()
