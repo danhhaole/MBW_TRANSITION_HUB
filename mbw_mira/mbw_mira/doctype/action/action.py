@@ -49,6 +49,16 @@ def update_step_result_talent_campaign(doc):
 	return True
 
 
+def update_current_campaign(self):
+	campaign = frappe.get_doc("Campaign",self.campaign)
+	current += campaign.current
+	if current > campaign.total:
+		current = campaign.total
+	campaign.update({
+		"current":current
+    })
+	campaign.save(ignore_permissions=True)
+	frappe.db.commit()
 
 
 #Hàm lấy ra action theo action_type trong step campaign
