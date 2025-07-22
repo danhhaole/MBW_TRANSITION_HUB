@@ -4,6 +4,8 @@ import logging
 from mbw_mira.integrations.ats.frappe_site_provider import FrappeSiteProvider
 from datetime import datetime
 import json
+from urllib.parse import unquote
+
 
 logger = logging.getLogger(__name__)
 
@@ -92,7 +94,7 @@ def map_mbw_ats_to_talentprofiles(record, campaign_name, source_name, segment_id
     skills = []
     if record.get("candidate_skill"):
         for skill in record["candidate_skill"]:
-            skills.append(skill.get("can_skill_name"))
+            skills.append(unquote(skill.get("can_skill_name")))
     skills_json_string = json.dumps(skills) if skills else "[]"
 
     # Headline (current position)

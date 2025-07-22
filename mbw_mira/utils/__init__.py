@@ -5,7 +5,7 @@ import json
 from rapidfuzz import fuzz
 from frappe.utils import now_datetime
 from mbw_mira.mbw_mira.doctype.interaction.interaction import create_interaction
-
+from urllib.parse import unquote
 
 def send_email_job(talentprofile_id, action_id, step_id):
     from mbw_mira.utils.email import send_email
@@ -112,7 +112,7 @@ def send_sms_job(talentprofile_id, action_id, step_id):
 
         if not talentprofiles.phone:
             frappe.throw("Candidate does not have a phone number.")
-
+        action.executed_at = now_datetime()
         action.status = "EXECUTED"
         action.result = {
             "status": "Success",
@@ -194,9 +194,9 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50):
                 criteria_dict = json.loads(criteria or "{}")
                 raw_skills = criteria_dict.get("skills", [])
                 if isinstance(raw_skills, str):
-                    criteria_skills = [s.strip().lower() for s in raw_skills.split(",")]
+                    criteria_skills = [unquote(s.strip().lower()) for s in raw_skills.split(",")]
                 elif isinstance(raw_skills, list):
-                    criteria_skills = [s.strip().lower() for s in raw_skills]
+                    criteria_skills = [unquote(s.strip().lower()) for s in raw_skills]
             except Exception as e:
                 frappe.log_error(f"Lỗi khi đọc criteria JSON: {e}")
                 return []
@@ -222,9 +222,9 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50):
 
             # Chuyển skills thành list nếu là chuỗi
             if isinstance(raw_skills, str):
-                candidate_skills = [s.strip().lower() for s in raw_skills.split(",")]
+                candidate_skills = [unquote(s.strip().lower()) for s in raw_skills.split(",")]
             elif isinstance(raw_skills, list):
-                candidate_skills = [s.strip().lower() for s in raw_skills]
+                candidate_skills = [unquote(s.strip().lower()) for s in raw_skills]
             else:
                 continue
 
