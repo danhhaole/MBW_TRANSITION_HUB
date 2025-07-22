@@ -140,7 +140,11 @@
 
       <!-- Dialogs -->
       <!-- Wizard cho tạo mới -->
-      <campaign-wizard v-model="showCreateWizard" @success="handleCreateSuccess" />
+      <campaign-wizard 
+        v-model="showCreateWizard" 
+        @success="handleCreateSuccess"
+        @draft-created="handleDraftCreated" 
+      />
 
       <!-- Form cho chỉnh sửa -->
       <campaignForm v-model="showEditForm" :campaign="selectedCampaign" @success="handleEditSuccess"
@@ -167,7 +171,7 @@ import {
 import { ToastContainer } from '@/components/shared'
 import { Button, Breadcrumbs, Select } from 'frappe-ui'
 import LayoutHeader from '@/components/LayoutHeader.vue'
-
+import { campaignService } from '@/services/universalService'
 
 
 // Router
@@ -323,6 +327,15 @@ const handleEditSuccess = async (event) => {
 const handleFormCancel = () => {
   showEditForm.value = false
   selectedCampaign.value = null
+}
+
+const handleDraftCreated = async (draftCampaign) => {
+  console.log('📄 Draft campaign created:', draftCampaign.name)
+  
+  // Reload campaign list to show the new draft
+  await loadCampaigns()
+  
+  console.log('📋 Campaign list refreshed after draft creation')
 }
 
 const handleClearSearch = () => {

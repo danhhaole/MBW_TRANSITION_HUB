@@ -103,7 +103,7 @@ def get_data_sources():
     try:
         data_sources = frappe.get_list(
             'CandidateDataSource',
-            fields=['name', 'source_name', 'source_type', 'description', 'is_active'],
+            fields=['name', 'source_name', 'source_type', 'source_title', 'description', 'is_active'],
             filters={'is_active': 1},
             order_by='source_name asc'
         )

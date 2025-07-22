@@ -231,10 +231,10 @@
                     </div>
                   </td>
                 </tr>
-                <tr v-else-if="campaignSteps.length === 0" class="text-center">
+                <tr v-else-if="sortedCampaignSteps.length === 0" class="text-center">
                   <td colspan="5" class="px-6 py-4 text-sm text-gray-500">No steps found</td>
                 </tr>
-                <tr v-else v-for="step in campaignSteps" :key="step.name" class="hover:bg-gray-50">
+                <tr v-else v-for="(step, idx) in sortedCampaignSteps" :key="step.name" class="hover:bg-gray-50">
                   <td class="px-6 py-4 whitespace-nowrap">
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-black">
                       Step {{ step.step_order }}
@@ -255,18 +255,27 @@
                     {{ step.delay_in_days }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                    <button
-                      @click="openStepModal(step)"
-                      class="text-blue-600 hover:text-blue-900"
-                    >
+                    <button @click="openStepModal(step)" class="text-blue-600 hover:text-blue-900" title="Edit Step">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                       </svg>
                     </button>
-                    <button
-                      @click="deleteStep(step)"
-                      class="text-red-600 hover:text-red-900"
-                    >
+                    <button @click="moveStepUp(idx)" :disabled="idx === 0" class="text-gray-600 hover:text-black" title="Move Up">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+                      </svg>
+                    </button>
+                    <button @click="moveStepDown(idx)" :disabled="idx === sortedCampaignSteps.length - 1" class="text-gray-600 hover:text-black" title="Move Down">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                      </svg>
+                    </button>
+                    <!-- <button @click="copyStep(step)" class="text-purple-600 hover:text-purple-900" title="Copy Step">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16h8M8 12h8m-7-8h6a2 2 0 012 2v12a2 2 0 01-2 2H9a2 2 0 01-2-2V6a2 2 0 012-2z"/>
+                      </svg>
+                    </button> -->
+                    <button @click="deleteStep(step)" class="text-red-600 hover:text-red-900" title="Delete Step">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                       </svg>
@@ -565,6 +574,7 @@
               :placeholder="__('Enter step order')"
               :required="true"
               :min="1"
+              :disabled="true"
             />
 
             <!-- Action Type -->
@@ -939,6 +949,11 @@ const tabs = computed(() => [
   }
 ])
 
+// 1. Always sort campaignSteps by step_order ascending
+const sortedCampaignSteps = computed(() => {
+  return [...campaignSteps.value].sort((a, b) => a.step_order - b.step_order)
+})
+
 // CSS classes for status and types
 const getStatusClasses = (status) => {
   const classes = {
@@ -1150,6 +1165,9 @@ const openStepModal = (step = null) => {
       stepFormData[key] = ''
     })
     stepFormData.campaign = route.params.id
+    // Gán step_order = max + 1
+    const maxOrder = Math.max(...campaignSteps.value.map(s => s.step_order), 0)
+    stepFormData.step_order = maxOrder + 1
   }
   showStepModal.value = true
 }
@@ -1183,12 +1201,64 @@ const deleteStep = async (step) => {
     try {
       const result = await campaignStepService.delete(step.name)
       if (result.success) {
-        loadCampaignSteps()
+        // Sau khi xóa, lấy lại danh sách step và cập nhật lại step_order liên tục
+        await loadCampaignSteps()
+        // Dồn lại thứ tự
+        const steps = sortedCampaignSteps.value
+        for (let i = 0; i < steps.length; i++) {
+          if (steps[i].step_order !== i + 1) {
+            steps[i].step_order = i + 1
+            await campaignStepService.save(steps[i], steps[i].name)
+          }
+        }
+        await loadCampaignSteps()
       }
     } catch (error) {
       console.error('Error deleting step:', error)
     }
   }
+}
+
+// 4. Add methods for move up/down/copy
+const moveStepUp = async (idx) => {
+  if (idx === 0) return
+  const steps = sortedCampaignSteps.value
+  const stepA = steps[idx]
+  const stepB = steps[idx - 1]
+  // Swap step_order
+  const temp = stepA.step_order
+  stepA.step_order = stepB.step_order
+  stepB.step_order = temp
+  // Save both
+  await campaignStepService.save(stepA, stepA.name)
+  await campaignStepService.save(stepB, stepB.name)
+  await loadCampaignSteps()
+}
+const moveStepDown = async (idx) => {
+  const steps = sortedCampaignSteps.value
+  if (idx === steps.length - 1) return
+  const stepA = steps[idx]
+  const stepB = steps[idx + 1]
+  // Swap step_order
+  const temp = stepA.step_order
+  stepA.step_order = stepB.step_order
+  stepB.step_order = temp
+  // Save both
+  await campaignStepService.save(stepA, stepA.name)
+  await campaignStepService.save(stepB, stepB.name)
+  await loadCampaignSteps()
+}
+const copyStep = async (step) => {
+  // Tạo step mới với thông tin giống step cũ, step_order = max + 1
+  const maxOrder = Math.max(...campaignSteps.value.map(s => s.step_order), 0)
+  const newStep = {
+    ...step,
+    name: undefined,
+    step_order: maxOrder + 1,
+    campaign_step_name: step.campaign_step_name + ' (Copy)'
+  }
+  await campaignStepService.save(newStep)
+  await loadCampaignSteps()
 }
 
 // Candidate methods
