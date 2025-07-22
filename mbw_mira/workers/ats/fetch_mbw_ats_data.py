@@ -6,7 +6,6 @@ from datetime import datetime
 import json
 from urllib.parse import unquote
 
-
 logger = logging.getLogger(__name__)
 
 def fetch_mbw_ats_data(campaign_name):

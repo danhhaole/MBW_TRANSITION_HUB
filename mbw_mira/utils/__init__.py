@@ -9,7 +9,6 @@ from urllib.parse import unquote
 
 def send_email_job(talentprofile_id, action_id, step_id):
     from mbw_mira.utils.email import send_email
-
     """
     Gửi email cho ứng viên, hỗ trợ cả message raw hoặc template.
     """
@@ -256,7 +255,6 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50):
 
         # Sắp xếp theo điểm giảm dần
         results.sort(key=lambda x: x["score"], reverse=True)
-
         return results
 
     except Exception as e:
