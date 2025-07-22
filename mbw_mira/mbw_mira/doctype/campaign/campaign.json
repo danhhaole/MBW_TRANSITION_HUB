@@ -19,7 +19,9 @@
   "owner_id",
   "start_date",
   "end_date",
-  "source_config"
+  "source_config",
+  "total",
+  "current"
  ],
  "fields": [
   {
@@ -108,12 +110,26 @@
    "fieldname": "source_file",
    "fieldtype": "Attach",
    "label": "Source File"
+  },
+  {
+   "fieldname": "total",
+   "fieldtype": "Int",
+   "hidden": 1,
+   "label": "Total",
+   "read_only": 1
+  },
+  {
+   "fieldname": "current",
+   "fieldtype": "Int",
+   "hidden": 1,
+   "label": "Current",
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-18 13:29:44.345191",
+ "modified": "2025-07-22 16:36:02.162265",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Campaign",
