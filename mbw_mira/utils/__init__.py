@@ -6,7 +6,7 @@ from rapidfuzz import fuzz
 from frappe.utils import now_datetime
 from mbw_mira.mbw_mira.doctype.interaction.interaction import create_interaction
 from urllib.parse import unquote
-import polib
+
 import csv
 
 
@@ -264,7 +264,8 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50):
         return []
 
 
-# def convert_po_to_csv(po_path, csv_path):    
+# def convert_po_to_csv(po_path, csv_path):
+#       import polib
 #     po = polib.pofile(po_path)
 #     with open(csv_path, 'w', newline='', encoding='utf-8') as f:
 #         writer = csv.writer(f)
