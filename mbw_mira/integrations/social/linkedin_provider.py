@@ -3,6 +3,7 @@ import logging
 from urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 import frappe
+from frappe import _
 
 
 class LinkedInProvider:
@@ -11,12 +12,11 @@ class LinkedInProvider:
     dựa trên CandidateDataSource (auth_method = OAuth2)
     """
 
-    BASE_URL = "https://api.linkedin.com/v2/"
-
-    def __init__(self, source_name, timeout=10, max_retries=3):
+    def __init__(self, source_name, timeout=10, max_retries=3, api_version="v2"):
         self.source_doc = frappe.get_doc("CandidateDataSource", source_name)
         self.timeout = timeout
         self.max_retries = max_retries
+        self.BASE_URL = f"https://api.linkedin.com/{api_version}/"
 
         self.session = requests.Session()
         retries = Retry(
@@ -53,25 +53,27 @@ class LinkedInProvider:
         else:
             self.access_token = self.source_doc.access_token
 
-        self.logger.info("✅ Connected to LinkedIn API")
+        self.logger.info("Connected to LinkedIn API")
 
     def disconnect(self):
         self.session.close()
-        self.logger.info("🔒 Disconnected from LinkedIn")
+        self.logger.info("Disconnected from LinkedIn")
 
     def is_token_expired(self):
         """
         Kiểm tra token hết hạn
         """
-        if not self.source_doc.token_expires_at:
-            return False
+        if not self.source_doc.access_token or not self.source_doc.token_expires_at:
+            return True
         from frappe.utils import now_datetime
         return now_datetime() >= self.source_doc.token_expires_at
 
     def refresh_access_token(self):
         """
-        Refresh OAuth2 token từ LinkedIn (nếu được cấp refresh_token)
+        Refresh OAuth2 token từ LinkedIn
         """
+        if not self.source_doc.refresh_token:
+            frappe.throw(_("No refresh token available. Please re-authenticate with LinkedIn."))
         token_url = "https://www.linkedin.com/oauth/v2/accessToken"
         data = {
             "grant_type": "refresh_token",
@@ -79,24 +81,28 @@ class LinkedInProvider:
             "client_id": self.source_doc.client_id,
             "client_secret": self.source_doc.client_secret
         }
-        resp = self.session.post(token_url, data=data, timeout=self.timeout)
-        if not resp.ok:
-            raise RuntimeError(f"Failed to refresh token: {resp.status_code} {resp.text}")
-        token_data = resp.json()
-        self.access_token = token_data.get("access_token")
-        expires_in = int(token_data.get("expires_in", 3600))
-
-        # update doc
-        self.source_doc.access_token = self.access_token
-        self.source_doc.token_expires_at = frappe.utils.add_seconds(frappe.utils.now_datetime(), expires_in)
-        self.source_doc.save()
-        frappe.db.commit()
-        self.logger.info("🔄 Refreshed LinkedIn access_token")
+        for attempt in range(self.max_retries):
+            try:
+                resp = self.session.post(token_url, data=data, timeout=self.timeout)
+                resp.raise_for_status()
+                token_data = resp.json()
+                self.access_token = token_data.get("access_token")
+                expires_in = int(token_data.get("expires_in", 3600))
+                self.source_doc.access_token = self.access_token
+                self.source_doc.token_expires_at = frappe.utils.add_seconds(frappe.utils.now_datetime(), expires_in)
+                self.source_doc.save()
+                frappe.db.commit()
+                self.logger.info("Refreshed LinkedIn access_token")
+                return
+            except requests.exceptions.RequestException as e:
+                self.logger.error(f"Attempt {attempt + 1} failed: {str(e)}")
+                if attempt == self.max_retries - 1:
+                    frappe.throw(_("Failed to refresh LinkedIn token after {0} attempts: {1}").format(self.max_retries, str(e)))
 
     # === Wrapper methods ===
 
     def get(self, path, params=None):
-        self.logger.info(f"📄 GET {path}")
+        self.logger.info(f"GET {path}")
         url = self.BASE_URL + path
         resp = self.session.get(
             url,
@@ -108,7 +114,7 @@ class LinkedInProvider:
         return resp.json()
 
     def post(self, path, json=None):
-        self.logger.info(f"📄 POST {path}")
+        self.logger.info(f"POST {path}")
         url = self.BASE_URL + path
         resp = self.session.post(
             url,
@@ -139,32 +145,34 @@ class LinkedInProvider:
         """
         return self.get("connections")
 
-    def post_share(self, text):
+    def post_share(self, message, link=None, visibility="PUBLIC", author_urn=None):
         """
-        Đăng bài viết (share)
+        Đăng bài viết (share) lên LinkedIn
+        :param message: Nội dung bài đăng
+        :param link: URL liên kết (nếu có, ví dụ: link ứng tuyển)
+        :param visibility: Độ hiển thị (PUBLIC, CONNECTIONS)
+        :param author_urn: URN của tác giả (person hoặc organization, mặc định lấy từ profile)
         """
-        urn = self.get_profile()["id"]
+        if not author_urn:
+            profile = self.get_profile()
+            author_urn = f"urn:li:person:{profile['id']}"
+
         payload = {
-            "author": f"urn:li:person:{urn}",
+            "author": author_urn,
             "lifecycleState": "PUBLISHED",
             "specificContent": {
                 "com.linkedin.ugc.ShareContent": {
-                    "shareCommentary": {"text": text},
-                    "shareMediaCategory": "NONE"
+                    "shareCommentary": {"text": message},
+                    "shareMediaCategory": "NONE" if not link else "ARTICLE"
                 }
             },
-            "visibility": {"com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"}
+            "visibility": {"com.linkedin.ugc.MemberNetworkVisibility": visibility}
         }
+        if link:
+            payload["specificContent"]["com.linkedin.ugc.ShareContent"]["media"] = [
+                {
+                    "status": "READY",
+                    "originalUrl": link
+                }
+            ]
         return self.post("ugcPosts", json=payload)
-
-
-#Cách dùng
-# from myapp.linkedin_provider import LinkedInProvider
-
-# source_name = "SOURCE-20250717-00002"
-
-# with LinkedInProvider(source_name) as linkedin:
-#     profile = linkedin.get_profile()
-#     print(profile)
-
-#     linkedin.post_share("Hello from Frappe + LinkedInProvider 🚀")

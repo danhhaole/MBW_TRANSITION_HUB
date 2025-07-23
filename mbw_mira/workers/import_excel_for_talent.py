@@ -117,5 +117,5 @@ def import_talentprofile_from_file(campaign_id: str):
                 inserted += 1
             except Exception as e:
                 logger.error(f"[TalentProfiles] Failed: {doc_data.get('full_name')} — {str(e)}", exc_info=True)
-        frappe.publish_realtime('import_talentprofile_from_file', data={'campaign': campaign_id})
+        frappe.publish_realtime('import_talentprofile_from_file', message={'campaign': campaign_id})
         return True

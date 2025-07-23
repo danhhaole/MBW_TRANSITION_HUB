@@ -1,301 +1,513 @@
 <template>
-  <Combobox v-model="selectedValue" nullable v-slot="{ open: isComboboxOpen }">
-    <Popover class="w-full" v-model:show="showOptions">
-      <template #target="{ open: openPopover, togglePopover }">
-        <slot
-          name="target"
-          v-bind="{
-            open: openPopover,
-            togglePopover,
-            isOpen: showOptions,
-            selectedValue,
-            displayValue,
-          }"
+  <div class="autocomplete-wrapper">
+    <Combobox
+      v-model="selectedValue"
+      :multiple="multiple"
+      nullable
+      v-slot="{ open: isComboboxOpen }"
+    >
+      <Popover
+        class="w-full"
+        v-model:show="showOptions"
+        ref="rootRef"
+        :placement="placement"
+      >
+        <template
+          #target="{ open: openPopover, togglePopover, close: closePopover }"
         >
-          <div class="w-full">
-            <button
-              class="relative flex h-7 w-full items-center justify-between gap-2 rounded bg-surface-gray-2 px-2 py-1 transition-colors hover:bg-surface-gray-3 border border-transparent focus:border-outline-gray-4 focus:outline-none focus:ring-2 focus:ring-outline-gray-3"
-              :class="inputClasses"
-              @click="() => togglePopover()"
-            >
-              <div
-                v-if="selectedValue"
-                class="flex text-base leading-5 items-center truncate"
-              >
-                <slot name="prefix" />
-                <span class="truncate">
-                  {{ displayValue(selectedValue) }}
-                </span>
-              </div>
-              <div
-                v-else
-                class="absolute text-ink-gray-4 text-left truncate w-full pr-7"
-              >
-                {{ placeholder || '' }}
-              </div>
-              <FeatherIcon
-                name="chevron-down"
-                class="absolute h-4 w-4 text-ink-gray-5 right-2"
-                aria-hidden="true"
-              />
-            </button>
-          </div>
-        </slot>
-      </template>
-      <template #body="{ isOpen }">
-        <div v-show="isOpen">
-          <div
-            class="relative mt-1 rounded-lg bg-surface-modal text-base shadow-2xl"
+          <slot
+            name="target"
+            v-bind="{
+              open: openPopover,
+              close: closePopover,
+              togglePopover,
+              isOpen: isComboboxOpen,
+            }"
           >
-            <div class="relative px-1.5 pt-1.5">
-              <ComboboxInput
-                ref="search"
-                class="form-input w-full focus:bg-surface-gray-3 hover:bg-surface-gray-4 text-ink-gray-8"
-                type="text"
-                @change="
-                  (e) => {
-                    query = e.target.value
-                  }
-                "
-                :value="query"
-                autocomplete="off"
-                placeholder="Search"
-              />
+            <div class="w-full space-y-1.5">
+              <label v-if="props.label" class="block text-xs text-gray-500">
+                {{ props.label }}
+              </label>
               <button
-                class="absolute right-1.5 inline-flex h-7 w-7 items-center justify-center"
-                @click="selectedValue = null"
+                class="flex h-8 w-full items-center justify-between gap-2 rounded bg-gray-100 px-3 py-1.5 transition-colors hover:bg-gray-200 border border-transparent focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                :class="{ 'bg-gray-200': isComboboxOpen }"
+                @click="togglePopover"
               >
-                <FeatherIcon name="x" class="w-4 text-ink-gray-8" />
+                <div class="flex items-center overflow-hidden">
+                  <slot name="prefix" />
+                  <span
+                    class="truncate text-sm leading-5 text-gray-800"
+                    v-if="displayValue"
+                  >
+                    {{ displayValue }}
+                  </span>
+                  <span class="text-sm leading-5 text-gray-400" v-else>
+                    {{ placeholder || 'Chọn một tùy chọn' }}
+                  </span>
+                  <slot name="suffix" />
+                </div>
+                <FeatherIcon
+                  name="chevron-down"
+                  class="h-4 w-4 text-gray-500"
+                  aria-hidden="true"
+                />
               </button>
             </div>
-            <ComboboxOptions
-              class="my-1 max-h-[12rem] overflow-y-auto p-1.5 pt-0"
-              static
+          </slot>
+        </template>
+        <template #body="{ isOpen, togglePopover }">
+          <div v-show="isOpen" class="relative">
+            <div
+              class="mt-1 rounded-lg bg-white text-sm shadow-lg border border-gray-200"
+              :class="bodyClasses"
             >
-              <div
-                class="mt-1.5"
-                v-for="group in groups"
-                :key="group.key"
-                v-show="group.items.length > 0"
+              <ComboboxOptions
+                class="max-h-60 overflow-y-auto px-2 pb-2"
+                :class="{ 'pt-2': hideSearch }"
+                static
               >
                 <div
-                  v-if="group.group && !group.hideLabel"
-                  class="truncate bg-surface-modal px-2.5 py-1.5 text-sm font-medium text-ink-gray-5"
+                  v-if="!hideSearch"
+                  class="sticky top-0 z-10 flex items-stretch space-x-2 bg-white py-2"
                 >
-                  {{ group.group }}
-                </div>
-                <ComboboxOption
-                  as="template"
-                  v-for="option in group.items"
-                  :key="option.value"
-                  :value="option"
-                  v-slot="{ active, selected }"
-                >
-                  <li
-                    :class="[
-                      'flex cursor-pointer items-center rounded px-2.5 py-1.5 text-base',
-                      { 'bg-surface-gray-3': active },
-                    ]"
-                  >
-                    <slot
-                      name="item-prefix"
-                      v-bind="{ active, selected, option }"
+                  <div class="relative w-full">
+                    <ComboboxInput
+                      ref="searchInput"
+                      class="w-full rounded border border-gray-300 px-3 py-1.5 text-sm focus:bg-gray-100 hover:bg-gray-50 text-gray-800"
+                      type="text"
+                      :value="query"
+                      @change="query = $event.target.value"
+                      autocomplete="off"
+                      placeholder="Tìm kiếm"
                     />
-                    <slot
-                      name="item-label"
-                      v-bind="{ active, selected, option }"
+                    <div
+                      class="absolute right-0 top-0 inline-flex h-8 w-8 items-center justify-center"
                     >
-                      <div class="flex-1 truncate text-ink-gray-7">
-                        {{ option.label }}
+                      <LoadingIndicator
+                        v-if="loading"
+                        class="h-4 w-4 text-gray-500"
+                      />
+                      <button v-else @click="clearAll">
+                        <FeatherIcon name="x" class="h-4 w-4 text-gray-600" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div v-if="groups.length === 0 && !loading" class="px-3 py-2 text-sm text-gray-500">
+                  Không có tùy chọn nào
+                </div>
+                <div
+                  v-for="group in groups"
+                  :key="group.key"
+                  v-show="group.items.length > 0"
+                >
+                  <div
+                    v-if="group.group && !group.hideLabel"
+                    class="sticky top-10 truncate bg-white px-3 py-1.5 text-xs font-medium text-gray-500"
+                  >
+                    {{ group.group }}
+                  </div>
+                  <ComboboxOption
+                    as="template"
+                    v-for="(option, idx) in group.items.slice(0, 50)"
+                    :key="idx"
+                    :value="option"
+                    :disabled="option.disabled"
+                    v-slot="{ active, selected }"
+                  >
+                    <li
+                      :class="[
+                        'flex cursor-pointer items-center justify-between rounded px-3 py-1.5 text-sm',
+                        {
+                          'bg-gray-100': active,
+                          'opacity-50': option.disabled,
+                        },
+                      ]"
+                    >
+                      <div class="flex flex-1 gap-2 overflow-hidden">
+                        <div
+                          v-if="$slots['item-prefix'] || props.multiple"
+                          class="flex flex-shrink-0"
+                        >
+                          <slot
+                            name="item-prefix"
+                            v-bind="{ active, selected, option }"
+                          >
+                            <FeatherIcon
+                              name="check"
+                              v-if="isOptionSelected(option)"
+                              class="h-4 w-4 text-gray-600"
+                            />
+                            <div v-else class="h-4 w-4" />
+                          </slot>
+                        </div>
+                        <div class="flex-1 truncate">
+                          <span class="block text-gray-700 font-medium">
+                            {{ option.value || '' }} <!-- Hiển thị value trên -->
+                          </span>
+                          <span class="block text-xs text-gray-500" v-if="option.title">
+                            {{ option.title || '' }} <!-- Hiển thị title dưới -->
+                          </span>
+                        </div>
                       </div>
-                    </slot>
-                  </li>
-                </ComboboxOption>
-              </div>
-              <li
-                v-if="groups.length == 0"
-                class="my-1.5 rounded-md px-2.5 py-1.5 text-base text-ink-gray-5"
+                    </li>
+                  </ComboboxOption>
+                </div>
+              </ComboboxOptions>
+              <div
+                v-if="$slots.footer || props.showFooter || multiple"
+                class="border-t border-gray-200 p-2"
               >
-                No results found
-              </li>
-            </ComboboxOptions>
-            <div
-              v-if="slots.footer"
-              class="border-t border-outline-gray-modals p-1.5"
-            >
-              <slot
-                name="footer"
-                v-bind="{ value: search?.el._value, close }"
-              ></slot>
+                <slot name="footer" v-bind="{ togglePopover }">
+                  <div v-if="multiple" class="flex items-center justify-end">
+                    <Button
+                      v-if="!areAllOptionsSelected"
+                      label="Chọn tất cả"
+                      @click.stop="selectAll"
+                    />
+                    <Button
+                      v-if="areAllOptionsSelected"
+                      label="Xóa tất cả"
+                      @click.stop="clearAll"
+                    />
+                  </div>
+                  <div v-else class="flex items-center justify-end">
+                    <Button label="Xóa" @click.stop="clearAll" />
+                  </div>
+                </slot>
+              </div>
             </div>
           </div>
-        </div>
-      </template>
-    </Popover>
-  </Combobox>
+        </template>
+      </Popover>
+    </Combobox>
+  </div>
 </template>
 
 <script setup>
 import {
   Combobox,
   ComboboxInput,
-  ComboboxOptions,
   ComboboxOption,
+  ComboboxOptions,
 } from '@headlessui/vue'
-import { Popover, Button, FeatherIcon } from 'frappe-ui'
-import { ref, computed, useAttrs, useSlots, watch, nextTick } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
+import {LoadingIndicator, Popover, Button, FeatherIcon , call, debounce } from 'frappe-ui'
 
 const props = defineProps({
   modelValue: {
-    type: String,
-    default: '',
+    default: undefined,
   },
   options: {
-    type: Array,
     default: () => [],
   },
-  size: {
-    type: String,
-    default: 'md',
+  multiple: {
+    type: Boolean,
+    default: false,
   },
-  variant: {
+  hideSearch: {
+    type: Boolean,
+    default: false,
+  },
+  label: {
     type: String,
-    default: 'subtle',
+    default: '',
   },
   placeholder: {
     type: String,
     default: '',
   },
-  disabled: {
+  showFooter: {
     type: Boolean,
     default: false,
   },
-  filterable: {
-    type: Boolean,
-    default: true,
+  bodyClasses: {
+    type: [String, Array],
+    default: '',
+  },
+  placement: {
+    type: String,
+    default: 'bottom-start',
+  },
+  doctype: {
+    type: String,
+    default: '',
+  },
+  filters: {
+    type: Object,
+    default: () => ({}),
   },
 })
+
 const emit = defineEmits(['update:modelValue', 'update:query', 'change'])
 
-const query = ref('')
+const searchInput = ref()
 const showOptions = ref(false)
-const search = ref(null)
+const query = ref('')
+const options = ref([])
+const loading = ref(false)
+const searchFields = ref(['title']) // Mặc định dựa trên dữ liệu của bạn
 
-const attrs = useAttrs()
-const slots = useSlots()
-
-const valuePropPassed = computed(() => 'value' in attrs)
-
-const selectedValue = computed({
-  get() {
-    return valuePropPassed.value ? attrs.value : props.modelValue
-  },
-  set(val) {
-    query.value = ''
-    if (val) {
-      showOptions.value = false
+const fetchSearchFields = async () => {
+  if (!props.doctype) {
+    console.log('Không có doctype, sử dụng trường mặc định:', searchFields.value)
+    return
+  }
+  console.log('Đang lấy trường tìm kiếm cho doctype:', props.doctype)
+  try {
+    const response = await call('frappe.client.get', {
+      doctype: 'DocType',
+      name: props.doctype,
+      fields: ['search_fields'],
+    })
+    console.log('Phản hồi trường tìm kiếm:', response)
+    if (response.search_fields) {
+      searchFields.value = response.search_fields.split(',').map(field => field.trim())
+    } else {
+      searchFields.value = ['title'] // Mặc định là 'title'
+      console.log('Không có search_fields trong doctype, mặc định là:', searchFields.value)
     }
-    emit(valuePropPassed.value ? 'change' : 'update:modelValue', val)
+  } catch (error) {
+    console.error('Lỗi khi lấy trường tìm kiếm:', error)
+    searchFields.value = ['title']
+  }
+  console.log('Trường tìm kiếm hiện tại:', searchFields.value)
+}
+
+const fetchOptions = debounce(async (searchQuery) => {
+  if (!searchQuery || !props.doctype) {
+    options.value = []
+    console.log('Không có truy vấn hoặc doctype, xóa options')
+    return
+  }
+  loading.value = true
+  try {
+    console.log('Đang lấy options với trường:', searchFields.value, 'cho truy vấn:', searchQuery)
+    const response = await call('frappe.desk.search.search_link', {
+      doctype: props.doctype,
+      txt: searchQuery,
+      filters: props.filters || {},
+      query: 'frappe.desk.search.search_link',
+      reference_doctype: props.doctype,
+      fields: searchFields.value,
+    })
+    console.log('Phản hồi options:', response)
+    options.value = response.results.map((item) => {
+      const labelField = searchFields.value[0] || 'title'
+      const option = {
+        label: item[labelField] || item.title || '',
+        value: item.name || item.value || '', // Sử dụng 'value' từ dữ liệu
+        title: item.title || '', // Giữ title để hiển thị
+        ...item,
+      }
+      console.log('Option đã xử lý:', option)
+      return option
+    })
+  } catch (error) {
+    console.error('Lỗi khi lấy options:', error)
+    options.value = []
+  } finally {
+    loading.value = false
+  }
+}, 300)
+
+const getExtendedInfo = (option) => {
+  if (!option || !option.value) {
+    return ''
+  }
+  return `Mã: ${option.value}`
+}
+
+watch(
+  () => props.doctype,
+  (newDoctype) => {
+    if (newDoctype) {
+      fetchSearchFields()
+    }
   },
+  { immediate: true }
+)
+
+watch(query, (newQuery) => {
+  console.log('Truy vấn thay đổi:', newQuery)
+  fetchOptions(newQuery)
 })
 
-function close() {
-  showOptions.value = false
-}
+watch(showOptions, (newValue) => {
+  console.log('Hiển thị options:', newValue)
+})
 
 const groups = computed(() => {
-  if (!props.options || props.options.length == 0) return []
-
-  let groups = props.options[0]?.group
-    ? props.options
-    : [{ group: '', items: props.options }]
-
-  return groups
-    .map((group, i) => {
-      return {
-        key: i,
-        group: group.group,
-        hideLabel: group.hideLabel || false,
-        items: props.filterable ? filterOptions(group.items) : group.items,
-      }
-    })
-    .filter((group) => group.items.length > 0)
-})
-
-function filterOptions(options) {
-  if (!query.value) {
-    return options
+  console.log('Tính toán groups, options:', options.value, 'props.options:', props.options)
+  if (!options.value.length && !props.options.length) return []
+  if (props.options.length) {
+    return [
+      {
+        key: 0,
+        group: '',
+        items: filterOptions(sanitizeOptions(props.options)),
+        hideLabel: true,
+      },
+    ]
   }
-  return options.filter((option) => {
-    let searchTexts = [option.label, option.value]
-    return searchTexts.some((text) =>
-      (text || '').toString().toLowerCase().includes(query.value.toLowerCase()),
-    )
-  })
-}
-
-function displayValue(option) {
-  if (typeof option === 'string') {
-    let allOptions = groups.value.flatMap((group) => group.items)
-    let selectedOption = allOptions.find((o) => o.value === option)
-    return selectedOption?.label || option
-  }
-  return option?.label
-}
-
-watch(query, (q) => {
-  emit('update:query', q)
-})
-
-watch(showOptions, (val) => {
-  if (val) {
-    nextTick(() => {
-      search.value.el.focus()
-    })
-  }
-})
-
-const textColor = computed(() => {
-  return props.disabled ? 'text-ink-gray-5' : 'text-ink-gray-8'
-})
-
-const inputClasses = computed(() => {
-  let sizeClasses = {
-    sm: 'text-base rounded h-7',
-    md: 'text-base rounded h-8',
-    lg: 'text-lg rounded-md h-10',
-    xl: 'text-xl rounded-md h-10',
-  }[props.size]
-
-  let paddingClasses = {
-    sm: 'py-1.5 px-2',
-    md: 'py-1.5 px-2.5',
-    lg: 'py-1.5 px-3',
-    xl: 'py-1.5 px-3',
-  }[props.size]
-
-  let variant = props.disabled ? 'disabled' : props.variant
-  let variantClasses = {
-    subtle:
-      'border border-gray-100 bg-surface-gray-2 placeholder-ink-gray-4 hover:border-outline-gray-modals hover:bg-surface-gray-3 focus:bg-surface-white focus:border-outline-gray-4 focus:shadow-sm focus:ring-0 focus-visible:ring-2 focus-visible:ring-outline-gray-3',
-    outline:
-      'border border-outline-gray-2 bg-surface-white placeholder-ink-gray-4 hover:border-outline-gray-3 hover:shadow-sm focus:bg-surface-white focus:border-outline-gray-4 focus:shadow-sm focus:ring-0 focus-visible:ring-2 focus-visible:ring-outline-gray-3',
-    disabled: [
-      'border bg-surface-menu-bar placeholder-ink-gray-3',
-      props.variant === 'outline'
-        ? 'border-outline-gray-2'
-        : 'border-transparent',
-    ],
-  }[variant]
-
   return [
-    sizeClasses,
-    paddingClasses,
-    variantClasses,
-    textColor.value,
-    'transition-colors w-full',
+    {
+      key: 0,
+      group: '',
+      items: filterOptions(sanitizeOptions(options.value)),
+      hideLabel: true,
+    },
   ]
 })
 
-defineExpose({ query })
+const allOptions = computed(() => {
+  const opts = groups.value.flatMap((group) => group.items)
+  console.log('Tất cả options:', opts)
+  return opts
+})
+
+const sanitizeOptions = (options) => {
+  if (!options) return []
+  return options.map((option) => {
+    return typeof option === 'object' && option !== null
+      ? { label: option.title || option.label || '', value: option.value || option.name || '', title: option.title || '', ...option }
+      : { label: option.toString(), value: option }
+  })
+}
+
+const filterOptions = (options) => {
+  if (!query.value) return options
+  const filtered = options.filter((option) => {
+    return (
+      (option.label || '').toLowerCase().includes(query.value.trim().toLowerCase()) ||
+      (option.value || '')
+        .toString()
+        .toLowerCase()
+        .includes(query.value.trim().toLowerCase()) ||
+      (option.title || '').toLowerCase().includes(query.value.trim().toLowerCase())
+    )
+  })
+  console.log('Options đã lọc:', filtered)
+  return filtered
+}
+
+const selectedValue = computed({
+  get() {
+    if (!props.multiple) {
+      const opt = findOption(props.modelValue) || makeOption(props.modelValue)
+      console.log('Giá trị đã chọn (single):', opt)
+      return opt
+    }
+    const values = props.modelValue || []
+    const opts = typeof values[0] === 'object' && values[0] !== null
+      ? values
+      : values.map((v) => findOption(v) || makeOption(v))
+    console.log('Giá trị đã chọn (multiple):', opts)
+    return opts
+  },
+  set(val) {
+    console.log('Đặt giá trị đã chọn:', val)
+    query.value = ''
+    if (val && !props.multiple) showOptions.value = false
+    emit('update:modelValue', val)
+  },
+})
+
+const findOption = (option) => {
+  if (!option) return option
+  const value = typeof option === 'object' && option !== null ? option.value : option
+  return allOptions.value.find((o) => o.value === value)
+}
+
+const makeOption = (option) => {
+  return typeof option === 'object' && option !== null
+    ? { label: option.title || option.label || '', value: option.value || option.name || '', title: option.title || '', ...option }
+    : { label: option, value: option }
+}
+
+const getLabel = (option) => {
+  if (typeof option === 'object' && option !== null) {
+    return option.label || option.title || option.value
+  }
+  return option
+}
+
+const displayValue = computed(() => {
+  if (!selectedValue.value) return ''
+  if (!props.multiple) {
+    return getLabel(selectedValue.value)
+  }
+  return selectedValue.value.map((v) => getLabel(v)).join(', ')
+})
+
+const isOptionSelected = (option) => {
+  if (!selectedValue.value) return false
+  const value = typeof option === 'object' && option !== null ? option.value : option
+  if (!props.multiple) {
+    return selectedValue.value === value
+  }
+  return selectedValue.value.find((v) =>
+    typeof v === 'object' && v !== null ? v.value === value : v === value
+  )
+}
+
+const areAllOptionsSelected = computed(() => {
+  if (!props.multiple) return false
+  return allOptions.value.length === (selectedValue.value || []).length
+})
+
+const selectAll = () => {
+  selectedValue.value = allOptions.value
+}
+
+const clearAll = () => {
+  selectedValue.value = props.multiple ? [] : undefined
+}
+
+const isOption = (option) => {
+  return typeof option === 'object' && option !== null
+}
+
+const isOptionGroup = (option) => {
+  return typeof option === 'object' && option !== null && 'items' in option && 'group' in option
+}
+
+watch(
+  () => query.value,
+  () => {
+    emit('update:query', query.value)
+  }
+)
+
+watch(
+  () => showOptions.value,
+  () => {
+    if (showOptions.value) {
+      nextTick(() => {
+        if (searchInput.value?.$el) {
+          searchInput.value.$el.focus()
+          console.log('Đã focus vào input tìm kiếm')
+        }
+      })
+    }
+  }
+)
+
+const rootRef = ref()
+
+const togglePopover = () => {
+  showOptions.value = !showOptions.value
+  console.log('Đã toggle popover, showOptions:', showOptions.value)
+}
+
+defineExpose({
+  rootRef,
+  togglePopover,
+})
 </script>
+
+<style scoped>
+.autocomplete-wrapper {
+  position: relative;
+}
+</style>
