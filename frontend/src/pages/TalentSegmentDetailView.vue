@@ -520,11 +520,17 @@
 									<td class="px-6 py-4">
 										<div class="flex flex-wrap gap-1">
 											<span
-												v-for="skill in processSkills(candidate.skills)"
+												v-for="skill in processSkills(candidate.skills).slice(0, 4)"
 												:key="skill"
 												class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
 											>
 												{{ skill }}
+											</span>
+											<span
+												v-if="processSkills(candidate.skills).length > 4"
+												class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600"
+											>
+												+{{ processSkills(candidate.skills).length - 4 }}
 											</span>
 										</div>
 									</td>

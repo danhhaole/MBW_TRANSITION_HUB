@@ -161,10 +161,6 @@
 									</th>
 									<th
 										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-										{{ __('Contact Info') }}
-									</th>
-									<th
-										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 										{{ __('Skills') }}
 									</th>
 									<th
@@ -239,19 +235,12 @@
 														{{ candidate.full_name }}
 													</div>
 													<div class="text-sm text-gray-500 truncate">
-														{{ candidate.headline || 'Chưa có thông tin' }}
+														{{ candidate.email || 'No information' }}
 													</div>
 												</div>
 											</div>
 										</td>
 
-										<!-- Contact Info -->
-										<td class="px-6 py-4 whitespace-nowrap">
-											<div class="text-sm text-gray-900 truncate">
-												{{ candidate.email }}
-											</div>
-											<!-- Đã bỏ dòng location vì không còn trường này trong TalentProfiles -->
-										</td>
 
 										<!-- Skills -->
 										<td class="px-6 py-4 whitespace-nowrap">
@@ -464,7 +453,7 @@
 
 						<div class="mb-4">
 							<p class="text-sm text-gray-500 mb-3">
-								Bạn có chắc chắn muốn xóa ứng viên này không?
+								{{ __('Are you sure you want to delete this candidate?') }}
 							</p>
 							<div class="bg-gray-50 p-3 rounded-lg">
 								<div class="font-medium text-gray-900">
@@ -474,7 +463,7 @@
 									{{ deleteDialog.candidate?.email }}
 								</div>
 							</div>
-							<p class="text-xs text-red-600 mt-2">Hành động này không thể hoàn tác.</p>
+							<p class="text-xs text-red-600 mt-2">{{ __('This action cannot be undone.') }}</p>
 						</div>
 
 						<div class="flex justify-end space-x-3">
