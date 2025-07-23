@@ -206,6 +206,7 @@
 <script setup>
 import { computed, watch } from 'vue'
 import { Dialog, Button, Avatar } from 'frappe-ui'
+import { processSkills } from '../../services/candidateService'
 
 // Props
 const props = defineProps({
@@ -277,26 +278,6 @@ const formatDate = (dateStr) => {
     hour: '2-digit',
     minute: '2-digit'
   })
-}
-
-const processSkills = (skills) => {
-  if (!skills) return []
-  
-  // Handle different skill formats
-  if (typeof skills === 'string') {
-    try {
-      const parsed = JSON.parse(skills)
-      return Array.isArray(parsed) ? parsed : skills.split(',').map(s => s.trim()).filter(s => s)
-    } catch (e) {
-      return skills.split(',').map(s => s.trim()).filter(s => s)
-    }
-  } else if (Array.isArray(skills)) {
-    return skills
-  } else if (typeof skills === 'object' && skills !== null) {
-    return Object.values(skills)
-  }
-  
-  return []
 }
 
 // Methods

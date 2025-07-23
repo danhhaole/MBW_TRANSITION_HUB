@@ -687,25 +687,8 @@ const itemsPerPageOptions = [
 ]
 
 // Helper methods for candidate list display
-const getTopSkills = (skills, limit) => {
-	if (!skills) return []
-	
-	// Handle JSON skills from TalentPool
-	let skillsArray = []
-	if (typeof skills === 'string') {
-		try {
-			skillsArray = JSON.parse(skills)
-		} catch (e) {
-			skillsArray = skills.split(',').map(s => s.trim()).filter(s => s)
-		}
-	} else if (Array.isArray(skills)) {
-		skillsArray = skills
-	} else if (typeof skills === 'object' && skills !== null) {
-		skillsArray = Object.values(skills)
-	}
-	
-	return skillsArray.slice(0, limit || 3)
-}
+const getTopSkills = (skills, limit = 3) =>
+  processSkills(skills).slice(0, limit)
 
 const getStatusClasses = (status) => {
 	const statusConfig = formatCandidateStatus(status)

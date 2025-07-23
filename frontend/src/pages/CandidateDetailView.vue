@@ -1691,27 +1691,7 @@ const DocumentIcon = {
 
 // Computed
 const candidateSkills = computed(() => {
-	if (!candidate.skills) return []
-	
-	// Handle different skill formats
-	let skills = candidate.skills
-	if (typeof skills === 'string') {
-		try {
-			// Try to parse as JSON first
-			skills = JSON.parse(skills)
-		} catch (e) {
-			// If not JSON, split by comma
-			skills = skills.split(',').map(s => s.trim()).filter(s => s)
-		}
-	}
-	
-	if (Array.isArray(skills)) {
-		return skills.filter(skill => skill && skill.trim())
-	} else if (typeof skills === 'object' && skills !== null) {
-		return Object.values(skills).filter(skill => skill && skill.trim())
-	}
-	
-	return []
+  return processSkills(candidate.skills) // đã handle 'test,react' và "['test','react']"
 })
 
 const tabs = computed(() => [
@@ -2223,7 +2203,7 @@ const editCandidate = () => {
 		status: candidate.status || '',
 		source: candidate.source || '',
 		ai_summary: candidate.ai_summary || '',
-		skills: processSkills(candidate.skills) || [],
+		skills: candidate.skills || [],
 		email_opt_out: !!candidate.email_opt_out,
 	})
 	showEditModal.value = true

@@ -272,56 +272,64 @@ export const validateCandidateForm = (data) => {
   }
 }
 
+const tryParseWeirdJsonArray = (s) => {
+  // chỉ xử lý khi mở đầu bằng [ hoặc { để tránh split thường
+  if (!/^\s*[\[{]/.test(s)) return null
+  try {
+    // API trả về ['a','b'] -> đổi ' thành "
+    const fixed = s.replace(/'/g, '"')
+    const parsed = JSON.parse(fixed)
+    return parsed
+  } catch {
+    return null
+  }
+}
+
 // Process skills array/string for display (returns array)
 export const processSkills = (skills) => {
   if (!skills) return []
-  
+
+  const clean = (arr) =>
+    arr
+      .filter(v => v != null && v !== '')
+      .map(v => String(v).trim().replace(/^['"]|['"]$/g, '')) // bỏ quote đầu/cuối
+      .filter(v => v && v !== '[object Object]')
+
+  // Case A: Array
   if (Array.isArray(skills)) {
-    return skills
-      .filter(skill => skill != null && skill !== '') // Filter out null/undefined/empty values
-      .map(skill => {
-        // Handle objects that might come from v-combobox
-        if (typeof skill === 'object' && skill !== null) {
-          return String(skill.value || skill.label || skill.toString()).trim()
-        }
-        return String(skill).trim()
-      }) // Convert to string and trim
-      .filter(skill => skill.length > 0 && skill !== '[object Object]') // Remove empty strings and object objects
+    // Mảng bị vỡ từ chuỗi JSON: ["['react'", "'test'", "'abc']"]
+    if (skills.length && /^\s*\[/.test(String(skills[0]))) {
+      try {
+        const joined = skills.join(',')                  // "['react','test','abc']"
+        const fixed  = joined.replace(/'/g, '"')         // '["react","test","abc"]'
+        const parsed = JSON.parse(fixed)
+        return clean(parsed)
+      } catch { /* fallthrough */ }
+    }
+    return clean(skills)
   }
-  
+
+  // Case B: String
   if (typeof skills === 'string') {
-    return skills.split(',')
-      .map(s => s.trim())
-      .filter(s => s.length > 0) // Remove empty strings
+    const s = skills.trim()
+    try {
+      const parsed = JSON.parse(s) // chuẩn: ["react","test"]
+      if (Array.isArray(parsed)) return clean(parsed)
+    } catch { /* ignore */ }
+    return clean(s.split(','))
   }
-  
+
+  // Case C: Object
+  if (typeof skills === 'object') return clean(Object.values(skills))
+
   return []
 }
 
+
+
 // Convert skills array to string for backend storage (returns string)
-export const skillsToString = (skills) => {
-  if (!skills) return ''
-  
-  if (Array.isArray(skills)) {
-    return skills
-      .filter(skill => skill != null && skill !== '') // Filter out null/undefined/empty values
-      .map(skill => {
-        // Handle objects that might come from v-combobox
-        if (typeof skill === 'object' && skill !== null) {
-          return String(skill.value || skill.label || skill.toString()).trim()
-        }
-        return String(skill).trim()
-      }) // Convert to string and trim
-      .filter(skill => skill.length > 0 && skill !== '[object Object]') // Remove empty strings and object objects
-      .join(', ')
-  }
-  
-  if (typeof skills === 'string') {
-    return skills.trim()
-  }
-  
-  return ''
-}
+export const skillsToString = (skills) =>
+  processSkills(skills).join(', ')
 
 // Get engagement color based on score
 export const getEngagementColor = (score) => {

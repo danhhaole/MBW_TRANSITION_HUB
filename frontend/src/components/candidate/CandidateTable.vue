@@ -126,7 +126,7 @@
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="flex flex-wrap gap-1 max-w-xs">
                 <span
-                  v-for="skill in getTopSkills(candidate.skills)"
+                  v-for="skill in getTopSkills(candidate.skills, 2)"
                   :key="skill"
                   class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800"
                 >
@@ -511,9 +511,9 @@ const visiblePages = computed(() => {
 })
 
 // Helper functions
-const getTopSkills = (skills) => {
-  if (!skills || !Array.isArray(skills)) return []
-  return skills.slice(0, 2) // Show only 2 skills in table
+const getTopSkills = (skills, limit) => {
+  if (!Array.isArray(skills)) return [];
+  return skills.filter(skill => typeof skill === 'string' && skill.trim().length > 0).slice(0, limit || 3);
 }
 </script>
 
