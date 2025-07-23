@@ -1,17 +1,20 @@
 import '../../../frappe/frappe/public/js/lib/posthog.js'
 import { createResource } from 'frappe-ui'
+import { sessionStore } from './stores/session'
 
 declare global {
   interface Window {
     posthog: any
   }
 }
+
 type PosthogSettings = {
   posthog_project_id: string
   posthog_host: string
   enable_telemetry: boolean
   telemetry_site_age: number
 }
+
 interface CaptureOptions {
   data: {
     user: string
@@ -21,7 +24,7 @@ interface CaptureOptions {
 
 let posthog: typeof window.posthog = window.posthog
 
-// Posthog Settings
+// Posthog Settings Resource
 let posthogSettings = createResource({
   url: 'mbw_mira.api.get_posthog_settings',
   cache: 'posthog_settings',
@@ -67,16 +70,18 @@ function capture(
   window.posthog.capture(`crm_${event}`, options)
 }
 
-function startRecording() {
-}
+function startRecording() {}
+function stopRecording() {}
 
-function stopRecording() {
-}
-
-// Posthog Plugin
+// ✅ Posthog Plugin
 function posthogPlugin(app: any) {
   app.config.globalProperties.posthog = posthog
-  if (!window.posthog?.length) posthogSettings.fetch()
+
+  // ✅ Kiểm tra đã đăng nhập mới gọi fetch
+  const session = sessionStore()
+  if (session.isLoggedIn && !window.posthog?.length) {
+    posthogSettings.fetch()
+  }
 }
 
 export {

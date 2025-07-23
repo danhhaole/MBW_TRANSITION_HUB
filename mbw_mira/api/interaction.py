@@ -1,8 +1,7 @@
 import frappe
 from frappe import _
 import json
-from mbw_mira.campaign.controller import create_interaction
-from mbw_mira.campaign.utils import verify_signature
+from mbw_mira.utils import verify_signature
 from frappe.utils import now_datetime, add_days
 
 @frappe.whitelist(allow_guest=True)

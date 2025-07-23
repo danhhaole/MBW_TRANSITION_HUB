@@ -1,9 +1,16 @@
 import { createResource } from 'frappe-ui'
+import { sessionStore } from '@/stores/session'
 
 export default function translationPlugin(app) {
   app.config.globalProperties.__ = translate
   window.__ = translate
-  if (!window.translatedMessages) fetchTranslations()
+
+  const session = sessionStore()
+
+  // ✅ Chỉ fetch nếu đã đăng nhập
+  if (session.isLoggedIn && !window.translatedMessages) {
+    fetchTranslations()
+  }
 }
 
 function format(message, replace) {

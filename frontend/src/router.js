@@ -27,169 +27,94 @@ import EmailLogManagement from './pages/EmailLogManagement.vue'
 
 // Candidate Data Source Management
 import CandidateDataSourceManagement from './pages/CandidateDataSourceManagement.vue'
-
-// Candidate Data Source Management Direct
 import CandidateDataSourceManagementDirect from './pages/CandidateDataSourceManagementDirect.vue'
 
 // Candidate Pool Management
 import CandidatePoolManagement from './pages/CandidatePoolManagement.vue'
 
+// Public Profile
+import PublicTalentProfile from './pages/PublicTalentProfile.vue'
+
 const routes = [
-	{
-		path: '/',
-		name: 'Dashboard',
-		component: () => import('@/pages/Dashboard.vue'),
-	},
-	{
-		alias: '/talentsegment',
-		path: '/talentsegment',
-		name: 'TalentSegment',
-		component: () => import('@/pages/TalentSegment.vue'),
-	},
-	{
-		alias: '/candidate',
-		path: '/candidate',
-		name: 'Candidate',
-		component: () => import('@/pages/Candidate.vue'),
-	},
-	{
-		alias: '/campaigns',
-		path: '/campaigns',
-		name: 'CampaignManagement',
-		component: CampaignManagement,
-	},
-	{
-		path: '/campaigns/:id',
-		component: CampaignDetailView,
+	{ path: '/', name: 'Dashboard', component: () => import('@/pages/Dashboard.vue') },
+	{ alias: '/talentsegment', path: '/talentsegment', name: 'TalentSegment', component: () => import('@/pages/TalentSegment.vue') },
+	{ alias: '/candidate', path: '/candidate', name: 'Candidate', component: () => import('@/pages/Candidate.vue') },
+	{ alias: '/campaigns', path: '/campaigns', name: 'CampaignManagement', component: CampaignManagement },
+	{ path: '/campaigns/:id', name: 'CampaignDetailView', component: CampaignDetailView },
+	{ alias: '/report', path: '/report', name: 'Report', component: () => import('@/pages/Report.vue') },
+	{ alias: '/settings', path: '/settings', name: 'Settings', component: () => import('@/pages/Settings.vue') },
+	{ path: '/:invalidpath', name: 'Invalid Page', component: () => import('@/pages/InvalidPage.vue') },
 
-		name: 'CampaignDetailView',
-	},
-	{
-		alias: '/report',
-		path: '/report',
-		name: 'Report',
-		component: () => import('@/pages/Report.vue'),
-	},
-	{
-		alias: '/settings',
-		path: '/settings',
-		name: 'Settings',
-		component: () => import('@/pages/Settings.vue'),
-	},
-	{
-		path: '/:invalidpath',
-		name: 'Invalid Page',
-		component: () => import('@/pages/InvalidPage.vue'),
-	},
-	{
-		path: '/talent-segments',
-		component: TalentSegments,
-		name: 'TalentSegments',
-	},
-	{
-		path: '/talent-segments/:id',
-		component: TalentSegmentDetailView,
-		name: 'TalentSegmentDetail',
-	},
-	{
-		path: '/talent-segments/:id/detail',
-		component: TalentSegmentDetailView,
-		name: 'TalentSegmentDetailView',
-	},
+	// Talent Segment
+	{ path: '/talent-segments', name: 'TalentSegments', component: TalentSegments },
+	{ path: '/talent-segments/:id', name: 'TalentSegmentDetail', component: TalentSegmentDetailView },
+	{ path: '/talent-segments/:id/detail', name: 'TalentSegmentDetailView', component: TalentSegmentDetailView },
 
-	{
-		path: '/candidates',
-		component: CandidateManagement,
-		name: 'CandidateManagement',
-	},
-	{
-		path: '/candidates/:id',
-		component: CandidateDetailView,
-		name: 'CandidateDetailView',
-	},
-	{
-		path: '/interactions',
-		component: InteractionManagement,
-		name: 'InteractionManagement',
-	},
-	{
-		path: '/actions',
-		component: ActionManagement,
-		name: 'ActionManagement',
-	},
-	{
-		path: '/email-logs',
-		component: EmailLogManagement,
-		name: 'EmailLogManagement',
-	},
-	{
-		path: '/data-sources',
-		component: CandidateDataSourceManagement,
-		name: 'CandidateDataSourceManagement',
-	},
-	{
-		path: '/data-sources-direct',
-		component: CandidateDataSourceManagementDirect,
-		name: 'CandidateDataSourceManagementDirect',
-	},
-	{
-		path: '/campaign-templates',
-		component: () => import('@/pages/CampaignTemplateManagement.vue'),
-		name: 'CampaignTemplateManagement',
-	},
-	{
-		path: '/campaign-template/:id',
-		component: () => import('@/pages/CampaignTemplateDetail.vue'),
-		name: 'CampaignTemplateDetail',
-	},
-	{
-		path: '/candidate-pools',
-		component: CandidatePoolManagement,
-		name: 'CandidatePoolManagement',
-	},
+	// Candidate
+	{ path: '/candidates', name: 'CandidateManagement', component: CandidateManagement },
+	{ path: '/candidates/:id', name: 'CandidateDetailView', component: CandidateDetailView },
+
+	// Interaction & Action
+	{ path: '/interactions', name: 'InteractionManagement', component: InteractionManagement },
+	{ path: '/actions', name: 'ActionManagement', component: ActionManagement },
+
+	// Email Log
+	{ path: '/email-logs', name: 'EmailLogManagement', component: EmailLogManagement },
+
+	// Data Sources
+	{ path: '/data-sources', name: 'CandidateDataSourceManagement', component: CandidateDataSourceManagement },
+	{ path: '/data-sources-direct', name: 'CandidateDataSourceManagementDirect', component: CandidateDataSourceManagementDirect },
+
+	// Campaign Templates
+	{ path: '/campaign-templates', name: 'CampaignTemplateManagement', component: () => import('@/pages/CampaignTemplateManagement.vue') },
+	{ path: '/campaign-template/:id', name: 'CampaignTemplateDetail', component: () => import('@/pages/CampaignTemplateDetail.vue') },
+
+	// Candidate Pool
+	{ path: '/candidate-pools', name: 'CandidatePoolManagement', component: CandidatePoolManagement },
+
+	// Public Route
+	{ path: '/public-profile', name: 'PublicTalentProfile', component: PublicTalentProfile, meta: { public: true } },
 ]
 
 const scrollBehavior = (to, from, savedPosition) => {
 	if (to.name === from.name) {
-		to.meta?.scrollPos && (to.meta.scrollPos.top = 0);
-		return { left: 0, top: 0 };
+		to.meta?.scrollPos && (to.meta.scrollPos.top = 0)
+		return { left: 0, top: 0 }
 	}
-	const scrollpos = to.meta?.scrollPos || { left: 0, top: 0 };
+	const scrollpos = to.meta?.scrollPos || { left: 0, top: 0 }
 
 	if (scrollpos.top > 0) {
 		setTimeout(() => {
-			let el = document.querySelector("#list-rows");
-			el.scrollTo({
+			let el = document.querySelector("#list-rows")
+			el?.scrollTo?.({
 				top: scrollpos.top,
 				left: scrollpos.left,
 				behavior: "smooth",
-			});
-		}, 300);
+			})
+		}, 300)
 	}
-};
+}
 
-let router = createRouter({
+const router = createRouter({
 	history: createWebHistory('/mbw_mira'),
 	routes,
 	scrollBehavior
 })
 
 router.beforeEach(async (to, from, next) => {
+	const isPublicRoute = to.meta.public
 	const { isLoggedIn } = sessionStore()
-	isLoggedIn && (await userResource.promise)
 
-	// Nếu user đã login và đang truy cập trang login, redirect về dashboard
-	if (!isLoggedIn) {
-		window.location.href = "/login?redirect-to=/mbw_mira/";
+	if (!isPublicRoute && !isLoggedIn) {
+		window.location.href = "/login?redirect-to=/mbw_mira/"
 		return
-	} else if (['Test'].includes(to.name) && !to.hash) {
-		let storageKey = to.name === 'Test' ? 'lastTestTab' : 'lastTestTab'
-		const activeTab = localStorage.getItem(storageKey) || 'activity'
-		const hash = '#' + activeTab
-		next({ ...to, hash })
-	} else {
-		next()
 	}
+
+	if (isLoggedIn) {
+		await userResource.promise
+	}
+
+	next()
 })
 
 export default router

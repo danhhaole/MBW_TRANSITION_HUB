@@ -1,8 +1,8 @@
 <template>
   <FrappeUIProvider>
-    <Layout v-if="session().isLoggedIn">
+    <component :is="layoutComponent">
       <router-view />
-    </Layout>
+    </component>
     <Dialogs />
   </FrappeUIProvider>
 </template>
@@ -19,16 +19,17 @@ const MobileLayout = defineAsyncComponent(
 const DesktopLayout = defineAsyncComponent(
   () => import('./components/Layouts/DesktopLayout.vue'),
 )
-const Layout = computed(() => {
-  
-  if (window.innerWidth < 640) {
-    return MobileLayout
-  } else {
-    return DesktopLayout
-  }
+const PublicLayout = defineAsyncComponent(
+  () => import('./components/Layouts/PublicLayout.vue'),
+)
+
+// Chọn layout component phù hợp
+const layoutComponent = computed(() => {
+  if (!session().isLoggedIn) return PublicLayout
+  return window.innerWidth < 640 ? MobileLayout : DesktopLayout
 })
 
-
+// Thiết lập timezone
 setConfig('systemTimezone', window.timezone?.system || null)
 setConfig('localTimezone', window.timezone?.user || null)
 </script>
