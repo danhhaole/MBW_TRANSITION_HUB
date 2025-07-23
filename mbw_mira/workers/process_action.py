@@ -16,6 +16,7 @@ def process_email_action(action_name):
         #Lấy talentprofile 
         talent_id = frappe.db.get_value("TalentProfilesCampaign", action.talent_campaign_id,"talent_id")
         send_email_job(talent_id,action_name,action.campaign_step)
+        frappe.publish_realtime('action_executed', data={'talent_campaign': action.talent_campaign_id, "action":action_name})
         return True
 
     except Exception as e:
@@ -34,7 +35,7 @@ def process_sms_action(action_name):
         # Ví dụ: gọi API SMS gateway
         talent_id = frappe.db.get_value("TalentProfilesCampaign", action.talent_campaign_id,"talent_id")
         send_sms_job(talent_id,action_name,action.campaign_step)
-
+        frappe.publish_realtime('action_executed', data={'talent_campaign': action.talent_campaign_id, "action":action_name})
         return True
 
     except Exception as e:

@@ -3106,7 +3106,7 @@ msgstr "Giới thiệu"
 #: frontend/src/components/ViewControls.vue:160
 #: frontend/src/pages/Dashboard.vue:30
 msgid "Refresh"
-msgstr "Làm cho khỏe lại"
+msgstr "Làm mới"
 
 #. Label of a Small Text field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
@@ -3741,7 +3741,7 @@ msgstr "Chiến dịch tài năng"
 #: frontend/src/pages/TalentSegmentDetailView.vue:908
 #: frontend/src/pages/TalentSegmentManagement.vue:268
 msgid "Talent Pools"
-msgstr "Nguồn nhân tài"
+msgstr "Kho nhân tài"
 
 #: frontend/src/components/talent-segment/TalentSegmentDetailDialog.vue:26
 msgid "Talent Segment Details"

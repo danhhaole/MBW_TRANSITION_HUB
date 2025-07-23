@@ -21,7 +21,7 @@ def enroll_talent_for_campaign(campaign_id):
             for profile in talent_profiles:
                 create_talent_campaign(campaign_id, profile, first_step)
                 count += 1
-
+        frappe.publish_realtime('enroll_talent_campaign', data={'campaign': campaign_id})
         return count
     except Exception as e:
         frappe.log_error(frappe.get_traceback())

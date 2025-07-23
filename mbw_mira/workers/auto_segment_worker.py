@@ -25,6 +25,7 @@ def process_segment(segment_id: str):
                         "added_by": frappe.session.user  # hoặc seg.owner_id
                     }).insert(ignore_permissions=True)
                     frappe.db.commit()
+        frappe.publish_realtime('enroll_talent_segment', data={'segment': segment_id})
         return matches
     except Exception as e:
         frappe.log_error(frappe.get_traceback(), f"[AutoSegment Error] Segment {segment_id}")

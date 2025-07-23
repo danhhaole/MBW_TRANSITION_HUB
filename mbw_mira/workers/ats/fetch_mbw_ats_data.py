@@ -20,7 +20,6 @@ def fetch_mbw_ats_data(campaign_name):
 
     with FrappeSiteProvider(source_name) as provider:
         if provider.sync_direction not in ("Pull", "Both"):
-            logger.warning(f"[MBW ATS] Sync direction '{provider.sync_direction}' does not allow Pull.")
             return
 
         criteria = campaign.criteria or {}
@@ -34,6 +33,8 @@ def fetch_mbw_ats_data(campaign_name):
             
             if candidates:
                 total = save_candidates_to_talent_pool(provider,candidates, campaign, source_name, segment_id)
+
+            frappe.publish_realtime('fetch_data_integrations_ats', data={'campaign': campaign_name, "segment":segment_id})
 
             return total
         except Exception as e:

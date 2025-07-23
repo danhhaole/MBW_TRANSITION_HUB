@@ -34,6 +34,8 @@ def create_action_for_talent_campaign(talent_campaign_id):
             })
             action.insert(ignore_permissions=True)
             frappe.db.commit()
+
+            frappe.publish_realtime('action_created', data={'talent_campaign': talent_campaign_id})
             return action.name
         else:
             return None
