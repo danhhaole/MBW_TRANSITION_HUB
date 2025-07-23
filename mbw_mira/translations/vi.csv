@@ -192,10 +192,10 @@ Copied to clipboard,Sao chép vào bảng tạm
 Create,Tạo nên
 Create Campaign,Tạo chiến dịch
 Create New,Tạo mới
-Create New Pool,Tạo hồ bơi mới
-Create New Request,Tạo yêu cầu mới
-Create New Talent Pool,Tạo nhóm tài năng mới
-Create Pool,Tạo hồ bơi
+Create New Pool,Thêm tiêu chí
+Create New Request,Thêm chiến dịch
+Create New Talent Pool,Thêm tiêu chí
+Create Pool,Thêm tiêu chí
 Create View,Tạo chế độ xem
 Create your first campaign,Tạo chiến dịch đầu tiên của bạn
 Create your first email log to get started.,Tạo nhật ký email đầu tiên của bạn để bắt đầu.
@@ -204,7 +204,7 @@ Create your first note,Tạo ghi chú đầu tiên của bạn
 Create your first segment to get started,Tạo phân đoạn đầu tiên của bạn để bắt đầu
 Create your first talent pool to start managing candidates,Tạo nhóm tài năng đầu tiên của bạn để bắt đầu quản lý các ứng cử viên
 Create your first task,Tạo nhiệm vụ đầu tiên của bạn
-Created At,Được tạo ra tại
+Created At,Được tạo lúc
 Created By,Được tạo bởi
 Created Date,Đã tạo ngày
 Created:,Tạo:
@@ -220,18 +220,18 @@ Custom statuses,Trạng thái tùy chỉnh
 Customization,Tùy chỉnh
 Customize quick filters,Tùy chỉnh bộ lọc nhanh
 "Các tiêu chí dưới dạng cấu trúc để AI có thể sử dụng để tự động thêm ứng viên. VD: {""skills"": [""java"", ""spring""], ""experienceYears"": "">5""}","Các tiêu chí dưới dạng cấu trúc Để ai đó là thể sử dụng Để tự Động thênm ứng viênn. Vd: {""Kỹ năng"": [""Java"", ""Spring""], ""ExperienceYears"": ""> 5""}"
-Cập nhật,Cập NHật
+Cập nhật,Cập nhật
 DOCUMENT_UPLOADED,Document_uploaded
 DOWNLOAD_TRIGGERED,Download_triggered
 DRAFT,BẢN NHÁP
 DYNAMIC,NĂNG ĐỘNG
-Danger,Sự nguy hiểm
+Danger,Nguy hiểm
 Dashboard,Bảng điều khiển
 Data,Dữ liệu
 Data refreshed,Dữ liệu được làm mới
 Deal,Thỏa thuận
 "Default statuses, custom fields and layouts restored successfully.","Trạng thái mặc định, trường tùy chỉnh và bố cục được khôi phục thành công."
-Define a new talent segment,Xác định một phân khúc tài năng mới
+Define a new talent segment,Xác định tiêu chí mới
 Delay (Days),Độ trễ (ngày)
 Delay In Day,Chậm trễ trong ngày
 Delete,Xóa
@@ -243,7 +243,7 @@ Delete linked item,Xóa mục được liên kết
 Delete or unlink linked documents,Xóa hoặc hủy liên kết các tài liệu liên kết
 Delete or unlink these linked documents before deleting this document,Xóa hoặc hủy liên kết các tài liệu được liên kết này trước khi xóa tài liệu này
 Delete {0} items,Xóa các mục {0}
-Description,Sự miêu tả
+Description,Miêu tả
 Description cannot exceed 500 characters,Mô tả không thể vượt quá 500 ký tự
 Description will help others understand the purpose of the segment,Mô tả sẽ giúp người khác hiểu mục đích của phân khúc
 Desk,Bàn làm việc
@@ -347,7 +347,7 @@ Executed At,Thực hiện tại
 Exotel,Exotel
 Expand,Mở rộng
 Experience Years,Kinh nghiệm năm
-Export,Xuất khẩu
+Export,Xuất
 Export All {0} Record(s),Xuất tất cả {0} bản ghi
 Export Candidates,Ứng viên xuất khẩu
 Export Type,Loại xuất khẩu
@@ -360,8 +360,8 @@ Failed to update password,Không cập nhật mật khẩu
 Failed to update task: {0},Không cập nhật tác vụ: {0}
 Fallback,Thất bại
 Favicon,Favicon
-Field,Cánh đồng
-Fields Order,Thứ tự lĩnh vực
+Field,Trường
+Fields Order,Thứ tự trường
 "File ""{0}"" was skipped because of invalid file type","Tệp ""{0}"" đã bị bỏ qua vì loại tệp không hợp lệ"
 "File ""{0}"" was skipped because only {1} uploads are allowed","Tệp ""{0}"" đã bị bỏ qua vì chỉ được phép tải lên {1}"
 "File ""{0}"" was skipped because only {1} uploads are allowed for DocType ""{2}""","Tệp ""{0}"" đã bị bỏ qua vì chỉ được phép tải lên {1} được cho phép cho doctype ""{2}"""
@@ -374,7 +374,7 @@ Form Script,Hình thức tập lệnh
 Frappe CRM mobile,FRAPPE CRM Mobile
 From User,Từ người dùng
 Full Name,Tên đầy đủ
-"Ghi chú, mô tả bổ sung","Ghe Chú, Mô tả Bổ Sung"
+"Ghi chú, mô tả bổ sung","Ghi Chú, mô tả bổ sung"
 Group By,Nhóm theo
 Group By Field,Nhóm theo trường
 Group By: ,Nhóm bởi:
@@ -395,13 +395,13 @@ ID của Recruiter (người dùng) sở hữu hoặc quản lý phân khúc nà
 INTERVIEW_CONFIRMED,Phỏng vấn_conf xác nhận
 INTERVIEW_RESCHEDULED,Phỏng vấn_rescheduled
 Icon,Biểu tượng
-Import,Nhập khẩu
-Import Candidates,Nhập khẩu ứng viên
+Import,Nhập
+Import Candidates,Nhập ứng viên
 In,TRONG
 In Progress,Trong tiến trình
 Inactive,Không hoạt động
 Integration,Tích hợp
-Interaction,Sự tương tác
+Interaction,Tương tác
 Interaction Rate,Tỷ lệ tương tác
 Interaction Type,Loại tương tác
 Interactions,Tương tác
@@ -588,7 +588,7 @@ Processing...,Xử lý...
 Profile,Hồ sơ
 Profile Data,Dữ liệu hồ sơ
 Progress,Tiến triển
-Public,Công khai
+Public,Công cộng
 Public Views,Quan điểm công khai
 Public view,Quan điểm công khai
 Pull,Sự lôi kéo
@@ -720,7 +720,7 @@ TEST_COMPLETED,Test_completed
 TEST_STARTED,Test_started
 Talent,Tài năng
 Talent Campaign,Chiến dịch tài năng
-Talent Pools,Nguồn nhân tài
+Talent Pools,Kho nhân tài
 Talent Segment Details,Chi tiết phân khúc tài năng
 Talent Segments,Phân khúc
 Talent pool has been deleted successfully,Bể bơi tài năng đã bị xóa thành công

@@ -265,7 +265,7 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50):
 
 
 # def convert_po_to_csv(po_path, csv_path):
-#       import polib
+#     import polib
 #     po = polib.pofile(po_path)
 #     with open(csv_path, 'w', newline='', encoding='utf-8') as f:
 #         writer = csv.writer(f)

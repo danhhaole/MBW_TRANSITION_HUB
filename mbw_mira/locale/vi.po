@@ -1049,19 +1049,19 @@ msgstr "Tạo mới"
 
 #: frontend/src/components/talent-segment/TalentSegmentCardView.vue:114
 msgid "Create New Pool"
-msgstr "Tạo hồ bơi mới"
+msgstr "Thêm tiêu chí"
 
 #: frontend/src/components/campaign/CampaignCardView.vue:133
 msgid "Create New Request"
-msgstr "Tạo yêu cầu mới"
+msgstr "Thêm chiến dịch"
 
 #: frontend/src/pages/TalentSegmentManagement.vue:191
 msgid "Create New Talent Pool"
-msgstr "Tạo nhóm tài năng mới"
+msgstr "Thêm tiêu chí"
 
 #: frontend/src/pages/TalentSegmentManagement.vue:27
 msgid "Create Pool"
-msgstr "Tạo hồ bơi"
+msgstr "Thêm tiêu chí"
 
 #: frontend/src/components/ViewControls.vue:687
 msgid "Create View"
@@ -1098,7 +1098,7 @@ msgstr "Tạo nhiệm vụ đầu tiên của bạn"
 #. Label of a Datetime field in DocType 'Short URL'
 #: mbw_mira/mbw_mira/doctype/short_url/short_url.json
 msgid "Created At"
-msgstr "Được tạo ra tại"
+msgstr "Được tạo lúc"
 
 #. Label of a Link field in DocType 'CandidateDataSource'
 #. Label of a Link field in DocType 'Short URL'
@@ -1179,7 +1179,7 @@ msgstr ""
 #: frontend/src/components/candidateDataSource/CandidateDataSourceForm.vue:186
 #: frontend/src/components/candidateDataSource/CandidateDataSourceFormDirect.vue:304
 msgid "Cập nhật"
-msgstr "Cập NHật"
+msgstr "Cập nhật"
 
 #. Option for the 'Interaction Type' (Select) field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
@@ -1203,7 +1203,7 @@ msgstr "NĂNG ĐỘNG"
 
 #: frontend/src/components/talent-segment/TalentSegmentCardView.vue:212
 msgid "Danger"
-msgstr "Sự nguy hiểm"
+msgstr "Nguy hiểm"
 
 #: frontend/src/pages/Dashboard.vue:452
 msgid "Dashboard"
@@ -1229,7 +1229,7 @@ msgstr ""
 
 #: frontend/src/components/talent-segment/TalentSegmentCardView.vue:115
 msgid "Define a new talent segment"
-msgstr "Xác định một phân khúc tài năng mới"
+msgstr "Xác định tiêu chí mới"
 
 #: frontend/src/pages/CampaignDetailView.vue:222
 msgid "Delay (Days)"
@@ -1305,7 +1305,7 @@ msgstr "Xóa các mục {0}"
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 #: mbw_mira/mbw_mira/doctype/talentsegment/talentsegment.json
 msgid "Description"
-msgstr "Sự miêu tả"
+msgstr "Miêu tả"
 
 #: frontend/src/components/talent-segment/TalentSegmentForm.vue:389
 msgid "Description cannot exceed 500 characters"
@@ -1786,7 +1786,7 @@ msgstr "Kinh nghiệm năm"
 #: frontend/src/pages/CandidateManagement.vue:99
 #: frontend/src/pages/EmailLogManagement.vue:139
 msgid "Export"
-msgstr "Xuất khẩu"
+msgstr "Xuất"
 
 #: frontend/src/components/ViewControls.vue:282
 msgid "Export All {0} Record(s)"
@@ -1854,13 +1854,13 @@ msgstr "Favicon"
 
 #: frontend/src/components/Modals/EditValueModal.vue:5
 msgid "Field"
-msgstr "Cánh đồng"
+msgstr "Trường"
 
 #: frontend/src/components/Controls/GridFieldsEditorModal.vue:19
 #: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:13
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:12
 msgid "Fields Order"
-msgstr "Thứ tự lĩnh vực"
+msgstr "Thứ tự trường"
 
 #: frontend/src/components/FilesUploader/FilesUploaderArea.vue:333
 msgid "File \"{0}\" was skipped because of invalid file type"
@@ -1931,7 +1931,7 @@ msgstr "Tên đầy đủ"
 #. 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Ghi chú, mô tả bổ sung"
-msgstr "Ghe Chú, Mô tả Bổ Sung"
+msgstr "Ghi Chú, mô tả bổ sung"
 
 #. Label of a Tab Break field in DocType 'Mira View Settings'
 #: frontend/src/components/ViewControls.vue:379
@@ -2036,11 +2036,11 @@ msgstr "Biểu tượng"
 
 #: frontend/src/pages/CandidateManagement.vue:90
 msgid "Import"
-msgstr "Nhập khẩu"
+msgstr "Nhập"
 
 #: frontend/src/pages/CandidateManagement.vue:85
 msgid "Import Candidates"
-msgstr "Nhập khẩu ứng viên"
+msgstr "Nhập ứng viên"
 
 #: frontend/src/components/Filter.vue:276
 #: frontend/src/components/Filter.vue:297
@@ -2071,7 +2071,7 @@ msgstr "Tích hợp"
 #: mbw_mira/mbw_mira/doctype/applicantpool/applicantpool.json
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "Interaction"
-msgstr "Sự tương tác"
+msgstr "Tương tác"
 
 #: frontend/src/pages/TalentSegmentDetailView.vue:215
 msgid "Interaction Rate"
