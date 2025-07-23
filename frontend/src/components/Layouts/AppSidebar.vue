@@ -44,7 +44,7 @@
                 <div @click="toggleSubmenu(link.label)"
                   class="flex items-center cursor-pointer rounded-lg hover:bg-gray-50 transition-colors duration-200"
                   :class="[
-                    isSidebarCollapsed ? 'p-2 justify-center' : 'px-3 py-2',
+                    isSidebarCollapsed ? 'p-2 justify-center' : 'px-2 py-2',
                     hasActiveSubmenuItem(link.submenu) ? 'bg-gray-100 border-l-3 border-gray-400' : ''
                   ]">
                   <!-- Icon của menu chính -->
@@ -75,21 +75,21 @@
                 ]">
                   <div class="pl-10 pr-2 py-1 space-y-1">
                     <SidebarLink v-for="sublink in link.submenu" :key="sublink.label" :label="__(sublink.label)"
-                      :to="sublink.to" :isCollapsed="false" class="text-sm submenu-item" />
+                      :to="sublink.to" :isCollapsed="false" class="text-sm submenu-item" :icon="sublink.icon"/>
                   </div>
                 </div>
 
                 <!-- Tooltip cho submenu khi sidebar collapsed -->
                 <div v-if="isSidebarCollapsed && link.submenu.length > 0"
                   class="absolute left-12 top-0 hidden group-hover:block z-50 bg-white shadow-lg rounded-lg border border-gray-200 py-2 min-w-48">
-                  <div class="px-3 py-2 border-b border-gray-100">
+                  <div class="px-2 py-2 border-b border-gray-100">
                     <span class="text-sm font-medium text-ink-gray-8">
                       {{ __(link.label) }}
                     </span>
                   </div>
                   <div class="py-1">
                     <router-link v-for="sublink in link.submenu" :key="sublink.label" :to="sublink.to"
-                      class="block px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-50 transition-colors duration-200"
+                      class="block px-2 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-50 transition-colors duration-200"
                       :class="{
                         'bg-gray-100 text-gray-900 font-semibold': $route.name === sublink.to
                       }">
@@ -139,6 +139,8 @@ import TaskIcon from '@/components/Icons/TaskIcon.vue'
 import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
 import CollapseSidebar from '@/components/Icons/CollapseSidebar.vue'
 import NotificationsIcon from '@/components/Icons/NotificationsIcon.vue'
+import ExternalLinkIcon from '@/components/Icons/ExternalLinkIcon.vue'
+import ReplyIcon from '@/components/Icons/ReplyIcon.vue'
 import SidebarLink from '@/components/SidebarLink.vue'
 import Notifications from '@/components/Notifications.vue'
 import { viewsStore } from '@/stores/views'
@@ -254,7 +256,7 @@ const links = [
       },
       {
         label: "Interactions",
-        icon: PhoneIcon,
+        icon: ReplyIcon,
         to: 'InteractionManagement',
 
       },
@@ -277,10 +279,12 @@ const links = [
     submenu: [
       {
         label: "integrations",
+        icon:ExternalLinkIcon,
         to: 'CandidateDataSourceManagementDirect'
       },
       {
         label: "Campaign Templates",
+        icon:NoteIcon,
         to: 'CampaignTemplateManagement'
       },
 
