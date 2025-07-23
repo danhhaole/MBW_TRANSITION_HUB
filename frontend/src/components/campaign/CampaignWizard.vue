@@ -570,8 +570,10 @@
               <!-- Add Step Button -->
               <div v-if="!showStepForm" class="text-center">
                 <Button variant="outline" theme="gray" @click="addManualStep">
-                  <FeatherIcon name="plus" class="h-4 w-4 mr-2" />
-                  {{ campaignSteps.length > 0 ? __('Add Another Step') : __('Add First Step') }}
+                  <div class="flex items-center">
+                    <FeatherIcon name="plus" class="h-4 w-4 mr-2" />
+                    {{ campaignSteps.length > 0 ? __('Add Another Step') : __('Add First Step') }}
+                  </div>
                 </Button>
               </div>
               
@@ -580,8 +582,10 @@
                 <FeatherIcon name="zap" class="h-12 w-12 text-gray-400 mx-auto mb-3" />
                 <p class="text-gray-500 mb-4">{{ __('No steps created yet') }}</p>
                 <Button variant="solid" theme="gray" @click="addManualStep">
-                  <FeatherIcon name="plus" class="h-4 w-4 mr-2" />
-                  {{ __('Create First Step') }}
+                  <div class="flex items-center">
+                    <FeatherIcon name="plus" class="h-4 w-4 mr-2" />
+                    {{ __('Create First Step') }}
+                  </div>
                 </Button>
               </div>
             </div>
@@ -779,7 +783,8 @@ const campaignData = ref({
   target_segment: props.preselectedSegment || '',
   source_type: '', // New field: 'DataSource', 'File', 'Search'
   source_file: '', // For File type
-  data_source_id: '' // For DataSource type
+  data_source_id: '', // For DataSource type
+  source_config: null // New field to store file mapping, meta, and URL
 })
 
 const selectedSource = ref(props.preselectedSegment ? 'search' : '')
@@ -795,7 +800,10 @@ const dataSourceSelectionLevel = ref(0)
 const configData = ref({
   selectedSegment: props.preselectedSegment || '',
   selectedDataSource: '',
-  selectedFile: null
+  selectedFile: null,
+  uploadedFileUrl: '',
+  filePreview: [],
+  fileHeaders: []
 })
 const selectedCandidates = ref(new Set())
 const realCandidates = ref([]) // Replace mockCandidates
@@ -1590,109 +1598,204 @@ const getSearchButtonText = () => {
   return __('Continue')
 }
 
+// Helper: tạo toàn bộ CampaignStep trước
+const createAllSteps = async () => {
+  if (!draftCampaign.value) throw new Error('No draft campaign')
+
+  const promises = campaignSteps.value.map(step => {
+    const payload = {
+      campaign: draftCampaign.value.name,
+      campaign_step_name: step.campaign_step_name,
+      step_order: step.step_order,
+      action_type: step.action_type,
+      delay_in_days: step.delay_in_days || 0,
+      template_content: step.template_content || '',
+      action_config: step.action_config || null,
+      status: 'DRAFT',
+      is_active: 1
+    }
+    return campaignStepService.save(payload)
+  })
+
+  const results = await Promise.all(promises)
+  // cập nhật lại list steps bằng bản ghi server trả về (nếu cần cho UI)
+  campaignSteps.value = results
+    .filter(r => r?.success)
+    .map(r => r.data)
+
+  return campaignSteps.value.length
+}
+
+// Finalize: tạo step trước, update campaign sau
 const finalizeCampaign = async () => {
   activating.value = true
-  
+
   try {
     if (!draftCampaign.value) {
       throw new Error(__('No draft campaign found'))
     }
-    
-    console.log('🚀 Starting campaign finalization...')
-    console.log('📋 Draft Campaign:', draftCampaign.value)
-    console.log('📝 Campaign Steps to create:', campaignSteps.value)
-    
-    // Update the draft campaign with final details
+
+    // 1) Tạo tất cả steps trước
+    let stepCount = 0
+    if (campaignSteps.value.length > 0) {
+      try {
+        stepCount = await createAllSteps()
+      } catch (e) {
+        console.error('❌ Create steps failed', e)
+        alert(__('Failed to create steps. Please try again.'))
+        return
+      }
+    }
+
+    // 2) Update campaign sau khi đã có step
     const campaignUpdatePayload = {
       campaign_name: campaignData.value.campaign_name || draftCampaign.value.campaign_name,
-      description: campaignData.value.description || draftCampaign.value.description,
-      type: campaignData.value.type,
+      description:   campaignData.value.description   || draftCampaign.value.description,
+      type:          campaignData.value.type,
       status: 'DRAFT',
       start_date: new Date().toISOString().split('T')[0],
-      end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      end_date:   new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       is_active: false,
       source_type: campaignData.value.source_type || 'Template',
       template_used: selectedTemplate.value?.name || null,
-      steps_count: campaignSteps.value.length
+      steps_count: stepCount,
+      source_file: campaignData.value.source_file || '',
+      source_config: campaignData.value.source_config || null
     }
-    
-    console.log('Finalizing campaign with payload:', campaignUpdatePayload)
-    
-    // Update campaign using universal service
-    const campaignResult = await campaignService.save(campaignUpdatePayload, draftCampaign.value.name)
-    
-    if (campaignResult.success) {
-      // Save all campaign steps (if any were created from template or manual)
-      if (campaignSteps.value.length > 0) {
-        console.log(`Saving ${campaignSteps.value.length} campaign steps`)
-        
-        try {
-          // Create CampaignStep records for each step
-          const stepPromises = campaignSteps.value.map(async (step) => {
-            const stepPayload = {
-              campaign: draftCampaign.value.name,
-              campaign_step_name: step.campaign_step_name,
-              step_order: step.step_order,
-              action_type: step.action_type,
-              delay_in_days: step.delay_in_days || 0,
-              template_content: step.template_content || '',
-              action_config: step.action_config || null,
-              status: 'DRAFT',
-              is_active: 1
-            }
-            
-            console.log('Creating CampaignStep:', stepPayload)
-            const result = await campaignStepService.save(stepPayload)
-            
-            if (result.success) {
-              console.log(`✅ CampaignStep created:`, result.data.name)
-              return result.data
-            } else {
-              console.error(`❌ Failed to create CampaignStep:`, result.error)
-              throw new Error(`Failed to create step "${step.campaign_step_name}": ${result.error}`)
-            }
-          })
-          
-          // Wait for all steps to be created
-          const createdSteps = await Promise.all(stepPromises)
-          console.log(`✅ All ${createdSteps.length} campaign steps created successfully`)
-          
-        } catch (stepError) {
-          console.error('❌ Error creating campaign steps:', stepError)
-          // Don't fail the entire campaign creation, just log the error
-          alert(__('Campaign created successfully, but some steps failed to save. You can add steps manually later.') + '\n\nError: ' + stepError.message)
-        }
-      }
-      
-      emit('success', {
-        action: 'create',
-        data: campaignResult.data
-      })
-      
-      closeWizard()
-    } else {
+
+    const campaignResult = await campaignService.save(
+      campaignUpdatePayload,
+      draftCampaign.value.name
+    )
+
+    if (!campaignResult.success) {
       throw new Error(campaignResult.message || 'Failed to finalize campaign')
     }
+
+    // 3) Done
+    emit('success', { action: 'create', data: campaignResult.data })
+    closeWizard()
   } catch (error) {
     console.error('Error finalizing campaign:', error)
-    
-    let errorMessage = __('An error occurred while finalizing the campaign')
-    
-    if (error.message.includes('campaign_name')) {
-      errorMessage = __('Campaign name is invalid or already exists')
-    } else if (error.message.includes('validation')) {
-      errorMessage = __('Input data is not in the correct format')
-    } else if (error.message.includes('network') || error.message.includes('fetch')) {
-      errorMessage = __('Network connection error, please try again')
-    } else if (error.message) {
-      errorMessage = error.message
-    }
-    
-    alert(errorMessage)
+
+    let msg = __('An error occurred while finalizing the campaign')
+    if (error.message.includes('campaign_name')) msg = __('Campaign name is invalid or already exists')
+    else if (error.message.includes('validation')) msg = __('Input data is not in the correct format')
+    else if (error.message.includes('network') || error.message.includes('fetch')) msg = __('Network connection error, please try again')
+    else if (error.message) msg = error.message
+
+    alert(msg)
   } finally {
     activating.value = false
   }
 }
+
+
+// const finalizeCampaign = async () => {
+//   activating.value = true
+  
+//   try {
+//     if (!draftCampaign.value) {
+//       throw new Error(__('No draft campaign found'))
+//     }
+    
+//     console.log('🚀 Starting campaign finalization...')
+//     console.log('📋 Draft Campaign:', draftCampaign.value)
+//     console.log('📝 Campaign Steps to create:', campaignSteps.value)
+    
+//     // Update the draft campaign with final details
+//     const campaignUpdatePayload = {
+//       campaign_name: campaignData.value.campaign_name || draftCampaign.value.campaign_name,
+//       description: campaignData.value.description || draftCampaign.value.description,
+//       type: campaignData.value.type,
+//       status: 'DRAFT',
+//       start_date: new Date().toISOString().split('T')[0],
+//       end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+//       is_active: false,
+//       source_type: campaignData.value.source_type || 'Template',
+//       template_used: selectedTemplate.value?.name || null,
+//       steps_count: campaignSteps.value.length,
+//       source_file: campaignData.value.source_file || '',
+//       source_config: campaignData.value.source_config || null
+//     }
+    
+//     console.log('Finalizing campaign with payload:', campaignUpdatePayload)
+    
+//     // Update campaign using universal service
+//     const campaignResult = await campaignService.save(campaignUpdatePayload, draftCampaign.value.name)
+    
+//     if (campaignResult.success) {
+//       // Save all campaign steps (if any were created from template or manual)
+//       if (campaignSteps.value.length > 0) {
+//         console.log(`Saving ${campaignSteps.value.length} campaign steps`)
+        
+//         try {
+//           // Create CampaignStep records for each step
+//           const stepPromises = campaignSteps.value.map(async (step) => {
+//             const stepPayload = {
+//               campaign: draftCampaign.value.name,
+//               campaign_step_name: step.campaign_step_name,
+//               step_order: step.step_order,
+//               action_type: step.action_type,
+//               delay_in_days: step.delay_in_days || 0,
+//               template_content: step.template_content || '',
+//               action_config: step.action_config || null,
+//               status: 'DRAFT',
+//               is_active: 1
+//             }
+            
+//             console.log('Creating CampaignStep:', stepPayload)
+//             const result = await campaignStepService.save(stepPayload)
+            
+//             if (result.success) {
+//               console.log(`✅ CampaignStep created:`, result.data.name)
+//               return result.data
+//             } else {
+//               console.error(`❌ Failed to create CampaignStep:`, result.error)
+//               throw new Error(`Failed to create step "${step.campaign_step_name}": ${result.error}`)
+//             }
+//           })
+          
+//           // Wait for all steps to be created
+//           const createdSteps = await Promise.all(stepPromises)
+//           console.log(`✅ All ${createdSteps.length} campaign steps created successfully`)
+          
+//         } catch (stepError) {
+//           console.error('❌ Error creating campaign steps:', stepError)
+//           // Don't fail the entire campaign creation, just log the error
+//           alert(__('Campaign created successfully, but some steps failed to save. You can add steps manually later.') + '\n\nError: ' + stepError.message)
+//         }
+//       }
+      
+//       emit('success', {
+//         action: 'create',
+//         data: campaignResult.data
+//       })
+      
+//       closeWizard()
+//     } else {
+//       throw new Error(campaignResult.message || 'Failed to finalize campaign')
+//     }
+//   } catch (error) {
+//     console.error('Error finalizing campaign:', error)
+    
+//     let errorMessage = __('An error occurred while finalizing the campaign')
+    
+//     if (error.message.includes('campaign_name')) {
+//       errorMessage = __('Campaign name is invalid or already exists')
+//     } else if (error.message.includes('validation')) {
+//       errorMessage = __('Input data is not in the correct format')
+//     } else if (error.message.includes('network') || error.message.includes('fetch')) {
+//       errorMessage = __('Network connection error, please try again')
+//     } else if (error.message) {
+//       errorMessage = error.message
+//     }
+    
+//     alert(errorMessage)
+//   } finally {
+//     activating.value = false
+//   }
+// }
 
 const closeWizard = () => {
   show.value = false
@@ -1706,7 +1809,8 @@ const closeWizard = () => {
     target_segment: props.preselectedSegment || '',
     source_type: '',
     source_file: '',
-    data_source_id: ''
+    data_source_id: '',
+    source_config: null
   }
   selectedSource.value = props.preselectedSegment ? 'search' : ''
   selectedDataSourceType.value = ''
@@ -1797,6 +1901,27 @@ const createDraftCampaign = async () => {
     draftCampaignLoading.value = false
   }
 }
+
+// Watch configData để đồng bộ mapping file vào campaignData.source_config khi chọn nguồn là file
+watch(
+  [configData, selectedSource],
+  ([cfg, src]) => {
+    if (src !== 'file') return
+
+    const mappingEntries = Object.entries(cfg?.mapping || {}).filter(([, f]) => f)
+    if (!mappingEntries.length) return
+
+    const field_mapping = mappingEntries.map(([column_name, field_name]) => ({ column_name, field_name }))
+
+    campaignData.value.source_file = cfg?.selectedFile?.name || '' // để BE biết file
+    campaignData.value.source_config = JSON.stringify({
+      file_name: cfg?.selectedFile?.name || '',
+      meta_doctype: 'TalentProfiles',          // đổi nếu khác
+      field_mapping
+    })
+  },
+  { deep: true }
+)
 
 // Watchers
 watch(() => props.modelValue, (newVal) => {
