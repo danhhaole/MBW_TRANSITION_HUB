@@ -260,7 +260,6 @@ const fetchSearchFields = async () => {
       name: props.doctype,
       fields: ['search_fields'],
     })
-    console.log('Phản hồi trường tìm kiếm:', response)
     if (response.search_fields) {
       searchFields.value = response.search_fields.split(',').map(field => field.trim())
     } else {
