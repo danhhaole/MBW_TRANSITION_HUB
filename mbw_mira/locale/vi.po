@@ -22,7 +22,8 @@ msgstr ""
 msgid " (New)"
 msgstr ""
 
-#. Description of the 'Campaign' (Link) field in DocType 'TalentProfilesCampaign'
+#. Description of the 'Campaign' (Link) field in DocType
+#. 'TalentProfilesCampaign'
 #: mbw_mira/mbw_mira/doctype/TalentProfilesCampaign/TalentProfilesCampaign.json
 msgid "(Foreign Key -> Campaign)"
 msgstr ""
@@ -87,8 +88,8 @@ msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Campaign'
 #. Option for the 'Status' (Select) field in DocType 'TalentProfilesCampaign'
-#: mbw_mira/mbw_mira/doctype/campaign/campaign.json
 #: mbw_mira/mbw_mira/doctype/TalentProfilesCampaign/TalentProfilesCampaign.json
+#: mbw_mira/mbw_mira/doctype/campaign/campaign.json
 msgid "ACTIVE"
 msgstr ""
 
@@ -623,10 +624,10 @@ msgstr ""
 #. Label of a Link field in DocType 'TalentProfilesCampaign'
 #. Label of a Link field in DocType 'TalentPool'
 #: frontend/src/components/shared/TaskUpdateModal.vue:23
+#: mbw_mira/mbw_mira/doctype/TalentProfilesCampaign/TalentProfilesCampaign.json
 #: mbw_mira/mbw_mira/doctype/applicantpool/applicantpool.json
 #: mbw_mira/mbw_mira/doctype/campaign/campaign.json
 #: mbw_mira/mbw_mira/doctype/campaignstep/campaignstep.json
-#: mbw_mira/mbw_mira/doctype/TalentProfilesCampaign/TalentProfilesCampaign.json
 #: mbw_mira/mbw_mira/doctype/talentpool/talentpool.json
 msgid "Campaign"
 msgstr ""
@@ -2831,8 +2832,8 @@ msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Campaign'
 #. Option for the 'Status' (Select) field in DocType 'TalentProfilesCampaign'
-#: mbw_mira/mbw_mira/doctype/campaign/campaign.json
 #: mbw_mira/mbw_mira/doctype/TalentProfilesCampaign/TalentProfilesCampaign.json
+#: mbw_mira/mbw_mira/doctype/campaign/campaign.json
 msgid "PAUSED"
 msgstr ""
 
@@ -3537,6 +3538,7 @@ msgstr ""
 #: frontend/src/pages/EmailLogManagement.vue:359
 #: frontend/src/pages/EmailLogManagement.vue:444
 #: frontend/src/pages/TalentSegmentDetailView.vue:448
+#: mbw_mira/mbw_mira/doctype/TalentProfilesCampaign/TalentProfilesCampaign.json
 #: mbw_mira/mbw_mira/doctype/action/action.json
 #: mbw_mira/mbw_mira/doctype/applicantpool/applicantpool.json
 #: mbw_mira/mbw_mira/doctype/campaign/campaign.json
@@ -3544,7 +3546,6 @@ msgstr ""
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 #: mbw_mira/mbw_mira/doctype/candidatepool/candidatepool.json
 #: mbw_mira/mbw_mira/doctype/emaillog/emaillog.json
-#: mbw_mira/mbw_mira/doctype/TalentProfilesCampaign/TalentProfilesCampaign.json
 #: mbw_mira/mbw_mira/doctype/talentpool/talentpool.json
 msgid "Status"
 msgstr ""
@@ -3597,6 +3598,7 @@ msgid "Synced At"
 msgstr ""
 
 #. Name of a role
+#: mbw_mira/mbw_mira/doctype/TalentProfilesCampaign/TalentProfilesCampaign.json
 #: mbw_mira/mbw_mira/doctype/action/action.json
 #: mbw_mira/mbw_mira/doctype/applicantpool/applicantpool.json
 #: mbw_mira/mbw_mira/doctype/campaign/campaign.json
@@ -3610,7 +3612,6 @@ msgstr ""
 #: mbw_mira/mbw_mira/doctype/mira_notification/mira_notification.json
 #: mbw_mira/mbw_mira/doctype/mira_settings/mira_settings.json
 #: mbw_mira/mbw_mira/doctype/short_url/short_url.json
-#: mbw_mira/mbw_mira/doctype/TalentProfilesCampaign/TalentProfilesCampaign.json
 #: mbw_mira/mbw_mira/doctype/talentpool/talentpool.json
 #: mbw_mira/mbw_mira/doctype/talentsegment/talentsegment.json
 msgid "System Manager"
@@ -3640,10 +3641,10 @@ msgstr ""
 #. Label of a Link field in DocType 'CandidateSegment'
 #. Label of a Link field in DocType 'Interaction'
 #. Label of a Link field in DocType 'TalentProfilesCampaign'
+#: mbw_mira/mbw_mira/doctype/TalentProfilesCampaign/TalentProfilesCampaign.json
 #: mbw_mira/mbw_mira/doctype/applicantpool/applicantpool.json
 #: mbw_mira/mbw_mira/doctype/candidatesegment/candidatesegment.json
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
-#: mbw_mira/mbw_mira/doctype/TalentProfilesCampaign/TalentProfilesCampaign.json
 msgid "Talent"
 msgstr ""
 
@@ -3673,16 +3674,16 @@ msgstr ""
 msgid "Talent pool has been saved successfully"
 msgstr ""
 
-#. Name of a DocType
-#: mbw_mira/mbw_mira/doctype/TalentProfilesCampaign/TalentProfilesCampaign.json
-msgid "TalentProfilesCampaign"
-msgstr ""
-
 #. Option for the 'Source Type' (Select) field in DocType 'CandidateDataSource'
 #. Name of a DocType
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 #: mbw_mira/mbw_mira/doctype/talentpool/talentpool.json
 msgid "TalentPool"
+msgstr ""
+
+#. Name of a DocType
+#: mbw_mira/mbw_mira/doctype/TalentProfilesCampaign/TalentProfilesCampaign.json
+msgid "TalentProfilesCampaign"
 msgstr ""
 
 #. Name of a DocType
