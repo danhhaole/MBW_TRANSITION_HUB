@@ -10,164 +10,175 @@ msgstr ""
 "POT-Creation-Date: 2025-07-18 10:31+0707\n"
 "PO-Revision-Date: 2025-07-17 22:51+0642\n"
 "Last-Translator: dev@mbw.vn\n"
-"Language: vi\n"
 "Language-Team: dev@mbw.vn\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
+"Language: vi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 "Generated-By: Babel 2.13.1\n"
 
 #: frontend/src/components/ViewControls.vue:1217
 msgid " (New)"
-msgstr ""
+msgstr "(Mới)"
 
 #. Description of the 'Campaign' (Link) field in DocType
 #. 'TalentProfilesCampaign'
 #: mbw_mira/mbw_mira/doctype/TalentProfilesCampaign/TalentProfilesCampaign.json
 msgid "(Foreign Key -> Campaign)"
-msgstr ""
+msgstr "(Khóa ngoại -> Chiến dịch)"
 
 #. Description of the 'Campaign Step' (Link) field in DocType 'Action'
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "(Foreign Key -> CampaignStep) Bước đã tạo ra hành động này."
-msgstr ""
+msgstr "(Khóa ngoại -> Chiến dịch)"
 
-#. Description of the 'Talent' (Link) field in DocType 'TalentProfilesCampaign'
+#. Description of the 'Talent' (Link) field in DocType
+#. 'TalentProfilesCampaign'
 #: mbw_mira/mbw_mira/doctype/TalentProfilesCampaign/TalentProfilesCampaign.json
 msgid "(Foreign Key -> Candidate)"
-msgstr ""
+msgstr "(Khóa ngoại -> Ứng viên)"
 
 #. Description of the 'Talent Campaign' (Link) field in DocType 'Action'
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "(Foreign Key -> CandidateCampaign)"
-msgstr ""
+msgstr "(Khóa ngoại -> CandidateCampaign)"
 
 #. Description of the 'Target Segment' (Link) field in DocType 'Campaign'
 #: mbw_mira/mbw_mira/doctype/campaign/campaign.json
 msgid "(Foreign Key -> TalentSegment) Phân khúc mục tiêu."
-msgstr ""
+msgstr "."
 
 #. Description of the 'section_break_lenk' (Section Break) field in DocType
 #. 'TalentSegment'
 #: mbw_mira/mbw_mira/doctype/talentsegment/talentsegment.json
 msgid "(Phân khúc Nhân tài / Talent Pool)"
-msgstr ""
+msgstr "Không"
 
 #: frontend/src/utils/index.js:170
 msgid "1 hour ago"
-msgstr ""
+msgstr "1 giờ trước"
 
 #: frontend/src/utils/index.js:166
 msgid "1 minute ago"
-msgstr ""
+msgstr "1 phút trước"
 
 #: frontend/src/utils/index.js:184
 msgid "1 month ago"
-msgstr ""
+msgstr "1 tháng trước"
 
 #: frontend/src/utils/index.js:180
 msgid "1 week ago"
-msgstr ""
+msgstr "1 tuần trước"
 
 #: frontend/src/utils/index.js:188
 msgid "1 year ago"
-msgstr ""
+msgstr "1 năm trước"
 
 #: frontend/src/components/CommunicationArea.vue:85
 msgid "@John, can you please check this?"
-msgstr ""
+msgstr "@John, bạn có thể vui lòng kiểm tra cái này được không?"
 
 #: mbw_mira/mbw_mira/doctype/candidatesegment/candidatesegment.py:31
-msgid "A CandidateSegment with Candidate <b>{0}</b> and Segment <b>{1}</b> already exists: <a href='/app/candidate-segment/{2}'>{2}</a>"
+msgid ""
+"A CandidateSegment with Candidate <b>{0}</b> and Segment <b>{1}</b> already "
+"exists: <a href='/app/candidate-segment/{2}'>{2}</a>"
 msgstr ""
+"Một ứng cử viên với ứng cử viên <b> {0} </b> và phân đoạn <b> {1} </b> đã "
+"tồn tại: <a href = '/app/uster-secent/{2}'> {2} </a>"
 
 #: mbw_mira/mbw_mira/doctype/TalentProfilesCampaign/TalentProfilesCampaign.py:31
-msgid "A TalentProfilesCampaign with Campaign <b>{0}</b> and Candidate <b>{1}</b> already exists: <a href='/app/candidate-campaign/{2}'>{2}</a>"
+msgid ""
+"A TalentProfilesCampaign with Campaign <b>{0}</b> and Candidate <b>{1}</b> "
+"already exists: <a href='/app/candidate-campaign/{2}'>{2}</a>"
 msgstr ""
+"TalentProfileScampaign với chiến dịch <b> {0} </b> và ứng cử viên <b> {1} "
+"</b> đã tồn tại: <a href = '/app"
 
 #. Option for the 'Status' (Select) field in DocType 'Campaign'
 #. Option for the 'Status' (Select) field in DocType 'TalentProfilesCampaign'
 #: mbw_mira/mbw_mira/doctype/TalentProfilesCampaign/TalentProfilesCampaign.json
 #: mbw_mira/mbw_mira/doctype/campaign/campaign.json
 msgid "ACTIVE"
-msgstr ""
+msgstr "TÍCH CỰC"
 
 #. Label of a Long Text field in DocType 'Candidate'
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
 msgid "AI Summary"
-msgstr ""
+msgstr "Tóm tắt AI"
 
 #. Label of a Small Text field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "API Base URL"
-msgstr ""
+msgstr "URL cơ sở API"
 
-#. Option for the 'Auth Method' (Select) field in DocType 'CandidateDataSource'
+#. Option for the 'Auth Method' (Select) field in DocType
+#. 'CandidateDataSource'
 #. Label of a Data field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "API Key"
-msgstr ""
+msgstr "Khóa API"
 
 #. Description of the 'API Key' (Data) field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "API Key do nhà cung cấp cấp khi đăng ký ứng dụng (ví dụ: TopCV)"
-msgstr ""
+msgstr "API KEY Do NHÀ CUNG CấP CấP KHI ĐÓ"
 
 #. Label of a Password field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "API Secret"
-msgstr ""
+msgstr "Bí mật API"
 
 #. Description of the 'API Secret' (Password) field in DocType
 #. 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "API Secret đi kèm với API Key (nếu có)"
-msgstr ""
+msgstr "API SELX"
 
 #. Option for the 'Interaction Type' (Select) field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "APPLICATION_SUBMITTED"
-msgstr ""
+msgstr "Application_submited"
 
 #. Option for the 'Status' (Select) field in DocType 'Campaign'
 #. Option for the 'Status' (Select) field in DocType 'Candidate'
 #: mbw_mira/mbw_mira/doctype/campaign/campaign.json
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
 msgid "ARCHIVED"
-msgstr ""
+msgstr "Lưu trữ"
 
-#. Option for the 'Source Type' (Select) field in DocType 'CandidateDataSource'
+#. Option for the 'Source Type' (Select) field in DocType
+#. 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "ATS"
-msgstr ""
+msgstr "ATS"
 
 #. Option for the 'Type' (Select) field in DocType 'Campaign'
 #: mbw_mira/mbw_mira/doctype/campaign/campaign.json
 msgid "ATTRACTION"
-msgstr ""
+msgstr "SỰ THU HÚT"
 
 #. Label of a Small Text field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Access Token"
-msgstr ""
+msgstr "Mã thông báo truy cập"
 
 #. Description of the 'Access Token' (Small Text) field in DocType
 #. 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Access Token hiện tại (OAuth2)"
-msgstr ""
+msgstr "Truy cập Mã thông báo Hiện Tại (OAuth2)"
 
 #. Name of a DocType
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "Action"
-msgstr ""
+msgstr "Hoạt động"
 
 #. Label of a Select field in DocType 'CampaignStep'
 #: frontend/src/pages/CampaignDetailView.vue:221
 #: mbw_mira/mbw_mira/doctype/campaignstep/campaignstep.json
 msgid "Action Type"
-msgstr ""
+msgstr "Loại hành động"
 
 #: frontend/src/components/CustomActions.vue:73
 #: frontend/src/components/ViewControls.vue:683
@@ -183,7 +194,7 @@ msgstr ""
 #: frontend/src/pages/EmailLogManagement.vue:162
 #: frontend/src/pages/TalentSegmentDetailView.vue:457
 msgid "Actions"
-msgstr ""
+msgstr "Hành động"
 
 #. Label of a Check field in DocType 'Campaign'
 #. Option for the 'Status' (Select) field in DocType 'CandidateDataSource'
@@ -198,36 +209,36 @@ msgstr ""
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 #: mbw_mira/mbw_mira/doctype/talentpool/talentpool.json
 msgid "Active"
-msgstr ""
+msgstr "Tích cực"
 
 #: frontend/src/pages/CandidateDetailView.vue:1832
 #: frontend/src/pages/Dashboard.vue:157
 msgid "Active Campaigns"
-msgstr ""
+msgstr "Các chiến dịch tích cực"
 
 #: frontend/src/pages/TalentSegmentDetailView.vue:159
 msgid "Active Candidates"
-msgstr ""
+msgstr "Ứng cử viên tích cực"
 
 #: frontend/src/pages/EmailLogManagement.vue:304
 msgid "Add"
-msgstr ""
+msgstr "Thêm vào"
 
 #: frontend/src/components/candidate/CandidateCardView.vue:232
 #: frontend/src/pages/CandidateManagement.vue:18
 #: frontend/src/pages/TalentSegmentDetailView.vue:260
 #: frontend/src/pages/TalentSegmentDetailView.vue:414
 msgid "Add Candidate"
-msgstr ""
+msgstr "Thêm ứng viên"
 
 #: frontend/src/pages/TalentSegmentDetailView.vue:635
 #: frontend/src/pages/TalentSegmentDetailView.vue:963
 msgid "Add Candidate to Segment"
-msgstr ""
+msgstr "Thêm ứng viên vào phân khúc"
 
 #: frontend/src/components/ColumnSettings.vue:69
 msgid "Add Column"
-msgstr ""
+msgstr "Thêm cột"
 
 #: frontend/src/components/Controls/GridFieldsEditorModal.vue:58
 #: frontend/src/components/FieldLayoutEditor.vue:173
@@ -235,217 +246,231 @@ msgstr ""
 #: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:13
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:12
 msgid "Add Field"
-msgstr ""
+msgstr "Thêm trường"
 
 #: frontend/src/components/Filter.vue:138
 msgid "Add Filter"
-msgstr ""
+msgstr "Thêm bộ lọc"
 
 #: frontend/src/pages/ActionManagement.vue:17
 #: frontend/src/pages/ActionManagement.vue:388
 msgid "Add New Action"
-msgstr ""
+msgstr "Thêm hành động mới"
 
 #: frontend/src/components/candidate/CandidateEditModal.vue:6
 msgid "Add New Candidate"
-msgstr ""
+msgstr "Thêm ứng viên mới"
 
 #: frontend/src/pages/InteractionManagement.vue:17
 msgid "Add New Interaction"
-msgstr ""
+msgstr "Thêm tương tác mới"
 
 #: frontend/src/pages/EmailLogManagement.vue:17
 msgid "Add New Log"
-msgstr ""
+msgstr "Thêm nhật ký mới"
 
 #: frontend/src/components/Controls/Grid.vue:321
 msgid "Add Row"
-msgstr ""
+msgstr "Thêm hàng"
 
 #: frontend/src/components/FieldLayoutEditor.vue:200
 #: frontend/src/components/SidePanelLayoutEditor.vue:130
 msgid "Add Section"
-msgstr ""
+msgstr "Thêm phần"
 
 #: frontend/src/components/SortBy.vue:148
 msgid "Add Sort"
-msgstr ""
+msgstr "Thêm sắp xếp"
 
 #: frontend/src/pages/CampaignDetailView.vue:210
 msgid "Add Step"
-msgstr ""
+msgstr "Thêm bước"
 
 #: frontend/src/components/FieldLayoutEditor.vue:62
 msgid "Add Tab"
-msgstr ""
+msgstr "Thêm tab"
 
 #: frontend/src/components/talent-segment/TalentSegmentDetailDialog.vue:364
 msgid "Add candidate to segment"
-msgstr ""
+msgstr "Thêm ứng viên vào phân khúc"
 
 #: frontend/src/components/FieldLayoutEditor.vue:426
 msgid "Add column"
-msgstr ""
+msgstr "Thêm cột"
 
 #: frontend/src/components/ViewControls.vue:104
 msgid "Add filter"
-msgstr ""
+msgstr "Thêm bộ lọc"
 
 #: frontend/src/components/talent-segment/TalentSegmentDetailDialog.vue:330
 msgid "Add first candidate"
-msgstr ""
+msgstr "Thêm ứng viên đầu tiên"
 
 #: frontend/src/pages/TalentSegmentDetailView.vue:833
 msgid "Add to Segment"
-msgstr ""
+msgstr "Thêm vào phân đoạn"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Add your first comment"
-msgstr ""
+msgstr "Thêm bình luận đầu tiên của bạn"
 
 #: frontend/src/pages/TalentSegmentDetailView.vue:454
 msgid "Added"
-msgstr ""
+msgstr "Đã thêm"
 
 #. Label of a Datetime field in DocType 'CandidateSegment'
 #: mbw_mira/mbw_mira/doctype/candidatesegment/candidatesegment.json
 msgid "Added At"
-msgstr ""
+msgstr "Đã thêm tại"
 
 #. Label of a Link field in DocType 'CandidateSegment'
 #: mbw_mira/mbw_mira/doctype/candidatesegment/candidatesegment.json
 msgid "Added By"
-msgstr ""
+msgstr "Được thêm bởi"
 
 #: frontend/src/pages/TalentSegmentDetailView.vue:833
 msgid "Adding..."
-msgstr ""
+msgstr "Thêm ..."
 
 #: frontend/src/pages/ActionManagement.vue:107
 msgid "Advanced Filters"
-msgstr ""
+msgstr "Bộ lọc nâng cao"
 
 #. Name of a role
 #: mbw_mira/mbw_mira/doctype/form_script/form_script.json
 #: mbw_mira/mbw_mira/doctype/mira_settings/mira_settings.json
 msgid "All"
-msgstr ""
+msgstr "Tất cả"
 
 #: frontend/src/pages/CandidateManagement.vue:583
 msgid "All Sources"
-msgstr ""
+msgstr "Tất cả các nguồn"
 
 #: frontend/src/pages/CampaignManagement.vue:92
 #: frontend/src/pages/CandidateManagement.vue:574
 msgid "All Statuses"
-msgstr ""
+msgstr "Tất cả các trạng thái"
 
 #: mbw_mira/mbw_mira/doctype/action/action.py:80
-msgid "An Action with Candidate Campaign <b>{0}</b> and Campaign Step <b>{1}</b> already exists: <a href='/app/action/{2}'>{2}</a>"
+msgid ""
+"An Action with Candidate Campaign <b>{0}</b> and Campaign Step <b>{1}</b> "
+"already exists: <a href='/app/action/{2}'>{2}</a>"
 msgstr ""
+"Một hành động với chiến dịch ứng cử viên <b> {0} </b> và bước chiến dịch <b>"
+" {1} </b> đã tồn tại: <a href = '/app/action/{2}'> {2} </a>"
 
 #: frontend/src/data/script.js:50 frontend/src/data/script.js:51
 msgid "An error occurred"
-msgstr ""
+msgstr "Một lỗi đã xảy ra"
 
 #: frontend/src/components/campaign/CampaignForm.vue:321
 msgid "An error occurred: "
-msgstr ""
+msgstr "Đã xảy ra lỗi:"
 
 #. Description of the 'Favicon' (Attach) field in DocType 'Mira Settings'
 #: mbw_mira/mbw_mira/doctype/mira_settings/mira_settings.json
-msgid "An icon file with .ico extension. Should be 16 x 16 px. Generated using a favicon generator. [favicon-generator.org]"
+msgid ""
+"An icon file with .ico extension. Should be 16 x 16 px. Generated using a "
+"favicon generator. [favicon-generator.org]"
 msgstr ""
+"Một tập tin biểu tượng với tiện ích mở rộng .ico. Nên là 16 x 16 px. Được "
+"tạo bằng cách sử dụng một máy phát favicon. [Favicon-generator.org]"
 
 #. Description of the 'Logo' (Attach) field in DocType 'Mira Settings'
 #: mbw_mira/mbw_mira/doctype/mira_settings/mira_settings.json
 msgid "An image with 1:1 & 2:1 ratio is preferred"
-msgstr ""
+msgstr "Một hình ảnh có tỷ lệ 1: 1 & 2: 1 được ưu tiên"
 
 #: frontend/src/pages/TalentSegmentDetailView.vue:331
 msgid "Analysis and detailed charts will be implemented here"
-msgstr ""
+msgstr "Phân tích và biểu đồ chi tiết sẽ được thực hiện ở đây"
 
 #: frontend/src/pages/CampaignDetailView.vue:1058
 #: frontend/src/pages/TalentSegmentDetailView.vue:280
 msgid "Analytics"
-msgstr ""
+msgstr "Phân tích"
 
 #: frontend/src/components/Filter.vue:44 frontend/src/components/Filter.vue:82
 msgid "And"
-msgstr ""
+msgstr "Và"
 
 #. Label of a Link field in DocType 'CandidatePool'
 #: mbw_mira/mbw_mira/doctype/candidatepool/candidatepool.json
 msgid "Applicant"
-msgstr ""
+msgstr "Người xin việc"
 
 #. Name of a DocType
 #: mbw_mira/mbw_mira/doctype/applicantpool/applicantpool.json
 msgid "ApplicantPool"
-msgstr ""
+msgstr "Ứng dụng"
 
 #. Label of a Datetime field in DocType 'ApplicantPool'
 #: mbw_mira/mbw_mira/doctype/applicantpool/applicantpool.json
 msgid "Application Date"
-msgstr ""
+msgstr "Ngày nộp đơn"
 
 #. Label of a Data field in DocType 'ApplicantPool'
 #: mbw_mira/mbw_mira/doctype/applicantpool/applicantpool.json
 msgid "Application Position"
-msgstr ""
+msgstr "Vị trí ứng dụng"
 
 #: frontend/src/components/campaign/CampaignCard.vue:113
 msgid "Applications Count"
-msgstr ""
+msgstr "Đếm ứng dụng"
 
 #. Label of a Select field in DocType 'Form Script'
 #: mbw_mira/mbw_mira/doctype/form_script/form_script.json
 msgid "Apply To"
-msgstr ""
+msgstr "Áp dụng cho"
 
 #: frontend/src/components/Apps.vue:19
 #: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:2
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:1
 msgid "Apps"
-msgstr ""
+msgstr "Ứng dụng"
 
 #: frontend/src/pages/CampaignManagement.vue:95
 #: frontend/src/pages/CandidateDetailView.vue:1638
 #: frontend/src/pages/CandidateManagement.vue:579
 msgid "Archived"
-msgstr ""
+msgstr "Lưu trữ"
 
 #: frontend/src/pages/TalentSegmentManagement.vue:234
 msgid "Are you sure you want to delete"
-msgstr ""
+msgstr "Bạn có chắc bạn muốn xóa"
 
 #: frontend/src/pages/EmailLogManagement.vue:410
-msgid "Are you sure you want to delete this email log? This action cannot be undone."
+msgid ""
+"Are you sure you want to delete this email log? This action cannot be "
+"undone."
 msgstr ""
+"Bạn có chắc là bạn muốn xóa nhật ký email này? Hành động này không thể được "
+"hoàn tác."
 
 #: frontend/src/components/DeleteLinkedDocModal.vue:245
 msgid "Are you sure you want to delete {0} linked item(s)?"
-msgstr ""
+msgstr "Bạn có chắc là bạn muốn xóa (các) mục được liên kết {0} không?"
 
 #: frontend/src/composables/frappecloud.js:24
 #: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:2
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:1
 msgid "Are you sure you want to login to your Frappe Cloud dashboard?"
 msgstr ""
+"Bạn có chắc là bạn muốn đăng nhập vào bảng điều khiển Frappe Cloud của mình "
+"không?"
 
 #: frontend/src/components/DeleteLinkedDocModal.vue:258
 msgid "Are you sure you want to unlink {0} linked item(s)?"
-msgstr ""
+msgstr "Bạn có chắc là bạn muốn liên kết {0} mục được liên kết không?"
 
 #: frontend/src/components/ListBulkActions.vue:184
 #: frontend/src/components/Modals/AssignmentModal.vue:5
 msgid "Assign To"
-msgstr ""
+msgstr "Gán cho"
 
 #: frontend/src/pages/CampaignDetailView.vue:1048
 msgid "Assigned Candidates"
-msgstr ""
+msgstr "Ứng viên được chỉ định"
 
 #. Label of a Link field in DocType 'Action'
 #: frontend/src/pages/ActionManagement.vue:159
@@ -453,170 +478,171 @@ msgstr ""
 #: frontend/src/pages/ActionManagement.vue:418
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "Assignee"
-msgstr ""
+msgstr "Người được giao"
 
 #. Option for the 'Type' (Select) field in DocType 'Mira Notification'
 #: mbw_mira/mbw_mira/doctype/mira_notification/mira_notification.json
 msgid "Assignment"
-msgstr ""
+msgstr "Phân công"
 
 #: frontend/src/components/ListBulkActions.vue:152
 msgid "Assignment cleared successfully"
-msgstr ""
+msgstr "Bài tập đã xóa thành công"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Assignment rule"
-msgstr ""
+msgstr "Quy tắc chuyển nhượng"
 
 #: frontend/src/components/Controls/GridFieldsEditorModal.vue:176
 #: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:13
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:12
 msgid "At least one field is required"
-msgstr ""
+msgstr "Ít nhất một trường là bắt buộc"
 
 #: frontend/src/components/FilesUploader/FilesUploader.vue:5
 #: frontend/src/components/FilesUploader/FilesUploader.vue:76
 msgid "Attach"
-msgstr ""
+msgstr "Gắn"
 
 #. Label of a Long Text field in DocType 'EmailLog'
 #: frontend/src/pages/EmailLogManagement.vue:368
 #: frontend/src/pages/EmailLogManagement.vue:464
 #: mbw_mira/mbw_mira/doctype/emaillog/emaillog.json
 msgid "Attachments"
-msgstr ""
+msgstr "Đính kèm"
 
 #: frontend/src/components/campaign/CampaignCardView.vue:27
 msgid "Attraction"
-msgstr ""
+msgstr "Sự thu hút"
 
 #. Label of a Select field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Auth Method"
-msgstr ""
+msgstr "Phương pháp Auth"
 
 #: frontend/src/components/talent-segment/TalentSegmentForm.vue:368
 msgid "Automatic (AI)"
-msgstr ""
+msgstr "Tự động (AI)"
 
 #. Label of a Small Text field in DocType 'Candidate'
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
 msgid "Avatar"
-msgstr ""
+msgstr "Avatar"
 
 #. Label of a Small Text field in DocType 'EmailLog'
 #: mbw_mira/mbw_mira/doctype/emaillog/emaillog.json
 msgid "BCC"
-msgstr ""
+msgstr "BCC"
 
 #: frontend/src/components/FilesUploader/FilesUploader.vue:31
 #: frontend/src/components/campaign/CampaignWizard.vue:199
 msgid "Back"
-msgstr ""
+msgstr "Mặt sau"
 
 #: frontend/src/components/FilesUploader/FilesUploader.vue:31
 msgid "Back to file upload"
-msgstr ""
+msgstr "Quay lại tải lên tệp"
 
-#. Option for the 'Auth Method' (Select) field in DocType 'CandidateDataSource'
+#. Option for the 'Auth Method' (Select) field in DocType
+#. 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Basic"
-msgstr ""
+msgstr "Nền tảng"
 
 #: frontend/src/components/candidate/CandidateForm.vue:9
 msgid "Basic Information"
-msgstr ""
+msgstr "Thông tin cơ bản"
 
 #: frontend/src/components/Filter.vue:355
 msgid "Between"
-msgstr ""
+msgstr "Giữa"
 
 #. Option for the 'Sync Direction' (Select) field in DocType
 #. 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Both"
-msgstr ""
+msgstr "Cả hai"
 
 #: mbw_mira/services/candidate_service.py:136
 msgid "Both 'campaign' and 'segment' are required."
-msgstr ""
+msgstr "Cả 'chiến dịch' và 'phân khúc' đều được yêu cầu."
 
 #: mbw_mira/services/candidate_service.py:76
 msgid "Both 'segment' and 'candidates' are required."
-msgstr ""
+msgstr "Cả 'phân khúc' và 'ứng cử viên' đều được yêu cầu."
 
 #. Label of a Tab Break field in DocType 'Mira Settings'
 #: mbw_mira/mbw_mira/doctype/mira_settings/mira_settings.json
 msgid "Branding"
-msgstr ""
+msgstr "Thương hiệu"
 
 #: frontend/src/components/campaign/CampaignWizard.vue:68
 msgid "Brief description of campaign purpose..."
-msgstr ""
+msgstr "Mô tả ngắn gọn về mục đích chiến dịch ..."
 
 #: frontend/src/components/Modals/EditValueModal.vue:2
 msgid "Bulk Edit"
-msgstr ""
+msgstr "Chỉnh sửa số lượng lớn"
 
 #. Option for the 'Interaction Type' (Select) field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "CALL_COMPLETED"
-msgstr ""
+msgstr "Call_completed"
 
 #. Option for the 'Interaction Type' (Select) field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "CALL_MISSED"
-msgstr ""
+msgstr "Call_missed"
 
 #. Option for the 'Status' (Select) field in DocType 'TalentProfilesCampaign'
 #: mbw_mira/mbw_mira/doctype/TalentProfilesCampaign/TalentProfilesCampaign.json
 msgid "CANCELLED"
-msgstr ""
+msgstr "Bị hủy bỏ"
 
 #. Label of a Small Text field in DocType 'EmailLog'
 #: mbw_mira/mbw_mira/doctype/emaillog/emaillog.json
 msgid "CC"
-msgstr ""
+msgstr "Cc"
 
 #. Option for the 'Interaction Type' (Select) field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "CHAT_COMPLETED"
-msgstr ""
+msgstr "Chat_completed"
 
 #. Option for the 'Interaction Type' (Select) field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "CHAT_MESSAGE_SENT"
-msgstr ""
+msgstr "Chat_message_sent"
 
 #. Option for the 'Interaction Type' (Select) field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "CHAT_STARTED"
-msgstr ""
+msgstr "Chat_started"
 
 #. Option for the 'Status' (Select) field in DocType 'TalentProfilesCampaign'
 #: mbw_mira/mbw_mira/doctype/TalentProfilesCampaign/TalentProfilesCampaign.json
 msgid "COMPLETED"
-msgstr ""
+msgstr "HOÀN THÀNH"
 
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:1
 msgid "CRM"
-msgstr ""
+msgstr "CRM"
 
 #: frontend/src/components/ViewControls.vue:272
 msgid "CSV"
-msgstr ""
+msgstr "CSV"
 
 #: frontend/src/pages/InteractionManagement.vue:63
 msgid "Call Interactions"
-msgstr ""
+msgstr "Gọi tương tác"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Call log"
-msgstr ""
+msgstr "Nhật ký cuộc gọi"
 
 #: frontend/src/components/FilesUploader/FilesUploaderArea.vue:51
 msgid "Camera"
-msgstr ""
+msgstr "Camera"
 
 #. Label of a Link field in DocType 'ApplicantPool'
 #. Name of a DocType
@@ -630,11 +656,11 @@ msgstr ""
 #: mbw_mira/mbw_mira/doctype/campaignstep/campaignstep.json
 #: mbw_mira/mbw_mira/doctype/talentpool/talentpool.json
 msgid "Campaign"
-msgstr ""
+msgstr "Chiến dịch"
 
 #: frontend/src/pages/CampaignDetailView.vue:92
 msgid "Campaign Information"
-msgstr ""
+msgstr "Thông tin chiến dịch"
 
 #. Label of a Data field in DocType 'Campaign'
 #: frontend/src/components/campaign/CampaignTable.vue:15
@@ -642,7 +668,7 @@ msgstr ""
 #: frontend/src/pages/CampaignDetailView.vue:99
 #: mbw_mira/mbw_mira/doctype/campaign/campaign.json
 msgid "Campaign Name"
-msgstr ""
+msgstr "Tên chiến dịch"
 
 #. Label of a Link field in DocType 'Action'
 #: frontend/src/pages/ActionManagement.vue:145
@@ -650,43 +676,46 @@ msgstr ""
 #: frontend/src/pages/ActionManagement.vue:401
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "Campaign Step"
-msgstr ""
+msgstr "Bước chiến dịch"
 
 #. Label of a Data field in DocType 'CampaignStep'
 #: mbw_mira/mbw_mira/doctype/campaignstep/campaignstep.json
 msgid "Campaign Step Name"
-msgstr ""
+msgstr "Tên bước chiến dịch"
 
 #: frontend/src/pages/CampaignDetailView.vue:202
 #: frontend/src/pages/CampaignDetailView.vue:1043
 msgid "Campaign Steps"
-msgstr ""
+msgstr "Các bước chiến dịch"
 
 #: mbw_mira/api/__init__.py:70
-msgid "Campaign creation has been scheduled. You will be notified when it's done."
+msgid ""
+"Campaign creation has been scheduled. You will be notified when it's done."
 msgstr ""
+"Sáng tạo chiến dịch đã được lên kế hoạch. Bạn sẽ được thông báo khi hoàn "
+"thành."
 
 #: frontend/src/components/campaign/CampaignForm.vue:279
 msgid "Campaign name cannot exceed 200 characters"
-msgstr ""
+msgstr "Tên chiến dịch không thể vượt quá 200 ký tự"
 
 #: frontend/src/components/campaign/CampaignForm.vue:276
 msgid "Campaign name is required"
-msgstr ""
+msgstr "Tên chiến dịch được yêu cầu"
 
 #: frontend/src/pages/Dashboard.vue:126
 msgid "Campaign:"
-msgstr ""
+msgstr "Chiến dịch:"
 
 #. Name of a DocType
 #: mbw_mira/mbw_mira/doctype/campaignstep/campaignstep.json
 msgid "CampaignStep"
-msgstr ""
+msgstr "Chiến dịch"
 
 #: frontend/src/pages/CampaignDetailView.vue:929
 #: frontend/src/pages/CampaignManagement.vue:170
 msgid "Campaigns"
-msgstr ""
+msgstr "Chiến dịch"
 
 #: frontend/src/components/BulkDeleteLinkedDocModal.vue:92
 #: frontend/src/components/ColumnSettings.vue:132
@@ -704,166 +733,175 @@ msgstr ""
 #: frontend/src/pages/TalentSegmentDetailView.vue:817
 #: frontend/src/pages/TalentSegmentManagement.vue:244
 msgid "Cancel"
-msgstr ""
+msgstr "Hủy bỏ"
 
 #: frontend/src/pages/CampaignDetailView.vue:1003
 #: frontend/src/pages/CandidateDetailView.vue:1630
 msgid "Cancelled"
-msgstr ""
+msgstr "Bị hủy bỏ"
 
 #. Name of a DocType
 #: frontend/src/components/candidate/CandidateTable.vue:16
 #: frontend/src/pages/TalentSegmentDetailView.vue:430
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
 msgid "Candidate"
-msgstr ""
+msgstr "Ứng viên"
 
 #: frontend/src/pages/ActionManagement.vue:152
 #: frontend/src/pages/ActionManagement.vue:226
 #: frontend/src/pages/ActionManagement.vue:394
 msgid "Candidate Campaign"
-msgstr ""
+msgstr "Chiến dịch ứng cử viên"
 
 #. Label of a Int field in DocType 'TalentSegment'
 #: mbw_mira/mbw_mira/doctype/talentsegment/talentsegment.json
 msgid "Candidate Count"
-msgstr ""
+msgstr "Đếm ứng viên"
 
 #: frontend/src/components/candidate/CandidateViewModal.vue:6
 msgid "Candidate Details"
-msgstr ""
+msgstr "Chi tiết ứng cử viên"
 
 #: frontend/src/components/candidate/CandidateTable.vue:6
 msgid "Candidate List"
-msgstr ""
+msgstr "Danh sách ứng cử viên"
 
 #: frontend/src/pages/CandidateManagement.vue:35
 msgid "Candidate Management"
-msgstr ""
+msgstr "Quản lý ứng cử viên"
 
 #: frontend/src/pages/TalentSegmentDetailView.vue:752
 msgid "Candidate not specified"
-msgstr ""
+msgstr "Ứng cử viên không được chỉ định"
 
 #. Name of a DocType
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "CandidateDataSource"
-msgstr ""
+msgstr "Ứng cử viên"
 
 #. Name of a DocType
 #: mbw_mira/mbw_mira/doctype/candidatepool/candidatepool.json
 msgid "CandidatePool"
-msgstr ""
+msgstr "Ứng cử viên"
 
 #. Name of a DocType
 #: mbw_mira/mbw_mira/doctype/candidatesegment/candidatesegment.json
 msgid "CandidateSegment"
-msgstr ""
+msgstr "Candidatesegment"
 
 #: frontend/src/pages/CandidateDetailView.vue:1539
 #: frontend/src/pages/CandidateManagement.vue:497
 msgid "Candidates"
-msgstr ""
+msgstr "Ứng cử viên"
 
 #: frontend/src/pages/TalentSegmentDetailView.vue:342
 msgid "Candidates in this segment"
-msgstr ""
+msgstr "Ứng viên trong phân khúc này"
 
 #: mbw_mira/mbw_mira/doctype/mira_settings/mira_settings.py:31
 msgid "Cannot delete standard items {0}"
-msgstr ""
+msgstr "Không thể xóa các mục tiêu chuẩn {0}"
 
 #: frontend/src/components/FilesUploader/FilesUploader.vue:94
 msgid "Capture"
-msgstr ""
+msgstr "Chiếm lấy"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Capturing leads"
-msgstr ""
+msgstr "Nắm bắt khách hàng tiềm năng"
 
 #: frontend/src/pages/CampaignManagement.vue:84
 msgid "Card"
-msgstr ""
+msgstr "Thẻ"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Change"
-msgstr ""
+msgstr "Thay đổi"
 
 #: frontend/src/components/Modals/ChangePasswordModal.vue:2
 msgid "Change Password"
-msgstr ""
+msgstr "Thay đổi mật khẩu"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Change deal status"
-msgstr ""
+msgstr "Thay đổi trạng thái thỏa thuận"
 
 #. Description of the 'Sync Direction' (Select) field in DocType
 #. 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Chiều đồng bộ dữ liệu: Pull (lấy về), Push (gửi đi), Both (cả hai)"
-msgstr ""
+msgstr "Chiều Đồng bộ dữ liệu: pull (lấy về), push"
 
 #. Description of the 'Source Type' (Select) field in DocType
 #. 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Chọn loại nguồn: ATS, JobBoard, SocialNetwork, Manual hoặc Other"
 msgstr ""
+"Chọn Loại Nguồn: ATS, Bảng công việc, SocialNetwork, HOUSUAL HOặC Khác"
 
 #. Description of the 'Headline' (Data) field in DocType 'Candidate'
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
-msgid "Chức danh hoặc mô tả ngắn gọn. VD: \"Senior Software Engineer at ABC Corp\""
+msgid ""
+"Chức danh hoặc mô tả ngắn gọn. VD: \"Senior Software Engineer at ABC Corp\""
 msgstr ""
+"Chức Danh Hoặc Mô tả ngắn Gọn. VD: \"Kỹ sư phần mềm cao cấp tại ABC Corp\""
 
 #: frontend/src/components/Controls/Link.vue:60
 #: frontend/src/pages/ActionManagement.vue:127
 msgid "Clear"
-msgstr ""
+msgstr "Thông thoáng"
 
 #: frontend/src/components/ListBulkActions.vue:134
 #: frontend/src/components/ListBulkActions.vue:142
 #: frontend/src/components/ListBulkActions.vue:188
 msgid "Clear Assignment"
-msgstr ""
+msgstr "Phân công rõ ràng"
 
 #: frontend/src/components/candidate/CandidateCardView.vue:239
 #: frontend/src/pages/CandidateManagement.vue:107
 #: frontend/src/pages/EmailLogManagement.vue:105
 msgid "Clear Filters"
-msgstr ""
+msgstr "Bộ lọc rõ ràng"
 
 #: frontend/src/components/SortBy.vue:160
 msgid "Clear Sort"
-msgstr ""
+msgstr "Xóa loại"
 
-#: frontend/src/components/Filter.vue:18 frontend/src/components/Filter.vue:150
+#: frontend/src/components/Filter.vue:18
+#: frontend/src/components/Filter.vue:150
 msgid "Clear all Filter"
-msgstr ""
+msgstr "Xóa tất cả các bộ lọc"
 
 #: frontend/src/components/campaign/CampaignCard.vue:152
 #: frontend/src/pages/Dashboard.vue:294
 msgid "Click Rate"
-msgstr ""
+msgstr "Nhấp chuột"
 
 #. Label of a Data field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Client ID"
-msgstr ""
+msgstr "ID máy khách"
 
-#. Description of the 'Client ID' (Data) field in DocType 'CandidateDataSource'
+#. Description of the 'Client ID' (Data) field in DocType
+#. 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Client ID (OAuth2), lấy từ Developer Portal của nhà cung cấp"
 msgstr ""
+"ID khách hàng (OAuth2), nhà phát triển LấY Từ Cổng thông tin CủA NHÀ CUNG "
+"CấP"
 
 #. Label of a Password field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Client Secret"
-msgstr ""
+msgstr "Bí mật của khách hàng"
 
 #. Description of the 'Client Secret' (Password) field in DocType
 #. 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Client Secret (OAuth2), lấy từ Developer Portal của nhà cung cấp"
 msgstr ""
+"Bí mật khách hàng (OAuth2), nhà phát triển Lấy Từ Cổng thông tin CủA NHÀ "
+"CUNG CấP"
 
 #: frontend/src/components/Notifications.vue:28
 #: frontend/src/components/campaign/CampaignView.vue:140
@@ -885,7 +923,7 @@ msgstr "Thu gọn"
 
 #: frontend/src/components/FieldLayoutEditor.vue:350
 msgid "Collapsible"
-msgstr ""
+msgstr "Có thể sụp đổ"
 
 #: frontend/src/components/FieldLayoutEditor.vue:423
 msgid "Column"
@@ -894,13 +932,13 @@ msgstr "Cột"
 #. Label of a Data field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Column Field"
-msgstr ""
+msgstr "Trường cột"
 
 #. Label of a Code field in DocType 'Mira View Settings'
 #: frontend/src/components/ColumnSettings.vue:4
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Columns"
-msgstr ""
+msgstr "Cột"
 
 #. Label of a Link field in DocType 'Mira Notification'
 #: frontend/src/components/CommentBox.vue:80
@@ -908,11 +946,11 @@ msgstr ""
 #: mbw_mira/mbw_mira/doctype/mira_notification/mira_notification.json
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Comment"
-msgstr ""
+msgstr "Bình luận"
 
 #: frontend/src/components/shared/TaskUpdateModal.vue:133
 msgid "Complete"
-msgstr ""
+msgstr "Hoàn thành"
 
 #: frontend/src/components/campaign/CampaignCard.vue:9
 #: frontend/src/components/campaign/CampaignCardView.vue:238
@@ -920,74 +958,74 @@ msgstr ""
 #: frontend/src/pages/CandidateDetailView.vue:1629
 #: frontend/src/pages/Dashboard.vue:658
 msgid "Completed"
-msgstr ""
+msgstr "Hoàn thành"
 
 #. Label of a JSON field in DocType 'Campaign'
 #. Label of a JSON field in DocType 'CampaignStep'
 #: mbw_mira/mbw_mira/doctype/campaign/campaign.json
 #: mbw_mira/mbw_mira/doctype/campaignstep/campaignstep.json
 msgid "Config"
-msgstr ""
+msgstr "Cấu hình"
 
 #: frontend/src/composables/frappecloud.js:29
 #: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:2
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:1
 msgid "Confirm"
-msgstr ""
+msgstr "Xác nhận"
 
 #: frontend/src/pages/EmailLogManagement.vue:408
 #: frontend/src/pages/TalentSegmentManagement.vue:214
 msgid "Confirm Delete"
-msgstr ""
+msgstr "Xác nhận xóa"
 
 #: frontend/src/components/Modals/ChangePasswordModal.vue:18
 msgid "Confirm Password"
-msgstr ""
+msgstr "Xác nhận mật khẩu"
 
 #: frontend/src/pages/Dashboard.vue:75
 msgid "Congratulations! You have completed all tasks."
-msgstr ""
+msgstr "Chúc mừng! Bạn đã hoàn thành tất cả các nhiệm vụ."
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Contact"
-msgstr ""
+msgstr "Liên hệ"
 
 #: frontend/src/components/Modals/EditValueModal.vue:20
 msgid "Contact Us"
-msgstr ""
+msgstr "Liên hệ với chúng tôi"
 
 #. Label of a Long Text field in DocType 'EmailLog'
 #: frontend/src/pages/EmailLogManagement.vue:377
 #: frontend/src/pages/EmailLogManagement.vue:475
 #: mbw_mira/mbw_mira/doctype/emaillog/emaillog.json
 msgid "Content"
-msgstr ""
+msgstr "Nội dung"
 
 #: frontend/src/components/campaign/CampaignWizard.vue:212
 msgid "Continue"
-msgstr ""
+msgstr "Tiếp tục"
 
 #: frontend/src/components/ListBulkActions.vue:88
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Convert"
-msgstr ""
+msgstr "Chuyển thành"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Convert lead to deal"
-msgstr ""
+msgstr "Chuyển đổi dẫn sang giao dịch"
 
 #: frontend/src/components/ListBulkActions.vue:80
 #: frontend/src/components/ListBulkActions.vue:195
 msgid "Convert to Deal"
-msgstr ""
+msgstr "Chuyển đổi sang giao dịch"
 
 #: frontend/src/components/ListBulkActions.vue:96
 msgid "Converted successfully"
-msgstr ""
+msgstr "Chuyển đổi thành công"
 
 #: frontend/src/utils/index.js:342
 msgid "Copied to clipboard"
-msgstr ""
+msgstr "Sao chép vào bảng tạm"
 
 #: frontend/src/components/Modals/CreateDocumentModal.vue:92
 #: frontend/src/components/campaign/CampaignForm.vue:206
@@ -996,71 +1034,71 @@ msgstr ""
 #: frontend/src/components/talent-segment/TalentSegmentForm_clean.vue:268
 #: frontend/src/pages/ActionManagement.vue:452
 msgid "Create"
-msgstr ""
+msgstr "Tạo nên"
 
 #: frontend/src/components/campaign/CampaignWizard.vue:242
 #: frontend/src/pages/TalentSegmentDetailView.vue:240
 msgid "Create Campaign"
-msgstr ""
+msgstr "Tạo chiến dịch"
 
 #: frontend/src/components/Controls/Link.vue:48
 #: frontend/src/components/SidePanelLayout.vue:140
 #: frontend/src/pages/CampaignManagement.vue:18
 msgid "Create New"
-msgstr ""
+msgstr "Tạo mới"
 
 #: frontend/src/components/talent-segment/TalentSegmentCardView.vue:114
 msgid "Create New Pool"
-msgstr ""
+msgstr "Tạo hồ bơi mới"
 
 #: frontend/src/components/campaign/CampaignCardView.vue:133
 msgid "Create New Request"
-msgstr ""
+msgstr "Tạo yêu cầu mới"
 
 #: frontend/src/pages/TalentSegmentManagement.vue:191
 msgid "Create New Talent Pool"
-msgstr ""
+msgstr "Tạo nhóm tài năng mới"
 
 #: frontend/src/pages/TalentSegmentManagement.vue:27
 msgid "Create Pool"
-msgstr ""
+msgstr "Tạo hồ bơi"
 
 #: frontend/src/components/ViewControls.vue:687
 msgid "Create View"
-msgstr ""
+msgstr "Tạo chế độ xem"
 
 #: frontend/src/components/campaign/CampaignCardView.vue:11
 msgid "Create your first campaign"
-msgstr ""
+msgstr "Tạo chiến dịch đầu tiên của bạn"
 
 #: frontend/src/pages/EmailLogManagement.vue:255
 msgid "Create your first email log to get started."
-msgstr ""
+msgstr "Tạo nhật ký email đầu tiên của bạn để bắt đầu."
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Create your first lead"
-msgstr ""
+msgstr "Tạo sự dẫn đầu đầu tiên của bạn"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Create your first note"
-msgstr ""
+msgstr "Tạo ghi chú đầu tiên của bạn"
 
 #: frontend/src/components/talent-segment/TalentSegmentTable.vue:146
 msgid "Create your first segment to get started"
-msgstr ""
+msgstr "Tạo phân đoạn đầu tiên của bạn để bắt đầu"
 
 #: frontend/src/pages/TalentSegmentManagement.vue:80
 msgid "Create your first talent pool to start managing candidates"
-msgstr ""
+msgstr "Tạo nhóm tài năng đầu tiên của bạn để bắt đầu quản lý các ứng cử viên"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Create your first task"
-msgstr ""
+msgstr "Tạo nhiệm vụ đầu tiên của bạn"
 
 #. Label of a Datetime field in DocType 'Short URL'
 #: mbw_mira/mbw_mira/doctype/short_url/short_url.json
 msgid "Created At"
-msgstr ""
+msgstr "Được tạo ra tại"
 
 #. Label of a Link field in DocType 'CandidateDataSource'
 #. Label of a Link field in DocType 'Short URL'
@@ -1068,133 +1106,139 @@ msgstr ""
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 #: mbw_mira/mbw_mira/doctype/short_url/short_url.json
 msgid "Created By"
-msgstr ""
+msgstr "Được tạo bởi"
 
 #: frontend/src/components/campaign/CampaignTable.vue:18
 msgid "Created Date"
-msgstr ""
+msgstr "Đã tạo ngày"
 
 #: frontend/src/pages/CampaignDetailView.vue:70
 #: frontend/src/pages/TalentSegmentDetailView.vue:88
 msgid "Created:"
-msgstr ""
+msgstr "Tạo:"
 
 #. Label of a JSON field in DocType 'Campaign'
 #. Label of a JSON field in DocType 'TalentSegment'
 #: mbw_mira/mbw_mira/doctype/campaign/campaign.json
 #: mbw_mira/mbw_mira/doctype/talentsegment/talentsegment.json
 msgid "Criteria"
-msgstr ""
+msgstr "Tiêu chuẩn"
 
 #. Label of a Data field in DocType 'TalentPool'
 #: mbw_mira/mbw_mira/doctype/talentpool/talentpool.json
 msgid "Current Position"
-msgstr ""
+msgstr "Vị trí hiện tại"
 
 #. Label of a Int field in DocType 'TalentProfilesCampaign'
 #: mbw_mira/mbw_mira/doctype/TalentProfilesCampaign/TalentProfilesCampaign.json
 msgid "Current Step Order"
-msgstr ""
+msgstr "Đơn đặt hàng bước hiện tại"
 
 #: frontend/src/components/shared/TaskUpdateModal.vue:26
 msgid "Current status"
-msgstr ""
+msgstr "Trạng thái hiện tại"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Custom actions"
-msgstr ""
+msgstr "Hành động tùy chỉnh"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Custom branding"
-msgstr ""
+msgstr "Thương hiệu tùy chỉnh"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Custom fields"
-msgstr ""
+msgstr "Trường tùy chỉnh"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Custom list actions"
-msgstr ""
+msgstr "Hành động danh sách tùy chỉnh"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Custom statuses"
-msgstr ""
+msgstr "Trạng thái tùy chỉnh"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Customization"
-msgstr ""
+msgstr "Tùy chỉnh"
 
 #: frontend/src/components/ViewControls.vue:211
 msgid "Customize quick filters"
-msgstr ""
+msgstr "Tùy chỉnh bộ lọc nhanh"
 
 #. Description of the 'Criteria' (JSON) field in DocType 'TalentSegment'
 #: mbw_mira/mbw_mira/doctype/talentsegment/talentsegment.json
-msgid "Các tiêu chí dưới dạng cấu trúc để AI có thể sử dụng để tự động thêm ứng viên. VD: {\"skills\": [\"java\", \"spring\"], \"experienceYears\": \">5\"}"
+msgid ""
+"Các tiêu chí dưới dạng cấu trúc để AI có thể sử dụng để tự động thêm ứng "
+"viên. VD: {\"skills\": [\"java\", \"spring\"], \"experienceYears\": \">5\"}"
 msgstr ""
+"Các tiêu chí dưới dạng cấu trúc Để ai đó là thể sử dụng Để tự Động thênm ứng"
+" viênn. Vd: {\"Kỹ năng\": [\"Java\", \"Spring\"], \"ExperienceYears\": \"> "
+"5\"}"
 
 #: frontend/src/components/candidateDataSource/CandidateDataSourceForm.vue:186
 #: frontend/src/components/candidateDataSource/CandidateDataSourceFormDirect.vue:304
 msgid "Cập nhật"
-msgstr ""
+msgstr "Cập NHật"
 
 #. Option for the 'Interaction Type' (Select) field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "DOCUMENT_UPLOADED"
-msgstr ""
+msgstr "Document_uploaded"
 
 #. Option for the 'Interaction Type' (Select) field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "DOWNLOAD_TRIGGERED"
-msgstr ""
+msgstr "Download_triggered"
 
 #. Option for the 'Status' (Select) field in DocType 'Campaign'
 #: mbw_mira/mbw_mira/doctype/campaign/campaign.json
 msgid "DRAFT"
-msgstr ""
+msgstr "BẢN NHÁP"
 
 #. Option for the 'Type' (Select) field in DocType 'TalentSegment'
 #: mbw_mira/mbw_mira/doctype/talentsegment/talentsegment.json
 msgid "DYNAMIC"
-msgstr ""
+msgstr "NĂNG ĐỘNG"
 
 #: frontend/src/components/talent-segment/TalentSegmentCardView.vue:212
 msgid "Danger"
-msgstr ""
+msgstr "Sự nguy hiểm"
 
 #: frontend/src/pages/Dashboard.vue:452
 msgid "Dashboard"
-msgstr ""
+msgstr "Bảng điều khiển"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Data"
-msgstr ""
+msgstr "Dữ liệu"
 
 #: frontend/src/pages/CampaignManagement.vue:321
 msgid "Data refreshed"
-msgstr ""
+msgstr "Dữ liệu được làm mới"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Deal"
-msgstr ""
+msgstr "Thỏa thuận"
 
 #: mbw_mira/mbw_mira/doctype/mira_settings/mira_settings.js:18
 #: mbw_mira/mbw_mira/doctype/mira_settings/mira_settings.js:30
 msgid "Default statuses, custom fields and layouts restored successfully."
 msgstr ""
+"Trạng thái mặc định, trường tùy chỉnh và bố cục được khôi phục thành công."
 
 #: frontend/src/components/talent-segment/TalentSegmentCardView.vue:115
 msgid "Define a new talent segment"
-msgstr ""
+msgstr "Xác định một phân khúc tài năng mới"
 
 #: frontend/src/pages/CampaignDetailView.vue:222
 msgid "Delay (Days)"
-msgstr ""
+msgstr "Độ trễ (ngày)"
 
 #. Label of a Int field in DocType 'CampaignStep'
 #: mbw_mira/mbw_mira/doctype/campaignstep/campaignstep.json
 msgid "Delay In Day"
-msgstr ""
+msgstr "Chậm trễ trong ngày"
 
 #: frontend/src/components/BulkDeleteLinkedDocModal.vue:8
 #: frontend/src/components/BulkDeleteLinkedDocModal.vue:53
@@ -1223,32 +1267,34 @@ msgstr "Xóa và khôi phục"
 #: frontend/src/pages/ActionManagement.vue:196
 #: frontend/src/pages/EmailLogManagement.vue:128
 msgid "Delete Selected"
-msgstr ""
+msgstr "Xóa đã chọn"
 
 #: frontend/src/pages/TalentSegmentManagement.vue:231
 msgid "Delete Talent Pool"
-msgstr ""
+msgstr "Xóa nhóm tài năng"
 
 #: frontend/src/components/ViewControls.vue:1157
 #: frontend/src/components/ViewControls.vue:1165
 msgid "Delete View"
-msgstr ""
+msgstr "Xóa chế độ xem"
 
 #: frontend/src/components/DeleteLinkedDocModal.vue:244
 msgid "Delete linked item"
-msgstr ""
+msgstr "Xóa mục được liên kết"
 
 #: frontend/src/components/DeleteLinkedDocModal.vue:11
 msgid "Delete or unlink linked documents"
-msgstr ""
+msgstr "Xóa hoặc hủy liên kết các tài liệu liên kết"
 
 #: frontend/src/components/DeleteLinkedDocModal.vue:25
 msgid "Delete or unlink these linked documents before deleting this document"
 msgstr ""
+"Xóa hoặc hủy liên kết các tài liệu được liên kết này trước khi xóa tài liệu "
+"này"
 
 #: frontend/src/components/BulkDeleteLinkedDocModal.vue:33
 msgid "Delete {0} items"
-msgstr ""
+msgstr "Xóa các mục {0}"
 
 #. Label of a Small Text field in DocType 'Campaign'
 #. Label of a Text field in DocType 'Interaction'
@@ -1259,158 +1305,160 @@ msgstr ""
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 #: mbw_mira/mbw_mira/doctype/talentsegment/talentsegment.json
 msgid "Description"
-msgstr ""
+msgstr "Sự miêu tả"
 
 #: frontend/src/components/talent-segment/TalentSegmentForm.vue:389
 msgid "Description cannot exceed 500 characters"
-msgstr ""
+msgstr "Mô tả không thể vượt quá 500 ký tự"
 
 #: frontend/src/components/talent-segment/TalentSegmentForm_clean.vue:36
 msgid "Description will help others understand the purpose of the segment"
-msgstr ""
+msgstr "Mô tả sẽ giúp người khác hiểu mục đích của phân khúc"
 
 #: frontend/src/components/Apps.vue:63
 #: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:2
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:1
 msgid "Desk"
-msgstr ""
+msgstr "Bàn làm việc"
 
 #: frontend/src/pages/TalentSegmentDetailView.vue:329
 msgid "Detailed Analysis"
-msgstr ""
+msgstr "Phân tích chi tiết"
 
 #: frontend/src/components/talent-segment/TalentSegmentForm_clean.vue:30
 msgid "Detailed description of this segment..."
-msgstr ""
+msgstr "Mô tả chi tiết về phân khúc này ..."
 
 #: frontend/src/components/campaign/CampaignCardView.vue:109
 msgid "Details"
-msgstr ""
+msgstr "Chi tiết"
 
 #: frontend/src/components/FilesUploader/FilesUploaderArea.vue:39
 msgid "Device"
-msgstr ""
+msgstr "Thiết bị"
 
 #: mbw_mira/mbw_mira/doctype/form_script/form_script.js:30
 msgid "Disable"
-msgstr ""
+msgstr "Vô hiệu hóa"
 
 #: frontend/src/components/CommentBox.vue:76
 msgid "Discard"
-msgstr ""
+msgstr "Loại bỏ"
 
 #. Label of a Link field in DocType 'Form Script'
 #. Label of a Link field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/form_script/form_script.json
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "DocType"
-msgstr ""
+msgstr "Doctype"
 
 #. Label of a Data field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Doctype To Sync"
-msgstr ""
+msgstr "Doctype để đồng bộ hóa"
 
 #: frontend/src/data/document.js:23
 msgid "Document updated successfully"
-msgstr ""
+msgstr "Tài liệu được cập nhật thành công"
 
 #: frontend/src/pages/CandidateDetailView.vue:1856
 msgid "Documents"
-msgstr ""
+msgstr "Tài liệu"
 
 #: frontend/src/components/ViewControls.vue:254
 msgid "Download"
-msgstr ""
+msgstr "Tải xuống"
 
 #: frontend/src/components/campaign/CampaignCardView.vue:235
 #: frontend/src/pages/CampaignManagement.vue:96
 msgid "Draft"
-msgstr ""
+msgstr "Bản nháp"
 
 #: frontend/src/components/FilesUploader/FilesUploaderArea.vue:24
 msgid "Drag and drop files here or upload from"
-msgstr ""
+msgstr "Kéo và thả tệp tại đây hoặc tải lên từ"
 
 #: frontend/src/components/FilesUploader/FilesUploaderArea.vue:56
 msgid "Drop files here"
-msgstr ""
+msgstr "Thả tập tin ở đây"
 
 #. Label of a Tab Break field in DocType 'Mira Settings'
 #: mbw_mira/mbw_mira/doctype/mira_settings/mira_settings.json
 msgid "Dropdown Items"
-msgstr ""
+msgstr "Các mặt hàng thả xuống"
 
 #: frontend/src/components/ViewControls.vue:1113
 #: frontend/src/components/candidate/CandidateCardView.vue:185
 msgid "Duplicate"
-msgstr ""
+msgstr "Nhân bản"
 
 #: mbw_mira/mbw_mira/doctype/action/action.py:85
 msgid "Duplicate Action"
-msgstr ""
+msgstr "Hành động trùng lặp"
 
 #: mbw_mira/mbw_mira/doctype/candidatesegment/candidatesegment.py:36
 msgid "Duplicate CandidateSegment"
-msgstr ""
+msgstr "Trùng lặp candidatesegment"
 
 #: mbw_mira/mbw_mira/doctype/TalentProfilesCampaign/TalentProfilesCampaign.py:34
 msgid "Duplicate TalentProfilesCampaign"
-msgstr ""
+msgstr "Trùng lặp TalentProfileScampaign"
 
 #. Description of the 'Profile Data' (JSON) field in DocType 'Candidate'
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
-msgid "Dữ liệu có cấu trúc do AI bóc tách từ CV, bao gồm lịch sử công việc, học vấn."
-msgstr ""
+msgid ""
+"Dữ liệu có cấu trúc do AI bóc tách từ CV, bao gồm lịch sử công việc, học "
+"vấn."
+msgstr "Dữ liệu đó là cấu trúc làm ai bóc tách từ cv, bao"
 
 #. Option for the 'Interaction Type' (Select) field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "EMAIL_BOUNCED"
-msgstr ""
+msgstr "Email_Bounced"
 
 #. Option for the 'Interaction Type' (Select) field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "EMAIL_CLICKED"
-msgstr ""
+msgstr "Email_Clicked"
 
 #. Option for the 'Interaction Type' (Select) field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "EMAIL_DELIVERED"
-msgstr ""
+msgstr "Email_Delivered"
 
 #. Option for the 'Interaction Type' (Select) field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "EMAIL_OPENED"
-msgstr ""
+msgstr "Email_Opened"
 
 #. Option for the 'Interaction Type' (Select) field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "EMAIL_REPLIED"
-msgstr ""
+msgstr "Email_Replied"
 
 #. Option for the 'Interaction Type' (Select) field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "EMAIL_SENT"
-msgstr ""
+msgstr "Email_Sent"
 
 #. Option for the 'Interaction Type' (Select) field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "EMAIL_UNSUBSCRIBED"
-msgstr ""
+msgstr "Email_unSubScripted"
 
 #. Option for the 'Status' (Select) field in DocType 'Candidate'
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
 msgid "ENGAGED"
-msgstr ""
+msgstr "ĐÍNH HÔN"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "ERPNext"
-msgstr ""
+msgstr "ERPNEXT"
 
 #. Option for the 'Status' (Select) field in DocType 'Action'
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "EXECUTED"
-msgstr ""
+msgstr "Thực hiện"
 
 #: frontend/src/components/FieldLayout/Field.vue:91
 #: frontend/src/components/FieldLayoutEditor.vue:319
@@ -1425,56 +1473,56 @@ msgstr ""
 #: frontend/src/pages/EmailLogManagement.vue:217
 #: frontend/src/pages/EmailLogManagement.vue:304
 msgid "Edit"
-msgstr ""
+msgstr "Biên tập"
 
 #: frontend/src/pages/ActionManagement.vue:388
 msgid "Edit Action"
-msgstr ""
+msgstr "Chỉnh sửa hành động"
 
 #: frontend/src/pages/CampaignDetailView.vue:25
 msgid "Edit Campaign"
-msgstr ""
+msgstr "Chỉnh sửa chiến dịch"
 
 #: frontend/src/components/candidate/CandidateEditModal.vue:6
 msgid "Edit Candidate"
-msgstr ""
+msgstr "Chỉnh sửa ứng cử viên"
 
 #: frontend/src/components/Modals/DataFieldsModal.vue:7
 msgid "Edit Data Fields Layout"
-msgstr ""
+msgstr "Chỉnh sửa bố cục trường dữ liệu"
 
 #: frontend/src/components/Controls/GridFieldsEditorModal.vue:7
 #: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:13
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:12
 msgid "Edit Grid Fields Layout"
-msgstr ""
+msgstr "Chỉnh sửa bố cục trường lưới"
 
 #: frontend/src/components/Controls/GridRowFieldsModal.vue:7
 msgid "Edit Grid Row Fields Layout"
-msgstr ""
+msgstr "Chỉnh sửa bố cục trường hàng lưới"
 
 #: frontend/src/pages/CandidateDetailView.vue:25
 msgid "Edit Profile"
-msgstr ""
+msgstr "Chỉnh sửa hồ sơ"
 
 #: frontend/src/components/Modals/QuickEntryModal.vue:7
 msgid "Edit Quick Entry Layout"
-msgstr ""
+msgstr "Chỉnh sửa bố cục nhập nhanh"
 
 #: frontend/src/components/talent-segment/TalentSegmentDetailDialog.vue:356
 #: frontend/src/pages/TalentSegmentDetailView.vue:25
 msgid "Edit Segment"
-msgstr ""
+msgstr "Chỉnh sửa phân đoạn"
 
 #: frontend/src/pages/TalentSegmentDetailView.vue:853
 #: frontend/src/pages/TalentSegmentDetailView.vue:978
 #: frontend/src/pages/TalentSegmentManagement.vue:191
 msgid "Edit Talent Pool"
-msgstr ""
+msgstr "Chỉnh sửa nhóm tài năng"
 
 #: frontend/src/components/Controls/GridRowModal.vue:8
 msgid "Editing Row {0}"
-msgstr ""
+msgstr "Chỉnh sửa hàng {0}"
 
 #. Label of a Data field in DocType 'Candidate'
 #. Label of a Data field in DocType 'TalentPool'
@@ -1484,168 +1532,168 @@ msgstr ""
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
 #: mbw_mira/mbw_mira/doctype/talentpool/talentpool.json
 msgid "Email"
-msgstr ""
+msgstr "E-mail"
 
 #: frontend/src/pages/CandidateDetailView.vue:1644
 msgid "Email Bounced"
-msgstr ""
+msgstr "Email bị trả lại"
 
 #: frontend/src/pages/CandidateDetailView.vue:1646
 msgid "Email Clicked"
-msgstr ""
+msgstr "Email đã nhấp"
 
 #: frontend/src/pages/CandidateDetailView.vue:1643
 msgid "Email Delivered"
-msgstr ""
+msgstr "Email được gửi"
 
 #: frontend/src/pages/CandidateDetailView.vue:1850
 msgid "Email History"
-msgstr ""
+msgstr "Lịch sử email"
 
 #: frontend/src/pages/InteractionManagement.vue:50
 msgid "Email Interactions"
-msgstr ""
+msgstr "Tương tác email"
 
 #: frontend/src/pages/EmailLogManagement.vue:304
 msgid "Email Log"
-msgstr ""
+msgstr "Nhật ký email"
 
 #: frontend/src/pages/EmailLogManagement.vue:426
 msgid "Email Log Details"
-msgstr ""
+msgstr "Chi tiết nhật ký email"
 
 #: frontend/src/pages/EmailLogManagement.vue:115
 #: frontend/src/pages/EmailLogManagement.vue:508
 msgid "Email Logs"
-msgstr ""
+msgstr "Nhật ký email"
 
 #: frontend/src/pages/CandidateDetailView.vue:1645
 msgid "Email Opened"
-msgstr ""
+msgstr "Email đã mở"
 
 #. Label of a Check field in DocType 'Candidate'
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
 msgid "Email Opt Out"
-msgstr ""
+msgstr "Email từ chối"
 
 #: frontend/src/pages/CandidateDetailView.vue:1642
 msgid "Email Sent"
-msgstr ""
+msgstr "Email đã gửi"
 
 #: frontend/src/pages/CandidateDetailView.vue:168
 msgid "Email Subscription"
-msgstr ""
+msgstr "Đăng ký email"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Email communication"
-msgstr ""
+msgstr "Giao tiếp qua email"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Email template"
-msgstr ""
+msgstr "Mẫu email"
 
 #. Name of a DocType
 #: mbw_mira/mbw_mira/doctype/emaillog/emaillog.json
 msgid "EmailLog"
-msgstr ""
+msgstr "Emaillog"
 
 #: frontend/src/components/Filter.vue:124
 msgid "Empty - Choose a field to filter by"
-msgstr ""
+msgstr "Trống - chọn một trường để lọc theo"
 
 #: frontend/src/components/SortBy.vue:134
 msgid "Empty - Choose a field to sort by"
-msgstr ""
+msgstr "Trống - chọn một trường để sắp xếp theo"
 
 #: mbw_mira/mbw_mira/doctype/form_script/form_script.js:30
 msgid "Enable"
-msgstr ""
+msgstr "Cho phép"
 
 #. Label of a Check field in DocType 'Mira Settings'
 #: mbw_mira/mbw_mira/doctype/mira_settings/mira_settings.json
 msgid "Enable Forecasting"
-msgstr ""
+msgstr "Cho phép dự báo"
 
 #. Label of a Check field in DocType 'Form Script'
 #: mbw_mira/mbw_mira/doctype/form_script/form_script.json
 msgid "Enabled"
-msgstr ""
+msgstr "Đã bật"
 
 #. Label of a Date field in DocType 'Campaign'
 #: frontend/src/pages/CampaignDetailView.vue:135
 #: mbw_mira/mbw_mira/doctype/campaign/campaign.json
 msgid "End Date"
-msgstr ""
+msgstr "Ngày kết thúc"
 
 #: frontend/src/pages/CandidateDetailView.vue:1637
 #: frontend/src/pages/CandidateManagement.vue:578
 msgid "Engaged"
-msgstr ""
+msgstr "Đính hôn"
 
 #: frontend/src/components/talent-segment/TalentSegmentCardView.vue:50
 msgid "Engagement Rate"
-msgstr ""
+msgstr "Tỷ lệ tham gia"
 
 #: frontend/src/components/candidate/CandidateTable.vue:21
 msgid "Engagement Score"
-msgstr ""
+msgstr "Điểm tham gia"
 
 #. Label of a Datetime field in DocType 'TalentProfilesCampaign'
 #: mbw_mira/mbw_mira/doctype/TalentProfilesCampaign/TalentProfilesCampaign.json
 msgid "Enrolled At"
-msgstr ""
+msgstr "Ghi danh tại"
 
 #: frontend/src/pages/EmailLogManagement.vue:351
 msgid "Enter BCC recipients"
-msgstr ""
+msgstr "Nhập người nhận BCC"
 
 #: frontend/src/pages/EmailLogManagement.vue:341
 msgid "Enter CC recipients"
-msgstr ""
+msgstr "Nhập người nhận CC"
 
 #: frontend/src/components/candidate/CandidateForm.vue:33
 msgid "Enter email address"
-msgstr ""
+msgstr "Nhập địa chỉ email"
 
 #: frontend/src/pages/EmailLogManagement.vue:380
 msgid "Enter email content"
-msgstr ""
+msgstr "Nhập nội dung email"
 
 #: frontend/src/pages/EmailLogManagement.vue:313
 msgid "Enter email subject"
-msgstr ""
+msgstr "Nhập chủ đề email"
 
 #: frontend/src/pages/EmailLogManagement.vue:389
 msgid "Enter error details"
-msgstr ""
+msgstr "Nhập chi tiết lỗi"
 
 #: frontend/src/components/candidate/CandidateForm.vue:20
 msgid "Enter full name"
-msgstr ""
+msgstr "Nhập tên đầy đủ"
 
 #: frontend/src/components/candidate/CandidateForm.vue:46
 msgid "Enter phone number"
-msgstr ""
+msgstr "Nhập số điện thoại"
 
 #: frontend/src/pages/EmailLogManagement.vue:322
 msgid "Enter recipients (comma-separated)"
-msgstr ""
+msgstr "Nhập người nhận (phân tách bằng dấu phẩy)"
 
 #: frontend/src/pages/ActionManagement.vue:441
 msgid "Enter result data as JSON or leave empty..."
-msgstr ""
+msgstr "Nhập dữ liệu kết quả dưới dạng JSON hoặc để trống ..."
 
 #: frontend/src/components/talent-segment/TalentSegmentForm_clean.vue:12
 msgid "Enter segment name..."
-msgstr ""
+msgstr "Nhập tên phân đoạn ..."
 
 #: frontend/src/pages/EmailLogManagement.vue:333
 msgid "Enter sender email"
-msgstr ""
+msgstr "Nhập email người gửi"
 
 #: frontend/src/components/FieldLayout/Field.vue:334
 msgid "Enter {0}"
-msgstr ""
+msgstr "Enter {0}"
 
 #. Description of the 'Status' (Select) field in DocType 'Candidate'
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
@@ -1654,8 +1702,11 @@ msgid ""
 "Trạng thái của ứng viên trong vivu. Các giá trị: NEW, SOURCED, NURTURING, ENGAGED, ARCHIVED.\n"
 "\n"
 msgstr ""
+"Enum\n"
+"Trạng tháia của ứng Vin trong vivu. Các Giá trị: Mới, có nguồn gốc, nuôi dưỡng, tham gia, lưu trữ."
 
-#: frontend/src/components/Filter.vue:67 frontend/src/components/Filter.vue:100
+#: frontend/src/components/Filter.vue:67
+#: frontend/src/components/Filter.vue:100
 #: frontend/src/components/Filter.vue:272
 #: frontend/src/components/Filter.vue:293
 #: frontend/src/components/Filter.vue:310
@@ -1663,71 +1714,71 @@ msgstr ""
 #: frontend/src/components/Filter.vue:332
 #: frontend/src/components/Filter.vue:348
 msgid "Equals"
-msgstr ""
+msgstr "Bằng nhau"
 
 #. Label of a Long Text field in DocType 'EmailLog'
 #: mbw_mira/mbw_mira/doctype/emaillog/emaillog.json
 msgid "Error"
-msgstr ""
+msgstr "Lỗi"
 
 #: frontend/src/pages/EmailLogManagement.vue:387
 #: frontend/src/pages/EmailLogManagement.vue:481
 msgid "Error Details"
-msgstr ""
+msgstr "Chi tiết lỗi"
 
 #: frontend/src/pages/CampaignManagement.vue:332
 #: frontend/src/pages/CampaignManagement.vue:335
 msgid "Error deleting campaign"
-msgstr ""
+msgstr "Chiến dịch xóa lỗi"
 
 #: frontend/src/data/document.js:26
 msgid "Error updating document"
-msgstr ""
+msgstr "Lỗi cập nhật tài liệu"
 
 #. Label of a Float field in DocType 'CandidatePool'
 #: mbw_mira/mbw_mira/doctype/candidatepool/candidatepool.json
 msgid "Evaluation Score"
-msgstr ""
+msgstr "Điểm đánh giá"
 
 #: frontend/src/components/campaign/CampaignWizard.vue:55
 msgid "Example: React Candidate Nurturing Q4/2024"
-msgstr ""
+msgstr "Ví dụ: Ứng viên phản ứng nuôi dưỡng Q4/2024"
 
 #: frontend/src/components/ViewControls.vue:268
 #: frontend/src/components/ViewControls.vue:277
 msgid "Excel"
-msgstr ""
+msgstr "Excel"
 
 #: frontend/src/pages/ActionManagement.vue:183
 msgid "Execute Selected"
-msgstr ""
+msgstr "Thực thi đã chọn"
 
 #: frontend/src/pages/ActionManagement.vue:49
 #: frontend/src/pages/CampaignDetailView.vue:1008
 msgid "Executed"
-msgstr ""
+msgstr "Thực hiện"
 
 #. Label of a Datetime field in DocType 'Action'
 #: frontend/src/pages/ActionManagement.vue:230
 #: frontend/src/pages/ActionManagement.vue:432
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "Executed At"
-msgstr ""
+msgstr "Thực hiện tại"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Exotel"
-msgstr ""
+msgstr "Exotel"
 
 #: frontend/src/components/Layouts/AppSidebar.vue:114
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 #: mbw_mira/public/frontend/assets/DesktopLayout-62cc0e1f.js:1
 msgid "Expand"
-msgstr ""
+msgstr "Mở rộng"
 
 #. Label of a Float field in DocType 'TalentPool'
 #: mbw_mira/mbw_mira/doctype/talentpool/talentpool.json
 msgid "Experience Years"
-msgstr ""
+msgstr "Kinh nghiệm năm"
 
 #: frontend/src/components/ViewControls.vue:203
 #: frontend/src/components/ViewControls.vue:251
@@ -1735,34 +1786,35 @@ msgstr ""
 #: frontend/src/pages/CandidateManagement.vue:99
 #: frontend/src/pages/EmailLogManagement.vue:139
 msgid "Export"
-msgstr ""
+msgstr "Xuất khẩu"
 
 #: frontend/src/components/ViewControls.vue:282
 msgid "Export All {0} Record(s)"
-msgstr ""
+msgstr "Xuất tất cả {0} bản ghi"
 
 #: frontend/src/pages/CandidateManagement.vue:94
 msgid "Export Candidates"
-msgstr ""
+msgstr "Ứng viên xuất khẩu"
 
 #: frontend/src/components/ViewControls.vue:264
 msgid "Export Type"
-msgstr ""
+msgstr "Loại xuất khẩu"
 
 #. Option for the 'Status' (Select) field in DocType 'Action'
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "FAILED"
-msgstr ""
+msgstr "THẤT BẠI"
 
 #. Option for the 'Interaction Type' (Select) field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "FORM_SUBMITTED"
-msgstr ""
+msgstr "Form_submited"
 
-#. Option for the 'Source Name' (Select) field in DocType 'CandidateDataSource'
+#. Option for the 'Source Name' (Select) field in DocType
+#. 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Facebook"
-msgstr ""
+msgstr "Facebook"
 
 #. Option for the 'Status' (Select) field in DocType 'EmailLog'
 #: frontend/src/components/shared/TaskUpdateModal.vue:151
@@ -1773,94 +1825,98 @@ msgstr ""
 #: frontend/src/pages/EmailLogManagement.vue:530
 #: mbw_mira/mbw_mira/doctype/emaillog/emaillog.json
 msgid "Failed"
-msgstr ""
+msgstr "Thất bại"
 
 #: frontend/src/data/script.js:110
 msgid "Failed to load form controller: {0}"
-msgstr ""
+msgstr "Không tải bộ điều khiển biểu mẫu: {0}"
 
 #: frontend/src/components/Modals/ChangePasswordModal.vue:94
 #: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:2
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:1
 msgid "Failed to update password"
-msgstr ""
+msgstr "Không cập nhật mật khẩu"
 
 #: mbw_mira/api/dashboard.py:245
 msgid "Failed to update task: {0}"
-msgstr ""
+msgstr "Không cập nhật tác vụ: {0}"
 
 #. Option for the 'Status' (Select) field in DocType 'EmailLog'
 #: frontend/src/pages/EmailLogManagement.vue:531
 #: mbw_mira/mbw_mira/doctype/emaillog/emaillog.json
 msgid "Fallback"
-msgstr ""
+msgstr "Thất bại"
 
 #. Label of a Attach field in DocType 'Mira Settings'
 #: mbw_mira/mbw_mira/doctype/mira_settings/mira_settings.json
 msgid "Favicon"
-msgstr ""
+msgstr "Favicon"
 
 #: frontend/src/components/Modals/EditValueModal.vue:5
 msgid "Field"
-msgstr ""
+msgstr "Cánh đồng"
 
 #: frontend/src/components/Controls/GridFieldsEditorModal.vue:19
 #: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:13
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:12
 msgid "Fields Order"
-msgstr ""
+msgstr "Thứ tự lĩnh vực"
 
 #: frontend/src/components/FilesUploader/FilesUploaderArea.vue:333
 msgid "File \"{0}\" was skipped because of invalid file type"
-msgstr ""
+msgstr "Tệp \"{0}\" đã bị bỏ qua vì loại tệp không hợp lệ"
 
 #: frontend/src/components/FilesUploader/FilesUploaderArea.vue:354
 msgid "File \"{0}\" was skipped because only {1} uploads are allowed"
-msgstr ""
+msgstr "Tệp \"{0}\" đã bị bỏ qua vì chỉ được phép tải lên {1}"
 
 #: frontend/src/components/FilesUploader/FilesUploaderArea.vue:359
-msgid "File \"{0}\" was skipped because only {1} uploads are allowed for DocType \"{2}\""
+msgid ""
+"File \"{0}\" was skipped because only {1} uploads are allowed for DocType "
+"\"{2}\""
 msgstr ""
+"Tệp \"{0}\" đã bị bỏ qua vì chỉ được phép tải lên {1} được cho phép cho "
+"doctype \"{2}\""
 
 #: frontend/src/components/Filter.vue:6
 msgid "Filter"
-msgstr ""
+msgstr "Lọc"
 
 #. Label of a Code field in DocType 'Mira View Settings'
 #. Label of a Tab Break field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Filters"
-msgstr ""
+msgstr "Bộ lọc"
 
 #: frontend/src/components/ColumnSettings.vue:112
 #: frontend/src/components/Filter.vue:58 frontend/src/components/Filter.vue:89
 #: frontend/src/components/SortBy.vue:6 frontend/src/components/SortBy.vue:106
 #: frontend/src/components/SortBy.vue:140
 msgid "First Name"
-msgstr ""
+msgstr "Tên"
 
 #: frontend/src/components/Filter.vue:131
 msgid "First name"
-msgstr ""
+msgstr "Tên"
 
 #. Option for the 'Apply To' (Select) field in DocType 'Form Script'
 #: mbw_mira/mbw_mira/doctype/form_script/form_script.json
 msgid "Form"
-msgstr ""
+msgstr "Hình thức"
 
 #. Name of a DocType
 #: mbw_mira/mbw_mira/doctype/form_script/form_script.json
 msgid "Form Script"
-msgstr ""
+msgstr "Hình thức tập lệnh"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Frappe CRM mobile"
-msgstr ""
+msgstr "FRAPPE CRM Mobile"
 
 #. Label of a Link field in DocType 'Mira Notification'
 #: mbw_mira/mbw_mira/doctype/mira_notification/mira_notification.json
 msgid "From User"
-msgstr ""
+msgstr "Từ người dùng"
 
 #. Label of a Data field in DocType 'Candidate'
 #. Label of a Data field in DocType 'TalentPool'
@@ -1869,120 +1925,122 @@ msgstr ""
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
 #: mbw_mira/mbw_mira/doctype/talentpool/talentpool.json
 msgid "Full Name"
-msgstr ""
+msgstr "Tên đầy đủ"
 
 #. Description of the 'Notes' (Small Text) field in DocType
 #. 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Ghi chú, mô tả bổ sung"
-msgstr ""
+msgstr "Ghe Chú, Mô tả Bổ Sung"
 
 #. Label of a Tab Break field in DocType 'Mira View Settings'
 #: frontend/src/components/ViewControls.vue:379
 #: frontend/src/components/ViewControls.vue:611 frontend/src/utils/view.js:16
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Group By"
-msgstr ""
+msgstr "Nhóm theo"
 
 #. Label of a Data field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Group By Field"
-msgstr ""
+msgstr "Nhóm theo trường"
 
 #: frontend/src/components/GroupBy.vue:8
 msgid "Group By: "
-msgstr ""
+msgstr "Nhóm bởi:"
 
 #. Label of a Data field in DocType 'Candidate'
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
 msgid "Headline"
-msgstr ""
+msgstr "Tiêu đề"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Help"
-msgstr ""
+msgstr "Giúp đỡ"
 
 #: frontend/src/components/CommunicationArea.vue:62
 msgid "Hi John, \\n\\nCan you please provide more details on this..."
 msgstr ""
+"Xin chào John, \\ n \\ ncan, bạn vui lòng cung cấp thêm chi tiết về điều này"
+" ..."
 
 #: frontend/src/components/Controls/Password.vue:19
 #: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:2
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:1
 msgid "Hide Password"
-msgstr ""
+msgstr "Ẩn mật khẩu"
 
 #: frontend/src/components/FieldLayoutEditor.vue:360
 msgid "Hide border"
-msgstr ""
+msgstr "Ẩn đường viền"
 
 #: frontend/src/components/FieldLayoutEditor.vue:355
 msgid "Hide label"
-msgstr ""
+msgstr "Ẩn nhãn"
 
 #: frontend/src/components/Controls/GridRowFieldsModal.vue:20
 #: frontend/src/components/Modals/DataFieldsModal.vue:20
 #: frontend/src/components/Modals/QuickEntryModal.vue:20
 msgid "Hide preview"
-msgstr ""
+msgstr "Ẩn xem trước"
 
 #. Option for the 'Status' (Select) field in DocType 'CandidatePool'
 #: mbw_mira/mbw_mira/doctype/candidatepool/candidatepool.json
 msgid "Hired"
-msgstr ""
+msgstr "Thuê"
 
 #. Label of a Date field in DocType 'CandidatePool'
 #: mbw_mira/mbw_mira/doctype/candidatepool/candidatepool.json
 msgid "Hired Date"
-msgstr ""
+msgstr "Ngày thuê"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Home actions"
-msgstr ""
+msgstr "Hành động nhà"
 
 #. Description of the 'Source Action' (Link) field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "Hành động hệ thống đã thực hiện dẫn đến tương tác này"
-msgstr ""
+msgstr "Hànnh động hệ thống ĐA"
 
 #: frontend/src/pages/Dashboard.vue:695 frontend/src/pages/Dashboard.vue:707
 #: frontend/src/pages/Dashboard.vue:719 frontend/src/pages/Dashboard.vue:731
 #: frontend/src/pages/Dashboard.vue:743
 msgid "Hôm nay"
-msgstr ""
+msgstr "Hôm Nay"
 
 #: frontend/src/components/candidateDataSource/CandidateDataSourceForm.vue:177
 #: frontend/src/components/candidateDataSource/CandidateDataSourceFormDirect.vue:295
 msgid "Hủy"
-msgstr ""
+msgstr "Hủy"
 
 #. Description of the 'Owner ID' (Data) field in DocType 'TalentSegment'
 #: mbw_mira/mbw_mira/doctype/talentsegment/talentsegment.json
 msgid "ID của Recruiter (người dùng) sở hữu hoặc quản lý phân khúc này."
-msgstr ""
+msgstr "Id của nhà tuyển dụng (người dùng) sở hữu hoặc quản lý phân Khúc nào."
 
 #. Option for the 'Interaction Type' (Select) field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "INTERVIEW_CONFIRMED"
-msgstr ""
+msgstr "Phỏng vấn_conf xác nhận"
 
 #. Option for the 'Interaction Type' (Select) field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "INTERVIEW_RESCHEDULED"
-msgstr ""
+msgstr "Phỏng vấn_rescheduled"
 
 #. Label of a Data field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Icon"
-msgstr ""
+msgstr "Biểu tượng"
 
 #: frontend/src/pages/CandidateManagement.vue:90
 msgid "Import"
-msgstr ""
+msgstr "Nhập khẩu"
 
 #: frontend/src/pages/CandidateManagement.vue:85
 msgid "Import Candidates"
-msgstr ""
+msgstr "Nhập khẩu ứng viên"
 
 #: frontend/src/components/Filter.vue:276
 #: frontend/src/components/Filter.vue:297
@@ -1990,11 +2048,11 @@ msgstr ""
 #: frontend/src/components/Filter.vue:325
 #: frontend/src/components/Filter.vue:339
 msgid "In"
-msgstr ""
+msgstr "TRONG"
 
 #: frontend/src/components/campaign/CampaignCardView.vue:236
 msgid "In Progress"
-msgstr ""
+msgstr "Trong tiến trình"
 
 #. Option for the 'Status' (Select) field in DocType 'CandidateDataSource'
 #. Option for the 'Status' (Select) field in DocType 'TalentPool'
@@ -2002,49 +2060,49 @@ msgstr ""
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 #: mbw_mira/mbw_mira/doctype/talentpool/talentpool.json
 msgid "Inactive"
-msgstr ""
+msgstr "Không hoạt động"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Integration"
-msgstr ""
+msgstr "Tích hợp"
 
 #. Label of a Link field in DocType 'ApplicantPool'
 #. Name of a DocType
 #: mbw_mira/mbw_mira/doctype/applicantpool/applicantpool.json
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "Interaction"
-msgstr ""
+msgstr "Sự tương tác"
 
 #: frontend/src/pages/TalentSegmentDetailView.vue:215
 msgid "Interaction Rate"
-msgstr ""
+msgstr "Tỷ lệ tương tác"
 
 #. Label of a Select field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "Interaction Type"
-msgstr ""
+msgstr "Loại tương tác"
 
 #: frontend/src/pages/CandidateDetailView.vue:1844
 #: frontend/src/pages/InteractionManagement.vue:470
 msgid "Interactions"
-msgstr ""
+msgstr "Tương tác"
 
 #. Label of a Text field in DocType 'CandidatePool'
 #: mbw_mira/mbw_mira/doctype/candidatepool/candidatepool.json
 msgid "Interview Feedback"
-msgstr ""
+msgstr "Phản hồi phỏng vấn"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Introduction"
-msgstr ""
+msgstr "Giới thiệu"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Invite users"
-msgstr ""
+msgstr "Mời người dùng"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Invite your team"
-msgstr ""
+msgstr "Mời nhóm của bạn"
 
 #: frontend/src/components/Filter.vue:278
 #: frontend/src/components/Filter.vue:287
@@ -2054,134 +2112,140 @@ msgstr ""
 #: frontend/src/components/Filter.vue:341
 #: frontend/src/components/Filter.vue:350
 msgid "Is"
-msgstr ""
+msgstr "Là"
 
 #. Label of a Check field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Is Default"
-msgstr ""
+msgstr "Là mặc định"
 
 #. Label of a Check field in DocType 'Form Script'
 #. Label of a Check field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/form_script/form_script.json
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Is Standard"
-msgstr ""
+msgstr "Là tiêu chuẩn"
 
 #. Description of the 'Enable Forecasting' (Check) field in DocType 'Mira
 #. Settings'
 #: mbw_mira/mbw_mira/doctype/mira_settings/mira_settings.json
-msgid "It will make deal's \"Expected Closure Date\" mandatory to get accurate forecasting insights"
+msgid ""
+"It will make deal's \"Expected Closure Date\" mandatory to get accurate "
+"forecasting insights"
 msgstr ""
+"Nó sẽ làm cho \"Ngày đóng cửa dự kiến\" của Deal để có được những hiểu biết "
+"chính xác về dự báo"
 
-#. Option for the 'Source Type' (Select) field in DocType 'CandidateDataSource'
+#. Option for the 'Source Type' (Select) field in DocType
+#. 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "JobBoard"
-msgstr ""
+msgstr "Bảng làm việc"
 
-#: frontend/src/components/Filter.vue:75 frontend/src/components/Filter.vue:108
+#: frontend/src/components/Filter.vue:75
+#: frontend/src/components/Filter.vue:108
 #: frontend/src/components/Modals/AssignmentModal.vue:35
 msgid "John Doe"
-msgstr ""
+msgstr "John Doe"
 
 #. Label of a Tab Break field in DocType 'Mira View Settings'
 #: frontend/src/components/ViewControls.vue:384
 #: frontend/src/components/ViewControls.vue:600 frontend/src/utils/view.js:20
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Kanban"
-msgstr ""
+msgstr "Kanban"
 
 #. Label of a Code field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Kanban Columns"
-msgstr ""
+msgstr "Cột Kanban"
 
 #. Label of a Code field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Kanban Fields"
-msgstr ""
+msgstr "Cánh đồng Kanban"
 
 #. Description of the 'Sync Frequency Minutes' (Int) field in DocType
 #. 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Khoảng thời gian giữa các lần đồng bộ (phút)"
-msgstr ""
+msgstr "Khoảng thời Gian Giữa Các lần Đồng Bộ (Phút)"
 
 #: mbw_mira/api/file_parser.py:50
 msgid "Không tìm thấy DocType '{0}'"
-msgstr ""
+msgstr "Không tìm thấy doctype '{0}'"
 
 #: mbw_mira/api/file_parser.py:20
 msgid "Không tìm thấy file với tên: {0}"
-msgstr ""
+msgstr "Không tìm thấy file với Tênn: {0}"
 
 #. Description of the 'Active' (Check) field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Kích hoạt hoặc tắt nguồn dữ liệu này"
-msgstr ""
+msgstr "Kích hoạt hoặc tắt ngger dữ liệu nào"
 
 #. Label of a Data field in DocType 'Mira View Settings'
 #: frontend/src/components/ColumnSettings.vue:109
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Label"
-msgstr ""
+msgstr "Nhãn"
 
 #: frontend/src/components/Filter.vue:620
 msgid "Last 6 Months"
-msgstr ""
+msgstr "6 tháng qua"
 
 #: frontend/src/pages/TalentSegmentDetailView.vue:442
 msgid "Last Contact"
-msgstr ""
+msgstr "Liên hệ cuối cùng"
 
 #. Label of a Small Text field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Last Error"
-msgstr ""
+msgstr "Lỗi cuối cùng"
 
 #. Label of a Datetime field in DocType 'Candidate'
 #: frontend/src/components/candidate/CandidateTable.vue:20
 #: frontend/src/pages/CandidateDetailView.vue:160
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
 msgid "Last Interaction"
-msgstr ""
+msgstr "Tương tác cuối cùng"
 
 #: frontend/src/components/Filter.vue:612
 msgid "Last Month"
-msgstr ""
+msgstr "Tháng trước"
 
 #: frontend/src/components/Filter.vue:616
 msgid "Last Quarter"
-msgstr ""
+msgstr "Quý trước"
 
 #. Label of a Datetime field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Last Sync At"
-msgstr ""
+msgstr "Đồng bộ hóa cuối cùng tại"
 
 #: frontend/src/components/Filter.vue:608
 msgid "Last Week"
-msgstr ""
+msgstr "Tuần trước"
 
 #: frontend/src/components/Filter.vue:624
 msgid "Last Year"
-msgstr ""
+msgstr "Năm ngoái"
 
 #: frontend/src/components/talent-segment/TalentSegmentCardView.vue:28
 msgid "Last updated: "
-msgstr ""
+msgstr "Cập nhật lần cuối:"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Lead"
-msgstr ""
+msgstr "Chỉ huy"
 
 #: frontend/src/pages/ActionManagement.vue:443
 msgid "Leave empty or enter valid JSON. Example: {key: value}"
-msgstr ""
+msgstr "Để trống hoặc nhập JSON hợp lệ. Ví dụ: {key: value}"
 
 #: frontend/src/components/FilesUploader/FilesUploaderArea.vue:43
 msgid "Library"
-msgstr ""
+msgstr "Thư viện"
 
 #: frontend/src/components/Filter.vue:274
 #: frontend/src/components/Filter.vue:285
@@ -2189,22 +2253,23 @@ msgstr ""
 #: frontend/src/components/Filter.vue:323
 #: frontend/src/components/Filter.vue:337
 msgid "Like"
-msgstr ""
+msgstr "Giống"
 
 #: frontend/src/components/FilesUploader/FilesUploaderArea.vue:47
 msgid "Link"
-msgstr ""
+msgstr "Liên kết"
 
 #. Label of a Small Text field in DocType 'Candidate'
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
 msgid "Link CV"
-msgstr ""
+msgstr "Liên kết CV"
 
-#. Option for the 'Source Name' (Select) field in DocType 'CandidateDataSource'
+#. Option for the 'Source Name' (Select) field in DocType
+#. 'CandidateDataSource'
 #: frontend/src/pages/CandidateManagement.vue:585
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "LinkedIn"
-msgstr ""
+msgstr "LinkedIn"
 
 #. Option for the 'Apply To' (Select) field in DocType 'Form Script'
 #. Label of a Tab Break field in DocType 'Mira View Settings'
@@ -2214,40 +2279,40 @@ msgstr ""
 #: mbw_mira/mbw_mira/doctype/form_script/form_script.json
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "List"
-msgstr ""
+msgstr "Danh sách"
 
 #: frontend/src/pages/EmailLogManagement.vue:370
 msgid "List of attachment paths"
-msgstr ""
+msgstr "Danh sách các đường dẫn đính kèm"
 
 #. Description of the 'URL (if any)' (Data) field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "Liên kết mà ứng viên đã nhấp vào (nếu có)"
-msgstr ""
+msgstr "Liên kết mà ứng viênn ĐA nhấp vào (nếu đó)"
 
 #. Label of a Check field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Load Default Columns"
-msgstr ""
+msgstr "Tải các cột mặc định"
 
 #: frontend/src/pages/TalentSegmentDetailView.vue:681
 msgid "Loading available candidates..."
-msgstr ""
+msgstr "Đang tải ứng viên có sẵn ..."
 
 #: frontend/src/pages/Dashboard.vue:168
 msgid "Loading campaigns..."
-msgstr ""
+msgstr "Đang tải các chiến dịch ..."
 
 #: frontend/src/pages/CandidateManagement.vue:119
 msgid "Loading candidate list..."
-msgstr ""
+msgstr "Đang tải danh sách ứng cử viên ..."
 
 #: frontend/src/components/campaign/CampaignTable.vue:7
 #: frontend/src/components/talent-segment/TalentSegmentTable.vue:11
 #: frontend/src/pages/Dashboard.vue:53
 #: frontend/src/pages/TalentSegmentManagement.vue:68
 msgid "Loading data..."
-msgstr ""
+msgstr "Tải dữ liệu ..."
 
 #: frontend/src/pages/CampaignDetailView.vue:60
 #: frontend/src/pages/CampaignDetailView.vue:930
@@ -2258,262 +2323,267 @@ msgstr ""
 #: frontend/src/pages/TalentSegmentDetailView.vue:79
 #: frontend/src/pages/TalentSegmentDetailView.vue:909
 msgid "Loading..."
-msgstr ""
+msgstr "Đang tải..."
 
 #. Label of a Data field in DocType 'TalentPool'
 #: mbw_mira/mbw_mira/doctype/talentpool/talentpool.json
 msgid "Location"
-msgstr ""
+msgstr "Vị trí"
 
 #: frontend/src/composables/frappecloud.js:23
 #: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:2
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:1
 msgid "Login to Frappe Cloud?"
-msgstr ""
+msgstr "Đăng nhập vào Frappe Cloud?"
 
 #. Label of a Attach field in DocType 'Mira Settings'
 #: mbw_mira/mbw_mira/doctype/mira_settings/mira_settings.json
 msgid "Logo"
-msgstr ""
+msgstr "Logo"
 
 #. Label of a Small Text field in DocType 'Short URL'
 #: mbw_mira/mbw_mira/doctype/short_url/short_url.json
 msgid "Long URL"
-msgstr ""
+msgstr "URL dài"
 
 #. Description of the 'Interaction Type' (Select) field in DocType
 #. 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "Loại hành vi của ứng viên được hệ thống ghi nhận"
-msgstr ""
+msgstr "Loại hànnh vi của"
 
 #. Description of the 'Type' (Select) field in DocType 'TalentSegment'
 #: mbw_mira/mbw_mira/doctype/talentsegment/talentsegment.json
-msgid "Loại phân khúc: DYNAMIC (AI tự động cập nhật), MANUAL (người dùng tự quản lý)."
+msgid ""
+"Loại phân khúc: DYNAMIC (AI tự động cập nhật), MANUAL (người dùng tự quản "
+"lý)."
 msgstr ""
+"Loại Phân Khúc: Dynamic (ai Tự Động Cập NHật), Hướng dẫn sử dụng (người Dùng"
+" tự Quản Lý)."
 
 #. Option for the 'Type' (Select) field in DocType 'TalentSegment'
 #: mbw_mira/mbw_mira/doctype/talentsegment/talentsegment.json
 msgid "MANUAL"
-msgstr ""
+msgstr "THỦ CÔNG"
 
 #. Option for the 'Action Type' (Select) field in DocType 'CampaignStep'
 #: mbw_mira/mbw_mira/doctype/campaignstep/campaignstep.json
 msgid "MANUAL_CALL"
-msgstr ""
+msgstr "CANUAL_CALL"
 
 #. Option for the 'Action Type' (Select) field in DocType 'CampaignStep'
 #: mbw_mira/mbw_mira/doctype/campaignstep/campaignstep.json
 msgid "MANUAL_TASK"
-msgstr ""
+msgstr "CANUAL_TASK"
 
-#. Option for the 'Source Name' (Select) field in DocType 'CandidateDataSource'
+#. Option for the 'Source Name' (Select) field in DocType
+#. 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "MBW ATS"
-msgstr ""
+msgstr "MBW ATS"
 
 #: frontend/src/components/ViewControls.vue:1146
 msgid "Make Private"
-msgstr ""
+msgstr "Làm cho riêng tư"
 
 #: frontend/src/components/ViewControls.vue:1146
 msgid "Make Public"
-msgstr ""
+msgstr "Công khai"
 
 #: frontend/src/components/talent-segment/TalentSegmentCardView.vue:86
 msgid "Manage"
-msgstr ""
+msgstr "Quản lý"
 
 #: frontend/src/pages/CandidateManagement.vue:38
 msgid "Manage and track candidate information in the system"
-msgstr ""
+msgstr "Quản lý và theo dõi thông tin ứng viên trong hệ thống"
 
 #: frontend/src/data/document.js:31
 msgid "Mandatory field error: {0}"
-msgstr ""
+msgstr "Lỗi trường bắt buộc: {0}"
 
 #: frontend/src/components/talent-segment/TalentSegmentForm.vue:364
 #: frontend/src/pages/CandidateManagement.vue:584
 msgid "Manual"
-msgstr ""
+msgstr "Thủ công"
 
 #: frontend/src/pages/CampaignDetailView.vue:995
 msgid "Manual Call"
-msgstr ""
+msgstr "Cuộc gọi thủ công"
 
 #: frontend/src/pages/CampaignDetailView.vue:996
 msgid "Manual Task"
-msgstr ""
+msgstr "Nhiệm vụ thủ công"
 
 #: frontend/src/components/Notifications.vue:19
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 #: mbw_mira/public/frontend/assets/DesktopLayout-62cc0e1f.js:1
 msgid "Mark all as read"
-msgstr ""
+msgstr "Đánh dấu tất cả như đọc"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Masters"
-msgstr ""
+msgstr "Thạc sĩ"
 
 #: frontend/src/components/talent-segment/TalentSegmentForm.vue:281
 msgid "Maximum Salary (million VND)"
-msgstr ""
+msgstr "Mức lương tối đa (triệu VND)"
 
 #: frontend/src/pages/CandidateDetailView.vue:1648
 msgid "Meeting"
-msgstr ""
+msgstr "Cuộc họp"
 
 #. Option for the 'Type' (Select) field in DocType 'Mira Notification'
 #: mbw_mira/mbw_mira/doctype/mira_notification/mira_notification.json
 msgid "Mention"
-msgstr ""
+msgstr "Đề cập đến"
 
 #. Label of a HTML Editor field in DocType 'Mira Notification'
 #: mbw_mira/mbw_mira/doctype/mira_notification/mira_notification.json
 msgid "Message"
-msgstr ""
+msgstr "Tin nhắn"
 
 #: frontend/src/components/talent-segment/TalentSegmentForm.vue:268
 msgid "Minimum Salary (million VND)"
-msgstr ""
+msgstr "Mức lương tối thiểu (triệu VND)"
 
 #: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:2
 msgid "Mira"
-msgstr ""
+msgstr "Mira"
 
 #. Name of a DocType
 #: mbw_mira/mbw_mira/doctype/mira_notification/mira_notification.json
 msgid "Mira Notification"
-msgstr ""
+msgstr "Thông báo Mira"
 
 #. Name of a DocType
 #: mbw_mira/mbw_mira/doctype/mira_settings/mira_settings.json
 msgid "Mira Settings"
-msgstr ""
+msgstr "Cài đặt Mira"
 
 #. Name of a DocType
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Mira View Settings"
-msgstr ""
+msgstr "Cài đặt Mira View"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Mobile app installation"
-msgstr ""
+msgstr "Cài đặt ứng dụng di động"
 
 #: frontend/src/pages/EmailLogManagement.vue:161
 #: frontend/src/pages/EmailLogManagement.vue:468
 msgid "Modified"
-msgstr ""
+msgstr "Sửa đổi"
 
 #: frontend/src/pages/CampaignDetailView.vue:73
 #: frontend/src/pages/TalentSegmentDetailView.vue:91
 msgid "Modified:"
-msgstr ""
+msgstr "Đã sửa đổi:"
 
 #: frontend/src/components/FieldLayoutEditor.vue:454
 msgid "Move to next section"
-msgstr ""
+msgstr "Di chuyển sang phần tiếp theo"
 
 #: frontend/src/components/FieldLayoutEditor.vue:407
 msgid "Move to next tab"
-msgstr ""
+msgstr "Di chuyển sang tab tiếp theo"
 
 #: frontend/src/components/FieldLayoutEditor.vue:464
 msgid "Move to previous section"
-msgstr ""
+msgstr "Di chuyển sang phần trước"
 
 #: frontend/src/components/FieldLayoutEditor.vue:393
 msgid "Move to previous tab"
-msgstr ""
+msgstr "Di chuyển sang tab trước"
 
 #: frontend/src/pages/Dashboard.vue:41
 msgid "My Tasks"
-msgstr ""
+msgstr "Nhiệm vụ của tôi"
 
 #. Description of the 'Description' (Small Text) field in DocType
 #. 'TalentSegment'
 #: mbw_mira/mbw_mira/doctype/talentsegment/talentsegment.json
 msgid "Mô tả chi tiết về tiêu chí, mục đích của phân khúc này."
-msgstr ""
+msgstr "Mô tả Chi Tiết Về TiÊU Chí, Mục Đích Của Phân Khúc Nào."
 
 #. Description of the 'Skills' (Small Text) field in DocType 'Candidate'
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
 msgid "Mảng các kỹ năng được chuẩn hóa. VD: [\"react\", \"nodejs\", \"aws\"]"
-msgstr ""
+msgstr "Mảng các kỹ năng Được Chuẩn Hùaa. VD: [\"React\", \"Nodejs\", \"AWS\"]"
 
 #. Option for the 'Status' (Select) field in DocType 'Candidate'
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
 msgid "NEW"
-msgstr ""
+msgstr "MỚI"
 
 #. Option for the 'Type' (Select) field in DocType 'Campaign'
 #. Option for the 'Status' (Select) field in DocType 'Candidate'
 #: mbw_mira/mbw_mira/doctype/campaign/campaign.json
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
 msgid "NURTURING"
-msgstr ""
+msgstr "Nuôi dưỡng"
 
 #. Label of a Data field in DocType 'Mira Settings'
 #: frontend/src/components/ViewControls.vue:779
 #: mbw_mira/mbw_mira/doctype/mira_settings/mira_settings.json
 msgid "Name"
-msgstr ""
+msgstr "Tên"
 
 #. Option for the 'Status' (Select) field in DocType 'ApplicantPool'
 #: frontend/src/pages/CandidateDetailView.vue:1634
 #: frontend/src/pages/CandidateManagement.vue:575
 #: mbw_mira/mbw_mira/doctype/applicantpool/applicantpool.json
 msgid "New"
-msgstr ""
+msgstr "Mới"
 
 #: frontend/src/components/Modals/ChangePasswordModal.vue:6
 msgid "New Password"
-msgstr ""
+msgstr "Mật khẩu mới"
 
 #: frontend/src/components/FieldLayoutEditor.vue:203
 #: frontend/src/components/SidePanelLayoutEditor.vue:133
 msgid "New Section"
-msgstr ""
+msgstr "Phần mới"
 
 #: frontend/src/components/FieldLayoutEditor.vue:299
 #: frontend/src/components/FieldLayoutEditor.vue:304
 msgid "New Tab"
-msgstr ""
+msgstr "Tab mới"
 
 #: frontend/src/components/Modals/CreateDocumentModal.vue:88
 msgid "New {0}"
-msgstr ""
+msgstr "Mới {0}"
 
 #: frontend/src/pages/ActionManagement.vue:381
 #: frontend/src/pages/EmailLogManagement.vue:296
 #: frontend/src/pages/TalentSegmentManagement.vue:113
 msgid "Next"
-msgstr ""
+msgstr "Kế tiếp"
 
 #: frontend/src/components/Filter.vue:668
 msgid "Next 6 Months"
-msgstr ""
+msgstr "6 tháng tới"
 
 #. Label of a Datetime field in DocType 'TalentProfilesCampaign'
 #: mbw_mira/mbw_mira/doctype/TalentProfilesCampaign/TalentProfilesCampaign.json
 msgid "Next Action At"
-msgstr ""
+msgstr "Hành động tiếp theo tại"
 
 #: frontend/src/components/Filter.vue:660
 msgid "Next Month"
-msgstr ""
+msgstr "Tháng tới"
 
 #: frontend/src/components/Filter.vue:664
 msgid "Next Quarter"
-msgstr ""
+msgstr "Quý tới"
 
 #: frontend/src/components/Filter.vue:656
 msgid "Next Week"
-msgstr ""
+msgstr "Tuần tới"
 
 #: frontend/src/components/Filter.vue:672
 msgid "Next Year"
-msgstr ""
+msgstr "Năm tới"
 
 #. Description of the 'Source' (Data) field in DocType 'Candidate'
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
@@ -2524,121 +2594,124 @@ msgstr ""
 #: frontend/src/pages/Dashboard.vue:722 frontend/src/pages/Dashboard.vue:734
 #: frontend/src/pages/Dashboard.vue:746
 msgid "Ngày mai"
-msgstr ""
+msgstr "Ngào Mai"
 
 #. Description of the 'Last Interaction' (Datetime) field in DocType
 #. 'Candidate'
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
 msgid "Ngày và giờ của lần tương tác cuối cùng (gửi email, mở email, v.v.)."
-msgstr ""
+msgstr "Ngày và giờ của lần tương tac Cuối cùnm (email gửi, email mở, v.v.)."
 
 #. Description of the 'Created By' (Link) field in DocType
 #. 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Người tạo nguồn dữ liệu này"
-msgstr ""
+msgstr "Người tạo nguồn dữ liệu nào"
 
 #: frontend/src/components/Controls/Grid.vue:27
 msgid "No"
-msgstr ""
+msgstr "KHÔNG"
 
 #: mbw_mira/services/candidate_service.py:164
 msgid "No Campaign Step found for Campaign {}"
-msgstr ""
+msgstr "Không tìm thấy bước chiến dịch nào cho chiến dịch {}"
 
 #: frontend/src/components/Controls/Grid.vue:309
 msgid "No Data"
-msgstr ""
+msgstr "Không có dữ liệu"
 
 #: mbw_mira/api/__init__.py:63
 msgid "No JSON payload found in request"
-msgstr ""
+msgstr "Không tìm thấy tải trọng json trong yêu cầu"
 
 #: frontend/src/pages/ActionManagement.vue:252
 msgid "No actions found"
-msgstr ""
+msgstr "Không tìm thấy hành động"
 
 #: frontend/src/pages/Dashboard.vue:189
 msgid "No active campaigns yet"
-msgstr ""
+msgstr "Chưa có chiến dịch hoạt động nào"
 
 #: frontend/src/pages/TalentSegmentDetailView.vue:722
-msgid "No available candidates to add. All candidates are already in this segment."
+msgid ""
+"No available candidates to add. All candidates are already in this segment."
 msgstr ""
+"Không có ứng viên có sẵn để thêm. Tất cả các ứng cử viên đã ở trong phân "
+"khúc này."
 
 #: frontend/src/components/campaign/CampaignCardView.vue:10
 msgid "No campaigns to display"
-msgstr ""
+msgstr "Không có chiến dịch nào để hiển thị"
 
 #: frontend/src/components/candidate/CandidateCardView.vue:216
 #: frontend/src/pages/TalentSegmentDetailView.vue:490
 msgid "No candidates found"
-msgstr ""
+msgstr "Không tìm thấy ứng cử viên"
 
 #: mbw_mira/services/candidate_service.py:143
 msgid "No candidates found in segment {}"
-msgstr ""
+msgstr "Không có ứng cử viên nào được tìm thấy trong phân khúc {}"
 
 #: frontend/src/components/candidate/CandidateCardView.vue:216
 #: frontend/src/components/talent-segment/TalentSegmentCardView.vue:79
 #: frontend/src/components/talent-segment/TalentSegmentDetailDialog.vue:320
 msgid "No candidates yet"
-msgstr ""
+msgstr "Chưa có ứng cử viên nào"
 
 #: frontend/src/components/talent-segment/TalentSegmentTable.vue:12
 msgid "No data available"
-msgstr ""
+msgstr "Không có dữ liệu có sẵn"
 
 #: frontend/src/pages/TalentSegmentDetailView.vue:771
 msgid "No email"
-msgstr ""
+msgstr "Không có email"
 
 #: frontend/src/pages/EmailLogManagement.vue:254
 msgid "No email logs found"
-msgstr ""
+msgstr "Không tìm thấy nhật ký email"
 
 #: frontend/src/components/talent-segment/TalentSegmentCardView.vue:43
 msgid "No information"
-msgstr ""
+msgstr "Không có thông tin"
 
 #: frontend/src/components/candidate/CandidateCardView.vue:62
 msgid "No information available"
-msgstr ""
+msgstr "Không có thông tin có sẵn"
 
 #: frontend/src/components/FieldLayoutEditor.vue:92
 msgid "No label"
-msgstr ""
+msgstr "Không có nhãn"
 
 #: frontend/src/components/Notifications.vue:83
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 #: mbw_mira/public/frontend/assets/DesktopLayout-62cc0e1f.js:1
 msgid "No new notifications"
-msgstr ""
+msgstr "Không có thông báo mới"
 
 #: frontend/src/components/candidate/CandidateViewModal.vue:48
 msgid "No position information available"
-msgstr ""
+msgstr "Không có thông tin vị trí có sẵn"
 
 #: frontend/src/pages/Dashboard.vue:350
 msgid "No recently completed campaigns"
-msgstr ""
+msgstr "Không có chiến dịch nào đã hoàn thành gần đây"
 
 #: frontend/src/components/Controls/MultiSelectEmailInput.vue:72
 #: frontend/src/components/Controls/MultiSelectUserInput.vue:72
 msgid "No results found"
-msgstr ""
+msgstr "Không tìm thấy kết quả"
 
 #: frontend/src/components/talent-segment/TalentSegmentTable.vue:144
 msgid "No segments available"
-msgstr ""
+msgstr "Không có phân đoạn có sẵn"
 
 #: frontend/src/pages/TalentSegmentManagement.vue:79
 msgid "No talent pools yet"
-msgstr ""
+msgstr "Chưa có tài năng nào"
 
 #: frontend/src/components/SidePanelLayout.vue:131
 msgid "No {0} Available"
-msgstr ""
+msgstr "Không có {0} có sẵn"
 
 #: frontend/src/pages/CampaignDetailView.vue:100
 #: frontend/src/pages/CampaignDetailView.vue:104
@@ -2654,7 +2727,7 @@ msgstr ""
 #: frontend/src/pages/CandidateDetailView.vue:156
 #: frontend/src/pages/CandidateDetailView.vue:163
 msgid "None"
-msgstr ""
+msgstr "Không có"
 
 #: frontend/src/components/Filter.vue:273
 #: frontend/src/components/Filter.vue:294
@@ -2662,7 +2735,7 @@ msgstr ""
 #: frontend/src/components/Filter.vue:322
 #: frontend/src/components/Filter.vue:349
 msgid "Not Equals"
-msgstr ""
+msgstr "Không bằng"
 
 #: frontend/src/components/Filter.vue:277
 #: frontend/src/components/Filter.vue:298
@@ -2670,7 +2743,7 @@ msgstr ""
 #: frontend/src/components/Filter.vue:326
 #: frontend/src/components/Filter.vue:340
 msgid "Not In"
-msgstr ""
+msgstr "Không phải vào"
 
 #: frontend/src/components/Filter.vue:275
 #: frontend/src/components/Filter.vue:286
@@ -2678,7 +2751,7 @@ msgstr ""
 #: frontend/src/components/Filter.vue:324
 #: frontend/src/components/Filter.vue:338
 msgid "Not Like"
-msgstr ""
+msgstr "Không thích"
 
 #: frontend/src/components/Controls/GridFieldsEditorModal.vue:10
 #: frontend/src/components/Controls/GridRowFieldsModal.vue:10
@@ -2687,20 +2760,20 @@ msgstr ""
 #: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:13
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:12
 msgid "Not Saved"
-msgstr ""
+msgstr "Không được lưu"
 
 #: frontend/src/components/campaign/CampaignCardView.vue:70
 msgid "Not determined"
-msgstr ""
+msgstr "Không xác định"
 
 #: frontend/src/pages/Dashboard.vue:667
 msgid "Not specified"
-msgstr ""
+msgstr "Không được chỉ định"
 
 #: frontend/src/pages/CandidateDetailView.vue:1649
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Note"
-msgstr ""
+msgstr "Ghi chú"
 
 #. Label of a Text field in DocType 'ApplicantPool'
 #. Label of a Small Text field in DocType 'CandidateDataSource'
@@ -2711,26 +2784,26 @@ msgstr ""
 #: mbw_mira/mbw_mira/doctype/candidatepool/candidatepool.json
 #: mbw_mira/mbw_mira/doctype/talentpool/talentpool.json
 msgid "Notes"
-msgstr ""
+msgstr "Ghi chú"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Notification"
-msgstr ""
+msgstr "Thông báo"
 
 #. Label of a Text field in DocType 'Mira Notification'
 #: mbw_mira/mbw_mira/doctype/mira_notification/mira_notification.json
 msgid "Notification Text"
-msgstr ""
+msgstr "Văn bản thông báo"
 
 #. Label of a Dynamic Link field in DocType 'Mira Notification'
 #: mbw_mira/mbw_mira/doctype/mira_notification/mira_notification.json
 msgid "Notification Type Doc"
-msgstr ""
+msgstr "Loại thông báo tài liệu"
 
 #. Label of a Link field in DocType 'Mira Notification'
 #: mbw_mira/mbw_mira/doctype/mira_notification/mira_notification.json
 msgid "Notification Type Doctype"
-msgstr ""
+msgstr "Loại thông báo DOCTYPE"
 
 #: frontend/src/components/Layouts/AppSidebar.vue:9
 #: frontend/src/components/Mobile/MobileSidebar.vue:23
@@ -2740,259 +2813,264 @@ msgstr ""
 #: mbw_mira/public/frontend/assets/MobileLayout-39580b5a.js:1
 #: mbw_mira/public/frontend/assets/MobileLayout-3bbdcb8b.js:1
 msgid "Notifications"
-msgstr ""
+msgstr "Thông báo"
 
 #: frontend/src/components/talent-segment/TalentSegmentForm.vue:397
 msgid "Number of candidates must be >= 0"
-msgstr ""
+msgstr "Số lượng ứng cử viên phải> = 0"
 
 #: frontend/src/components/campaign/CampaignCardView.vue:27
 #: frontend/src/pages/CandidateDetailView.vue:1636
 #: frontend/src/pages/CandidateManagement.vue:577
 msgid "Nurturing"
-msgstr ""
+msgstr "Nuôi dưỡng"
 
-#. Option for the 'Auth Method' (Select) field in DocType 'CandidateDataSource'
+#. Option for the 'Auth Method' (Select) field in DocType
+#. 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "OAuth2"
-msgstr ""
+msgstr "OAuth2"
 
 #: frontend/src/components/campaign/CampaignWizard.vue:63
 msgid "Objective"
-msgstr ""
+msgstr "Khách quan"
 
 #. Option for the 'Status' (Select) field in DocType 'CandidatePool'
 #: mbw_mira/mbw_mira/doctype/candidatepool/candidatepool.json
 msgid "Offered"
-msgstr ""
+msgstr "Ngỏ ý"
 
 #: frontend/src/pages/TalentSegmentDetailView.vue:697
 msgid "Only display candidates not already in this segment"
-msgstr ""
+msgstr "Chỉ hiển thị các ứng viên chưa có trong phân khúc này"
 
 #: frontend/src/utils/index.js:448
 msgid "Only image files are allowed"
-msgstr ""
+msgstr "Chỉ cho phép tệp hình ảnh được phép"
 
 #: frontend/src/components/campaign/CampaignCard.vue:134
 #: frontend/src/pages/Dashboard.vue:288
 msgid "Open Rate"
-msgstr ""
+msgstr "Tỷ lệ mở"
 
 #: frontend/src/components/campaign/CampaignForm.vue:186
 #: frontend/src/pages/TalentSegmentManagement.vue:590
 msgid "Operation successful!"
-msgstr ""
+msgstr "Hoạt động thành công!"
 
 #: frontend/src/components/ViewControls.vue:199
 msgid "Options"
-msgstr ""
+msgstr "Tùy chọn"
 
 #: frontend/src/pages/CampaignDetailView.vue:219
 msgid "Order"
-msgstr ""
+msgstr "Đặt hàng"
 
 #. Label of a Tab Break field in DocType 'Mira View Settings'
 #. Label of a Code field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Order By"
-msgstr ""
+msgstr "Đặt hàng bởi"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Organization"
-msgstr ""
+msgstr "Tổ chức"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Other features"
-msgstr ""
+msgstr "Các tính năng khác"
 
 #: frontend/src/pages/Dashboard.vue:684
 msgid "Overdue"
-msgstr ""
+msgstr "Quá hạn"
 
 #: frontend/src/pages/Dashboard.vue:14
 msgid "Overview Dashboard"
-msgstr ""
+msgstr "Tổng quan Dashboard"
 
 #: frontend/src/components/campaign/CampaignTable.vue:19
 msgid "Owner"
-msgstr ""
+msgstr "Người sở hữu"
 
 #. Label of a Link field in DocType 'Campaign'
 #. Label of a Data field in DocType 'TalentSegment'
 #: mbw_mira/mbw_mira/doctype/campaign/campaign.json
 #: mbw_mira/mbw_mira/doctype/talentsegment/talentsegment.json
 msgid "Owner ID"
-msgstr ""
+msgstr "ID chủ sở hữu"
 
 #. Option for the 'Interaction Type' (Select) field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "PAGE_VISITED"
-msgstr ""
+msgstr "Trang_visited"
 
 #. Option for the 'Status' (Select) field in DocType 'Campaign'
 #. Option for the 'Status' (Select) field in DocType 'TalentProfilesCampaign'
 #: mbw_mira/mbw_mira/doctype/TalentProfilesCampaign/TalentProfilesCampaign.json
 #: mbw_mira/mbw_mira/doctype/campaign/campaign.json
 msgid "PAUSED"
-msgstr ""
+msgstr "Tạm dừng"
 
 #. Option for the 'Status' (Select) field in DocType 'Action'
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "PENDING_MANUAL"
-msgstr ""
+msgstr "Đang chờ xử lý_manual"
 
 #: frontend/src/pages/ActionManagement.vue:373
 msgid "Page"
-msgstr ""
+msgstr "Trang"
 
 #: mbw_mira/services/candidate_service.py:80
 msgid "Parameter 'candidates' must be a list."
-msgstr ""
+msgstr "Tham số 'ứng cử viên' phải là một danh sách."
 
 #: frontend/src/components/Modals/ChangePasswordModal.vue:87
 #: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:2
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:1
 msgid "Password updated successfully"
-msgstr ""
+msgstr "Mật khẩu được cập nhật thành công"
 
 #: frontend/src/components/campaign/CampaignCardView.vue:237
 #: frontend/src/pages/CampaignDetailView.vue:1001
 #: frontend/src/pages/CampaignManagement.vue:94
 #: frontend/src/pages/CandidateDetailView.vue:1628
 msgid "Paused"
-msgstr ""
+msgstr "Tạm dừng"
 
 #: frontend/src/pages/Dashboard.vue:661
 msgid "Pending Confirmation"
-msgstr ""
+msgstr "Đang chờ xác nhận"
 
 #: frontend/src/pages/CampaignDetailView.vue:1011
 msgid "Pending Manual"
-msgstr ""
+msgstr "Hướng dẫn đang chờ xử lý"
 
 #. Label of a Data field in DocType 'Candidate'
 #. Label of a Data field in DocType 'TalentPool'
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
 #: mbw_mira/mbw_mira/doctype/talentpool/talentpool.json
 msgid "Phone"
-msgstr ""
+msgstr "Điện thoại"
 
 #: frontend/src/pages/CandidateDetailView.vue:1647
 msgid "Phone Call"
-msgstr ""
+msgstr "Cuộc gọi điện thoại"
 
 #: frontend/src/components/candidate/CandidateForm.vue:41
 #: frontend/src/pages/CandidateDetailView.vue:127
 msgid "Phone Number"
-msgstr ""
+msgstr "Số điện thoại"
 
 #. Description of the 'Auth Method' (Select) field in DocType
 #. 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
-msgid "Phương thức xác thực API: API Key (TopCV), OAuth2 (Facebook, LinkedIn), Basic"
+msgid ""
+"Phương thức xác thực API: API Key (TopCV), OAuth2 (Facebook, LinkedIn), "
+"Basic"
 msgstr ""
+"Phương thức xátc thực API: API Key (TopCV), OAuth2 (Facebook, LinkedIn), "
+"BASIC"
 
 #: frontend/src/components/ViewControls.vue:1138
 msgid "Pin View"
-msgstr ""
+msgstr "Chế độ xem pin"
 
 #. Label of a Check field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Pinned"
-msgstr ""
+msgstr "Ghim"
 
 #: frontend/src/components/ViewControls.vue:677
 msgid "Pinned Views"
-msgstr ""
+msgstr "Quan điểm ghim"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Pinned view"
-msgstr ""
+msgstr "Chế độ xem ghim"
 
 #: frontend/src/components/FilesUploader/FilesUploader.vue:168
 msgid "Please enter a valid URL"
-msgstr ""
+msgstr "Vui lòng nhập URL hợp lệ"
 
 #: frontend/src/components/candidate/CandidateTable.vue:17
 msgid "Position"
-msgstr ""
+msgstr "Chức vụ"
 
 #: frontend/src/pages/ActionManagement.vue:370
 #: frontend/src/pages/EmailLogManagement.vue:271
 #: frontend/src/pages/TalentSegmentManagement.vue:110
 msgid "Previous"
-msgstr ""
+msgstr "Trước"
 
 #: frontend/src/components/FilesUploader/FilesUploaderArea.vue:89
 msgid "Private"
-msgstr ""
+msgstr "Riêng tư"
 
 #: frontend/src/components/campaign/CampaignWizard.vue:120
 msgid "Processing..."
-msgstr ""
+msgstr "Xử lý..."
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Profile"
-msgstr ""
+msgstr "Hồ sơ"
 
 #. Label of a JSON field in DocType 'Candidate'
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
 msgid "Profile Data"
-msgstr ""
+msgstr "Dữ liệu hồ sơ"
 
 #: frontend/src/components/campaign/CampaignCardView.vue:49
 #: frontend/src/components/campaign/CampaignTable.vue:17
 msgid "Progress"
-msgstr ""
+msgstr "Tiến triển"
 
 #. Label of a Check field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Public"
-msgstr ""
+msgstr "Công cộng"
 
 #: frontend/src/components/ViewControls.vue:672
 msgid "Public Views"
-msgstr ""
+msgstr "Quan điểm công khai"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Public view"
-msgstr ""
+msgstr "Quan điểm công khai"
 
 #. Option for the 'Sync Direction' (Select) field in DocType
 #. 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Pull"
-msgstr ""
+msgstr "Sự lôi kéo"
 
 #. Option for the 'Sync Direction' (Select) field in DocType
 #. 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Push"
-msgstr ""
+msgstr "Xô"
 
 #: frontend/src/components/ViewControls.vue:731
 msgid "Quick Filters updated successfully"
-msgstr ""
+msgstr "Bộ lọc nhanh được cập nhật thành công"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Quick entry layout"
-msgstr ""
+msgstr "Bố cục nhập nhanh"
 
 #: frontend/src/pages/Dashboard.vue:696 frontend/src/pages/Dashboard.vue:708
 #: frontend/src/pages/Dashboard.vue:720 frontend/src/pages/Dashboard.vue:732
 #: frontend/src/pages/Dashboard.vue:744
 msgid "Quá hạn"
-msgstr ""
+msgstr "Quá hạn"
 
 #. Label of a Check field in DocType 'Mira Notification'
 #: mbw_mira/mbw_mira/doctype/mira_notification/mira_notification.json
 msgid "Read"
-msgstr ""
+msgstr "Đọc"
 
 #: frontend/src/pages/Dashboard.vue:318
 msgid "Recently Completed"
-msgstr ""
+msgstr "Gần đây đã hoàn thành"
 
 #. Label of a Small Text field in DocType 'EmailLog'
 #: frontend/src/pages/EmailLogManagement.vue:158
@@ -3000,81 +3078,81 @@ msgstr ""
 #: frontend/src/pages/EmailLogManagement.vue:436
 #: mbw_mira/mbw_mira/doctype/emaillog/emaillog.json
 msgid "Recipients"
-msgstr ""
+msgstr "Người nhận"
 
 #: frontend/src/components/campaign/CampaignCardView.vue:43
 msgid "Recruiting for important positions in the company."
-msgstr ""
+msgstr "Tuyển dụng cho các vị trí quan trọng trong công ty."
 
 #: frontend/src/components/campaign/CampaignTableNew.vue:7
 msgid "Recruitment Campaign List"
-msgstr ""
+msgstr "Danh sách chiến dịch tuyển dụng"
 
 #. Label of a Dynamic Link field in DocType 'Mira Notification'
 #: mbw_mira/mbw_mira/doctype/mira_notification/mira_notification.json
 msgid "Reference Doc"
-msgstr ""
+msgstr "Tài liệu tham khảo"
 
 #. Label of a Link field in DocType 'Mira Notification'
 #: mbw_mira/mbw_mira/doctype/mira_notification/mira_notification.json
 msgid "Reference Doctype"
-msgstr ""
+msgstr "Tài liệu tham khảo doctype"
 
 #: frontend/src/pages/CandidateManagement.vue:587
 msgid "Referral"
-msgstr ""
+msgstr "Giới thiệu"
 
 #: frontend/src/components/ViewControls.vue:25
 #: frontend/src/components/ViewControls.vue:160
 #: frontend/src/pages/Dashboard.vue:30
 msgid "Refresh"
-msgstr ""
+msgstr "Làm cho khỏe lại"
 
 #. Label of a Small Text field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Refresh Token"
-msgstr ""
+msgstr "Làm mới mã thông báo"
 
 #. Description of the 'Refresh Token' (Small Text) field in DocType
 #. 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Refresh Token (OAuth2), để làm mới Access Token"
-msgstr ""
+msgstr "Làm mới mã thông báo (oauth2), để lÀm mới truy cập mã thông báo"
 
 #. Option for the 'Status' (Select) field in DocType 'ApplicantPool'
 #. Option for the 'Status' (Select) field in DocType 'CandidatePool'
 #: mbw_mira/mbw_mira/doctype/applicantpool/applicantpool.json
 #: mbw_mira/mbw_mira/doctype/candidatepool/candidatepool.json
 msgid "Rejected"
-msgstr ""
+msgstr "Vật bị loại bỏ"
 
 #: frontend/src/pages/TalentSegmentDetailView.vue:187
 msgid "Related Campaigns"
-msgstr ""
+msgstr "Các chiến dịch liên quan"
 
 #: frontend/src/components/FilesUploader/FilesUploader.vue:23
 msgid "Remove all"
-msgstr ""
+msgstr "Loại bỏ tất cả"
 
 #: frontend/src/components/FieldLayoutEditor.vue:444
 msgid "Remove and move fields to previous column"
-msgstr ""
+msgstr "Xóa và di chuyển các trường đến cột trước"
 
 #: frontend/src/components/FieldLayoutEditor.vue:438
 msgid "Remove column"
-msgstr ""
+msgstr "Xóa cột"
 
 #: frontend/src/components/FieldLayoutEditor.vue:365
 msgid "Remove section"
-msgstr ""
+msgstr "Loại bỏ phần"
 
 #: frontend/src/components/FieldLayoutEditor.vue:324
 msgid "Remove tab"
-msgstr ""
+msgstr "Xóa tab"
 
 #: frontend/src/components/CommunicationArea.vue:10
 msgid "Reply"
-msgstr ""
+msgstr "Hồi đáp"
 
 #: frontend/src/components/Controls/GridFieldsEditorModal.vue:82
 #: frontend/src/components/Controls/GridRowFieldsModal.vue:30
@@ -3083,98 +3161,98 @@ msgstr ""
 #: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:13
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:12
 msgid "Reset"
-msgstr ""
+msgstr "Cài lại"
 
 #: frontend/src/components/ColumnSettings.vue:82
 msgid "Reset Changes"
-msgstr ""
+msgstr "Đặt lại thay đổi"
 
 #: frontend/src/components/ColumnSettings.vue:93
 msgid "Reset to Default"
-msgstr ""
+msgstr "Đặt lại về mặc định"
 
 #: mbw_mira/mbw_mira/doctype/mira_settings/mira_settings.js:14
 msgid "Restore"
-msgstr ""
+msgstr "Khôi phục"
 
 #. Label of a Button field in DocType 'Mira Settings'
 #: mbw_mira/mbw_mira/doctype/mira_settings/mira_settings.js:13
 #: mbw_mira/mbw_mira/doctype/mira_settings/mira_settings.json
 msgid "Restore Defaults"
-msgstr ""
+msgstr "Khôi phục mặc định"
 
 #. Label of a JSON field in DocType 'Action'
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "Result"
-msgstr ""
+msgstr "Kết quả"
 
 #: frontend/src/pages/ActionManagement.vue:439
 msgid "Result (JSON)"
-msgstr ""
+msgstr "Kết quả (JSON)"
 
 #. Label of a Attach field in DocType 'ApplicantPool'
 #: mbw_mira/mbw_mira/doctype/applicantpool/applicantpool.json
 msgid "Resume"
-msgstr ""
+msgstr "Bản tóm tắt"
 
 #: frontend/src/components/FilesUploader/FilesUploader.vue:54
 msgid "Retake"
-msgstr ""
+msgstr "Retake"
 
 #. Label of a Data field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Route Name"
-msgstr ""
+msgstr "Tên tuyến đường"
 
 #. Label of a Code field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Rows"
-msgstr ""
+msgstr "Hàng"
 
 #: frontend/src/components/campaign/CampaignCard.vue:9
 #: frontend/src/pages/Dashboard.vue:204
 msgid "Running"
-msgstr ""
+msgstr "Đang chạy"
 
 #. Option for the 'Status' (Select) field in DocType 'Action'
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "SCHEDULED"
-msgstr ""
+msgstr "Dự kiến"
 
 #. Option for the 'Action Type' (Select) field in DocType 'CampaignStep'
 #: mbw_mira/mbw_mira/doctype/campaignstep/campaignstep.json
 msgid "SEND_EMAIL"
-msgstr ""
+msgstr "Send_email"
 
 #. Option for the 'Action Type' (Select) field in DocType 'CampaignStep'
 #: mbw_mira/mbw_mira/doctype/campaignstep/campaignstep.json
 msgid "SEND_SMS"
-msgstr ""
+msgstr "Send_sms"
 
 #. Option for the 'Status' (Select) field in DocType 'Action'
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "SKIPPED"
-msgstr ""
+msgstr "Bỏ qua"
 
 #. Option for the 'Interaction Type' (Select) field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "SMS_DELIVERED"
-msgstr ""
+msgstr "SMS_Delivered"
 
 #. Option for the 'Interaction Type' (Select) field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "SMS_REPLIED"
-msgstr ""
+msgstr "SMS_Replied"
 
 #. Option for the 'Interaction Type' (Select) field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "SMS_SENT"
-msgstr ""
+msgstr "SMS_SENT"
 
 #. Option for the 'Status' (Select) field in DocType 'Candidate'
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
 msgid "SOURCED"
-msgstr ""
+msgstr "Có nguồn gốc"
 
 #. Name of a role
 #: mbw_mira/mbw_mira/doctype/form_script/form_script.json
@@ -3182,18 +3260,18 @@ msgstr ""
 #: mbw_mira/mbw_mira/doctype/mira_settings/mira_settings.json
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Sales Manager"
-msgstr ""
+msgstr "Giám đốc bán hàng"
 
 #. Name of a role
 #: mbw_mira/mbw_mira/doctype/mira_notification/mira_notification.json
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Sales User"
-msgstr ""
+msgstr "Người dùng bán hàng"
 
 #. Label of a Check field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Same Site?"
-msgstr ""
+msgstr "Cùng một trang web?"
 
 #: frontend/src/components/Controls/GridFieldsEditorModal.vue:87
 #: frontend/src/components/Controls/GridRowFieldsModal.vue:26
@@ -3205,130 +3283,130 @@ msgstr ""
 #: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:13
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:12
 msgid "Save"
-msgstr ""
+msgstr "Cứu"
 
 #: frontend/src/components/ViewControls.vue:57
 #: frontend/src/components/ViewControls.vue:157
 msgid "Save Changes"
-msgstr ""
+msgstr "Lưu các thay đổi"
 
 #: frontend/src/components/ViewControls.vue:667
 msgid "Saved Views"
-msgstr ""
+msgstr "Lượt xem đã lưu"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Saved view"
-msgstr ""
+msgstr "Đã lưu xem"
 
 #: frontend/src/components/shared/TaskUpdateModal.vue:139
 msgid "Schedule"
-msgstr ""
+msgstr "Lịch trình"
 
 #: frontend/src/pages/ActionManagement.vue:62
 #: frontend/src/pages/CampaignDetailView.vue:1007
 #: frontend/src/pages/Dashboard.vue:657
 msgid "Scheduled"
-msgstr ""
+msgstr "Dự kiến"
 
 #. Label of a Datetime field in DocType 'Action'
 #: frontend/src/pages/ActionManagement.vue:229
 #: frontend/src/pages/ActionManagement.vue:427
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "Scheduled At"
-msgstr ""
+msgstr "Dự kiến tại"
 
 #. Label of a Code field in DocType 'Form Script'
 #: mbw_mira/mbw_mira/doctype/form_script/form_script.json
 msgid "Script"
-msgstr ""
+msgstr "Kịch bản"
 
 #: frontend/src/pages/ActionManagement.vue:88
 msgid "Search actions..."
-msgstr ""
+msgstr "Hành động tìm kiếm ..."
 
 #: frontend/src/pages/TalentSegmentDetailView.vue:691
 msgid "Search and select candidate..."
-msgstr ""
+msgstr "Tìm kiếm và chọn ứng viên ..."
 
 #: frontend/src/pages/TalentSegmentDetailView.vue:349
 msgid "Search by name..."
-msgstr ""
+msgstr "Tìm kiếm theo tên ..."
 
 #: frontend/src/pages/CandidateManagement.vue:52
 msgid "Search candidates..."
-msgstr ""
+msgstr "Các ứng cử viên tìm kiếm ..."
 
 #: frontend/src/pages/EmailLogManagement.vue:76
 msgid "Search emails..."
-msgstr ""
+msgstr "Email tìm kiếm ..."
 
 #: frontend/src/pages/TalentSegmentManagement.vue:38
 msgid "Search talent pools..."
-msgstr ""
+msgstr "Tìm kiếm nhóm tài năng ..."
 
 #: frontend/src/components/campaign/CampaignTableNew.vue:16
 #: frontend/src/pages/CampaignManagement.vue:30
 msgid "Search..."
-msgstr ""
+msgstr "Tìm kiếm..."
 
 #: frontend/src/components/FieldLayoutEditor.vue:342
 msgid "Section"
-msgstr ""
+msgstr "Phần"
 
 #. Label of a Link field in DocType 'CandidateSegment'
 #. Label of a Link field in DocType 'TalentPool'
 #: mbw_mira/mbw_mira/doctype/candidatesegment/candidatesegment.json
 #: mbw_mira/mbw_mira/doctype/talentpool/talentpool.json
 msgid "Segment"
-msgstr ""
+msgstr "Phân đoạn"
 
 #: frontend/src/pages/TalentSegmentDetailView.vue:290
 msgid "Segment Analytics"
-msgstr ""
+msgstr "Phân tích phân khúc"
 
 #: frontend/src/components/talent-segment/TalentSegmentForm_clean.vue:7
 msgid "Segment Name"
-msgstr ""
+msgstr "Tên phân khúc"
 
 #: frontend/src/components/talent-segment/TalentSegmentForm.vue:385
 msgid "Segment name cannot exceed 100 characters"
-msgstr ""
+msgstr "Tên phân đoạn không thể vượt quá 100 ký tự"
 
 #: frontend/src/components/talent-segment/TalentSegmentForm.vue:381
 msgid "Segment name must be at least 3 characters"
-msgstr ""
+msgstr "Tên phân đoạn phải có ít nhất 3 ký tự"
 
 #: frontend/src/components/talent-segment/TalentSegmentForm.vue:393
 msgid "Segment type is required"
-msgstr ""
+msgstr "Loại phân đoạn là bắt buộc"
 
 #: frontend/src/pages/CandidateDetailView.vue:1838
 msgid "Segments"
-msgstr ""
+msgstr "Phân đoạn"
 
 #: frontend/src/pages/TalentSegmentDetailView.vue:651
 msgid "Select Candidate"
-msgstr ""
+msgstr "Chọn ứng viên"
 
 #: frontend/src/pages/TalentSegmentDetailView.vue:638
 msgid "Select candidate to add to"
-msgstr ""
+msgstr "Chọn ứng viên để thêm vào"
 
 #: frontend/src/components/FieldLayout/Field.vue:332
 msgid "Select {0}"
-msgstr ""
+msgstr "Chọn {0}"
 
 #: frontend/src/pages/CampaignDetailView.vue:993
 msgid "Send Email"
-msgstr ""
+msgstr "Gửi email"
 
 #: frontend/src/pages/CampaignDetailView.vue:994
 msgid "Send SMS"
-msgstr ""
+msgstr "Gửi SMS"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Send email"
-msgstr ""
+msgstr "Gửi email"
 
 #. Label of a Data field in DocType 'EmailLog'
 #: frontend/src/pages/EmailLogManagement.vue:96
@@ -3337,91 +3415,91 @@ msgstr ""
 #: frontend/src/pages/EmailLogManagement.vue:440
 #: mbw_mira/mbw_mira/doctype/emaillog/emaillog.json
 msgid "Sender"
-msgstr ""
+msgstr "Người gửi"
 
 #: frontend/src/pages/EmailLogManagement.vue:325
 #: frontend/src/pages/EmailLogManagement.vue:344
 #: frontend/src/pages/EmailLogManagement.vue:354
 msgid "Separate multiple emails with commas"
-msgstr ""
+msgstr "Tách biệt nhiều email với dấu phẩy"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Service level agreement"
-msgstr ""
+msgstr "Thỏa thuận cấp độ dịch vụ"
 
 #: frontend/src/components/FilesUploader/FilesUploader.vue:69
 msgid "Set all as private"
-msgstr ""
+msgstr "Đặt tất cả là riêng tư"
 
 #: frontend/src/components/FilesUploader/FilesUploader.vue:62
 msgid "Set all as public"
-msgstr ""
+msgstr "Đặt tất cả như công khai"
 
 #: frontend/src/components/ViewControls.vue:1123
 msgid "Set as default"
-msgstr ""
+msgstr "Đặt làm mặc định"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Setting up"
-msgstr ""
+msgstr "Thiết lập"
 
 #. Label of a Tab Break field in DocType 'Mira Settings'
 #: mbw_mira/mbw_mira/doctype/mira_settings/mira_settings.json
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Settings"
-msgstr ""
+msgstr "Cài đặt"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Setup your password"
-msgstr ""
+msgstr "Thiết lập mật khẩu của bạn"
 
 #. Label of a Data field in DocType 'Short URL'
 #: mbw_mira/mbw_mira/doctype/short_url/short_url.json
 msgid "Short Code"
-msgstr ""
+msgstr "Mã ngắn"
 
 #. Name of a DocType
 #: mbw_mira/mbw_mira/doctype/short_url/short_url.json
 msgid "Short URL"
-msgstr ""
+msgstr "Url ngắn"
 
 #. Label of a Date field in DocType 'CandidatePool'
 #: mbw_mira/mbw_mira/doctype/candidatepool/candidatepool.json
 msgid "Shortlist Date"
-msgstr ""
+msgstr "Ngày rút gọn ngày"
 
 #. Option for the 'Status' (Select) field in DocType 'ApplicantPool'
 #. Option for the 'Status' (Select) field in DocType 'CandidatePool'
 #: mbw_mira/mbw_mira/doctype/applicantpool/applicantpool.json
 #: mbw_mira/mbw_mira/doctype/candidatepool/candidatepool.json
 msgid "Shortlisted"
-msgstr ""
+msgstr "Lọt vào danh sách"
 
 #: frontend/src/components/Controls/Password.vue:19
 #: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:2
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:1
 msgid "Show Password"
-msgstr ""
+msgstr "Hiển thị mật khẩu"
 
 #: frontend/src/components/FieldLayoutEditor.vue:360
 msgid "Show border"
-msgstr ""
+msgstr "Hiển thị biên giới"
 
 #: frontend/src/components/FieldLayoutEditor.vue:355
 msgid "Show label"
-msgstr ""
+msgstr "Hiển thị nhãn"
 
 #: frontend/src/components/Controls/GridRowFieldsModal.vue:20
 #: frontend/src/components/Modals/DataFieldsModal.vue:20
 #: frontend/src/components/Modals/QuickEntryModal.vue:20
 msgid "Show preview"
-msgstr ""
+msgstr "Hiển thị xem trước"
 
 #: frontend/src/pages/ActionManagement.vue:361
 #: frontend/src/pages/EmailLogManagement.vue:263
 #: frontend/src/pages/TalentSegmentManagement.vue:119
 msgid "Showing"
-msgstr ""
+msgstr "Hiển thị"
 
 #. Label of a Small Text field in DocType 'Candidate'
 #. Label of a JSON field in DocType 'TalentPool'
@@ -3430,34 +3508,35 @@ msgstr ""
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
 #: mbw_mira/mbw_mira/doctype/talentpool/talentpool.json
 msgid "Skills"
-msgstr ""
+msgstr "Kỹ năng"
 
 #: frontend/src/pages/TalentSegmentDetailView.vue:783
 msgid "Skills:"
-msgstr ""
+msgstr "Kỹ năng:"
 
 #: frontend/src/components/shared/TaskUpdateModal.vue:145
 msgid "Skip"
-msgstr ""
+msgstr "Nhảy"
 
 #: frontend/src/components/campaign/CampaignWizard.vue:232
 msgid "Skip this step"
-msgstr ""
+msgstr "Bỏ qua bước này"
 
 #: frontend/src/pages/CampaignDetailView.vue:1009
 #: frontend/src/pages/Dashboard.vue:659
 msgid "Skipped"
-msgstr ""
+msgstr "Bỏ qua"
 
-#. Option for the 'Source Type' (Select) field in DocType 'CandidateDataSource'
+#. Option for the 'Source Type' (Select) field in DocType
+#. 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "SocialNetwork"
-msgstr ""
+msgstr "SocialNetwork"
 
 #: frontend/src/components/SortBy.vue:10 frontend/src/components/SortBy.vue:22
 #: frontend/src/components/SortBy.vue:240
 msgid "Sort"
-msgstr ""
+msgstr "Loại"
 
 #. Label of a Link field in DocType 'Campaign'
 #. Label of a Data field in DocType 'Candidate'
@@ -3469,53 +3548,57 @@ msgstr ""
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
 #: mbw_mira/mbw_mira/doctype/talentpool/talentpool.json
 msgid "Source"
-msgstr ""
+msgstr "Nguồn"
 
 #. Label of a Link field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "Source Action"
-msgstr ""
+msgstr "Nguồn hành động"
 
 #. Label of a Select field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Source Name"
-msgstr ""
+msgstr "Tên nguồn"
 
 #. Label of a Select field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Source Type"
-msgstr ""
+msgstr "Loại nguồn"
 
 #: frontend/src/pages/CandidateDetailView.vue:1635
 #: frontend/src/pages/CandidateManagement.vue:576
 msgid "Sourced"
-msgstr ""
+msgstr "Có nguồn gốc"
 
 #: mbw_mira/mbw_mira/doctype/form_script/form_script.js:15
-msgid "Standard Form Scripts can not be modified, duplicate the Form Script instead."
+msgid ""
+"Standard Form Scripts can not be modified, duplicate the Form Script "
+"instead."
 msgstr ""
+"Không thể sửa đổi các tập lệnh biểu mẫu tiêu chuẩn, thay vào đó sao chép tập"
+" lệnh biểu mẫu."
 
 #: frontend/src/components/ViewControls.vue:634
 msgid "Standard Views"
-msgstr ""
+msgstr "Quan điểm tiêu chuẩn"
 
 #. Label of a Date field in DocType 'Campaign'
 #: frontend/src/pages/CampaignDetailView.vue:131
 #: mbw_mira/mbw_mira/doctype/campaign/campaign.json
 msgid "Start Date"
-msgstr ""
+msgstr "Ngày bắt đầu"
 
 #: frontend/src/components/campaign/CampaignCardView.vue:136
 msgid "Start a new recruitment request"
-msgstr ""
+msgstr "Bắt đầu một yêu cầu tuyển dụng mới"
 
 #: frontend/src/components/candidate/CandidateCardView.vue:221
 msgid "Start by adding your first candidate."
-msgstr ""
+msgstr "Bắt đầu bằng cách thêm ứng viên đầu tiên của bạn."
 
 #: frontend/src/components/campaign/CampaignForm.vue:284
 msgid "Start date cannot be after end date"
-msgstr ""
+msgstr "Ngày bắt đầu không thể sau ngày kết thúc"
 
 #. Label of a Select field in DocType 'Action'
 #. Label of a Select field in DocType 'ApplicantPool'
@@ -3548,16 +3631,16 @@ msgstr ""
 #: mbw_mira/mbw_mira/doctype/emaillog/emaillog.json
 #: mbw_mira/mbw_mira/doctype/talentpool/talentpool.json
 msgid "Status"
-msgstr ""
+msgstr "Trạng thái"
 
 #: frontend/src/pages/CampaignDetailView.vue:220
 msgid "Step Name"
-msgstr ""
+msgstr "Tên bước"
 
 #. Label of a Int field in DocType 'CampaignStep'
 #: mbw_mira/mbw_mira/doctype/campaignstep/campaignstep.json
 msgid "Step Order"
-msgstr ""
+msgstr "Bước đơn đặt hàng"
 
 #. Label of a Data field in DocType 'EmailLog'
 #: frontend/src/pages/EmailLogManagement.vue:157
@@ -3565,37 +3648,37 @@ msgstr ""
 #: frontend/src/pages/EmailLogManagement.vue:432
 #: mbw_mira/mbw_mira/doctype/emaillog/emaillog.json
 msgid "Subject"
-msgstr ""
+msgstr "Chủ thể"
 
 #: frontend/src/pages/CandidateDetailView.vue:180
 msgid "Subscribed"
-msgstr ""
+msgstr "Đăng ký"
 
 #. Option for the 'Status' (Select) field in DocType 'EmailLog'
 #: frontend/src/pages/EmailLogManagement.vue:50
 #: frontend/src/pages/EmailLogManagement.vue:529
 #: mbw_mira/mbw_mira/doctype/emaillog/emaillog.json
 msgid "Success"
-msgstr ""
+msgstr "Thành công"
 
 #: frontend/src/components/FilesUploader/FilesUploader.vue:49
 msgid "Switch camera"
-msgstr ""
+msgstr "Chuyển đổi camera"
 
 #. Label of a Select field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Sync Direction"
-msgstr ""
+msgstr "Đồng bộ hướng"
 
 #. Label of a Int field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Sync Frequency Minutes"
-msgstr ""
+msgstr "Số phút tần số đồng bộ hóa"
 
 #. Label of a Datetime field in DocType 'TalentPool'
 #: mbw_mira/mbw_mira/doctype/talentpool/talentpool.json
 msgid "Synced At"
-msgstr ""
+msgstr "Đồng bộ hóa tại"
 
 #. Name of a role
 #: mbw_mira/mbw_mira/doctype/TalentProfilesCampaign/TalentProfilesCampaign.json
@@ -3615,27 +3698,29 @@ msgstr ""
 #: mbw_mira/mbw_mira/doctype/talentpool/talentpool.json
 #: mbw_mira/mbw_mira/doctype/talentsegment/talentsegment.json
 msgid "System Manager"
-msgstr ""
+msgstr "Trình quản lý hệ thống"
 
 #. Description of the 'Candidate Count' (Int) field in DocType 'TalentSegment'
 #: mbw_mira/mbw_mira/doctype/talentsegment/talentsegment.json
-msgid "Số lượng ứng viên hiện có trong phân khúc (dùng để hiển thị, được cập nhật định kỳ)."
-msgstr ""
+msgid ""
+"Số lượng ứng viên hiện có trong phân khúc (dùng để hiển thị, được cập nhật "
+"định kỳ)."
+msgstr "Số lượng ứng viênn hiện đó"
 
 #. Description of the 'Phone' (Data) field in DocType 'Candidate'
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
 msgid "Số điện thoại liên lạc. VD: \"0912345678\""
-msgstr ""
+msgstr "Số ĐIện Thoại liên Lạc. VD: \"0912345678\""
 
 #. Option for the 'Interaction Type' (Select) field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "TEST_COMPLETED"
-msgstr ""
+msgstr "Test_completed"
 
 #. Option for the 'Interaction Type' (Select) field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "TEST_STARTED"
-msgstr ""
+msgstr "Test_started"
 
 #. Label of a Link field in DocType 'ApplicantPool'
 #. Label of a Link field in DocType 'CandidateSegment'
@@ -3646,12 +3731,12 @@ msgstr ""
 #: mbw_mira/mbw_mira/doctype/candidatesegment/candidatesegment.json
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "Talent"
-msgstr ""
+msgstr "Tài năng"
 
 #. Label of a Link field in DocType 'Action'
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "Talent Campaign"
-msgstr ""
+msgstr "Chiến dịch tài năng"
 
 #: frontend/src/pages/TalentSegmentDetailView.vue:908
 #: frontend/src/pages/TalentSegmentManagement.vue:268
@@ -3660,7 +3745,7 @@ msgstr "Nguồn nhân tài"
 
 #: frontend/src/components/talent-segment/TalentSegmentDetailDialog.vue:26
 msgid "Talent Segment Details"
-msgstr ""
+msgstr "Chi tiết phân khúc tài năng"
 
 #: frontend/src/pages/TalentSegment.vue:16
 msgid "Talent Segments"
@@ -3668,42 +3753,43 @@ msgstr "Phân khúc"
 
 #: frontend/src/pages/TalentSegmentManagement.vue:535
 msgid "Talent pool has been deleted successfully"
-msgstr ""
+msgstr "Bể bơi tài năng đã bị xóa thành công"
 
 #: frontend/src/pages/TalentSegmentManagement.vue:543
 msgid "Talent pool has been saved successfully"
-msgstr ""
+msgstr "Bể bơi tài năng đã được cứu thành công"
 
-#. Option for the 'Source Type' (Select) field in DocType 'CandidateDataSource'
+#. Option for the 'Source Type' (Select) field in DocType
+#. 'CandidateDataSource'
 #. Name of a DocType
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 #: mbw_mira/mbw_mira/doctype/talentpool/talentpool.json
 msgid "TalentPool"
-msgstr ""
+msgstr "Talentpool"
 
 #. Name of a DocType
 #: mbw_mira/mbw_mira/doctype/TalentProfilesCampaign/TalentProfilesCampaign.json
 msgid "TalentProfilesCampaign"
-msgstr ""
+msgstr "TalentProfileScampaign"
 
 #. Name of a DocType
 #: mbw_mira/mbw_mira/doctype/talentsegment/talentsegment.json
 msgid "TalentSegment"
-msgstr ""
+msgstr "Tài năng"
 
 #: frontend/src/components/campaign/CampaignCard.vue:124
 #: frontend/src/pages/Dashboard.vue:282
 msgid "Target Candidates"
-msgstr ""
+msgstr "Mục tiêu ứng cử viên"
 
 #. Label of a Link field in DocType 'Campaign'
 #: mbw_mira/mbw_mira/doctype/campaign/campaign.json
 msgid "Target Segment"
-msgstr ""
+msgstr "Phân đoạn mục tiêu"
 
 #: frontend/src/pages/CampaignDetailView.vue:143
 msgid "Target Segments"
-msgstr ""
+msgstr "Phân đoạn mục tiêu"
 
 #. Option for the 'Type' (Select) field in DocType 'Mira Notification'
 #: frontend/src/components/shared/TaskUpdateModal.vue:6
@@ -3711,130 +3797,142 @@ msgstr ""
 #: mbw_mira/mbw_mira/doctype/mira_notification/mira_notification.json
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Task"
-msgstr ""
+msgstr "Nhiệm vụ"
 
 #: mbw_mira/api/dashboard.py:212
 msgid "Task ID is required"
-msgstr ""
+msgstr "ID nhiệm vụ là bắt buộc"
 
 #: mbw_mira/api/dashboard.py:218
 msgid "Task not found"
-msgstr ""
+msgstr "Nhiệm vụ không tìm thấy"
 
 #: mbw_mira/api/dashboard.py:240
 msgid "Task updated successfully"
-msgstr ""
+msgstr "Nhiệm vụ được cập nhật thành công"
 
 #. Label of a Long Text field in DocType 'CampaignStep'
 #: mbw_mira/mbw_mira/doctype/campaignstep/campaignstep.json
 msgid "Template"
-msgstr ""
+msgstr "Bản mẫu"
 
 #. Description of the 'Current Step Order' (Int) field in DocType
 #. 'TalentProfilesCampaign'
 #: mbw_mira/mbw_mira/doctype/TalentProfilesCampaign/TalentProfilesCampaign.json
 msgid "Tham chiếu đến order trong CampaignStep để xác định bước hiện tại."
-msgstr ""
+msgstr "Tham Chiếu ĐếN đặt hàng Trong Chiến dịch Để Xát"
 
 #: frontend/src/components/candidateDataSource/CandidateDataSourceForm.vue:165
 #: frontend/src/components/candidateDataSource/CandidateDataSourceFormDirect.vue:265
 msgid "Thao tác thành công!"
-msgstr ""
+msgstr "Thao Tácc ThànH Công!"
 
 #: frontend/src/components/talent-segment/TalentSegmentDetailDialog.vue:366
 msgid "The add candidate feature will be developed in the next phase."
 msgstr ""
+"Tính năng ứng cử viên thêm sẽ được phát triển trong giai đoạn tiếp theo."
 
 #: frontend/src/components/Filter.vue:644
 msgid "This Month"
-msgstr ""
+msgstr "Tháng này"
 
 #: frontend/src/components/Filter.vue:648
 msgid "This Quarter"
-msgstr ""
+msgstr "Quý này"
 
 #: frontend/src/components/Filter.vue:640
 msgid "This Week"
-msgstr ""
+msgstr "Tuần này"
 
 #: frontend/src/components/Filter.vue:652
 msgid "This Year"
-msgstr ""
+msgstr "Năm nay"
 
 #: frontend/src/pages/TalentSegmentManagement.vue:234
 msgid "This action cannot be undone."
-msgstr ""
+msgstr "Hành động này không thể được hoàn tác."
 
 #: frontend/src/components/talent-segment/TalentSegmentForm_clean.vue:19
 msgid "This name will be displayed in the segment list"
-msgstr ""
+msgstr "Tên này sẽ được hiển thị trong danh sách phân khúc"
 
 #: frontend/src/components/SidePanelLayoutEditor.vue:119
 msgid "This section is not editable"
-msgstr ""
+msgstr "Phần này không thể chỉnh sửa"
 
 #: frontend/src/components/talent-segment/TalentSegmentDetailDialog.vue:322
 msgid "This segment has no candidates yet"
-msgstr ""
+msgstr "Phân khúc này chưa có ứng cử viên"
 
 #: frontend/src/components/BulkDeleteLinkedDocModal.vue:66
 msgid "This will delete selected items and items linked to it, are you sure?"
 msgstr ""
+"Điều này sẽ xóa các mục đã chọn và các mục được liên kết với nó, bạn có chắc"
+" không?"
 
 #: frontend/src/components/BulkDeleteLinkedDocModal.vue:69
-msgid "This will delete selected items and unlink linked items to it, are you sure?"
+msgid ""
+"This will delete selected items and unlink linked items to it, are you sure?"
 msgstr ""
+"Điều này sẽ xóa các mục đã chọn và các mục liên kết đã liên kết với nó, bạn "
+"có chắc không?"
 
 #: mbw_mira/mbw_mira/doctype/mira_settings/mira_settings.js:9
-msgid "This will restore (if not exist) all the default statuses, custom fields and layouts. Delete & Restore will delete default layouts and then restore them."
+msgid ""
+"This will restore (if not exist) all the default statuses, custom fields and"
+" layouts. Delete & Restore will delete default layouts and then restore "
+"them."
 msgstr ""
+"Điều này sẽ khôi phục (nếu không tồn tại) tất cả các trạng thái, trường tùy "
+"chỉnh và bố cục mặc định. Xóa & Khôi phục sẽ xóa bố cục mặc định và sau đó "
+"khôi phục chúng."
 
 #: mbw_mira/api/file_parser.py:12
 msgid "Thiếu 'file_name' trong request."
-msgstr ""
+msgstr "ThiếU 'File_Name' yêu cầu trong."
 
 #: mbw_mira/api/file_parser.py:15
 msgid "Thiếu 'meta_doctype' trong request."
-msgstr ""
+msgstr "Thiếu 'Meta_Doctype' Trong yêu cầu."
 
 #. Description of the 'Description' (Text) field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "Thông tin bổ sung hoặc nội dung liên quan"
-msgstr ""
+msgstr "Thôn tin"
 
 #. Description of the 'Last Error' (Small Text) field in DocType
 #. 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Thông tin lỗi gần nhất khi đồng bộ"
-msgstr ""
+msgstr "Thông tin lỗi gần NHất Khi"
 
 #: frontend/src/pages/CandidateDetailView.vue:107
 msgid "Thông tin ứng viên"
-msgstr ""
+msgstr "Thông tin ứng Vin"
 
 #. Description of the 'Token Expires At' (Datetime) field in DocType
 #. 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Thời điểm Access Token hết hạn"
-msgstr ""
+msgstr "Thời điểm mã thông báo truy cập hết hạn"
 
 #. Description of the 'Next Action At' (Datetime) field in DocType
 #. 'TalentProfilesCampaign'
 #: mbw_mira/mbw_mira/doctype/TalentProfilesCampaign/TalentProfilesCampaign.json
 msgid "Thời điểm dự kiến cho hành động tiếp theo."
-msgstr ""
+msgstr "Thời Điểm dự Kiến Cho Hành Động tiếp Theo."
 
 #. Description of the 'Last Sync At' (Datetime) field in DocType
 #. 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Thời điểm đồng bộ gần nhất"
-msgstr ""
+msgstr "Thời Điểm đồng bộ gần NHất"
 
 #. Description of the 'Enrolled At' (Datetime) field in DocType
 #. 'TalentProfilesCampaign'
 #: mbw_mira/mbw_mira/doctype/TalentProfilesCampaign/TalentProfilesCampaign.json
 msgid "Thời điểm ứng viên được thêm vào chiến dịch."
-msgstr ""
+msgstr "Thời Điểm ứng viênn ĐượC thênm Vào Chiến dịch."
 
 #: frontend/src/components/Filter.vue:356
 msgid "Timespan"
@@ -3844,69 +3942,70 @@ msgstr ""
 #: frontend/src/pages/CandidateDetailView.vue:148
 #: mbw_mira/mbw_mira/doctype/talentsegment/talentsegment.json
 msgid "Title"
-msgstr ""
+msgstr "Tiêu đề"
 
 #. Label of a Data field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "Title Field"
-msgstr ""
+msgstr "Lĩnh vực tiêu đề"
 
 #. Description of the 'Subject' (Data) field in DocType 'EmailLog'
 #: mbw_mira/mbw_mira/doctype/emaillog/emaillog.json
 msgid "Tiêu đề email"
-msgstr ""
+msgstr "TIÊU Đề Email"
 
 #. Label of a Link field in DocType 'Mira Notification'
 #: mbw_mira/mbw_mira/doctype/mira_notification/mira_notification.json
 msgid "To User"
-msgstr ""
+msgstr "Cho người dùng"
 
 #: frontend/src/components/Filter.vue:632 frontend/src/pages/Dashboard.vue:680
 #: frontend/src/pages/InteractionManagement.vue:76
 msgid "Today"
-msgstr ""
+msgstr "Hôm nay"
 
 #. Label of a Datetime field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Token Expires At"
-msgstr ""
+msgstr "Mã thông báo hết hạn tại"
 
 #: frontend/src/components/Filter.vue:636 frontend/src/pages/Dashboard.vue:682
 msgid "Tomorrow"
-msgstr ""
+msgstr "Ngày mai"
 
 #: frontend/src/components/talent-segment/TalentSegmentCardView.vue:34
 msgid "Top Skills"
-msgstr ""
+msgstr "Kỹ năng hàng đầu"
 
-#. Option for the 'Source Name' (Select) field in DocType 'CandidateDataSource'
+#. Option for the 'Source Name' (Select) field in DocType
+#. 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "TopCV"
-msgstr ""
+msgstr "TOPCV"
 
 #: frontend/src/pages/ActionManagement.vue:36
 msgid "Total Actions"
-msgstr ""
+msgstr "Tổng số hành động"
 
 #: frontend/src/pages/TalentSegmentDetailView.vue:131
 msgid "Total Candidates"
-msgstr ""
+msgstr "Tổng số ứng cử viên"
 
 #: frontend/src/pages/EmailLogManagement.vue:37
 msgid "Total Emails"
-msgstr ""
+msgstr "Tổng số email"
 
 #: frontend/src/pages/InteractionManagement.vue:37
 msgid "Total Interactions"
-msgstr ""
+msgstr "Tổng số tương tác"
 
 #: frontend/src/components/candidate/CandidateCardView.vue:220
 msgid "Try changing filters to find suitable candidates."
-msgstr ""
+msgstr "Hãy thử thay đổi bộ lọc để tìm ứng viên phù hợp."
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Twilio"
-msgstr ""
+msgstr "Twilio"
 
 #. Label of a Select field in DocType 'Campaign'
 #. Label of a Select field in DocType 'Mira Notification'
@@ -3918,87 +4017,93 @@ msgstr ""
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 #: mbw_mira/mbw_mira/doctype/talentsegment/talentsegment.json
 msgid "Type"
-msgstr ""
+msgstr "Kiểu"
 
 #: frontend/src/components/Controls/MultiSelectEmailInput.vue:73
 #: frontend/src/components/Controls/MultiSelectUserInput.vue:73
 msgid "Type an email address to invite"
-msgstr ""
+msgstr "Nhập địa chỉ email để mời"
 
 #. Description of the 'Doctype To Sync' (Data) field in DocType
 #. 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Tên Doctype trong hệ thống sẽ đồng bộ với ATS"
-msgstr ""
+msgstr "Tênn doctype trong hệ thống sẽ đồng bộ với ats"
 
 #. Description of the 'Title' (Data) field in DocType 'TalentSegment'
 #: mbw_mira/mbw_mira/doctype/talentsegment/talentsegment.json
-msgid "Tên hiển thị của phân khúc. VD: \"Senior Java Developers (HN)\", \"Product Designers (Remote)\""
+msgid ""
+"Tên hiển thị của phân khúc. VD: \"Senior Java Developers (HN)\", \"Product "
+"Designers (Remote)\""
 msgstr ""
+"Tênn hiển thị của phân Khúc. VD: \"Các nhà phát triển Java cao cấp (HN)\", "
+"\"Nhà thiết kế sản phẩm (từ xa)\""
 
 #. Description of the 'Source Name' (Select) field in DocType
 #. 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
-msgid "Tên nguồn dữ liệu, ví dụ: TopCV, VietnamWorks, Facebook… (tùy thuộc Source Type, được cập nhật tự động)"
-msgstr ""
+msgid ""
+"Tên nguồn dữ liệu, ví dụ: TopCV, VietnamWorks, Facebook… (tùy thuộc Source "
+"Type, được cập nhật tự động)"
+msgstr "Tênn Nguồn dữ liệu, ví dụ: topcv, Việt Nam, Facebook"
 
 #. Description of the 'Full Name' (Data) field in DocType 'Candidate'
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
 msgid "Tên đầy đủ của ứng viên. VD: \"Nguyễn Văn An\""
-msgstr ""
+msgstr "Tênn Đầy Đủ Của ứng Vin. Vd: \"Nguyễn Văn an\""
 
 #. Description of the 'Status' (Select) field in DocType 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Tình trạng của nguồn dữ liệu: Active (đang sử dụng), Inactive"
-msgstr ""
+msgstr "TÌnh trạng của ngg"
 
 #: frontend/src/components/candidateDataSource/CandidateDataSourceForm.vue:186
 #: frontend/src/components/candidateDataSource/CandidateDataSourceFormDirect.vue:304
 msgid "Tạo mới"
-msgstr ""
+msgstr "TạO MớI"
 
 #. Label of a Data field in DocType 'Interaction'
 #: mbw_mira/mbw_mira/doctype/interaction/interaction.json
 msgid "URL (if any)"
-msgstr ""
+msgstr "URL (nếu có)"
 
 #: frontend/src/components/FieldLayoutEditor.vue:350
 msgid "Uncollapsible"
-msgstr ""
+msgstr "Không thể kiểm soát được"
 
 #. Option for the 'Status' (Select) field in DocType 'ApplicantPool'
 #: mbw_mira/mbw_mira/doctype/applicantpool/applicantpool.json
 msgid "Under Review"
-msgstr ""
+msgstr "Đang được xem xét"
 
 #: frontend/src/components/BulkDeleteLinkedDocModal.vue:143
 #: frontend/src/components/DeleteLinkedDocModal.vue:90
 msgid "Unlink"
-msgstr ""
+msgstr "Hủy bỏ"
 
 #: frontend/src/components/BulkDeleteLinkedDocModal.vue:84
 msgid "Unlink and delete"
-msgstr ""
+msgstr "Hủy bỏ và xóa"
 
 #: frontend/src/components/BulkDeleteLinkedDocModal.vue:41
 msgid "Unlink and delete {0} items"
-msgstr ""
+msgstr "Hủy bỏ và xóa các mục {0}"
 
 #: frontend/src/components/DeleteLinkedDocModal.vue:257
 msgid "Unlink linked item"
-msgstr ""
+msgstr "Hủy liên kết các mục được liên kết"
 
 #: frontend/src/components/ViewControls.vue:1138
 msgid "Unpin View"
-msgstr ""
+msgstr "Chế độ xem Unpin"
 
 #: frontend/src/components/ViewControls.vue:975
 msgid "Unsaved Changes"
-msgstr ""
+msgstr "Những thay đổi chưa được lưu"
 
 #: frontend/src/pages/CandidateDetailView.vue:174
 msgid "Unsubscribed"
-msgstr ""
+msgstr "Không được đăng ký"
 
 #: frontend/src/components/FieldLayoutEditor.vue:26
 #: frontend/src/components/Modals/CreateDocumentModal.vue:8
@@ -4007,7 +4112,7 @@ msgstr ""
 #: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:2
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:1
 msgid "Untitled"
-msgstr ""
+msgstr "Không có tiêu đề"
 
 #: frontend/src/components/ColumnSettings.vue:138
 #: frontend/src/components/Modals/AssignmentModal.vue:17
@@ -4022,368 +4127,384 @@ msgstr ""
 #: frontend/src/pages/Dashboard.vue:147
 #: frontend/src/pages/EmailLogManagement.vue:402
 msgid "Update"
-msgstr ""
+msgstr "Cập nhật"
 
 #: frontend/src/components/shared/TaskUpdateModal.vue:35
 msgid "Update status"
-msgstr ""
+msgstr "Cập nhật trạng thái"
 
 #: frontend/src/components/Modals/EditValueModal.vue:30
 msgid "Update {0} Records"
-msgstr ""
+msgstr "Cập nhật bản ghi {0}"
 
 #: frontend/src/components/FilesUploader/FilesUploader.vue:86
 msgid "Upload"
-msgstr ""
+msgstr "Tải lên"
 
 #. Label of a Link field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "User"
-msgstr ""
+msgstr "Người dùng"
 
 #: frontend/src/components/Modals/EditValueModal.vue:14
 msgid "Value"
-msgstr ""
+msgstr "Giá trị"
 
-#. Option for the 'Source Name' (Select) field in DocType 'CandidateDataSource'
+#. Option for the 'Source Name' (Select) field in DocType
+#. 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "VietnamWorks"
-msgstr ""
+msgstr "Việt Nam"
 
 #: frontend/src/components/candidate/CandidateCardView.vue:151
 #: frontend/src/components/talent-segment/TalentSegmentCardView.vue:205
 #: frontend/src/pages/EmailLogManagement.vue:207
 msgid "View Details"
-msgstr ""
+msgstr "Xem chi tiết"
 
 #: frontend/src/components/campaign/CampaignCard.vue:172
 msgid "View Workflow Details"
-msgstr ""
+msgstr "Xem chi tiết quy trình làm việc"
 
 #: frontend/src/components/campaign/CampaignCardView.vue:116
 msgid "View timeline"
-msgstr ""
+msgstr "Xem dòng thời gian"
 
 #: frontend/src/pages/Dashboard.vue:307
 msgid "View workflow details"
-msgstr ""
+msgstr "Xem chi tiết quy trình làm việc"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Views"
-msgstr ""
+msgstr "Quan điểm"
 
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "Web form"
-msgstr ""
+msgstr "Mẫu web"
 
 #: frontend/src/pages/Dashboard.vue:16
 msgid "Welcome back! Here is the status of your activities today."
 msgstr ""
+"Chào mừng trở lại! Đây là tình trạng của các hoạt động của bạn ngày hôm nay."
 
 #. Option for the 'Type' (Select) field in DocType 'Mira Notification'
 #: mbw_mira/mbw_mira/doctype/mira_notification/mira_notification.json
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 msgid "WhatsApp"
-msgstr ""
+msgstr "WhatsApp"
 
 #: frontend/src/components/Filter.vue:44 frontend/src/components/Filter.vue:82
 msgid "Where"
-msgstr ""
+msgstr "Ở đâu"
 
 #: frontend/src/components/ColumnSettings.vue:117
 msgid "Width"
-msgstr ""
+msgstr "Chiều rộng"
 
 #: frontend/src/components/ColumnSettings.vue:122
 msgid "Width can be in number, pixel or rem (eg. 3, 30px, 10rem)"
-msgstr ""
+msgstr "Chiều rộng có thể có trong số, pixel hoặc rem (ví dụ: 3, 30px, 10rem)"
 
 #: frontend/src/components/Filter.vue:628
 msgid "Yesterday"
-msgstr ""
+msgstr "Hôm qua"
 
 #: frontend/src/components/ViewControls.vue:976
 msgid "You have unsaved changes. Do you want to save them?"
-msgstr ""
+msgstr "Bạn có những thay đổi chưa được lưu. Bạn có muốn cứu họ không?"
 
 #: mbw_mira/mbw_mira/doctype/form_script/form_script.py:24
 msgid "You need to be in developer mode to edit a Standard Form Script"
 msgstr ""
+"Bạn cần ở chế độ nhà phát triển để chỉnh sửa tập lệnh biểu mẫu tiêu chuẩn"
 
 #: frontend/src/components/DeleteLinkedDocModal.vue:75
 #: frontend/src/components/DeleteLinkedDocModal.vue:93
 msgid "all"
-msgstr ""
+msgstr "tất cả"
 
 #: frontend/src/pages/Dashboard.vue:276
 msgid "applications"
-msgstr ""
+msgstr "ứng dụng"
 
 #: frontend/src/components/talent-segment/TalentSegmentForm.vue:275
 msgid "e.g. 15"
-msgstr ""
+msgstr "ví dụ. 15"
 
 #: frontend/src/components/talent-segment/TalentSegmentForm.vue:288
 msgid "e.g. 30"
-msgstr ""
+msgstr "ví dụ. 30"
 
 #: frontend/src/components/Controls/MultiSelectEmailInput.vue:268
 #: frontend/src/components/Controls/MultiSelectUserInput.vue:242
 msgid "email already exists"
-msgstr ""
+msgstr "Email đã tồn tại"
 
 #. Option for the 'Type' (Select) field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "group_by"
-msgstr ""
+msgstr "nhóm_by"
 
 #: frontend/src/utils/index.js:144
 msgid "in 1 hour"
-msgstr ""
+msgstr "trong 1 giờ"
 
 #: frontend/src/utils/index.js:140
 msgid "in 1 minute"
-msgstr ""
+msgstr "trong 1 phút"
 
 #: frontend/src/utils/index.js:158
 msgid "in 1 year"
-msgstr ""
+msgstr "trong 1 năm"
 
 #: frontend/src/utils/index.js:110
 msgid "in {0} M"
-msgstr ""
+msgstr "trong {0} m"
 
 #: frontend/src/utils/index.js:106
 msgid "in {0} d"
-msgstr ""
+msgstr "trong {0} d"
 
 #: frontend/src/utils/index.js:152
 msgid "in {0} days"
-msgstr ""
+msgstr "Trong {0} ngày"
 
 #: frontend/src/utils/index.js:100
 #: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:13
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:12
 msgid "in {0} h"
-msgstr ""
+msgstr "trong {0} h"
 
 #: frontend/src/utils/index.js:146
 msgid "in {0} hours"
-msgstr ""
+msgstr "trong {0} giờ"
 
 #: frontend/src/utils/index.js:98
 #: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:13
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:12
 msgid "in {0} m"
-msgstr ""
+msgstr "trong {0} m"
 
 #: frontend/src/utils/index.js:142
 msgid "in {0} minutes"
-msgstr ""
+msgstr "trong {0} phút"
 
 #: frontend/src/utils/index.js:156
 msgid "in {0} months"
-msgstr ""
+msgstr "trong {0} tháng"
 
 #: frontend/src/utils/index.js:108
 msgid "in {0} w"
-msgstr ""
+msgstr "trong {0} w"
 
 #: frontend/src/utils/index.js:154
 msgid "in {0} weeks"
-msgstr ""
+msgstr "trong {0} tuần"
 
 #: frontend/src/utils/index.js:112
 msgid "in {0} y"
-msgstr ""
+msgstr "trong {0} y"
 
 #: frontend/src/utils/index.js:160
 msgid "in {0} years"
-msgstr ""
+msgstr "trong {0} năm"
 
 #: frontend/src/pages/EmailLogManagement.vue:263
 msgid "items"
-msgstr ""
+msgstr "mặt hàng"
 
 #: frontend/src/utils/index.js:138 frontend/src/utils/index.js:164
 msgid "just now"
-msgstr ""
+msgstr "vừa rồi"
 
 #. Option for the 'Type' (Select) field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "kanban"
-msgstr ""
+msgstr "Kanban"
 
 #: mbw_mira/api/doc.py:40 mbw_mira/api/doc.py:158 mbw_mira/api/doc.py:503
 msgid "label"
-msgstr ""
+msgstr "nhãn"
 
 #. Option for the 'Type' (Select) field in DocType 'Mira View Settings'
 #: mbw_mira/mbw_mira/doctype/mira_view_settings/mira_view_settings.json
 msgid "list"
-msgstr ""
+msgstr "danh sách"
 
 #: frontend/src/components/Notifications.vue:65
 #: mbw_mira/public/frontend/assets/DesktopLayout-33f0550c.js:1
 #: mbw_mira/public/frontend/assets/DesktopLayout-62cc0e1f.js:1
 msgid "mentioned you in {0}"
-msgstr ""
+msgstr "đã đề cập đến bạn trong {0}"
 
 #: frontend/src/pages/Dashboard.vue:382
 msgid "new candidates"
-msgstr ""
+msgstr "ứng cử viên mới"
 
 #: frontend/src/components/FieldLayoutEditor.vue:374
 msgid "next"
-msgstr ""
+msgstr "Kế tiếp"
 
 #: frontend/src/utils/index.js:96 frontend/src/utils/index.js:116
 #: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:13
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:12
 msgid "now"
-msgstr ""
+msgstr "Hiện nay"
 
 #: frontend/src/pages/ActionManagement.vue:361
 #: frontend/src/pages/ActionManagement.vue:373
 #: frontend/src/pages/EmailLogManagement.vue:263
 #: frontend/src/pages/TalentSegmentManagement.vue:123
 msgid "of"
-msgstr ""
+msgstr "của"
 
 #: frontend/src/pages/TalentSegmentDetailView.vue:806
 msgid "other skills"
-msgstr ""
+msgstr "các kỹ năng khác"
 
 #: frontend/src/components/FieldLayoutEditor.vue:374
 msgid "previous"
-msgstr ""
+msgstr "trước"
 
 #: frontend/src/pages/ActionManagement.vue:361
 #: frontend/src/pages/TalentSegmentManagement.vue:125
 msgid "results"
-msgstr ""
+msgstr "kết quả"
 
 #: frontend/src/components/campaign/CampaignCardView.vue:262
 msgid "steps"
-msgstr ""
+msgstr "Các bước"
 
 #: frontend/src/pages/ActionManagement.vue:361
 #: frontend/src/pages/EmailLogManagement.vue:263
 #: frontend/src/pages/TalentSegmentManagement.vue:121
 msgid "to"
-msgstr ""
+msgstr "ĐẾN"
 
 #: frontend/src/utils/index.js:104 frontend/src/utils/index.js:150
 #: mbw_mira/public/frontend/assets/GlobalModals-80b15c31.js:13
 #: mbw_mira/public/frontend/assets/GlobalModals-b27187b8.js:12
 msgid "tomorrow"
-msgstr ""
+msgstr "Ngày mai"
 
 #: frontend/src/utils/index.js:176
 msgid "yesterday"
-msgstr ""
+msgstr "Hôm qua"
 
 #: frontend/src/utils/index.js:128
 msgid "{0} M"
-msgstr ""
+msgstr "{0} m"
 
 #: frontend/src/utils/index.js:124
 msgid "{0} d"
-msgstr ""
+msgstr "{0} d"
 
 #: frontend/src/utils/index.js:178
 msgid "{0} days ago"
-msgstr ""
+msgstr "{0} ngày trước"
 
 #: frontend/src/utils/index.js:120
 msgid "{0} h"
-msgstr ""
+msgstr "{0} h"
 
 #: frontend/src/utils/index.js:172
 msgid "{0} hours ago"
-msgstr ""
+msgstr "{0} giờ trước"
 
 #: frontend/src/utils/index.js:118
 msgid "{0} m"
-msgstr ""
+msgstr "{0} m"
 
 #: frontend/src/utils/index.js:168
 msgid "{0} minutes ago"
-msgstr ""
+msgstr "{0} phút trước"
 
 #: frontend/src/utils/index.js:186
 msgid "{0} months ago"
-msgstr ""
+msgstr "{0} tháng trước"
 
 #: frontend/src/utils/index.js:126
 msgid "{0} w"
-msgstr ""
+msgstr "{0} w"
 
 #: frontend/src/utils/index.js:182
 msgid "{0} weeks ago"
-msgstr ""
+msgstr "{0} tuần trước"
 
 #: frontend/src/utils/index.js:130
 msgid "{0} y"
-msgstr ""
+msgstr "{0} y"
 
 #: frontend/src/utils/index.js:190
 msgid "{0} years ago"
-msgstr ""
+msgstr "{0} năm trước"
 
 #. Description of the 'AI Summary' (Long Text) field in DocType 'Candidate'
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
 msgid "Đoạn văn bản tóm tắt điểm mạnh, yếu, tiềm năng do GenAI tạo ra."
-msgstr ""
+msgstr "Đoạn Văn bản Tóm tắt Điểm MạNH, yếu, tiềm năn do Genai tạo ra."
 
 #. Description of the 'Same Site?' (Check) field in DocType
 #. 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
-msgid "Đánh dấu nếu ATS này chạy cùng site với hệ thống hiện tại (không cần nhập API Base URL)"
-msgstr ""
+msgid ""
+"Đánh dấu nếu ATS này chạy cùng site với hệ thống hiện tại (không cần nhập "
+"API Base URL)"
+msgstr "ĐổiH dấu nếu ats nÀy chạy cùna trang web với hệ Th"
 
 #. Description of the 'Link CV' (Small Text) field in DocType 'Candidate'
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
 msgid "Đường dẫn đến file CV gốc (PDF, DOCX) trên cloud storage (S3, GCS)."
-msgstr ""
+msgstr "Đường dẫn Đ-N Tệp CV GốC (PDF, DOCX) TRê"
 
 #. Description of the 'Avatar' (Small Text) field in DocType 'Candidate'
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
 msgid "Đường dẫn đến ảnh đại diện (nếu có). VD: \"https://.../avatar.jpg\""
-msgstr ""
+msgstr "Đường dẫn Đến ảNH Đại diện (nếu đó). VD: \"https: //.../avatar.jpg\""
 
 #. Description of the 'API Base URL' (Small Text) field in DocType
 #. 'CandidateDataSource'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Địa chỉ API endpoint của nhà cung cấp (bỏ trống nếu Same Site)"
-msgstr ""
+msgstr "ĐịA Chỉ api endpoint của nhà cung cấp (bỏ trống nếu cùng trang web)"
 
 #. Description of the 'Email' (Data) field in DocType 'Candidate'
 #: mbw_mira/mbw_mira/doctype/candidate/candidate.json
-msgid "Địa chỉ email chính, dùng để liên lạc. Phải là duy nhất. VD: \"nguyen.van.an@email.com\""
+msgid ""
+"Địa chỉ email chính, dùng để liên lạc. Phải là duy nhất. VD: "
+"\"nguyen.van.an@email.com\""
 msgstr ""
+"Địa Chỉ Email Chính, Dùn Đề Phải Là Duy NHất. VD: "
+"\"Nguyễn.van.an@email.com\""
 
 #: mbw_mira/api/file_parser.py:31
 msgid "Định dạng file không hỗ trợ."
-msgstr ""
+msgstr "Đ-Nh dạng tập tin Không Hỗ trợ."
 
 #: frontend/src/data/script.js:330
-msgid "⚠️ Avoid using \"trigger\" as a field name — it conflicts with the built-in trigger() method."
+msgid ""
+"⚠️ Avoid using \"trigger\" as a field name — it conflicts with the built-in "
+"trigger() method."
 msgstr ""
+"Tránh sử dụng \"Trigger\" làm tên trường-nó mâu thuẫn với phương thức "
+"Trigger () tích hợp."
 
 #: frontend/src/data/script.js:342
 msgid "⚠️ Method \"{0}\" not found in class."
-msgstr ""
+msgstr "Phương thức \"{0}\" không tìm thấy trong lớp."
 
 #: frontend/src/data/script.js:87
-msgid "⚠️ No class found for doctype: {0}, it is mandatory to have a class for the parent doctype. it can be empty, but it should be present."
+msgid ""
+"⚠️ No class found for doctype: {0}, it is mandatory to have a class for the "
+"parent doctype. it can be empty, but it should be present."
 msgstr ""
+"Không tìm thấy lớp nào cho doctype: {0}, bắt buộc phải có một lớp cho cha mẹ"
+" doctype. Nó có thể trống, nhưng nó nên có mặt."
 
 #: frontend/src/data/script.js:184
 msgid "⚠️ No data found for parent field: {0}"
-msgstr ""
+msgstr "Không tìm thấy dữ liệu cho trường cha: {0}"
 
 #: frontend/src/data/script.js:192
 msgid "⚠️ No row found for idx: {0} in parent field: {1}"
-msgstr ""
-
+msgstr "⚠ Không tìm thấy hàng cho idx: {0} trong trường cha: {1}"

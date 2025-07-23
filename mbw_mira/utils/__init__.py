@@ -6,6 +6,9 @@ from rapidfuzz import fuzz
 from frappe.utils import now_datetime
 from mbw_mira.mbw_mira.doctype.interaction.interaction import create_interaction
 from urllib.parse import unquote
+import polib
+import csv
+
 
 def send_email_job(talentprofile_id, action_id, step_id):
     from mbw_mira.utils.email import send_email
@@ -259,3 +262,30 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50):
 
     except Exception as e:
         return []
+
+
+# def convert_po_to_csv(po_path, csv_path):    
+#     po = polib.pofile(po_path)
+#     with open(csv_path, 'w', newline='', encoding='utf-8') as f:
+#         writer = csv.writer(f)
+#         for entry in po:
+#             if entry.msgid:
+#                 writer.writerow([entry.msgid, entry.msgstr])
+
+# def translate_po_file(input_po_path, output_po_path):
+#     from deep_translator import GoogleTranslator
+#     # Load file .po gốc
+#     po = polib.pofile(input_po_path)
+#     # Dịch từng msgid nếu msgstr rỗng
+#     for entry in po:
+#         if entry.msgid and not entry.msgstr:
+#             try:
+#                 translated = GoogleTranslator(source='en', target='vi').translate(entry.msgid)
+#                 entry.msgstr = translated
+#             except Exception as e:
+#                 print(f"Lỗi dịch '{entry.msgid}': {e}")
+#                 entry.msgstr = ""  # fallback
+
+#     # Ghi ra file mới
+#     po.save(output_po_path)
+#     print(f"Đã dịch và lưu: {output_po_path}")
