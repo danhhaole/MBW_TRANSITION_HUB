@@ -39,19 +39,23 @@
                 :to="link.to" :isCollapsed="isSidebarCollapsed" class="mx-2 my-0.5" />
 
               <!-- Menu item có submenu -->
-              <div v-else class="mx-2 my-0.5">
+              <div v-else class="mx-2 my-0.5 relative group overflow-visible">
                 <!-- Parent menu item với icon expand/collapse -->
-                <div @click="toggleSubmenu(link.label)"
+                <div @click="!isSidebarCollapsed && toggleSubmenu(link.label)"
+                  @mouseenter="isSidebarCollapsed && onEnterParent(link.label, $event)"
+                  @mouseleave="isSidebarCollapsed && onLeaveParent()"
                   class="flex items-center cursor-pointer rounded-lg hover:bg-gray-50 transition-colors duration-200"
                   :class="[
                     isSidebarCollapsed ? 'p-2 justify-center' : 'px-2 py-2',
-                    hasActiveSubmenuItem(link.submenu) ? 'bg-gray-100 border-l-3 border-gray-400' : ''
+                    hasActiveSubmenuItem(link.submenu)
+                      ? 'bg-gray-200 text-gray-900 font-semibold border-l-3 border-gray-400'
+                      : ''
                   ]">
                   <!-- Icon của menu chính -->
                   <div class="flex-shrink-0">
                     <component :is="link.icon" class="h-4 w-4" :class="[
                       isSidebarCollapsed ? '' : 'mr-3',
-                      hasActiveSubmenuItem(link.submenu) ? 'text-gray-800' : 'text-ink-gray-7'
+                      hasActiveSubmenuItem(link.submenu) ? 'text-gray-900' : 'text-ink-gray-7'
                     ]" />
                   </div>
 
@@ -67,36 +71,34 @@
                   </div>
                 </div>
 
-                <!-- Submenu items -->
-                <div v-if="!isSidebarCollapsed" class="overflow-hidden transition-all duration-300 ease-in-out" :class="[
-                  expandedMenus[link.label]
-                    ? 'max-h-96 opacity-100'
-                    : 'max-h-0 opacity-0'
-                ]">
+                <!-- Submenu items - EXPANDED MODE -->
+                <div v-if="!isSidebarCollapsed" class="overflow-hidden transition-all duration-300 ease-in-out"
+                  :class="expandedMenus[link.label] ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'">
                   <div class="pl-10 pr-2 py-1 space-y-1">
                     <SidebarLink v-for="sublink in link.submenu" :key="sublink.label" :label="__(sublink.label)"
-                      :to="sublink.to" :isCollapsed="false" class="text-sm submenu-item" :icon="sublink.icon"/>
+                      :to="sublink.to" :isCollapsed="false" class="text-sm submenu-item" :icon="sublink.icon" />
                   </div>
                 </div>
 
-                <!-- Tooltip cho submenu khi sidebar collapsed -->
-                <div v-if="isSidebarCollapsed && link.submenu.length > 0"
-                  class="absolute left-12 top-0 hidden group-hover:block z-50 bg-white shadow-lg rounded-lg border border-gray-200 py-2 min-w-48">
-                  <div class="px-2 py-2 border-b border-gray-100">
-                    <span class="text-sm font-medium text-ink-gray-8">
-                      {{ __(link.label) }}
-                    </span>
-                  </div>
-                  <div class="py-1">
-                    <router-link v-for="sublink in link.submenu" :key="sublink.label" :to="sublink.to"
-                      class="block px-2 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-50 transition-colors duration-200"
-                      :class="{
-                        'bg-gray-100 text-gray-900 font-semibold': $route.name === sublink.to
-                      }">
-                      {{ __(sublink.label) }}
-                    </router-link>
-                  </div>
-                </div>
+                <!-- Flyout submenu - COLLAPSED MODE -->
+                <Teleport to="body">
+                  <transition name="fade">
+                    <div v-if="isSidebarCollapsed && hoveredParent === link.label && link.submenu?.length"
+                      :style="flyoutStyle(link.label)"
+                      class="fixed z-[99999] bg-white shadow-lg rounded-lg border border-gray-200 py-2 min-w-[12rem]"
+                      @mouseenter="onEnterParent(link.label)"
+                      @mouseleave="onLeaveParent()">
+                      <div class="px-3 py-2 border-b text-sm font-medium text-ink-gray-8">
+                        {{ __(link.label) }}
+                      </div>
+                      <router-link v-for="sublink in link.submenu" :key="sublink.label" :to="sublink.to"
+                        class="block px-3 py-2 text-sm text-gray-600 hover:bg-gray-200 hover:text-gray-900 hover:font-semibold transition-colors duration-150"
+                        :class="{ 'bg-gray-100 text-gray-900 font-semibold': $route.name === (sublink.to.name || sublink.to) }">
+                        {{ __(sublink.label) }}
+                      </router-link>
+                    </div>
+                  </transition>
+                </Teleport>
               </div>
             </template>
           </nav>
@@ -180,7 +182,7 @@ const toggleSubmenu = (menuLabel) => {
 // Function để check nếu submenu có item active
 const hasActiveSubmenuItem = (submenu) => {
   if (!submenu || !submenu.length) return false
-  return submenu.some(sublink => route.name === sublink.to)
+  return submenu.some(sublink => route.name === (sublink.to.name || sublink.to))
 }
 
 // Auto-expand menu có submenu item active
@@ -190,6 +192,27 @@ const autoExpandActiveMenus = () => {
       expandedMenus[link.label] = true
     }
   })
+}
+
+// script setup
+const hoveredParent = ref(null)
+const flyoutTop = ref(0)
+const onEnterParent = (label, event) => {
+  hoveredParent.value = label
+  // Nếu có event (từ menu cha), lấy vị trí top của menu cha
+  if (event && event.currentTarget) {
+    const rect = event.currentTarget.getBoundingClientRect()
+    flyoutTop.value = rect.top
+  }
+}
+const onLeaveParent = () => (hoveredParent.value = null)
+
+// Hàm style cho flyout submenu khi sidebar thu gọn
+const flyoutStyle = (label) => {
+  return {
+    left: '48px',
+    top: flyoutTop.value + 'px',
+  }
 }
 
 const links = [
@@ -252,23 +275,23 @@ const links = [
       {
         label: "Talent Profiles",
         icon: ContactsIcon,
-        to: 'CandidateManagement',
+        to: { name: 'CandidateManagement' },
       },
       {
         label: "Interactions",
         icon: ReplyIcon,
-        to: 'InteractionManagement',
+        to: { name: 'InteractionManagement' },
 
       },
       {
         label: "Actions",
         icon: PinIcon,
-        to: 'ActionManagement',
+        to: { name: 'ActionManagement' },
       },
       {
         label: "Email Logs",
         icon: Email2Icon,
-        to: 'EmailLogManagement',
+        to: { name: 'EmailLogManagement' },
       },
     ]
   },
@@ -279,13 +302,13 @@ const links = [
     submenu: [
       {
         label: "integrations",
-        icon:ExternalLinkIcon,
-        to: 'CandidateDataSourceManagementDirect'
+        icon: ExternalLinkIcon,
+        to: { name: 'CandidateDataSourceManagementDirect' }
       },
       {
         label: "Campaign Templates",
-        icon:NoteIcon,
-        to: 'CampaignTemplateManagement'
+        icon: NoteIcon,
+        to: { name: 'CampaignTemplateManagement' }
       },
 
     ]
@@ -368,6 +391,14 @@ onMounted(async () => {
   autoExpandActiveMenus()
 })
 
+watch(isSidebarCollapsed, (v) => {
+  if (v) {
+    Object.keys(expandedMenus).forEach(k => expandedMenus[k] = false)
+  } else {
+    hoveredParent.value = null
+  }
+})
+
 // Watch route changes để auto-expand menus
 watch(() => route.name, () => {
   autoExpandActiveMenus()
@@ -441,5 +472,27 @@ watch(() => route.name, () => {
 .parent-menu-item.has-active-submenu {
   background-color: #f3f4f6;
   /* bg-gray-100 */
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity .15s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>
+
+<style>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity .15s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>
