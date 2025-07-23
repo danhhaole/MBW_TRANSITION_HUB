@@ -2,10 +2,11 @@
   <div v-if="show" class="fixed z-50 inset-0 overflow-y-auto">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
       <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="handleClose"></div>
-      
+
       <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
-      
-      <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+
+      <div
+        class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
         <form @submit.prevent="handleSubmit">
           <!-- Header -->
           <div class="bg-white pt-5 pb-4 sm:py-6 sm:pb-4">
@@ -13,24 +14,16 @@
               <h3 class="text-lg px-5 leading-6 font-medium text-gray-900">
                 {{ isEdit ? __('Edit Campaign Template') : __('Create Campaign Template') }}
               </h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                @click="handleClose"
-                class="px-6"
-              >
+              <Button variant="ghost" size="sm" @click="handleClose" class="px-6">
                 <template #icon>
                   <FeatherIcon name="x" class="w-6 h-6" />
                 </template>
               </Button>
             </div>
-            
+
             <!-- Tabs -->
             <div class="mt-4" v-if="tabs.length > 0">
-              <Tabs
-                v-model="activeTabIndex"
-                :tabs="tabs"
-              />
+              <Tabs v-model="activeTabIndex" :tabs="tabs" />
             </div>
           </div>
 
@@ -44,13 +37,8 @@
                   {{ __('Template Name') }}
                   <span class="text-red-500">*</span>
                 </label>
-                <TextInput
-                  v-model="formData.template_name"
-                  type="text"
-                  :placeholder="__('Enter template name...')"
-                  :disabled="loading"
-                  class="w-full"
-                />
+                <TextInput v-model="formData.template_name" type="text" :placeholder="__('Enter template name...')"
+                  :disabled="loading" class="w-full" />
                 <div v-if="errors.template_name" class="mt-1 text-sm text-red-600">
                   {{ errors.template_name }}
                 </div>
@@ -62,13 +50,8 @@
                   {{ __('Campaign Type') }}
                   <span class="text-red-500">*</span>
                 </label>
-                <FormControl
-                  type="select"
-                  v-model="formData.campaign_type"
-                  :options="campaignTypeOptions"
-                  :disabled="loading"
-                  class="w-full"
-                />
+                <FormControl type="select" v-model="formData.campaign_type" :options="campaignTypeOptions"
+                  :disabled="loading" class="w-full" />
                 <div v-if="errors.campaign_type" class="mt-1 text-sm text-red-600">
                   {{ errors.campaign_type }}
                 </div>
@@ -79,13 +62,9 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   {{ __('Description') }}
                 </label>
-                <textarea
-                  v-model="formData.description"
-                  rows="3"
-                  :placeholder="__('Enter template description...')"
+                <textarea v-model="formData.description" rows="3" :placeholder="__('Enter template description...')"
                   :disabled="loading"
-                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                />
+                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
                 <div v-if="errors.description" class="mt-1 text-sm text-red-600">
                   {{ errors.description }}
                 </div>
@@ -93,12 +72,8 @@
 
               <!-- Is Active -->
               <div class="flex items-center">
-                <input
-                  v-model="formData.is_active"
-                  type="checkbox"
-                  :disabled="loading"
-                  class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                />
+                <input v-model="formData.is_active" type="checkbox" :disabled="loading"
+                  class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" />
                 <label class="ml-2 block text-sm text-gray-900">
                   {{ __('Active') }}
                 </label>
@@ -113,15 +88,11 @@
                   <h3 class="text-lg font-medium text-gray-900">{{ __('Template Steps') }}</h3>
                   <p class="text-sm text-gray-500">{{ __('Define the steps for this campaign template') }}</p>
                 </div>
-                <Button
-                  type="button"
-                  variant="solid"
-                  theme="gray"
-                  @click.stop="handleAddStep"
-                >
+                <Button type="button" variant="solid" theme="gray" @click.stop="handleAddStep">
                   <template #prefix>
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                     </svg>
                   </template>
                   {{ __('Add Step') }}
@@ -131,9 +102,12 @@
               <!-- Steps List -->
               <div v-if="stepsLoading" class="flex justify-center py-4">
                 <div class="flex items-center text-gray-600">
-                  <svg class="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <svg class="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <path class="opacity-75" fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                    </path>
                   </svg>
                   {{ __('Loading steps...') }}
                 </div>
@@ -142,97 +116,68 @@
               <div v-else-if="templateSteps.length === 0" class="text-center py-6 bg-gray-50 rounded-lg">
                 <div class="text-gray-400 mb-2">
                   <svg class="mx-auto h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </div>
                 <p class="text-gray-500 text-sm">{{ __('No steps defined yet. Click "Add Step" to get started.') }}</p>
               </div>
 
               <div v-else class="space-y-2">
-                <div
-                  v-for="(step, index) in templateSteps"
-                  :key="step.name"
-                >
+                <div v-for="(step, index) in templateSteps" :key="step.name">
                   <!-- Normal Step Display -->
-                  <div
-                    v-if="!editingStep || editingStep.name !== step.name"
-                    class="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:bg-gray-100 transition-colors"
-                  >
+                  <div v-if="!editingStep || editingStep.name !== step.name"
+                    class="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:bg-gray-100 transition-colors">
                     <div class="flex items-center justify-between">
                       <div class="flex-1">
                         <div class="flex items-center space-x-3">
-                          <span class="flex items-center justify-center w-6 h-6 bg-indigo-100 text-indigo-800 text-xs font-medium rounded-full">
+                          <span
+                            class="flex items-center justify-center w-6 h-6 bg-indigo-100 text-indigo-800 text-xs font-medium rounded-full">
                             {{ step.step_order }}
                           </span>
                           <div>
                             <h4 class="text-sm font-medium text-gray-900">{{ step.campaign_step_name }}</h4>
                             <div class="flex items-center space-x-2 text-xs text-gray-500">
                               <span>{{ step.action_type }}</span>
-                              <span v-if="step.delay_in_days > 0">• {{ step.delay_in_days }} {{ __('days delay') }}</span>
+                              <span v-if="step.delay_in_days > 0">• {{ step.delay_in_days }} {{ __('days delay')
+                                }}</span>
                             </div>
                           </div>
                         </div>
                       </div>
                       <div class="flex items-center space-x-1">
                         <!-- Move Up -->
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          @click.stop="handleMoveStep(step, 'up')"
-                          :disabled="index === 0"
-                          :title="__('Move up')"
-                        >
+                        <Button type="button" variant="ghost" size="sm" @click.stop="handleMoveStep(step, 'up')"
+                          :disabled="index === 0" :title="__('Move up')">
                           <template #icon>
                             <FeatherIcon name="chevron-up" class="w-4 h-4" />
                           </template>
                         </Button>
                         <!-- Move Down -->
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          @click.stop="handleMoveStep(step, 'down')"
-                          :disabled="index === templateSteps.length - 1"
-                          :title="__('Move down')"
-                        >
+                        <Button type="button" variant="ghost" size="sm" @click.stop="handleMoveStep(step, 'down')"
+                          :disabled="index === templateSteps.length - 1" :title="__('Move down')">
                           <template #icon>
                             <FeatherIcon name="chevron-down" class="w-4 h-4" />
                           </template>
                         </Button>
                         <div class="border-l border-gray-300 h-4 mx-1"></div>
                         <!-- Copy -->
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          @click.stop="handleCopyStep(step)"
-                          :title="__('Copy step')"
-                        >
+                        <Button type="button" variant="ghost" size="sm" @click.stop="handleCopyStep(step)"
+                          :title="__('Copy step')">
                           <template #icon>
                             <FeatherIcon name="copy" class="w-4 h-4" />
                           </template>
                         </Button>
                         <!-- Edit -->
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          @click.stop="handleEditStep(step)"
-                          :title="__('Edit step')"
-                        >
+                        <Button type="button" variant="ghost" size="sm" @click.stop="handleEditStep(step)"
+                          :title="__('Edit step')">
                           <template #icon>
                             <FeatherIcon name="edit-2" class="w-4 h-4" />
                           </template>
                         </Button>
                         <!-- Delete -->
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          @click.stop="handleDeleteStep(step)"
-                          :title="__('Delete step')"
-                        >
+                        <Button type="button" variant="ghost" size="sm" @click.stop="handleDeleteStep(step)"
+                          :title="__('Delete step')">
                           <template #icon>
                             <FeatherIcon name="trash-2" class="w-4 h-4" />
                           </template>
@@ -242,20 +187,12 @@
                   </div>
 
                   <!-- Inline Edit Step Form -->
-                  <div
-                    v-else
-                    class="bg-blue-50 border border-blue-200 rounded-lg p-4"
-                  >
+                  <div v-else class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <div class="flex items-center justify-between mb-4">
                       <h4 class="text-lg font-medium text-gray-900">
                         {{ __('Edit Step') }}
                       </h4>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        @click.stop="handleStepCancel"
-                      >
+                      <Button type="button" variant="ghost" size="sm" @click.stop="handleStepCancel">
                         <template #icon>
                           <FeatherIcon name="x" class="w-4 h-4" />
                         </template>
@@ -270,13 +207,8 @@
                             {{ __('Step Name') }}
                             <span class="text-red-500">*</span>
                           </label>
-                          <TextInput
-                            v-model="stepFormData.campaign_step_name"
-                            type="text"
-                            :placeholder="__('Enter step name...')"
-                            :disabled="stepFormLoading"
-                            class="w-full"
-                          />
+                          <TextInput v-model="stepFormData.campaign_step_name" type="text"
+                            :placeholder="__('Enter step name...')" :disabled="stepFormLoading" class="w-full" />
                           <div v-if="stepFormErrors.campaign_step_name" class="mt-1 text-sm text-red-600">
                             {{ stepFormErrors.campaign_step_name }}
                           </div>
@@ -288,53 +220,37 @@
                             {{ __('Action Type') }}
                             <span class="text-red-500">*</span>
                           </label>
-                          <FormControl
-                            type="select"
-                            v-model="stepFormData.action_type"
-                            :options="actionTypeOptions"
-                            :disabled="stepFormLoading"
-                            class="w-full"
-                          />
+                          <FormControl type="select" v-model="stepFormData.action_type" :options="actionTypeOptions"
+                            :disabled="stepFormLoading" class="w-full" />
                           <div v-if="stepFormErrors.action_type" class="mt-1 text-sm text-red-600">
                             {{ stepFormErrors.action_type }}
                           </div>
                         </div>
                       </div>
 
-                                          <!-- Delay Days -->
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ __('Delay (Days)') }}
-                      </label>
-                      <TextInput
-                        v-model.number="stepFormData.delay_in_days"
-                        type="number"
-                        min="0"
-                        max="365"
-                        :placeholder="__('0 for immediate execution')"
-                        :disabled="stepFormLoading"
-                        class="w-full"
-                      />
-                      <p class="mt-1 text-xs text-gray-500">
-                        {{ __('Number of days to wait before executing this step') }}
-                      </p>
-                      <div v-if="stepFormErrors.delay_in_days" class="mt-1 text-sm text-red-600">
-                        {{ stepFormErrors.delay_in_days }}
+                      <!-- Delay Days -->
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                          {{ __('Delay (Days)') }}
+                        </label>
+                        <TextInput v-model.number="stepFormData.delay_in_days" type="number" min="0" max="365"
+                          :placeholder="__('0 for immediate execution')" :disabled="stepFormLoading" class="w-full" />
+                        <p class="mt-1 text-xs text-gray-500">
+                          {{ __('Number of days to wait before executing this step') }}
+                        </p>
+                        <div v-if="stepFormErrors.delay_in_days" class="mt-1 text-sm text-red-600">
+                          {{ stepFormErrors.delay_in_days }}
+                        </div>
                       </div>
-                    </div>
 
                       <!-- Template Content -->
                       <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">
                           {{ __('Template Content') }}
                         </label>
-                        <textarea
-                          v-model="stepFormData.template_content"
-                          rows="3"
-                          :placeholder="__('Enter template content for this step...')"
-                          :disabled="stepFormLoading"
-                          class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                        />
+                        <textarea v-model="stepFormData.template_content" rows="3"
+                          :placeholder="__('Enter template content for this step...')" :disabled="stepFormLoading"
+                          class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
                         <div v-if="stepFormErrors.template_content" class="mt-1 text-sm text-red-600">
                           {{ stepFormErrors.template_content }}
                         </div>
@@ -345,13 +261,9 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">
                           {{ __('Action Configuration') }}
                         </label>
-                        <textarea
-                          v-model="stepFormData.action_config_string"
-                          rows="3"
-                          :placeholder="__('Enter JSON configuration...')"
-                          :disabled="stepFormLoading"
-                          class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm font-mono text-sm"
-                        />
+                        <textarea v-model="stepFormData.action_config_string" rows="3"
+                          :placeholder="__('Enter JSON configuration...')" :disabled="stepFormLoading"
+                          class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm font-mono text-sm" />
                         <p class="mt-1 text-xs text-gray-500">
                           {{ __('JSON configuration for the action (optional)') }}
                         </p>
@@ -364,7 +276,8 @@
                       <div class="bg-gray-50 p-3 rounded-md border border-gray-200">
                         <div class="flex items-center space-x-3">
                           <div class="flex-shrink-0">
-                            <div class="w-6 h-6 bg-indigo-100 text-indigo-800 text-xs font-medium rounded-full flex items-center justify-center">
+                            <div
+                              class="w-6 h-6 bg-indigo-100 text-indigo-800 text-xs font-medium rounded-full flex items-center justify-center">
                               {{ stepFormData.step_order }}
                             </div>
                           </div>
@@ -377,23 +290,12 @@
 
                       <!-- Form Actions -->
                       <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          theme="gray"
-                          @click.stop="handleStepCancel"
-                          :disabled="stepFormLoading"
-                        >
+                        <Button type="button" variant="outline" theme="gray" @click.stop="handleStepCancel"
+                          :disabled="stepFormLoading">
                           {{ __('Cancel') }}
                         </Button>
-                        <Button
-                          type="button"
-                          variant="solid"
-                          theme="gray"
-                          @click.stop="handleStepSubmit"
-                          :loading="stepFormLoading"
-                          :disabled="stepFormLoading"
-                        >
+                        <Button type="button" variant="solid" theme="gray" @click.stop="handleStepSubmit"
+                          :loading="stepFormLoading" :disabled="stepFormLoading">
                           {{ stepFormLoading ? __('Saving...') : __('Update Step') }}
                         </Button>
                       </div>
@@ -409,12 +311,7 @@
                     <h4 class="text-lg font-medium text-gray-900">
                       {{ __('Add New Step') }}
                     </h4>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      @click.stop="handleStepCancel"
-                    >
+                    <Button type="button" variant="ghost" size="sm" @click.stop="handleStepCancel">
                       <template #icon>
                         <FeatherIcon name="x" class="w-4 h-4" />
                       </template>
@@ -429,13 +326,8 @@
                           {{ __('Step Name') }}
                           <span class="text-red-500">*</span>
                         </label>
-                        <TextInput
-                          v-model="stepFormData.campaign_step_name"
-                          type="text"
-                          :placeholder="__('Enter step name...')"
-                          :disabled="stepFormLoading"
-                          class="w-full"
-                        />
+                        <TextInput v-model="stepFormData.campaign_step_name" type="text"
+                          :placeholder="__('Enter step name...')" :disabled="stepFormLoading" class="w-full" />
                         <div v-if="stepFormErrors.campaign_step_name" class="mt-1 text-sm text-red-600">
                           {{ stepFormErrors.campaign_step_name }}
                         </div>
@@ -447,53 +339,37 @@
                           {{ __('Action Type') }}
                           <span class="text-red-500">*</span>
                         </label>
-                        <FormControl
-                          type="select"
-                          v-model="stepFormData.action_type"
-                          :options="actionTypeOptions"
-                          :disabled="stepFormLoading"
-                          class="w-full"
-                        />
+                        <FormControl type="select" v-model="stepFormData.action_type" :options="actionTypeOptions"
+                          :disabled="stepFormLoading" class="w-full" />
                         <div v-if="stepFormErrors.action_type" class="mt-1 text-sm text-red-600">
                           {{ stepFormErrors.action_type }}
                         </div>
                       </div>
                     </div>
 
-                                          <!-- Delay Days -->
-                      <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                          {{ __('Delay (Days)') }}
-                        </label>
-                        <TextInput
-                          v-model.number="stepFormData.delay_in_days"
-                          type="number"
-                          min="0"
-                          max="365"
-                          :placeholder="__('0 for immediate execution')"
-                          :disabled="stepFormLoading"
-                          class="w-full"
-                        />
-                        <p class="mt-1 text-xs text-gray-500">
-                          {{ __('Number of days to wait before executing this step') }}
-                        </p>
-                        <div v-if="stepFormErrors.delay_in_days" class="mt-1 text-sm text-red-600">
-                          {{ stepFormErrors.delay_in_days }}
-                        </div>
+                    <!-- Delay Days -->
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ __('Delay (Days)') }}
+                      </label>
+                      <TextInput v-model.number="stepFormData.delay_in_days" type="number" min="0" max="365"
+                        :placeholder="__('0 for immediate execution')" :disabled="stepFormLoading" class="w-full" />
+                      <p class="mt-1 text-xs text-gray-500">
+                        {{ __('Number of days to wait before executing this step') }}
+                      </p>
+                      <div v-if="stepFormErrors.delay_in_days" class="mt-1 text-sm text-red-600">
+                        {{ stepFormErrors.delay_in_days }}
                       </div>
+                    </div>
 
                     <!-- Template Content -->
                     <div>
                       <label class="block text-sm font-medium text-gray-700 mb-2">
                         {{ __('Template Content') }}
                       </label>
-                      <textarea
-                        v-model="stepFormData.template_content"
-                        rows="3"
-                        :placeholder="__('Enter template content for this step...')"
-                        :disabled="stepFormLoading"
-                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                      />
+                      <textarea v-model="stepFormData.template_content" rows="3"
+                        :placeholder="__('Enter template content for this step...')" :disabled="stepFormLoading"
+                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
                       <div v-if="stepFormErrors.template_content" class="mt-1 text-sm text-red-600">
                         {{ stepFormErrors.template_content }}
                       </div>
@@ -504,13 +380,9 @@
                       <label class="block text-sm font-medium text-gray-700 mb-2">
                         {{ __('Action Configuration') }}
                       </label>
-                      <textarea
-                        v-model="stepFormData.action_config_string"
-                        rows="3"
-                        :placeholder="__('Enter JSON configuration...')"
-                        :disabled="stepFormLoading"
-                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm font-mono text-sm"
-                      />
+                      <textarea v-model="stepFormData.action_config_string" rows="3"
+                        :placeholder="__('Enter JSON configuration...')" :disabled="stepFormLoading"
+                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm font-mono text-sm" />
                       <p class="mt-1 text-xs text-gray-500">
                         {{ __('JSON configuration for the action (optional)') }}
                       </p>
@@ -523,36 +395,27 @@
                     <div class="bg-green-50 p-3 rounded-md border border-green-200">
                       <div class="flex items-center space-x-3">
                         <div class="flex-shrink-0">
-                          <div class="w-6 h-6 bg-green-100 text-green-800 text-xs font-medium rounded-full flex items-center justify-center">
+                          <div
+                            class="w-6 h-6 bg-green-100 text-green-800 text-xs font-medium rounded-full flex items-center justify-center">
                             {{ stepFormData.step_order }}
                           </div>
                         </div>
                         <div class="flex-1">
                           <p class="text-sm font-medium text-gray-900">{{ __('Step Order') }}</p>
-                          <p class="text-xs text-gray-500">{{ __('Will be positioned as step #' + stepFormData.step_order) }}</p>
+                          <p class="text-xs text-gray-500">{{ __('Will be positioned as step #' +
+                            stepFormData.step_order) }}</p>
                         </div>
                       </div>
                     </div>
 
                     <!-- Form Actions -->
                     <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        theme="gray"
-                        @click.stop="handleStepCancel"
-                        :disabled="stepFormLoading"
-                      >
+                      <Button type="button" variant="outline" theme="gray" @click.stop="handleStepCancel"
+                        :disabled="stepFormLoading">
                         {{ __('Cancel') }}
                       </Button>
-                      <Button
-                        type="button"
-                        variant="solid"
-                        theme="gray"
-                        @click.stop="handleStepSubmit"
-                        :loading="stepFormLoading"
-                        :disabled="stepFormLoading"
-                      >
+                      <Button type="button" variant="solid" theme="gray" @click.stop="handleStepSubmit"
+                        :loading="stepFormLoading" :disabled="stepFormLoading">
                         {{ stepFormLoading ? __('Saving...') : __('Add Step') }}
                       </Button>
                     </div>
@@ -564,8 +427,11 @@
             <!-- Error Message -->
             <div v-if="submitError" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
               <div class="flex">
-                <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                  fill="currentColor">
+                  <path fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clip-rule="evenodd" />
                 </svg>
                 <div class="ml-3">
                   <h3 class="text-sm font-medium text-red-800">
@@ -581,22 +447,10 @@
 
           <!-- Footer -->
           <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-            <Button
-              type="submit"
-              variant="solid"
-              theme="gray"
-              :loading="loading"
-              :disabled="loading"
-            >
-              {{ loading ? __('Saving...') : (isEdit ? __('Update Template') : __('Create Template')) }}
+            <Button type="submit" variant="solid" theme="gray" :loading="loading" :disabled="loading">
+              {{ submitLabel }}
             </Button>
-            <Button
-              variant="outline"
-              theme="gray"
-              @click="handleClose"
-              :disabled="loading"
-              class="sm:mr-3"
-            >
+            <Button variant="outline" theme="gray" @click="handleClose" :disabled="loading" class="sm:mr-3">
               {{ __('Cancel') }}
             </Button>
           </div>
@@ -640,7 +494,10 @@ const show = computed({
   set: (value) => emit('update:modelValue', value)
 })
 
-const isEdit = computed(() => !!props.template)
+const currentTemplateName = computed(() => props.template?.name || savedTemplate.value?.name || null)
+
+// 2) Sửa isEdit để dùng currentTemplateName
+const isEdit = computed(() => !!currentTemplateName.value)
 
 // Tabs configuration
 const tabs = computed(() => {
@@ -650,19 +507,24 @@ const tabs = computed(() => {
       name: 'template'
     }
   ]
-  
+
   // Only show steps tab if template exists or is being edited
-  if (isEdit.value || savedTemplate.value) {
+  if (isEdit.value) {
     tabsArray.push({
-      label: templateSteps.value.length > 0 
+      label: templateSteps.value.length > 0
         ? `${__('Template Steps')} (${templateSteps.value.length})`
         : __('Template Steps'),
       name: 'steps'
     })
   }
-  
+
   return tabsArray
 })
+
+const submitLabel = computed(() => {
+  if (loading.value) return __('Saving...');
+  return isEdit.value ? __('Update Template') : __('Create Template');
+});
 
 // For backward compatibility
 const activeTab = computed(() => tabs.value[activeTabIndex.value]?.name || 'template')
@@ -722,12 +584,12 @@ const resetForm = () => {
   formData.campaign_type = ''
   formData.description = ''
   formData.is_active = true
-  
+
   // Clear errors
   Object.keys(errors).forEach(key => {
     delete errors[key]
   })
-  
+
   submitError.value = ''
   activeTabIndex.value = 0
   savedTemplate.value = null
@@ -744,7 +606,7 @@ const setFormData = (template) => {
     // Fix: Handle both number (1/0) and boolean values for is_active
     formData.is_active = template.is_active === 1 || template.is_active === true
     savedTemplate.value = template
-    
+
     // Load steps if template exists
     if (template.name) {
       loadTemplateSteps(template.name)
@@ -754,7 +616,7 @@ const setFormData = (template) => {
 
 const loadTemplateSteps = async (templateName) => {
   if (!templateName) return
-  
+
   stepsLoading.value = true
   try {
     const result = await campaignTemplateStepDirectService.getStepsByTemplate(templateName)
@@ -777,11 +639,11 @@ const handleAddStep = async () => {
     showError(__('Please save the template first before adding steps'))
     return
   }
-  
+
   // Reset and show inline step form
   resetStepForm()
   editingStep.value = null
-  
+
   // Auto-assign next step order
   try {
     const nextOrder = await getNextStepOrder()
@@ -790,18 +652,18 @@ const handleAddStep = async () => {
     console.error('Error getting next step order:', error)
     stepFormData.step_order = templateSteps.value.length + 1
   }
-  
+
   showStepForm.value = true
-  
+
   // Auto-scroll to add step form after it renders
   await nextTick()
   const addStepForm = document.querySelector('.bg-green-50.border-green-200')
   if (addStepForm) {
-    addStepForm.scrollIntoView({ 
-      behavior: 'smooth', 
-      block: 'start' 
+    addStepForm.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
     })
-    
+
     // Auto-focus on first input field
     const firstInput = addStepForm.querySelector('input[type="text"]')
     if (firstInput) {
@@ -816,7 +678,7 @@ const handleEditStep = async (step) => {
   editingStep.value = step
   setStepFormData(step)
   // No need to set showStepForm, it's handled by v-if in template
-  
+
   // Auto-focus on first input field after form renders
   await nextTick()
   const editForm = document.querySelector('.bg-blue-50.border-blue-200')
@@ -830,7 +692,7 @@ const handleEditStep = async (step) => {
 
 const handleDeleteStep = async (step) => {
   if (!confirm(__('Are you sure you want to delete this step?'))) return
-  
+
   try {
     const result = await campaignTemplateStepDirectService.delete(step.name)
     if (result.success) {
@@ -869,7 +731,7 @@ const handleMoveStep = async (step, direction) => {
 const handleCopyStep = async (step) => {
   try {
     const templateName = savedTemplate.value?.name || props.template?.name
-    
+
     // Create copy data with modified name and put at the end
     const copyData = {
       template: templateName,
@@ -880,7 +742,7 @@ const handleCopyStep = async (step) => {
       template_content: step.template_content || '',
       action_config: step.action_config || null
     }
-    
+
     const result = await campaignTemplateStepDirectService.create(copyData)
     if (result.success) {
       showSuccess(__('Step copied successfully'))
@@ -905,12 +767,12 @@ const resetStepForm = () => {
   stepFormData.delay_in_days = 0
   stepFormData.template_content = ''
   stepFormData.action_config_string = ''
-  
+
   // Clear errors
   Object.keys(stepFormErrors).forEach(key => {
     delete stepFormErrors[key]
   })
-  
+
   editingStep.value = null
 }
 
@@ -921,7 +783,7 @@ const setStepFormData = (step) => {
     stepFormData.step_order = step.step_order || 1
     stepFormData.delay_in_days = step.delay_in_days || 0
     stepFormData.template_content = step.template_content || ''
-    
+
     // Handle JSON config
     if (step.action_config) {
       if (typeof step.action_config === 'object') {
@@ -938,7 +800,7 @@ const setStepFormData = (step) => {
 const getNextStepOrder = async () => {
   const templateName = savedTemplate.value?.name || props.template?.name
   if (!templateName) return 1
-  
+
   try {
     const result = await campaignTemplateStepDirectService.getNextStepOrder(templateName)
     return result || templateSteps.value.length + 1
@@ -1033,10 +895,10 @@ const handleStepSubmit = async () => {
       showStepForm.value = false
       editingStep.value = null
       resetStepForm()
-      
+
       // Reload steps list
       loadTemplateSteps(templateName)
-      
+
       // Emit step changed event to parent
       emit('step-changed')
     } else {
@@ -1110,12 +972,11 @@ const handleSubmit = async () => {
     }
 
     let result
-
-    if (isEdit.value) {
-      // Update existing template
-      result = await campaignTemplateDirectService.update(props.template.name, data)
+    if (currentTemplateName.value) {
+      // Update
+      result = await campaignTemplateDirectService.update(currentTemplateName.value, data)
     } else {
-      // Create new template
+      // Create
       result = await campaignTemplateDirectService.create(data)
     }
 
@@ -1125,16 +986,12 @@ const handleSubmit = async () => {
       // Update saved template for new creations
       if (!isEdit.value) {
         savedTemplate.value = result.data
-        activeTabIndex.value = 1 // Switch to steps tab
-        
-        // Don't close modal, switch to steps tab
+        await loadTemplateSteps(result.data.name)
+        // nhảy sang tab steps
+        activeTabIndex.value = tabs.value.findIndex(t => t.name === 'steps')
         emit('saved', result.data)
-        return
       } else {
-        // For edits, reload steps and close modal
-        if (result.data?.name) {
-          loadTemplateSteps(result.data.name)
-        }
+        if (result.data?.name) await loadTemplateSteps(result.data.name)
         show.value = false
         emit('saved', result.data)
       }
@@ -1171,7 +1028,7 @@ watch(
     if (newValue) {
       // Reset form when opening
       resetForm()
-      
+
       // Set form data if editing
       if (props.template) {
         nextTick(() => {
@@ -1195,4 +1052,4 @@ watch(
 
 <style scoped>
 /* Add any component-specific styles here */
-</style> 
+</style>
