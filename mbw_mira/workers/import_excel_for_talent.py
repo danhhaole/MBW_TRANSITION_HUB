@@ -129,3 +129,73 @@ def check_exists(email):
         return True
     else:
         return False
+
+# def fake_sample_data():
+#     import random
+#     from faker import Faker
+#     import pandas as pd
+#     from datetime import datetime
+
+#     fake = Faker('vi_VN')  # Dùng tên tiếng Anh giả lập gần giống tiếng Việt
+
+#     def vietnamize_name(name):
+#         parts = name.split()
+#         return " ".join(part.capitalize() for part in parts)
+
+#     # Danh sách Talent Pool và kỹ năng tương ứng
+#     talent_pools = [
+#         ("Software Developers", ["Python", "JavaScript", "SQL", "Git"]),
+#         ("Data Professionals", ["Python", "SQL", "Power BI", "Tableau"]),
+#         ("Digital Marketing Experts", ["SEO", "Google Ads", "Content Writing"]),
+#         ("UI/UX & Product Designers", ["Figma", "Prototyping", "Adobe XD"]),
+#         ("Project & Product Managers", ["Agile", "Scrum", "Jira"]),
+#         ("Business Analysts", ["BPMN", "SQL cơ bản", "Process Design"]),
+#         ("Quality Assurance (QA)", ["Manual Testing", "Selenium", "JIRA"]),
+#         ("DevOps & Cloud Engineers", ["Docker", "Kubernetes", "CI/CD"]),
+#         ("IT Infrastructure & Security", ["Linux", "Firewall", "Security Policies"]),
+#         ("Sales & Account Managers", ["CRM", "Negotiation", "Communication"]),
+#         ("Customer Support", ["Ticketing Tools", "Troubleshooting"]),
+#         ("HR & Talent Acquisition", ["Sourcing", "Boolean Search"]),
+#         ("Finance & Accounting", ["Excel nâng cao", "IFRS"]),
+#         ("Operations", ["Logistics", "Inventory Control"]),
+#         ("Interns & Fresh Graduates", ["Tin học văn phòng", "Tư duy logic"])
+#     ]
+
+#     # Tạo dữ liệu mẫu
+#     sample_data = []
+#     base_id = 6000
+
+#     for i in range(100):
+#         name = vietnamize_name(fake.name())
+#         email = fake.email()
+#         phone = "0" + fake.msisdn()[1:10]
+#         dob = fake.date_of_birth(minimum_age=22, maximum_age=30).strftime('%Y-%m-%d')
+#         headline, skills = random.choice(talent_pools)
+#         id_str = f"TLP-2507-{base_id + i:05d}"
+#         source = "SOURCE-250722-00536"
+#         link_cv = f"/files/{name.replace(' ', '_')}-CV.pdf"
+#         ai_summary = f"CV của {name} ứng tuyển vị trí {headline.lower()}."
+#         last_interaction = datetime(2025, 7, random.randint(1, 23), random.randint(8, 18), random.randint(0, 59))
+
+#         sample_data.append({
+#             "Full Name": name,
+#             "Email": email,
+#             "Phone": phone,
+#             "DOB": dob,
+#             "Avatar": "",
+#             "Headline": headline,
+#             "Source": source,
+#             "Link CV": link_cv,
+#             "Profile Data": "",
+#             "Skills": str(skills),
+#             "AI Summary": ai_summary,
+#             "Status": "NEW",
+#             "Last Interaction": None,
+#             "Email Opt Out": 0
+#         })
+
+#     # Lưu thành file CSV
+#     df = pd.DataFrame(sample_data)
+#     df.to_csv("TalentProfiles_100_sample.csv", index=False)
+
+#     print("Đã tạo file TalentProfiles_100_sample.csv thành công.")
