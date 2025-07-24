@@ -4,13 +4,13 @@ import json
 from datetime import datetime
 import os
 
-def import_talentprofile_from_file(campaign_id: str):
+def import_talentprofile_from_file(campaign_name: str):
     logger = frappe.logger("import_candidates")
 
     # 1. Lấy thông tin campaign
     campaign = frappe.db.get_value(
         "Campaign",
-        campaign_id,
+        campaign_name,
         [
             "campaign_name", "is_active", "status",
             "start_date", "end_date", "target_segment",
@@ -20,7 +20,7 @@ def import_talentprofile_from_file(campaign_id: str):
     )
 
     if not campaign:
-        logger.error(f"Campaign not found: {campaign_id}")
+        logger.error(f"Campaign not found: {campaign_name}")
         return
 
     # 2. Kiểm tra trạng thái hợp lệ

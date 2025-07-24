@@ -2,6 +2,9 @@ app_name = "mbw_mira"
 app_title = "MBW Mira"
 app_publisher = "MBWCloud Co."
 app_description = "MBW Mira Talent Pool"
+app_icon_url = "/assets/mbw_mira/images/mira-logo.png"
+app_icon_title = "MBW Mira"
+app_icon_route = "/mbw_mira"
 app_email = "dev@mbw.vn"
 app_license = "agpl-3.0"
 
@@ -14,7 +17,7 @@ app_license = "agpl-3.0"
 add_to_apps_screen = [
 	{
 		"name": "mbw_mira",
-		"logo": "/assets/mbw_mira/logo.png",
+		"logo": "/assets/mbw_mira/images/mira-logo.png",
 		"title": "MBW Mira",
 		"route": "/mbw_mira",
 		#"has_permission": "mbw_mira.api.permission.has_app_permission"

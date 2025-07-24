@@ -8,7 +8,6 @@ def run():
     """
     now = datetime.now()
     threshold = now - timedelta(minutes=30)
-    frappe.logger().info(f"[Pending Actions Checker] Running at {now}")
 
     actions = frappe.get_all(
         "Action",
@@ -25,7 +24,6 @@ def run():
             frappe.enqueue(
                 "mbw_mira.workers.process_action.check_pending_action",
                 queue="short",
-                timeout=120,
                 job_name=a.name,
                 action_name=a.name
             )

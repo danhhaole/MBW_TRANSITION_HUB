@@ -6,6 +6,6 @@ tags
 node_modules
 __pycache__
 mbw_mira/www/mbw_mira.html
-mbw_mira/mbw_mira/public
+mbw_mira/mbw_mira/public/node_modules
 frontend/components.d.ts
-mbw_mira/public
+mbw_mira/public/node_modules
