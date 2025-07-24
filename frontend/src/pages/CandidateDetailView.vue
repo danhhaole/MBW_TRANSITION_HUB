@@ -292,7 +292,7 @@
 									<td
 										class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
 									>
-										{{ item.campaign_name || item.campaign_id }}
+										{{ item.title || item.name }}
 									</td>
 									<td class="px-6 py-4 whitespace-nowrap">
 										<span
@@ -1918,11 +1918,15 @@ const loadCandidate = async () => {
 	loading.value = true
 	try {
 		const result = await candidateService.getFormData(route.params.id)
-		if (result.success) {
+		console.log('result', result)
+		if (result.success && result.data) {
 			Object.assign(candidate, result.data)
+		} else {
+			Object.assign(candidate, {})
 		}
 	} catch (error) {
 		console.error('Error loading candidate:', error)
+		Object.assign(candidate, {})
 	} finally {
 		loading.value = false
 	}
@@ -1936,7 +1940,6 @@ const loadCandidateCampaigns = async () => {
 			fields: [
 				'name',
 				'campaign_id',
-				'campaign_name',
 				'status',
 				'current_step_order',
 				'next_action_at',
@@ -2059,12 +2062,12 @@ const loadAvailableCampaigns = async () => {
 const loadAvailableSegments = async () => {
 	try {
 		const result = await talentSegmentService.getList({
-			fields: ['name', 'segment_name'],
+			fields: ['name', 'title'],
 			page_length: 1000,
 		})
 		if (result.success) {
 			availableSegments.value = result.data.map((item) => ({
-				label: item.segment_name || item.name,
+				label: item.title || item.name,
 				value: item.name,
 			}))
 		}

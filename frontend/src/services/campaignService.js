@@ -12,8 +12,7 @@ import {
 // Lấy danh sách campaigns với filter
 export const getFilteredCampaigns = async (filterOptions = {}) => {
   try {
-    const { status, type, isActive, searchText } = filterOptions
-    
+    const { status, type, isActive, searchText, page = 1, limit = 20 } = filterOptions
     let filters = {}
     if (status && status !== 'all') {
       filters.status = status
@@ -24,30 +23,25 @@ export const getFilteredCampaigns = async (filterOptions = {}) => {
     if (isActive !== undefined) {
       filters.is_active = isActive
     }
-    
-    let response
-    if (searchText) {
-      response = await searchCampaigns(searchText)
-      // Áp dụng thêm filters nếu có
-      if (response.success && response.data && (status !== 'all' || type !== 'all' || isActive !== undefined)) {
-        response.data = response.data.filter(campaign => {
-          let match = true
-          if (status && status !== 'all') match = match && campaign.status === status
-          if (type && type !== 'all') match = match && campaign.type === type
-          if (isActive !== undefined) match = match && campaign.is_active === isActive
-          return match
-        })
-      }
-    } else {
-      response = await getCampaigns(filters)
+    let options = {
+      filters,
+      page_length: limit,
+      start: (page - 1) * limit,
+      or_filters: undefined,
     }
+    if (searchText) {
+      options.or_filters = [
+        ['campaign_name', 'like', `%${searchText}%`],
+        ['description', 'like', `%${searchText}%`]
+      ]
+    }
+    const response = await getCampaigns(options)
 
-    console.log('Service response:', response)
-    
-    if (response.success) {
-      return response.data || []
+    console.log('response', response)
+    if (response && Array.isArray(response.data)) {
+      return response
     } else {
-      throw new Error(response.message || 'Không thể tải danh sách chiến dịch')
+      throw new Error('Không thể tải danh sách chiến dịch')
     }
   } catch (error) {
     console.error('Failed to get campaigns:', error)
@@ -59,10 +53,10 @@ export const getFilteredCampaigns = async (filterOptions = {}) => {
 export const getCampaignDetails = async (name) => {
   try {
     const response = await getCampaignByName(name)
-    if (response.success) {
+    if (response && response.data) {
       return response.data
     } else {
-      throw new Error(response.message || 'Không thể tải thông tin chiến dịch')
+      throw new Error('Không thể tải thông tin chiến dịch')
     }
   } catch (error) {
     console.error('Failed to get campaign details:', error)
@@ -74,7 +68,7 @@ export const getCampaignDetails = async (name) => {
 export const getUserOptions = async () => {
   try {
     const response = await getUsers()
-    return response.success ? (response.data || []) : []
+    return Array.isArray(response) ? response : (response.data || [])
   } catch (error) {
     console.error('Failed to get users:', error)
     return []
@@ -85,7 +79,7 @@ export const getUserOptions = async () => {
 export const getTalentSegmentOptions = async () => {
   try {
     const response = await getTalentSegments()
-    return response.success ? (response.data || []) : []
+    return Array.isArray(response) ? response : (response.data || [])
   } catch (error) {
     console.error('Failed to get talent segments:', error)
     return []
@@ -99,7 +93,6 @@ export const submitNewCampaign = async (formData) => {
     if (!formData.campaign_name || !formData.campaign_name.trim()) {
       throw new Error('Tên chiến dịch không được để trống')
     }
-    
     if (formData.start_date && formData.end_date) {
       const startDate = new Date(formData.start_date)
       const endDate = new Date(formData.end_date)
@@ -107,7 +100,6 @@ export const submitNewCampaign = async (formData) => {
         throw new Error('Ngày kết thúc phải sau ngày bắt đầu')
       }
     }
-
     const response = await createCampaign({
       campaign_name: formData.campaign_name.trim(),
       description: formData.description || '',
@@ -119,11 +111,10 @@ export const submitNewCampaign = async (formData) => {
       status: formData.status || 'DRAFT',
       target_segment: formData.target_segment || null
     })
-    
-    if (response.success) {
+    if (response && response.data) {
       return response
     } else {
-      throw new Error(response.message || 'Không thể tạo campaign')
+      throw new Error('Không thể tạo campaign')
     }
   } catch (error) {
     console.error('Failed to create campaign:', error)
@@ -138,7 +129,6 @@ export const updateCampaignData = async (name, formData) => {
     if (!formData.campaign_name || !formData.campaign_name.trim()) {
       throw new Error('Tên chiến dịch không được để trống')
     }
-    
     if (formData.start_date && formData.end_date) {
       const startDate = new Date(formData.start_date)
       const endDate = new Date(formData.end_date)
@@ -146,7 +136,6 @@ export const updateCampaignData = async (name, formData) => {
         throw new Error('Ngày kết thúc phải sau ngày bắt đầu')
       }
     }
-
     const updateData = {
       campaign_name: formData.campaign_name.trim(),
       description: formData.description || '',
@@ -158,12 +147,11 @@ export const updateCampaignData = async (name, formData) => {
       status: formData.status || 'DRAFT',
       target_segment: formData.target_segment || null
     }
-
     const response = await updateCampaign(name, updateData)
-    if (response.success) {
+    if (response && response.data) {
       return response
     } else {
-      throw new Error(response.message || 'Không thể cập nhật campaign')
+      throw new Error('Không thể cập nhật campaign')
     }
   } catch (error) {
     console.error('Failed to update campaign:', error)
@@ -175,10 +163,10 @@ export const updateCampaignData = async (name, formData) => {
 export const removeCampaign = async (name, campaignName) => {
   try {
     const response = await deleteCampaign(name)
-    if (response.success) {
+    if (response) {
       return response
     } else {
-      throw new Error(response.message || `Không thể xóa chiến dịch "${campaignName}"`)
+      throw new Error(`Không thể xóa chiến dịch "${campaignName}"`)
     }
   } catch (error) {
     console.error('Failed to delete campaign:', error)

@@ -1,4 +1,5 @@
 import { ref, computed, reactive } from 'vue'
+import { debounce } from 'lodash'
 import { 
   getFilteredCampaigns, 
   getCampaignDetails, 
@@ -70,17 +71,14 @@ export const useCampaignList = () => {
       const requestOptions = {
         page: pagination.value.page,
         limit: pagination.value.limit,
-        search: searchText.value,
-        status_filter: statusFilter.value,
-        type_filter: typeFilter.value,
-        active_filter: activeFilter.value,
-        order_by: 'modified desc',
+        searchText: searchText.value,
+        status: statusFilter.value,
+        type: typeFilter.value,
+        isActive: activeFilter.value !== 'all' ? (activeFilter.value === 'active' ? 1 : 0) : undefined,
         ...options
       }
-      
-      const response = await getCampaigns(requestOptions)
-      
-      if (response.success) {
+      const response = await getFilteredCampaigns(requestOptions)
+      if (response && Array.isArray(response.data) && response.data.length > 0) {
         campaigns.value = response.data.map(campaign => ({
           ...campaign,
           displayStatus: getCampaignStatusByDate(
@@ -92,14 +90,13 @@ export const useCampaignList = () => {
           formattedStartDate: formatCampaignDate(campaign.start_date),
           formattedEndDate: formatCampaignDate(campaign.end_date)
         }))
-        
         // Update pagination info
         pagination.value = {
           ...pagination.value,
           ...response.pagination
         }
       } else {
-        error.value = response.message
+        error.value = response && response.message ? response.message : 'Không có dữ liệu'
         campaigns.value = []
       }
     } catch (err) {
@@ -131,24 +128,28 @@ export const useCampaignList = () => {
 
   // Set filter và reload
   const setStatusFilter = (status) => {
+    // Nếu truyền vào là event object thì lấy value
+    if (status && status.target) status = status.target.value
     statusFilter.value = status
     refreshCampaigns()
   }
 
   const setTypeFilter = (type) => {
+    if (type && type.target) type = type.target.value
     typeFilter.value = type
     refreshCampaigns()
   }
 
   const setActiveFilter = (active) => {
+    if (active && active.target) active = active.target.value
     activeFilter.value = active
     refreshCampaigns()
   }
 
-  const setSearchText = (text) => {
+  const setSearchText = debounce((text) => {
     searchText.value = text
     refreshCampaigns()
-  }
+  }, 400)
 
   return {
     campaigns,

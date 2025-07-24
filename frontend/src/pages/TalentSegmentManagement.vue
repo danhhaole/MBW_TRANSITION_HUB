@@ -80,43 +80,34 @@
         </div>
       </div>
 
-      <!-- Loading State -->
-      <div v-if="loading && !segments.length" class="flex flex-col items-center justify-center py-12">
-        <svg class="animate-spin h-12 w-12 text-blue-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-          viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-          </path>
-        </svg>
-        <div class="text-gray-600">{{ __('Loading data...') }}</div>
-      </div>
-
-      <!-- Empty State -->
-      <div v-else-if="!loading && !segments.length" class="text-center py-16">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 text-gray-300 mx-auto mb-4" fill="none"
-          viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
-            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
-          </path>
-        </svg>
-        <h3 class="text-xl font-medium text-gray-900 mb-2">{{ __('No talent pools yet') }}</h3>
-        <p class="text-gray-500 mb-6">{{ __('Create your first talent pool to start managing candidates') }}</p>
-        <Button variant="solid" theme="blue" @click="showCreateForm = true">
-          <template #prefix>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6">
-              </path>
-            </svg>
-          </template>
-          Create Your First Pool
-        </Button>
-      </div>
-
-      <!-- Segments Grid -->
-      <div v-else>
-        <!-- Use TalentSegmentCardView Component -->
+      <!-- Loading & Empty State & Main Content -->
+      <template v-if="loading && !segments.length">
+        <Loading :active="true" text="Đang tải dữ liệu..." />
+      </template>
+      <template v-else-if="!loading && !segments.length">
+        <div class="text-center py-16">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 text-gray-300 mx-auto mb-4" fill="none"
+            viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+            </path>
+          </svg>
+          <h3 class="text-xl font-medium text-gray-900 mb-2">{{ __('No talent pools yet') }}</h3>
+          <p class="text-gray-500 mb-6">{{ __('Create your first talent pool to start managing candidates') }}</p>
+          <Button variant="solid" theme="gray" @click="showCreateForm = true">
+            <template #prefix>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6">
+                </path>
+              </svg>
+            </template>
+            {{ __('Create Your First Pool') }}
+          </Button>
+        </div>
+      </template>
+      <template v-else>
+        <!-- Segments Grid -->
         <TalentSegmentCardView 
           :segments="paginatedSegments"
           :loading="loading"
@@ -125,7 +116,6 @@
           @delete="handleDelete"
           @create="showCreateForm = true"
         />
-
         <!-- Pagination -->
         <div v-if="totalPages > 1" class="mt-8">
           <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6 rounded-lg shadow">
@@ -141,11 +131,11 @@
               <div>
                 <p class="text-sm text-gray-700">
                   {{ __('Showing') }}
-                  <span class="font-medium">{{ (pagination.currentPage - 1) * pagination.pageSize + 1 }}</span>
+                  <span class="font-medium">{{ (pagination.currentPage - 1) * pagination.itemsPerPage + 1 }}</span>
                   {{ __('to') }}
-                  <span class="font-medium">{{ Math.min(pagination.currentPage * pagination.pageSize, filteredSegments.length) }}</span>
+                  <span class="font-medium">{{ Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.total) }}</span>
                   {{ __('of') }}
-                  <span class="font-medium">{{ filteredSegments.length }}</span>
+                  <span class="font-medium">{{ pagination.total }}</span>
                   {{ __('results') }}
                 </p>
               </div>
@@ -185,7 +175,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </template>
 
       <!-- Success/Error Toast -->
       <div v-if="toast.show" :class="[
@@ -263,7 +253,7 @@
           </div>
         </div>
         <div class="px-4 pb-7 pt-4 sm:px-6">
-          <div class="space-y-2 flex justify-end gap-3">
+          <div class=" flex justify-end items-center gap-3">
             <Button variant="outline" theme="gray" @click="showDeleteDialog = false" :disabled="loading">
               {{ __('Cancel') }}
             </Button>
@@ -286,6 +276,7 @@ import TalentSegmentForm from '@/components/talent-segment/TalentSegmentForm.vue
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import { Breadcrumbs } from 'frappe-ui'
 import TalentSegmentCardView from '@/components/talent-segment/TalentSegmentCardView.vue'
+import Loading from '@/components/shared/Loading.vue'
 
 
 let title = __('Talent Pools')

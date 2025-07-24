@@ -35,6 +35,9 @@ import CandidatePoolManagement from './pages/CandidatePoolManagement.vue'
 // Public Profile
 import PublicTalentProfile from './pages/PublicTalentProfile.vue'
 
+// Email Editor
+import EmailEditor from './pages/EmailEditor.vue'
+
 const routes = [
 	{ path: '/', name: 'Dashboard', component: () => import('@/pages/Dashboard.vue') },
 	{ alias: '/talentsegment', path: '/talentsegment', name: 'TalentSegment', component: () => import('@/pages/TalentSegment.vue') },
@@ -74,7 +77,12 @@ const routes = [
 
 	// Public Route
 	{ path: '/public-profile', name: 'PublicTalentProfile', component: PublicTalentProfile, meta: { public: true } },
+
+	// Email Editor
+	{ path: '/email-editor', name: 'EmailEditor', component: EmailEditor },
+
 ]
+
 
 const scrollBehavior = (to, from, savedPosition) => {
 	if (to.name === from.name) {

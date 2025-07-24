@@ -623,39 +623,33 @@ const loadData = async () => {
     })
     
     // Prepare search conditions
-    const searchConditions = []
+    let or_filters = undefined
     if (search.value && search.value.trim() !== '') {
-      searchConditions.push(['talent_campaign_id', 'like', `%${search.value}%`])
-      searchConditions.push(['campaign_step', 'like', `%${search.value}%`])
-      searchConditions.push(['assignee_id', 'like', `%${search.value}%`])
+      or_filters = [
+        ['talent_campaign_id', 'like', `%${search.value}%`],
+        ['campaign_step', 'like', `%${search.value}%`],
+        ['assignee_id', 'like', `%${search.value}%`]
+      ]
     }
-    
     const params = {
       filters: apiFilters,
+      or_filters,
       page_length: pagination.limit,
       start: (pagination.page - 1) * pagination.limit,
       order_by: 'scheduled_at desc',
       fields: ['name', 'talent_campaign_id', 'campaign_step', 'status', 'scheduled_at', 'executed_at', 'result', 'assignee_id', 'modified']
     }
-    
-    // Add search conditions if any
-    if (searchConditions.length > 0) {
-      params.filters.search_text = searchConditions
-    }
 
     const result = await actionService.getList(params)
-    
-    if (result.success) {
-      items.value = result.data || []
+    if (result && Array.isArray(result.data)) {
+      items.value = result.data
       Object.assign(pagination, result.pagination)
-      
       // Update stats
       stats.total = result.pagination.total || 0
       stats.executed = result.data?.filter(item => item.status === 'EXECUTED').length || 0
       stats.scheduled = result.data?.filter(item => item.status === 'SCHEDULED').length || 0
       stats.failed = result.data?.filter(item => item.status === 'FAILED').length || 0
     } else {
-      console.error('Error loading data:', result.error)
       items.value = []
     }
   } catch (error) {

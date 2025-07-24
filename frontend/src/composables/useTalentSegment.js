@@ -96,13 +96,12 @@ export const useTalentSegment = () => {
     error.value = null
     try {
       console.log('Loading segments with filters:', filters)
-      const data = await getFilteredTalentSegments(filters)
-      
+      const result = await getFilteredTalentSegments(filters)
+      const data = result.data || []
       // Enrich each segment with additional data
       const enrichedSegments = await Promise.all(
         data.map(segment => enrichSegmentData(segment))
       )
-      
       segments.value = enrichedSegments
       console.log('Loaded and enriched segments:', enrichedSegments)
     } catch (err) {

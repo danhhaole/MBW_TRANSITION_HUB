@@ -668,24 +668,21 @@ const loadData = async () => {
     })
     
     // Prepare search conditions
-    const searchConditions = []
+    let or_filters = undefined
     if (search.value && search.value.trim() !== '') {
-      searchConditions.push(['subject', 'like', `%${search.value}%`])
-      searchConditions.push(['recipients', 'like', `%${search.value}%`])
-      searchConditions.push(['sender', 'like', `%${search.value}%`])
+      or_filters = [
+        ['subject', 'like', `%${search.value}%`],
+        ['recipients', 'like', `%${search.value}%`],
+        ['sender', 'like', `%${search.value}%`]
+      ]
     }
-    
     const params = {
       filters: apiFilters,
+      or_filters,
       page_length: pagination.limit,
       start: (pagination.page - 1) * pagination.limit,
       order_by: 'modified desc',
       fields: ['name', 'subject', 'recipients', 'cc', 'bcc', 'sender', 'content', 'attachments', 'status', 'error', 'modified']
-    }
-    
-    // Add search conditions if any
-    if (searchConditions.length > 0) {
-      params.filters.search_text = searchConditions
     }
 
     const result = await emailLogService.getList(params)

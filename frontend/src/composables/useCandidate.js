@@ -1,27 +1,15 @@
 import { ref, reactive, computed, watch } from 'vue'
 import {
-  getCandidatesResource,
-  getCandidateStatsResource,
-  searchCandidatesResource,
-  getCandidateResource,
-  createCandidateResource,
-  updateCandidateResource,
-  deleteCandidateResource,
-  getFilterOptionsResource
-} from '../services/candidateRepository'
-
-// Simple debounce function
-function debounce(func, wait) {
-  let timeout
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout)
-      func(...args)
-    }
-    clearTimeout(timeout)
-    timeout = setTimeout(later, wait)
-  }
-}
+  getCandidates,
+  getCandidateStats,
+  searchCandidates,
+  getCandidate,
+  createCandidate,
+  updateCandidate,
+  deleteCandidate,
+  getFilterOptions
+} from '@/repositories/candidateRepository'
+import { debounce } from 'lodash'
 
 /**
  * Talent Pool Composable
@@ -69,8 +57,6 @@ export function useCandidate() {
     pagination.page = 1
     fetchCandidates()
   }, 500)
-  
-  // Watch search changes
   watch(() => filters.search, debouncedSearch)
   
   // Methods
@@ -78,27 +64,25 @@ export function useCandidate() {
     try {
       loading.value = true
       error.value = null
-      
-      const params = {
-        page: pagination.page,
-        limit: pagination.limit,
-        search: filters.search,
-        status: filters.status,
-        source: filters.source,
-        skills: JSON.stringify(filters.skills),
+      const options = {
+        filters: {
+          status: filters.status || undefined,
+          source: filters.source || undefined
+        },
+        or_filters: filters.search ? [
+          ['full_name', 'like', `%${filters.search}%`],
+          ['email', 'like', `%${filters.search}%`]
+        ] : undefined,
+        page_length: pagination.limit,
+        start: (pagination.page - 1) * pagination.limit,
         order_by: 'modified desc'
       }
-      
-      await getCandidatesResource.fetch(params)
-      
-      if (getCandidatesResource.data) {
-        const result = getCandidatesResource.data
-        candidates.value = result.candidates || []
-        
-        // Update pagination
-        if (result.pagination) {
-          Object.assign(pagination, result.pagination)
-        }
+      const result = await getCandidates(options)
+
+      console.log('result', result)
+      candidates.value = result.data || []
+      if (result.pagination) {
+        Object.assign(pagination, result.pagination)
       }
     } catch (err) {
       error.value = err.message || 'Failed to fetch talent pools'
@@ -110,9 +94,9 @@ export function useCandidate() {
   
   const fetchStats = async () => {
     try {
-      await getCandidateStatsResource.fetch()
-      if (getCandidateStatsResource.data) {
-        stats.value = getCandidateStatsResource.data
+      const statsResult = await getCandidateStats()
+      if (statsResult) {
+        stats.value = statsResult
       }
     } catch (err) {
       console.error('Error fetching stats:', err)
@@ -121,18 +105,14 @@ export function useCandidate() {
   
   const fetchFilterOptions = async () => {
     try {
-      await getFilterOptionsResource.fetch()
-      if (getFilterOptionsResource.data) {
-        const data = getFilterOptionsResource.data
-        filterOptions.value = {
-          status: Array.isArray(data.status) ? data.status : [],
-          source: Array.isArray(data.source) ? data.source : [],
-          skills: Array.isArray(data.skills) ? data.skills : []
-        }
+      const data = await getFilterOptions()
+      filterOptions.value = {
+        status: Array.isArray(data.status) ? data.status : [],
+        source: Array.isArray(data.source) ? data.source : [],
+        skills: Array.isArray(data.skills) ? data.skills : []
       }
     } catch (err) {
       console.error('Error fetching filter options:', err)
-      // Keep default empty arrays
       filterOptions.value = { 
         status: [], 
         source: [], 
@@ -143,8 +123,8 @@ export function useCandidate() {
   
   const searchCandidates = async (query, limit = 10) => {
     try {
-      await searchCandidatesResource.fetch({ query, limit })
-      return searchCandidatesResource.data || []
+      await searchCandidates.fetch({ query, limit })
+      return searchCandidates.data || []
     } catch (err) {
       console.error('Error searching candidates:', err)
       return []
@@ -156,11 +136,11 @@ export function useCandidate() {
       loading.value = true
       error.value = null
       
-      await getCandidateResource.fetch({ name })
+      await getCandidate.fetch({ name })
       
-      if (getCandidateResource.data) {
-        selectedCandidate.value = getCandidateResource.data
-        return getCandidateResource.data
+      if (getCandidate.data) {
+        selectedCandidate.value = getCandidate.data
+        return getCandidate.data
       }
       return null
     } catch (err) {
@@ -176,19 +156,12 @@ export function useCandidate() {
     try {
       loading.value = true
       error.value = null
-      
-      await createCandidateResource.fetch({ data: candidateData })
-      
-      if (createCandidateResource.data) {
-        // Add to local list instead of refetching
-        candidates.value.unshift(createCandidateResource.data)
-        
-        // Update pagination
+      const result = await createCandidate(candidateData)
+      if (result) {
+        candidates.value.unshift(result)
         pagination.total += 1
-        
-        // Only fetch stats to update counts
         await fetchStats()
-        return createCandidateResource.data
+        return result
       }
       return null
     } catch (err) {
@@ -204,23 +177,17 @@ export function useCandidate() {
     try {
       loading.value = true
       error.value = null
-      
-      await updateCandidateResource.fetch({ name, data: candidateData })
-      
-      if (updateCandidateResource.data) {
-        // Update in local list
+      const result = await updateCandidate(name, candidateData)
+      if (result) {
         const index = candidates.value.findIndex(c => c.name === name)
         if (index !== -1) {
-          candidates.value[index] = updateCandidateResource.data
+          candidates.value[index] = result
         }
-        
-        // Update selected candidate if it's the same
         if (selectedCandidate.value?.name === name) {
-          selectedCandidate.value = updateCandidateResource.data
+          selectedCandidate.value = result
         }
-        
         await fetchStats()
-        return updateCandidateResource.data
+        return result
       }
       return null
     } catch (err) {
@@ -236,23 +203,13 @@ export function useCandidate() {
     try {
       loading.value = true
       error.value = null
-      
-      await deleteCandidateResource.fetch({ name })
-      
-      // Remove from local list
+      await deleteCandidate(name)
       candidates.value = candidates.value.filter(c => c.name !== name)
-      
-      // Clear selected if it's the deleted one
       if (selectedCandidate.value?.name === name) {
         selectedCandidate.value = null
       }
-      
-      // Update pagination
       pagination.total -= 1
-      
-      // Only fetch stats to update counts
       await fetchStats()
-      
       return true
     } catch (err) {
       error.value = err.message || 'Failed to delete talent pool'
@@ -292,18 +249,21 @@ export function useCandidate() {
   }
   
   // Filter methods
-  const updateSearch = (searchText) => {
+  const updateSearch = debounce((searchText) => {
     filters.search = searchText
-    // debouncedSearch will be triggered by the watcher
-  }
-  
+    pagination.page = 1
+    fetchCandidates()
+  }, 400)
+
   const updateStatus = (status) => {
+    if (status && status.target) status = status.target.value
     filters.status = status
     pagination.page = 1
     fetchCandidates()
   }
-  
+
   const updateSource = (source) => {
+    if (source && source.target) source = source.target.value
     filters.source = source
     pagination.page = 1
     fetchCandidates()

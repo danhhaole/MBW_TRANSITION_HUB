@@ -172,6 +172,7 @@ import { ToastContainer } from '@/components/shared'
 import { Button, Breadcrumbs, Select } from 'frappe-ui'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import { campaignService } from '@/services/universalService'
+import Loading from '@/components/shared/Loading.vue'
 
 
 // Router

@@ -125,12 +125,14 @@
         </div>
         <h3 class="text-lg font-medium text-gray-900 mb-2">{{ __('No campaigns found') }}</h3>
         <p class="text-gray-500 mb-4">{{ __('Start creating your first recruitment campaign') }}</p>
-        <button 
+        <Button
           @click="$emit('create')"
-          class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+          theme="gray"
+          variant="solid"
+          class="text-sm font-medium"
         >
           {{ __('Create Campaign') }}
-        </button>
+        </Button>
       </div>
 
       <!-- Pagination -->
@@ -217,7 +219,8 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { Dialog, Button, FeatherIcon } from 'frappe-ui'
+import { Dialog, FeatherIcon } from 'frappe-ui'
+import { Button } from 'frappe-ui'
 
 // Translation helper function
 

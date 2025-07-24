@@ -14,32 +14,27 @@ import { getUsers } from '@/repositories/campaignRepository'
 // Lấy danh sách phân khúc với filter
 export const getFilteredTalentSegments = async (filterOptions = {}) => {
   try {
-    const { type, searchText } = filterOptions
-    
+    const { type, searchText, page = 1, limit = 20 } = filterOptions
     let filters = {}
     if (type && type !== 'all') {
       filters.type = type
     }
-    
-    let response
-    if (searchText) {
-      response = await searchTalentSegments(searchText)
-      // Áp dụng thêm filters nếu có
-      if (response.success && response.data && type !== 'all') {
-        response.data = response.data.filter(segment => {
-          return type === 'all' || segment.type === type
-        })
-      }
-    } else {
-      response = await getTalentSegments(filters)
+    let options = {
+      filters,
+      page_length: limit,
+      start: (page - 1) * limit
     }
-
-    console.log('Service response:', response)
-    
-    if (response.success) {
-      return response.data || []
+    if (searchText) {
+      options.or_filters = [
+        ['title', 'like', `%${searchText}%`],
+        ['description', 'like', `%${searchText}%`]
+      ]
+    }
+    const response = await getTalentSegments(options)
+    if (response && Array.isArray(response.data)) {
+      return response
     } else {
-      throw new Error(response.message || 'Không thể tải danh sách phân khúc')
+      throw new Error('Không thể tải danh sách phân khúc')
     }
   } catch (error) {
     console.error('Failed to get talent segments:', error)
@@ -51,10 +46,10 @@ export const getFilteredTalentSegments = async (filterOptions = {}) => {
 export const getTalentSegmentDetails = async (name) => {
   try {
     const response = await getTalentSegmentByName(name)
-    if (response.success) {
+    if (response && response.data) {
       return response.data
     } else {
-      throw new Error(response.message || 'Không thể tải thông tin phân khúc')
+      throw new Error('Không thể tải thông tin phân khúc')
     }
   } catch (error) {
     console.error('Failed to get talent segment details:', error)
@@ -66,10 +61,10 @@ export const getTalentSegmentDetails = async (name) => {
 export const createNewTalentSegment = async (segmentData) => {
   try {
     const response = await createTalentSegment(segmentData)
-    if (response.success) {
+    if (response && response.data) {
       return response.data
     } else {
-      throw new Error(response.message || 'Không thể tạo phân khúc')
+      throw new Error('Không thể tạo phân khúc')
     }
   } catch (error) {
     console.error('Failed to create talent segment:', error)
@@ -81,10 +76,10 @@ export const createNewTalentSegment = async (segmentData) => {
 export const updateTalentSegmentDetails = async (name, updateData) => {
   try {
     const response = await updateTalentSegment(name, updateData)
-    if (response.success) {
+    if (response && response.data) {
       return response.data
     } else {
-      throw new Error(response.message || 'Không thể cập nhật phân khúc')
+      throw new Error('Không thể cập nhật phân khúc')
     }
   } catch (error) {
     console.error('Failed to update talent segment:', error)
@@ -96,10 +91,10 @@ export const updateTalentSegmentDetails = async (name, updateData) => {
 export const deleteTalentSegmentById = async (name) => {
   try {
     const response = await deleteTalentSegment(name)
-    if (response.success) {
+    if (response) {
       return true
     } else {
-      throw new Error(response.message || 'Không thể xóa phân khúc')
+      throw new Error('Không thể xóa phân khúc')
     }
   } catch (error) {
     console.error('Failed to delete talent segment:', error)
@@ -111,10 +106,10 @@ export const deleteTalentSegmentById = async (name) => {
 export const getSegmentCandidates = async (segmentId, filterOptions = {}) => {
   try {
     const response = await getTalentSegmentCandidates(segmentId, filterOptions)
-    if (response.success) {
-      return response.data || []
+    if (response && response.data) {
+      return response.data
     } else {
-      throw new Error(response.message || 'Không thể tải danh sách ứng viên')
+      throw new Error('Không thể tải danh sách ứng viên')
     }
   } catch (error) {
     console.error('Failed to get segment candidates:', error)
@@ -126,10 +121,10 @@ export const getSegmentCandidates = async (segmentId, filterOptions = {}) => {
 export const addCandidateToTalentSegment = async (segmentId, candidateId) => {
   try {
     const response = await addCandidateToSegment(segmentId, candidateId)
-    if (response.success) {
+    if (response && response.data) {
       return response.data
     } else {
-      throw new Error(response.message || 'Không thể thêm ứng viên')
+      throw new Error('Không thể thêm ứng viên')
     }
   } catch (error) {
     console.error('Failed to add candidate to segment:', error)
@@ -141,10 +136,10 @@ export const addCandidateToTalentSegment = async (segmentId, candidateId) => {
 export const removeCandidateFromTalentSegment = async (segmentId, candidateId) => {
   try {
     const response = await removeCandidateFromSegment(segmentId, candidateId)
-    if (response.success) {
+    if (response && response.success) {
       return true
     } else {
-      throw new Error(response.message || 'Không thể xóa ứng viên')
+      throw new Error('Không thể xóa ứng viên')
     }
   } catch (error) {
     console.error('Failed to remove candidate from segment:', error)
