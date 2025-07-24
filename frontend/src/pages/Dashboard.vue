@@ -32,132 +32,223 @@
 				</div>
 			</header>
 
-			<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-				<!-- Main Content -->
-				<main class="lg:col-span-2 space-y-6">
-					<!-- My Tasks Section -->
-					<section class="fade-in" style="animation-delay: 100ms">
-						<h2 class="text-xl font-bold text-slate-800 mb-4">
-							{{ __('My Tasks') }} (<span>{{ tasks.length }}</span
-							>)
-						</h2>
+			<div class="flex flex-col lg:flex-row gap-6">
+				<!-- Top block: My Tasks + Recently Completed -->
+				<div class="flex flex-col lg:flex-row w-full gap-6">
+					<div class="flex-1">
+						<!-- My Tasks Section -->
+						<section class="fade-in" style="animation-delay: 100ms">
+							<h2 class="text-xl font-bold text-slate-800 mb-4">
+								{{ __('My Tasks') }} (<span>{{ tasks.length }}</span
+								>)
+							</h2>
 
-						<div v-if="loading" class="text-center py-12">
-							<div
-								class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4"
-							>
-								<div
-									class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
-								></div>
-							</div>
-							<p class="text-slate-600">{{ __('Loading data...') }}</p>
-						</div>
-
-						<div v-else-if="tasks.length === 0" class="text-center py-12">
-							<div
-								class="flex items-center justify-center w-20 h-20 mx-auto mb-4 bg-green-100 rounded-full"
-							>
-								<svg
-									class="w-10 h-10 text-green-600"
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
-								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M19 10a9 9 0 11-18 0 9 9 0 0118 0z"
-									/>
-								</svg>
-							</div>
-							<p class="text-lg font-medium text-slate-900 mb-2">
-								{{ __('Congratulations! You have completed all tasks.') }}
-							</p>
-						</div>
-
-						<div v-else class="space-y-3">
-							<div
-								v-for="task in tasks"
-								:key="task.id"
-								class="bg-white border border-slate-200 rounded-lg p-4 flex items-center gap-4"
-							>
-								<div
-									class="flex-shrink-0 w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center"
-								>
-									<svg
-										v-if="task.status === 'PENDING_MANUAL'"
-										class="w-5 h-5 text-slate-500"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
+							<template v-if="loading">
+								<div class="text-center py-12">
+									<div
+										class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4"
 									>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-										/>
-									</svg>
-									<svg
-										v-else
-										class="w-5 h-5 text-slate-500"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-									>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-										/>
-									</svg>
+										<div
+											class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
+										></div>
+									</div>
+									<p class="text-slate-600">{{ __('Loading data...') }}</p>
 								</div>
+							</template>
 
-								<div class="flex-1">
-									<p class="font-semibold text-slate-800">
-										{{ task.title }}:
-										<span class="font-normal text-slate-600">{{
-											task.candidate
-										}}</span>
-									</p>
-									<p class="text-xs text-slate-500">
-										{{ __('Campaign:') }} {{ task.campaign }}
+							<template v-else-if="tasks.length === 0">
+								<div class="text-center py-12">
+									<div
+										class="flex items-center justify-center w-20 h-20 mx-auto mb-4 bg-green-100 rounded-full"
+									>
+										<svg
+											class="w-10 h-10 text-green-600"
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24"
+										>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M19 10a9 9 0 11-18 0 9 9 0 0118 0z"
+											/>
+										</svg>
+									</div>
+									<p class="text-lg font-medium text-slate-900 mb-2">
+										{{ __('Congratulations! You have completed all tasks.') }}
 									</p>
 								</div>
+							</template>
 
-								<div class="text-right flex-shrink-0">
-									<p
-										:class="[
-											'text-xs font-semibold',
-											getDueDateTextColor(task.dueDate),
-										]"
+							<template v-else>
+								<div class="space-y-3">
+									<div
+										v-for="task in tasks"
+										:key="task.id"
+										class="bg-white border border-slate-200 rounded-lg p-4 flex items-center gap-4"
 									>
-										{{ task.dueDate }}
-									</p>
-									<Button
-										@click="openTaskModal(task)"
-										:variant="'outline'"
-										:ref_for="true"
-										theme="gray"
-										:disabled="loading"
-										class="mt-2 px-3 py-1.5 bg-indigo-600 text-black text-xs font-semibold rounded-lg hover:bg-indigo-700 disabled:opacity-50"
-									>
-										{{ __('Update') }}
-									</Button>
+										<div
+											class="flex-shrink-0 w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center"
+										>
+											<svg
+												v-if="task.status === 'PENDING_MANUAL'"
+												class="w-5 h-5 text-slate-500"
+												fill="none"
+												stroke="currentColor"
+												viewBox="0 0 24 24"
+											>
+												<path
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													stroke-width="2"
+													d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+												/>
+											</svg>
+											<svg
+												v-else
+												class="w-5 h-5 text-slate-500"
+												fill="none"
+												stroke="currentColor"
+												viewBox="0 0 24 24"
+											>
+												<path
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													stroke-width="2"
+													d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+												/>
+											</svg>
+										</div>
+
+										<div class="flex-1">
+											<p class="font-semibold text-slate-800">
+												{{ task.title }}:
+												<span class="font-normal text-slate-600">{{
+													task.candidate
+												}}</span>
+											</p>
+											<p class="text-xs text-slate-500">
+												{{ __('Campaign:') }} {{ task.campaign }}
+											</p>
+										</div>
+
+										<div class="text-right flex-shrink-0">
+											<p
+												:class="[
+													'text-xs font-semibold',
+													getDueDateTextColor(task.dueDate),
+												]"
+											>
+												{{ task.dueDate }}
+											</p>
+											<Button
+												@click="openTaskModal(task)"
+												:variant="'outline'"
+												:ref_for="true"
+												theme="gray"
+												:disabled="loading"
+												class="mt-2 px-3 py-1.5 bg-indigo-600 text-black text-xs font-semibold rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+											>
+												{{ __('Update') }}
+											</Button>
+										</div>
+									</div>
 								</div>
-							</div>
-						</div>
-					</section>
+							</template>
+						</section>
+					</div>
+					<div class="flex-1">
+						<!-- Recently Completed Section -->
+						<section class="fade-in" style="animation-delay: 300ms">
+							<h2 class="text-xl font-bold text-slate-800 mb-4">{{ __('Recently Completed') }}</h2>
 
-					<!-- Active Campaigns Section -->
-					<section class="fade-in" style="animation-delay: 200ms">
-						<h2 class="text-xl font-bold text-slate-800 mb-4">
-							{{ __('Active Campaigns') }}
-						</h2>
+							<template v-if="loading">
+								<div class="text-center py-8">
+									<div
+										class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 mb-4"
+									>
+										<div
+											class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"
+										></div>
+									</div>
+									<p class="text-sm text-slate-600">{{ __('Loading...') }}</p>
+								</div>
+							</template>
 
-						<div v-if="loading" class="text-center py-12">
+							<template v-else-if="completedCampaigns.length === 0">
+								<div class="text-center py-8">
+									<div
+										class="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full"
+									>
+										<svg
+											class="w-8 h-8 text-slate-400"
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24"
+										>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+											/>
+										</svg>
+									</div>
+									<p class="text-sm text-slate-600">
+										{{ __('No recently completed campaigns') }}
+									</p>
+								</div>
+							</template>
+
+							<template v-else>
+								<div class="space-y-4">
+									<div
+										v-for="campaign in completedCampaigns"
+										:key="campaign.id"
+										class="bg-white border border-slate-200 rounded-lg p-4 flex items-center gap-4"
+									>
+										<div
+											class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center"
+										>
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												width="20"
+												height="20"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												stroke-width="2"
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												class="text-blue-600"
+											>
+												<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+												<polyline points="22 4 12 14.01 9 11.01" />
+											</svg>
+										</div>
+										<div class="flex-1">
+											<p class="font-semibold text-slate-800">{{ campaign.name }}</p>
+											<p class="text-xs text-slate-500">
+												{{ campaign.stats.newApplicants }} {{ __('new candidates') }}
+											</p>
+										</div>
+									</div>
+								</div>
+							</template>
+						</section>
+					</div>
+				</div>
+			</div>
+			<!-- Bottom block: Active Campaigns -->
+			<div class="w-full mt-8">
+				<section class="fade-in" style="animation-delay: 200ms">
+					<h2 class="text-xl font-bold text-slate-800 mb-4">
+						{{ __('Active Campaigns') }}
+					</h2>
+
+					<template v-if="loading">
+						<div class="text-center py-12">
 							<div
 								class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4"
 							>
@@ -167,8 +258,10 @@
 							</div>
 							<p class="text-slate-600">{{ __('Loading campaigns...') }}</p>
 						</div>
+					</template>
 
-						<div v-else-if="activeCampaigns.length === 0" class="text-center py-12">
+					<template v-else-if="activeCampaigns.length === 0">
+						<div class="text-center py-12">
 							<div
 								class="flex items-center justify-center w-20 h-20 mx-auto mb-4 bg-slate-100 rounded-full"
 							>
@@ -188,8 +281,10 @@
 							</div>
 							<p class="text-slate-600">{{ __('No active campaigns yet') }}</p>
 						</div>
+					</template>
 
-						<div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<template v-else>
+						<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 							<div
 								v-for="campaign in activeCampaigns"
 								:key="campaign.id"
@@ -273,7 +368,7 @@
 													}}</span>
 												</div>
 
-												<span class="flex justify-center text-xs text-slate-500">{{ __('applications') }}</span>
+												
 											</div>
 										</div>
 
@@ -309,83 +404,8 @@
 								</div>
 							</div>
 						</div>
-					</section>
-				</main>
-
-				<!-- Sidebar: Completed Campaigns & Stats -->
-				<aside class="lg:col-span-1 space-y-6">
-					<section class="fade-in" style="animation-delay: 300ms">
-						<h2 class="text-xl font-bold text-slate-800 mb-4">{{ __('Recently Completed') }}</h2>
-
-						<div v-if="loading" class="text-center py-8">
-							<div
-								class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 mb-4"
-							>
-								<div
-									class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"
-								></div>
-							</div>
-							<p class="text-sm text-slate-600">{{ __('Loading...') }}</p>
-						</div>
-
-						<div v-else-if="completedCampaigns.length === 0" class="text-center py-8">
-							<div
-								class="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full"
-							>
-								<svg
-									class="w-8 h-8 text-slate-400"
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
-								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-									/>
-								</svg>
-							</div>
-							<p class="text-sm text-slate-600">
-								{{ __('No recently completed campaigns') }}
-							</p>
-						</div>
-
-						<div v-else class="space-y-4">
-							<div
-								v-for="campaign in completedCampaigns"
-								:key="campaign.id"
-								class="bg-white border border-slate-200 rounded-lg p-4 flex items-center gap-4"
-							>
-								<div
-									class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center"
-								>
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										width="20"
-										height="20"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										stroke-width="2"
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										class="text-blue-600"
-									>
-										<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-										<polyline points="22 4 12 14.01 9 11.01" />
-									</svg>
-								</div>
-								<div class="flex-1">
-									<p class="font-semibold text-slate-800">{{ campaign.name }}</p>
-									<p class="text-xs text-slate-500">
-										{{ campaign.stats.newApplicants }} {{ __('new candidates') }}
-									</p>
-								</div>
-							</div>
-						</div>
-					</section>
-				</aside>
+					</template>
+				</section>
 			</div>
 
 			<!-- Task Update Modal -->
@@ -457,14 +477,14 @@ const loadTasks = async () => {
 	try {
 		const result = await actionService.getList({
 			filters: {
-				status: ['in', ['PENDING_MANUAL', 'SCHEDULED']],
+				status: ['in', ['PENDING_MANUAL']],
 			},
 			fields: [
 				'name',
 				'status',
 				'scheduled_at',
 				'executed_at',
-				'candidate_campaign_id',
+				'talent_campaign_id',
 				'campaign_step',
 				'assignee_id',
 			],
@@ -477,32 +497,35 @@ const loadTasks = async () => {
 			const actionsWithDetails = await Promise.all(
 				result.data.map(async (action) => {
 					// Get candidate campaign details
-					const ccResult = await candidateCampaignService.getFormData(
-						action.candidate_campaign_id,
-					)
-					if (ccResult.success) {
-						const candidateResult = await candidateService.getFormData(
-							ccResult.data.talent_id,
+					console.log("action", action)		
+					if(action.talent_campaign_id){
+						const ccResult = await candidateCampaignService.getFormData(
+							action.talent_campaign_id,
 						)
-						const campaignResult = await campaignService.getFormData(
-							ccResult.data.campaign_id,
-						)
+						if (ccResult.success) {
+							const candidateResult = await candidateService.getFormData(
+								ccResult.data.talent_id,
+							)
+							const campaignResult = await campaignService.getFormData(
+								ccResult.data.campaign_id,
+							)
 
-						return {
-							id: action.name,
-							title: getActionTitle(action.status),
-							type: action.status,
-							candidate: candidateResult.success
-								? candidateResult.data.candidate_name ||
-									candidateResult.data.full_name
-								: 'Unknown',
-							campaign: campaignResult.success
-								? campaignResult.data.campaign_name
-								: 'Unknown',
-							dueDate: formatDueDate(action.scheduled_at),
-							status: action.status,
-							description: `${getActionTitle(action.status)} cho chiến dịch ${campaignResult.success ? campaignResult.data.campaign_name : 'Unknown'}`,
-							candidateCampaignId: action.candidate_campaign_id,
+							return {
+								id: action.name,
+								title: getActionTitle(action.status),
+								type: action.status,
+								candidate: candidateResult.success
+									? candidateResult.data.candidate_name ||
+										candidateResult.data.full_name
+									: 'Unknown',
+								campaign: campaignResult.success
+									? campaignResult.data.campaign_name
+									: 'Unknown',
+								dueDate: formatDueDate(action.scheduled_at),
+								status: action.status,
+								description: `${getActionTitle(action.status)} cho chiến dịch ${campaignResult.success ? campaignResult.data.campaign_name : 'Unknown'}`,
+								candidateCampaignId: action.talent_campaign_id,
+							}
 						}
 					}
 					return null
@@ -583,7 +606,7 @@ const loadCompletedCampaigns = async () => {
 		// Get recently executed actions to show completed campaigns
 		const actionsResult = await actionService.getList({
 			filters: { status: 'EXECUTED' },
-			fields: ['name', 'executed_at', 'candidate_campaign_id'],
+			fields: ['name', 'executed_at', 'talent_campaign_id'],
 			order_by: 'executed_at desc',
 			page_length: 20,
 		})
@@ -593,8 +616,9 @@ const loadCompletedCampaigns = async () => {
 			const campaignMap = new Map()
 
 			for (const action of actionsResult.data) {
+				if(action.talent_campaign_id){
 				const ccResult = await candidateCampaignService.getFormData(
-					action.candidate_campaign_id,
+					action.talent_campaign_id,
 				)
 				if (ccResult.success) {
 					const campaignId = ccResult.data.campaign_id
@@ -611,6 +635,7 @@ const loadCompletedCampaigns = async () => {
 					} else {
 						campaignMap.get(campaignId).completedTasks++
 					}
+				}
 				}
 			}
 
