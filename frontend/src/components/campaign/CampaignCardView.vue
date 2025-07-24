@@ -48,50 +48,16 @@
             <div class="flex justify-between items-center mb-2">
               <span class="text-xs text-gray-500">{{ __('Progress') }}</span>
               <span class="text-xs font-medium" :class="getProgressTextClass(campaign)">
-                {{ getCampaignSteps(campaign) }}
+                {{ campaign.total > 0 ? __('Step') : 'Steps' }} {{ campaign.current || 0 }}/{{ campaign.total || 0 }}
               </span>
             </div>
-            
             <!-- Progress bar -->
             <div class="progress-container mb-4">
               <div 
                 class="progress-bar transition-all duration-300 ease-out"
-                :style="{ width: getCampaignProgress(campaign) + '%' }"
+                :style="{ width: getCampaignPercent(campaign) + '%' }"
                 :class="getProgressBarClass(campaign)"
               ></div>
-            </div>
-
-            <!-- Timeline info -->
-            <div class="flex justify-between items-center text-xs mb-4">
-              <div class="flex items-center">
-                <svg class="w-4 h-4 text-gray-400 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                </svg>
-                <span class="text-gray-600">{{ campaign.formattedStartDate || __('Not determined') }}</span>
-              </div>
-              
-              <!-- Owner avatars -->
-              <div class="flex items-center -space-x-2">
-                <div
-                  v-if="campaign.owner_id"
-                  class="w-6 h-6 rounded-full border-2 border-white flex items-center justify-center text-xs font-medium text-white"
-                  :class="getOwnerColor(campaign.owner_id)"
-                >
-                  {{ getInitials(campaign.owner_id) }}
-                </div>
-                <div
-                  v-if="campaign.target_segment"
-                  class="w-6 h-6 rounded-full bg-purple-200 border-2 border-white flex items-center justify-center text-xs font-medium text-purple-800"
-                >
-                  {{ getInitials(campaign.target_segment) }}
-                </div>
-                <div
-                  v-if="getTeamCount(campaign) > 2"
-                  class="w-6 h-6 rounded-full bg-green-200 border-2 border-white flex items-center justify-center text-xs font-medium text-green-800"
-                >
-                  +{{ getTeamCount(campaign) - 2 }}
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -297,6 +263,11 @@ const getTeamCount = (campaign) => {
   if (campaign.owner_id) count++
   if (campaign.target_segment) count++
   return count + 2 // Simulate additional team members
+}
+
+function getCampaignPercent(campaign) {
+  if (!campaign.total || campaign.total === 0) return 0
+  return Math.round(((campaign.current || 0) / campaign.total) * 100)
 }
 </script>
 

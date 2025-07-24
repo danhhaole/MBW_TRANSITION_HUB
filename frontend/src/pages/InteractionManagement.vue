@@ -673,12 +673,12 @@ const loadFilterOptions = async () => {
     
     // Load actions
     const actionResult = await actionService.getList({
-      fields: ['name', 'candidate_campaign_id', 'campaign_step'],
+      fields: ['name', 'talent_campaign_id', 'campaign_step'],
       page_length: 1000
     })
     if (actionResult.success) {
       filterOptions.actions = actionResult.data.map(item => ({
-        label: `${item.candidate_campaign_id} - ${item.campaign_step}`,
+        label: `${item.talent_campaign_id} - ${item.campaign_step}`,
         value: item.name
       }))
     }

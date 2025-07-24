@@ -109,7 +109,7 @@
       <template v-else>
         <!-- Segments Grid -->
         <TalentSegmentCardView 
-          :segments="paginatedSegments"
+          :segments="segmentsForCurrentPage"
           :loading="loading"
           @view-details="handleViewDetails"
           @edit="handleEdit"
@@ -197,7 +197,7 @@
 
     <!-- Create/Edit Dialog -->
     <Dialog v-model="showCreateForm" :options="createDialogOptions">
-      <template #body>
+      <template #body-title>
         <div class="bg-white px-4 pb-6 pt-5 sm:px-6">
           <div class="mb-5 flex items-center justify-between">
             <div>
@@ -205,15 +205,24 @@
                 {{ editingSegment ? __('Edit Talent Pool') : __('Create New Talent Pool') }}
               </h3>
             </div>
-            <div class="flex items-center gap-1">
-              <Button variant="ghost" class="w-7" @click="handleFormClose">
-                <FeatherIcon name="x" class="h-4 w-4" />
-              </Button>
-            </div>
           </div>
-          <div class="max-h-[70vh] overflow-y-auto">
-            <TalentSegmentForm :segment="editingSegment" @success="handleFormSuccess" @cancel="handleFormClose" />
+        </div>
+      </template>
+      <template #body-content>
+        <div class="bg-white">
+          <div class="max-h-[60vh] overflow-y-auto">
+            <TalentSegmentForm ref="formRef" :segment="editingSegment" @success="handleFormSuccess" @cancel="handleFormClose" />
           </div>
+        </div>
+      </template>
+      <template #actions>
+        <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <Button variant="outline" theme="gray" @click="handleFormClose">
+            {{ __('Cancel') }}
+          </Button>
+          <Button variant="solid" theme="gray" @click="handleFormSubmit" :loading="loading">
+            {{ editingSegment ? __('Update') : __('Create') }}
+          </Button>
         </div>
       </template>
     </Dialog>
@@ -309,6 +318,13 @@ const showDeleteDialog = ref(false)
 const editingSegment = ref(null)
 const deletingSegment = ref(null)
 const searchQuery = ref('')
+const formRef = ref(null)
+
+function handleFormSubmit() {
+  if (formRef.value) {
+    formRef.value.handleSubmit()
+  }
+}
 
 // Pagination state
 const pagination = ref({
@@ -627,6 +643,15 @@ onMounted(() => {
 onUnmounted(() => {
   // Remove keyboard event listener
   document.removeEventListener('keydown', handleKeyDown)
+})
+
+// Thêm computed mới để chỉ push nút create ở trang cuối
+const segmentsForCurrentPage = computed(() => {
+  const arr = paginatedSegments.value.slice()
+  if (pagination.value.currentPage === totalPages.value) {
+    arr.push({ isCreateButton: true })
+  }
+  return arr
 })
 </script>
 

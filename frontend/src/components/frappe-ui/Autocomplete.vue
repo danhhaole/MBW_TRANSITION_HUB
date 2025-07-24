@@ -338,8 +338,8 @@ watch(showOptions, (newValue) => {
 
 const groups = computed(() => {
   console.log('Tính toán groups, options:', options.value, 'props.options:', props.options)
-  if (!options.value.length && !props.options.length) return []
-  if (props.options.length) {
+  if (!options.value?.length && !props.options?.length) return []
+  if (props.options?.length) {
     return [
       {
         key: 0,

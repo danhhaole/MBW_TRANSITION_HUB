@@ -5,7 +5,7 @@ export const getCampaigns = async (options = {}) => {
   const {
     filters = {},
     or_filters = undefined,
-    fields = ['name', 'campaign_name', 'description', 'is_active', 'owner_id', 'start_date', 'end_date', 'type', 'status', 'target_segment', 'creation', 'modified'],
+    fields = ['name', 'campaign_name', 'description', 'is_active', 'owner_id', 'start_date', 'end_date', 'type', 'status', 'target_segment', 'creation', 'modified', 'current', 'total'],
     order_by = 'modified desc',
     page_length = 20,
     start = 0
@@ -42,7 +42,7 @@ export const getCampaigns = async (options = {}) => {
 export const getCampaignStats = async () => {
   const result = await call('frappe.client.get_list', {
     doctype: 'Campaign',
-    fields: ['name', 'campaign_name', 'description', 'is_active', 'owner_id', 'start_date', 'end_date', 'type', 'status', 'target_segment', 'creation', 'modified'],
+    fields: ['name', 'campaign_name', 'description', 'is_active', 'owner_id', 'start_date', 'end_date', 'type', 'status', 'target_segment', 'creation', 'modified', 'current', 'total'],
     filters: { enabled: 1 },
     order_by: 'full_name asc'
   })

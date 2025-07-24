@@ -1638,15 +1638,15 @@ const finalizeCampaign = async () => {
     // 1) Tạo tất cả steps trước
     let stepCount = 0
     if (campaignSteps.value.length > 0) {
-      try {
-        stepCount = await createAllSteps()
-      } catch (e) {
-        console.error('❌ Create steps failed', e)
-        alert(__('Failed to create steps. Please try again.'))
-        return
-      }
+      // try {
+      //   stepCount = await createAllSteps()
+      // } catch (e) {
+      //   console.error('❌ Create steps failed', e)
+      //   alert(__('Failed to create steps. Please try again.'))
+      //   return
+      // }
     }
-
+    console.log("campaignData.value", campaignData.value)
     // 2) Update campaign sau khi đã có step
     const campaignUpdatePayload = {
       campaign_name: campaignData.value.campaign_name || draftCampaign.value.campaign_name,
@@ -1660,7 +1660,9 @@ const finalizeCampaign = async () => {
       template_used: selectedTemplate.value?.name || null,
       steps_count: stepCount,
       source_file: campaignData.value.source_file || '',
-      source_config: campaignData.value.source_config || null
+      source_config: campaignData.value.source_config || null,
+      campaign_steps: campaignSteps.value,
+      target_segment: campaignData.value.target_segment || null
     }
 
     const campaignResult = await campaignService.save(
@@ -1934,6 +1936,11 @@ watch(show, (newVal) => {
     // Clean up draft campaign if wizard is closed without completion
     // TODO: Optionally delete draft campaign
   }
+})
+
+// Đồng bộ target_segment với configData.selectedSegment
+watch(() => configData.value.selectedSegment, (val) => {
+  campaignData.value.target_segment = val
 })
 </script>
 

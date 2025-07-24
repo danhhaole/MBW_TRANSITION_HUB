@@ -2,12 +2,12 @@
   <div class="pool-config space-y-4">
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-2">
-        Chọn phân khúc nhân tài
+        {{ __('Select a talent segment') }}
       </label>
       <Autocomplete
         v-model="data.selectedSegment"
         :options="segmentOptions"
-        placeholder="Chọn phân khúc có sẵn..."
+        :placeholder="__('Select a talent segment')"
         @change="handleSegmentChange"
       />
     </div>
@@ -15,22 +15,22 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">
-          Kỹ năng (bổ sung)
+          {{ __('Skills (optional)') }}
         </label>
         <FormControl
           v-model="data.skills"
           type="text"
-          placeholder="React, NodeJS, Python..."
+          :placeholder="__('React, NodeJS, Python...')"
         />
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">
-          Số năm kinh nghiệm (bổ sung)
+          {{ __('Years of experience (optional)') }}
         </label>
         <FormControl
           v-model="data.experience"
           type="number"
-          placeholder="3+"
+          :placeholder="__('3+')"
         />
       </div>
     </div>
@@ -38,24 +38,24 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">
-          Địa điểm (bổ sung)
+          {{ __('Location (optional)') }}
         </label>
         <FormControl
           v-model="data.location"
           type="select"
           :options="locationOptions"
-          placeholder="Chọn địa điểm"
+          :placeholder="__('Select a location')"
         />
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">
-          Cấp độ (bổ sung)
+          {{ __('Level (optional)') }}
         </label>
         <FormControl
           v-model="data.level"
           type="select"
           :options="levelOptions"
-          placeholder="Chọn cấp độ"
+          :placeholder="__('Select a level')"
         />
       </div>
     </div>
@@ -133,6 +133,7 @@ const loadTalentSegments = async () => {
 
 // Handle segment change
 const handleSegmentChange = (value) => {
+  console.log("value", value)
   data.value.selectedSegment = value
 }
 
@@ -157,7 +158,14 @@ const levels = [
 
 // Watch for changes
 watch(data, (newData) => {
-  emit('update:modelValue', newData)
+  console.log("newData", {
+    ...newData,
+    selectedSegment: newData.selectedSegment.value
+  })
+  emit('update:modelValue', {
+    ...newData,
+    selectedSegment: newData.selectedSegment.value
+  } )
 }, { deep: true })
 
 // Lifecycle

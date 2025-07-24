@@ -169,7 +169,7 @@
 									</th>
 									<th
 										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-										{{ __('Engagement Score') }}
+										{{ __('Source') }}
 									</th>
 									<th
 										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -266,19 +266,9 @@
 
 										<!-- Engagement Score -->
 										<td class="px-6 py-4 whitespace-nowrap">
-											<div class="flex items-center">
-												<div class="w-16 mr-2">
-													<div class="w-full bg-gray-200 rounded-full h-1.5">
-														<div class="h-1.5 rounded-full transition-all duration-300"
-															:class="getEngagementBarColor(calculateEngagementScore(candidate))"
-															:style="`width: ${calculateEngagementScore(candidate)}%`">
-														</div>
-													</div>
-												</div>
-												<span class="text-xs font-medium text-gray-700">
-													{{ calculateEngagementScore(candidate) }}%
-												</span>
-											</div>
+											<span class="text-xs font-medium text-gray-700">
+												{{ candidate.source || '-' }}
+											</span>
 										</td>
 
 										<!-- Actions -->

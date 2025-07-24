@@ -51,14 +51,9 @@
               <!-- Progress -->
               <td class="py-4 px-4">
                 <div class="flex items-center">
-                  <div class="w-20 h-2 bg-gray-200 rounded-full mr-2">
-                    <div 
-                      class="h-full rounded-full"
-                      :class="getProgressBarClass(campaign.status)"
-                      :style="`width: ${getProgress(campaign)}%`"
-                    ></div>
-                  </div>
-                  <span class="text-xs font-medium text-gray-700">{{ getProgress(campaign) }}%</span>
+                  <span class="text-xs font-medium text-gray-700">
+                    {{ __('Step') }} {{ campaign.current || 0 }}/{{ campaign.total || 1 }}
+                  </span>
                 </div>
               </td>
 
