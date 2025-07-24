@@ -11,7 +11,7 @@ class Campaign(Document):
 
     def on_update(self):
         #Kiểm tra nếu có campaign_steps = [];
-        if self.campaign_steps and isinstance(self.campaign_steps, dict):
+        if hasattr(self, 'campaign_steps'):
             insert_campaign_step(self.campaign_steps,self.name)
     def on_trash(self):
         #Kiểm tra trạng thái là draff hoặc chưa active 
@@ -34,16 +34,16 @@ def insert_campaign_step(steps,campaign_name):
     try:
         step_name =[]
         for step in steps:
-            if step.campaign_step_name:
+            if step.get("campaign_step_name"):
                 campaign_step =frappe.get_doc({
                     "doctype": "CampaignStep",
-                    "campaign_step_name": step.campaign_step_name,
+                    "campaign_step_name": step.get("campaign_step_name"),
                     "campaign": campaign_name,
-                    "step_order": int(step.step_order),
-                    "action_type": step.action_type,
-                    "delay_in_days": int(step.delay_in_days),
-                    "template": step.template_content,
-                    "action_config": step.action_config  # optional: nếu muốn phân công tự động
+                    "step_order": int(step.get("step_order")),
+                    "action_type": step.get("action_type"),
+                    "delay_in_days": int(step.get("delay_in_days")),
+                    "template": step.get("template_content"),
+                    "action_config": step.get("action_config")  # optional: nếu muốn phân công tự động
                 })
                 campaign_step.insert(ignore_permissions=True)
                 frappe.db.commit()
