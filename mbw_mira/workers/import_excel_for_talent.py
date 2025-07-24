@@ -73,7 +73,7 @@ def import_talentprofile_from_file(campaign_name: str):
                 raw_data[target_field] = row.get(source_col)
 
             # 7. Chuẩn hóa dữ liệu theo TalentProfiles mới
-            skills_raw = raw_data.get("skills")
+            skills_raw = json.loads(raw_data.get("skills"),[])
             if isinstance(skills_raw, str):
                 skills_list = [skill.strip() for skill in skills_raw.split(",") if skill.strip()]
             elif isinstance(skills_raw, list):
@@ -81,16 +81,16 @@ def import_talentprofile_from_file(campaign_name: str):
             else:
                 skills_list = []
 
-            status_map = {
-                "Ứng tuyển": "ENGAGED",
-                "Tiềm năng": "NURTURING",
-                "Mới": "NEW",
-                "Đã liên hệ": "SOURCED",
-                "Không phù hợp": "ARCHIVED",
-                "Active": "ENGAGED",
-                "Inactive": "ARCHIVED"
-            }
-            status = status_map.get(raw_data.get("status"), "NEW")
+            # status_map = {
+            #     "Ứng tuyển": "ENGAGED",
+            #     "Tiềm năng": "NURTURING",
+            #     "Mới": "NEW",
+            #     "Đã liên hệ": "SOURCED",
+            #     "Không phù hợp": "ARCHIVED",
+            #     "Active": "ENGAGED",
+            #     "Inactive": "ARCHIVED"
+            # }
+            status = "NEW"
 
             doc_data = {
                 "doctype": "TalentProfiles",
@@ -111,11 +111,21 @@ def import_talentprofile_from_file(campaign_name: str):
 
             # 8. Insert
             try:
-                doc = frappe.get_doc(doc_data)
-                doc.insert(ignore_permissions=True)
-                frappe.db.commit()
-                inserted += 1
+                if not check_exists(raw_data.get("email")):
+                    doc = frappe.get_doc(doc_data)
+                    doc.insert(ignore_permissions=True)
+                    frappe.db.commit()
+                    inserted += 1
+                else:
+                    continue
             except Exception as e:
                 logger.error(f"[TalentProfiles] Failed: {doc_data.get('full_name')} — {str(e)}", exc_info=True)
-        frappe.publish_realtime('import_talentprofile_from_file', message={'campaign': campaign_id})
+        frappe.publish_realtime('import_talentprofile_from_file', message={'campaign': campaign_name})
         return True
+
+def check_exists(email):
+    talent_exists = frappe.db.exists("TalentProfiles",{"email":email})
+    if talent_exists:
+        return True
+    else:
+        return False

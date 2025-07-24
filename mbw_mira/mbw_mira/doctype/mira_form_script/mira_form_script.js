@@ -1,7 +1,7 @@
 // Copyright (c) 2023, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
 
-frappe.ui.form.on("Form Script", {
+frappe.ui.form.on("Mira Form Script", {
 	refresh(frm) {
 		frm.set_query("dt", {
 			filters: {
@@ -13,7 +13,7 @@ frappe.ui.form.on("Form Script", {
 			frm.disable_form();
 			frappe.show_alert(
 				__(
-					"Standard Form Scripts can not be modified, duplicate the Form Script instead."
+					"Standard Mira Form Scripts can not be modified, duplicate the Mira Form Script instead."
 				)
 			);
 		}

@@ -6,7 +6,7 @@ from frappe import _
 from frappe.model.document import Document
 
 
-class FormScript(Document):
+class MiraFormScript(Document):
 	def validate(self):
 		in_user_env = not (
 			frappe.flags.in_install
@@ -23,15 +23,15 @@ class FormScript(Document):
 			else:
 				frappe.throw(_("You need to be in developer mode to edit a Standard Form Script"))
 
-def get_form_script(dt, view="Form"):
+def get_mira_form_script(dt, view="Form"):
 	"""Returns the form script for the given doctype"""
-	FormScript = frappe.qb.DocType("Form Script")
+	MiraFormScript = frappe.qb.DocType("Form Script")
 	query = (
-		frappe.qb.from_(FormScript)
+		frappe.qb.from_(MiraFormScript)
 		.select("script")
-		.where(FormScript.dt == dt)
-		.where(FormScript.view == view)
-		.where(FormScript.enabled == 1)
+		.where(MiraFormScript.dt == dt)
+		.where(MiraFormScript.view == view)
+		.where(MiraFormScript.enabled == 1)
 	)
 
 	doc = query.run(as_dict=True)
