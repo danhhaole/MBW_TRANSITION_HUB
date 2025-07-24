@@ -276,7 +276,6 @@ import TalentSegmentForm from '@/components/talent-segment/TalentSegmentForm.vue
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import { Breadcrumbs } from 'frappe-ui'
 import TalentSegmentCardView from '@/components/talent-segment/TalentSegmentCardView.vue'
-import Loading from '@/components/shared/Loading.vue'
 
 
 let title = __('Talent Pools')
