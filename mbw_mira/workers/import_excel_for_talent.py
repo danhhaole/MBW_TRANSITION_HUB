@@ -2,7 +2,7 @@ import frappe
 import pandas as pd
 import json
 from datetime import datetime
-import os
+import ast
 
 def import_talentprofile_from_file(campaign_name: str):
     logger = frappe.logger("import_candidates")
@@ -20,7 +20,7 @@ def import_talentprofile_from_file(campaign_name: str):
     )
 
     if not campaign:
-        logger.error(f"Campaign not found: {campaign_name}")
+        frappe.log_error("Import TalentProfile", f"Campaign not found: {campaign_name}")
         return
 
     # 2. Kiểm tra trạng thái hợp lệ
@@ -28,24 +28,27 @@ def import_talentprofile_from_file(campaign_name: str):
     if not campaign.is_active or campaign.status != "ACTIVE" \
             or not campaign.start_date or not campaign.end_date \
             or campaign.start_date > today or campaign.end_date < today:
+        frappe.log_error("Import TalentProfile", f"Campaign is not active or out of range: {campaign_name}")
         return
 
     # 3. Parse source_config JSON
     try:
         source_config = json.loads(campaign.source_config or "{}")
     except Exception as e:
-        logger.error(f"Failed to parse source_config JSON: {e}", exc_info=True)
+        frappe.log_error("Import TalentProfile", f"Failed to parse source_config JSON: {e}")
         return
 
     file_name = campaign.source_file.split("/")[-1]
     field_mapping = source_config.get("field_mapping", [])
 
     if not file_name or not field_mapping:
+        frappe.log_error("Import TalentProfile", f"Missing file name or field mapping for campaign: {campaign_name}")
         return
 
     # 4. Tìm file đã upload trong File doctype
     file_url = frappe.db.get_value("File", {"file_name": file_name}, "file_url")
     if not file_url:
+        frappe.log_error("Import TalentProfile", f"File not found in File doctype: {file_name}")
         return
 
     file_path = frappe.get_site_path("public", file_url.lstrip("/"))
@@ -57,9 +60,13 @@ def import_talentprofile_from_file(campaign_name: str):
         elif file_name.endswith((".xls", ".xlsx")):
             df = pd.read_excel(file_path)
         else:
+            frappe.log_error("Import TalentProfile", f"Unsupported file format: {file_name}")
             return
+
+        # Convert NaN thành None
+        df = df.where(pd.notnull(df), None)
     except Exception as e:
-        logger.error(f"Error reading file {file_name}: {str(e)}", exc_info=True)
+        frappe.log_error("Import TalentProfile", f"Error reading file {file_name}: {e}")
         return
 
     inserted = 0
@@ -72,26 +79,30 @@ def import_talentprofile_from_file(campaign_name: str):
                 target_field = mapping.get("field_name")
                 raw_data[target_field] = row.get(source_col)
 
-            # 7. Chuẩn hóa dữ liệu theo TalentProfiles mới
-            skills_raw = json.loads(raw_data.get("skills"),[])
-            if isinstance(skills_raw, str):
-                skills_list = [skill.strip() for skill in skills_raw.split(",") if skill.strip()]
-            elif isinstance(skills_raw, list):
-                skills_list = skills_raw
+            # 7. Chuẩn hóa dữ liệu: xử lý skills
+            skills_value = raw_data.get("skills") or "[]"
+            skills_list = []
+
+            if isinstance(skills_value, list):
+                skills_list = skills_value
+            elif isinstance(skills_value, str):
+                try:
+                    # Ưu tiên parse JSON
+                    skills_list = json.loads(skills_value)
+                    if not isinstance(skills_list, list):
+                        raise ValueError
+                except:
+                    try:
+                        skills_list = ast.literal_eval(skills_value)
+                        if not isinstance(skills_list, list):
+                            raise ValueError
+                    except:
+                        skills_list = [s.strip() for s in skills_value.split(",") if s.strip()]
             else:
                 skills_list = []
-
-            # status_map = {
-            #     "Ứng tuyển": "ENGAGED",
-            #     "Tiềm năng": "NURTURING",
-            #     "Mới": "NEW",
-            #     "Đã liên hệ": "SOURCED",
-            #     "Không phù hợp": "ARCHIVED",
-            #     "Active": "ENGAGED",
-            #     "Inactive": "ARCHIVED"
-            # }
-            status = "NEW"
-
+            profile_data = raw_data.get("profile_data")
+            profile_data = None if pd.isna(profile_data) else profile_data
+            # 8. Chuẩn bị dữ liệu TalentProfiles
             doc_data = {
                 "doctype": "TalentProfiles",
                 "full_name": raw_data.get("full_name"),
@@ -99,28 +110,29 @@ def import_talentprofile_from_file(campaign_name: str):
                 "phone": raw_data.get("phone"),
                 "source": raw_data.get("source") or "Excel Import",
                 "skills": json.dumps(skills_list),
-                "avatar": raw_data.get("avatar"),
-                "headline": raw_data.get("current_position") or raw_data.get("major_id"),
-                "cv_original_url": raw_data.get("cv_original_url"),
-                "profile_data": raw_data.get("profile_data"),  # đảm bảo đây là JSON string hoặc dict
-                "ai_summary": raw_data.get("notes"),
-                "status": status,
-                "last_interaction": datetime.now(),
-                "email_opt_out": int(raw_data.get("email_opt_out") or 0)
+                "avatar": "",
+                "headline": raw_data.get("headline") or "",
+                "cv_original_url": raw_data.get("cv_original_url") or "",
+                "profile_data": profile_data,
+                "ai_summary": raw_data.get("ai_summary")  or "",
+                "status": "NEW",
+                "last_interaction": None,
+                "email_opt_out": 0
             }
 
-            # 8. Insert
+            # 9. Insert nếu chưa tồn tại
             try:
                 if not check_exists(raw_data.get("email")):
                     doc = frappe.get_doc(doc_data)
                     doc.insert(ignore_permissions=True)
                     frappe.db.commit()
                     inserted += 1
-                else:
-                    continue
             except Exception as e:
-                logger.error(f"[TalentProfiles] Failed: {doc_data.get('full_name')} — {str(e)}", exc_info=True)
+                frappe.log_error("Failed to insert", f"Failed to insert: {doc_data.get('full_name')} — {doc_data}")
+
+        # 10. Gửi sự kiện realtime nếu cần
         frappe.publish_realtime('import_talentprofile_from_file', message={'campaign': campaign_name})
+        logger.info(f"Imported {inserted} profiles for campaign {campaign_name}")
         return True
 
 def check_exists(email):
