@@ -134,12 +134,12 @@ const actionOptions = computed(() => {
       color: 'success',
       icon: 'mdi-check-circle'
     },
-    { 
-      value: 'SCHEDULED', 
-      label: __('Schedule'), 
-      color: 'info',
-      icon: 'mdi-calendar-clock'
-    },
+    // { 
+    //   value: 'SCHEDULED', 
+    //   label: __('Schedule'), 
+    //   color: 'info',
+    //   icon: 'mdi-calendar-clock'
+    // },
     { 
       value: 'SKIPPED', 
       label: __('Skip'), 
@@ -184,18 +184,18 @@ const resetForm = () => {
 }
 
 const getActionButtonText = () => {
-  switch (selectedAction.value) {
-    case 'EXECUTED':
-      return 'Hoàn thành tác vụ'
-    case 'SCHEDULED':
-      return 'Lên lịch tác vụ'
-    case 'SKIPPED':
-      return 'Bỏ qua tác vụ'
-    case 'FAILED':
-      return 'Đánh dấu thất bại'
-    default:
+  //switch (selectedAction.value) {
+    // case 'EXECUTED':
+    //   return 'Hoàn thành tác vụ'
+    // // case 'SCHEDULED':
+    // //   return 'Lên lịch tác vụ'
+    // case 'SKIPPED':
+    //   return 'Bỏ qua tác vụ'
+    // case 'FAILED':
+    //   return 'Đánh dấu thất bại'
+    // default:
       return 'Cập nhật tác vụ'
-  }
+  //}
 }
 
 const getStatusLabel = (status) => {
