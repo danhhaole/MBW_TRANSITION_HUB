@@ -1,5 +1,6 @@
 {
  "actions": [],
+ "allow_import": 1,
  "autoname": "format:SEG-{YY}{MM}{DD}-{#####}",
  "creation": "2025-06-26 14:02:38.115814",
  "doctype": "DocType",
@@ -60,7 +61,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-06-30 08:19:33.511437",
+ "modified": "2025-07-24 16:09:53.445572",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "TalentSegment",
