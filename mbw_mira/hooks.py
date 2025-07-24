@@ -11,15 +11,15 @@ app_license = "agpl-3.0"
 # required_apps = []
 
 # Each item in the list will be shown as an app in the apps page
-# add_to_apps_screen = [
-# 	{
-# 		"name": "mbw_mira",
-# 		"logo": "/assets/mbw_mira/logo.png",
-# 		"title": "MBW Mira",
-# 		"route": "/mbw_mira",
-# 		"has_permission": "mbw_mira.api.permission.has_app_permission"
-# 	}
-# ]
+add_to_apps_screen = [
+	{
+		"name": "mbw_mira",
+		"logo": "/assets/mbw_mira/logo.png",
+		"title": "MBW Mira",
+		"route": "/mbw_mira",
+		#"has_permission": "mbw_mira.api.permission.has_app_permission"
+	}
+]
 
 # Includes in <head>
 # ------------------
