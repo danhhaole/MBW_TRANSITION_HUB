@@ -32,13 +32,16 @@ import CandidateDataSourceManagementDirect from './pages/CandidateDataSourceMana
 // Candidate Pool Management
 import CandidatePoolManagement from './pages/CandidatePoolManagement.vue'
 
-// Public Profile
-import PublicTalentProfile from './pages/PublicTalentProfile.vue'
 
 // Email Editor
 import EmailEditor from './pages/EmailEditor.vue'
 
 import ApplicantPoolManagement from './pages/ApplicantPoolManagement.vue'
+
+
+// Public Profile
+import LadiPage from './pages/Public/LadiPage.vue'
+import RegisterPage from './pages/Public/RegisterPage.vue'
 
 const routes = [
 	{ path: '/', name: 'Dashboard', component: () => import('@/pages/Dashboard.vue') },
@@ -77,14 +80,16 @@ const routes = [
 	// Candidate Pool
 	{ path: '/candidate-pools', name: 'CandidatePoolManagement', component: CandidatePoolManagement },
 
-	// Public Route
-	{ path: '/public-profile', name: 'PublicTalentProfile', component: PublicTalentProfile, meta: { public: true } },
+	
 
 	// Email Editor
 	{ path: '/email-editor', name: 'EmailEditor', component: EmailEditor },
 
 	{ path: '/applicant-pool', name: 'ApplicantPoolManagement', component: ApplicantPoolManagement },
 
+	// Public Route
+	{ path: '/ladi', name: 'LadiPage', component: LadiPage, meta: { public: true } },
+	{ path: '/register', name: 'RegisterPage', component: RegisterPage, meta: { public: true } },
 ]
 
 
