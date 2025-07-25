@@ -134,15 +134,15 @@ def render_template(template_str, context):
 
     if not template_str:
         return "Xin chào bạn"
-    candidate, action, step = context
-    base_url = get_url()
+    talentprofiles, action, step = context
+    base_url = frappe.request.host
     params = {
-        "candidate_id": candidate.name,
+        "candidate_id": talentprofiles.name,
         "action": action.name,
         "url": f"{base_url}/mbw_mira/ladi?campaign={step.campaign}",
     }
 
-    context_parse = {"candidate_name": candidate.full_name}
+    context_parse = {"candidate_name": talentprofiles.full_name}
 
     sig = make_signature(params)
 
@@ -166,7 +166,7 @@ def render_template(template_str, context):
         f"{base_url}/mbw_mira/ladi?campaign={step.campaign}"
     )
     context_parse["apply_link"] = (
-        f"{base_url}/mbw_mira/application?campaign={step.campaign}"
+        f"{base_url}/mbw_mira/application?campaign={step.campaign}&email={talentprofiles.email}&name={talentprofiles.full_name}"
     )
     
 

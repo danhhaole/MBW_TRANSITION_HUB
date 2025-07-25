@@ -220,7 +220,7 @@ def get_file_uploader_defaults(doctype: str):
 		"make_attachments_public": bool(make_attachments_public),
 	}
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def get_campaign_qrcode():
     data = frappe.local.form_dict or frappe.request.json
     campaign_id = data.get("campaign_id")
@@ -235,7 +235,7 @@ def get_campaign_qrcode():
         frappe.throw("Campaign is not active")
 
     # URL form đăng ký
-    base_url = frappe.utils.get_url()
+    base_url = frappe.request.host
     register_url = f"{base_url}/register?campaign={campaign.name}"
 
     # Tạo QR code
