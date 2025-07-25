@@ -511,8 +511,8 @@ const {
 
 	fetchCandidates,
 	getCandidate,
-	createCandidate,
-	updateCandidate,
+	createCandidateAPI,
+	updateCandidateAPI,
 	deleteCandidate,
 
 	goToPage,
@@ -772,12 +772,12 @@ const handleSaveCandidate = async (candidateData) => {
 		if (editModal.value.candidate) {
 			// Update existing candidate
 			console.log('Updating candidate:', editModal.value.candidate.name)
-			await updateCandidate(editModal.value.candidate.name, candidateData)
+			await updateCandidateAPI(editModal.value.candidate.name, candidateData)
 			showSuccess('Candidate updated successfully')
 		} else {
 			// Create new candidate
 			console.log('Creating new candidate')
-			await createCandidate(candidateData)
+			await createCandidateAPI(candidateData)
 			showSuccess('New candidate created successfully')
 		}
 

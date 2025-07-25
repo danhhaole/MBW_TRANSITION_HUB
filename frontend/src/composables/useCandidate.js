@@ -152,7 +152,7 @@ export function useCandidate() {
     }
   }
   
-  const createCandidate = async (candidateData) => {
+  const createCandidateAPI = async (candidateData) => {
     try {
       loading.value = true
       error.value = null
@@ -173,7 +173,7 @@ export function useCandidate() {
     }
   }
   
-  const updateCandidate = async (name, candidateData) => {
+  const updateCandidateAPI = async (name, candidateData) => {
     try {
       loading.value = true
       error.value = null
@@ -314,8 +314,8 @@ export function useCandidate() {
     fetchFilterOptions,
     searchCandidates,
     getCandidate,
-    createCandidate,
-    updateCandidate,
+    createCandidateAPI,
+    updateCandidateAPI,
     deleteCandidate,
     
     // Pagination

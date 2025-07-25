@@ -274,6 +274,7 @@
       </template>
     </Dialog>
   </div>
+  <ToastContainer />
 </template>
 
 <script setup>
@@ -286,6 +287,10 @@ import LayoutHeader from '@/components/LayoutHeader.vue'
 import { Breadcrumbs } from 'frappe-ui'
 import TalentSegmentCardView from '@/components/talent-segment/TalentSegmentCardView.vue'
 import Loading from '@/components/Loading.vue'
+import { ToastContainer } from '@/components/shared'
+import { useToast } from '@/composables/useToast'
+
+const { showToast, showSuccess, showError } = useToast()
 
 
 let title = __('Talent Pools')
@@ -562,7 +567,7 @@ const confirmDelete = async () => {
   if (result) {
     showDeleteDialog.value = false
     deletingSegment.value = null
-    showToast(__('Talent pool has been deleted successfully'), 'success')
+    showSuccess(__('Talent pool has been deleted successfully'))
   }
 }
 
@@ -570,7 +575,7 @@ const handleFormSuccess = async () => {
   showCreateForm.value = false
   editingSegment.value = null
   await loadSegments()
-  showToast(__('Talent pool has been saved successfully'), 'success')
+  showSuccess(__('Talent pool has been saved successfully'))
 }
 
 const handleFormClose = () => {
@@ -581,19 +586,7 @@ const handleFormClose = () => {
 
 const handleRefresh = async () => {
   await loadSegments()
-  showToast(__('Data refreshed'), 'info', 2000)
-}
-
-const showToast = (message, type = 'success') => {
-  toast.value = {
-    show: true,
-    message,
-    type
-  }
-
-  setTimeout(() => {
-    toast.value.show = false
-  }, 5000)
+  showSuccess(__('Data refreshed'))
 }
 
 // Keyboard shortcuts
@@ -620,9 +613,9 @@ watch(() => segments.value.length, () => {
 
 watch(() => [error.value, success.value], ([errorVal, successVal]) => {
   if (errorVal) {
-    showToast(errorVal, 'error')
+    showError(errorVal)
   } else if (successVal) {
-    showToast(__('Operation successful!'), 'success')
+    showSuccess(__('Operation successful!'))
   }
 })
 

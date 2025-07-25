@@ -383,14 +383,14 @@ def submit_application():
             "email": email,
             "full_name": full_name,
             "source": campaign_id,
-            "status": "APPLIED",
+            "status": "HIRED",
             "last_interaction": now,
         })
         profile.insert(ignore_permissions=True)
         frappe.db.commit()
     else:
         profile = frappe.get_doc("TalentProfiles", profile_name)
-        profile.status = "APPLIED"
+        profile.status = "HIRED"
         profile.last_interaction = now
         profile.save(ignore_permissions=True)
         frappe.db.commit()
