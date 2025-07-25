@@ -284,7 +284,7 @@ def submit_talent_profile():
     # 1. Check trùng email trong cùng campaign
     existing = frappe.db.exists(
         "TalentProfiles",
-        {"email": data["email"], "source": f"campaign:{campaign_id}"}
+        {"email": data["email"], "source": campaign_id}
     )
     if existing:
         return {
@@ -310,7 +310,7 @@ def submit_talent_profile():
         "doctype": "TalentProfiles",
         "full_name": data["full_name"],
         "email": data["email"],
-        "source": f"campaign:{campaign_id}",
+        "source": campaign_id,
         "status": "NEW",
         "last_interaction": datetime.now(),
     }
