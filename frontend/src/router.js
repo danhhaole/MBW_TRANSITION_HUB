@@ -42,7 +42,7 @@ import ApplicantPoolManagement from './pages/ApplicantPoolManagement.vue'
 // Public Profile
 import LadiPage from './pages/Public/LadiPage.vue'
 import RegisterPage from './pages/Public/RegisterPage.vue'
-import UnsubcribePage from './pages/Public/UnsubcribePage.vue'
+import UnSubscribePage from './pages/Public/UnSubscribePage.vue'
 import ApplicationPage from './pages/Public/ApplicationPage.vue'
 
 const routes = [
@@ -92,8 +92,8 @@ const routes = [
 	// Public Route
 	{ path: '/ladi', name: 'LadiPage', component: LadiPage, meta: { public: true } },
 	{ path: '/register', name: 'RegisterPage', component: RegisterPage, meta: { public: true } },
-	{ path: '/unsubscribe', name: 'UnsubscribePage', component: UnsubscribePage, meta: { public: true } },
-	{ path: '/application', name: 'ApplicationPage', component: ApplicationPage, meta: { public: true } },
+	{ path: '/unsubscribe', name: 'UnSubscribePage', component: UnSubscribePage, meta: { public: true } },
+	{ path: '/application', name: 'ApplicationPage', component: ApplicationPage, meta: { public: true } }
 ]
 
 
