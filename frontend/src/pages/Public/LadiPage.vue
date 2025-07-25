@@ -1,110 +1,72 @@
 <template>
-  <div class="bg-white min-h-screen text-gray-800 font-sans">
-    <!-- Hero Section -->
-    <section class="bg-[#C4161C] text-white py-24 px-6 text-center">
-      <h1 class="text-5xl font-bold mb-6">Chào mừng đến với MBW</h1>
-      <p class="text-xl max-w-4xl mx-auto">
-        Chúng tôi là đối tác chuyển đổi số toàn diện cho doanh nghiệp và tổ chức giáo dục, mang lại giải pháp công nghệ linh hoạt, dễ sử dụng và hiệu quả cao.
-      </p>
-      <button
-        @click="showModal = true"
-        class="mt-8 bg-white text-[#C4161C] px-8 py-4 rounded-full font-semibold hover:bg-gray-100 transition"
-      >
-        Tôi quan tâm
-      </button>
-    </section>
+  <div class="max-w-5xl mx-auto px-4 py-10 space-y-8">
+    <h1 class="text-3xl font-bold text-center text-[#b30000]">
+      Vì sao chọn MobiWork Việt Nam?
+    </h1>
 
-    <!-- Về Chúng Tôi -->
-    <section class="py-20 px-6 max-w-6xl mx-auto">
-      <div class="text-center mb-16">
-        <h2 class="text-3xl font-bold text-[#C4161C] mb-4">Chúng tôi là ai?</h2>
-        <p class="text-lg text-gray-700">
-          MBW là doanh nghiệp công nghệ tập trung vào phát triển phần mềm quản trị và hệ thống giáo dục, được tin tưởng bởi hàng trăm tổ chức trên toàn quốc.
-        </p>
-      </div>
-      <div class="grid md:grid-cols-3 gap-10">
-        <div class="text-center">
-          <img src="" class="mx-auto h-20 mb-4" />
-          <h3 class="text-xl font-semibold mb-2">Sáng tạo và Linh hoạt</h3>
-          <p class="text-gray-600">Sản phẩm của chúng tôi liên tục đổi mới để đáp ứng nhu cầu thực tế.</p>
+    <div
+      v-for="(item, index) in feedItems"
+      :key="index"
+      class="bg-gradient-to-br from-white via-red-50 to-red-100 p-6 rounded-2xl shadow-xl hover:shadow-2xl transition-shadow duration-300 border border-red-200"
+    >
+      <div class="flex items-start gap-4">
+        <div class="bg-red-500 text-white p-3 rounded-full shadow-lg">
+          <FeatherIcon :name="item.icon" class="w-6 h-6" />
         </div>
-        <div class="text-center">
-          <img src="" class="mx-auto h-20 mb-4" />
-          <h3 class="text-xl font-semibold mb-2">Hỗ trợ tận tâm</h3>
-          <p class="text-gray-600">Đội ngũ tư vấn và kỹ thuật luôn đồng hành với khách hàng 24/7.</p>
-        </div>
-        <div class="text-center">
-          <img src="" class="mx-auto h-20 mb-4" />
-          <h3 class="text-xl font-semibold mb-2">Khả năng mở rộng</h3>
-          <p class="text-gray-600">Hệ thống được thiết kế linh hoạt, dễ tích hợp và mở rộng.</p>
+        <div>
+          <h2 class="text-xl font-semibold text-red-800">{{ item.title }}</h2>
+          <p class="text-gray-700 mt-2 whitespace-pre-line leading-relaxed">
+            {{ item.content }}
+          </p>
         </div>
       </div>
-    </section>
+    </div>
 
-    <!-- Ứng dụng trong Talent Pool -->
-    <section class="bg-gray-50 py-20 px-6">
-      <div class="max-w-4xl mx-auto text-center">
-        <h2 class="text-3xl font-bold text-[#C4161C] mb-4">Talent Pool - Tương lai tuyển dụng chủ động</h2>
-        <p class="text-lg text-gray-700 mb-6">
-          MBW cung cấp giải pháp quản lý Talent Pool – nơi doanh nghiệp có thể chủ động xây dựng và nuôi dưỡng mối quan hệ với ứng viên tiềm năng, phục vụ cho chiến lược tuyển dụng lâu dài.
-        </p>
+    <!-- CTA Button -->
+    <div class="text-center pt-8">
+      <RouterLink :to="`/register?campaign=${campaignId}`">
         <button
-          @click="showModal = true"
-          class="bg-[#C4161C] text-white px-8 py-3 rounded-full hover:bg-[#a31215] transition"
+          class="bg-gradient-to-r from-red-600 via-red-500 to-red-600 hover:from-red-700 hover:via-red-600 hover:to-red-700 text-white text-lg font-bold px-10 py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
         >
-          Tôi quan tâm Talent Pool
+          🎯 Tham gia ngay cùng MobiWork – Để lại thông tin của bạn
         </button>
-      </div>
-    </section>
-
-    <!-- Modal Đăng ký thông tin -->
-    <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg shadow-lg max-w-md w-full p-6 relative">
-        <button
-          class="absolute top-2 right-2 text-gray-500 hover:text-red-500"
-          @click="showModal = false"
-        >
-          ✕
-        </button>
-        <h3 class="text-xl font-bold text-[#C4161C] mb-4">Đăng ký nhận thông tin</h3>
-        <form @submit.prevent="submitRegister">
-          <div class="mb-4 text-left">
-            <label class="block text-sm font-medium">Họ và tên</label>
-            <input v-model="register.full_name" required class="w-full mt-1 border rounded px-3 py-2" />
-          </div>
-          <div class="mb-4 text-left">
-            <label class="block text-sm font-medium">Email</label>
-            <input v-model="register.email" type="email" required class="w-full mt-1 border rounded px-3 py-2" />
-          </div>
-          <div class="mb-4 text-left">
-            <label class="block text-sm font-medium">Số điện thoại</label>
-            <input v-model="register.phone" class="w-full mt-1 border rounded px-3 py-2" />
-          </div>
-          <button
-            type="submit"
-            class="bg-[#C4161C] text-white px-6 py-2 rounded hover:bg-[#a31215] transition w-full"
-          >
-            Gửi thông tin
-          </button>
-        </form>
-      </div>
+      </RouterLink>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { FeatherIcon } from 'frappe-ui'
+import { ref, onMounted } from 'vue'
 
-const showModal = ref(false)
-const register = ref({
-  full_name: '',
-  email: '',
-  phone: '',
+const campaignId = ref('')
+
+// Lấy campaignId từ URL query string
+onMounted(() => {
+  const params = new URLSearchParams(window.location.search)
+  campaignId.value = params.get('campaign') || ''
 })
 
-function submitRegister() {
-  console.log('Dữ liệu gửi:', register.value)
-  // TODO: Gửi thông tin đến Frappe server
-  showModal.value = false
-}
+const feedItems = [
+  {
+    title: 'Môi trường làm việc lý tưởng',
+    icon: 'Home',
+    content: `Hơn 10 năm phát triển, MobiWork luôn hướng đến việc xây dựng nơi làm việc lý tưởng, nơi nhân viên được lắng nghe, chia sẻ và ghi nhận xứng đáng.`,
+  },
+  {
+    title: 'Lương thưởng cạnh tranh',
+    icon: 'BadgeDollarSign',
+    content: `- Tiền lương: tương xứng vị trí và năng lực\n- Tăng lương: định kỳ, xét trước hạn với người xuất sắc\n- Thưởng: cuối năm, lễ Tết theo đóng góp`,
+  },
+  {
+    title: 'Phúc lợi hấp dẫn',
+    icon: 'HeartHandshake',
+    content: `- Thưởng lễ, Tết, tháng 13\n- Hỗ trợ: hiếu hỉ, ốm đau, thai sản\n- Nghỉ mát, thể thao, BHXH - BHYT đầy đủ`,
+  },
+  {
+    title: 'Đào tạo & Phát triển nghề nghiệp',
+    icon: 'GraduationCap',
+    content: `- Lộ trình nghề nghiệp rõ ràng\n- Đào tạo hội nhập, chuyên môn, kỹ năng\n- Cơ hội phát triển và thăng tiến minh bạch`,
+  }
+]
 </script>

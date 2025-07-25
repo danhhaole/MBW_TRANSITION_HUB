@@ -155,9 +155,20 @@ def render_template(template_str, context):
     context_parse["tracking_link"] = (
         f"{base_url}/api/method/mbw_mira.api.interaction.click_redirect?{query}"
     )
-    context_parse["url_link"] = (
-        f"{base_url}/api/method/mbw_mira.api.interaction.unsubscribe?{query}"
+    context_parse["unsubscribe_link"] = (
+        f"{base_url}/unsubscribe?{query}"
     )
+
+    context_parse["register_link"] = (
+        f"{base_url}/register?campaign={step.campaign}"
+    )
+    context_parse["ladi_link"] = (
+        f"{base_url}/ladi?campaign={step.campaign}"
+    )
+    context_parse["apply_link"] = (
+        f"{base_url}/application?campaign={step.campaign}"
+    )
+    
 
     return frappe.render_template(template_str, context_parse)
 

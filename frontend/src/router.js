@@ -42,6 +42,8 @@ import ApplicantPoolManagement from './pages/ApplicantPoolManagement.vue'
 // Public Profile
 import LadiPage from './pages/Public/LadiPage.vue'
 import RegisterPage from './pages/Public/RegisterPage.vue'
+import UnsubcribePage from './pages/Public/UnsubcribePage.vue'
+import ApplicationPage from './pages/Public/ApplicationPage.vue'
 
 const routes = [
 	{ path: '/', name: 'Dashboard', component: () => import('@/pages/Dashboard.vue') },
@@ -90,6 +92,8 @@ const routes = [
 	// Public Route
 	{ path: '/ladi', name: 'LadiPage', component: LadiPage, meta: { public: true } },
 	{ path: '/register', name: 'RegisterPage', component: RegisterPage, meta: { public: true } },
+	{ path: '/unsubcribe', name: 'UnsubcribePage', component: UnsubcribePage, meta: { public: true } },
+	{ path: '/apply', name: 'ApplicationPage', component: ApplicationPage, meta: { public: true } },
 ]
 
 
