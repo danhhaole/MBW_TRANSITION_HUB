@@ -13,7 +13,7 @@
 "@John, can you please check this?","@John, bạn có thể vui lòng kiểm tra cái này được không?"
 A CandidateSegment with Candidate <b>{0}</b> and Segment <b>{1}</b> already exists: <a href='/app/candidate-segment/{2}'>{2}</a>,Một ứng cử viên với ứng cử viên <b> {0} </b> và phân đoạn <b> {1} </b> đã tồn tại: <a href = '/app/uster-secent/{2}'> {2} </a>
 A TalentProfilesCampaign with Campaign <b>{0}</b> and Candidate <b>{1}</b> already exists: <a href='/app/candidate-campaign/{2}'>{2}</a>,TalentProfileScampaign với chiến dịch <b> {0} </b> và ứng cử viên <b> {1} </b> đã tồn tại: <a href = '/app
-ACTIVE,TÍCH CỰC
+ACTIVE,KÍCH HOẠT
 AI Summary,Tóm tắt AI
 API Base URL,URL cơ sở API
 API Key,Khóa API
@@ -29,12 +29,12 @@ Access Token hiện tại (OAuth2),Truy cập Mã thông báo Hiện Tại (OAut
 Action,Hoạt động
 Action Type,Loại hành động
 Actions,Hành động
-Active,Tích cực
-Active Campaigns,Các chiến dịch tích cực
-Active Candidates,Ứng cử viên tích cực
+Active,Kích hoạt
+Active Campaigns,Các chiến dịch kích hoạt
+Active Candidates,Ứng cử viên kích hoạt
 Add,Thêm vào
 Add Candidate,Thêm ứng viên
-Add Candidate to Segment,Thêm ứng viên vào phân khúc
+Add Candidate to Segment,Thêm ứng viên vào kho nhân tài
 Add Column,Thêm cột
 Add Field,Thêm trường
 Add Filter,Thêm bộ lọc
@@ -47,11 +47,11 @@ Add Section,Thêm phần
 Add Sort,Thêm sắp xếp
 Add Step,Thêm bước
 Add Tab,Thêm tab
-Add candidate to segment,Thêm ứng viên vào phân khúc
+Add candidate to segment,Thêm ứng viên vào kho nhân tài
 Add column,Thêm cột
 Add filter,Thêm bộ lọc
 Add first candidate,Thêm ứng viên đầu tiên
-Add to Segment,Thêm vào phân đoạn
+Add to Segment,Thêm vào kho nhân tài
 Add your first comment,Thêm bình luận đầu tiên của bạn
 Added,Đã thêm
 Added At,Đã thêm tại
