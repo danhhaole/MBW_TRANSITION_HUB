@@ -224,7 +224,8 @@ def get_file_uploader_defaults(doctype: str):
 def get_campaign_qrcode():
     data = frappe.local.form_dict or frappe.request.json
     campaign_id = data.get("campaign_id")
-
+    origin = frappe.request.headers.get("Origin")
+    
     if not campaign_id:
         frappe.throw("Missing campaign_id")
 
@@ -237,7 +238,10 @@ def get_campaign_qrcode():
     # URL form đăng ký
     protocol = frappe.request.scheme
     host = frappe.request.host
+    origin = frappe.request.headers.get("Origin")
     base_url = f"{protocol}://{host}"
+    if origin:
+        base_url = origin
     register_url = f"{base_url}/register?campaign={campaign.name}"
 
     # Tạo QR code
