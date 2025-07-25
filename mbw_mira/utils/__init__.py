@@ -139,7 +139,7 @@ def render_template(template_str, context):
     params = {
         "candidate_id": candidate.name,
         "action": action.name,
-        "url": f"{base_url}/mbw_mira/",
+        "url": f"{base_url}/mbw_mira/ladi?campaign={step.campaign}",
     }
 
     context_parse = {"candidate_name": candidate.full_name}
