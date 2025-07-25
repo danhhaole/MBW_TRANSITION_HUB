@@ -235,7 +235,9 @@ def get_campaign_qrcode():
         frappe.throw("Campaign is not active")
 
     # URL form đăng ký
-    base_url = frappe.request.host
+    protocol = frappe.request.scheme
+    host = frappe.request.host
+    base_url = f"{protocol}://{host}"
     register_url = f"{base_url}/register?campaign={campaign.name}"
 
     # Tạo QR code

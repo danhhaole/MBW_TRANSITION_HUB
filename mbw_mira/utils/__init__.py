@@ -135,7 +135,9 @@ def render_template(template_str, context):
     if not template_str:
         return "Xin chào bạn"
     talentprofiles, action, step = context
-    base_url = frappe.request.host
+    protocol = frappe.request.scheme
+    host = frappe.request.host
+    base_url = f"{protocol}://{host}"
     params = {
         "candidate_id": talentprofiles.name,
         "action": action.name,
