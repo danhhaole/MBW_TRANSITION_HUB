@@ -382,7 +382,7 @@ def submit_application():
             "doctype": "TalentProfiles",
             "email": email,
             "full_name": full_name,
-            "source": f"campaign:{campaign_id}",
+            "source": campaign_id,
             "status": "APPLIED",
             "last_interaction": now,
         })
