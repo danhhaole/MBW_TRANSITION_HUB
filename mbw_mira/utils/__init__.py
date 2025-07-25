@@ -156,17 +156,17 @@ def render_template(template_str, context):
         f"{base_url}/api/method/mbw_mira.api.interaction.click_redirect?{query}"
     )
     context_parse["unsubscribe_link"] = (
-        f"{base_url}/unsubscribe?{query}"
+        f"{base_url}/mbw_mira/unsubscribe?{query}"
     )
 
     context_parse["register_link"] = (
-        f"{base_url}/register?campaign={step.campaign}"
+        f"{base_url}/mbw_mira/register?campaign={step.campaign}"
     )
     context_parse["ladi_link"] = (
-        f"{base_url}/ladi?campaign={step.campaign}"
+        f"{base_url}/mbw_mira/ladi?campaign={step.campaign}"
     )
     context_parse["apply_link"] = (
-        f"{base_url}/application?campaign={step.campaign}"
+        f"{base_url}/mbw_mira/application?campaign={step.campaign}"
     )
     
 
