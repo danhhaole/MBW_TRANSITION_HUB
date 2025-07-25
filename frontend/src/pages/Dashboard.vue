@@ -44,16 +44,7 @@
 							</h2>
 
 							<template v-if="loading">
-								<div class="text-center py-12">
-									<div
-										class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4"
-									>
-										<div
-											class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
-										></div>
-									</div>
-									<p class="text-slate-600">{{ __('Loading data...') }}</p>
-								</div>
+								<Loading text="Loading data..." />
 							</template>
 
 							<template v-else-if="tasks.length === 0">
@@ -164,16 +155,7 @@
 							<h2 class="text-xl font-bold text-slate-800 mb-4">{{ __('Recently Completed') }}</h2>
 
 							<template v-if="loading">
-								<div class="text-center py-8">
-									<div
-										class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 mb-4"
-									>
-										<div
-											class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"
-										></div>
-									</div>
-									<p class="text-sm text-slate-600">{{ __('Loading...') }}</p>
-								</div>
+								<Loading text="Loading..." />
 							</template>
 
 							<template v-else-if="completedCampaigns.length === 0">
@@ -248,16 +230,7 @@
 					</h2>
 
 					<template v-if="loading">
-						<div class="text-center py-12">
-							<div
-								class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4"
-							>
-								<div
-									class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
-								></div>
-							</div>
-							<p class="text-slate-600">{{ __('Loading campaigns...') }}</p>
-						</div>
+						<Loading text="Loading campaigns..." />
 					</template>
 
 					<template v-else-if="activeCampaigns.length === 0">
@@ -433,6 +406,7 @@ import { Button } from 'frappe-ui'
 import CampaignCard from '@/components/campaign/CampaignCard.vue'
 import TaskUpdateModal from '@/components/shared/TaskUpdateModal.vue'
 import { ToastContainer } from '@/components/shared'
+import Loading from '@/components/Loading.vue'
 import {
 	campaignService,
 	candidateCampaignService,
@@ -635,7 +609,7 @@ const loadCompletedCampaigns = async () => {
 					} else {
 						campaignMap.get(campaignId).completedTasks++
 					}
-				}
+				}					
 				}
 			}
 

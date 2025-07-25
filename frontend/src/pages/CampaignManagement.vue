@@ -130,6 +130,7 @@
 
       <!-- Main content -->
       <div class="bg-white rounded-lg border border-gray-200">
+        <Loading v-if="loading" text="Loading campaigns..." />
         <!-- Table/Card view -->
         <campaign-table v-if="viewMode === 'list'" :campaigns="campaigns" :loading="loading" :pagination="pagination"
           @page-change="goToPage" @edit="openEditDialog" @view="openViewDialog" @delete="handleDelete" />
@@ -171,6 +172,7 @@ import {
 import { ToastContainer } from '@/components/shared'
 import { Button, Breadcrumbs, Select } from 'frappe-ui'
 import LayoutHeader from '@/components/LayoutHeader.vue'
+import Loading from '@/components/Loading.vue'
 import { campaignService } from '@/services/universalService'
 
 

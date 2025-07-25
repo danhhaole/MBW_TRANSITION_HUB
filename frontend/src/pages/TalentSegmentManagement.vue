@@ -82,7 +82,7 @@
 
       <!-- Loading & Empty State & Main Content -->
       <template v-if="loading && !segments.length">
-        <Loading :active="true" text="Đang tải dữ liệu..." />
+        <Loading text="Loading talent pools..." />
       </template>
       <template v-else-if="!loading && !segments.length">
         <div class="text-center py-16">
@@ -285,6 +285,7 @@ import TalentSegmentForm from '@/components/talent-segment/TalentSegmentForm.vue
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import { Breadcrumbs } from 'frappe-ui'
 import TalentSegmentCardView from '@/components/talent-segment/TalentSegmentCardView.vue'
+import Loading from '@/components/Loading.vue'
 
 
 let title = __('Talent Pools')

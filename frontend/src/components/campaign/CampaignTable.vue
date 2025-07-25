@@ -2,10 +2,7 @@
   <!-- Table Container Only -->
   <div>
       <!-- Loading State -->
-      <div v-if="loading" class="text-center py-12">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-        <p class="mt-4 text-gray-600">{{ __('Loading data...') }}</p>
-      </div>
+      <Loading v-if="loading" text="Loading campaigns..." />
 
       <!-- Table -->
       <div v-else-if="campaigns?.length > 0" class="overflow-x-auto">
@@ -103,6 +100,11 @@
                     :title="__('Delete')"
                   >
                     <FeatherIcon name="trash-2" class="h-4 w-4" />
+                  </button>
+                  <button v-if="campaign.status === 'ACTIVE'" @click="handleShowQr(campaign)" class="text-gray-600 hover:text-indigo-600 p-2 rounded-md hover:bg-indigo-50 transition-colors" :title="__('Show QR Code')">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h6v6H3V3zm12 0h6v6h-6V3zM3 15h6v6H3v-6zm12 0h6v6h-6v-6z" />
+                    </svg>
                   </button>
                 </div>
               </td>
@@ -210,12 +212,31 @@
       </div>
     </template>
   </Dialog>
+
+  <!-- QR Code Dialog -->
+  <Dialog v-model="showQrDialog" :options="{ title: 'QR Code', size: 'md' }">
+    <template #body-content>
+      <div class="flex flex-col items-center justify-center p-4">
+        <img v-if="qrData.image" :src="qrData.image" alt="QR Code" class="mb-4 w-48 h-48 object-contain" />
+        <div v-if="qrData.url" class="text-sm break-all text-center">
+          <a :href="qrData.url" target="_blank" class="text-blue-600 underline">{{ qrData.url }}</a>
+        </div>
+      </div>
+    </template>
+    <template #actions>
+      <div class="flex justify-end">
+        <Button variant="outline" theme="gray" @click="showQrDialog = false">{{ __('Close') }}</Button>
+      </div>
+    </template>
+  </Dialog>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
 import { Dialog, FeatherIcon } from 'frappe-ui'
 import { Button } from 'frappe-ui'
+import Loading from '@/components/Loading.vue'
+import { call } from 'frappe-ui'
 
 // Translation helper function
 
@@ -253,6 +274,8 @@ const emit = defineEmits([
 // Refs
 const showDeleteDialog = ref(false)
 const itemToDelete = ref(null)
+const showQrDialog = ref(false)
+const qrData = ref({ url: '', image: '' })
 
 // Methods for UI
 const getStatusBadgeClass = (status) => {
@@ -370,6 +393,19 @@ const confirmDelete = () => {
 
 const handlePageChange = (page) => {
   emit('page-change', page)
+}
+
+async function handleShowQr(campaign) {
+  try {
+    const res = await call('mbw_mira.api.get_campaign_qrcode', {
+      campaign_id: campaign.name
+    })
+    qrData.value = res
+    showQrDialog.value = true
+  } catch (e) {
+    qrData.value = { url: '', image: '' }
+    showQrDialog.value = false
+  }
 }
 </script>
 

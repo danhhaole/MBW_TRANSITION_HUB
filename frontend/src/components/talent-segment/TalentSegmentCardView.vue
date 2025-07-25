@@ -47,12 +47,13 @@
               <!-- Top Skills - Always show this section -->
               <div class="mb-3">
                 <div class="text-xs text-gray-500 mb-1">{{ __('Top Skills') }}</div>
-                <div class="flex flex-wrap gap-1 min-h-[24px]">
-                  <template v-if="segment.topSkills && segment.topSkills.length">
+                <div class="flex flex-wrap gap-1 items-center">
+                  <template v-if="segment.topSkills && segment.topSkills.length" class="flex flex-wrap gap-1 items-center">
                     <span v-for="skill in segment.topSkills.slice(0, 3)" :key="skill"
-                      class="inline-block bg-[#e0e7ff] text-[#4338ca] font-medium text-xs px-2 py-1 rounded-full">
-                      {{ skill }}
+                    class="max-h-[24px] inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                    {{ skill }}
                     </span>
+                    <span v-if="segment.topSkills.length > 3" class="text-xs text-gray-400 italic bg-gray-200 px-2 py-1 rounded-full flex items-center">{{ __('+') }} {{ segment.topSkills.length - 3 }}</span>
                   </template>
                   <template v-else>
                     <span class="text-xs text-gray-400 italic mt-2">{{ __('No information') }}</span>

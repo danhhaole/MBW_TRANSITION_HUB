@@ -268,6 +268,11 @@ const links = [
   // },
 
   {
+    label: "Applicant Pool",
+    icon: NoteIcon,
+    to: { name: 'ApplicantPoolManagement' },
+  },
+  {
     label: "Report",
     icon: NoteIcon,
     to: 'Report',

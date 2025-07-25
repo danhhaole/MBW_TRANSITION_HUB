@@ -221,7 +221,8 @@
         </div>
 
         <!-- Table Content -->
-        <div class="overflow-x-auto">
+        <Loading v-if="loading" text="Loading interactions..." />
+        <div class="overflow-x-auto" v-else>
           <table class="w-full">
             <thead class="bg-slate-50 border-b border-slate-200">
               <tr>
@@ -485,6 +486,7 @@ import { Button, Dialog, FormControl, Avatar, Badge, Breadcrumbs } from 'frappe-
 import { interactionService, candidateService, actionService } from '../services/universalService'
 import { debounce } from 'lodash'
 import LayoutHeader from '@/components/LayoutHeader.vue'
+import Loading from '@/components/Loading.vue'
 
 
 

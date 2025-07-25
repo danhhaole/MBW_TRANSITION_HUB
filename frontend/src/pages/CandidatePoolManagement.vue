@@ -74,12 +74,7 @@
 			</div>
 
 			<!-- Loading State -->
-			<div v-if="loading && candidatePools.length === 0" class="text-center py-12">
-				<div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4">
-					<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-				</div>
-				<p class="text-gray-600">{{ __('Loading candidate pools...') }}</p>
-			</div>
+			<Loading v-if="loading && candidatePools.length === 0" text="Loading candidate pools..." />
 
 			<!-- Content Views -->
 			<div v-else>
@@ -337,6 +332,7 @@ import { useCandidatePool } from '@/composables/useCandidatePool'
 import { useToast } from '@/composables/useToast'
 import { FormControl, Breadcrumbs, Avatar, Button } from 'frappe-ui'
 import LayoutHeader from '@/components/LayoutHeader.vue'
+import Loading from '@/components/Loading.vue'
 import CandidatePoolViewModal from '@/components/candidate-pool/CandidatePoolViewModal.vue'
 
 const breadcrumbs = [{ label: __('Candidate Pools'), route: { name: 'CandidatePoolManagement' } }]

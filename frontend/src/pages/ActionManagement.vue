@@ -190,51 +190,8 @@
 
       <!-- Data Table -->
       <div class="bg-white border border-slate-200 rounded-lg">
-        <div class="flex justify-between items-center p-4 border-b border-slate-200">
-          <span class="text-lg font-semibold text-slate-800">{{ __('Actions') }} ({{ pagination.total }})</span>
-          <div class="flex gap-2">
-            <Button
-              v-if="selected.length > 0"
-              variant="outline"
-              theme="green"
-              @click="bulkExecute"
-            >
-              <template #prefix>
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M19 10a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </template>
-              {{ __('Execute Selected') }} ({{ selected.length }})
-            </Button>
-            <Button
-              v-if="selected.length > 0"
-              variant="outline"
-              theme="red"
-              @click="bulkDelete"
-            >
-              <template #prefix>
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </template>
-              {{ __('Delete Selected') }} ({{ selected.length }})
-            </Button>
-            <Button
-              variant="outline"
-              @click="exportData"
-            >
-              <template #prefix>
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </template>
-              {{ __('Export') }}
-            </Button>
-          </div>
-        </div>
-
-        <!-- Table Content -->
-        <div class="overflow-x-auto">
+        <Loading v-if="loading" text="Loading actions..." />
+        <div class="overflow-x-auto" v-else>
           <table class="w-full">
             <thead class="bg-slate-50 border-b border-slate-200">
               <tr>
@@ -514,6 +471,7 @@ import { debounce } from 'lodash'
 import { createResource, Breadcrumbs } from 'frappe-ui'
 import { ToastContainer } from '@/components/shared'
 import LayoutHeader from '@/components/LayoutHeader.vue'
+import Loading from '@/components/Loading.vue'
 
 const router = useRouter()
 

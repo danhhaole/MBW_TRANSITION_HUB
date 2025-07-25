@@ -139,12 +139,7 @@
 			</div>
 
 			<!-- Loading State -->
-			<div v-if="loading && candidates.length === 0" class="text-center py-12">
-				<div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4">
-					<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-				</div>
-				<p class="text-gray-600">{{ __('Loading candidate list...') }}</p>
-			</div>
+			<Loading v-if="loading && candidates.length === 0" text="Loading candidates..." />
 
 			<!-- Content Views -->
 			<div v-else>
@@ -486,7 +481,7 @@ import { FormControl, Breadcrumbs, Button } from 'frappe-ui'
 import { CandidateViewModal, CandidateEditModal } from '@/components/candidate'
 import { Avatar } from 'frappe-ui'
 import LayoutHeader from '@/components/LayoutHeader.vue'
-
+import Loading from '@/components/Loading.vue'
 
 
 import {

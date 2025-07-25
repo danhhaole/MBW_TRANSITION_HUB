@@ -12,6 +12,7 @@ import {
 	userRepository,
 	candidateDataSourceRepository,
 } from '../repositories/universalRepository'
+import { call } from 'frappe-ui'
 
 class UniversalService {
 	constructor(repository) {
@@ -165,5 +166,75 @@ export const campaignService = new UniversalService(campaignRepository)
 export const campaignStepService = new UniversalService(campaignStepRepository)
 export const userService = new UniversalService(userRepository)
 export const candidateDataSourceService = new UniversalService(candidateDataSourceRepository)
+
+export const getCampaignOptions = async () => {
+  const data = await call('frappe.client.get_list', {
+    doctype: 'Campaign',
+    fields: ['name', 'campaign_name'],
+    order_by: 'campaign_name asc',
+    limit_page_length: 1000
+  })
+  return (data || []).map(c => ({ label: c.campaign_name || c.name, value: c.name }))
+}
+
+export const getSegmentOptions = async () => {
+  const data = await call('frappe.client.get_list', {
+    doctype: 'TalentSegment',
+    fields: ['name', 'title'],
+    limit_page_length: 1000
+  })
+  return (data || []).map(s => ({ label: s.title || s.name, value: s.name }))
+}
+
+export const applicantPoolService = {
+  async getList(options = {}) {
+    const {
+      filters = {},
+      or_filters = undefined,
+      fields = [
+        'name', 'talent_id', 'campaign_id', 'segment_id', 'application_status', 'result', 'score', 'application_date', 'notes'
+      ],
+      order_by = 'modified desc',
+      page_length = 20,
+      start = 0
+    } = options
+    const data = await call('frappe.client.get_list', {
+      doctype: 'ApplicantPool',
+      filters,
+      or_filters,
+      fields,
+      order_by,
+      start,
+      page_length
+    })
+    const total = await call('frappe.client.get_count', {
+      doctype: 'ApplicantPool',
+      filters
+    })
+    return {
+      data: data || [],
+      total: total || 0
+    }
+  },
+  async getFormData(name) {
+    return await call('frappe.client.get', {
+      doctype: 'ApplicantPool',
+      name
+    })
+  },
+  async update(name, data) {
+    return await call('frappe.client.set_value', {
+      doctype: 'ApplicantPool',
+      name,
+      fieldname: data
+    })
+  },
+  async delete(name) {
+    return await call('frappe.client.delete', {
+      doctype: 'ApplicantPool',
+      name
+    })
+  },
+}
 
 export default UniversalService

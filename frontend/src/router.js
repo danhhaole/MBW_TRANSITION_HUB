@@ -38,6 +38,8 @@ import PublicTalentProfile from './pages/PublicTalentProfile.vue'
 // Email Editor
 import EmailEditor from './pages/EmailEditor.vue'
 
+import ApplicantPoolManagement from './pages/ApplicantPoolManagement.vue'
+
 const routes = [
 	{ path: '/', name: 'Dashboard', component: () => import('@/pages/Dashboard.vue') },
 	{ alias: '/talentsegment', path: '/talentsegment', name: 'TalentSegment', component: () => import('@/pages/TalentSegment.vue') },
@@ -80,6 +82,8 @@ const routes = [
 
 	// Email Editor
 	{ path: '/email-editor', name: 'EmailEditor', component: EmailEditor },
+
+	{ path: '/applicant-pool', name: 'ApplicantPoolManagement', component: ApplicantPoolManagement },
 
 ]
 
