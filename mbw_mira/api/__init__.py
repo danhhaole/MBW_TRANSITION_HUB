@@ -242,7 +242,7 @@ def get_campaign_qrcode():
     base_url = f"{protocol}://{host}"
     if origin:
         base_url = origin
-    register_url = f"{base_url}/register?campaign={campaign.name}"
+    register_url = f"{base_url}/mbw_mira/register?campaign={campaign.name}"
 
     # Tạo QR code
     qr = qrcode.QRCode(
