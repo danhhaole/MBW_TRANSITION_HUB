@@ -1,4 +1,5 @@
 import frappe
+from frappe import _
 import json
 from bs4 import BeautifulSoup
 from frappe.core.api.file import get_max_file_size
@@ -6,6 +7,14 @@ from frappe.translate import get_all_translations
 from frappe.utils import cstr, split_emails, validate_email_address
 # from frappe.utils.modules import get_modules_from_all_apps_for_user
 from frappe.utils.telemetry import POSTHOG_HOST_FIELD, POSTHOG_PROJECT_FIELD
+import qrcode
+from qrcode.constants import ERROR_CORRECT_H
+from PIL import Image
+import base64
+import io
+import os
+from datetime import datetime
+from frappe.utils import now_datetime
 
 @frappe.whitelist()
 def create_candidate_segment():
@@ -211,3 +220,279 @@ def get_file_uploader_defaults(doctype: str):
 		"make_attachments_public": bool(make_attachments_public),
 	}
 
+@frappe.whitelist()
+def get_campaign_qrcode():
+    data = frappe.local.form_dict or frappe.request.json
+    campaign_id = data.get("campaign_id")
+
+    if not campaign_id:
+        frappe.throw("Missing campaign_id")
+
+    # Lấy campaign
+    campaign = frappe.db.get_value("Campaign", campaign_id,["*"],as_dict=1)
+
+    if not campaign.is_active or campaign.status != "ACTIVE":
+        frappe.throw("Campaign is not active")
+
+    # URL form đăng ký
+    base_url = frappe.utils.get_url()
+    register_url = f"{base_url}/register?campaign={campaign.name}"
+
+    # Tạo QR code
+    qr = qrcode.QRCode(
+        version=2,
+        error_correction=ERROR_CORRECT_H,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(register_url)
+    qr.make(fit=True)
+
+    qr_img = qr.make_image(fill_color="black", back_color="white").convert("RGB")
+
+    # Encode base64
+    buffer = io.BytesIO()
+    qr_img.save(buffer, format="PNG")
+    img_base64 = base64.b64encode(buffer.getvalue()).decode()
+
+    return {
+        "url": register_url,
+        "image": f"data:image/png;base64,{img_base64}"
+    }
+
+@frappe.whitelist(allow_guest=True)
+def submit_talent_profile():
+
+    # Lấy dữ liệu từ JSON body
+    data = frappe.local.form_dict or frappe.request.json
+    if not data:
+        frappe.throw(_("No data submitted"))
+
+    # Các trường bắt buộc
+    required_fields = ["campaign", "full_name", "email"]
+    for field in required_fields:
+        if not data.get(field):
+            frappe.throw(_(f"Missing required field: {field}"))
+
+    campaign_id = data["campaign"]
+
+    # Tránh permission error, dùng get_value thay vì get_doc
+    campaign = frappe.db.get_value("Campaign", campaign_id, ["name", "is_active"], as_dict=True)
+    if not campaign or not campaign.is_active:
+        frappe.throw(_("This campaign is not active"))
+
+    # 1. Check trùng email trong cùng campaign
+    existing = frappe.db.exists(
+        "TalentProfiles",
+        {"email": data["email"], "source": f"campaign:{campaign_id}"}
+    )
+    if existing:
+        return {
+            "success": False,
+            "message": "You have already submitted your profile for this campaign."
+        }
+
+    # 2. Chống spam gửi liên tục trong vòng 60s
+    recent = frappe.db.sql("""
+        SELECT name FROM `tabTalentProfiles`
+        WHERE email = %s
+        AND creation > NOW() - INTERVAL 60 SECOND
+        LIMIT 1
+    """, (data["email"],))
+    if recent:
+        return {
+            "success": False,
+            "message": "You have recently submitted. Please wait a moment before submitting again."
+        }
+
+    # 3. Xây dữ liệu hồ sơ
+    profile_fields = {
+        "doctype": "TalentProfiles",
+        "full_name": data["full_name"],
+        "email": data["email"],
+        "source": f"campaign:{campaign_id}",
+        "status": "NEW",
+        "last_interaction": datetime.now(),
+    }
+
+    optional_fields = [
+        "phone", "dob", "avatar", "headline", "skills",
+        "cv_original_url", "ai_summary", "email_opt_out"
+    ]
+    for field in optional_fields:
+        if field in data and data[field] not in [None, ""]:
+            profile_fields[field] = data[field]
+
+    # Trường JSON
+    if "profile_data" in data:
+        try:
+            profile_fields["profile_data"] = (
+                json.loads(data["profile_data"])
+                if isinstance(data["profile_data"], str)
+                else data["profile_data"]
+            )
+        except Exception:
+            profile_fields["profile_data"] = {}
+
+    # 4. Tạo và lưu hồ sơ (public)
+    profile = frappe.get_doc(profile_fields)
+    profile.insert(ignore_permissions=True)
+    frappe.db.commit()
+
+    return {
+        "success": True,
+        "message": "Submitted successfully",
+        "talent_profile_id": profile.name
+    }
+
+def try_parse_json(value):
+    try:
+        return json.loads(value) if isinstance(value, str) else value
+    except Exception:
+        return None
+
+@frappe.whitelist(allow_guest=True)
+def submit_application():
+    data = frappe.local.form_dict or frappe.request.json
+    if not data:
+        frappe.throw(_("No data submitted"))
+
+    # Lấy các trường chính
+    email = data.get("email")
+    full_name = data.get("full_name")
+    campaign_id = data.get("campaign_id")
+    position = data.get("position")
+    resume = data.get("resume")  # file URL hoặc file token
+    segment_id = data.get("segment_id")
+
+    if not email or not campaign_id:
+        frappe.throw(_("Email and campaign_id are required."))
+
+    # 1. Kiểm tra campaign hợp lệ
+    campaign = frappe.db.get_value("Campaign", campaign_id, ["name", "is_active"], as_dict=True)
+    if not campaign or not campaign.is_active:
+        frappe.throw(_("This campaign is not active"))
+
+    # 2. Tìm hoặc tạo TalentProfiles
+    profile_name = frappe.db.get_value("TalentProfiles", {"email": email})
+    now = now_datetime()
+
+    if not profile_name:
+        profile = frappe.get_doc({
+            "doctype": "TalentProfiles",
+            "email": email,
+            "full_name": full_name,
+            "source": f"campaign:{campaign_id}",
+            "status": "APPLIED",
+            "last_interaction": now,
+        })
+        profile.insert(ignore_permissions=True)
+        frappe.db.commit()
+    else:
+        profile = frappe.get_doc("TalentProfiles", profile_name)
+        profile.status = "APPLIED"
+        profile.last_interaction = now
+        profile.save(ignore_permissions=True)
+        frappe.db.commit()
+    # 3. Check duplicate ApplicantPool
+    existing_app = frappe.db.exists(
+        "ApplicantPool",
+        {
+            "talent_id": profile.name,
+            "campaign_id": campaign_id,
+            "position": position or ""
+        }
+    )
+    if existing_app:
+        return {
+            "success": False,
+            "message": "You have already applied for this campaign and position."
+        }
+
+    # 4. Tạo ApplicantPool record
+    applicant = frappe.get_doc({
+        "doctype": "ApplicantPool",
+        "talent_id": profile.name,
+        "campaign_id": campaign_id,
+        "segment_id": segment_id,
+        "application_date": now,
+        "position": position,
+        "resume": resume,
+        "application_status": "New"
+    })
+    applicant.insert(ignore_permissions=True)
+    frappe.db.commit()
+
+    # 5. Ghi nhận tương tác - tránh spam (nếu đã có gần đây thì bỏ qua)
+    recent = frappe.db.exists("Interaction", {
+        "talent_id": profile.name,
+        "interaction_type": "APPLICATION_SUBMITTED",
+        "reference_doctype": "ApplicantPool",
+        "reference_name": applicant.name
+    })
+
+    if not recent:
+        interaction = frappe.get_doc({
+            "doctype": "Interaction",
+            "talent_id": profile.name,
+            "interaction_type": "APPLICATION_SUBMITTED",
+            "description": f"{profile.full_name} applied to campaign {campaign_id} for position {position}",
+            "reference_doctype": "ApplicantPool",
+            "reference_name": applicant.name
+        })
+        interaction.insert(ignore_permissions=True)
+        frappe.db.commit()
+    return {
+        "success": True,
+        "message": "Application submitted successfully"
+    }
+
+
+@frappe.whitelist(allow_guest=True)
+def get_campaign_details_for_submit():
+    data = frappe.local.form_dict or frappe.request.json
+    campaign_id = data.get("campaign_id")
+
+    if not campaign_id:
+        frappe.throw(_("Missing campaign_id"))
+
+    # Lấy thông tin campaign (tránh quyền)
+    campaign = frappe.db.get_value(
+        "Campaign",
+        campaign_id,
+        ["name", "campaign_name", "start_date", "end_date", "status", "source", "target_segment","criteria"],
+        as_dict=True
+    )
+
+    if not campaign:
+        frappe.throw(_("Campaign not found"))
+
+    # Parse target_segment nếu là MultiSelect field (dạng comma-separated string)
+    segment_names = []
+    if campaign.target_segment:
+        if isinstance(campaign.target_segment, str):
+            segment_names = [s.strip() for s in campaign.target_segment.split(",") if s.strip()]
+        elif isinstance(campaign.target_segment, list):
+            segment_names = campaign.target_segment
+
+    # Lấy danh sách TalentSegment (tránh quyền)
+    segments = []
+    if segment_names:
+        segments = frappe.db.get_all(
+            "TalentSegment",
+            filters={"name": ["in", segment_names]},
+            fields=["name", "title", "description", "criteria", "type"]
+        )
+
+        # Nếu cần parse criteria từ JSON string
+        for seg in segments:
+            if seg.get("criteria"):
+                try:
+                    seg["criteria"] = json.loads(seg["criteria"])
+                except Exception:
+                    seg["criteria"] = {}
+
+    return {
+        "campaign": campaign,
+        "segments": segments
+    }
