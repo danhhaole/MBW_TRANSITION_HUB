@@ -86,8 +86,7 @@
                     <div v-if="isSidebarCollapsed && hoveredParent === link.label && link.submenu?.length"
                       :style="flyoutStyle(link.label)"
                       class="fixed z-[99999] bg-white shadow-lg rounded-lg border border-gray-200 py-2 min-w-[12rem]"
-                      @mouseenter="onEnterParent(link.label)"
-                      @mouseleave="onLeaveParent()">
+                      @mouseenter="onEnterParent(link.label)" @mouseleave="onLeaveParent()">
                       <div class="px-3 py-2 border-b text-sm font-medium text-ink-gray-8">
                         {{ __(link.label) }}
                       </div>
@@ -267,11 +266,7 @@ const links = [
   //   ]
   // },
 
-  {
-    label: "Applicant Pool",
-    icon: NoteIcon,
-    to: { name: 'ApplicantPoolManagement' },
-  },
+
   {
     label: "Report",
     icon: NoteIcon,
@@ -281,6 +276,11 @@ const links = [
         label: "Talent Profiles",
         icon: ContactsIcon,
         to: { name: 'CandidateManagement' },
+      },
+      {
+        label: "Applicant Pool",
+        icon: NoteIcon,
+        to: { name: 'ApplicantPoolManagement' },
       },
       {
         label: "Interactions",

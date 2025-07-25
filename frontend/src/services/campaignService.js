@@ -111,7 +111,7 @@ export const submitNewCampaign = async (formData) => {
       status: formData.status || 'DRAFT',
       target_segment: formData.target_segment || null
     })
-    if (response && response.data) {
+    if (response) {
       return response
     } else {
       throw new Error('Không thể tạo campaign')
@@ -148,7 +148,7 @@ export const updateCampaignData = async (name, formData) => {
       target_segment: formData.target_segment || null
     }
     const response = await updateCampaign(name, updateData)
-    if (response && response.data) {
+    if (response) {
       return response
     } else {
       throw new Error('Không thể cập nhật campaign')
