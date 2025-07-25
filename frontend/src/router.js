@@ -92,8 +92,8 @@ const routes = [
 	// Public Route
 	{ path: '/ladi', name: 'LadiPage', component: LadiPage, meta: { public: true } },
 	{ path: '/register', name: 'RegisterPage', component: RegisterPage, meta: { public: true } },
-	{ path: '/unsubcribe', name: 'UnsubcribePage', component: UnsubcribePage, meta: { public: true } },
-	{ path: '/apply', name: 'ApplicationPage', component: ApplicationPage, meta: { public: true } },
+	{ path: '/unsubscribe', name: 'UnsubscribePage', component: UnsubscribePage, meta: { public: true } },
+	{ path: '/application', name: 'ApplicationPage', component: ApplicationPage, meta: { public: true } },
 ]
 
 
