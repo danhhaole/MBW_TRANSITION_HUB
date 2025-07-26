@@ -7,6 +7,7 @@
  "field_order": [
   "talent_id",
   "segment_id",
+  "match_score",
   "added_at",
   "added_by"
  ],
@@ -37,12 +38,17 @@
    "label": "Talent Profile",
    "options": "TalentProfiles",
    "reqd": 1
+  },
+  {
+   "fieldname": "match_score",
+   "fieldtype": "Float",
+   "label": "Match Score"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-19 11:04:13.686102",
+ "modified": "2025-07-26 10:14:50.737211",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "TalentProfilesSegment",

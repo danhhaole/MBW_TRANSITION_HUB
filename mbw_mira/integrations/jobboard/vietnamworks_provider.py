@@ -48,11 +48,11 @@ class VietnamWorksProvider:
             self.refresh_access_token()
         else:
             self.access_token = self.source_doc.access_token
-        self.logger.info("✅ Connected to VietnamWorks API")
+        self.logger.info("Connected to VietnamWorks API")
 
     def disconnect(self):
         self.session.close()
-        self.logger.info("🔒 Disconnected from VietnamWorks")
+        self.logger.info("Disconnected from VietnamWorks")
 
     def is_token_expired(self):
         if not self.source_doc.token_expires_at:
@@ -81,7 +81,7 @@ class VietnamWorksProvider:
         self.source_doc.token_expires_at = add_seconds(now_datetime(), int(token_data.get("expires_in", 3600)))
         self.source_doc.save()
         frappe.db.commit()
-        self.logger.info("🔄 Refreshed VietnamWorks access_token")
+        self.logger.info("Refreshed VietnamWorks access_token")
 
     def _headers(self):
         return {
@@ -90,7 +90,7 @@ class VietnamWorksProvider:
         }
 
     def get(self, path, params=None):
-        self.logger.info(f"📄 GET {path}")
+        self.logger.info(f"GET {path}")
         url = self.BASE_URL + path
         resp = self.session.get(
             url,
@@ -102,7 +102,7 @@ class VietnamWorksProvider:
         return resp.json()
 
     def post(self, path, json=None):
-        self.logger.info(f"📄 POST {path}")
+        self.logger.info(f"POST {path}")
         url = self.BASE_URL + path
         resp = self.session.post(
             url,

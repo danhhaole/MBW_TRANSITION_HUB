@@ -21,6 +21,7 @@ def process_segment(segment_id: str):
                         "doctype": "TalentProfilesSegment",
                         "segment_id": segment_id,
                         "talent_id": profile.get("name"),
+                        "match_score":profile.get("score"),
                         "added_at": now(),
                         "added_by": frappe.session.user  # hoặc seg.owner_id
                     }).insert(ignore_permissions=True)
@@ -38,3 +39,4 @@ def check_exists(segment_id,talent_id):
         return True
     else:
         return False
+

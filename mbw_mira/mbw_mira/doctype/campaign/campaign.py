@@ -3,8 +3,6 @@
 
 import frappe
 from frappe.model.document import Document
-from frappe.utils import now, now_datetime, add_days
-from mbw_mira.utils import find_candidates_fuzzy
 
 class Campaign(Document):
     pass

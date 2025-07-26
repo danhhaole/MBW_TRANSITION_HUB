@@ -67,7 +67,7 @@ class TopCVProvider:
 
     def disconnect(self):
         self.session.close()
-        self.logger.info("🔒 Disconnected HTTP session from TopCV")
+        self.logger.info("Disconnected HTTP session from TopCV")
 
     def _headers(self):
         return {
@@ -80,7 +80,7 @@ class TopCVProvider:
         """
         Wrapper GET request
         """
-        self.logger.info(f"📄 GET {path}")
+        self.logger.info(f"GET {path}")
         url = f"{self.BASE_URL}/{path.lstrip('/')}"
         resp = self.session.get(
             url,
@@ -95,7 +95,7 @@ class TopCVProvider:
         """
         Wrapper POST request
         """
-        self.logger.info(f"📄 POST {path}")
+        self.logger.info(f"POST {path}")
         url = f"{self.BASE_URL}/{path.lstrip('/')}"
         resp = self.session.post(
             url,
@@ -112,14 +112,14 @@ class TopCVProvider:
         """
         Gọi /api/connect để báo bắt đầu phiên
         """
-        self.logger.info("📡 Connecting session to TopCV")
+        self.logger.info("Connecting session to TopCV")
         return self.post("api/connect")
 
     def disconnect_session(self):
         """
         Gọi /api/disconnect để báo kết thúc phiên
         """
-        self.logger.info("📡 Disconnecting session from TopCV")
+        self.logger.info("Disconnecting session from TopCV")
         return self.post("api/disconnect")
 
     def get_jobs(self):

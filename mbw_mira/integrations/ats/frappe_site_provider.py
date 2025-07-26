@@ -63,7 +63,7 @@ class FrappeSiteProvider:
             return
 
         if getattr(self.source_doc, "same_site", 0) and self.source_doc.source_type != "ATS":
-            self.logger.warning("⚠️ same_site is only valid with ATS; falling back to API")
+            self.logger.warning("same_site is only valid with ATS; falling back to API")
 
         url = self.source_doc.api_base_url
         if not url:
@@ -98,10 +98,10 @@ class FrappeSiteProvider:
 
     def disconnect(self):
         if self._same_site_active:
-            self.logger.info("🔒 Same site mode: nothing to disconnect")
+            self.logger.info("Same site mode: nothing to disconnect")
         else:
             self.session.close()
-            self.logger.info("🔒 Disconnected HTTP session")
+            self.logger.info("Disconnected HTTP session")
 
     def is_token_expired(self):
         if not self.source_doc.token_expires_at:
@@ -130,26 +130,26 @@ class FrappeSiteProvider:
         self.source_doc.token_expires_at = add_seconds(now_datetime(), int(resp.get("expires_in", 3600)))
         self.source_doc.save()
         frappe.db.commit()
-        self.logger.info("🔄 Refreshed OAuth2 access_token")
+        self.logger.info("Refreshed OAuth2 access_token")
 
     # === CRUD & Call ===
 
     def get_list(self, doctype, **kwargs):
-        self.logger.info(f"📄 get_list({doctype})")
+        self.logger.info(f"get_list({doctype})")
         if self._same_site_active:
             return frappe.get_all(doctype, **kwargs)
         else:
             return self.client.get_list(doctype, **kwargs)
 
     def get_doc(self, doctype, name):
-        self.logger.info(f"📄 get_doc({doctype}, {name})")
+        self.logger.info(f"get_doc({doctype}, {name})")
         if self._same_site_active:
             return frappe.get_doc(doctype, name).as_dict()
         else:
             return self.client.get_doc(doctype, name)
 
     def insert(self, doc):
-        self.logger.info(f"📄 insert({doc.get('doctype')})")
+        self.logger.info(f"insert({doc.get('doctype')})")
         if self.sync_direction not in ("Push", "Both"):
             raise PermissionError("Sync direction does not allow Push")
         if self._same_site_active:
@@ -161,7 +161,7 @@ class FrappeSiteProvider:
             return self.client.insert(doc)
 
     def update(self, doctype, name, doc):
-        self.logger.info(f"📄 update({doctype}, {name})")
+        self.logger.info(f"update({doctype}, {name})")
         if self.sync_direction not in ("Push", "Both"):
             raise PermissionError("Sync direction does not allow Push")
         if self._same_site_active:
@@ -174,7 +174,7 @@ class FrappeSiteProvider:
             return self.client.update(doctype, name, doc)
 
     def delete(self, doctype, name):
-        self.logger.info(f"📄 delete({doctype}, {name})")
+        self.logger.info(f"delete({doctype}, {name})")
         if self.sync_direction not in ("Push", "Both"):
             raise PermissionError("Sync direction does not allow Push")
         if self._same_site_active:
@@ -185,7 +185,7 @@ class FrappeSiteProvider:
             return self.client.delete(doctype, name)
 
     def call(self, method, params=None):
-        self.logger.info(f"📄 call({method})")
+        self.logger.info(f"call({method})")
         if self._same_site_active:
             return frappe.call(method, **(params or {}))
         else:

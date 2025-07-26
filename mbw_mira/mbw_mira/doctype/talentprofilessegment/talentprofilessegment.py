@@ -2,8 +2,9 @@
 # For license information, please see license.txt
 
 import frappe
+from frappe import _
 from frappe.model.document import Document
-
+import json
 
 class TalentProfilesSegment(Document):
     pass
@@ -12,7 +13,7 @@ class TalentProfilesSegment(Document):
         validate_unique_candidate_segment(self)
 
     def on_update(self):
-        count_candidate_segment(self.segment_id)
+        count_talentprofile_segment(self.segment_id)
         #Cập nhật phân trạng thái CATEGORIZED vào thông tin hồ sơ
         update_status_talent_profile(self.talent_id)
         
@@ -39,7 +40,7 @@ def validate_unique_candidate_segment(doc):
             title=frappe._("Duplicate TalentProfilesSegment")
         )
 
-def count_candidate_segment(segment_id):
+def count_talentprofile_segment(segment_id):
     try:
         total_candidate = frappe.db.count("TalentProfilesSegment",filters={"segment_id":segment_id})
         print("===========total_candidate==============",total_candidate)
@@ -53,3 +54,64 @@ def update_status_talent_profile(talent_id):
     #Trạng thái đã được phân loại
     frappe.db.set_value("TalentProfiles",talent_id,"status","CATEGORIZED")
     frappe.db.commit()
+
+@frappe.whitelist(allow_guest=False)
+def bulk_insert_segments():
+    """
+    Bulk insert TalentProfilesSegment records directly (no queue).
+    Accepts JSON body or form_dict['data'].
+    Returns status per record: success / duplicate / fail
+    """
+
+    try:
+        # 1. Lấy dữ liệu từ JSON body hoặc form_dict
+        if frappe.request and frappe.request.data:
+            payload = frappe.request.get_json()
+        else:
+            raw_data = frappe.form_dict.get("data")
+            payload = json.loads(raw_data) if raw_data else []
+
+        # 2. Validate
+        if not isinstance(payload, list):
+            frappe.throw(_("Input data must be a list of records"))
+
+        result = []
+        for item in payload:
+            status_entry = {
+                "data": item,
+                "status": "pending",
+                "message": ""
+            }
+
+            try:
+                filters = {
+                    "talent_id": item.get("talent_id"),
+                    "segment_id": item.get("segment_id"),
+                }
+
+                if frappe.db.exists("TalentProfilesSegment", filters):
+                    status_entry["status"] = "duplicate"
+                    status_entry["message"] = "Record already exists"
+                else:
+                    doc = frappe.new_doc("TalentProfilesSegment")
+                    doc.update(item)
+                    doc.insert(ignore_permissions=True)
+
+                    status_entry["status"] = "success"
+                    status_entry["message"] = f"Inserted: {doc.name}"
+            except Exception as e:
+                status_entry["status"] = "fail"
+                status_entry["message"] = str(e)
+                frappe.log_error(frappe.get_traceback(), "Bulk Insert Error")
+
+            result.append(status_entry)
+
+        return {
+            "status": "completed",
+            "total": len(payload),
+            "results": result
+        }
+
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "Bulk Insert API Error")
+        frappe.throw(_("Failed to process bulk insert."))
