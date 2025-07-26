@@ -72,7 +72,7 @@ export function useCandidate() {
         or_filters: filters.search ? [
           ['full_name', 'like', `%${filters.search}%`],
           ['email', 'like', `%${filters.search}%`]
-        ] : undefined,
+        ] : [],
         page_length: pagination.limit,
         start: (pagination.page - 1) * pagination.limit,
         order_by: 'modified desc'

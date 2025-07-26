@@ -257,7 +257,7 @@
 							/>
 						</svg>
 					</template>
-					{{ __('Add Candidate') }}
+					{{ __('Add Profile') }}
 				</Button>
 
 				<Button variant="solid" theme="gray" @click="showAnalytics = !showAnalytics">
@@ -411,7 +411,7 @@
 										/>
 									</svg>
 								</template>
-								{{ __('Add Candidate') }}
+								{{ __('Add Profile') }}
 							</Button>
 						</div>
 					</div>
@@ -427,7 +427,7 @@
 										scope="col"
 										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
 									>
-										{{ __('Candidate') }}
+										{{ __('Profile') }}
 									</th>
 									<th
 										scope="col"

@@ -22,8 +22,8 @@ export const getCandidates = async (options = {}) => {
     or_filters,
     fields,
     order_by,
-    start,
-    page_length
+    limit_start: start,
+    limit_page_length: page_length
   })
   const total = await call('frappe.client.get_count', {
     doctype: 'TalentProfiles',

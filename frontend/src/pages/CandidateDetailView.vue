@@ -798,10 +798,10 @@
 								</div>
 								<div>
 									<h3 class="text-lg font-medium text-gray-900">
-										Assign to Campaign
+										{{ __('Assign to Campaign') }}
 									</h3>
 									<p class="text-sm text-gray-500">
-										Add candidate to a campaign
+										{{ __('Add profile to a campaign') }}
 									</p>
 								</div>
 							</div>
@@ -829,21 +829,21 @@
 							<FormControl
 								v-model="campaignFormData.campaign_id"
 								type="select"
-								label="Select Campaign"
+								label="{{ __('Select Campaign') }}"
 								:options="availableCampaigns"
 								:required="true"
 							/>
 							<FormControl
 								v-model="campaignFormData.status"
 								type="select"
-								label="Status"
+								label="{{ __('Status') }}"
 								:options="statusOptions"
 								:required="true"
 							/>
 							<FormControl
 								v-model="campaignFormData.current_step_order"
 								type="number"
-								label="Starting Step"
+								label="{{ __('Starting Step') }}"
 								:value="1"
 								:min="1"
 							/>
@@ -858,10 +858,10 @@
 									clip-rule="evenodd"
 								/>
 							</svg>
-							Candidate will be assigned to campaign
+							{{ __('Profile will be assigned to campaign') }}
 						</div>
 						<div class="flex space-x-3">
-							<Button variant="outline" @click="closeCampaignModal">Cancel</Button>
+							<Button variant="outline" @click="closeCampaignModal">{{ __('Cancel') }}</Button>
 							<Button :loading="savingCampaign" @click="assignToCampaign">
 								<div class="flex items-center">
 									<svg
@@ -877,7 +877,7 @@
 											d="M5 13l4 4L19 7"
 										/>
 									</svg>
-									Assign
+									{{ __('Assign') }}
 								</div>
 							</Button>
 						</div>
@@ -921,10 +921,10 @@
 								</div>
 								<div>
 									<h3 class="text-lg font-medium text-gray-900">
-										Add to Segment
+										{{ __('Add to Segment') }}
 									</h3>
 									<p class="text-sm text-gray-500">
-										Add candidate to a talent segment
+										{{ __('Add profile to a talent segment') }}
 									</p>
 								</div>
 							</div>
@@ -952,7 +952,7 @@
 							<FormControl
 								v-model="segmentFormData.segment_id"
 								type="select"
-								label="Select Segment"
+								label="{{ __('Select Segment') }}"
 								:options="availableSegments"
 								:required="true"
 							/>
@@ -967,10 +967,10 @@
 									clip-rule="evenodd"
 								/>
 							</svg>
-							Candidate will be added to segment
+							{{ __('Profile will be added to segment') }}
 						</div>
 						<div class="flex space-x-3">
-							<Button variant="outline" @click="closeSegmentModal">Cancel</Button>
+							<Button variant="outline" @click="closeSegmentModal">{{ __('Cancel') }}</Button>
 							<Button :loading="savingSegment" @click="addToSegment">
 								<div class="flex items-center">
 									<svg
@@ -986,7 +986,7 @@
 											d="M12 6v6m0 0v6m0-6h6m-6 0H6"
 										/>
 									</svg>
-									Add
+									{{ __('Add') }}
 								</div>
 							</Button>
 						</div>
@@ -1030,10 +1030,10 @@
 								</div>
 								<div>
 									<h3 class="text-lg font-medium text-gray-900">
-										Add Interaction
+										{{ __('Add Interaction') }}
 									</h3>
 									<p class="text-sm text-gray-500">
-										Record a new interaction with candidate
+										{{ __('Record a new interaction with profile') }}
 									</p>
 								</div>
 							</div>
@@ -1061,20 +1061,20 @@
 							<FormControl
 								v-model="interactionFormData.interaction_type"
 								type="select"
-								label="Interaction Type"
+								label="{{ __('Interaction Type') }}"
 								:options="interactionTypeOptions"
 								:required="true"
 							/>
 							<FormControl
 								v-model="interactionFormData.description"
 								type="textarea"
-								label="Description"
+								label="{{ __('Description') }}"
 								:required="true"
 							/>
 							<FormControl
 								v-model="interactionFormData.url"
 								type="text"
-								label="URL (optional)"
+								label="{{ __('URL (optional)') }}"
 							/>
 						</div>
 					</div>
@@ -1087,11 +1087,11 @@
 									clip-rule="evenodd"
 								/>
 							</svg>
-							Interaction will be recorded
+							{{ __('Interaction will be recorded') }}
 						</div>
 						<div class="flex space-x-3">
 							<Button variant="outline" @click="closeInteractionModal"
-								>Cancel</Button
+								>{{ __('Cancel') }}</Button
 							>
 							<Button :loading="savingInteraction" @click="saveInteraction">
 								<div class="flex items-center">
@@ -1108,7 +1108,7 @@
 											d="M5 13l4 4L19 7"
 										/>
 									</svg>
-									Save
+									{{ __('Save') }}
 								</div>
 							</Button>
 						</div>
@@ -1152,10 +1152,10 @@
 								</div>
 								<div>
 									<h3 class="text-lg font-medium text-gray-900">
-										Upload Document
+										{{ __('Upload Document') }}
 									</h3>
 									<p class="text-sm text-gray-500">
-										Upload a document for this candidate
+										{{ __('Upload a document for this profile') }}
 									</p>
 								</div>
 							</div>
@@ -1182,7 +1182,7 @@
 						<div class="space-y-4">
 							<div>
 								<label class="block text-sm font-medium text-gray-700 mb-2"
-									>Select File</label
+									>{{ __('Select File') }}</label
 								>
 								<input
 									ref="fileInput"
@@ -1194,7 +1194,7 @@
 							<FormControl
 								v-model="documentFormData.description"
 								type="textarea"
-								label="Description (optional)"
+								label="{{ __('Description (optional)') }}"
 							/>
 						</div>
 					</div>
@@ -1207,10 +1207,10 @@
 									clip-rule="evenodd"
 								/>
 							</svg>
-							Document will be uploaded immediately
+							{{ __('Document will be uploaded immediately') }}
 						</div>
 						<div class="flex space-x-3">
-							<Button variant="outline" @click="closeDocumentModal">Cancel</Button>
+							<Button variant="outline" @click="closeDocumentModal">{{ __('Cancel') }}</Button>
 							<Button
 								:loading="uploadingDocument"
 								@click="saveDocument"
@@ -1230,7 +1230,7 @@
 											d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
 										/>
 									</svg>
-									Upload
+									{{ __('Upload') }}
 								</div>
 							</Button>
 						</div>
@@ -1274,10 +1274,10 @@
 								</div>
 								<div>
 									<h3 class="text-lg font-medium text-gray-900">
-										Compose Email
+										{{ __('Compose Email') }}
 									</h3>
 									<p class="text-sm text-gray-500">
-										Send an email to the candidate
+										{{ __('Send an email to the profile') }}
 									</p>
 								</div>
 							</div>
@@ -1305,19 +1305,19 @@
 							<FormControl
 								v-model="emailFormData.to"
 								type="text"
-								label="To"
+								label="{{ __('To') }}"
 								:required="true"
 							/>
 							<FormControl
 								v-model="emailFormData.subject"
 								type="text"
-								label="Subject"
+								label="{{ __('Subject') }}"
 								:required="true"
 							/>
 							<FormControl
 								v-model="emailFormData.content"
 								type="textarea"
-								label="Message"
+								label="{{ __('Message') }}"
 								:required="true"
 								:rows="8"
 							/>
@@ -1332,10 +1332,10 @@
 									clip-rule="evenodd"
 								/>
 							</svg>
-							Email will be sent immediately
+							{{ __('Email will be sent immediately') }}
 						</div>
 						<div class="flex space-x-3">
-							<Button variant="outline" @click="closeEmailModal">Cancel</Button>
+							<Button variant="outline" @click="closeEmailModal">{{ __('Cancel') }}</Button>
 							<Button :loading="sendingEmail" @click="sendEmail">
 								<div class="flex items-center">
 									<svg
@@ -1351,7 +1351,7 @@
 											d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
 										/>
 									</svg>
-									Send Email
+									{{ __('Send Email') }}
 								</div>
 							</Button>
 						</div>

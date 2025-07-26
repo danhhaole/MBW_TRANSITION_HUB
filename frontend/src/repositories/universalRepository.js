@@ -34,8 +34,8 @@ class UniversalRepository {
         fields,
         order_by,
         group_by,
-        start,
-        page_length
+        limit_start: start,
+        limit_page_length: page_length
       })
       // Lấy tổng số bản ghi cho phân trang
       const total = await call('frappe.client.get_count', {

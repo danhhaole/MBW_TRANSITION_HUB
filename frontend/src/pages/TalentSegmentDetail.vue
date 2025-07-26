@@ -20,7 +20,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
           </template>
-          Back to Talent Pools
+          {{ __('Back to Talent Pools') }}
         </Button>
       </div>
 
@@ -51,11 +51,11 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </template>
-            Export
+            {{ __('Export') }}
           </Button>
           <Dropdown :options="getMoreMenuOptions()" placement="bottom-end">
             <Button variant="outline" theme="gray">
-              More
+              {{ __('More') }}
               <template #suffix>
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -69,46 +69,46 @@
       <!-- Stats Cards -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-white">
-          <div class="text-sm opacity-90 mb-1">Total Candidates</div>
+          <div class="text-sm opacity-90 mb-1">{{ __('Total Profiles') }}</div>
           <div class="text-3xl font-bold mb-2">{{ candidateCount }}</div>
           <div class="text-sm flex items-center">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
             </svg>
-            +{{ newCandidatesThisMonth }} this month
+            +{{ newCandidatesThisMonth }} {{ __('this month') }}
           </div>
         </div>
         
         <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-6 text-white">
-          <div class="text-sm opacity-90 mb-1">Engagement Rate</div>
+          <div class="text-sm opacity-90 mb-1">{{ __('Engagement Rate') }}</div>
           <div class="text-3xl font-bold mb-2">{{ engagementRate }}%</div>
           <div class="text-sm flex items-center">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
             </svg>
-            +{{ engagementChange }}% from last month
+            +{{ engagementChange }}% {{ __('from last month') }}
           </div>
         </div>
         
         <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-6 text-white">
-          <div class="text-sm opacity-90 mb-1">Active Campaigns</div>
+          <div class="text-sm opacity-90 mb-1">{{ __('Active Campaigns') }}</div>
           <div class="text-3xl font-bold mb-2">{{ activeCampaigns }}</div>
           <div class="text-sm flex items-center">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            {{ pendingApprovals }} pending approval
+            {{ pendingApprovals }} {{ __('pending approval') }}
           </div>
         </div>
         
         <div class="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg p-6 text-white">
-          <div class="text-sm opacity-90 mb-1">Avg. Response Time</div>
+          <div class="text-sm opacity-90 mb-1">{{ __('Avg. Response Time') }}</div>
           <div class="text-3xl font-bold mb-2">{{ avgResponseTime }} days</div>
           <div class="text-sm flex items-center">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
             </svg>
-            {{ responseTimeChange }} days from last month
+            {{ responseTimeChange }} {{ __('days from last month') }}
           </div>
         </div>
       </div>
@@ -125,7 +125,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
           </template>
-          Create Campaign
+          {{ __('Create Campaign') }}
         </Button>
         
         <Button
@@ -138,7 +138,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
             </svg>
           </template>
-          Add Candidates
+          {{ __('Add Profiles') }}
         </Button>
         
         <Button
@@ -151,7 +151,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           </template>
-          Schedule Nurturing
+          {{ __('Schedule Nurturing') }}
         </Button>
         
         <Button
@@ -164,20 +164,20 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
           </template>
-          Analytics
+          {{ __('Analytics') }}
         </Button>
       </div>
 
       <!-- Candidates Table -->
       <div class="bg-white rounded-lg shadow-sm border border-gray-200">
         <div class="flex justify-between items-center p-6 border-b border-gray-200">
-          <h2 class="text-lg font-semibold text-gray-900">Candidates in this Pool</h2>
+          <h2 class="text-lg font-semibold text-gray-900">{{ __('Profiles in this Pool') }}</h2>
           <div class="flex items-center space-x-3">
             <div class="relative">
               <input
                 v-model="candidateSearch"
                 type="text"
-                placeholder="Search candidates..."
+                placeholder="{{ __('Search profiles...') }}"
                 class="block w-80 pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               />
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -196,7 +196,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                 </svg>
               </template>
-              Filter
+              {{ __('Filter') }} 
             </Button>
           </div>
         </div>
@@ -205,7 +205,7 @@
         <div v-show="showFilters" class="p-6 border-b border-gray-200 bg-gray-50">
           <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Status') }}</label>
               <select
                 v-model="statusFilter"
                 class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -216,7 +216,7 @@
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Skills</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Skills') }}</label>
               <select
                 v-model="skillFilter"
                 class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -227,7 +227,7 @@
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Engagement</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Engagement') }}</label>
               <select
                 v-model="engagementFilter"
                 class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -244,7 +244,7 @@
                 @click="clearFilters"
                 class="w-full"
               >
-                Clear Filters
+                {{ __('Clear Filters') }}
               </Button>
             </div>
           </div>
@@ -256,22 +256,22 @@
             <thead class="bg-gray-50">
               <tr>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Candidate
+                  {{ __('Candidate') }}
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Skills
+                  {{ __('Skills') }}
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Last Contact
+                  {{ __('Last Contact') }}
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Engagement
+                  {{ __('Engagement') }}
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
+                  {{ __('Status') }}
                 </th>
                 <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
+                  {{ __('Actions') }}
                 </th>
               </tr>
             </thead>
@@ -283,13 +283,13 @@
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <span class="ml-2">Loading candidates...</span>
+                    <span class="ml-2">{{ __('Loading profiles...') }}</span>
                   </div>
                 </td>
               </tr>
               <tr v-else-if="paginatedCandidates.length === 0">
                 <td colspan="6" class="px-6 py-4 text-center text-gray-500">
-                  No candidates found
+                  {{ __('No profiles found') }}
                 </td>
               </tr>
               <tr v-else v-for="candidate in paginatedCandidates" :key="candidate.id" class="hover:bg-gray-50">
@@ -360,7 +360,7 @@
                       size="sm"
                       @click="viewCandidate(candidate)"
                     >
-                      View
+                      {{ __('View') }} 
                     </Button>
                     <Dropdown :options="getCandidateMenuOptions(candidate)" placement="bottom-end">
                       <Button variant="ghost" theme="gray" size="sm">
@@ -379,7 +379,7 @@
         <!-- Pagination -->
         <div v-if="totalPages > 1" class="flex justify-between items-center px-6 py-4 border-t border-gray-200">
           <div class="text-sm text-gray-500">
-            Showing {{ paginationStart }} to {{ paginationEnd }} of {{ filteredCandidates.length }} candidates
+            {{ __('Showing') }} {{ paginationStart }} {{ __('to') }} {{ paginationEnd }} {{ __('of') }} {{ filteredCandidates.length }} {{ __('candidates') }}
           </div>
           <div class="flex items-center space-x-2">
             <Button
@@ -389,7 +389,7 @@
               @click="previousPage"
               :disabled="currentPage <= 1"
             >
-              Previous
+              {{ __('Previous') }}
             </Button>
             <div class="flex space-x-1">
               <button
@@ -413,7 +413,7 @@
               @click="nextPage"
               :disabled="currentPage >= totalPages"
             >
-              Next
+              {{ __('Next') }}
             </Button>
           </div>
         </div>
