@@ -193,9 +193,10 @@ scheduler_events = {
 # Overriding Methods
 # ------------------------------
 #
-# override_whitelisted_methods = {
-# 	"frappe.desk.doctype.event.event.get_events": "mbw_mira.event.get_events"
-# }
+override_whitelisted_methods = {
+	#"frappe.desk.doctype.event.event.get_events": "mbw_mira.event.get_events"
+    "frappe.client.get_list": "mbw_mira.api.override.get_list_with_links"
+}
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,
