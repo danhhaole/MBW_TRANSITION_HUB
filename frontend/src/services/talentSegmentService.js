@@ -34,11 +34,11 @@ export const getFilteredTalentSegments = async (filterOptions = {}) => {
     if (response && Array.isArray(response.data)) {
       return response
     } else {
-      throw new Error('Không thể tải danh sách phân khúc')
+      throw new Error('Failed to get talent segments')
     }
   } catch (error) {
     console.error('Failed to get talent segments:', error)
-    throw new Error('Không thể tải danh sách phân khúc')
+    throw new Error('Failed to get talent segments')
   }
 }
 
@@ -49,11 +49,11 @@ export const getTalentSegmentDetails = async (name) => {
     if (response && response.data) {
       return response.data
     } else {
-      throw new Error('Không thể tải thông tin phân khúc')
+      throw new Error('Failed to get talent segment details')
     }
   } catch (error) {
     console.error('Failed to get talent segment details:', error)
-    throw new Error('Không thể tải thông tin phân khúc')
+    throw new Error('Failed to get talent segment details')
   }
 }
 
@@ -64,11 +64,11 @@ export const createNewTalentSegment = async (segmentData) => {
     if (response && response.data) {
       return response.data
     } else {
-      throw new Error('Không thể tạo phân khúc')
+      throw new Error('Failed to create talent segment')
     }
   } catch (error) {
     console.error('Failed to create talent segment:', error)
-    throw new Error('Không thể tạo phân khúc')
+    throw new Error('Failed to create talent segment')
   }
 }
 
@@ -79,11 +79,11 @@ export const updateTalentSegmentDetails = async (name, updateData) => {
     if (response && response.data) {
       return response.data
     } else {
-      throw new Error('Không thể cập nhật phân khúc')
+      throw new Error('Failed to update talent segment')
     }
   } catch (error) {
     console.error('Failed to update talent segment:', error)
-    throw new Error('Không thể cập nhật phân khúc')
+    throw new Error('Failed to update talent segment')
   }
 }
 
@@ -94,11 +94,11 @@ export const deleteTalentSegmentById = async (name) => {
     if (response) {
       return true
     } else {
-      throw new Error('Không thể xóa phân khúc')
+      throw new Error('Failed to delete talent segment')
     }
   } catch (error) {
     console.error('Failed to delete talent segment:', error)
-    throw new Error('Không thể xóa phân khúc')
+    throw new Error('Failed to delete talent segment')
   }
 }
 
@@ -109,11 +109,11 @@ export const getSegmentCandidates = async (segmentId, filterOptions = {}) => {
     if (response && response.data) {
       return response.data
     } else {
-      throw new Error('Không thể tải danh sách ứng viên')
+        throw new Error('Failed to get segment candidates')
     }
   } catch (error) {
     console.error('Failed to get segment candidates:', error)
-    throw new Error('Không thể tải danh sách ứng viên')
+    throw new Error('Failed to get segment candidates')
   }
 }
 
@@ -124,11 +124,11 @@ export const addCandidateToTalentSegment = async (segmentId, candidateId) => {
     if (response && response.data) {
       return response.data
     } else {
-      throw new Error('Không thể thêm ứng viên')
+      throw new Error('Failed to add candidate to segment')
     }
   } catch (error) {
     console.error('Failed to add candidate to segment:', error)
-    throw new Error('Không thể thêm ứng viên')
+    throw new Error('Failed to add candidate to segment')
   }
 }
 
@@ -139,11 +139,11 @@ export const removeCandidateFromTalentSegment = async (segmentId, candidateId) =
     if (response && response.success) {
       return true
     } else {
-      throw new Error('Không thể xóa ứng viên')
+      throw new Error('Failed to remove candidate from segment')
     }
   } catch (error) {
     console.error('Failed to remove candidate from segment:', error)
-    throw new Error('Không thể xóa ứng viên')
+      throw new Error('Failed to remove candidate from segment')
   }
 }
 
@@ -181,13 +181,13 @@ export const formatDate = (dateString) => {
   const diffInDays = diffInHours / 24
   
   if (diffInHours < 1) {
-    return 'Vừa xong'
+    return 'Just now'
   } else if (diffInHours < 24) {
-    return `${Math.floor(diffInHours)} giờ trước`
+    return `${Math.floor(diffInHours)} hours ago`
   } else if (diffInDays < 7) {
-    return `${Math.floor(diffInDays)} ngày trước`
+    return `${Math.floor(diffInDays)} days ago`
   } else {
-    return date.toLocaleDateString('vi-VN')
+    return date.toLocaleDateString('en-US')
   }
 }
 
@@ -216,19 +216,19 @@ export const validateTalentSegmentForm = (formData) => {
   const errors = {}
   
   if (!formData.title || !formData.title.trim()) {
-    errors.title = 'Tên phân khúc là bắt buộc'
+    errors.title = 'Talent segment name is required'
   } else if (formData.title.length < 3) {
-    errors.title = 'Tên phân khúc phải có ít nhất 3 ký tự'
+    errors.title = 'Talent segment name must be at least 3 characters'
   } else if (formData.title.length > 200) {
-    errors.title = 'Tên phân khúc không được quá 200 ký tự'
+    errors.title = 'Talent segment name must be less than 200 characters'
   }
 
   if (formData.description && formData.description.length > 1000) {
-    errors.description = 'Mô tả không được quá 1000 ký tự'
+    errors.description = 'Description must be less than 1000 characters'
   }
 
   if (!formData.type) {
-    errors.type = 'Loại phân khúc là bắt buộc'
+    errors.type = 'Talent segment type is required'
   }
 
   // Validate criteria nếu là JSON
@@ -238,7 +238,7 @@ export const validateTalentSegmentForm = (formData) => {
         JSON.parse(formData.criteria)
       }
     } catch (e) {
-      errors.criteria = 'Tiêu chí phải là JSON hợp lệ'
+      errors.criteria = 'Criteria must be a valid JSON'
     }
   }
 

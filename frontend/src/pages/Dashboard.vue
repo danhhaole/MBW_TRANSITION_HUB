@@ -16,7 +16,7 @@
 					{{ __('Welcome back! Here is the status of your activities today.') }}
 				</p>
 				<div class="mt-4">
-					<Button variant="outline" :loading="loading" @click="refreshData">
+					<Button variant="outline" :loading="refreshLoading" @click="refreshData">
 						<template #prefix>
 							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path
@@ -39,11 +39,10 @@
 						<!-- My Tasks Section -->
 						<section class="fade-in" style="animation-delay: 100ms">
 							<h2 class="text-xl font-bold text-slate-800 mb-4">
-								{{ __('My Tasks') }} (<span>{{ tasks.length }}</span
-								>)
+								{{ __('My Tasks') }} (<span>{{ tasks.length }}</span>)
 							</h2>
 
-							<template v-if="loading">
+							<template v-if="tasksLoading">
 								<Loading text="Loading data..." />
 							</template>
 
@@ -138,7 +137,7 @@
 												:variant="'outline'"
 												:ref_for="true"
 												theme="gray"
-												:disabled="loading"
+												:disabled="taskUpdating"
 												class="mt-2 px-3 py-1.5 bg-indigo-600 text-black text-xs font-semibold rounded-lg hover:bg-indigo-700 disabled:opacity-50"
 											>
 												{{ __('Update') }}
@@ -154,7 +153,7 @@
 						<section class="fade-in" style="animation-delay: 300ms">
 							<h2 class="text-xl font-bold text-slate-800 mb-4">{{ __('Recently Completed') }}</h2>
 
-							<template v-if="loading">
+							<template v-if="completedLoading">
 								<Loading text="Loading..." />
 							</template>
 
@@ -229,7 +228,7 @@
 						{{ __('Active Campaigns') }}
 					</h2>
 
-					<template v-if="loading">
+					<template v-if="campaignsLoading">
 						<Loading text="Loading campaigns..." />
 					</template>
 
@@ -425,7 +424,13 @@ const activeCampaigns = ref([])
 const completedCampaigns = ref([])
 const taskModal = ref(false)
 const selectedTask = ref(null)
-const loading = ref(false)
+
+// Separate loading states for each section
+const tasksLoading = ref(false)
+const campaignsLoading = ref(false) 
+const completedLoading = ref(false)
+const taskUpdating = ref(false)
+const refreshLoading = ref(false)
 
 // Toast state
 const toastMessage = ref('')
@@ -449,6 +454,7 @@ const breadcrumbs = [
 // Load Tasks from Action doctype
 const loadTasks = async () => {
 	try {
+		tasksLoading.value = true
 		const result = await actionService.getList({
 			filters: {
 				status: ['in', ['PENDING_MANUAL']],
@@ -511,12 +517,15 @@ const loadTasks = async () => {
 	} catch (error) {
 		console.error('Error loading tasks:', error)
 		tasks.value = []
+	} finally {
+		tasksLoading.value = false
 	}
 }
 
 // Load Active Campaigns
 const loadActiveCampaigns = async () => {
 	try {
+		campaignsLoading.value = true
 		const result = await campaignService.getList({
 			filters: { status: 'ACTIVE' },
 			fields: ['name', 'campaign_name', 'description', 'status', 'creation'],
@@ -571,12 +580,15 @@ const loadActiveCampaigns = async () => {
 	} catch (error) {
 		console.error('Error loading active campaigns:', error)
 		activeCampaigns.value = []
+	} finally {
+		campaignsLoading.value = false
 	}
 }
 
 // Load Completed Campaigns (recently completed)
 const loadCompletedCampaigns = async () => {
 	try {
+		completedLoading.value = true
 		// Get recently executed actions to show completed campaigns
 		const actionsResult = await actionService.getList({
 			filters: { status: 'EXECUTED' },
@@ -630,6 +642,8 @@ const loadCompletedCampaigns = async () => {
 	} catch (error) {
 		console.error('Error loading completed campaigns:', error)
 		completedCampaigns.value = []
+	} finally {
+		completedLoading.value = false
 	}
 }
 
@@ -757,7 +771,7 @@ const openTaskModal = (task) => {
 
 const handleTaskCompleted = async (taskData) => {
 	try {
-		loading.value = true
+		taskUpdating.value = true
 
 		// Update action status based on the selected action
 		await updateTaskResource.submit({
@@ -852,25 +866,30 @@ const handleTaskCompleted = async (taskData) => {
 
 		showToastMessage(actionMessages[taskData.action] || 'Task updated', 'success')
 
-		// Refresh data
-		await refreshData()
+		// Only reload tasks section since only tasks were updated
+		await loadTasks()
+		
+		// Also reload completed campaigns if task was executed (completed)
+		if (taskData.action === 'EXECUTED') {
+			await loadCompletedCampaigns()
+		}
 	} catch (error) {
 		console.error('Error updating task:', error)
 		showToastMessage('Could not update task. Please try again.', 'error')
 	} finally {
-		loading.value = false
+		taskUpdating.value = false
 	}
 }
 
 const refreshData = async () => {
-	loading.value = true
+	refreshLoading.value = true
 	try {
 		await Promise.all([loadTasks(), loadActiveCampaigns(), loadCompletedCampaigns()])
 	} catch (error) {
 		console.error('Error refreshing data:', error)
 		showToastMessage('Could not load data. Please try again.', 'error')
 	} finally {
-		loading.value = false
+		refreshLoading.value = false
 	}
 }
 
