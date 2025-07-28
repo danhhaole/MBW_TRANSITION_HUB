@@ -35,7 +35,7 @@ import CandidatePoolManagement from './pages/CandidatePoolManagement.vue'
 
 // Email Editor
 import EmailEditor from './pages/EmailEditor.vue'
-
+import LadiPageEditor from './pages/LadiPageEditor.vue'
 import ApplicantPoolManagement from './pages/ApplicantPoolManagement.vue'
 
 
@@ -86,11 +86,11 @@ const routes = [
 
 	// Email Editor
 	{ path: '/email-editor', name: 'EmailEditor', component: EmailEditor },
-
+	{ path: '/ladi-editor', name: 'LadiPageEditor', component: LadiPageEditor },
 	{ path: '/applicant-pool', name: 'ApplicantPoolManagement', component: ApplicantPoolManagement },
 
 	// Public Route
-	{ path: '/ladi', name: 'LadiPage', component: LadiPage, meta: { public: true } },
+	{ path: '/ladi/:slug', name: 'LadiPage', component: LadiPage, meta: { public: true } },
 	{ path: '/register', name: 'RegisterPage', component: RegisterPage, meta: { public: true } },
 	{ path: '/unsubscribe', name: 'UnSubscribePage', component: UnSubscribePage, meta: { public: true } },
 	{ path: '/application', name: 'ApplicationPage', component: ApplicationPage, meta: { public: true } }

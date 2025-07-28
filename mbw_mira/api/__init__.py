@@ -523,3 +523,23 @@ def get_campaign_details_for_submit():
         "campaign": campaign,
         "segments": segments
     }
+
+@frappe.whitelist(allow_guest=True)
+def get_landing_page_html():
+    import html
+    data = frappe.local.form_dict or frappe.request.json
+    if not data:
+        frappe.throw(_("Missing data"))
+    slug = data.get('slug')
+    if not slug:
+        frappe.throw(_("Missing slug"))
+    doc = frappe.db.get_value("LadiPage", {"route": slug, "published": 1},["content","css","title"],as_dict=1)
+    
+    if doc:
+        return {
+            "html": html.unescape(doc.content),
+            "css": doc.css,
+            "title": doc.title
+        }
+    else:
+        return None

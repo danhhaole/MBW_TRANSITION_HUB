@@ -27,8 +27,9 @@
   },
   {
    "fieldname": "route",
-   "fieldtype": "Small Text",
-   "label": "Route"
+   "fieldtype": "Data",
+   "label": "Route",
+   "unique": 1
   },
   {
    "fieldname": "campaign",
@@ -45,12 +46,12 @@
   },
   {
    "fieldname": "content",
-   "fieldtype": "Text Editor",
+   "fieldtype": "Code",
    "label": "HTML Content"
   },
   {
    "fieldname": "css",
-   "fieldtype": "Text Editor",
+   "fieldtype": "Code",
    "label": "CSS Content"
   },
   {
@@ -83,7 +84,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-28 16:02:55.354607",
+ "modified": "2025-07-28 17:26:15.389718",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "LadiPage",
