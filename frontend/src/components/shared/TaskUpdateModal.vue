@@ -62,7 +62,7 @@
           <FormControl
             v-model="scheduledDate"
             type="datetime-local"
-            label="Ngày lên lịch"
+            :label="__('Schedule Date')"
             :min="new Date().toISOString().slice(0, 16)"
           />
         </div>
@@ -72,8 +72,8 @@
           <FormControl
             v-model="notes"
             type="textarea"
-            label="Ghi chú chi tiết"
-            placeholder="Nhập ghi chú về kết quả thực hiện tác vụ..."
+            :label="__('Notes')"
+            :placeholder="__('Enter notes about the task execution...')"
             :rows="3"
           />
         </div>
@@ -84,7 +84,7 @@
           variant="outline"
           @click="closeModal"
         >
-          Hủy
+          {{ __('Cancel') }}
         </Button>
         <Button
           :disabled="!selectedAction || (selectedAction === 'SCHEDULED' && !scheduledDate)"
@@ -194,17 +194,17 @@ const getActionButtonText = () => {
     // case 'FAILED':
     //   return 'Đánh dấu thất bại'
     // default:
-      return 'Cập nhật tác vụ'
+      return __('Update Task')
   //}
 }
 
 const getStatusLabel = (status) => {
   const statusLabels = {
-    'PENDING_MANUAL': 'Chờ xác nhận',
-    'SCHEDULED': 'Đã lên lịch',
-    'EXECUTED': 'Đã hoàn thành',
-    'SKIPPED': 'Đã bỏ qua',
-    'FAILED': 'Thất bại'
+    'PENDING_MANUAL': __('Pending Manual'),
+    'SCHEDULED': __('Scheduled'),
+    'EXECUTED': __('Executed'),
+    'SKIPPED': __('Skipped'),
+    'FAILED': __('Failed')
   }
   return statusLabels[status] || status
 }

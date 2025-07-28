@@ -232,12 +232,12 @@
                   </td>
                 </tr>
                 <tr v-else-if="sortedCampaignSteps.length === 0" class="text-center">
-                  <td colspan="5" class="px-6 py-4 text-sm text-gray-500">No steps found</td>
+                  <td colspan="5" class="px-6 py-4 text-sm text-gray-500">{{ __('No steps found') }}</td>
                 </tr>
                 <tr v-else v-for="(step, idx) in sortedCampaignSteps" :key="step.name" class="hover:bg-gray-50">
                   <td class="px-6 py-4 whitespace-nowrap">
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-black">
-                      Step {{ step.step_order }}
+                      {{ __('Step') }} {{ step.step_order }}
                     </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -290,7 +290,7 @@
         <!-- Other tabs content -->
         <div v-if="activeTab === 'candidates'">
           <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-medium text-gray-900">Assigned Candidates</h3>
+            <h3 class="text-lg font-medium text-gray-900">{{ __('Assigned Profiles') }}</h3>
             <div class="flex items-center space-x-2">
               <button
                 v-if="campaign.target_segment && availableCandidates.length > 0"
@@ -324,11 +324,11 @@
             <table class="min-w-full divide-y divide-gray-300">
               <thead class="bg-gray-50">
                 <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Candidate</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Step</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enrolled At</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Profile') }}</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Status') }}</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Current Step') }}</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Enrolled At') }}</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Actions') }}</th>
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
@@ -340,7 +340,7 @@
                   </td>
                 </tr>
                 <tr v-else-if="candidateCampaigns.length === 0" class="text-center">
-                  <td colspan="5" class="px-6 py-4 text-sm text-gray-500">No candidates assigned</td>
+                  <td colspan="5" class="px-6 py-4 text-sm text-gray-500">{{ __('No profiles assigned') }}</td>
                 </tr>
                 <tr v-else v-for="candidate in candidateCampaigns" :key="candidate.name" class="hover:bg-gray-50">
                   <td class="px-6 py-4 whitespace-nowrap">
@@ -354,7 +354,7 @@
                       </div>
                       <div class="ml-3">
                         						<div class="text-sm font-medium text-gray-900">{{ candidate.talent_id }}</div>
-                        <div class="text-sm text-gray-500">Candidate</div>
+                        <div class="text-sm text-gray-500">{{ __('Profile') }}</div>
                       </div>
                     </div>
                   </td>
@@ -368,7 +368,7 @@
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      Step {{ candidate.current_step_order }}
+                      {{ __('Step') }} {{ candidate.current_step_order }}
                     </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -423,7 +423,7 @@
         
         <div v-if="activeTab === 'actions'">
           <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-medium text-gray-900">Campaign Actions</h3>
+            <h3 class="text-lg font-medium text-gray-900">{{ __('Campaign Actions') }}</h3>
             <button
               @click="openActionModal()"
               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -431,7 +431,7 @@
               <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
               </svg>
-              Add Action
+              {{ __('Add Action') }}
             </button>
           </div>
           
@@ -440,11 +440,11 @@
             <table class="min-w-full divide-y divide-gray-300">
               <thead class="bg-gray-50">
                 <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Campaign Step</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scheduled At</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Executed At</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Campaign Step') }}</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Status') }}</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Scheduled At') }}</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Executed At') }}</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Actions') }}</th>
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
@@ -456,7 +456,7 @@
                   </td>
                 </tr>
                 <tr v-else-if="actions.length === 0" class="text-center">
-                  <td colspan="5" class="px-6 py-4 text-sm text-gray-500">No actions found</td>
+                  <td colspan="5" class="px-6 py-4 text-sm text-gray-500">{{ __('No actions found') }}</td>
                 </tr>
                 <tr v-else v-for="action in actions" :key="action.name" class="hover:bg-gray-50">
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -504,37 +504,37 @@
         </div>
         
         <div v-if="activeTab === 'analytics'">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">Campaign Analytics</h3>
+          <h3 class="text-lg font-medium text-gray-900 mb-4">{{ __('Campaign Analytics') }}</h3>
           
           <!-- Stats Cards -->
           <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div class="bg-white p-4 rounded-lg shadow border text-center">
               <div class="text-2xl font-bold text-blue-600">{{ campaignSteps.length }}</div>
-              <div class="text-sm text-gray-500">Total Steps</div>
+              <div class="text-sm text-gray-500">{{ __('Total Steps') }}</div>
             </div>
             <div class="bg-white p-4 rounded-lg shadow border text-center">
               <div class="text-2xl font-bold text-green-600">{{ candidateCampaigns.length }}</div>
-              <div class="text-sm text-gray-500">Assigned Candidates</div>
+              <div class="text-sm text-gray-500">{{ __('Assigned Profiles') }}</div>
             </div>
             <div class="bg-white p-4 rounded-lg shadow border text-center">
               <div class="text-2xl font-bold text-yellow-600">{{ getActiveCandidates() }}</div>
-              <div class="text-sm text-gray-500">Active Candidates</div>
+              <div class="text-sm text-gray-500">{{ __('Active Profiles') }}</div>
             </div>
             <div class="bg-white p-4 rounded-lg shadow border text-center">
               <div class="text-2xl font-bold text-purple-600">{{ getCompletedCandidates() }}</div>
-              <div class="text-sm text-gray-500">Completed</div>
+              <div class="text-sm text-gray-500">{{ __('Completed Profiles') }}</div>
             </div>
           </div>
           
           <!-- Chart placeholder -->
           <div class="bg-white p-6 rounded-lg shadow border">
-            <h4 class="text-lg font-medium text-gray-900 mb-4">Campaign Progress</h4>
+            <h4 class="text-lg font-medium text-gray-900 mb-4">{{ __('Campaign Progress') }} </h4>
             <div class="text-center p-8">
               <svg class="w-16 h-16 text-gray-300 mx-auto" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
               </svg>
               <p class="text-gray-500 mt-4">
-                Analytics charts will be implemented here
+                {{ __('Analytics charts will be implemented here') }}
               </p>
             </div>
           </div>
@@ -941,7 +941,7 @@ const tabs = computed(() => [
   },
   {
     key: 'candidates',
-    		label: __('Assigned Candidates'),
+    		label: __('Assigned Profiles'),
     count: candidateCampaigns.value.length
   },
   {
