@@ -62,6 +62,11 @@ export default defineConfig({
 			'prosemirror-view',
 			'lowlight',
 			'highlight.js',
+			'grapesjs',
+      'grapesjs-preset-webpage',
+      'grapesjs-plugin-export',
+      'grapesjs-navbar',
+      'grapesjs-plugin-forms',
 		],
 		esbuildOptions: {
 			format: 'esm',
