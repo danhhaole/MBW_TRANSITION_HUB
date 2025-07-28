@@ -308,22 +308,21 @@ def submit_talent_profile():
     if recent:
         return {
             "success": False,
-            "message": "You have recently submitted. Please wait a moment before submitting again."
+            "message": _("You have recently submitted. Please wait a moment before submitting again.")
         }
-
     # 3. Xây dữ liệu hồ sơ
     profile_fields = {
         "doctype": "TalentProfiles",
         "full_name": data["full_name"],
         "email": data["email"],
         "source": campaign_id,
-        "status": "NEW",
+        "status": "NEW",        
         "last_interaction": datetime.now(),
     }
 
     optional_fields = [
-        "phone", "dob", "avatar", "headline", "skills",
-        "cv_original_url", "ai_summary", "email_opt_out"
+        "phone", "dob", "avatar", "headline", "skills","position",
+        "cv_original_url", "portfolio_url", "linkedin_url"
     ]
     for field in optional_fields:
         if field in data and data[field] not in [None, ""]:
@@ -370,6 +369,19 @@ def submit_application():
     position = data.get("position")
     resume = data.get("resume")  # file URL hoặc file token
     segment_id = data.get("segment_id")
+
+     # 2. Chống spam gửi liên tục trong vòng 60s
+    recent = frappe.db.sql("""
+        SELECT name FROM `tabTalentProfiles`
+        WHERE email = %s
+        AND creation > NOW() - INTERVAL 60 SECOND
+        LIMIT 1
+    """, (data["email"],))
+    if recent:
+        return {
+            "success": False,
+            "message": _("You have recently submitted. Please wait a moment before submitting again.")
+        }
 
     if not email or not campaign_id:
         frappe.throw(_("Email and campaign_id are required."))
@@ -489,7 +501,12 @@ def get_campaign_details_for_submit():
             filters={"name": ["in", segment_names]},
             fields=["name", "title", "description", "criteria", "type"]
         )
-
+    else:
+        segments = frappe.db.get_all(
+            "TalentSegment",
+            fields=["name", "title", "description", "criteria", "type"]
+        )
+    if segments:
         # Nếu cần parse criteria từ JSON string
         for seg in segments:
             if seg.get("criteria"):

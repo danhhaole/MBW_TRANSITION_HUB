@@ -18,7 +18,7 @@ def find_talentprofile_by_segment():
 	try:
 		# Lấy các trường chính
 		segment_id = data.get("segment_id")
-		min_score = data.get("min_score") or 50
+		min_score = data.get("min_score")
 		if not segment_id:
 			frappe.throw(_("Segment required"))
 			return []

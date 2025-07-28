@@ -15,8 +15,11 @@
   "source",
   "cv_original_url",
   "profile_data",
+  "position",
   "skills",
   "ai_summary",
+  "linkedin_url",
+  "portfolio_url",
   "status",
   "last_interaction",
   "email_opt_out"
@@ -93,13 +96,15 @@
    "description": "Ng\u00e0y v\u00e0 gi\u1edd c\u1ee7a l\u1ea7n t\u01b0\u01a1ng t\u00e1c cu\u1ed1i c\u00f9ng (g\u1eedi email, m\u1edf email, v.v.).",
    "fieldname": "last_interaction",
    "fieldtype": "Datetime",
-   "label": "Last Interaction"
+   "label": "Last Interaction",
+   "read_only": 1
   },
   {
    "default": "0",
    "fieldname": "email_opt_out",
    "fieldtype": "Check",
-   "label": "Email Opt Out"
+   "label": "Email Opt Out",
+   "read_only": 1
   },
   {
    "description": "H\u1ed3 S\u01a1 \u1ee8ng Vi\u00ean Ti\u1ec1m N\u0103ng, l\u00e0 n\u01a1i l\u01b0u tr\u1eef th\u00f4ng tin chi ti\u1ebft v\u1ec1 c\u00e1c \u1ee9ng vi\u00ean c\u00f3 ti\u1ec1m n\u0103ng, k\u1ec3 c\u1ea3 khi h\u1ecd kh\u00f4ng ch\u1ee7 \u0111\u1ed9ng t\u00ecm vi\u1ec7c.",
@@ -111,12 +116,28 @@
    "fieldname": "dob",
    "fieldtype": "Date",
    "label": "DOB"
+  },
+  {
+   "fieldname": "linkedin_url",
+   "fieldtype": "Small Text",
+   "label": "Linkedin Url"
+  },
+  {
+   "fieldname": "portfolio_url",
+   "fieldtype": "Small Text",
+   "label": "Portfolio Url"
+  },
+  {
+   "description": "V\u1ecb tr\u00ed quan t\u00e2m",
+   "fieldname": "position",
+   "fieldtype": "Data",
+   "label": "Position"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-23 14:45:57.524500",
+ "modified": "2025-07-28 08:31:36.471714",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "TalentProfiles",
@@ -137,7 +158,6 @@
   }
  ],
  "row_format": "Dynamic",
- "search_fields": "full_name",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
