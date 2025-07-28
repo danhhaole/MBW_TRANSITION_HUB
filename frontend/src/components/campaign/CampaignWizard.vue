@@ -146,7 +146,7 @@
               <div class="flex items-center space-x-2 mb-4">
                 <FeatherIcon :name="getSourceIcon(selectedSource)" class="h-6 w-6 text-blue-600" />
                 <h4 class="text-lg font-medium text-gray-900">
-                  {{ sources.find(s => s.key === selectedSource)?.title }} {{ __('Configuration') }}
+                  {{ sources.find(s => s.key === selectedSource)?.title }} {{ __('Manually') }}
                 </h4>
               </div>
 
@@ -240,13 +240,13 @@
               <!-- Search Configuration -->
               <div v-else-if="selectedSource === 'search'">
                 <p class="text-sm text-gray-600 mb-4">
-                  {{ __('Search configuration will be handled in the next step when selecting target segment.') }}
+                  {{ __('You’ll manually set up your search in the next step.') }}
                 </p>
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <div class="flex">
                     <FeatherIcon name="info" class="h-5 w-5 text-blue-400 mt-0.5 mr-2" />
                     <div class="text-sm text-blue-800">
-                      {{ __('You will be able to select specific talent segments in the next step.') }}
+                      {{ __('In the next step, you’ll choose the talent segments to search manually.') }}
                     </div>
                   </div>
                 </div>
