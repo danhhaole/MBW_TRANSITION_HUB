@@ -315,6 +315,16 @@ const links = [
         icon: NoteIcon,
         to: { name: 'CampaignTemplateManagement' }
       },
+      {
+        label: "Ladi Templates",
+        icon: NoteIcon,
+        to: { name: 'LadiPageEditor' }
+      },
+      {
+        label: "Email Templates",
+        icon: Email2Icon,
+        to: { name: 'EmailEditor' }
+      },
 
     ]
   },
