@@ -1098,12 +1098,12 @@ const loadAvailableCandidates = async () => {
     if (!campaign.target_segment) {
       // If no target segment, show all candidates
       const result = await candidateService.getList({
-        fields: ['name', 'candidate_name'],
+        fields: ['name', 'full_name'],
         page_length: 1000
       })
       if (result.success) {
         availableCandidates.value = result.data.map(item => ({
-          label: item.candidate_name || item.name,
+          label: item.full_name || item.name,
           value: item.name
         }))
       }

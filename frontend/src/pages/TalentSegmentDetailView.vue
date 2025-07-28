@@ -361,9 +361,10 @@
 									<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
 										{{ formatDateTime(candidate.added_at) }}
 									</td>
-									
+
 									<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-										<span :class="getEngagementColor(candidate.match_score)" class="font-bold text-center flex items-center justify-center">
+										<span :class="getEngagementColor(candidate.match_score)"
+											class="font-bold text-center flex items-center justify-center">
 											{{ candidate.match_score || 0 }}%
 											<!-- {{ console.log(candidate) }} -->
 										</span>
@@ -521,13 +522,14 @@
 														<span :class="getEngagementColor(candidate.score)">
 															{{ candidate.score }}%
 														</span>
-														
+
 													</span>
 												</div>
 											</div>
 											<div v-if="candidate.skills && candidate.skills.length > 0" class="mt-2">
 												<div class="flex flex-wrap gap-1">
-													<span v-for="skill in processSkills(candidate.skills).slice(0, 3)" :key="skill"
+													<span v-for="skill in processSkills(candidate.skills).slice(0, 3)"
+														:key="skill"
 														class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">
 														{{ skill }}
 													</span>
@@ -611,8 +613,16 @@
 						</div>
 					</div>
 					<div class="max-h-[60vh] overflow-y-auto">
-						<TalentSegmentForm :segment="editingSegmentData" @success="handleTalentSegmentUpdated"
+						<TalentSegmentForm ref="formRef" :segment="editingSegmentData" @success="handleTalentSegmentUpdated"
 							@cancel="handleEditModalClose" />
+					</div>
+					<div class="flex justify-end space-x-3 pt-4 border-t border-gray-200 mt-4">
+						<Button variant="outline" theme="gray" @click="showEditTalentSegmentModal = false">
+							{{ __('Cancel') }}
+						</Button>
+						<Button variant="solid" theme="gray" @click="updateTalentSegment" :loading="loading">
+							{{ __('Update') }}
+						</Button>
 					</div>
 				</div>
 			</template>
@@ -680,6 +690,13 @@ const minScore = ref(50)
 const suggestedCandidates = ref([])
 const selectedCandidates = ref([])
 const loadingSuggestedCandidates = ref(false)
+const formRef = ref(null)
+
+const updateTalentSegment = async () => {
+	if (formRef.value) {
+		await formRef.value.handleSubmit()
+	}
+}
 
 // Computed
 const filteredCandidates = computed(() => {
