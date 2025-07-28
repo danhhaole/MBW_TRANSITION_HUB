@@ -921,13 +921,13 @@ const loadCandidatesFromSegment = async (segmentId) => {
       // Get the actual candidate data
       const candidateResult = await candidateService.getList({
         filters: { name: ['in', candidateIds] },
-        fields: ['name', 'candidate_name', 'email', 'skills', 'status']
+        fields: ['name', 'full_name', 'email', 'skills', 'status']
       })
       
       if (candidateResult.success) {
         return candidateResult.data.map(candidate => ({
           id: candidate.name,
-          name: candidate.candidate_name || candidate.name,
+          name: candidate.full_name || candidate.name,
           title: candidate.email || 'Candidate',
           source: 'Talent Segment',
           email: candidate.email,

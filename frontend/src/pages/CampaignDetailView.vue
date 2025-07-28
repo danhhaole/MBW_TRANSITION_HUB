@@ -305,7 +305,7 @@
                 <svg v-else class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                 </svg>
-                Assign All from Segment ({{ availableCandidates.length }})
+                {{ __('Assign All from Segment') }}  ({{ availableCandidates.length }})
               </button>
               <button
                 @click="openCandidateModal()"
@@ -314,7 +314,7 @@
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                 </svg>
-                Assign Candidate
+                {{ __('Assign Profile') }}
               </button>
             </div>
           </div>
@@ -631,12 +631,19 @@
     <Dialog
       v-model="showCandidateModal"
       :options="{
-        title: 'Assign Candidate to Campaign',
         size: 'md'
       }"
     >
       <template #body>
-        <div class="p-6">
+        <div class="flex justify-between items-center mb-4 px-6 pt-6">
+          <h3 class="text-lg font-medium text-gray-900">
+            {{ __('Assign Profile to Campaign') }}
+          </h3>
+          <Button variant="outline" theme="gray" @click="closeCandidateModal" class="flex items-center">
+           <FeatherIcon name="x" class="w-4 h-4" />
+          </Button>
+        </div>
+        <div class="px-6 pb-6">
           <div class="space-y-4">
             <!-- Candidate Selection -->
             <FormControl
@@ -1135,12 +1142,12 @@ const loadAvailableCandidates = async () => {
         if (availableCandidateIds.length > 0) {
           const candidateResult = await candidateService.getList({
             filters: { name: ['in', availableCandidateIds] },
-            fields: ['name', 'candidate_name']
+            fields: ['name', 'full_name']
           })
           
           if (candidateResult.success) {
             availableCandidates.value = candidateResult.data.map(item => ({
-              title: item.candidate_name || item.name,
+              label: item.full_name + ' (' + item.name + ')',
               value: item.name
             }))
           }
