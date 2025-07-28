@@ -86,7 +86,7 @@ export const searchTalentSegments = async (searchText) => {
 export const getTalentSegmentCandidates = async (segmentId, filters = {}) => {
   const data = await call('frappe.client.get_list', {
     doctype: 'TalentProfilesSegment',
-    fields: ['talent_id', 'added_at', 'added_by'],
+    fields: ['talent_id', 'added_at', 'added_by', 'match_score'],
     filters: { segment_id: segmentId, ...filters },
     order_by: 'added_at desc',
     page_length: 50

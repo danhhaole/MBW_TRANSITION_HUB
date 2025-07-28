@@ -49,7 +49,37 @@
         </div>
 
         <!-- Actions -->
-        <div class="flex items-center space-x-3">
+        <div class="flex items-center space-x-4">
+          <!-- View mode toggle -->
+          <div class="flex rounded-md">
+            <button @click="viewMode = 'list'" :class="[
+              viewMode === 'list'
+                ? 'bg-black text-white'
+                : 'bg-white text-gray-700 hover:text-gray-500',
+              'relative inline-flex items-center px-4 py-1.5 rounded-l-md border border-gray-300 text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-black focus:border-black'
+            ]">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+              </svg>
+              {{ __('List') }}
+            </button>
+            <button @click="viewMode = 'card'" :class="[
+              viewMode === 'card'
+                ? 'bg-black text-white'
+                : 'bg-white text-gray-700 hover:text-gray-500',
+              'relative inline-flex items-center px-4 py-1.5 rounded-r-md border border-gray-300 border-l-0 text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-black focus:border-black'
+            ]">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+              {{ __('Card') }}
+            </button>
+          </div>
+
           <!-- Refresh Button -->
           <Button
             variant="outline"
@@ -107,8 +137,19 @@
         </div>
       </template>
       <template v-else>
-        <!-- Segments Grid -->
+        <!-- Segments View based on mode -->
         <TalentSegmentCardView 
+          v-if="viewMode === 'card'"
+          :segments="segmentsForCurrentPage"
+          :loading="loading"
+          @view-details="handleViewDetails"
+          @edit="handleEdit"
+          @delete="handleDelete"
+          @create="showCreateForm = true"
+        />
+        
+        <TalentSegmentListView 
+          v-else
           :segments="segmentsForCurrentPage"
           :loading="loading"
           @view-details="handleViewDetails"
@@ -286,6 +327,7 @@ import TalentSegmentForm from '@/components/talent-segment/TalentSegmentForm.vue
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import { Breadcrumbs } from 'frappe-ui'
 import TalentSegmentCardView from '@/components/talent-segment/TalentSegmentCardView.vue'
+import TalentSegmentListView from '@/components/talent-segment/TalentSegmentListView.vue'
 import Loading from '@/components/Loading.vue'
 import { ToastContainer } from '@/components/shared'
 import { useToast } from '@/composables/useToast'
@@ -319,6 +361,7 @@ console.log(segments)
 
 // Local state
 const currentTab = ref('pools')
+const viewMode = ref('card') // Default to card view
 const showCreateForm = ref(false)
 const showDeleteDialog = ref(false)
 const editingSegment = ref(null)
@@ -335,7 +378,7 @@ function handleFormSubmit() {
 // Pagination state
 const pagination = ref({
   currentPage: 1,
-  itemsPerPage: 9, // 3x3 grid
+  itemsPerPage: 8, // 3x3 grid
   total: 0
 })
 
@@ -378,14 +421,76 @@ const deleteDialogOptions = computed(() => ({
 }))
 
 // Pagination computed properties
-const totalSegments = computed(() => segments.value.length)
+const totalSegments = ref(0) // Thêm biến này để lưu tổng số records từ server
 const totalPages = computed(() => Math.ceil(totalSegments.value / pagination.value.itemsPerPage))
 
-const paginatedSegments = computed(() => {
-  const start = (pagination.value.currentPage - 1) * pagination.value.itemsPerPage
-  const end = start + pagination.value.itemsPerPage
-  return segments.value.slice(start, end)
-})
+
+const loadSegmentsWithPagination = async () => {
+  try {
+    // Gọi loadSegments từ composable với params
+    const result = await loadSegments({
+      page: pagination.value.currentPage,
+      limit: pagination.value.itemsPerPage
+    })
+    
+    if (result) {
+      // loadSegments trong composable trả về { data, total }
+      segments.value = result.data
+      totalSegments.value = result.total
+      pagination.value.total = result.total
+      
+      // Enrich data if needed
+      if (segments.value.length > 0) {
+        const enrichedSegments = await Promise.all(
+          segments.value.map(segment => enrichSegmentData(segment))
+        )
+        segments.value = enrichedSegments
+      }
+    }
+    
+    console.log(`Loaded ${segments.value.length} segments, total: ${totalSegments.value}`)
+  } catch (err) {
+    console.error('Error loading segments:', err)
+    showError(err.message || 'Failed to load segments')
+  }
+}
+
+const enrichSegmentData = async (segment) => {
+  try {
+    // Extract skills from criteria JSON field
+    let topSkills = []
+    if (segment.criteria) {
+      try {
+        const criteria = typeof segment.criteria === 'string' 
+          ? JSON.parse(segment.criteria) 
+          : segment.criteria
+        
+        if (criteria.skills && Array.isArray(criteria.skills)) {
+          topSkills = criteria.skills
+        }
+      } catch (e) {
+        console.error('Error parsing criteria JSON for segment:', segment.name, e)
+      }
+    }
+    
+    // For now, just add the skills
+    segment.topSkills = topSkills
+    segment.teamMembers = [] // Empty for now
+    
+    return segment
+  } catch (error) {
+    console.error('Error enriching segment data for:', segment.name, error)
+    segment.topSkills = []
+    segment.teamMembers = []
+    return segment
+  }
+}
+
+// const paginatedSegments = computed(() => {
+//   const start = (pagination.value.currentPage - 1) * pagination.value.itemsPerPage
+//   const end = start + pagination.value.itemsPerPage
+//   return segments.value.slice(start, end)
+// })
 
 const paginationStart = computed(() => {
   return totalSegments.value === 0 ? 0 : (pagination.value.currentPage - 1) * pagination.value.itemsPerPage + 1
@@ -450,15 +555,17 @@ const previousPage = () => {
 // Search handling
 const handleSearch = () => {
   if (searchQuery.value !== filters.searchText) {
-    searchSegments(searchQuery.value || '')
-    pagination.value.currentPage = 1 // Reset to first page on search
+    filters.searchText = searchQuery.value // Cập nhật filter
+    pagination.value.currentPage = 1 // Reset về trang 1
+    loadSegmentsWithPagination() // Gọi hàm mới
   }
 }
 
 const clearSearch = () => {
   searchQuery.value = ''
-  clearSegmentSearch()
+  filters.searchText = '' // Clear filter
   pagination.value.currentPage = 1
+  loadSegmentsWithPagination() // Gọi hàm mới
 }
 
 // Utility functions
@@ -567,6 +674,13 @@ const confirmDelete = async () => {
   if (result) {
     showDeleteDialog.value = false
     deletingSegment.value = null
+    
+    // Kiểm tra nếu trang hiện tại không còn items
+    if (segments.value.length === 1 && pagination.value.currentPage > 1) {
+      pagination.value.currentPage--
+    }
+    
+    await loadSegmentsWithPagination() // Reload với pagination
     showSuccess(__('Talent pool has been deleted successfully'))
   }
 }
@@ -574,7 +688,7 @@ const confirmDelete = async () => {
 const handleFormSuccess = async () => {
   showCreateForm.value = false
   editingSegment.value = null
-  await loadSegments()
+  await loadSegmentsWithPagination() // Dùng hàm mới
   showSuccess(__('Talent pool has been saved successfully'))
 }
 
@@ -585,7 +699,7 @@ const handleFormClose = () => {
 }
 
 const handleRefresh = async () => {
-  await loadSegments()
+  await loadSegmentsWithPagination()
   showSuccess(__('Data refreshed'))
 }
 
@@ -619,6 +733,10 @@ watch(() => [error.value, success.value], ([errorVal, successVal]) => {
   }
 })
 
+watch(() => pagination.value.currentPage, () => {
+  loadSegmentsWithPagination()
+})
+
 // Reset editingSegment when dialog closes
 watch(() => showCreateForm.value, (isOpen) => {
   if (!isOpen) {
@@ -629,7 +747,7 @@ watch(() => showCreateForm.value, (isOpen) => {
 
 // Initialize
 onMounted(() => {
-  loadSegments()
+  loadSegmentsWithPagination()
   // Add keyboard event listener
   document.addEventListener('keydown', handleKeyDown)
 })
@@ -641,8 +759,8 @@ onUnmounted(() => {
 
 // Thêm computed mới để chỉ push nút create ở trang cuối
 const segmentsForCurrentPage = computed(() => {
-  const arr = paginatedSegments.value.slice()
-  if (pagination.value.currentPage === totalPages.value) {
+  const arr = segments.value.slice() // Dùng segments.value thay vì paginatedSegments
+  if (pagination.value.currentPage === totalPages.value && segments.value.length < pagination.value.itemsPerPage) {
     arr.push({ isCreateButton: true })
   }
   return arr

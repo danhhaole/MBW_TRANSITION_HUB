@@ -142,6 +142,7 @@ const form = ref({
   phone: '',
   dob: '',
   headline: '',
+  position: '',
   skills: [],
   cv_original_url: '',
   ai_summary: '',
@@ -150,34 +151,49 @@ const form = ref({
 
 const { showToast, showSuccess, showError } = useToast()
 
-const allFields = [
+const allFields = computed(() => [
   { fieldname: 'full_name', label: 'Full Name', type: 'text', required: true, placeholder: 'Enter your full name' },
   { fieldname: 'email', label: 'Email', type: 'email', required: true, placeholder: 'example@email.com' },
   { fieldname: 'phone', label: 'Phone', type: 'tel', placeholder: '0123 456 789' },
   { fieldname: 'dob', label: 'Date of Birth', type: 'date' },
+  { fieldname: 'position', label: 'Position', type: 'select', required: true, placeholder: 'Select your position', options: positionOptions.value },
   { fieldname: 'headline', label: 'Headline', type: 'text', placeholder: 'Example: Frontend Developer with 3 years of experience' },
   { fieldname: 'cv_original_url', label: 'CV Link', type: 'url', placeholder: 'https://drive.google.com/...' },
   { fieldname: 'ai_summary', label: 'Self Introduction', type: 'textarea', placeholder: 'Brief introduction about yourself, experience and career goals...' },
-]
+])
 
-const personalFields = computed(() => allFields.filter(f => ['full_name', 'email', 'phone', 'dob'].includes(f.fieldname)))
-const professionalFields = computed(() => allFields.filter(f => ['headline', 'cv_original_url', 'ai_summary'].includes(f.fieldname)))
+const personalFields = computed(() => allFields.value.filter(f => ['full_name', 'email', 'phone', 'dob'].includes(f.fieldname)))
+const professionalFields = computed(() => allFields.value.filter(f => ['position', 'headline', 'cv_original_url', 'ai_summary'].includes(f.fieldname)))
 
 const campaignDetails = ref({ skills: [], segment_skills: [] })
+const positionOptions = ref([])
 
 onMounted(async () => {
   const params = new URLSearchParams(window.location.search)
   form.value.campaign = params.get('campaign') || ''
+
+  // Position options will be loaded from campaign details
 
   if (form.value.campaign) {
     try {
       const res = await call('mbw_mira.api.get_campaign_details_for_submit', { campaign_id: form.value.campaign })
       const data = res || {}
       console.log(res)
+      
+      // Load skills from segments
       campaignDetails.value.skills = data.segments.flatMap(seg => seg.criteria?.skills || [])
       if (Array.isArray(data.segments)) {
         const segmentSkills = data.segments.flatMap(seg => seg.criteria?.skills || [])
         campaignDetails.value.segment_skills = [...new Set(segmentSkills)]
+      }
+      
+      // Load position options from segments
+      if (Array.isArray(data.segments)) {
+        positionOptions.value = data.segments.map(seg => ({
+          label: seg.title,
+          value: seg.title
+        }))
+        console.log('Position options loaded from campaign details:', positionOptions.value)
       }
     } catch (error) {
       console.error('Error loading campaign details:', error)
@@ -227,9 +243,9 @@ function submit() {
     return
   }
   
-  if (!form.value.full_name || !form.value.email) {
-    // showToast({ title: 'Lỗi', text: 'Vui lòng điền đầy đủ họ tên và email', type: 'error' })
-    console.error('Missing required fields: full_name or email')
+  if (!form.value.full_name || !form.value.email || !form.value.position) {
+    // showToast({ title: 'Lỗi', text: 'Vui lòng điền đầy đủ họ tên, email và position', type: 'error' })
+    console.error('Missing required fields: full_name, email, or position')
     return
   }
 
@@ -243,6 +259,7 @@ function submit() {
   // Add optional fields only if they have values
   if (form.value.phone?.trim()) payload.phone = form.value.phone.trim()
   if (form.value.dob) payload.dob = form.value.dob
+  if (form.value.position?.trim()) payload.position = form.value.position.trim()
   if (form.value.headline?.trim()) payload.headline = form.value.headline.trim()
   if (form.value.cv_original_url?.trim()) payload.cv_original_url = form.value.cv_original_url.trim()
   if (form.value.ai_summary?.trim()) payload.ai_summary = form.value.ai_summary.trim()

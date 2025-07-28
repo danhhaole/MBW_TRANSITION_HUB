@@ -238,3 +238,73 @@ export const applicantPoolService = {
 }
 
 export default UniversalService
+
+// New service functions for talent segment operations
+export const findTalentProfilesBySegment = async (segmentId, minScore = 50) => {
+	try {
+		const result = await call('mbw_mira.mbw_mira.doctype.talentsegment.talentsegment.find_talentprofile_by_segment', {
+			segment_id: segmentId,
+			min_score: Number(minScore)
+		})
+		
+		console.log('findTalentProfilesBySegment result:', result)
+		
+		if (result && Array.isArray(result)) {
+			return {
+				success: true,
+				data: result,
+				count: result.length
+			}
+		} else {
+			return {
+				success: false,
+				error: 'Invalid response format',
+				data: [],
+				count: 0
+			}
+		}
+	} catch (error) {
+		console.error('Error finding talent profiles by segment:', error)
+		return {
+			success: false,
+			error: error.message || 'Network error',
+			data: [],
+			count: 0
+		}
+	}
+}
+
+export const bulkInsertSegments = async (segmentData) => {
+	try {
+		// Gửi dữ liệu trực tiếp thay vì wrap trong object data
+		const result = await call('mbw_mira.mbw_mira.doctype.talentprofilessegment.talentprofilessegment.bulk_insert_segments', segmentData)
+		
+		console.log('bulkInsertSegments result:', result)
+		
+		if (result && result.status === 'completed') {
+			return {
+				success: true,
+				data: result,
+				total: result.total,
+				results: result.results
+			}
+		} else {
+			return {
+				success: false,
+				error: result?.message || 'Bulk insert failed',
+				data: result,
+				total: 0,
+				results: []
+			}
+		}
+	} catch (error) {
+		console.error('Error bulk inserting segments:', error)
+		return {
+			success: false,
+			error: error.message || 'Network error',
+			data: {},
+			total: 0,
+			results: []
+		}
+	}
+}

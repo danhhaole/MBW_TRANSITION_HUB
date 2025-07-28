@@ -6,7 +6,7 @@
         <template v-if="segment.isCreateButton">
           <!-- Create New Pool Card -->
           <div
-            class="bg-white rounded-lg  overflow-hidden border-2 border-dashed border-gray-300 flex items-center justify-center h-64 transition-all duration-300 hover:border-blue-500 cursor-pointer hover:bg-gray-50"
+            class="bg-white rounded-lg  overflow-hidden border-2 border-dashed border-gray-300 flex items-center justify-center h-[235px] transition-all duration-300 hover:border-blue-500 cursor-pointer hover:bg-gray-50"
             @click="$emit('create')">
             <div class="text-center p-6">
               <div class="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-3">
@@ -50,8 +50,10 @@
                 <div class="flex flex-wrap gap-1 items-center">
                   <template v-if="segment.topSkills && segment.topSkills.length" class="flex flex-wrap gap-1 items-center">
                     <span v-for="skill in segment.topSkills.slice(0, 3)" :key="skill"
-                    class="max-h-[24px] max-w-[120px] inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 overflow-hidden">
-                    <span class="truncate">{{ skill }}</span>
+                    class="max-h-[24px] max-w-[72px] inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 overflow-hidden">
+                    <Tooltip :text="skill" placement="top">
+                      <span class="truncate">{{ skill }}</span>
+                    </Tooltip>
                     </span>
                     <span v-if="segment.topSkills.length > 3" class="text-xs text-gray-400 italic bg-gray-200 px-2 py-1 rounded-full flex items-center">{{ __('+') }} {{ segment.topSkills.length - 3 }}</span>
                   </template>
@@ -103,7 +105,7 @@
 
 <script setup>
 import { computed, ref, h } from 'vue'
-import { Button, Dropdown, FeatherIcon } from 'frappe-ui'
+import { Button, Dropdown, FeatherIcon, Tooltip } from 'frappe-ui'
 import { calculateEngagementRate, formatDate, getSegmentTypeColor } from '@/services/talentSegmentService'
 import { processSkills } from '@/services/candidateService'
 

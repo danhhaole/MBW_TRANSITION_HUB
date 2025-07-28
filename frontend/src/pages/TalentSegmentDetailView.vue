@@ -6,43 +6,25 @@
 			</template>
 			<template #right-header>
 				<Button variant="outline" theme="gray" @click="openEditModal">
-							<template #prefix>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									class="h-4 w-4"
-									fill="none"
-									viewBox="0 0 24 24"
-									stroke="currentColor"
-								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-									/>
-								</svg>
-							</template>
-							{{ __('Edit Pool') }}
-						</Button>
-						<Button variant="outline" theme="red" @click="$router.push('/talent-segments')">
-							<template #prefix>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									class="h-4 w-4"
-									fill="none"
-									viewBox="0 0 24 24"
-									stroke="currentColor"
-								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-									/>
-								</svg>
-							</template>
-							{{ __('Delete') }}
-						</Button>
+					<template #prefix>
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+							stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+								d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+						</svg>
+					</template>
+					{{ __('Edit Pool') }}
+				</Button>
+				<Button variant="outline" theme="red" @click="$router.push('/talent-segments')">
+					<template #prefix>
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+							stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+								d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+						</svg>
+					</template>
+					{{ __('Delete') }}
+				</Button>
 			</template>
 		</LayoutHeader>
 
@@ -79,11 +61,11 @@
 								{{ talentSegment.title || __('Loading...') }}
 							</h1>
 							<div class="flex items-center flex-wrap gap-3">
-								<span
-									class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-								>
-									{{ talentSegment.type || __('Active') }}
-								</span>
+																	<span
+										class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
+									>
+										{{ talentSegment.type || __('Active') }}
+									</span>
 								<span class="text-sm text-gray-500">
 									{{ __('Created:') }} {{ formatDate(talentSegment.creation) }}
 								</span>
@@ -104,24 +86,13 @@
 
 			<!-- Detailed Analytics Cards -->
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-				<div
-					class="bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-lg border border-blue-200"
-				>
+				<div class="bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-lg border border-gray-200">
 					<div class="flex items-center">
 						<div class="flex-shrink-0">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								class="h-8 w-8 text-blue-600"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-								/>
+							<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-600" fill="none"
+								viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+									d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
 							</svg>
 						</div>
 						<div class="ml-4">
@@ -132,52 +103,30 @@
 						</div>
 					</div>
 				</div>
-				<div
-					class="bg-gradient-to-r from-green-50 to-green-100 p-6 rounded-lg border border-green-200"
-				>
+				<div class="bg-gradient-to-r from-green-50 to-green-100 p-6 rounded-lg border border-green-200">
 					<div class="flex items-center">
 						<div class="flex-shrink-0">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								class="h-8 w-8 text-green-600"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-								/>
+							<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-600" fill="none"
+								viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+									d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
 							</svg>
 						</div>
 						<div class="ml-4">
 							<div class="text-2xl font-bold text-green-900">
-								{{ candidates.filter(c => c.status === 'ACTIVE').length }}
+								{{candidates.filter(c => c.status === 'ACTIVE').length}}
 							</div>
 							<div class="text-sm text-green-700">{{ __('Active Candidates') }}</div>
 						</div>
 					</div>
 				</div>
-				<div
-					class="bg-gradient-to-r from-yellow-50 to-yellow-100 p-6 rounded-lg border border-yellow-200"
-				>
+				<div class="bg-gradient-to-r from-yellow-50 to-yellow-100 p-6 rounded-lg border border-yellow-200">
 					<div class="flex items-center">
 						<div class="flex-shrink-0">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								class="h-8 w-8 text-yellow-600"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a1 1 0 011-1h1m-1 4h10m0-4V5a1 1 0 011-1h1m-4 0h.01"
-								/>
+							<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-yellow-600" fill="none"
+								viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+									d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a1 1 0 011-1h1m-1 4h10m0-4V5a1 1 0 011-1h1m-4 0h.01" />
 							</svg>
 						</div>
 						<div class="ml-4">
@@ -188,29 +137,20 @@
 						</div>
 					</div>
 				</div>
-				<div
-					class="bg-gradient-to-r from-purple-50 to-purple-100 p-6 rounded-lg border border-purple-200"
-				>
+				<div class="bg-gradient-to-r from-purple-50 to-purple-100 p-6 rounded-lg border border-purple-200">
 					<div class="flex items-center">
 						<div class="flex-shrink-0">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								class="h-8 w-8 text-purple-600"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-								/>
+							<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-purple-600" fill="none"
+								viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+									d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
 							</svg>
 						</div>
 						<div class="ml-4">
 							<div class="text-2xl font-bold text-purple-900">
-								{{ candidates.length > 0 ? Math.round((candidates.filter(c => c.status === 'ACTIVE').length / candidates.length) * 100) : 0 }}%
+								{{candidates.length > 0 ? Math.round((candidates.filter(c => c.status ===
+									'ACTIVE').length /
+									candidates.length) * 100) : 0}}%
 							</div>
 							<div class="text-sm text-purple-700">{{ __('Interaction Rate') }}</div>
 						</div>
@@ -222,19 +162,10 @@
 			<div class="flex flex-wrap gap-3 mb-6">
 				<Button variant="solid" theme="blue" @click="showCampaignWizard = true">
 					<template #prefix>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							class="h-4 w-4"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
-							/>
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+							stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+								d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
 						</svg>
 					</template>
 					{{ __('Create Campaign') }}
@@ -242,19 +173,10 @@
 
 				<Button variant="solid" theme="green" @click="showAddCandidateModal = true">
 					<template #prefix>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							class="h-4 w-4"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-							/>
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+							stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+								d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
 						</svg>
 					</template>
 					{{ __('Add Profile') }}
@@ -262,19 +184,10 @@
 
 				<Button variant="solid" theme="gray" @click="showAnalytics = !showAnalytics">
 					<template #prefix>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							class="h-4 w-4"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-							/>
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+							stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+								d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
 						</svg>
 					</template>
 					{{ __('Analytics') }}
@@ -282,27 +195,15 @@
 			</div>
 
 			<!-- Analytics Section (Initially Hidden) -->
-			<div
-				v-if="showAnalytics"
-				class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6"
-			>
+			<div v-if="showAnalytics" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
 				<div class="flex items-center justify-between mb-6">
 					<h2 class="text-xl font-semibold text-gray-900">{{ __('Segment Analytics') }}</h2>
 					<Button variant="ghost" theme="gray" @click="showAnalytics = false">
 						<template #prefix>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								class="h-4 w-4"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M6 18L18 6M6 6l12 12"
-								/>
+							<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+								stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+									d="M6 18L18 6M6 6l12 12" />
 							</svg>
 						</template>
 						{{ __('Close') }}
@@ -312,19 +213,10 @@
 				<!-- Chart placeholder -->
 				<div class="bg-gray-50 rounded-lg border border-gray-200 p-8">
 					<div class="text-center">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							class="h-16 w-16 text-gray-300 mx-auto mb-4"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="1"
-								d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-							/>
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-300 mx-auto mb-4" fill="none"
+							viewBox="0 0 24 24" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+								d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
 						</svg>
 						<h4 class="text-lg font-medium text-gray-600 mb-2">{{ __('Detailed Analysis') }}</h4>
 						<p class="text-gray-500">
@@ -339,76 +231,28 @@
 				<div class="p-6">
 					<div class="flex justify-between items-center mb-6">
 						<h3 class="text-lg font-medium text-gray-900">
-							{{ __('Candidates in this segment') }}
+							{{ __('Profiles in this segment') }}
 						</h3>
 						<div class="flex items-center space-x-3">
 							<div class="relative">
-								<input
-									v-model="candidateSearch"
-									type="text"
-									:placeholder="__('Search by name...')"
+								<input v-model="candidateSearch" type="text" :placeholder="__('Search by name...')"
 									class="block w-80 pl-10 pr-8 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-									@input="handleSearchInput"
-								/>
-								<div
-									class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
-								>
-									<svg
-										class="h-5 w-5 text-gray-400"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-									>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-										></path>
+									@input="handleSearchInput" />
+								<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+									<svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor"
+										viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+											d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
 									</svg>
 								</div>
-								<!-- Search loading indicator -->
-								<div
-									v-if="searchLoading"
-									class="absolute inset-y-0 right-0 pr-3 flex items-center"
-								>
-									<svg
-										class="animate-spin h-4 w-4 text-blue-500"
-										xmlns="http://www.w3.org/2000/svg"
-										fill="none"
-										viewBox="0 0 24 24"
-									>
-										<circle
-											class="opacity-25"
-											cx="12"
-											cy="12"
-											r="10"
-											stroke="currentColor"
-											stroke-width="4"
-										></circle>
-										<path
-											class="opacity-75"
-											fill="currentColor"
-											d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-										></path>
-									</svg>
-								</div>
+
 							</div>
 							<Button variant="solid" theme="gray" @click="showAddCandidateModal = true">
 								<template #prefix>
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										class="h-4 w-4"
-										fill="none"
-										viewBox="0 0 24 24"
-										stroke="currentColor"
-									>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-										/>
+									<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+										viewBox="0 0 24 24" stroke="currentColor">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+											d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
 									</svg>
 								</template>
 								{{ __('Add Profile') }}
@@ -417,44 +261,36 @@
 					</div>
 
 					<!-- Candidates Table -->
-					<div
-						class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg"
-					>
+					<div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
 						<table class="min-w-full divide-y divide-gray-300">
 							<thead class="bg-gray-50">
 								<tr>
-									<th
-										scope="col"
-										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-									>
+									<th scope="col"
+										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 										{{ __('Profile') }}
 									</th>
-									<th
-										scope="col"
-										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-									>
+									<th scope="col"
+										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 										{{ __('Skills') }}
 									</th>
-									<th
-										scope="col"
-										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-									>
+									<th scope="col"
+										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 										{{ __('Last Contact') }}
 									</th>
-									<th
-										scope="col"
-										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-									>
+									<th scope="col"
+										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 										{{ __('Status') }}
 									</th>
-									<th
-										scope="col"
-										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-									>
+									<th scope="col"
+										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 										{{ __('Added') }}
 									</th>
+									<th scope="col"
+										class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+										{{ __('Match Score') }}
+									</th>
 									<th scope="col" class="relative px-6 py-3">
-										<span class="sr-only">{{ __('Actions') }}</span>
+										<span class="">{{ __('Actions') }}</span>
 									</th>
 								</tr>
 							</thead>
@@ -462,25 +298,13 @@
 								<tr v-if="loadingCandidates">
 									<td colspan="6" class="px-6 py-4 text-center text-gray-500">
 										<div class="flex justify-center">
-											<svg
-												class="animate-spin h-5 w-5 text-blue-500"
-												xmlns="http://www.w3.org/2000/svg"
-												fill="none"
-												viewBox="0 0 24 24"
-											>
-												<circle
-													class="opacity-25"
-													cx="12"
-													cy="12"
-													r="10"
-													stroke="currentColor"
-													stroke-width="4"
-												></circle>
-												<path
-													class="opacity-75"
-													fill="currentColor"
-													d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-												></path>
+											<svg class="animate-spin h-5 w-5 text-blue-500"
+												xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+												<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+													stroke-width="4"></circle>
+												<path class="opacity-75" fill="currentColor"
+													d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+												</path>
 											</svg>
 										</div>
 									</td>
@@ -490,21 +314,16 @@
 										{{ __('No candidates found') }}
 									</td>
 								</tr>
-								<tr
-									v-else
-									v-for="candidate in filteredCandidates"
-									:key="candidate.name"
-									class="hover:bg-gray-50"
-								>
+								<tr v-else v-for="candidate in filteredCandidates" :key="candidate.name"
+									class="hover:bg-gray-50">
 									<td class="px-6 py-4 whitespace-nowrap">
 										<div class="flex items-center">
 											<div class="flex-shrink-0 h-8 w-8">
 												<div
-													class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center"
-												>
-																									<span class="text-xs font-medium text-white">{{
-													candidate.full_name?.charAt(0) || '?'
-												}}</span>
+													class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center">
+													<span class="text-xs font-medium text-white">{{
+														candidate.full_name?.charAt(0) || '?'
+													}}</span>
 												</div>
 											</div>
 											<div class="ml-3">
@@ -519,17 +338,13 @@
 									</td>
 									<td class="px-6 py-4">
 										<div class="flex flex-wrap gap-1">
-											<span
-												v-for="skill in processSkills(candidate.skills).slice(0, 4)"
+											<span v-for="skill in processSkills(candidate.skills).slice(0, 4)"
 												:key="skill"
-												class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-											>
+												class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
 												{{ skill }}
 											</span>
-											<span
-												v-if="processSkills(candidate.skills).length > 4"
-												class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600"
-											>
+											<span v-if="processSkills(candidate.skills).length > 4"
+												class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
 												+{{ processSkills(candidate.skills).length - 4 }}
 											</span>
 										</div>
@@ -538,87 +353,50 @@
 										{{ formatDateTime(candidate.last_interaction) }}
 									</td>
 									<td class="px-6 py-4 whitespace-nowrap">
-										<span
-											:class="getStatusBadgeClass(candidate.status)"
-											class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-										>
+										<span :class="getStatusBadgeClass(candidate.status)"
+											class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
 											{{ candidate.status }}
 										</span>
 									</td>
 									<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
 										{{ formatDateTime(candidate.added_at) }}
 									</td>
-									<td
-										class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
-									>
+									
+									<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+										<span :class="getEngagementColor(candidate.match_score)" class="font-bold text-center flex items-center justify-center">
+											{{ candidate.match_score || 0 }}%
+											<!-- {{ console.log(candidate) }} -->
+										</span>
+									</td>
+									<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
 										<div class="flex items-center space-x-2">
-											<Button
-												variant="ghost"
-												theme="gray"
-												size="sm"
-												@click="viewCandidateDetails(candidate)"
-											>
-												<svg
-													xmlns="http://www.w3.org/2000/svg"
-													class="h-4 w-4"
-													fill="none"
-													viewBox="0 0 24 24"
-													stroke="currentColor"
-												>
-													<path
-														stroke-linecap="round"
-														stroke-linejoin="round"
+											<Button variant="ghost" theme="gray" size="sm"
+												@click="viewCandidateDetails(candidate)">
+												<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+													viewBox="0 0 24 24" stroke="currentColor">
+													<path stroke-linecap="round" stroke-linejoin="round"
+														stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+													<path stroke-linecap="round" stroke-linejoin="round"
 														stroke-width="2"
-														d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-													/>
-													<path
-														stroke-linecap="round"
-														stroke-linejoin="round"
-														stroke-width="2"
-														d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-													/>
+														d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
 												</svg>
 											</Button>
-											<Button
-												variant="ghost"
-												theme="blue"
-												size="sm"
-												@click="contactCandidate(candidate)"
-											>
-												<svg
-													xmlns="http://www.w3.org/2000/svg"
-													class="h-4 w-4"
-													fill="none"
-													viewBox="0 0 24 24"
-													stroke="currentColor"
-												>
-													<path
-														stroke-linecap="round"
-														stroke-linejoin="round"
+											<Button variant="ghost" theme="blue" size="sm"
+												@click="contactCandidate(candidate)">
+												<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+													viewBox="0 0 24 24" stroke="currentColor">
+													<path stroke-linecap="round" stroke-linejoin="round"
 														stroke-width="2"
-														d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 012 2z"
-													/>
+														d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 012 2z" />
 												</svg>
 											</Button>
-											<Button
-												variant="ghost"
-												theme="red"
-												size="sm"
-												@click="removeFromSegment(candidate)"
-											>
-												<svg
-													xmlns="http://www.w3.org/2000/svg"
-													class="h-4 w-4"
-													fill="none"
-													viewBox="0 0 24 24"
-													stroke="currentColor"
-												>
-													<path
-														stroke-linecap="round"
-														stroke-linejoin="round"
+											<Button variant="ghost" theme="red" size="sm"
+												@click="removeFromSegment(candidate)">
+												<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+													viewBox="0 0 24 24" stroke="currentColor">
+													<path stroke-linecap="round" stroke-linejoin="round"
 														stroke-width="2"
-														d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-													/>
+														d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
 												</svg>
 											</Button>
 										</div>
@@ -638,10 +416,10 @@
 					<div class="mb-6 flex items-center justify-between">
 						<div>
 							<h3 class="text-xl font-semibold leading-6 text-gray-900">
-								{{ __('Add Candidate to Segment') }}
+								{{ __('Add Profiles to Segment') }}
 							</h3>
 							<p class="mt-1 text-sm text-gray-500">
-								{{ __('Select candidate to add to') }} "{{ talentSegment.title }}"
+								{{ __('Select profiles to add to') }} "{{ talentSegment.title }}"
 							</p>
 						</div>
 						<div class="flex items-center gap-1">
@@ -652,168 +430,147 @@
 					</div>
 
 					<div class="space-y-6">
+						<!-- Min Score Slider -->
 						<div>
 							<label class="block text-sm font-medium text-gray-700 mb-3">
-								{{ __('Select Candidate') }} <span class="text-red-500">*</span>
+								{{ __('Minimum Match Score') }}: {{ minScore }}%
 							</label>
+							<div class="flex justify-between text-xs text-gray-500 mt-1">
+								<span>0%</span>
+								<span>50%</span>
+								<span>100%</span>
+							</div>
+							<div class="slider-wrapper">
+								<div class="progress-track" :style="{ '--progress': minScore + '%' }"></div>
+								<input v-model="minScore" type="range" min="0" max="100" step="5" class="slider"
+									@input="handleMinScoreChange" />
+							</div>
+							<p class="text-xs text-gray-500 mt-5">
+								{{ __('Higher score means better skill match with segment criteria') }}
+							</p>
+						</div>
 
-							<!-- Loading state -->
-							<div
-								v-if="loadingAvailableCandidates"
-								class="flex items-center justify-center p-8 border-2 border-dashed border-gray-300 rounded-lg"
-							>
-								<div class="text-center">
-									<svg
-										class="animate-spin h-8 w-8 text-blue-500 mx-auto mb-2"
-										xmlns="http://www.w3.org/2000/svg"
-										fill="none"
-										viewBox="0 0 24 24"
-									>
-										<circle
-											class="opacity-25"
-											cx="12"
-											cy="12"
-											r="10"
-											stroke="currentColor"
-											stroke-width="4"
-										></circle>
-										<path
-											class="opacity-75"
-											fill="currentColor"
-											d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-										></path>
-									</svg>
-									<p class="text-sm text-gray-500">
-										{{ __('Loading available candidates...') }}
-									</p>
+						<!-- Find Matches Button -->
+						<div>
+							<label class="block text-sm font-medium text-gray-700 mb-3">
+								{{ __('Find Matching Candidates') }}
+							</label>
+							<div class="flex gap-2">
+								<Button variant="solid" theme="gray" :loading="loadingSuggestedCandidates"
+									@click="loadSuggestedCandidates">
+									{{ __('Find Matches') }}
+								</Button>
+							</div>
+						</div>
+
+						<!-- Loading state -->
+						<div v-if="loadingSuggestedCandidates"
+							class="flex items-center justify-center p-8 border-2 border-dashed border-gray-300 rounded-lg">
+							<div class="text-center">
+								<svg class="animate-spin h-8 w-8 text-gray-500 mx-auto mb-2"
+									xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+									<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+										stroke-width="4"></circle>
+									<path class="opacity-75" fill="currentColor"
+										d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+									</path>
+								</svg>
+								<p class="text-sm text-gray-500">
+									{{ __('Finding matching candidates...') }}
+								</p>
+							</div>
+						</div>
+
+						<!-- Candidates List -->
+						<div v-else-if="suggestedCandidates.length > 0" class="space-y-4">
+							<div class="flex items-center justify-between">
+								<h4 class="text-sm font-medium text-gray-900">
+									{{ __('Suggested Candidates') }} ({{ suggestedCandidates.length }})
+								</h4>
+								<div class="flex items-center gap-2">
+									<Button variant="ghost" theme="gray" size="sm" @click="selectAllCandidates">
+										{{ __('Select All') }}
+									</Button>
+									<Button variant="ghost" theme="gray" size="sm" @click="deselectAllCandidates">
+										{{ __('Deselect All') }}
+									</Button>
 								</div>
 							</div>
 
-							<!-- Autocomplete -->
-							<div v-else>
-								<Autocomplete
-									v-model="candidateFormData.candidate_id"
-									:options="availableCandidates"
-									:placeholder="__('Search and select candidate...')"
-									@change="handleCandidateSelection"
-								/>
-							</div>
-
-							<p class="mt-2 text-xs text-gray-500">
-								{{ __('Only display candidates not already in this segment') }}
-							</p>
-
-							<!-- No candidates available message -->
-							<div
-								v-if="
-									!loadingAvailableCandidates && availableCandidates.length === 0
-								"
-								class="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md"
-							>
-								<div class="flex">
-									<svg
-										class="h-5 w-5 text-yellow-400"
-										xmlns="http://www.w3.org/2000/svg"
-										viewBox="0 0 20 20"
-										fill="currentColor"
-									>
-										<path
-											fill-rule="evenodd"
-											d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-											clip-rule="evenodd"
-										/>
-									</svg>
-									<div class="ml-3">
-										<p class="text-sm text-yellow-800">
-											{{ __('No available candidates to add. All candidates are already in this segment.') }}
-										</p>
+							<div class="max-h-96 overflow-y-auto border border-gray-200 rounded-lg">
+								<div v-for="candidate in filteredSuggestedCandidates" :key="candidate.name"
+									class="flex items-center p-4 border-b border-gray-100 hover:bg-gray-50">
+									<div class="flex items-center flex-1">
+										<input :value="candidate.name" type="checkbox"
+											:checked="selectedCandidates.includes(candidate.name)"
+											@change="toggleCandidateSelection(candidate.name)"
+											class="h-4 w-4 text-gray-600 focus:ring-gray-500 border-gray-300 rounded" />
+										<div class="ml-3 flex-1">
+											<div class="flex items-center justify-between">
+												<div>
+													<div class="text-sm font-medium text-gray-900">
+														{{ candidate.full_name || candidate.name }}
+													</div>
+													<div class="text-sm text-gray-500">
+														{{ candidate.email }}
+													</div>
+												</div>
+												<div class="flex items-center gap-2">
+													<span
+														class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+														<span :class="getEngagementColor(candidate.score)">
+															{{ candidate.score }}%
+														</span>
+														
+													</span>
+												</div>
+											</div>
+											<div v-if="candidate.skills && candidate.skills.length > 0" class="mt-2">
+												<div class="flex flex-wrap gap-1">
+													<span v-for="skill in processSkills(candidate.skills).slice(0, 3)" :key="skill"
+														class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">
+														{{ skill }}
+													</span>
+													<span v-if="candidate.skills.length > 3"
+														class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
+														+{{ candidate.skills.length - 3 }} {{ __('more') }}
+													</span>
+												</div>
+											</div>
+										</div>
 									</div>
 								</div>
 							</div>
 						</div>
 
-						<!-- Selected Candidate Preview -->
-						<div
-							v-if="selectedCandidatePreview"
-							class="border border-gray-200 rounded-lg p-4 bg-gradient-to-r from-blue-50 to-indigo-50"
-						>
-							<div class="flex items-start space-x-4">
-								<div class="flex-shrink-0">
-									<div
-										class="h-12 w-12 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center shadow-md"
-									>
-										<span class="text-lg font-medium text-white">
-											{{
-												selectedCandidatePreview.full_name
-													?.charAt(0)
-													?.toUpperCase() || '?'
-											}}
-										</span>
-									</div>
+						<!-- No candidates found -->
+						<div v-else-if="!loadingSuggestedCandidates && suggestedCandidates.length === 0"
+							class="text-center p-8 border-2 border-dashed border-gray-300 rounded-lg">
+							<svg class="h-12 w-12 text-gray-400 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg"
+								fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+									d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+							</svg>
+							<h4 class="text-lg font-medium text-gray-600 mb-2">{{ __('No candidates found') }}</h4>
+							<p class="text-gray-500">
+								{{ __('Try adjusting the minimum score or search criteria') }}
+							</p>
+						</div>
+
+						<!-- Selected Candidates Summary -->
+						<div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+							<div class="flex items-center justify-between">
+								<div>
+									<h4 class="text-sm font-medium text-gray-900">
+										{{ __('Selected Candidates') }} ({{ selectedCandidates.length }})
+									</h4>
+									<p class="text-sm text-gray-700 mt-1">
+										{{ __('Ready to add to segment') }}
+									</p>
 								</div>
-								<div class="flex-grow min-w-0">
-									<div class="text-base font-semibold text-gray-900">
-										{{
-											selectedCandidatePreview.full_name ||
-											__('Candidate not specified')
-										}}
-									</div>
-									<div class="text-sm text-gray-600 flex items-center mt-1">
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											class="h-4 w-4 mr-1"
-											fill="none"
-											viewBox="0 0 24 24"
-											stroke="currentColor"
-										>
-											<path
-												stroke-linecap="round"
-												stroke-linejoin="round"
-												stroke-width="2"
-												d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"
-											/>
-										</svg>
-										{{
-											selectedCandidatePreview.email || __('No email')
-										}}
-									</div>
-									<div
-										v-if="
-											selectedCandidatePreview.skills &&
-											processSkills(selectedCandidatePreview.skills).length >
-												0
-										"
-										class="mt-3"
-									>
-										<div class="text-xs font-medium text-gray-500 mb-2">
-											{{ __('Skills:') }}
-										</div>
-										<div class="flex flex-wrap gap-1">
-											<span
-												v-for="skill in processSkills(
-													selectedCandidatePreview.skills,
-												).slice(0, 4)"
-												:key="skill"
-												class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200"
-											>
-												{{ skill }}
-											</span>
-											<span
-												v-if="
-													processSkills(selectedCandidatePreview.skills)
-														.length > 4
-												"
-												class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200"
-											>
-												+{{
-													processSkills(selectedCandidatePreview.skills)
-														.length - 4
-												}}
-												{{ __('other skills') }}
-											</span>
-										</div>
-									</div>
-								</div>
+								<Button variant="ghost" theme="gray" size="sm" @click="deselectAllCandidates">
+									{{ __('Clear All') }}
+								</Button>
 							</div>
 						</div>
 					</div>
@@ -822,32 +579,20 @@
 					<Button variant="outline" theme="gray" @click="closeAddCandidateModal">
 						{{ __('Cancel') }}
 					</Button>
-					<Button
-						variant="solid"
-						theme="gray"
-						:loading="savingCandidate"
-						:disabled="
-							!candidateFormData.candidate_id ||
-							loadingAvailableCandidates ||
-							availableCandidates.length === 0
-						"
-						@click="addCandidateToSegment"
-					>
+					<Button variant="solid" theme="gray" :loading="savingCandidates"
+						:disabled="selectedCandidates.length === 0" @click="addSelectedCandidatesToSegment">
 						<template #prefix>
 							<FeatherIcon name="user-plus" class="h-4 w-4" />
 						</template>
-						{{ savingCandidate ? __('Adding...') : __('Add to Segment') }}
+						{{ savingCandidates ? __('Adding...') : __('Add Selected to Segment') }}
 					</Button>
 				</div>
 			</template>
 		</Dialog>
 
 		<!-- Campaign Wizard -->
-		<CampaignWizard
-			v-model="showCampaignWizard"
-			:preselected-segment="route.params.id"
-			@success="handleCampaignCreated"
-		/>
+		<CampaignWizard v-model="showCampaignWizard" :preselected-segment="route.params.id"
+			@success="handleCampaignCreated" />
 
 		<!-- Edit Talent Segment Modal -->
 		<Dialog v-model="showEditTalentSegmentModal" :options="editSegmentDialogOptions">
@@ -860,21 +605,14 @@
 							</h3>
 						</div>
 						<div class="flex items-center gap-1">
-							<Button
-								variant="ghost"
-								class="w-7"
-								@click="showEditTalentSegmentModal = false"
-							>
+							<Button variant="ghost" class="w-7" @click="showEditTalentSegmentModal = false">
 								<FeatherIcon name="x" class="h-4 w-4" />
 							</Button>
 						</div>
 					</div>
 					<div class="max-h-[60vh] overflow-y-auto">
-						<TalentSegmentForm
-							:segment="editingSegmentData"
-							@success="handleTalentSegmentUpdated"
-							@cancel="handleEditModalClose"
-						/>
+						<TalentSegmentForm :segment="editingSegmentData" @success="handleTalentSegmentUpdated"
+							@cancel="handleEditModalClose" />
 					</div>
 				</div>
 			</template>
@@ -891,10 +629,12 @@ import {
 	candidateCampaignService,
 	campaignService,
 	candidateService,
+	findTalentProfilesBySegment,
+	bulkInsertSegments,
 } from '../services/universalService'
 import { processSkills } from '../services/candidateService'
 import { usersStore } from '@/stores/users'
-import { Button, Dialog, Breadcrumbs, FeatherIcon, Autocomplete } from 'frappe-ui'
+import { Button, Dialog, Breadcrumbs, FeatherIcon } from 'frappe-ui'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import CampaignWizard from '@/components/campaign/CampaignWizard.vue'
 import TalentSegmentForm from '@/components/talent-segment/TalentSegmentForm.vue'
@@ -925,58 +665,39 @@ const loadingCampaigns = ref(false)
 const talentSegment = reactive({})
 const candidates = ref([])
 const relatedCampaigns = ref([])
-const availableCandidates = ref([])
-const availableCandidatesData = ref([]) // Store full candidate data for preview
 
 // Modals
 const showAddCandidateModal = ref(false)
 const showCampaignWizard = ref(false)
 const showEditTalentSegmentModal = ref(false)
 const editingSegmentData = ref(null)
-const savingCandidate = ref(false)
+const savingCandidates = ref(false)
 const showAnalytics = ref(false)
 
-// Search
+// Search and filtering
 const candidateSearch = ref('')
-const searchLoading = ref(false)
-const searchResults = ref([]) // Store search-specific results
-
-// Loading states
-const loadingAvailableCandidates = ref(false)
-
-// Form data
-const candidateFormData = reactive({
-	candidate_id: '',
-	segment_id: route.params.id,
-})
+const minScore = ref(50)
+const suggestedCandidates = ref([])
+const selectedCandidates = ref([])
+const loadingSuggestedCandidates = ref(false)
 
 // Computed
 const filteredCandidates = computed(() => {
-	// If we have search results from API, use those instead
-	if (candidateSearch.value && candidateSearch.value.trim().length >= 2) {
-		console.log('Using API search results:', searchResults.value.length)
-		return searchResults.value
-	}
-	
-	// Otherwise show all candidates
-	console.log('Showing all candidates:', candidates.value.length)
+	// For now, just return all candidates since we removed the search functionality
+	// from the main candidates table
 	return candidates.value
+})
+
+const filteredSuggestedCandidates = computed(() => {
+	// No longer filtering by search since we removed the search input
+	return suggestedCandidates.value
 })
 
 // Dialog options
 const addCandidateDialogOptions = computed(() => ({
-	title: __('Add Candidate to Segment'),
-	size: 'lg',
+	title: __('Add Candidates to Segment'),
+	size: '3xl',
 }))
-
-// Selected candidate preview for the modal
-const selectedCandidatePreview = computed(() => {
-	if (!candidateFormData.candidate_id) return null
-	return (
-		availableCandidatesData.value.find((c) => c.name === candidateFormData.candidate_id) ||
-		null
-	)
-})
 
 // Dialog options
 const editSegmentDialogOptions = computed(() => ({
@@ -984,32 +705,16 @@ const editSegmentDialogOptions = computed(() => ({
 	size: '4xl',
 }))
 
-// Add watcher with debounce for API search
-let searchTimeout = null
-watch(candidateSearch, (newValue) => {
-	console.log('candidateSearch changed to:', newValue)
-	
-	// Clear previous timeout
-	if (searchTimeout) {
-		clearTimeout(searchTimeout)
-	}
-	
-	// Debounce search - wait 500ms after user stops typing
-	searchTimeout = setTimeout(async () => {
-		if (newValue && newValue.trim().length >= 2) {
-			await searchCandidatesAPI(newValue.trim())
-		} else {
-			// Clear search results if query is empty
-			searchResults.value = []
-		}
-	}, 500)
-})
 
-// Watch modal state to load available candidates when modal opens
-watch(showAddCandidateModal, async (newValue) => {
+
+// Watch modal state to clear data when modal opens
+watch(showAddCandidateModal, (newValue) => {
 	if (newValue) {
-		console.log('Modal opened, loading available candidates...')
-		await loadAvailableCandidates()
+		console.log('Modal opened, clearing previous data...')
+		// Clear previous data when modal opens
+		suggestedCandidates.value = []
+		selectedCandidates.value = []
+		minScore.value = 50
 	}
 })
 
@@ -1026,9 +731,100 @@ watch(editingSegmentData, (newValue) => {
 }, { deep: true })
 
 // Methods
-const handleSearchInput = async (event) => {
+const handleSearchInput = (event) => {
 	console.log('Search input event:', event.target.value)
-	// The watcher will handle the actual search with debounce
+	// Currently disabled - search functionality removed from main table
+}
+
+const handleMinScoreChange = () => {
+	console.log('Min score changed to:', minScore.value)
+	// No longer auto-reload when score changes - user must click "Find Matches"
+}
+
+const loadSuggestedCandidates = async () => {
+	loadingSuggestedCandidates.value = true
+	try {
+		console.log('Loading suggested candidates with min score:', minScore.value)
+		const result = await findTalentProfilesBySegment(route.params.id, minScore.value)
+
+		if (result.success) {
+			suggestedCandidates.value = result.data
+			console.log('Loaded suggested candidates:', result.data.length)
+		} else {
+			console.error('Failed to load suggested candidates:', result.error)
+			suggestedCandidates.value = []
+		}
+	} catch (error) {
+		console.error('Error loading suggested candidates:', error)
+		suggestedCandidates.value = []
+	} finally {
+		loadingSuggestedCandidates.value = false
+	}
+}
+
+const toggleCandidateSelection = (candidateId) => {
+	const index = selectedCandidates.value.indexOf(candidateId)
+	if (index > -1) {
+		selectedCandidates.value.splice(index, 1)
+	} else {
+		selectedCandidates.value.push(candidateId)
+	}
+	console.log('Selected candidates:', selectedCandidates.value)
+}
+
+const selectAllCandidates = () => {
+	selectedCandidates.value = filteredSuggestedCandidates.value.map(c => c.name)
+	console.log('Selected all candidates:', selectedCandidates.value.length)
+}
+
+const deselectAllCandidates = () => {
+	selectedCandidates.value = []
+	console.log('Deselected all candidates')
+}
+
+const addSelectedCandidatesToSegment = async () => {
+	if (selectedCandidates.value.length === 0) return
+
+	console.log('Adding selected candidates to segment:', selectedCandidates.value)
+	console.log('Suggested candidates:', suggestedCandidates.value)
+	savingCandidates.value = true
+
+	try {
+		// Prepare data for bulk insert
+		const segmentData = selectedCandidates.value.map(candidateId => ({
+			talent_id: candidateId,
+			segment_id: route.params.id,
+			added_at: moment().format('YYYY-MM-DD HH:mm:ss'),
+			added_by: getUser()?.name || 'Administrator',
+			match_score: suggestedCandidates.value.find(c => c.name === candidateId)?.score || 0
+		}))
+
+		console.log('Bulk insert data:', segmentData)
+
+		const result = await bulkInsertSegments(segmentData)
+
+		if (result.success) {
+			console.log('Bulk insert successful:', result)
+
+			// Show success message
+			const successCount = result.results.filter(r => r.status === 'success').length
+			const duplicateCount = result.results.filter(r => r.status === 'duplicate').length
+			const failCount = result.results.filter(r => r.status === 'fail').length
+
+			console.log(`Successfully added ${successCount} candidates, ${duplicateCount} duplicates, ${failCount} failed`)
+
+			// Close modal and reload data
+			closeAddCandidateModal()
+			await loadCandidates()
+			await loadTalentSegment()
+		} else {
+			console.error('Failed to bulk insert candidates:', result.error)
+		}
+	} catch (error) {
+		console.error('Error adding candidates:', error)
+	} finally {
+		savingCandidates.value = false
+	}
 }
 
 // Utility functions using moment.js
@@ -1044,11 +840,11 @@ const formatDateTime = (dateString) => {
 
 const getStatusBadgeClass = (status) => {
 	const statusClasses = {
-		'ACTIVE': 'bg-green-100 text-green-800',
+		'ACTIVE': 'bg-gray-100 text-gray-800',
 		'INACTIVE': 'bg-gray-100 text-gray-800',
-		'PENDING': 'bg-yellow-100 text-yellow-800',
-		'CONTACTED': 'bg-blue-100 text-blue-800',
-		'REJECTED': 'bg-red-100 text-red-800',
+		'PENDING': 'bg-gray-100 text-gray-800',
+		'CONTACTED': 'bg-gray-100 text-gray-800',
+		'REJECTED': 'bg-gray-100 text-gray-800',
 	}
 	return statusClasses[status] || 'bg-gray-100 text-gray-800'
 }
@@ -1080,7 +876,7 @@ const loadCandidates = async () => {
 		console.log('Fetching candidate segments...')
 		const candidateSegmentResult = await candidateSegmentService.getList({
 			filters: { segment_id: route.params.id },
-			fields: ['name', 'talent_id', 'added_at', 'added_by'],
+			fields: ['name', 'talent_id', 'added_at', 'added_by', 'match_score'],
 		})
 		console.log('TalentProfilesSegment API result:', candidateSegmentResult)
 
@@ -1109,6 +905,7 @@ const loadCandidates = async () => {
 						added_at: segmentRelation?.added_at,
 						added_by: segmentRelation?.added_by,
 						candidate_segment_id: segmentRelation?.name,
+						match_score: segmentRelation?.match_score
 					}
 				})
 				console.log('Loaded candidates:', candidates.value.length, candidates.value)
@@ -1169,93 +966,17 @@ const loadRelatedCampaigns = async () => {
 	}
 }
 
-const loadAvailableCandidates = async () => {
-	loadingAvailableCandidates.value = true
-	try {
-		// Get all candidates with more fields for preview
-		const allCandidatesResult = await candidateService.getList({
-			page_length: 1000,
-			fields: ['name', 'full_name', 'email', 'phone', 'status', 'skills', 'headline']
-		})
 
-		if (allCandidatesResult && allCandidatesResult.success && allCandidatesResult.data) {
-			// Get candidates already in this segment
-			const existingCandidateSegments = await candidateSegmentService.getList({
-				filters: { segment_id: route.params.id },
-				fields: ['talent_id'],
-			})
-
-			const existingCandidateIds = existingCandidateSegments.success
-				? existingCandidateSegments.data.map((cs) => cs.talent_id)
-				: []
-
-			// Filter out candidates already in the segment
-			const availableCandidatesFiltered = allCandidatesResult.data.filter(
-				(candidate) => !existingCandidateIds.includes(candidate.name),
-			)
-
-			// Store full candidate data for preview
-			availableCandidatesData.value = availableCandidatesFiltered
-
-			// Create options for autocomplete
-			availableCandidates.value = availableCandidatesFiltered.map((item) => ({
-				title: item.full_name || item.name,
-				value: item.name,
-			}))
-
-			console.log('Available candidates:', availableCandidates.value)
-		}
-	} catch (error) {
-		console.error('Error loading candidates:', error)
-	} finally {
-		loadingAvailableCandidates.value = false
-	}
-}
-
-// Candidate methods
-const handleCandidateSelection = (candidateId) => {
-	candidateFormData.candidate_id = candidateId
-}
 
 const closeAddCandidateModal = () => {
 	showAddCandidateModal.value = false
-	candidateFormData.candidate_id = ''
-	availableCandidates.value = []
-	availableCandidatesData.value = []
+	selectedCandidates.value = []
+	suggestedCandidates.value = []
+	minScore.value = 50
 	console.log('Modal closed, cleared candidate data')
 }
 
-const addCandidateToSegment = async () => {
-	if (!candidateFormData.candidate_id) return
-	console.log('Adding candidate to segment:', candidateFormData.candidate_id)
-	savingCandidate.value = true
-	try {
-		// Create a new TalentProfilesSegment relationship
-		const candidateSegmentData = {
-			talent_id: candidateFormData.candidate_id?.value,
-			segment_id: route.params.id,
-			added_at: moment().format('YYYY-MM-DD HH:mm:ss'),
-			added_by: getUser()?.name || 'Administrator',
-		}
 
-		const result = await candidateSegmentService.save(candidateSegmentData)
-		if (result.success) {
-			// Show success message
-			const candidateName = selectedCandidatePreview.value?.full_name || 'Candidate'
-			console.log(`${candidateName} has been successfully added to the segment!`)
-
-			closeAddCandidateModal()
-			await loadCandidates()
-			await loadTalentSegment()
-		} else {
-			console.error('Failed to add candidate to segment:', result.error)
-		}
-	} catch (error) {
-		console.error('Error adding candidate:', error)
-	} finally {
-		savingCandidate.value = false
-	}
-}
 
 const viewCandidateDetails = (candidate) => {
 	router.push(`/candidates/${candidate.name}`)
@@ -1284,65 +1005,7 @@ const removeFromSegment = async (candidate) => {
 	}
 }
 
-// Search API method
-const searchCandidatesAPI = async (searchQuery) => {
-	if (!searchQuery || searchQuery.trim().length < 2) {
-		searchResults.value = []
-		return
-	}
 
-	searchLoading.value = true
-	console.log('Searching candidates via API with query:', searchQuery)
-	
-	try {
-		// Get all TalentProfilesSegment records for this segment first
-		const candidateSegmentResult = await candidateSegmentService.getList({
-			filters: { segment_id: route.params.id },
-			fields: ['name', 'talent_id', 'added_at', 'added_by'],
-		})
-
-		if (candidateSegmentResult.success && candidateSegmentResult.data.length > 0) {
-			const candidateIds = candidateSegmentResult.data.map((cs) => cs.talent_id)
-
-			// Search candidates with API filters - search by full_name only
-			const searchResult = await candidateService.getList({
-				filters: { 
-					name: ['in', candidateIds],
-					full_name: ['like', `%${searchQuery}%`]
-				},
-				page_length: 1000,
-				fields: ['name', 'full_name', 'email', 'phone', 'status', 'skills', 'headline', 'last_interaction']
-			})
-
-			console.log('Search API result:', searchResult)
-
-			if (searchResult && searchResult.success && searchResult.data) {
-				// Merge with segment relationship data
-				searchResults.value = searchResult.data.map((candidate) => {
-					const segmentRelation = candidateSegmentResult.data.find(
-						(cs) => cs.talent_id === candidate.name,
-					)
-					return {
-						...candidate,
-						added_at: segmentRelation?.added_at,
-						added_by: segmentRelation?.added_by,
-						candidate_segment_id: segmentRelation?.name,
-					}
-				})
-			} else {
-				console.error('Search API failed:', searchResult?.error || 'No data returned')
-				searchResults.value = []
-			}
-		} else {
-			searchResults.value = []
-		}
-	} catch (error) {
-		console.error('Error searching candidates:', error)
-		searchResults.value = []
-	} finally {
-		searchLoading.value = false
-	}
-}
 
 // Additional methods
 const handleCampaignCreated = async (event) => {
@@ -1376,7 +1039,7 @@ onMounted(async () => {
 	console.log('Route params:', route.params)
 	console.log('Route path:', route.path)
 	console.log('Route name:', route.name)
-	
+
 	try {
 		console.log('Loading talent segment...')
 		await loadTalentSegment()
@@ -1389,6 +1052,10 @@ onMounted(async () => {
 		console.error('Error in onMounted:', error)
 	}
 })
+
+const getEngagementColor = (score) => {
+	return score >= 80 ? 'text-green-500' : score >= 60 ? 'text-yellow-500' : 'text-red-500'
+}
 </script>
 
 <style scoped>
@@ -1396,5 +1063,86 @@ onMounted(async () => {
 	max-width: 1200px;
 	margin: 0 auto;
 	padding: 20px;
+}
+
+/* Custom slider styles */
+/* Wrapper để chứa slider và background gradient */
+.slider-wrapper {
+	position: relative;
+	width: 100%;
+	height: 8px;
+	margin-bottom: 4px;
+}
+
+/* Progress track */
+.progress-track {
+	position: absolute;
+	top: 0;
+	left: 0;
+	height: 8px;
+	border-radius: 4px;
+	background: linear-gradient(to right, #3b82f6 var(--progress), #e5e7eb var(--progress));
+	width: 100%;
+	z-index: 1;
+}
+
+/* Custom slider styles */
+.slider {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 100%;
+	height: 8px;
+	background: transparent;
+	cursor: pointer;
+	position: relative;
+	z-index: 2;
+}
+
+/* Track styles với gradient background */
+.slider::-webkit-slider-track {
+	height: 8px;
+	border-radius: 4px;
+	background: transparent;
+}
+
+.slider::-moz-range-track {
+	height: 8px;
+	border-radius: 4px;
+	background: transparent;
+}
+
+/* Thumb styles với màu động */
+.slider::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	height: 20px;
+	width: 20px;
+	border-radius: 50%;
+	background: #3b82f6;
+	cursor: pointer;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+	transition: all 0.2s ease;
+}
+
+.slider::-moz-range-thumb {
+	height: 20px;
+	width: 20px;
+	border-radius: 50%;
+	background: #3b82f6;
+	cursor: pointer;
+	border: none;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+	transition: all 0.2s ease;
+}
+
+/* Hover effects */
+.slider::-webkit-slider-thumb:hover {
+	transform: scale(1.1);
+	background: #2563eb;
+}
+
+.slider::-moz-range-thumb:hover {
+	transform: scale(1.1);
+	background: #2563eb;
 }
 </style>

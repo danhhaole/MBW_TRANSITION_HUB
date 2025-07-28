@@ -312,10 +312,24 @@ export const processSkills = (skills) => {
   // Case B: String
   if (typeof skills === 'string') {
     const s = skills.trim()
+    
+    // Thử parse JSON chuẩn trước
     try {
       const parsed = JSON.parse(s) // chuẩn: ["react","test"]
       if (Array.isArray(parsed)) return clean(parsed)
-    } catch { /* ignore */ }
+    } catch { 
+      // Nếu fail, kiểm tra xem có phải dạng ['react','test'] không
+      if (/^\[.*\]$/.test(s)) {
+        try {
+          // Chuyển single quotes thành double quotes
+          const fixed = s.replace(/'/g, '"')
+          const parsed = JSON.parse(fixed)
+          if (Array.isArray(parsed)) return clean(parsed)
+        } catch { /* ignore */ }
+      }
+    }
+    
+    // Fallback: split by comma
     return clean(s.split(','))
   }
 

@@ -18,10 +18,28 @@ class TalentProfiles(Document):
 		if self.position:
 			create_talentprofiles_segment(self)
 			
+	def validate_unique_talent_profiles(self):
+			"""
+			Kiểm tra xem đã tồn tại TalentProfiles với cùng
+			talent_id + candidate_id (ngoại trừ chính nó) hay chưa.
+			"""																												
+			filters = {
+				"email": self.email
+			}
+
+			existing = frappe.db.exists("TalentProfiles", filters)
+
+			if existing and existing != self.name:
+				frappe.throw(
+				frappe._(
+					"A TalentProfiles with Email <b>{0}</b> already exists: <a href='/app/TalentProfiles/{1}'>{1}</a>"
+				).format(self.email, existing),
+				title=frappe._("Duplicate TalentProfiles"),
+			)
 
 def create_talentprofiles_segment(self):
 	#Tìm talentsegment theo title (position)
-	segment = frappe.db.get_value("TalenSegment",{"title":self.position},"name")
+	segment = frappe.db.get_value("TalentSegment",{"title":self.position},"name")
 	if segment:
 		#Kiểm tra tồn tại profile trong segment chưa
 		profile_segment_exists = frappe.db.exists("TalentProfilesSegment",{"talent_id":self.name,"segment_id":segment})
@@ -36,28 +54,10 @@ def create_talentprofiles_segment(self):
 			doc.insert(ignore_permissions=True)
 			frappe.db.commit()
 
-	return True
+		return True
 #     "talent_id",
 #   "segment_id",
 #   "match_score",
 #   "added_at",
 #   "added_by"
 
-	def validate_unique_talent_profiles(self):
-		"""
-		Kiểm tra xem đã tồn tại TalentProfiles với cùng
-		talent_id + candidate_id (ngoại trừ chính nó) hay chưa.
-		"""
-		filters = {
-			"email": self.email
-		}
-
-		existing = frappe.db.exists("TalentProfiles", filters)
-
-		if existing and existing != self.name:
-			frappe.throw(
-            frappe._(
-                "A TalentProfiles with Email <b>{0}</b> already exists: <a href='/app/TalentProfiles/{1}'>{1}</a>"
-            ).format(self.email, existing),
-            title=frappe._("Duplicate TalentProfiles"),
-        )

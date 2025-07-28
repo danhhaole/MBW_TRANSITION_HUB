@@ -322,7 +322,7 @@ def submit_talent_profile():
 
     optional_fields = [
         "phone", "dob", "avatar", "headline", "skills","position",
-        "cv_original_url", "portfolio_url", "linkedin_url"
+        "cv_original_url", "portfolio_url", "linkedin_url", ""
     ]
     for field in optional_fields:
         if field in data and data[field] not in [None, ""]:
@@ -340,9 +340,13 @@ def submit_talent_profile():
             profile_fields["profile_data"] = {}
 
     # 4. Tạo và lưu hồ sơ (public)
-    profile = frappe.get_doc(profile_fields)
-    profile.insert(ignore_permissions=True)
-    frappe.db.commit()
+    try:
+        profile = frappe.get_doc(profile_fields)
+        profile.insert(ignore_permissions=True)
+        frappe.db.commit()
+    except Exception as e:
+        print("error", e)
+        frappe.throw(e)
 
     return {
         "success": True,

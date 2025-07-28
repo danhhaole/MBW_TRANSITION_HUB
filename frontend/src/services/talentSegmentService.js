@@ -31,6 +31,7 @@ export const getFilteredTalentSegments = async (filterOptions = {}) => {
       ]
     }
     const response = await getTalentSegments(options)
+    console.log('response', response)
     if (response && Array.isArray(response.data)) {
       return response
     } else {
