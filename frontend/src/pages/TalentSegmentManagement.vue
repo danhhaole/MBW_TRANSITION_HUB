@@ -170,15 +170,15 @@
             </div>
             <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
               <div>
-                <p class="text-sm text-gray-700">
-                  {{ __('Showing') }}
-                  <span class="font-medium">{{ (pagination.currentPage - 1) * pagination.itemsPerPage + 1 }}</span>
-                  {{ __('to') }}
-                  <span class="font-medium">{{ Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.total) }}</span>
-                  {{ __('of') }}
-                  <span class="font-medium">{{ pagination.total }}</span>
-                  {{ __('results') }}
-                </p>
+                  <p class="text-sm text-gray-700">
+                    {{ __('Showing') }}
+                    <span class="font-medium">{{ paginationStart }}</span>
+                    {{ __('to') }}
+                    <span class="font-medium">{{ paginationEnd }}</span>
+                    {{ __('of') }}
+                    <span class="font-medium">{{ totalSegments }}</span>
+                    {{ __('results') }}
+                  </p>
               </div>
               <div>
                 <nav class="relative z-0 inline-flex rounded-md  -space-x-px" aria-label="Pagination">

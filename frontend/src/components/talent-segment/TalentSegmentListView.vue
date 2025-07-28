@@ -38,7 +38,7 @@
               {{ __('Type') }}
             </th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              {{ __('Candidates') }}
+              {{ __('Total Profiles') }}
             </th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               {{ __('Status') }}
@@ -53,7 +53,7 @@
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
           <!-- Create button row -->
-          <tr v-if="hasCreateButton" class="hover:bg-gray-50">
+          <!-- <tr v-if="hasCreateButton" class="hover:bg-gray-50">
             <td colspan="6" class="px-6 py-4">
               <div class="flex items-center justify-center">
                 <Button variant="outline" theme="gray" @click="$emit('create')" class="flex items-center">
@@ -66,7 +66,7 @@
                 </Button>
               </div>
             </td>
-          </tr>
+          </tr> -->
 
           <!-- Segment rows -->
           <tr v-for="segment in segments" :key="segment.name" class="hover:bg-gray-50" v-show="!segment.isCreateButton">
