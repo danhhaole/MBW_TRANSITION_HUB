@@ -15,17 +15,16 @@ export const useLadiPageStore = defineStore('ladiPage', {
     },
     filters: {
       search: '',
-      status: 'all',
+      published: 'all',
       campaign: 'all'
     }
   }),
 
   getters: {
-    statusOptions: () => [
+    publishedOptions: () => [
       { label: 'All Statuses', value: 'all' },
-      { label: 'Draft', value: 'Draft' },
-      { label: 'Published', value: 'Published' },
-      { label: 'Archived', value: 'Archived' }
+      { label: 'Published', value: '1' },
+      { label: 'Draft', value: '0' }
     ]
   },
 
@@ -38,7 +37,7 @@ export const useLadiPageStore = defineStore('ladiPage', {
 
         // Prepare filters
         let queryFilters = {}
-        if (filters.status !== 'all') queryFilters.status = filters.status
+        if (filters.published !== 'all') queryFilters.published = filters.published
         if (filters.campaign !== 'all') queryFilters.campaign = filters.campaign
         
         // Prepare or_filters for search
@@ -46,7 +45,7 @@ export const useLadiPageStore = defineStore('ladiPage', {
         if (filters.search) {
           orFilters = [
             ['title', 'like', `%${filters.search}%`],
-            ['description', 'like', `%${filters.search}%`]
+            ['route', 'like', `%${filters.search}%`]
           ]
         }
 
@@ -142,6 +141,27 @@ export const useLadiPageStore = defineStore('ladiPage', {
       }
     },
 
+    async savePageContent(name, content, css) {
+      try {
+        this.loading = true
+        const response = await call('frappe.client.set_value', {
+          doctype: 'LadiPage',
+          name: name,
+          fieldname: {
+            content: content,
+            css: css
+          }
+        })
+        return response
+      } catch (error) {
+        this.error = error
+        console.error('Error saving page content:', error)
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
     async deleteLadiPage(name) {
       try {
         this.loading = true
@@ -183,8 +203,8 @@ export const useLadiPageStore = defineStore('ladiPage', {
       this.fetchLadiPages()
     },
 
-    setStatusFilter(status) {
-      this.filters.status = status
+    setPublishedFilter(published) {
+      this.filters.published = published
       this.pagination.page = 1
       this.fetchLadiPages()
     },

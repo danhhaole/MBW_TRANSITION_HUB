@@ -93,7 +93,7 @@
                                         Actions</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-200">
+                            <tbody class="divide-y divide-gray-200 text-sm">
                                 <tr v-for="item in items" :key="item.name">
                                     <td class="py-4 px-4">{{ item.talent_id }}</td>
                                     <td class="py-4 px-4">{{ item.campaign_id }}</td>

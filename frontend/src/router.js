@@ -36,6 +36,7 @@ import CandidatePoolManagement from './pages/CandidatePoolManagement.vue'
 // Email Editor
 import EmailEditor from './pages/EmailEditor.vue'
 import LadiPageEditor from './pages/LadiPageEditor.vue'
+import LadiPageView from './pages/LadiPageView.vue'
 import ApplicantPoolManagement from './pages/ApplicantPoolManagement.vue'
 
 
@@ -87,14 +88,10 @@ const routes = [
 	// Email Editor
 	{ path: '/email-editor', name: 'EmailEditor', component: EmailEditor },
 	{ path: '/ladi-editor', name: 'LadiPageEditor', component: LadiPageEditor },
+	{ path: '/ladi-view', name: 'LadiPageView', component: LadiPageView },
 	{ path: '/applicant-pool', name: 'ApplicantPoolManagement', component: ApplicantPoolManagement },
 
-	// Public Route
-	{ path: '/ladi/:slug', name: 'LadiPage', component: LadiPage, meta: { public: true } },
-	{ path: '/register', name: 'RegisterPage', component: RegisterPage, meta: { public: true } },
-	{ path: '/unsubscribe', name: 'UnSubscribePage', component: UnSubscribePage, meta: { public: true } },
-	{ path: '/application', name: 'ApplicationPage', component: ApplicationPage, meta: { public: true } },
-
+	// LadiPage Management
 	{ 
 		path: '/ladi-pages', 
 		name: 'ladi-pages',
@@ -104,6 +101,30 @@ const routes = [
 			title: 'Ladi Page Management'
 		}
 	},
+	{ 
+		path: '/ladi-pages/:id/edit', 
+		name: 'ladi-page-editor',
+		component: LadiPageEditor,
+		meta: {
+			requiresAuth: true,
+			title: 'Ladi Page Editor'
+		}
+	},
+	{ 
+		path: '/ladi-pages/:id/view', 
+		name: 'ladi-page-view',
+		component: LadiPageView,
+		meta: {
+			requiresAuth: true,
+			title: 'Ladi Page View'
+		}
+	},
+
+	// Public Route
+	{ path: '/ladi/:slug', name: 'LadiPage', component: LadiPage, meta: { public: true } },
+	{ path: '/register', name: 'RegisterPage', component: RegisterPage, meta: { public: true } },
+	{ path: '/unsubscribe', name: 'UnSubscribePage', component: UnSubscribePage, meta: { public: true } },
+	{ path: '/application', name: 'ApplicationPage', component: ApplicationPage, meta: { public: true } },
 ]
 
 

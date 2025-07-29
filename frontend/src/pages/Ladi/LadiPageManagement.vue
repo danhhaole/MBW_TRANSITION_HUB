@@ -9,7 +9,8 @@
         <!-- Create button -->
         <Button variant="solid" theme="gray" @click="handleCreate" :loading="store.loading">
           <template #prefix>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
           </template>
@@ -24,35 +25,25 @@
         <div class="flex flex-wrap gap-4 items-center justify-between">
           <!-- Search -->
           <div class="flex-1 min-w-[200px]">
-            <FormControl
-              type="text"
-              :placeholder="__('Search Ladi pages...')"
-              v-model="store.filters.search"
-              @input="handleSearch"
-            />
+            <FormControl type="text" :placeholder="__('Search Ladi pages...')" v-model="store.filters.search"
+              @input="handleSearch" />
           </div>
 
           <!-- Filters -->
           <div class="flex flex-wrap gap-4">
-            <Select
-              v-model="store.filters.status"
-              :options="store.statusOptions"
-              @change="store.setStatusFilter"
-              class="w-40"
-            />
-            <Select
-              v-model="store.filters.campaign"
-              :options="campaignOptions"
-              @change="store.setCampaignFilter"
-              class="w-48"
-            />
+            <Select v-model="store.filters.published" :options="store.publishedOptions"
+              @change="store.setPublishedFilter" class="w-40" />
+            <Select v-model="store.filters.campaign" :options="campaignOptions" @change="store.setCampaignFilter"
+              class="w-48" />
           </div>
 
           <!-- Refresh Button -->
           <Button variant="outline" theme="gray" @click="handleRefresh" :loading="refreshing">
             <template #prefix>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
             </template>
             {{ __('Refresh') }}
@@ -73,13 +64,13 @@
                   {{ __('Title') }}
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  {{ __('Route') }}
+                  {{ __('Slug') }}
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   {{ __('Campaign') }}
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  {{ __('Status') }}
+                  {{ __('Published') }}
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   {{ __('Created') }}
@@ -107,15 +98,11 @@
                   {{ page.campaign || __('None') }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <span
-                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                    :class="{
-                      'bg-green-100 text-green-800': page.status === 'Published',
-                      'bg-yellow-100 text-yellow-800': page.status === 'Draft',
-                      'bg-gray-100 text-gray-800': page.status === 'Archived'
-                    }"
-                  >
-                    {{ page.status }}
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" :class="{
+                    'bg-green-100 text-green-800': page.published,
+                    'bg-yellow-100 text-yellow-800': !page.published
+                  }">
+                    {{ page.published ? __('Published') : __('Draft') }}
                   </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -123,31 +110,35 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div class="flex justify-end space-x-2">
-                    <Button
-                      variant="outline"
-                      theme="gray"
-                      size="sm"
-                      @click="handleEdit(page)"
-                      :title="__('Edit')"
-                    >
-                      <template #prefix>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                      </template>
+                    <Button variant="outline" theme="blue" size="sm" @click="handleEdit(page)"
+                      :title="__('Edit Content')">
+
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+
                     </Button>
-                    <Button
-                      variant="outline"
-                      theme="red"
-                      size="sm"
-                      @click="handleDelete(page)"
-                      :title="__('Delete')"
-                    >
-                      <template #prefix>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </template>
+                    <Button variant="outline" theme="gray" size="sm" @click="handleView(page)" :title="__('View')">
+
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+
+                    </Button>
+                    <Button variant="outline" theme="red" size="sm" @click="handleDelete(page)" :title="__('Delete')">
+
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+
                     </Button>
                   </div>
                 </td>
@@ -157,23 +148,16 @@
         </div>
 
         <!-- Pagination -->
-        <div v-if="store.pagination.total > store.pagination.limit" class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+        <div v-if="store.pagination.total > store.pagination.limit"
+          class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
           <div class="flex items-center justify-between">
             <div class="flex-1 flex justify-between sm:hidden">
-              <Button
-                variant="outline"
-                theme="gray"
-                @click="store.setPage(store.pagination.page - 1)"
-                :disabled="store.pagination.page === 1"
-              >
+              <Button variant="outline" theme="gray" @click="store.setPage(store.pagination.page - 1)"
+                :disabled="store.pagination.page === 1">
                 {{ __('Previous') }}
               </Button>
-              <Button
-                variant="outline"
-                theme="gray"
-                @click="store.setPage(store.pagination.page + 1)"
-                :disabled="store.pagination.page === store.pagination.pages"
-              >
+              <Button variant="outline" theme="gray" @click="store.setPage(store.pagination.page + 1)"
+                :disabled="store.pagination.page === store.pagination.pages">
                 {{ __('Next') }}
               </Button>
             </div>
@@ -183,7 +167,8 @@
                   {{ __('Showing') }}
                   <span class="font-medium">{{ ((store.pagination.page - 1) * store.pagination.limit) + 1 }}</span>
                   {{ __('to') }}
-                  <span class="font-medium">{{ Math.min(store.pagination.page * store.pagination.limit, store.pagination.total) }}</span>
+                  <span class="font-medium">{{ Math.min(store.pagination.page * store.pagination.limit,
+                    store.pagination.total) }}</span>
                   {{ __('of') }}
                   <span class="font-medium">{{ store.pagination.total }}</span>
                   {{ __('results') }}
@@ -191,26 +176,22 @@
               </div>
               <div>
                 <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                  <Button
-                    variant="outline"
-                    theme="gray"
-                    @click="store.setPage(store.pagination.page - 1)"
+                  <Button variant="outline" theme="gray" @click="store.setPage(store.pagination.page - 1)"
                     :disabled="store.pagination.page === 1"
-                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-                  >
+                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
                     <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                      <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                      <path fill-rule="evenodd"
+                        d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                        clip-rule="evenodd" />
                     </svg>
                   </Button>
-                  <Button
-                    variant="outline"
-                    theme="gray"
-                    @click="store.setPage(store.pagination.page + 1)"
+                  <Button variant="outline" theme="gray" @click="store.setPage(store.pagination.page + 1)"
                     :disabled="store.pagination.page === store.pagination.pages"
-                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-                  >
+                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
                     <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                      <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                      <path fill-rule="evenodd"
+                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                        clip-rule="evenodd" />
                     </svg>
                   </Button>
                 </nav>
@@ -222,26 +203,25 @@
     </div>
 
     <!-- Create/Edit Modal -->
-    <LadiPageFormModal
-      v-if="showFormModal"
-      v-model="showFormModal"
-      :page="selectedPage"
-      @saved="handleSaved"
-    />
+    <LadiPageFormModal v-if="showFormModal" v-model="showFormModal" :page="selectedPage" @saved="handleSaved" />
+    <ToastContainer />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { Button, FormControl, Select, Breadcrumbs } from 'frappe-ui'
 import { useToast } from '@/composables/useToast'
 import { useLadiPageStore } from '@/stores/ladiPage'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import Loading from '@/components/Loading.vue'
 import LadiPageFormModal from './LadiPageFormModal.vue'
+import { ToastContainer } from '@/components/shared'
 
 // Initialize store
 const store = useLadiPageStore()
+const router = useRouter()
 
 // Toast notifications
 const { showSuccess, showError } = useToast()
@@ -292,8 +272,11 @@ const handleCreate = () => {
 }
 
 const handleEdit = (page) => {
-  selectedPage.value = page
-  showFormModal.value = true
+  router.push({ name: 'ladi-page-editor', params: { id: page.name } })
+}
+
+const handleView = (page) => {
+  router.push({ name: 'ladi-page-view', params: { id: page.name } })
 }
 
 const handleDelete = async (page) => {
