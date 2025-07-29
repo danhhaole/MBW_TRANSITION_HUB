@@ -279,7 +279,13 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50):
     except Exception as e:
         return []
 
+def render_merge_tags(html: str, context: dict) -> str:
+    import re
+    def replacer(match):
+        tag = match.group(1).strip()
+        return context.get(tag, f"{{{{ {tag} }}}}")  # nếu không có thì giữ nguyên
 
+    return re.sub(r"\{\{\s*(.*?)\s*\}\}", replacer, html)
 # def convert_po_to_csv(po_path, csv_path):
 #     import polib
 #     po = polib.pofile(po_path)

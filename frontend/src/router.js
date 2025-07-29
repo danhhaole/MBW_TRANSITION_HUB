@@ -93,7 +93,17 @@ const routes = [
 	{ path: '/ladi/:slug', name: 'LadiPage', component: LadiPage, meta: { public: true } },
 	{ path: '/register', name: 'RegisterPage', component: RegisterPage, meta: { public: true } },
 	{ path: '/unsubscribe', name: 'UnSubscribePage', component: UnSubscribePage, meta: { public: true } },
-	{ path: '/application', name: 'ApplicationPage', component: ApplicationPage, meta: { public: true } }
+	{ path: '/application', name: 'ApplicationPage', component: ApplicationPage, meta: { public: true } },
+
+	{ 
+		path: '/ladi-pages', 
+		name: 'ladi-pages',
+		component: () => import('./pages/Ladi/LadiPageManagement.vue'),
+		meta: {
+			requiresAuth: true,
+			title: 'Ladi Page Management'
+		}
+	},
 ]
 
 

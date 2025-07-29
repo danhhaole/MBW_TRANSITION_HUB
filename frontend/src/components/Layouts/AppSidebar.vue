@@ -325,6 +325,11 @@ const links = [
         icon: Email2Icon,
         to: { name: 'EmailEditor' }
       },
+      {
+        label: "Ladi Pages",
+        icon: NoteIcon,
+        to: 'ladi-pages',
+      },
 
     ]
   },

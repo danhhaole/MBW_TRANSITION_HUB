@@ -379,5 +379,51 @@ bm.add('1-column', {
         buildProps: ['display', 'flex-direction', 'justify-content', 'align-items', 'align-content', 'order', 'flex', 'flex-grow', 'flex-shrink', 'flex-basis'],
       });
       
+      const mergeTags = [
+        { label: 'Company Name', tag: '{{ company_name }}' },
+        { label: 'Form URL', tag: '{{ form_url }}' },
+        { label: 'Logo URL', tag: '{{ logo_url }}' },
+      ];
+      editor.BlockManager.add('merge-tag-blocks', {
+        label: 'Merge Tags',
+        category: 'Dynamic',
+        content: `<span>{{ company_name }}</span>`,
+      });
+      editor.Commands.add('open-merge-tag-popup', {
+        run(editor) {
+          const modal = editor.Modal;
+          const content = document.createElement('div');
+      
+          mergeTags.forEach(tag => {
+            const btn = document.createElement('button');
+            btn.innerText = tag.label;
+            btn.style.margin = '4px';
+            btn.onclick = () => {
+              const selected = editor.getSelected();
+              const insertText = tag.tag;
+      
+              if (selected && selected.is('text')) {
+                selected.view?.setContent(selected.view.getContent() + insertText);
+              } else {
+                editor.RichTextEditor?.insertHTML?.(insertText); // fallback
+              }
+      
+              modal.close();
+            };
+      
+            content.appendChild(btn);
+          });
+      
+          modal.setTitle('Insert Merge Tag');
+          modal.setContent(content);
+          modal.open();
+        }
+      });
+      editor.Panels.addButton('options', [{
+        id: 'merge-tags',
+        className: 'fa fa-tag',
+        command: 'open-merge-tag-popup',
+        attributes: { title: 'Insert Merge Tag' }
+      }]);
   }
   
