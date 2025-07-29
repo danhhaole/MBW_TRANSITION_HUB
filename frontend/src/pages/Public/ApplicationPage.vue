@@ -1,5 +1,5 @@
 <template>
-    <div class="flex justify-center items-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8">
+    <div class="flex justify-center items-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 container mx-auto">
       <div class="w-full max-w-xl bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
         <div class="text-center mb-8">
           <div class="inline-flex items-center justify-center w-16 h-16 bg-gray-600 rounded-full mb-4">

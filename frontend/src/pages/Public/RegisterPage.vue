@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-blue-50 w-full via-white to-indigo-50 py-8">
+  <div class="min-h-screen bg-gradient-to-br from-blue-50 w-full via-white to-indigo-50 py-8 container mx-auto">
     <div class="mx-auto w-full px-4 sm:px-6 lg:px-8">
       <!-- Header -->
       <div class="text-center mb-8">

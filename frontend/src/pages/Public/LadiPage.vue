@@ -4,8 +4,8 @@
   </div>
 
   <div v-else-if="pageData" class="ladi-page-container">
-    <!-- Inject HTML content with proper styling -->
-    <div v-html="fullHtml" class="ladi-page-content"></div>
+    <!-- Render only content, not full HTML document -->
+    <div v-html="pageData.content" class="ladi-page-content"></div>
   </div>
 
   <div v-else class="flex justify-center items-center min-h-screen">
@@ -17,171 +17,92 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted, nextTick, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { call } from 'frappe-ui'
 
 const pageData = ref(null)
 const loading = ref(true)
-
 const route = useRoute()
 
-// Computed full HTML with proper structure
-const fullHtml = computed(() => {
-  if (!pageData.value) return ''
-  
-  return `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>${pageData.value.title || 'Ladi Page'}</title>
-      <style>
-        ${pageData.value.css || ''}
-        
-        /* Reset and base styles */
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
-        
-        html, body {
-          height: 100%;
-          width: 100%;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          line-height: 1.6;
-          color: #333;
-        }
-        
-        /* Ensure content is properly contained */
-        .ladi-page-content {
-          width: 100%;
-          min-height: 100vh;
-          overflow-x: hidden;
-          position: relative;
-        }
-        
-        /* Header fixes */
-        header, .header, [class*="header"] {
-          position: relative !important;
-          top: auto !important;
-          left: auto !important;
-          right: auto !important;
-          width: 100% !important;
-          z-index: 1000;
-        }
-        
-        /* Footer fixes */
-        footer, .footer, [class*="footer"] {
-          position: relative !important;
-          bottom: auto !important;
-          left: auto !important;
-          right: auto !important;
-          width: 100% !important;
-          z-index: 1000;
-        }
-        
-        /* Navigation fixes */
-        nav, .nav, [class*="nav"] {
-          position: relative !important;
-          width: 100% !important;
-        }
-        
-        /* Fixed positioning fixes */
-        [style*="position: fixed"] {
-          position: relative !important;
-        }
-        
-        /* Absolute positioning fixes */
-        [style*="position: absolute"] {
-          position: relative !important;
-        }
-        
-        /* Responsive images */
-        img {
-          max-width: 100%;
-          height: auto;
-        }
-        
-        /* Fix for common layout issues */
-        .container {
-          width: 100%;
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 0 15px;
-        }
-        
-        /* Flexbox fixes */
-        .flex, [class*="flex"] {
-          display: flex !important;
-        }
-        
-        /* Grid fixes */
-        .grid, [class*="grid"] {
-          display: grid !important;
-        }
-        
-        /* Mobile responsiveness */
-        @media (max-width: 768px) {
-          .container {
-            padding: 0 10px;
-          }
-          
-          header, .header, [class*="header"] {
-            position: relative !important;
-          }
-          
-          footer, .footer, [class*="footer"] {
-            position: relative !important;
-          }
-        }
-        
-        /* Ensure proper stacking */
-        * {
-          z-index: auto;
-        }
-        
-        header, .header, [class*="header"] {
-          z-index: 1000 !important;
-        }
-        
-        footer, .footer, [class*="footer"] {
-          z-index: 1000 !important;
-        }
-      </style>
-      <script src="https://cdn.tailwindcss.com"><\/script>
-    </head>
-    <body>
-      <div class="ladi-page-content">
-        ${pageData.value.content || ''}
-      </div>
-    </body>
-    </html>
-  `
-})
-
+// Function to safely inject CSS without conflicts
 function injectStyleToHead(cssContent) {
   const id = 'ladi-style'
   const oldStyle = document.getElementById(id)
   if (oldStyle) oldStyle.remove()
 
   if (cssContent) {
+    // Clean and sanitize CSS
+    const sanitizedCSS = sanitizeCSS(cssContent)
     const styleEl = document.createElement('style')
     styleEl.setAttribute('id', id)
-    styleEl.innerHTML = cssContent
+    styleEl.innerHTML = sanitizedCSS
     document.head.appendChild(styleEl)
   }
 }
 
-function injectTailwindCDN() {
-  const id = 'tailwind-cdn'
-  if (!document.getElementById(id)) {
-    const script = document.createElement('script')
-    script.setAttribute('id', id)
-    script.src = 'https://cdn.tailwindcss.com'
-    document.head.appendChild(script)
+// Function to sanitize CSS and prevent conflicts
+function sanitizeCSS(css) {
+  // Remove any potential conflicts with existing styles
+  let sanitized = css
+  
+  // Add scoping to prevent global conflicts
+  sanitized = sanitized.replace(/body\s*{/g, '.ladi-page-content {')
+  sanitized = sanitized.replace(/html\s*{/g, '.ladi-page-content {')
+  
+  // Ensure navbar styles are preserved
+  sanitized += `
+    /* Ensure navbar functionality */
+    .ladi-page-content nav,
+    .ladi-page-content header {
+      position: relative !important;
+      width: 100% !important;
+      z-index: 1000 !important;
+    }
+  `
+  
+  return sanitized
+}
+
+// Function to extract and clean HTML content
+function extractCleanHTML(htmlString) {
+  if (!htmlString) return ''
+  
+  // If it's a full HTML document, extract only body content
+  const bodyMatch = htmlString.match(/<body[^>]*>([\s\S]*?)<\/body>/i)
+  if (bodyMatch) {
+    return bodyMatch[1]
+  }
+  
+  // If it contains DOCTYPE, extract everything after head
+  const docMatch = htmlString.match(/<!DOCTYPE[^>]*>[\s\S]*?<\/head>\s*([\s\S]*?)(?:<\/html>)?$/i)
+  if (docMatch) {
+    return docMatch[1].replace(/<\/?body[^>]*>/gi, '')
+  }
+  
+  // Otherwise return as is
+  return htmlString
+}
+
+// Function to extract CSS from HTML
+function extractCSS(htmlString) {
+  if (!htmlString) return ''
+  
+  const cssMatches = htmlString.match(/<style[^>]*>([\s\S]*?)<\/style>/gi)
+  if (cssMatches) {
+    return cssMatches
+      .map(match => match.replace(/<\/?style[^>]*>/gi, ''))
+      .join('\n')
+  }
+  
+  return ''
+}
+
+// Cleanup function
+function cleanup() {
+  const styleEl = document.getElementById('ladi-style')
+  if (styleEl) {
+    styleEl.remove()
   }
 }
 
@@ -191,22 +112,43 @@ onMounted(async () => {
     console.log('Loading page with slug:', slug)
     
     const res = await call('mbw_mira.api.get_landing_page_html', { slug })
-
+    
+    // Debug response structure
+    console.log('API Response:', res)
+    
     if (res && (res.html || res.content)) {
-      console.log('Page data loaded:', res)
+      const rawHTML = res.content || res.html || ''
+      
+      // Extract CSS from HTML if not provided separately
+      let cssContent = res.css || extractCSS(rawHTML)
+      
+      // Extract clean HTML content
+      const cleanHTML = extractCleanHTML(rawHTML)
+      
+      console.log('Processed data:', {
+        hasCSS: !!cssContent,
+        hasHTML: !!cleanHTML,
+        htmlLength: cleanHTML.length
+      })
+
       pageData.value = {
         title: res.title || 'Ladi Page',
-        content: res.content || res.html || '',
-        css: res.css || ''
+        content: cleanHTML,
+        css: cssContent
       }
       
-      // Inject CSS if available
-      if (res.css) {
-        injectStyleToHead(res.css)
+      // Wait for DOM update then inject CSS
+      await nextTick()
+      
+      if (cssContent) {
+        console.log('Injecting CSS to head')
+        injectStyleToHead(cssContent)
       }
       
-      // Inject Tailwind for custom blocks
-      // injectTailwindCDN()
+      // Additional DOM fixes after render
+      await nextTick()
+      fixNavbarAfterRender()
+      
     } else {
       console.log('No page data found for slug:', slug)
       pageData.value = null
@@ -214,10 +156,49 @@ onMounted(async () => {
 
   } catch (err) {
     console.error('Error loading Landing Page:', err)
+    console.error('Error details:', err.message)
     pageData.value = null
   } finally {
     loading.value = false
   }
+})
+
+// Function to fix navbar issues after render
+function fixNavbarAfterRender() {
+  setTimeout(() => {
+    const container = document.querySelector('.ladi-page-content')
+    if (!container) return
+    
+    // Fix navbar layout issues
+    const navElements = container.querySelectorAll('nav, header')
+    navElements.forEach(nav => {
+      // Ensure proper flex layout
+      const style = window.getComputedStyle(nav)
+      if (style.display !== 'flex') {
+        nav.style.display = 'flex'
+        nav.style.alignItems = 'center'
+        nav.style.justifyContent = 'space-between'
+      }
+      
+      // Fix navigation links
+      const navLinks = nav.querySelector('.nav-links, ul')
+      if (navLinks) {
+        navLinks.style.display = 'flex'
+        navLinks.style.listStyle = 'none'
+        navLinks.style.gap = '1rem'
+        navLinks.style.alignItems = 'center'
+        navLinks.style.margin = '0'
+        navLinks.style.padding = '0'
+      }
+    })
+    
+    console.log('Navbar fixes applied')
+  }, 100)
+}
+
+// Cleanup on unmount
+onUnmounted(() => {
+  cleanup()
 })
 </script>
 
@@ -226,81 +207,195 @@ onMounted(async () => {
   width: 100%;
   min-height: 100vh;
   background: white;
+  position: relative;
 }
 
 .ladi-page-content {
   width: 100%;
   min-height: 100vh;
+  position: relative;
 }
 
-/* Ensure iframe content is properly displayed */
-.ladi-page-content :deep(*) {
-  max-width: 100%;
-}
-
-/* Fix for any overflow issues */
-.ladi-page-content :deep(body) {
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden;
-}
-
-/* Header and footer specific fixes */
+/* Critical navbar fixes */
 .ladi-page-content :deep(header),
-.ladi-page-content :deep(.header),
-.ladi-page-content :deep([class*="header"]) {
+.ladi-page-content :deep(nav) {
   position: relative !important;
-  top: auto !important;
-  left: auto !important;
-  right: auto !important;
   width: 100% !important;
   z-index: 1000 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: wrap !important;
+  padding: 1rem 2rem !important;
+  box-sizing: border-box !important;
 }
 
-.ladi-page-content :deep(footer),
-.ladi-page-content :deep(.footer),
-.ladi-page-content :deep([class*="footer"]) {
-  position: relative !important;
-  bottom: auto !important;
-  left: auto !important;
-  right: auto !important;
-  width: 100% !important;
-  z-index: 1000 !important;
+/* Logo fixes */
+.ladi-page-content :deep(.logo) {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  font-size: 1.5rem !important;
+  font-weight: bold !important;
+  color: inherit !important;
+  text-decoration: none !important;
+  flex-shrink: 0 !important;
 }
 
-/* Navigation fixes */
-.ladi-page-content :deep(nav),
-.ladi-page-content :deep(.nav),
-.ladi-page-content :deep([class*="nav"]) {
-  position: relative !important;
-  width: 100% !important;
+/* Navigation links container */
+.ladi-page-content :deep(.nav-links),
+.ladi-page-content :deep(nav ul),
+.ladi-page-content :deep(header ul) {
+  display: flex !important;
+  list-style: none !important;
+  gap: 1rem !important;
+  align-items: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  flex-wrap: wrap !important;
+}
+
+/* Individual navigation items */
+.ladi-page-content :deep(.nav-links li),
+.ladi-page-content :deep(nav ul li),
+.ladi-page-content :deep(header ul li) {
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* Navigation links */
+.ladi-page-content :deep(.nav-links a),
+.ladi-page-content :deep(nav a),
+.ladi-page-content :deep(header a) {
+  color: inherit !important;
+  text-decoration: none !important;
+  font-weight: 500 !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 0.5rem !important;
+  transition: all 0.3s ease !important;
+  white-space: nowrap !important;
+}
+
+/* Button styles in navbar */
+.ladi-page-content :deep(.nav-cta),
+.ladi-page-content :deep(.get-started-btn),
+.ladi-page-content :deep(nav .btn),
+.ladi-page-content :deep(header .btn) {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  padding: 0.75rem 1.5rem !important;
+  border-radius: 50px !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  transition: all 0.3s ease !important;
+  border: none !important;
+  cursor: pointer !important;
+}
+
+/* Responsive images */
+.ladi-page-content :deep(img) {
+  max-width: 100% !important;
+  height: auto !important;
+  display: block !important;
 }
 
 /* Container fixes */
-.ladi-page-content :deep(.container),
-.ladi-page-content :deep([class*="container"]) {
+.ladi-page-content :deep(.container) {
   width: 100% !important;
   max-width: 1200px !important;
   margin: 0 auto !important;
-  padding: 0 15px !important;
+  padding: 0 1rem !important;
+  box-sizing: border-box !important;
 }
 
-/* Wrapper fixes */
-.ladi-page-content :deep(.wrapper),
-.ladi-page-content :deep([class*="wrapper"]) {
+/* Section spacing */
+.ladi-page-content :deep(section) {
   width: 100% !important;
-  position: relative !important;
+  box-sizing: border-box !important;
 }
 
-/* Responsive fixes */
+/* Prevent overflow issues */
+.ladi-page-content :deep(*) {
+  box-sizing: border-box !important;
+}
+
+/* Mobile responsive fixes */
 @media (max-width: 768px) {
-  .ladi-page-content {
-    padding: 0;
+  .ladi-page-content :deep(header),
+  .ladi-page-content :deep(nav) {
+    padding: 1rem !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
   }
   
-  .ladi-page-content :deep(.container),
-  .ladi-page-content :deep([class*="container"]) {
-    padding: 0 10px !important;
+  .ladi-page-content :deep(.nav-links),
+  .ladi-page-content :deep(nav ul),
+  .ladi-page-content :deep(header ul) {
+    width: 100% !important;
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
   }
+  
+  .ladi-page-content :deep(.container) {
+    padding: 0 0.5rem !important;
+  }
+  
+  .ladi-page-content :deep(.logo) {
+    margin-bottom: 0.5rem !important;
+  }
+}
+
+/* Fix for fixed/sticky headers */
+.ladi-page-content :deep(header[style*="fixed"]),
+.ladi-page-content :deep(nav[style*="fixed"]),
+.ladi-page-content :deep(.fixed) {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  z-index: 1000 !important;
+}
+
+/* Ensure proper text rendering */
+.ladi-page-content :deep(h1),
+.ladi-page-content :deep(h2),
+.ladi-page-content :deep(h3),
+.ladi-page-content :deep(h4),
+.ladi-page-content :deep(h5),
+.ladi-page-content :deep(h6) {
+  line-height: 1.2 !important;
+  margin-bottom: 1rem !important;
+}
+
+.ladi-page-content :deep(p) {
+  line-height: 1.6 !important;
+  margin-bottom: 1rem !important;
+}
+
+/* Animation preservation */
+.ladi-page-content :deep([class*="animate"]),
+.ladi-page-content :deep([style*="animation"]) {
+  animation-play-state: running !important;
+}
+
+/* Gradient text fixes */
+.ladi-page-content :deep([style*="background-clip: text"]) {
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* Flexbox layout preservation */
+.ladi-page-content :deep(.hero-buttons),
+.ladi-page-content :deep(.buttons),
+.ladi-page-content :deep([class*="btn-group"]) {
+  display: flex !important;
+  gap: 1rem !important;
+  flex-wrap: wrap !important;
+  justify-content: center !important;
+  align-items: center !important;
 }
 </style>
