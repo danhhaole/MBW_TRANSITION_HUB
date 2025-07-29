@@ -286,17 +286,18 @@ def render_merge_tags(html: str, context: dict) -> str:
         return context.get(tag, f"{{{{ {tag} }}}}")  # nếu không có thì giữ nguyên
 
     return re.sub(r"\{\{\s*(.*?)\s*\}\}", replacer, html)
-# def convert_po_to_csv(po_path, csv_path):
-#     import polib
-#     po = polib.pofile(po_path)
-#     with open(csv_path, 'w', newline='', encoding='utf-8') as f:
-#         writer = csv.writer(f)
-#         for entry in po:
-#             if entry.msgid:
-#                 writer.writerow([entry.msgid, entry.msgstr])
+def convert_po_to_csv(po_path, csv_path):
+    import polib
+    po = polib.pofile(po_path)
+    with open(csv_path, 'w', newline='', encoding='utf-8') as f:
+        writer = csv.writer(f)
+        for entry in po:
+            if entry.msgid:
+                writer.writerow([entry.msgid, entry.msgstr])
 
 # def translate_po_file(input_po_path, output_po_path):
 #     from deep_translator import GoogleTranslator
+#     import polib
 #     # Load file .po gốc
 #     po = polib.pofile(input_po_path)
 #     # Dịch từng msgid nếu msgstr rỗng

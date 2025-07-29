@@ -1,171 +1,292 @@
+"
+New	Hồ sơ mới thu thập, chưa được xử lý
+Sourced	Hồ sơ đã được tiếp cận từ nguồn bên ngoài (job boards, LinkedIn...)
+Enriched	Hồ sơ đã được bổ sung thông tin (qua parsing CV, đánh giá kỹ năng...)
+Nurturing	Đang trong quá trình nuôi dưỡng – gửi email, tài liệu, chăm sóc
+Engaged	Ứng viên đã phản hồi, tương tác tích cực
+Qualified	Đã được đánh giá đủ điều kiện cho các vị trí
+Categorized	Đã được phân loại theo kỹ năng, ngành nghề, mục tiêu
+In Campaign	Đang tham gia một chiến dịch tuyển dụng cụ thể
+Archived	Hồ sơ không còn được theo dõi tích cực, nhưng vẫn lưu để tham khảo
+Hired / Converted	Ứng viên đã được tuyển dụng vào hệ thống chính","Mới
+Nguồn gốc
+Làm phong phú hồ sơ Đạo ĐượC
+Nuôi dưỡng Đang Trong Quá trình Nu ý dưỡng - GửI Email, Tài Liệu
+Đã tham gia ứng Viên ĐA
+Đủ điều kiện
+Phân loại Đạo
+Trong chiến dịch Đang Tham GIA MộT Chiến Dịch Tuyển Dụng
+Lưu trữ hồ sơ không còn được Theo dõi tích cực, NHưng vẫn lưu Để Tham
+Đã thuê / chuyển đổi ứng Vin Đạo Đu"
  (New),(Mới)
 (Foreign Key -> Campaign),(Khóa ngoại -> Chiến dịch)
 (Foreign Key -> CampaignStep) Bước đã tạo ra hành động này.,(Khóa ngoại -> Chiến dịch)
 (Foreign Key -> Candidate),(Khóa ngoại -> Ứng viên)
 (Foreign Key -> CandidateCampaign),(Khóa ngoại -> CandidateCampaign)
-(Foreign Key -> TalentSegment) Phân khúc mục tiêu.,.
+(Foreign Key -> TalentSegment) Tiêu chí mục tiêu.,.
 (Phân khúc Nhân tài / Talent Pool),Không
+-- Select method --,-Chọn Phương thức-
+-- Select source type --,-Chọn loại nguồn-
+0 for immediate execution,0 để thực hiện ngay lập tức
 1 hour ago,1 giờ trước
 1 minute ago,1 phút trước
 1 month ago,1 tháng trước
 1 week ago,1 tuần trước
 1 year ago,1 năm trước
 "@John, can you please check this?","@John, bạn có thể vui lòng kiểm tra cái này được không?"
-A CandidateSegment with Candidate <b>{0}</b> and Segment <b>{1}</b> already exists: <a href='/app/candidate-segment/{2}'>{2}</a>,Một ứng cử viên với ứng cử viên <b> {0} </b> và phân đoạn <b> {1} </b> đã tồn tại: <a href = '/app/uster-secent/{2}'> {2} </a>
+A TalentProfiles with Email <b>{0}</b> already exists: <a href='/app/TalentProfiles/{1}'>{1}</a>,Một TalentProfiles có email <b> {0} </b> đã tồn tại: <a href = '/app/TalentProfiles/{1}'> {1} </a>
 A TalentProfilesCampaign with Campaign <b>{0}</b> and Candidate <b>{1}</b> already exists: <a href='/app/candidate-campaign/{2}'>{2}</a>,TalentProfileScampaign với chiến dịch <b> {0} </b> và ứng cử viên <b> {1} </b> đã tồn tại: <a href = '/app
+A TalentProfilesSegment with Candidate <b>{0}</b> and Segment <b>{1}</b> already exists: <a href='/app/candidate-segment/{2}'>{2}</a>,Một tài năng với ứng cử viên <b> {0} </b> và phân đoạn <b> {1} </b> đã tồn tại: <a href = '/app
 ACTIVE,KÍCH HOẠT
 AI Summary,Tóm tắt AI
 API Base URL,URL cơ sở API
 API Key,Khóa API
 API Key do nhà cung cấp cấp khi đăng ký ứng dụng (ví dụ: TopCV),API KEY Do NHÀ CUNG CấP CấP KHI ĐÓ
+API Key is required for API Key method,Khóa API được yêu cầu cho phương thức khóa API
 API Secret,Bí mật API
 API Secret đi kèm với API Key (nếu có),API SELX
 APPLICATION_SUBMITTED,Application_submited
 ARCHIVED,Lưu trữ
 ATS,ATS
+ATS Import,Nhập khẩu ATS
 ATTRACTION,SỰ THU HÚT
 Access Token,Mã thông báo truy cập
 Access Token hiện tại (OAuth2),Truy cập Mã thông báo Hiện Tại (OAuth2)
 Action,Hoạt động
+Action Config,Cấu hình hành động
+Action Configuration,Cấu hình hành động
 Action Type,Loại hành động
+Action type is required,Loại hành động là bắt buộc
 Actions,Hành động
+Activate data source,Kích hoạt nguồn dữ liệu
 Active,Kích hoạt
 Active Campaigns,Các chiến dịch kích hoạt
 Active Candidates,Ứng cử viên kích hoạt
+Active Profiles,Hồ sơ hoạt động
+Active Status,Trạng thái hoạt động
+Active talent acquisition,Tiếp thu tài năng tích cực
 Add,Thêm vào
-Add Candidate,Thêm ứng viên
-Add Candidate to Segment,Thêm ứng viên vào kho nhân tài
+Add Action,Thêm hành động
+Add Another Step,Thêm bước khác
+Add Candidates to Segment,Thêm ứng viên vào phân khúc
 Add Column,Thêm cột
+Add Data Source,Thêm nguồn dữ liệu
 Add Field,Thêm trường
 Add Filter,Thêm bộ lọc
+Add First Step,Thêm bước đầu tiên
+Add Interaction,Thêm tương tác
 Add New Action,Thêm hành động mới
 Add New Candidate,Thêm ứng viên mới
+Add New Data Source,Thêm nguồn dữ liệu mới
 Add New Interaction,Thêm tương tác mới
 Add New Log,Thêm nhật ký mới
+Add New Step,Thêm bước mới
+Add Profile,Thêm hồ sơ
+Add Profiles,Thêm hồ sơ
+Add Profiles to Segment,Thêm hồ sơ vào phân khúc
 Add Row,Thêm hàng
 Add Section,Thêm phần
+Add Selected to Segment,Thêm được chọn vào phân đoạn
 Add Sort,Thêm sắp xếp
 Add Step,Thêm bước
 Add Tab,Thêm tab
+Add Talent Profile,Thêm hồ sơ tài năng
+Add Template Step,Thêm bước mẫu
 Add candidate to segment,Thêm ứng viên vào kho nhân tài
 Add column,Thêm cột
 Add filter,Thêm bộ lọc
 Add first candidate,Thêm ứng viên đầu tiên
+Add profile to a campaign,Thêm hồ sơ vào một chiến dịch
+Add profile to a talent segment,Thêm hồ sơ vào một phân khúc tài năng
+Add steps to define the campaign workflow.,Thêm các bước để xác định quy trình công việc chiến dịch.
 Add to Segment,Thêm vào kho nhân tài
-Add your first comment,Thêm bình luận đầu tiên của bạn
 Added,Đã thêm
 Added At,Đã thêm tại
 Added By,Được thêm bởi
 Adding...,Thêm ...
+Additional Information,Thông tin bổ sung
+Ads,Quảng cáo
 Advanced Filters,Bộ lọc nâng cao
+Advertisement Campaign,Chiến dịch quảng cáo
 All,Tất cả
+All Campaigns,Tất cả các chiến dịch
 All Sources,Tất cả các nguồn
+All Status,Tất cả trạng thái
 All Statuses,Tất cả các trạng thái
+All Types,Tất cả các loại
 An Action with Candidate Campaign <b>{0}</b> and Campaign Step <b>{1}</b> already exists: <a href='/app/action/{2}'>{2}</a>,Một hành động với chiến dịch ứng cử viên <b> {0} </b> và bước chiến dịch <b> {1} </b> đã tồn tại: <a href = '/app/action/{2}'> {2} </a>
 An error occurred,Một lỗi đã xảy ra
+An error occurred while copying step,Xảy ra lỗi trong khi sao chép bước
+An error occurred while deleting step,Xảy ra lỗi trong khi xóa bước
+An error occurred while deleting template,Xảy ra lỗi trong khi xóa mẫu
+An error occurred while deleting the data source,Xảy ra lỗi trong khi xóa nguồn dữ liệu
+An error occurred while duplicating step,Xảy ra lỗi trong khi sao chép bước
+An error occurred while finalizing the campaign,Xảy ra lỗi trong khi hoàn thiện chiến dịch
+An error occurred while loading data,Xảy ra lỗi trong khi tải dữ liệu
+An error occurred while loading template,Xảy ra lỗi trong khi tải mẫu
+An error occurred while loading templates,Xảy ra lỗi trong khi tải mẫu
+An error occurred while moving step,Xảy ra lỗi trong khi di chuyển bước
+An error occurred while saving step,Xảy ra lỗi trong khi lưu bước
+An error occurred while saving template,Xảy ra lỗi trong khi lưu mẫu
 An error occurred: ,Đã xảy ra lỗi:
+An error occurred: {0},Đã xảy ra lỗi: {0}
 An icon file with .ico extension. Should be 16 x 16 px. Generated using a favicon generator. [favicon-generator.org],Một tập tin biểu tượng với tiện ích mở rộng .ico. Nên là 16 x 16 px. Được tạo bằng cách sử dụng một máy phát favicon. [Favicon-generator.org]
 An image with 1:1 & 2:1 ratio is preferred,Một hình ảnh có tỷ lệ 1: 1 & 2: 1 được ưu tiên
 Analysis and detailed charts will be implemented here,Phân tích và biểu đồ chi tiết sẽ được thực hiện ở đây
 Analytics,Phân tích
+Analytics charts will be implemented here,Biểu đồ phân tích sẽ được triển khai tại đây
 And,Và
 Applicant,Người xin việc
+Applicant Information,Thông tin ứng viên
+Applicant Pool,Nhóm ứng viên
 ApplicantPool,Ứng dụng
 Application Date,Ngày nộp đơn
+Application Details,Chi tiết ứng dụng
 Application Position,Vị trí ứng dụng
 Applications Count,Đếm ứng dụng
+Apply,Áp dụng
 Apply To,Áp dụng cho
+Apply for campaign,Áp dụng cho chiến dịch
 Apps,Ứng dụng
 Archived,Lưu trữ
+Are you interested in our company? Please leave your information and we will contact you shortly!,Bạn có quan tâm đến công ty của chúng tôi? Vui lòng để lại thông tin của bạn và chúng tôi sẽ liên hệ với bạn trong thời gian ngắn!
 Are you sure you want to delete,Bạn có chắc bạn muốn xóa
+"Are you sure you want to delete ""{0}""? This action cannot be undone and will also delete all associated template steps.","Bạn có chắc bạn muốn xóa ""{0}"" không? Hành động này không thể được hoàn tác và cũng sẽ xóa tất cả các bước mẫu được liên kết."
+Are you sure you want to delete campaign?,Bạn có chắc là bạn muốn xóa chiến dịch?
+"Are you sure you want to delete data source ""{0}""?","Bạn có chắc là bạn muốn xóa nguồn dữ liệu ""{0}"" không?"
+"Are you sure you want to delete data source ""{0}""? This action cannot be undone!","Bạn có chắc là bạn muốn xóa nguồn dữ liệu ""{0}"" không? Hành động này không thể được hoàn tác!"
+"Are you sure you want to delete step ""{0}""? This action cannot be undone. All following steps will be reordered.","Bạn có chắc là bạn muốn xóa bước ""{0}"" không? Hành động này không thể được hoàn tác. Tất cả các bước sau đây sẽ được sắp xếp lại."
+Are you sure you want to delete this application?,Bạn có chắc là bạn muốn xóa ứng dụng này không?
+Are you sure you want to delete this candidate?,Bạn có chắc là bạn muốn xóa ứng viên này?
 Are you sure you want to delete this email log? This action cannot be undone.,Bạn có chắc là bạn muốn xóa nhật ký email này? Hành động này không thể được hoàn tác.
+Are you sure you want to delete this step?,Bạn có chắc là bạn muốn xóa bước này?
 Are you sure you want to delete {0} linked item(s)?,Bạn có chắc là bạn muốn xóa (các) mục được liên kết {0} không?
 Are you sure you want to login to your Frappe Cloud dashboard?,Bạn có chắc là bạn muốn đăng nhập vào bảng điều khiển Frappe Cloud của mình không?
 Are you sure you want to unlink {0} linked item(s)?,Bạn có chắc là bạn muốn liên kết {0} mục được liên kết không?
+Assign,Giao phó
+Assign All from Segment,Gán tất cả từ phân khúc
+Assign Candidate,Chỉ định ứng viên
+Assign Profile,Gán hồ sơ
+Assign Profile to Campaign,Gán hồ sơ cho chiến dịch
 Assign To,Gán cho
-Assigned Candidates,Ứng viên được chỉ định
+Assign to Campaign,Gán cho chiến dịch
+Assigned Profiles,Hồ sơ được chỉ định
 Assignee,Người được giao
 Assignment,Phân công
 Assignment cleared successfully,Bài tập đã xóa thành công
-Assignment rule,Quy tắc chuyển nhượng
+At least,Ít nhất
 At least one field is required,Ít nhất một trường là bắt buộc
 Attach,Gắn
 Attachments,Đính kèm
 Attraction,Sự thu hút
 Auth Method,Phương pháp Auth
+Authentication,Xác thực
+Authentication Method,Phương pháp xác thực
+Authentication method is required,Phương pháp xác thực là bắt buộc
 Automatic (AI),Tự động (AI)
 Avatar,Avatar
+Avatar URL,Url avatar
+Avg Score,Điểm AVG
+Avg. Response Time,AVG. Thời gian phản hồi
 BCC,BCC
+Bachelor's Degree,Bằng cử nhân
 Back,Mặt sau
+Back to Talent Pools,Quay lại nhóm tài năng
+Back to Templates,Quay lại các mẫu
 Back to file upload,Quay lại tải lên tệp
 Basic,Nền tảng
 Basic Information,Thông tin cơ bản
 Between,Giữa
 Both,Cả hai
-Both 'campaign' and 'segment' are required.,Cả 'chiến dịch' và 'phân khúc' đều được yêu cầu.
-Both 'segment' and 'candidates' are required.,Cả 'phân khúc' và 'ứng cử viên' đều được yêu cầu.
 Branding,Thương hiệu
 Brief description of campaign purpose...,Mô tả ngắn gọn về mục đích chiến dịch ...
+Build custom workflow steps from scratch tailored to your needs,Xây dựng quy trình làm việc tùy chỉnh các bước từ đầu phù hợp với nhu cầu của bạn
 Bulk Edit,Chỉnh sửa số lượng lớn
+"By submitting this form, you agree to our terms of use.","Bằng cách gửi biểu mẫu này, bạn đồng ý với các điều khoản sử dụng của chúng tôi."
 CALL_COMPLETED,Call_completed
 CALL_MISSED,Call_missed
 CANCELLED,Bị hủy bỏ
+CATEGORIZED,Phân loại
 CC,Cc
 CHAT_COMPLETED,Chat_completed
 CHAT_MESSAGE_SENT,Chat_message_sent
 CHAT_STARTED,Chat_started
 COMPLETED,HOÀN THÀNH
-CRM,CRM
+CSS Content,Nội dung CSS
 CSV,CSV
+"CSV, XLSX files up to 10MB","Các tệp CSV, XLSX lên đến 10MB"
+CV Link,Liên kết CV
 Call Interactions,Gọi tương tác
-Call log,Nhật ký cuộc gọi
 Camera,Camera
 Campaign,Chiến dịch
+Campaign Actions,Hành động chiến dịch
+Campaign Analytics,Phân tích chiến dịch
+Campaign Execution Flow,Lưu lượng thực hiện chiến dịch
 Campaign Information,Thông tin chiến dịch
 Campaign Name,Tên chiến dịch
+Campaign Progress,Tiến trình chiến dịch
 Campaign Step,Bước chiến dịch
 Campaign Step Name,Tên bước chiến dịch
 Campaign Steps,Các bước chiến dịch
+Campaign Summary,Tóm tắt chiến dịch
+Campaign Templates,Mẫu chiến dịch
+Campaign Type,Loại chiến dịch
+Campaign Workflow,Quy trình làm việc chiến dịch
+Campaign Workflow Preview,Xem trước quy trình làm việc chiến dịch
+"Campaign created successfully, but some steps failed to save. You can add steps manually later.","Chiến dịch tạo ra thành công, nhưng một số bước không thể lưu. Bạn có thể thêm các bước thủ công sau này."
 Campaign creation has been scheduled. You will be notified when it's done.,Sáng tạo chiến dịch đã được lên kế hoạch. Bạn sẽ được thông báo khi hoàn thành.
 Campaign name cannot exceed 200 characters,Tên chiến dịch không thể vượt quá 200 ký tự
+Campaign name is invalid or already exists,Tên chiến dịch không hợp lệ hoặc đã tồn tại
 Campaign name is required,Tên chiến dịch được yêu cầu
+Campaign not found,Chiến dịch không tìm thấy
+Campaign type is required,Loại chiến dịch là bắt buộc
+Campaign will be created in DRAFT status with,Chiến dịch sẽ được tạo trong trạng thái dự thảo với
 Campaign:,Chiến dịch:
 CampaignStep,Chiến dịch
+CampaignTemplate,Chiến dịch
+CampaignTemplateStep,Chiến dịchTemplatestep
 Campaigns,Chiến dịch
 Cancel,Hủy bỏ
 Cancelled,Bị hủy bỏ
 Candidate,Ứng viên
 Candidate Campaign,Chiến dịch ứng cử viên
 Candidate Count,Đếm ứng viên
+Candidate Data Source Management,Quản lý nguồn dữ liệu ứng cử viên
 Candidate Details,Chi tiết ứng cử viên
 Candidate List,Danh sách ứng cử viên
 Candidate Management,Quản lý ứng cử viên
-Candidate not specified,Ứng cử viên không được chỉ định
+Candidate Pool Details,Ứng cử viên chi tiết hồ bơi
+Candidate Pools,Nhóm ứng cử viên
+Candidate Status,Tình trạng ứng cử viên
 CandidateDataSource,Ứng cử viên
 CandidatePool,Ứng cử viên
-CandidateSegment,Candidatesegment
 Candidates,Ứng cử viên
-Candidates in this segment,Ứng viên trong phân khúc này
 Cannot delete standard items {0},Không thể xóa các mục tiêu chuẩn {0}
 Capture,Chiếm lấy
-Capturing leads,Nắm bắt khách hàng tiềm năng
 Card,Thẻ
 Change,Thay đổi
 Change Password,Thay đổi mật khẩu
-Change deal status,Thay đổi trạng thái thỏa thuận
 "Chiều đồng bộ dữ liệu: Pull (lấy về), Push (gửi đi), Both (cả hai)","Chiều Đồng bộ dữ liệu: pull (lấy về), push"
+Choose a candidate,Chọn một ứng cử viên
+Choose a method to define the workflow for your campaign,Chọn một phương thức để xác định quy trình công việc cho chiến dịch của bạn
+Choose the talent segment you want to target with this campaign,Chọn phân khúc tài năng bạn muốn nhắm mục tiêu với chiến dịch này
 "Chọn loại nguồn: ATS, JobBoard, SocialNetwork, Manual hoặc Other","Chọn Loại Nguồn: ATS, Bảng công việc, SocialNetwork, HOUSUAL HOặC Khác"
 "Chức danh hoặc mô tả ngắn gọn. VD: ""Senior Software Engineer at ABC Corp""","Chức Danh Hoặc Mô tả ngắn Gọn. VD: ""Kỹ sư phần mềm cao cấp tại ABC Corp"""
 Clear,Thông thoáng
+Clear All,Rõ ràng tất cả
 Clear Assignment,Phân công rõ ràng
 Clear Filters,Bộ lọc rõ ràng
 Clear Sort,Xóa loại
 Clear all Filter,Xóa tất cả các bộ lọc
 Click Rate,Nhấp chuột
+Click to download,Bấm để tải xuống
+Click to upload or drag and drop,Bấm để tải lên hoặc kéo và thả
 Client ID,ID máy khách
 "Client ID (OAuth2), lấy từ Developer Portal của nhà cung cấp","ID khách hàng (OAuth2), nhà phát triển LấY Từ Cổng thông tin CủA NHÀ CUNG CấP"
+Client ID is required for OAuth2,ID máy khách được yêu cầu cho OAuth2
 Client Secret,Bí mật của khách hàng
 "Client Secret (OAuth2), lấy từ Developer Portal của nhà cung cấp","Bí mật khách hàng (OAuth2), nhà phát triển Lấy Từ Cổng thông tin CủA NHÀ CUNG CấP"
+Client Secret is required for OAuth2,Bí mật của khách hàng được yêu cầu cho OAuth2
 Close,Đóng
 Collapse,Thu gọn
 Collapsible,Có thể sụp đổ
@@ -175,97 +296,150 @@ Columns,Cột
 Comment,Bình luận
 Complete,Hoàn thành
 Completed,Hoàn thành
+Completed Profiles,Hoàn thành hồ sơ
+Compose Email,Biên soạn email
 Config,Cấu hình
+Configuration,Cấu hình
+Configuration Examples:,Ví dụ cấu hình:
+Configuration:,Cấu hình:
+Configure the sequence of actions for this campaign template,Định cấu hình chuỗi hành động cho mẫu chiến dịch này
+Configured,Cấu hình
 Confirm,Xác nhận
 Confirm Delete,Xác nhận xóa
 Confirm Password,Xác nhận mật khẩu
 Congratulations! You have completed all tasks.,Chúc mừng! Bạn đã hoàn thành tất cả các nhiệm vụ.
-Contact,Liên hệ
+Connection Status,Trạng thái kết nối
+Contact Information,Thông tin liên hệ
 Contact Us,Liên hệ với chúng tôi
 Content,Nội dung
+Content Preview:,Xem trước nội dung:
+Content reloaded successfully,Nội dung được tải lại thành công
+Content saved successfully,Nội dung được lưu thành công
+"Content template for emails, SMS, or other actions","Mẫu nội dung cho email, SMS hoặc các hành động khác"
 Continue,Tiếp tục
+Continue to Review,Tiếp tục xem xét
+Continue with Steps,Tiếp tục với các bước
+Continue with Template,Tiếp tục với mẫu
 Convert,Chuyển thành
-Convert lead to deal,Chuyển đổi dẫn sang giao dịch
 Convert to Deal,Chuyển đổi sang giao dịch
 Converted successfully,Chuyển đổi thành công
 Copied to clipboard,Sao chép vào bảng tạm
+Copy step,Sao chép bước
 Create,Tạo nên
 Create Campaign,Tạo chiến dịch
+Create Campaign Steps Manually,Tạo các bước chiến dịch theo cách thủ công
+Create Campaign Template,Tạo mẫu chiến dịch
+Create Content,Tạo nội dung
+Create First Step,Tạo bước đầu tiên
+Create Ladi Page,Tạo trang Ladi
+Create Manually,Tạo thủ công
 Create New,Tạo mới
+Create New Campaign,Tạo chiến dịch mới
 Create New Pool,Thêm tiêu chí
 Create New Request,Thêm chiến dịch
 Create New Talent Pool,Thêm tiêu chí
 Create Pool,Thêm tiêu chí
+Create Talent Pool,Tạo nhóm tài năng
+Create Template,Tạo mẫu
 Create View,Tạo chế độ xem
+Create Your First Pool,Tạo hồ bơi đầu tiên của bạn
+Create a new data source for the system,Tạo nguồn dữ liệu mới cho hệ thống
+Create a new recruitment campaign,Tạo một chiến dịch tuyển dụng mới
+Create first data source,Tạo nguồn dữ liệu đầu tiên
 Create your first campaign,Tạo chiến dịch đầu tiên của bạn
 Create your first email log to get started.,Tạo nhật ký email đầu tiên của bạn để bắt đầu.
-Create your first lead,Tạo sự dẫn đầu đầu tiên của bạn
-Create your first note,Tạo ghi chú đầu tiên của bạn
-Create your first segment to get started,Tạo phân đoạn đầu tiên của bạn để bắt đầu
+Create your first segment to get started,Thiết lập tiêu chí đầu tiên của bạn để bắt đầu
 Create your first talent pool to start managing candidates,Tạo nhóm tài năng đầu tiên của bạn để bắt đầu quản lý các ứng cử viên
-Create your first task,Tạo nhiệm vụ đầu tiên của bạn
+Created,Tạo
 Created At,Được tạo lúc
 Created By,Được tạo bởi
 Created Date,Đã tạo ngày
 Created:,Tạo:
+Creating Campaign...,Tạo chiến dịch ...
 Criteria,Tiêu chuẩn
+Current,Hiện hành
 Current Position,Vị trí hiện tại
+Current Status,Trạng thái hiện tại
+Current Step,Bước hiện tại
 Current Step Order,Đơn đặt hàng bước hiện tại
 Current status,Trạng thái hiện tại
-Custom actions,Hành động tùy chỉnh
-Custom branding,Thương hiệu tùy chỉnh
-Custom fields,Trường tùy chỉnh
-Custom list actions,Hành động danh sách tùy chỉnh
-Custom statuses,Trạng thái tùy chỉnh
-Customization,Tùy chỉnh
 Customize quick filters,Tùy chỉnh bộ lọc nhanh
 "Các tiêu chí dưới dạng cấu trúc để AI có thể sử dụng để tự động thêm ứng viên. VD: {""skills"": [""java"", ""spring""], ""experienceYears"": "">5""}","Các tiêu chí dưới dạng cấu trúc Để ai đó là thể sử dụng Để tự Động thênm ứng viênn. Vd: {""Kỹ năng"": [""Java"", ""Spring""], ""ExperienceYears"": ""> 5""}"
 Cập nhật,Cập nhật
+DOB,DOB
 DOCUMENT_UPLOADED,Document_uploaded
 DOWNLOAD_TRIGGERED,Download_triggered
 DRAFT,BẢN NHÁP
 DYNAMIC,NĂNG ĐỘNG
 Danger,Nguy hiểm
 Dashboard,Bảng điều khiển
-Data,Dữ liệu
+Data Source,Nguồn dữ liệu
+Data Source Details,Chi tiết nguồn dữ liệu
+Data Source Selected,Nguồn dữ liệu được chọn
 Data refreshed,Dữ liệu được làm mới
-Deal,Thỏa thuận
+Data refreshed successfully,Dữ liệu làm mới thành công
+DataSource,DataRource
 "Default statuses, custom fields and layouts restored successfully.","Trạng thái mặc định, trường tùy chỉnh và bố cục được khôi phục thành công."
 Define a new talent segment,Xác định tiêu chí mới
+Define the steps for this campaign template,Xác định các bước cho mẫu chiến dịch này
 Delay (Days),Độ trễ (ngày)
 Delay In Day,Chậm trễ trong ngày
+Delay In Days,Chậm trễ trong những ngày
+Delay cannot be negative,Độ trễ không thể là tiêu cực
+Delay in Days,Chậm trễ trong những ngày
+Delay must be between 0 and 365 days,Độ trễ phải từ 0 đến 365 ngày
 Delete,Xóa
 Delete & Restore,Xóa và khôi phục
 Delete Selected,Xóa đã chọn
+Delete Step,Xóa bước
 Delete Talent Pool,Xóa nhóm tài năng
+Delete Template,Xóa mẫu
 Delete View,Xóa chế độ xem
 Delete linked item,Xóa mục được liên kết
 Delete or unlink linked documents,Xóa hoặc hủy liên kết các tài liệu liên kết
 Delete or unlink these linked documents before deleting this document,Xóa hoặc hủy liên kết các tài liệu được liên kết này trước khi xóa tài liệu này
+Delete step,Xóa bước
 Delete {0} items,Xóa các mục {0}
+Deleting data source...,Xóa nguồn dữ liệu ...
+Deleting...,Xóa ...
 Description,Miêu tả
+Description (optional),Mô tả (tùy chọn)
 Description cannot exceed 500 characters,Mô tả không thể vượt quá 500 ký tự
+Description must be less than 500 characters,Mô tả phải nhỏ hơn 500 ký tự
 Description will help others understand the purpose of the segment,Mô tả sẽ giúp người khác hiểu mục đích của phân khúc
+Deselect All,Bỏ chọn tất cả
+Design Json,Thiết kế JSON
 Desk,Bàn làm việc
 Detailed Analysis,Phân tích chi tiết
-Detailed description of this segment...,Mô tả chi tiết về phân khúc này ...
+Detailed description of this segment...,Mô tả chi tiết về tiêu chí này ...
 Details,Chi tiết
 Device,Thiết bị
+Diploma,Bằng cấp
+Direct Mail,Thư trực tiếp
+Direct Mail Campaign,Chiến dịch thư trực tiếp
 Disable,Vô hiệu hóa
 Discard,Loại bỏ
+Display,Trưng bày
 DocType,Doctype
 Doctype To Sync,Doctype để đồng bộ hóa
 Document updated successfully,Tài liệu được cập nhật thành công
+Document will be uploaded immediately,Tài liệu sẽ được tải lên ngay lập tức
 Documents,Tài liệu
 Download,Tải xuống
 Draft,Bản nháp
+Draft Campaign,Dự thảo chiến dịch
+Draft campaign - to be configured,Dự thảo chiến dịch - được cấu hình
+Draft campaign not found. Please go back to step 1 and try again.,Dự thảo chiến dịch không tìm thấy. Vui lòng quay lại Bước 1 và thử lại.
 Drag and drop files here or upload from,Kéo và thả tệp tại đây hoặc tải lên từ
 Drop files here,Thả tập tin ở đây
 Dropdown Items,Các mặt hàng thả xuống
 Duplicate,Nhân bản
 Duplicate Action,Hành động trùng lặp
-Duplicate CandidateSegment,Trùng lặp candidatesegment
+Duplicate Step,Bước trùng lặp
+Duplicate TalentProfiles,Trùng lặp tài năng
 Duplicate TalentProfilesCampaign,Trùng lặp TalentProfileScampaign
+Duplicate TalentProfilesSegment,Trùng lặp TalentProfilessegment
+Duration:,Khoảng thời gian:
 "Dữ liệu có cấu trúc do AI bóc tách từ CV, bao gồm lịch sử công việc, học vấn.","Dữ liệu đó là cấu trúc làm ai bóc tách từ cv, bao"
 EMAIL_BOUNCED,Email_Bounced
 EMAIL_CLICKED,Email_Clicked
@@ -275,22 +449,37 @@ EMAIL_REPLIED,Email_Replied
 EMAIL_SENT,Email_Sent
 EMAIL_UNSUBSCRIBED,Email_unSubScripted
 ENGAGED,ĐÍNH HÔN
-ERPNext,ERPNEXT
+ENRICHED,Làm giàu
+EVENT,SỰ KIỆN
 EXECUTED,Thực hiện
 Edit,Biên tập
 Edit Action,Chỉnh sửa hành động
+Edit Application,Chỉnh sửa ứng dụng
 Edit Campaign,Chỉnh sửa chiến dịch
+Edit Campaign Template,Chỉnh sửa mẫu chiến dịch
 Edit Candidate,Chỉnh sửa ứng cử viên
+Edit Content,Chỉnh sửa nội dung
 Edit Data Fields Layout,Chỉnh sửa bố cục trường dữ liệu
+Edit Data Source,Chỉnh sửa nguồn dữ liệu
 Edit Grid Fields Layout,Chỉnh sửa bố cục trường lưới
 Edit Grid Row Fields Layout,Chỉnh sửa bố cục trường hàng lưới
+Edit Info,Chỉnh sửa thông tin
+Edit Ladi Page,Chỉnh sửa trang Ladi
+Edit Page Info,Chỉnh sửa thông tin trang
+Edit Pool,Chỉnh sửa hồ bơi
 Edit Profile,Chỉnh sửa hồ sơ
 Edit Quick Entry Layout,Chỉnh sửa bố cục nhập nhanh
-Edit Segment,Chỉnh sửa phân đoạn
+Edit Segment,Chỉnh sửa tiêu chí
+Edit Step,Chỉnh sửa bước
 Edit Talent Pool,Chỉnh sửa nhóm tài năng
+Edit Template,Chỉnh sửa mẫu
+Edit Template Step,Chỉnh sửa bước mẫu
+Edit step,Chỉnh sửa bước
 Editing Row {0},Chỉnh sửa hàng {0}
+Education Level,Trình độ học vấn
 Email,E-mail
 Email Bounced,Email bị trả lại
+Email Campaign,Chiến dịch email
 Email Clicked,Email đã nhấp
 Email Delivered,Email được gửi
 Email History,Lịch sử email
@@ -301,32 +490,56 @@ Email Logs,Nhật ký email
 Email Opened,Email đã mở
 Email Opt Out,Email từ chối
 Email Sent,Email đã gửi
-Email Subscription,Đăng ký email
-Email communication,Giao tiếp qua email
-Email template,Mẫu email
+Email Settings,Cài đặt email
+Email Steps:,Các bước email:
+Email and campaign_id are required.,Email và Chiến dịch_id được yêu cầu.
+Email will be sent immediately,Email sẽ được gửi ngay lập tức
 EmailLog,Emaillog
+EmailTemplateEditor,EmailTemplateDitor
 Empty - Choose a field to filter by,Trống - chọn một trường để lọc theo
 Empty - Choose a field to sort by,Trống - chọn một trường để sắp xếp theo
 Enable,Cho phép
 Enable Forecasting,Cho phép dự báo
 Enabled,Đã bật
 End Date,Ngày kết thúc
-Engaged,Đính hôn
+Engagement,Hôn ước
 Engagement Rate,Tỷ lệ tham gia
 Engagement Score,Điểm tham gia
 Enrolled At,Ghi danh tại
+Enter AI-generated summary,Nhập tóm tắt do AI tạo
 Enter BCC recipients,Nhập người nhận BCC
 Enter CC recipients,Nhập người nhận CC
+Enter JSON configuration...,Nhập cấu hình JSON ...
+Enter any notes about this action,Nhập bất kỳ ghi chú nào về hành động này
+Enter avatar URL,Nhập url avatar
+Enter campaign name,Nhập tên chiến dịch
+Enter current position/title,Nhập vị trí/tiêu đề hiện tại
+Enter data source name,Nhập tên nguồn dữ liệu
+Enter delay in days,Nhập chậm trong ngày
+Enter detailed campaign description...,Nhập mô tả chiến dịch chi tiết ...
 Enter email address,Nhập địa chỉ email
 Enter email content,Nhập nội dung email
 Enter email subject,Nhập chủ đề email
 Enter error details,Nhập chi tiết lỗi
+Enter experience years,Nhập năm kinh nghiệm
 Enter full name,Nhập tên đầy đủ
+"Enter location and press Enter (e.g. Hanoi, Ho Chi Minh City...)","Nhập vị trí và nhấn Enter (ví dụ: Hà Nội, Thành phố Hồ Minh ...)"
+Enter notes,Nhập ghi chú
+Enter notes about the task execution...,Nhập ghi chú về thực thi nhiệm vụ ...
 Enter phone number,Nhập số điện thoại
 Enter recipients (comma-separated),Nhập người nhận (phân tách bằng dấu phẩy)
 Enter result data as JSON or leave empty...,Nhập dữ liệu kết quả dưới dạng JSON hoặc để trống ...
-Enter segment name...,Nhập tên phân đoạn ...
+Enter segment name...,Nhập tên tiêu chí ...
 Enter sender email,Nhập email người gửi
+Enter skill and press Enter,Nhập kỹ năng và nhấn Enter
+"Enter skills separated by commas (e.g. React, Vue, Pinia...)","Nhập các kỹ năng được phân tách bằng dấu phẩy (ví dụ: React, Vue, Pinia ...)"
+Enter step name,Nhập tên bước
+Enter step name...,Nhập tên bước ...
+Enter step order,Nhập đơn đặt hàng bước
+Enter template content,Nhập nội dung mẫu
+Enter template content for this step...,Nhập nội dung mẫu cho bước này ...
+Enter template description...,Nhập mô tả mẫu ...
+Enter template name...,Nhập tên mẫu ...
 Enter {0},Enter {0}
 "Enum
 Trạng thái của ứng viên trong vivu. Các giá trị: NEW, SOURCED, NURTURING, ENGAGED, ARCHIVED.
@@ -336,83 +549,151 @@ Trạng tháia của ứng Vin trong vivu. Các Giá trị: Mới, có nguồn g
 Equals,Bằng nhau
 Error,Lỗi
 Error Details,Chi tiết lỗi
+Error Loading Data,Lỗi tải dữ liệu
 Error deleting campaign,Chiến dịch xóa lỗi
+Error loading data,Lỗi tải dữ liệu
+Error loading template,Lỗi tải mẫu
+Error loading templates,Lỗi tải mẫu
+Error posting job to Facebook: {0},Công việc đăng lỗi lên Facebook: {0}
+Error posting job to LinkedIn: {0},Công việc đăng lỗi cho LinkedIn: {0}
+Error saving step,Bước lưu lỗi
+Error saving template,Mẫu lưu lỗi
+Error searching candidates. Please try again.,Ứng viên tìm kiếm lỗi. Hãy thử lại.
 Error updating document,Lỗi cập nhật tài liệu
+Error: {0},Lỗi: {0}
+Evaluation,Sự đánh giá
 Evaluation Score,Điểm đánh giá
+Every {0} minutes,Mỗi phút {0}
+Exactly,Chính xác
 Example: React Candidate Nurturing Q4/2024,Ví dụ: Ứng viên phản ứng nuôi dưỡng Q4/2024
 Excel,Excel
-Execute Selected,Thực thi đã chọn
 Executed,Thực hiện
 Executed At,Thực hiện tại
-Exotel,Exotel
 Expand,Mở rộng
 Experience Years,Kinh nghiệm năm
 Export,Xuất
+Export & Submit,Xuất khẩu và gửi
 Export All {0} Record(s),Xuất tất cả {0} bản ghi
 Export Candidates,Ứng viên xuất khẩu
 Export Type,Loại xuất khẩu
+External data source,Nguồn dữ liệu bên ngoài
 FAILED,THẤT BẠI
 FORM_SUBMITTED,Form_submited
 Facebook,Facebook
+Fail,Thất bại
 Failed,Thất bại
+Failed to copy step,Không sao chép bước
+Failed to create draft campaign. Please try again.,Không thể tạo ra chiến dịch dự thảo. Hãy thử lại.
+Failed to create steps from template. Please try again.,Không thể tạo các bước từ mẫu. Hãy thử lại.
+Failed to create steps. Please try again.,Không tạo ra các bước. Hãy thử lại.
+Failed to delete Ladi page,Không xóa trang ladi
+Failed to delete step,Không xóa bước
+Failed to delete template,Không thể xóa mẫu
+Failed to duplicate step,Không thể nhân đôi bước
+Failed to export HTML,Không xuất khẩu HTML
 Failed to load form controller: {0},Không tải bộ điều khiển biểu mẫu: {0}
+Failed to load page data,Không tải dữ liệu trang
+Failed to load template,Không tải mẫu
+Failed to load template data,Không tải dữ liệu mẫu
+Failed to move step,Không thể di chuyển bước
+Failed to process bulk insert.,Không xử lý chèn số lượng lớn.
+Failed to refresh Facebook token after {0} attempts: {1},Không thể làm mới mã thông báo Facebook sau khi {0} cố gắng: {1}
+Failed to refresh LinkedIn token after {0} attempts: {1},Không thể làm mới mã thông báo LinkedIn sau khi {0} cố gắng: {1}
+Failed to reload content,Không tải lại nội dung
+Failed to save content,Không thể lưu nội dung
+Failed to send information,Không gửi thông tin
+Failed to update page info,Không cập nhật thông tin trang
 Failed to update password,Không cập nhật mật khẩu
 Failed to update task: {0},Không cập nhật tác vụ: {0}
 Fallback,Thất bại
 Favicon,Favicon
 Field,Trường
 Fields Order,Thứ tự trường
+File,Tài liệu
 "File ""{0}"" was skipped because of invalid file type","Tệp ""{0}"" đã bị bỏ qua vì loại tệp không hợp lệ"
 "File ""{0}"" was skipped because only {1} uploads are allowed","Tệp ""{0}"" đã bị bỏ qua vì chỉ được phép tải lên {1}"
 "File ""{0}"" was skipped because only {1} uploads are allowed for DocType ""{2}""","Tệp ""{0}"" đã bị bỏ qua vì chỉ được phép tải lên {1} được cho phép cho doctype ""{2}"""
+File Column,Cột tệp
+File Format Requirements,Yêu cầu định dạng tệp
+File Preview,Xem trước tập tin
 Filter,Lọc
 Filters,Bộ lọc
+Finalize Campaign,Hoàn thiện chiến dịch
+Find Matches,Tìm các trận đấu
+Find Matching Candidates,Tìm ứng viên phù hợp
+Finding matching candidates...,Tìm ứng viên phù hợp ...
+First 3 rows,3 hàng đầu tiên
 First Name,Tên
 First name,Tên
+First row should contain column headers,Hàng đầu tiên phải chứa các tiêu đề cột
 Form,Hình thức
-Form Script,Hình thức tập lệnh
-Frappe CRM mobile,FRAPPE CRM Mobile
+Found,Thành lập
 From User,Từ người dùng
 Full Name,Tên đầy đủ
+Full customization,Tùy chỉnh đầy đủ
+Get started by creating your first talent pool,Bắt đầu bằng cách tạo nhóm tài năng đầu tiên của bạn
 "Ghi chú, mô tả bổ sung","Ghi Chú, mô tả bổ sung"
 Group By,Nhóm theo
 Group By Field,Nhóm theo trường
 Group By: ,Nhóm bởi:
+HIRED,Thuê
+HTML Content,Nội dung HTML
+HTML exported successfully,HTML xuất khẩu thành công
+Has content,Có nội dung
 Headline,Tiêu đề
-Help,Giúp đỡ
 "Hi John, \n\nCan you please provide more details on this...","Xin chào John, \ n \ ncan, bạn vui lòng cung cấp thêm chi tiết về điều này ..."
+Hide Help,Ẩn sự giúp đỡ
 Hide Password,Ẩn mật khẩu
 Hide border,Ẩn đường viền
 Hide label,Ẩn nhãn
 Hide preview,Ẩn xem trước
+High School,Trường trung học
+Higher score means better skill match with segment criteria,Điểm cao hơn có nghĩa là phù hợp với kỹ năng tốt hơn với tiêu chí phân khúc
 Hired,Thuê
 Hired Date,Ngày thuê
-Home actions,Hành động nhà
+How would you like to create campaign steps?,Bạn muốn tạo các bước chiến dịch như thế nào?
 Hành động hệ thống đã thực hiện dẫn đến tương tác này,Hànnh động hệ thống ĐA
 Hôm nay,Hôm Nay
+"Hồ Sơ Ứng Viên Tiềm Năng, là nơi lưu trữ thông tin chi tiết về các ứng viên có tiềm năng, kể cả khi họ không chủ động tìm việc.","Hồ sơ ứng Viên tiềm năng, là nơi lưu trữ thang tin chi tiết về cau ứng viênn đó"
 Hủy,Hủy
 ID của Recruiter (người dùng) sở hữu hoặc quản lý phân khúc này.,Id của nhà tuyển dụng (người dùng) sở hữu hoặc quản lý phân Khúc nào.
+IN CAMPAIGN,Trong chiến dịch
 INTERVIEW_CONFIRMED,Phỏng vấn_conf xác nhận
 INTERVIEW_RESCHEDULED,Phỏng vấn_rescheduled
 Icon,Biểu tượng
 Import,Nhập
 Import Candidates,Nhập ứng viên
+Import candidates from CSV or Excel files.,Nhập ứng viên từ các tệp CSV hoặc Excel.
+"Import candidates from external data sources (ATS, Job Board, Social Network, etc.).","Nhập các ứng viên từ các nguồn dữ liệu bên ngoài (ATS, bảng công việc, mạng xã hội, v.v.)."
 In,TRONG
 In Progress,Trong tiến trình
+"In the next step, you’ll choose the talent segments to search manually.","Trong bước tiếp theo, bạn sẽ chọn các phân khúc tài năng để tìm kiếm thủ công."
 Inactive,Không hoạt động
-Integration,Tích hợp
+Information has been sent!,Thông tin đã được gửi!
+Initial Status,Trạng thái ban đầu
+Input data is not in the correct format,Dữ liệu đầu vào không ở định dạng chính xác
+Input data must be a list of records,Dữ liệu đầu vào phải là danh sách các bản ghi
 Interaction,Tương tác
 Interaction Rate,Tỷ lệ tương tác
 Interaction Type,Loại tương tác
+Interaction will be recorded,Tương tác sẽ được ghi lại
 Interactions,Tương tác
 Interview Feedback,Phản hồi phỏng vấn
-Introduction,Giới thiệu
-Invite users,Mời người dùng
-Invite your team,Mời nhóm của bạn
+Invalid API Base URL format,Định dạng URL cơ sở API không hợp lệ
+Invalid JSON format,Định dạng JSON không hợp lệ
 Is,Là
+Is Active,Đang hoạt động
 Is Default,Là mặc định
 Is Standard,Là tiêu chuẩn
 "It will make deal's ""Expected Closure Date"" mandatory to get accurate forecasting insights","Nó sẽ làm cho ""Ngày đóng cửa dự kiến"" của Deal để có được những hiểu biết chính xác về dự báo"
+Items per page,Các mục trên mỗi trang
+JSON Project Data,Dữ liệu dự án JSON
+JSON configuration for the action (optional),Cấu hình JSON cho hành động (tùy chọn)
+JSON được lấy từ editor.exportHtml hoặc editor.saveDesign,JSON ĐA
+Job Board,Bảng công việc
+Job Position,Vị trí công việc
+Job posted successfully on Facebook: {0},Công việc được đăng thành công trên Facebook: {0}
+Job posted successfully on LinkedIn: {0},Công việc được đăng thành công trên LinkedIn: {0}
 JobBoard,Bảng làm việc
 John Doe,John Doe
 Kanban,Kanban
@@ -423,36 +704,56 @@ Không tìm thấy DocType '{0}',Không tìm thấy doctype '{0}'
 Không tìm thấy file với tên: {0},Không tìm thấy file với Tênn: {0}
 Kích hoạt hoặc tắt nguồn dữ liệu này,Kích hoạt hoặc tắt ngger dữ liệu nào
 Label,Nhãn
+Ladi Page Editor,Trình chỉnh sửa trang Ladi
+Ladi Page View,Xem trang Ladi
+Ladi Pages,Trang ladi
+Ladi page deleted successfully,Trang ladi đã xóa thành công
+Ladi page saved successfully,Trang ladi đã lưu thành công
+LadiPage,Ladipage
 Last 6 Months,6 tháng qua
 Last Contact,Liên hệ cuối cùng
 Last Error,Lỗi cuối cùng
 Last Interaction,Tương tác cuối cùng
+Last Modified,Sửa đổi lần cuối
 Last Month,Tháng trước
 Last Quarter,Quý trước
+Last Sync,Đồng bộ hóa cuối cùng
 Last Sync At,Đồng bộ hóa cuối cùng tại
+Last Updated,Cập nhật lần cuối
 Last Week,Tuần trước
 Last Year,Năm ngoái
+Last updated,Cập nhật lần cuối
 Last updated: ,Cập nhật lần cuối:
-Lead,Chỉ huy
 Leave empty or enter valid JSON. Example: {key: value},Để trống hoặc nhập JSON hợp lệ. Ví dụ: {key: value}
+Level (optional),Cấp độ (tùy chọn)
 Library,Thư viện
 Like,Giống
 Link,Liên kết
 Link CV,Liên kết CV
 LinkedIn,LinkedIn
+Linkedin Url,URL LinkedIn
 List,Danh sách
 List of attachment paths,Danh sách các đường dẫn đính kèm
 Liên kết mà ứng viên đã nhấp vào (nếu có),Liên kết mà ứng viênn ĐA nhấp vào (nếu đó)
 Load Default Columns,Tải các cột mặc định
-Loading available candidates...,Đang tải ứng viên có sẵn ...
 Loading campaigns...,Đang tải các chiến dịch ...
-Loading candidate list...,Đang tải danh sách ứng cử viên ...
+Loading candidate pool details...,Đang tải chi tiết nhóm ứng cử viên ...
+Loading content...,Đang tải nội dung ...
 Loading data...,Tải dữ liệu ...
+Loading form...,Đang tải mẫu ...
+Loading profiles...,Tải hồ sơ ...
+Loading steps...,Đang tải các bước ...
+Loading talent pools...,Đang tải các nhóm tài năng ...
+Loading template details...,Tải chi tiết mẫu ...
+Loading template...,Tải mẫu ...
+Loading templates...,Tải mẫu ...
 Loading...,Đang tải...
 Location,Vị trí
+Location (optional),Vị trí (tùy chọn)
 Login to Frappe Cloud?,Đăng nhập vào Frappe Cloud?
 Logo,Logo
 Long URL,URL dài
+Long-term candidate engagement,Tham gia ứng cử viên lâu dài
 Loại hành vi của ứng viên được hệ thống ghi nhận,Loại hànnh vi của
 "Loại phân khúc: DYNAMIC (AI tự động cập nhật), MANUAL (người dùng tự quản lý).","Loại Phân Khúc: Dynamic (ai Tự Động Cập NHật), Hướng dẫn sử dụng (người Dùng tự Quản Lý)."
 MANUAL,THỦ CÔNG
@@ -463,34 +764,57 @@ Make Private,Làm cho riêng tư
 Make Public,Công khai
 Manage,Quản lý
 Manage and track candidate information in the system,Quản lý và theo dõi thông tin ứng viên trong hệ thống
+Manager,Giám đốc
 Mandatory field error: {0},Lỗi trường bắt buộc: {0}
 Manual,Thủ công
 Manual Call,Cuộc gọi thủ công
 Manual Task,Nhiệm vụ thủ công
+Manual Tasks:,Nhiệm vụ thủ công:
+Manually,Bằng tay
+Map Columns to Fields,Bản đồ cột đến các trường
 Mark all as read,Đánh dấu tất cả như đọc
-Masters,Thạc sĩ
-Maximum Salary (million VND),Mức lương tối đa (triệu VND)
+Master's Degree,Bằng thạc sĩ
+Match Score,Điểm trận đấu
+Maximum,Tối đa
+Maximum 1000 characters,Tối đa 1000 ký tự
+Maximum 200 characters,Tối đa 200 ký tự
+Maximum Salary,Mức lương tối đa
 Meeting,Cuộc họp
 Mention,Đề cập đến
 Message,Tin nhắn
-Minimum Salary (million VND),Mức lương tối thiểu (triệu VND)
+Minimum Match Score,Điểm trận đấu tối thiểu
+Minimum Salary,Mức lương tối thiểu
 Mira,Mira
+Mira Form Script,Mira Form Script
 Mira Notification,Thông báo Mira
 Mira Settings,Cài đặt Mira
 Mira View Settings,Cài đặt Mira View
-Mobile app installation,Cài đặt ứng dụng di động
+Missing campaign_id,Thiếu chiến dịch_id
+Missing data,Thiếu dữ liệu
+Missing required fields:,Thiếu các trường bắt buộc:
+Missing slug,Thiếu sên
 Modified,Sửa đổi
+Modified By,Sửa đổi bởi
 Modified:,Đã sửa đổi:
+More,Hơn
+Most Used,Được sử dụng nhiều nhất
+Move Down,Di chuyển xuống
+Move Up,Di chuyển lên
+Move down,Di chuyển xuống
 Move to next section,Di chuyển sang phần tiếp theo
 Move to next tab,Di chuyển sang tab tiếp theo
 Move to previous section,Di chuyển sang phần trước
 Move to previous tab,Di chuyển sang tab trước
+Move up,Di chuyển lên
 My Tasks,Nhiệm vụ của tôi
 "Mô tả chi tiết về tiêu chí, mục đích của phân khúc này.","Mô tả Chi Tiết Về TiÊU Chí, Mục Đích Của Phân Khúc Nào."
 "Mảng các kỹ năng được chuẩn hóa. VD: [""react"", ""nodejs"", ""aws""]","Mảng các kỹ năng Được Chuẩn Hùaa. VD: [""React"", ""Nodejs"", ""AWS""]"
 NEW,MỚI
 NURTURING,Nuôi dưỡng
 Name,Tên
+Need help? Contact us via email or hotline,Cần giúp đỡ? Liên hệ với chúng tôi qua email hoặc đường dây nóng
+"Network connection error, please try again","Lỗi kết nối mạng, vui lòng thử lại"
+Never,Không bao giờ
 New,Mới
 New Password,Mật khẩu mới
 New Section,Phần mới
@@ -503,62 +827,100 @@ Next Month,Tháng tới
 Next Quarter,Quý tới
 Next Week,Tuần tới
 Next Year,Năm tới
-"Nguồn gốc của hồ sơ. VD: ""ATS_2024"", ""LinkedIn_Sourcing"", ""Event_TechDay""",
+Next page,Trang tiếp theo
+"Nguồn gốc của hồ sơ. VD: ""ATS_2024"", ""LinkedIn_Sourcing"", ""Event_TechDay""","Nguồn gốc của hồ sơ. VD: ""ATS_2024"", ""LinkedIn_Sourcing"", ""Event_Techday"""
 Ngày mai,Ngào Mai
+Ngày sinh,Ngào Sinh
 "Ngày và giờ của lần tương tác cuối cùng (gửi email, mở email, v.v.).","Ngày và giờ của lần tương tac Cuối cùnm (email gửi, email mở, v.v.)."
 Người tạo nguồn dữ liệu này,Người tạo nguồn dữ liệu nào
 No,KHÔNG
-No Campaign Step found for Campaign {},Không tìm thấy bước chiến dịch nào cho chiến dịch {}
 No Data,Không có dữ liệu
+No Data Available,Không có dữ liệu có sẵn
 No JSON payload found in request,Không tìm thấy tải trọng json trong yêu cầu
+No Ladi pages found,Không tìm thấy trang ladi
+No access token available. Please re-authenticate with Facebook.,Không có mã thông báo truy cập có sẵn. Please re-authenticate with Facebook.
 No actions found,Không tìm thấy hành động
 No active campaigns yet,Chưa có chiến dịch hoạt động nào
-No available candidates to add. All candidates are already in this segment.,Không có ứng viên có sẵn để thêm. Tất cả các ứng cử viên đã ở trong phân khúc này.
+No applicant data available.,Không có dữ liệu ứng viên có sẵn.
+No applications found,Không tìm thấy ứng dụng
+No available candidates found.,Không tìm thấy ứng viên có sẵn.
+No available candidates found. All candidates from the target segment are already assigned.,Không tìm thấy ứng viên có sẵn. Tất cả các ứng cử viên từ phân khúc mục tiêu đã được chỉ định.
+No campaign steps found. Please add steps first.,Không tìm thấy các bước chiến dịch. Vui lòng thêm các bước đầu tiên.
+No campaign templates available,Không có mẫu chiến dịch nào có sẵn
+No campaigns found,Không tìm thấy chiến dịch
 No campaigns to display,Không có chiến dịch nào để hiển thị
+No candidate pool information found.,Không tìm thấy thông tin nhóm ứng cử viên.
+No candidate pools available.,Không có nhóm ứng cử viên có sẵn.
+No candidate pools found,Không tìm thấy nhóm ứng cử viên
 No candidates found,Không tìm thấy ứng cử viên
-No candidates found in segment {},Không có ứng cử viên nào được tìm thấy trong phân khúc {}
 No candidates yet,Chưa có ứng cử viên nào
+No content available,Không có nội dung có sẵn
+No content to export,Không có nội dung để xuất khẩu
 No data available,Không có dữ liệu có sẵn
-No email,Không có email
+No data sources,Không có nguồn dữ liệu
+No data sources yet,Chưa có nguồn dữ liệu nào
+No data submitted,Không có dữ liệu được gửi
+No description,Không có mô tả
+No description provided,Không có mô tả được cung cấp
+No draft campaign found,Không tìm thấy chiến dịch dự thảo
 No email logs found,Không tìm thấy nhật ký email
 No information,Không có thông tin
 No information available,Không có thông tin có sẵn
 No label,Không có nhãn
 No new notifications,Không có thông báo mới
 No position information available,Không có thông tin vị trí có sẵn
+No profiles assigned,Không có hồ sơ được chỉ định
+No profiles found,Không tìm thấy hồ sơ
 No recently completed campaigns,Không có chiến dịch nào đã hoàn thành gần đây
+No refresh token available. Please re-authenticate with LinkedIn.,Không có mã thông báo làm mới có sẵn. Vui lòng xác thực lại với LinkedIn.
+No requirement,Không có yêu cầu
 No results found,Không tìm thấy kết quả
-No segments available,Không có phân đoạn có sẵn
+No segments available,Không có tiêu chí có sẵn
+No steps configured,Không có bước được cấu hình
+No steps created yet,Chưa có bước nào được tạo ra
+No steps defined yet,Chưa có bước nào được xác định
+"No steps defined yet. Click ""Add Step"" to get started.","Chưa có bước nào được xác định. Nhấp vào ""Thêm bước"" để bắt đầu."
+No steps found,Không tìm thấy các bước
+No talent pools found,Không tìm thấy nhóm tài năng nào
 No talent pools yet,Chưa có tài năng nào
+No talent profile found,Không tìm thấy hồ sơ tài năng
+No template ID provided,Không có ID mẫu được cung cấp
+No template data available,Không có dữ liệu mẫu có sẵn
+No templates found,Không tìm thấy mẫu
 No {0} Available,Không có {0} có sẵn
 None,Không có
 Not Equals,Không bằng
 Not In,Không phải vào
 Not Like,Không thích
 Not Saved,Không được lưu
-Not determined,Không xác định
+Not set,Không đặt
 Not specified,Không được chỉ định
+Not synced,Không được đồng bộ hóa
 Note,Ghi chú
 Notes,Ghi chú
-Notification,Thông báo
+Notes & Feedback,Ghi chú & Phản hồi
+Notes about the data source...,Ghi chú về nguồn dữ liệu ...
 Notification Text,Văn bản thông báo
 Notification Type Doc,Loại thông báo tài liệu
 Notification Type Doctype,Loại thông báo DOCTYPE
 Notifications,Thông báo
 Number of candidates must be >= 0,Số lượng ứng cử viên phải> = 0
+Number of days to wait before executing this step,Số ngày phải đợi trước khi thực hiện bước này
 Nurturing,Nuôi dưỡng
+Nội dung HTML đã render,Nội phân html / render
 OAuth2,OAuth2
 Objective,Khách quan
 Offered,Ngỏ ý
-Only display candidates not already in this segment,Chỉ hiển thị các ứng viên chưa có trong phân khúc này
 Only image files are allowed,Chỉ cho phép tệp hình ảnh được phép
 Open Rate,Tỷ lệ mở
 Operation successful!,Hoạt động thành công!
+Opt out from marketing emails,Từ chối các email tiếp thị
+"Optional columns: phone, current_position, location, skills","Các cột tùy chọn: điện thoại, hiện tại_poseition, vị trí, kỹ năng"
 Options,Tùy chọn
 Order,Đặt hàng
 Order By,Đặt hàng bởi
-Organization,Tổ chức
-Other features,Các tính năng khác
+Order...,Đặt hàng...
+Other,Khác
 Overdue,Quá hạn
 Overview Dashboard,Tổng quan Dashboard
 Owner,Người sở hữu
@@ -567,11 +929,18 @@ PAGE_VISITED,Trang_visited
 PAUSED,Tạm dừng
 PENDING_MANUAL,Đang chờ xử lý_manual
 Page,Trang
-Parameter 'candidates' must be a list.,Tham số 'ứng cử viên' phải là một danh sách.
+Page Title,Tiêu đề trang
+Page Title is required,Tiêu đề trang được yêu cầu
+Page info updated successfully,Thông tin trang được cập nhật thành công
+Page not found,Không tìm thấy trang
+Page {0} of {1},Trang {0} của {1}
+Pass,Vượt qua
 Password updated successfully,Mật khẩu được cập nhật thành công
 Paused,Tạm dừng
 Pending Confirmation,Đang chờ xác nhận
 Pending Manual,Hướng dẫn đang chờ xử lý
+Personal Information,Thông tin cá nhân
+PhD,Tiến sĩ
 Phone,Điện thoại
 Phone Call,Cuộc gọi điện thoại
 Phone Number,Số điện thoại
@@ -579,42 +948,66 @@ Phone Number,Số điện thoại
 Pin View,Chế độ xem pin
 Pinned,Ghim
 Pinned Views,Quan điểm ghim
-Pinned view,Chế độ xem ghim
 Please enter a valid URL,Vui lòng nhập URL hợp lệ
+Please fill in the information and upload your CV,Vui lòng điền thông tin và tải lên CV của bạn
+Please provide accurate information about yourself,Vui lòng cung cấp thông tin chính xác về bản thân
+Please provide information about your experience and skills,Vui lòng cung cấp thông tin về kinh nghiệm và kỹ năng của bạn
+Please save the template first before adding steps,Vui lòng lưu mẫu trước khi thêm các bước
+Please select the skills that are relevant to the position you are applying for,Vui lòng chọn các kỹ năng có liên quan đến vị trí bạn đang đăng ký
+Portfolio Url,Danh mục đầu tư URL
 Position,Chức vụ
+Preferred Work Location,Vị trí công việc ưa thích
+Preview campaign workflow,Xem trước quy trình công việc chiến dịch
+Preview how this template will execute in a campaign,Xem trước cách mẫu này sẽ thực thi trong một chiến dịch
 Previous,Trước
+Previous page,Trang trước
 Private,Riêng tư
-Processing...,Xử lý...
+Process File,Tệp xử lý
+Professional Information,Thông tin chuyên nghiệp
 Profile,Hồ sơ
 Profile Data,Dữ liệu hồ sơ
+Profile will be added to segment,Hồ sơ sẽ được thêm vào phân khúc
+Profile will be assigned to campaign,Hồ sơ sẽ được gán cho chiến dịch
+Profiles in this Pool,Hồ sơ trong nhóm này
+Profiles in this segment,Hồ sơ trong phân khúc này
 Progress,Tiến triển
 Public,Công cộng
 Public Views,Quan điểm công khai
-Public view,Quan điểm công khai
+Published,Xuất bản
 Pull,Sự lôi kéo
 Push,Xô
+QUALIFIED,ĐẠT TIÊU CHUẨN
 Quick Filters updated successfully,Bộ lọc nhanh được cập nhật thành công
-Quick entry layout,Bố cục nhập nhanh
 Quá hạn,Quá hạn
+REFERRAL,Giới thiệu
+"React, NodeJS, Python...","React, Nodejs, Python ..."
 Read,Đọc
+Ready to add to segment,Sẵn sàng để thêm vào phân khúc
 Recently Completed,Gần đây đã hoàn thành
 Recipients,Người nhận
+Recommended for consistency,Đề nghị cho sự nhất quán
+Record a new interaction with profile,Ghi lại một tương tác mới với hồ sơ
 Recruiting for important positions in the company.,Tuyển dụng cho các vị trí quan trọng trong công ty.
 Recruitment Campaign List,Danh sách chiến dịch tuyển dụng
 Reference Doc,Tài liệu tham khảo
 Reference Doctype,Tài liệu tham khảo doctype
 Referral,Giới thiệu
 Refresh,Làm mới
+Refresh Data,Làm mới dữ liệu
 Refresh Token,Làm mới mã thông báo
 "Refresh Token (OAuth2), để làm mới Access Token","Làm mới mã thông báo (oauth2), để lÀm mới truy cập mã thông báo"
+Registration successful! Continue to homepage?,Đăng ký thành công! Tiếp tục đến trang chủ?
 Rejected,Vật bị loại bỏ
 Related Campaigns,Các chiến dịch liên quan
+Reload,Tải lại
 Remove all,Loại bỏ tất cả
 Remove and move fields to previous column,Xóa và di chuyển các trường đến cột trước
 Remove column,Xóa cột
 Remove section,Loại bỏ phần
 Remove tab,Xóa tab
 Reply,Hồi đáp
+Required Skills,Kỹ năng cần thiết
+"Required columns: full_name, email","Các cột bắt buộc: full_name, email"
 Reset,Cài lại
 Reset Changes,Đặt lại thay đổi
 Reset to Default,Đặt lại về mặc định
@@ -624,13 +1017,20 @@ Result,Kết quả
 Result (JSON),Kết quả (JSON)
 Resume,Bản tóm tắt
 Retake,Retake
+Retry,Thử lại
+Review Campaign,Đánh giá chiến dịch
+Review your campaign details and workflow before finalizing,Xem lại chi tiết chiến dịch và quy trình làm việc của bạn trước khi hoàn thiện
+Route,Tuyến đường
 Route Name,Tên tuyến đường
+Route is required,Tuyến đường là bắt buộc
 Rows,Hàng
 Running,Đang chạy
 SCHEDULED,Dự kiến
 SEND_EMAIL,Send_email
 SEND_SMS,Send_sms
 SKIPPED,Bỏ qua
+SMS,SMS
+SMS Campaign,Chiến dịch SMS
 SMS_DELIVERED,SMS_Delivered
 SMS_REPLIED,SMS_Replied
 SMS_SENT,SMS_SENT
@@ -638,120 +1038,213 @@ SOURCED,Có nguồn gốc
 Sales Manager,Giám đốc bán hàng
 Sales User,Người dùng bán hàng
 Same Site?,Cùng một trang web?
+Sample Values,Giá trị mẫu
 Save,Cứu
+Save & Edit,Lưu & Chỉnh sửa
 Save Changes,Lưu các thay đổi
 Saved Views,Lượt xem đã lưu
-Saved view,Đã lưu xem
+Saving...,Tiết kiệm ...
 Schedule,Lịch trình
+Schedule Date,Lịch trình ngày
+Schedule Nurturing,Lịch trình nuôi dưỡng
 Scheduled,Dự kiến
 Scheduled At,Dự kiến tại
+Score,Điểm
 Script,Kịch bản
+Search,Tìm kiếm
+Search Ladi pages...,Tìm kiếm các trang ladi ...
 Search actions...,Hành động tìm kiếm ...
-Search and select candidate...,Tìm kiếm và chọn ứng viên ...
+Search and select candidates from existing talent pools.,Tìm kiếm và chọn ứng viên từ các nhóm tài năng hiện có.
 Search by name...,Tìm kiếm theo tên ...
-Search candidates...,Các ứng cử viên tìm kiếm ...
+Search candidate pools...,Tìm kiếm nhóm ứng cử viên ...
+Search data sources...,Nguồn dữ liệu tìm kiếm ...
 Search emails...,Email tìm kiếm ...
+Search pools...,Các nhóm tìm kiếm ...
+Search profiles...,Hồ sơ tìm kiếm ...
 Search talent pools...,Tìm kiếm nhóm tài năng ...
+Search templates...,Mẫu tìm kiếm ...
 Search...,Tìm kiếm...
 Section,Phần
-Segment,Phân đoạn
-Segment Analytics,Phân tích phân khúc
-Segment Name,Tên phân khúc
-Segment name cannot exceed 100 characters,Tên phân đoạn không thể vượt quá 100 ký tự
-Segment name must be at least 3 characters,Tên phân đoạn phải có ít nhất 3 ký tự
-Segment type is required,Loại phân đoạn là bắt buộc
-Segments,Phân đoạn
+Segment,Tiêu chí
+Segment Analytics,Phân tích tiêu chí
+Segment Name,Tên tiêu chí
+Segment Type,Loại phân khúc
+Segment name cannot exceed 100 characters,Tên tiêu chí không thể vượt quá 100 ký tự
+Segment name must be at least 3 characters,Tên tiêu chí phải có ít nhất 3 ký tự
+Segment required,Phân khúc yêu cầu
+Segment type is required,Loại tiêu chí là bắt buộc
+Segments,Tiêu chí
+Select,Lựa chọn
+Select All,Chọn tất cả
+Select Campaign,Chọn Chiến dịch
+Select Campaign Template,Chọn Mẫu chiến dịch
 Select Candidate,Chọn ứng viên
-Select candidate to add to,Chọn ứng viên để thêm vào
+Select Data Source Type,Chọn loại nguồn dữ liệu
+Select File,Chọn Tệp
+Select Owner,Chọn chủ sở hữu
+Select Segment,Chọn phân đoạn
+Select Source Type,Chọn loại nguồn
+Select Specific Source,Chọn nguồn cụ thể
+Select Target Segment,Chọn Phân đoạn mục tiêu
+Select a level,Chọn một cấp độ
+Select a location,Chọn một vị trí
+Select a talent segment,Chọn một phân khúc tài năng
+Select action type,Chọn loại hành động
+Select action type...,Chọn loại hành động ...
+Select campaign step,Chọn bước chiến dịch
+Select campaign type...,Chọn loại chiến dịch ...
+Select candidate,Chọn ứng viên
+Select field,Chọn trường
+Select file,Chọn Tệp
+Select from pre-defined campaign templates with ready-made workflows,Chọn từ các mẫu chiến dịch được xác định trước với quy trình làm việc sẵn sàng
+Select manager,Chọn Trình quản lý
+Select profiles to add to,Chọn Hồ sơ để thêm vào
+Select segment type,Chọn loại phân đoạn
+Select source,Chọn nguồn
+Select status,Chọn trạng thái
 Select {0},Chọn {0}
+Selected,Đã chọn
+Selected Candidates,Ứng cử viên được lựa chọn
+Selected skills,Kỹ năng được lựa chọn
 Send Email,Gửi email
 Send SMS,Gửi SMS
-Send email,Gửi email
+Send an email to the profile,Gửi email đến hồ sơ
 Sender,Người gửi
+Sending...,Gửi ...
 Separate multiple emails with commas,Tách biệt nhiều email với dấu phẩy
-Service level agreement,Thỏa thuận cấp độ dịch vụ
 Set all as private,Đặt tất cả là riêng tư
 Set all as public,Đặt tất cả như công khai
 Set as default,Đặt làm mặc định
-Setting up,Thiết lập
 Settings,Cài đặt
-Setup your password,Thiết lập mật khẩu của bạn
 Short Code,Mã ngắn
 Short URL,Url ngắn
 Shortlist Date,Ngày rút gọn ngày
 Shortlisted,Lọt vào danh sách
+Show Help,Hiển thị trợ giúp
 Show Password,Hiển thị mật khẩu
+Show QR Code,Hiển thị mã QR
 Show border,Hiển thị biên giới
 Show label,Hiển thị nhãn
 Show preview,Hiển thị xem trước
 Showing,Hiển thị
 Skills,Kỹ năng
-Skills:,Kỹ năng:
+Skills (optional),Kỹ năng (tùy chọn)
+Skills from segment,Kỹ năng từ phân khúc
+Skills should be comma-separated,Kỹ năng nên được phân tách bằng dấu phẩy
 Skip,Nhảy
-Skip this step,Bỏ qua bước này
 Skipped,Bỏ qua
+Slug,Sên
+Social Media,Phương tiện truyền thông xã hội
+Social Media Campaign,Chiến dịch truyền thông xã hội
+Social Network,Mạng xã hội
 SocialNetwork,SocialNetwork
 Sort,Loại
 Source,Nguồn
 Source Action,Nguồn hành động
+Source File,Tệp nguồn
 Source Name,Tên nguồn
 Source Type,Loại nguồn
-Sourced,Có nguồn gốc
-"Standard Form Scripts can not be modified, duplicate the Form Script instead.","Không thể sửa đổi các tập lệnh biểu mẫu tiêu chuẩn, thay vào đó sao chép tập lệnh biểu mẫu."
+Source name is required,Tên nguồn được yêu cầu
+Source type is required,Loại nguồn là bắt buộc
+"Standard Mira Form Scripts can not be modified, duplicate the Mira Form Script instead.","Không thể sửa đổi mẫu MIRA tiêu chuẩn Mira, thay vào đó sao chép tập lệnh MIRA Mẫu."
 Standard Views,Quan điểm tiêu chuẩn
 Start Date,Ngày bắt đầu
 Start a new recruitment request,Bắt đầu một yêu cầu tuyển dụng mới
+Start by adding the first talent profile.,Bắt đầu bằng cách thêm hồ sơ tài năng đầu tiên.
 Start by adding your first candidate.,Bắt đầu bằng cách thêm ứng viên đầu tiên của bạn.
+Start by creating your first campaign template.,Bắt đầu bằng cách tạo mẫu chiến dịch đầu tiên của bạn.
+Start by creating your first data source.,Bắt đầu bằng cách tạo nguồn dữ liệu đầu tiên của bạn.
+Start creating your first recruitment campaign,Bắt đầu tạo chiến dịch tuyển dụng đầu tiên của bạn
 Start date cannot be after end date,Ngày bắt đầu không thể sau ngày kết thúc
+Starting Step,Bước bắt đầu
 Status,Trạng thái
+Step,Bước chân
 Step Name,Tên bước
 Step Order,Bước đơn đặt hàng
+Step added successfully,Bước được thêm thành công
+Step copied successfully,Bước sao chép thành công
+Step deleted successfully,Bước đã xóa thành công
+Step duplicated successfully,Bước trùng lặp thành công
+Step moved successfully,Bước di chuyển thành công
+Step name is required,Tên kế được yêu cầu
+Step name must be less than 150 characters,Tên bước phải nhỏ hơn 150 ký tự
+Step order must be at least 1,Lệnh bước phải có ít nhất 1
+Step order must be between 1 and 999,Lệnh bước phải từ 1 đến 999
+Step updated successfully,Bước cập nhật thành công
+Steps,Các bước
 Subject,Chủ thể
-Subscribed,Đăng ký
+Submit,Nộp
 Success,Thành công
+Suggested Candidates,Ứng viên đề xuất
 Switch camera,Chuyển đổi camera
+Sync Data,Đồng bộ hóa dữ liệu
 Sync Direction,Đồng bộ hướng
+Sync Frequency (minutes),Tần số đồng bộ hóa (phút)
 Sync Frequency Minutes,Số phút tần số đồng bộ hóa
-Synced At,Đồng bộ hóa tại
 System Manager,Trình quản lý hệ thống
 "Số lượng ứng viên hiện có trong phân khúc (dùng để hiển thị, được cập nhật định kỳ).",Số lượng ứng viênn hiện đó
 "Số điện thoại liên lạc. VD: ""0912345678""","Số ĐIện Thoại liên Lạc. VD: ""0912345678"""
 TEST_COMPLETED,Test_completed
 TEST_STARTED,Test_started
-Talent,Tài năng
-Talent Campaign,Chiến dịch tài năng
+Talent Pool,Hồ bơi tài năng
 Talent Pools,Kho nhân tài
+Talent Profile,Hồ sơ tài năng
+Talent Profiles,Hồ sơ tài năng
 Talent Segment Details,Chi tiết phân khúc tài năng
 Talent Segments,Phân khúc
 Talent pool has been deleted successfully,Bể bơi tài năng đã bị xóa thành công
 Talent pool has been saved successfully,Bể bơi tài năng đã được cứu thành công
 TalentPool,Talentpool
+TalentProfile Campaign,Chiến dịch TalentProfile
+TalentProfiles,Talentprofiles
 TalentProfilesCampaign,TalentProfileScampaign
+TalentProfilesSegment,TalentProfilessegment
 TalentSegment,Tài năng
 Target Candidates,Mục tiêu ứng cử viên
-Target Segment,Phân đoạn mục tiêu
-Target Segments,Phân đoạn mục tiêu
+Target Field,Trường mục tiêu
+Target Segment,Tiêu chí
+Target Segments,Tiêu chí
 Task,Nhiệm vụ
 Task ID is required,ID nhiệm vụ là bắt buộc
 Task not found,Nhiệm vụ không tìm thấy
 Task updated successfully,Nhiệm vụ được cập nhật thành công
 Template,Bản mẫu
+Template Content,Nội dung mẫu
+Template Info,Thông tin mẫu
+Template Name,Tên mẫu
+Template Steps,Các bước mẫu
+Template Used,Mẫu được sử dụng
+Template created successfully,Mẫu tạo thành công
+Template deleted successfully,Mẫu đã xóa thành công
+Template name is required,Tên mẫu được yêu cầu
+Template name must be less than 150 characters,Tên mẫu phải nhỏ hơn 150 ký tự
+Template not found,Mẫu không tìm thấy
+Template updated successfully,Mẫu cập nhật thành công
+Test Connection,Kết nối kiểm tra
+Test connection error: {0},Lỗi kết nối kiểm tra: {0}
+Test connection failed: {0},Kết nối kiểm tra không thành công: {0}
+Testing...,Thử nghiệm ...
 Tham chiếu đến order trong CampaignStep để xác định bước hiện tại.,Tham Chiếu ĐếN đặt hàng Trong Chiến dịch Để Xát
 Thao tác thành công!,Thao Tácc ThànH Công!
 The add candidate feature will be developed in the next phase.,Tính năng ứng cử viên thêm sẽ được phát triển trong giai đoạn tiếp theo.
+The requested page could not be found.,Không thể tìm thấy trang được yêu cầu.
 This Month,Tháng này
 This Quarter,Quý này
 This Week,Tuần này
 This Year,Năm nay
+This action cannot be undone!,Hành động này không thể được hoàn tác!
 This action cannot be undone.,Hành động này không thể được hoàn tác.
-This name will be displayed in the segment list,Tên này sẽ được hiển thị trong danh sách phân khúc
+This campaign is not active,Chiến dịch này không hoạt động
+This field is required,Trường này được yêu cầu
+This name will be displayed in the segment list,Tên này sẽ được hiển thị trong danh sách tiêu chí
 This section is not editable,Phần này không thể chỉnh sửa
-This segment has no candidates yet,Phân khúc này chưa có ứng cử viên
+This segment has no candidates yet,Tiêu chí này chưa có ứng cử viên
 "This will delete selected items and items linked to it, are you sure?","Điều này sẽ xóa các mục đã chọn và các mục được liên kết với nó, bạn có chắc không?"
 "This will delete selected items and unlink linked items to it, are you sure?","Điều này sẽ xóa các mục đã chọn và các mục liên kết đã liên kết với nó, bạn có chắc không?"
 "This will restore (if not exist) all the default statuses, custom fields and layouts. Delete & Restore will delete default layouts and then restore them.","Điều này sẽ khôi phục (nếu không tồn tại) tất cả các trạng thái, trường tùy chỉnh và bố cục mặc định. Xóa & Khôi phục sẽ xóa bố cục mặc định và sau đó khôi phục chúng."
 Thiếu 'file_name' trong request.,ThiếU 'File_Name' yêu cầu trong.
 Thiếu 'meta_doctype' trong request.,Thiếu 'Meta_Doctype' Trong yêu cầu.
+Thumbnail,Hình thu nhỏ
 Thông tin bổ sung hoặc nội dung liên quan,Thôn tin
 Thông tin lỗi gần nhất khi đồng bộ,Thông tin lỗi gần NHất Khi
 Thông tin ứng viên,Thông tin ứng Vin
@@ -759,67 +1252,115 @@ Thời điểm Access Token hết hạn,Thời điểm mã thông báo truy cậ
 Thời điểm dự kiến cho hành động tiếp theo.,Thời Điểm dự Kiến Cho Hành Động tiếp Theo.
 Thời điểm đồng bộ gần nhất,Thời Điểm đồng bộ gần NHất
 Thời điểm ứng viên được thêm vào chiến dịch.,Thời Điểm ứng viênn ĐượC thênm Vào Chiến dịch.
-Timespan,
+Timeline,Dòng thời gian
+Timespan,Thời gian
+Tip: You can enter multiple skills at once by separating them with commas,Mẹo: Bạn có thể nhập nhiều kỹ năng cùng một lúc bằng cách tách chúng bằng dấu phẩy
 Title,Tiêu đề
 Title Field,Lĩnh vực tiêu đề
 Tiêu đề email,TIÊU Đề Email
+To,ĐẾN
 To User,Cho người dùng
 Today,Hôm nay
 Token Expires At,Mã thông báo hết hạn tại
 Tomorrow,Ngày mai
 Top Skills,Kỹ năng hàng đầu
 TopCV,TOPCV
+Total,Tổng cộng
 Total Actions,Tổng số hành động
 Total Candidates,Tổng số ứng cử viên
 Total Emails,Tổng số email
 Total Interactions,Tổng số tương tác
+Total Profiles,Tổng số hồ sơ
+Total Steps,Tổng số các bước
+Total Steps:,Tổng số các bước:
+Total Templates,Tổng số mẫu
+Try Again,Hãy thử lại
+Try adjusting the minimum score or search criteria,Hãy thử điều chỉnh điểm tối thiểu hoặc tiêu chí tìm kiếm
 Try changing filters to find suitable candidates.,Hãy thử thay đổi bộ lọc để tìm ứng viên phù hợp.
-Twilio,Twilio
+Try changing the filter to find a suitable talent profile.,Hãy thử thay đổi bộ lọc để tìm một hồ sơ tài năng phù hợp.
+Try changing the filter to find suitable candidate pools.,Hãy thử thay đổi bộ lọc để tìm nhóm ứng cử viên phù hợp.
+Trạng thái công khai,Trạng tháia sang Khai
 Type,Kiểu
 Type an email address to invite,Nhập địa chỉ email để mời
 Tên Doctype trong hệ thống sẽ đồng bộ với ATS,Tênn doctype trong hệ thống sẽ đồng bộ với ats
-"Tên hiển thị của phân khúc. VD: ""Senior Java Developers (HN)"", ""Product Designers (Remote)""","Tênn hiển thị của phân Khúc. VD: ""Các nhà phát triển Java cao cấp (HN)"", ""Nhà thiết kế sản phẩm (từ xa)"""
+"Tên hiển thị của tiêu chí. VD: ""Senior Java Developers (HN)"", ""Product Designers (Remote)""","Tênn hiển thị của tiêu chí. VD: ""Các nhà phát triển Java cao cấp (HN)"", ""Nhà thiết kế sản phẩm (từ xa)"""
 "Tên nguồn dữ liệu, ví dụ: TopCV, VietnamWorks, Facebook… (tùy thuộc Source Type, được cập nhật tự động)","Tênn Nguồn dữ liệu, ví dụ: topcv, Việt Nam, Facebook"
 "Tên đầy đủ của ứng viên. VD: ""Nguyễn Văn An""","Tênn Đầy Đủ Của ứng Vin. Vd: ""Nguyễn Văn an"""
 "Tình trạng của nguồn dữ liệu: Active (đang sử dụng), Inactive",TÌnh trạng của ngg
 Tạo mới,TạO MớI
 URL (if any),URL (nếu có)
+URL (optional),URL (tùy chọn)
+Unable to load data,Không thể tải dữ liệu
+Unable to load templates,Không thể tải mẫu
 Uncollapsible,Không thể kiểm soát được
 Under Review,Đang được xem xét
+Unknown,Không xác định
 Unlink,Hủy bỏ
 Unlink and delete,Hủy bỏ và xóa
 Unlink and delete {0} items,Hủy bỏ và xóa các mục {0}
 Unlink linked item,Hủy liên kết các mục được liên kết
 Unpin View,Chế độ xem Unpin
 Unsaved Changes,Những thay đổi chưa được lưu
-Unsubscribed,Không được đăng ký
 Untitled,Không có tiêu đề
+Untitled Campaign,Chiến dịch không có tiêu đề
 Update,Cập nhật
+Update Step,Cập nhật bước
+Update Task,Cập nhật nhiệm vụ
+Update Template,Cập nhật mẫu
+Update campaign information,Cập nhật thông tin chiến dịch
+Update data source information,Cập nhật thông tin nguồn dữ liệu
 Update status,Cập nhật trạng thái
 Update {0} Records,Cập nhật bản ghi {0}
 Upload,Tải lên
+"Upload CV (PDF, DOCX)","Tải lên CV (PDF, DOCX)"
+Upload Document,Tải lên tài liệu
+Upload a document for this profile,Tải lên một tài liệu cho hồ sơ này
+Uploading...,Tải lên ...
+Use Move Up/Down buttons to reorder steps,Sử dụng các nút di chuyển lên/xuống để sắp xếp lại các bước
+Use Template,Sử dụng mẫu
+Use the Back button to choose a different type,Sử dụng nút quay lại để chọn một loại khác
 User,Người dùng
 Value,Giá trị
 VietnamWorks,Việt Nam
+View,Xem
 View Details,Xem chi tiết
 View Workflow Details,Xem chi tiết quy trình làm việc
 View timeline,Xem dòng thời gian
 View workflow details,Xem chi tiết quy trình làm việc
-Views,Quan điểm
-Web form,Mẫu web
+Vị trí quan tâm,Vị trí quan tâm
+Wait,Chờ đợi
+Website,Trang web
 Welcome back! Here is the status of your activities today.,Chào mừng trở lại! Đây là tình trạng của các hoạt động của bạn ngày hôm nay.
 WhatsApp,WhatsApp
 Where,Ở đâu
 Width,Chiều rộng
 "Width can be in number, pixel or rem (eg. 3, 30px, 10rem)","Chiều rộng có thể có trong số, pixel hoặc rem (ví dụ: 3, 30px, 10rem)"
+Will be added:,Sẽ được thêm vào:
+Work Experience,Kinh nghiệm làm việc
+Years of experience,Nhiều năm kinh nghiệm
+Years of experience (optional),Nhiều năm kinh nghiệm (tùy chọn)
 Yesterday,Hôm qua
+You can add profiles and activate the campaign after creation,Bạn có thể thêm hồ sơ và kích hoạt chiến dịch sau khi tạo
+You have recently submitted. Please wait a moment before submitting again.,Bạn đã nộp gần đây. Vui lòng đợi một chút trước khi gửi lại.
 You have unsaved changes. Do you want to save them?,Bạn có những thay đổi chưa được lưu. Bạn có muốn cứu họ không?
 You need to be in developer mode to edit a Standard Form Script,Bạn cần ở chế độ nhà phát triển để chỉnh sửa tập lệnh biểu mẫu tiêu chuẩn
+You’ll manually set up your search in the next step.,Bạn sẽ tự thiết lập tìm kiếm theo cách thủ công trong bước tiếp theo.
 all,tất cả
 applications,ứng dụng
-e.g. 15,ví dụ. 15
-e.g. 30,ví dụ. 30
+campaigns,chiến dịch
+candidate,ứng viên
+candidate pools,nhóm ứng cử viên
+candidates,ứng cử viên
+day,ngày
+days,ngày
+days ago,ngày trước
+days delay,ngày trì hoãn
+days from last month,Ngày kể từ tháng trước
+days total duration,ngày tổng thời gian
+e.g. 15 million VND,ví dụ. 15 triệu vnd
+e.g. 30 million VND,ví dụ. 30 triệu vnd
 email already exists,Email đã tồn tại
+from last month,từ tháng trước
 group_by,nhóm_by
 in 1 hour,trong 1 giờ
 in 1 minute,trong 1 phút
@@ -842,16 +1383,23 @@ kanban,Kanban
 label,nhãn
 list,danh sách
 mentioned you in {0},đã đề cập đến bạn trong {0}
+months ago,vài tháng trước
+more,hơn
 new candidates,ứng cử viên mới
 next,Kế tiếp
 now,Hiện nay
 of,của
-other skills,các kỹ năng khác
+pending approval,đang chờ phê duyệt
 previous,trước
 results,kết quả
+sources available,Nguồn có sẵn
 steps,Các bước
+templates,mẫu
+this month,tháng này
 to,ĐẾN
 tomorrow,Ngày mai
+weeks ago,vài tuần trước
+years ago,nhiều năm trước
 yesterday,Hôm qua
 {0} M,{0} m
 {0} d,{0} d
