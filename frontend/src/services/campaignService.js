@@ -165,9 +165,7 @@ export const removeCampaign = async (name, campaignName) => {
     const response = await deleteCampaign(name)
     if (response) {
       return response
-    } else {
-      throw new Error(`Không thể xóa chiến dịch "${campaignName}"`)
-    }
+    } 
   } catch (error) {
     console.error('Failed to delete campaign:', error)
     throw new Error(`Không thể xóa chiến dịch "${campaignName}"`)
