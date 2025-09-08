@@ -323,7 +323,7 @@ class CandidateDataSourceDirectService {
   async testConnection(name) {
     try {
       // Gọi custom API method cho test connection
-      const response = await call('mbw_mira.api.candidate_data_source.test_connection', {
+      const response = await call('mbw_mira.mbw_mira.candidatedatasource.candidatedatasource.test_connection', {
         name: name
       })
 
@@ -347,7 +347,7 @@ class CandidateDataSourceDirectService {
   async syncData(name) {
     try {
       // Gọi custom API method cho sync data
-      const response = await call('mbw_mira.api.candidate_data_source.sync_data', {
+      const response = await call('mbw_mira.mbw_mira.candidatedatasource.candidatedatasource.sync_data', {
         name: name
       })
 

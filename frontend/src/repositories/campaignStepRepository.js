@@ -8,7 +8,7 @@ import { createResource } from 'frappe-ui'
 // Get paginated campaign steps with filters and search
 export const getCampaignSteps = (params = {}) => {
   const resource = createResource({
-    url: 'mbw_mira.api.campaign_step.get_campaign_steps_paginated',
+    url: 'mbw_mira.mbw_mira.campaignstep.campaignstep.get_campaign_steps_paginated',
     method: 'POST',
     auto: false
   })
@@ -59,7 +59,7 @@ export const getCampaignSteps = (params = {}) => {
 // Get campaign step statistics
 export const getCampaignStepStats = () => {
   const resource = createResource({
-    url: 'mbw_mira.api.campaign_step.get_campaign_step_stats',
+    url: 'mbw_mira.mbw_mira.campaignstep.campaignstep.get_campaign_step_stats',
     method: 'GET',
     auto: false
   })
@@ -73,7 +73,7 @@ export const getCampaignStepStats = () => {
 // Search campaign steps for autocomplete
 export const searchCampaignSteps = (query, limit = 10) => {
   const resource = createResource({
-    url: 'mbw_mira.api.campaign_step.search_campaign_steps',
+    url: 'mbw_mira.mbw_mira.campaignstep.campaignstep.search_campaign_steps',
     method: 'POST',
     auto: false
   })
@@ -92,7 +92,7 @@ export const searchCampaignSteps = (query, limit = 10) => {
 // Get campaign step by ID/name
 export const getCampaignStepByName = (name) => {
   const resource = createResource({
-    url: 'mbw_mira.api.campaign_step.get_campaign_step_by_name',
+    url: 'mbw_mira.mbw_mira.campaignstep.campaignstep.get_campaign_step_by_name',
     method: 'POST',
     auto: false
   })
@@ -106,7 +106,7 @@ export const getCampaignStepByName = (name) => {
 // Create new campaign step
 export const createCampaignStep = (data) => {
   const resource = createResource({
-    url: 'mbw_mira.api.campaign_step.create_campaign_step',
+    url: 'mbw_mira.mbw_mira.campaignstep.campaignstep.create_campaign_step',
     method: 'POST',
     auto: false
   })
@@ -126,7 +126,7 @@ export const createCampaignStep = (data) => {
 // Update campaign step
 export const updateCampaignStep = (name, data) => {
   const resource = createResource({
-    url: 'mbw_mira.api.campaign_step.update_campaign_step',
+    url: 'mbw_mira.mbw_mira.campaignstep.campaignstep.update_campaign_step',
     method: 'POST',
     auto: false
   })
@@ -140,7 +140,7 @@ export const updateCampaignStep = (name, data) => {
 // Delete campaign step
 export const deleteCampaignStep = (name) => {
   const resource = createResource({
-    url: 'mbw_mira.api.campaign_step.delete_campaign_step',
+    url: 'mbw_mira.mbw_mira.campaignstep.campaignstep.delete_campaign_step',
     method: 'POST',
     auto: false
   })
@@ -154,7 +154,7 @@ export const deleteCampaignStep = (name) => {
 // Get filter options
 export const getCampaignStepFilterOptions = () => {
   const resource = createResource({
-    url: 'mbw_mira.api.campaign_step.get_campaign_step_filter_options',
+    url: 'mbw_mira.mbw_mira.campaignstep.campaignstep.get_campaign_step_filter_options',
     method: 'GET',
     auto: false
   })
@@ -168,7 +168,7 @@ export const getCampaignStepFilterOptions = () => {
 // Get steps by campaign
 export const getStepsByCampaign = (campaign) => {
   const resource = createResource({
-    url: 'mbw_mira.api.campaign_step.get_steps_by_campaign',
+    url: 'mbw_mira.mbw_mira.campaignstep.campaignstep.get_steps_by_campaign',
     method: 'POST',
     auto: false
   })
@@ -182,7 +182,7 @@ export const getStepsByCampaign = (campaign) => {
 // Reorder campaign steps
 export const reorderCampaignSteps = (campaign, stepOrders) => {
   const resource = createResource({
-    url: 'mbw_mira.api.campaign_step.reorder_campaign_steps',
+    url: 'mbw_mira.mbw_mira.campaignstep.campaignstep.reorder_campaign_steps',
     method: 'POST',
     auto: false
   })
@@ -196,7 +196,7 @@ export const reorderCampaignSteps = (campaign, stepOrders) => {
 // Get campaigns for dropdown
 export const getCampaigns = () => {
   const resource = createResource({
-    url: 'mbw_mira.api.campaign.get_campaigns_paginated',
+    url: 'mbw_mira.mbw_mira.campaign.campaign.get_campaigns_paginated',
     method: 'POST',
     auto: false
   })

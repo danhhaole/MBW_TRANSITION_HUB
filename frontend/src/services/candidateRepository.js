@@ -2,7 +2,7 @@ import { createResource } from 'frappe-ui'
 
 // Get paginated talent profiles
 export const getCandidatesResource = createResource({
-  url: 'mbw_mira.api.talentprofiles.get_talent_profiles_paginated',
+  url: 'mbw_mira.mbw_mira.talentprofiles.talentprofiles.get_talent_profiles_paginated',
   method: 'GET',
   transform: (data) => {
     if (data?.success) {
@@ -17,49 +17,49 @@ export const getCandidatesResource = createResource({
 
 // Get talent profile statistics
 export const getCandidateStatsResource = createResource({
-  url: 'mbw_mira.api.talentprofiles.get_talent_profile_stats',
+  url: 'mbw_mira.mbw_mira.talentprofiles.talentprofiles.get_talent_profile_stats',
   method: 'GET',
   transform: (data) => data?.stats || {}
 })
 
 // Search talent profiles
 export const searchCandidatesResource = createResource({
-  url: 'mbw_mira.api.talentprofiles.search_talent_profiles',
+  url: 'mbw_mira.mbw_mira.talentprofiles.talentprofiles.search_talent_profiles',
   method: 'GET',
   transform: (data) => data?.talent_profiles || []
 })
 
 // Get single talent profile
 export const getCandidateResource = createResource({
-  url: 'mbw_mira.api.talentprofiles.get_talent_profile_by_name',
+  url: 'mbw_mira.mbw_mira.talentprofiles.talentprofiles.get_talent_profile_by_name',
   method: 'GET',
   transform: (data) => data?.talent_profile || null
 })
 
 // Create talent profile
 export const createCandidateResource = createResource({
-  url: 'mbw_mira.api.talentprofiles.create_talent_profile',
+  url: 'mbw_mira.mbw_mira.talentprofiles.talentprofiles.create_talent_profile',
   method: 'POST',
   transform: (data) => data?.talent_profile || null
 })
 
 // Update talent profile
 export const updateCandidateResource = createResource({
-  url: 'mbw_mira.api.talentprofiles.update_talent_profile',
+  url: 'mbw_mira.mbw_mira.talentprofiles.talentprofiles.update_talent_profile',
   method: 'POST',
   transform: (data) => data?.talent_profile || null
 })
 
 // Delete talent profile
 export const deleteCandidateResource = createResource({
-  url: 'mbw_mira.api.talentprofiles.delete_talent_profile',
+  url: 'mbw_mira.mbw_mira.talentprofiles.talentprofiles.delete_talent_profile',
   method: 'DELETE',
   transform: (data) => data?.success || false
 })
 
 // Get filter options
 export const getFilterOptionsResource = createResource({
-  url: 'mbw_mira.api.talentprofiles.get_talent_profile_filter_options',
+  url: 'mbw_mira.mbw_mira.talentprofiles.talentprofiles.get_talent_profile_filter_options',
   method: 'GET',
   transform: (data) => data?.options || { status: [], source: [], skills: [] }
 }) 

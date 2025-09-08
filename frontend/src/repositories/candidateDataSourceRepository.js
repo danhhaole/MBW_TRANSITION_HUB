@@ -6,19 +6,19 @@ import { call } from 'frappe-ui'
 
 // Get all active data sources for campaign wizard
 export const getDataSources = () => {
-  return call('mbw_mira.api.candidate_data_source.get_data_sources')
+  return call('mbw_mira.mbw_mira.candidatedatasource.candidatedatasource.get_data_sources')
 }
 
 // Test connection to a data source
 export const testConnection = (name) => {
-  return call('mbw_mira.api.candidate_data_source.test_connection', {
+  return call('mbw_mira.mbw_mira.candidatedatasource.candidatedatasource.test_connection', {
     name
   })
 }
 
 // Sync data from a data source
 export const syncData = (name) => {
-  return call('mbw_mira.api.candidate_data_source.sync_data', {
+  return call('mbw_mira.mbw_mira.candidatedatasource.candidatedatasource.sync_data', {
     name
   })
 }

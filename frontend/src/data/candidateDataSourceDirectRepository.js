@@ -91,7 +91,7 @@ export const getDataSourceFilterOptions = async (field) => {
 // Các function đặc biệt cho CandidateDataSource
 export const testDataSourceConnection = async (id) => {
   try {
-    const response = await call('mbw_mira.api.candidate_data_source.test_connection', {
+    const response = await call('mbw_mira.mbw_mira.candidatedatasource.candidatedatasource.test_connection', {
       name: id
     })
     return response
@@ -103,7 +103,7 @@ export const testDataSourceConnection = async (id) => {
 
 export const syncDataSourceData = async (id) => {
   try {
-    const response = await call('mbw_mira.api.candidate_data_source.sync_data', {
+    const response = await call('mbw_mira.mbw_mira.candidatedatasource.candidatedatasource.sync_data', {
       name: id
     })
     return response
