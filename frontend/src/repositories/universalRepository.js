@@ -144,5 +144,6 @@ export const campaignRepository = new UniversalRepository('Campaign')
 export const campaignStepRepository = new UniversalRepository('CampaignStep')
 export const userRepository = new UniversalRepository('User')
 export const candidateDataSourceRepository = new UniversalRepository('CandidateDataSource')
+export const jobOpeningRepository = new UniversalRepository('JobOpening')
 
 export default UniversalRepository

@@ -11,6 +11,7 @@ import {
 	campaignStepRepository,
 	userRepository,
 	candidateDataSourceRepository,
+	jobOpeningRepository,
 } from '../repositories/universalRepository'
 import { call } from 'frappe-ui'
 
@@ -166,6 +167,7 @@ export const campaignService = new UniversalService(campaignRepository)
 export const campaignStepService = new UniversalService(campaignStepRepository)
 export const userService = new UniversalService(userRepository)
 export const candidateDataSourceService = new UniversalService(candidateDataSourceRepository)
+export const jobOpeningService = new UniversalService(jobOpeningRepository)
 
 export const getCampaignOptions = async () => {
   const data = await call('frappe.client.get_list', {
