@@ -230,7 +230,11 @@ const links = [
     icon: OrganizationsIcon,
     to: 'CampaignManagement',
   },
-
+  {
+    label: "JobOpening",
+    icon: OrganizationsIcon,
+    to: 'JobOpeningManagement',
+  },
   // {
   //   label: "Candidate Pools",
   //   icon: TaskIcon,

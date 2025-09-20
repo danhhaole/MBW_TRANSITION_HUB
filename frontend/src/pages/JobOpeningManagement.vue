@@ -140,496 +140,482 @@
         </div>
       </div>
 
-      <!-- Job Opening Wizard Dialog -->
-      <Dialog 
-        v-model="showForm" 
-        :options="{ 
-          size: '4xl',
-          // Chặn đóng modal khi click outside
-          closeOnClickOutside: false,
-          closeOnEscape: false
-        }"
-        @close="handleMainModalClose"
-      >
-        <template #body>
-          <div class="flex h-[600px] relative">
-            <!-- Close button -->
-            <button
-              @click="closeForm"
-              class="absolute top-4 right-4 z-10 p-2 text-gray-900 rounded-full transition-colors"
-              title="Close"
-            >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+      <!-- Job Opening Wizard Modal -->
+      <div v-if="showForm" class="fixed inset-0 z-50 overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen p-4 text-center">
+          <!-- Background overlay - KHÔNG cho phép click để đóng -->
+          <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
 
-            <!-- Left Panel - Steps -->
-            <div class="w-80 bg-gray-50 p-6 border-r border-gray-200">
-              <div class="mb-6">
-                <h3 class="text-lg font-semibold text-gray-900">
-                  {{ form.name ? __('Edit Job Opening') : __('Create Job Opening') }}
-                </h3>
-                <p class="text-sm text-gray-500 mt-1">
-                  {{ __('Complete 2 simple steps to') }} {{ form.name ? __('update your job opening') : __('create your job opening') }}
-                </p>
-              </div>
-              
-              <!-- Step 1 -->
-              <div class="flex items-center mb-4">
-                <div :class="[
-                  'flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium',
-                  currentStep >= 1 ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-600'
-                ]">
-                  <svg v-if="currentStep > 1" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                  </svg>
-                  <span v-else>1</span>
-                </div>
-                <div class="ml-3">
-                  <p class="text-sm font-medium text-gray-900">{{ __('Basic Information') }}</p>
-                  <p class="text-xs text-gray-500">{{ __('Job title, position, and department') }}</p>
-                </div>
-              </div>
+          <!-- Modal panel -->
+          <div class="relative w-full max-w-6xl mx-auto bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all">
+            <div class="flex h-[600px] relative">
+              <!-- Close button -->
+              <button
+                @click="closeForm"
+                class="absolute top-4 right-4 z-10 p-2 text-gray-900 rounded-full transition-colors"
+                title="Close"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
 
-              <!-- Step 2 -->
-              <div class="flex items-center mb-6">
-                <div :class="[
-                  'flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium',
-                  currentStep >= 2 ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-600'
-                ]">
-                  <svg v-if="currentStep > 2" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                  </svg>
-                  <span v-else>2</span>
-                </div>
-                <div class="ml-3">
-                  <p class="text-sm font-medium text-gray-900">{{ __('Job Description') }}</p>
-                  <p class="text-xs text-gray-500">{{ __('Description, requirements, and responsibilities') }}</p>
-                </div>
-              </div>
-
-              <!-- Progress Bar -->
-              <div class="mt-6">
-                <div class="flex justify-between text-xs text-gray-500 mb-1">
-                  <span>{{ __('Progress') }}</span>
-                  <span>{{ currentStep }}/2</span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                  <div class="bg-blue-500 h-2 rounded-full transition-all duration-300" :style="{ width: `${(currentStep / 2) * 100}%` }"></div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Right Panel - Content -->
-            <div class="flex-1 p-6">
-              <!-- Step 1: Basic Information -->
-              <div v-if="currentStep === 1">
+              <!-- Left Panel - Steps -->
+              <div class="w-80 bg-gray-50 p-6 border-r border-gray-200">
                 <div class="mb-6">
-                  <h4 class="text-lg font-medium text-gray-900">{{ __('Basic Information') }}</h4>
-                  <p class="text-sm text-gray-500">{{ __('Job title, position, and department') }}</p>
+                  <h3 class="text-lg font-semibold text-gray-900">
+                    {{ form.name ? __('Edit Job Opening') : __('Create Job Opening') }}
+                  </h3>
+                  <p class="text-sm text-gray-500 mt-1">
+                    {{ __('Complete 2 simple steps to') }} {{ form.name ? __('update your job opening') : __('create your job opening') }}
+                  </p>
                 </div>
-                
-                <div class="space-y-4">
-                  <FormControl v-model="form.job_title" type="text" :label="__('Job Title')" :required="true" />
-                  <FormControl v-model="form.job_code" type="text" :label="__('Job Code')" />
-                  <div class="grid grid-cols-2 gap-4">
-                    <FormControl v-model="form.department_name" type="text" :label="__('Department')" />
-                    <FormControl v-model="form.location_name" type="text" :label="__('Location')" />
+
+                <!-- Step 1 -->
+                <div class="flex items-center mb-4">
+                  <div :class="[
+                    'flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium',
+                    currentStep >= 1 ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-600'
+                  ]">
+                    <svg v-if="currentStep > 1" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    <span v-else>1</span>
                   </div>
-                  <FormControl v-model="form.number_of_openings" type="number" :label="__('Number Of Openings')" />
-                  <div class="grid grid-cols-2 gap-4">
-                    <FormControl v-model="form.posting_date" type="date" :label="__('Posting Date')" />
-                    <FormControl v-model="form.closing_date" type="date" :label="__('Closing Date')" />
+                  <div class="ml-3">
+                    <p class="text-sm font-medium text-gray-900">{{ __('Basic Information') }}</p>
+                    <p class="text-xs text-gray-500">{{ __('Job title, position, and department') }}</p>
                   </div>
-                  <div class="grid grid-cols-2 gap-4">
-                    <FormControl v-model="form.approval_status" type="select" :label="__('Status')" :options="statusOptions" />
-                    <FormControl v-model="form.owner_id" type="select" :label="__('Owner')" :options="ownerOptions" />
+                </div>
+
+                <!-- Step 2 -->
+                <div class="flex items-center mb-6">
+                  <div :class="[
+                    'flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium',
+                    currentStep >= 2 ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-600'
+                  ]">
+                    <svg v-if="currentStep > 2" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    <span v-else>2</span>
+                  </div>
+                  <div class="ml-3">
+                    <p class="text-sm font-medium text-gray-900">{{ __('Job Description') }}</p>
+                    <p class="text-xs text-gray-500">{{ __('Description, requirements, and responsibilities') }}</p>
+                  </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="mt-6">
+                  <div class="flex justify-between text-xs text-gray-500 mb-1">
+                    <span>{{ __('Progress') }}</span>
+                    <span>{{ currentStep }}/2</span>
+                  </div>
+                  <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="bg-blue-500 h-2 rounded-full transition-all duration-300" :style="{ width: `${(currentStep / 2) * 100}%` }"></div>
                   </div>
                 </div>
               </div>
 
-              <!-- Step 2: Job Description -->
-              <div v-if="currentStep === 2">
-                <div class="flex items-center justify-between mb-6">
-                  <div>
-                    <h4 class="text-lg font-medium text-gray-900">{{ __('Job Description') }}</h4>
-                    <p class="text-sm text-gray-500">{{ __('Description, requirements, and responsibilities') }}</p>
+              <!-- Right Panel - Content -->
+              <div class="flex-1 p-6 overflow-auto">
+                <!-- Step 1: Basic Information -->
+                <div v-if="currentStep === 1">
+                  <div class="mb-6">
+                    <h4 class="text-lg font-medium text-gray-900">{{ __('Basic Information') }}</h4>
+                    <p class="text-sm text-gray-500">{{ __('Job title, position, and department') }}</p>
                   </div>
+
+                  <div class="space-y-4">
+                    <FormControl v-model="form.job_title" type="text" :label="__('Job Title')" :required="true" />
+                    <FormControl v-model="form.job_code" type="text" :label="__('Job Code')" />
+                    <div class="grid grid-cols-2 gap-4">
+                      <FormControl v-model="form.department_name" type="text" :label="__('Department')" />
+                      <FormControl v-model="form.location_name" type="text" :label="__('Location')" />
+                    </div>
+                    <FormControl v-model="form.number_of_openings" type="number" :label="__('Number Of Openings')" />
+                    <div class="grid grid-cols-2 gap-4">
+                      <FormControl v-model="form.posting_date" type="date" :label="__('Posting Date')" />
+                      <FormControl v-model="form.closing_date" type="date" :label="__('Closing Date')" />
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                      <FormControl v-model="form.approval_status" type="select" :label="__('Status')" :options="statusOptions" />
+                      <FormControl v-model="form.owner_id" type="select" :label="__('Owner')" :options="ownerOptions" />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Step 2: Job Description -->
+                <div v-if="currentStep === 2">
+                  <div class="flex items-center justify-between mb-6">
+                    <div>
+                      <h4 class="text-lg font-medium text-gray-900">{{ __('Job Description') }}</h4>
+                      <p class="text-sm text-gray-500">{{ __('Description, requirements, and responsibilities') }}</p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      class="mr-10"
+                      theme="blue"
+                      @click="openAIModal"
+                    >
+                      <template #prefix>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                      </template>
+                      {{ __('AI Generation') }}
+                    </Button>
+                  </div>
+
+                  <div class="space-y-4">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('Job Description') }}</label>
+                      <TextEditor
+                        ref="descriptionEditor"
+                        variant="outline"
+                        editor-class="!prose-sm !max-w-full overflow-auto !w-full min-h-[120px] max-h-[150px] py-1.5 px-2 rounded border border-gray-300 bg-white hover:border-gray-400 hover:shadow-sm focus:bg-white focus:border-gray-500 focus:shadow-sm focus:ring-0 focus-visible:ring-2 focus-visible:ring-gray-400 text-gray-800 transition-colors"
+                        :bubbleMenu="true"
+                        :fixedMenu="true"
+                        :content="form.description"
+                        :placeholder="__('Provide a detailed description of the job responsibilities and day-to-day tasks')"
+                        @change="form.description = $event"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('Job Requirements') }}</label>
+                      <TextEditor
+                        ref="requirementsEditor"
+                        variant="outline"
+                        editor-class="!prose-sm !max-w-full overflow-auto !w-full min-h-[120px] max-h-[150px] py-1.5 px-2 rounded border border-gray-300 bg-white hover:border-gray-400 hover:shadow-sm focus:bg-white focus:border-gray-500 focus:shadow-sm focus:ring-0 focus-visible:ring-2 focus-visible:ring-gray-400 text-gray-800 transition-colors"
+                        :bubbleMenu="true"
+                        :fixedMenu="true"
+                        :content="form.requirements"
+                        :placeholder="__('Specify required qualifications, skills, experience, and education')"
+                        @change="form.requirements = $event"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('Benefits') }}</label>
+                      <TextEditor
+                        ref="benefitsEditor"
+                        variant="outline"
+                        editor-class="!prose-sm !max-w-full overflow-auto !w-full min-h-[120px] max-h-[150px] py-1.5 px-2 rounded border border-gray-300 bg-white hover:border-gray-400 hover:shadow-sm focus:bg-white focus:border-gray-500 focus:shadow-sm focus:ring-0 focus-visible:ring-2 focus-visible:ring-gray-400 text-gray-800 transition-colors"
+                        :bubbleMenu="true"
+                        :fixedMenu="true"
+                        :content="form.benefits"
+                        :placeholder="__('Highlight the benefits and what makes this role attractive')"
+                        @change="form.benefits = $event"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Navigation Buttons -->
+                <div class="flex justify-between pt-6 border-t border-gray-200 mt-6">
                   <Button
+                    v-if="currentStep > 1"
                     variant="outline"
-                    size="sm"
-                    class="mr-10"
-                    theme="blue"
-                    @click="openAIModal"
+                    theme="gray"
+                    @click="previousStep"
                   >
                     <template #prefix>
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
-                    </template>
-                    {{ __('AI Generation') }}
-                  </Button>
-                </div>
-                
-                <div class="space-y-4">
-                  <div>
-                    <FormControl v-model="form.description" type="textarea" :label="__('Job Description')" :rows="4" />
-                    <div class="mt-2 text-xs text-gray-500">
-                      {{ __('Provide a detailed description of the job responsibilities and day-to-day tasks') }}
-                    </div>
-                  </div>
-                  <div>
-                    <FormControl v-model="form.requirements" type="textarea" :label="__('Job Requirements')" :rows="4" />
-                    <div class="mt-2 text-xs text-gray-500">
-                      {{ __('Specify required qualifications, skills, experience, and education') }}
-                    </div>
-                  </div>
-                  <div>
-                    <FormControl v-model="form.benefits" type="textarea" :label="__('Benefits')" :rows="4" />
-                    <div class="mt-2 text-xs text-gray-500">
-                      {{ __('Highlight the benefits and what makes this role attractive') }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Navigation Buttons -->
-              <div class="flex justify-between pt-6 border-t border-gray-200 mt-6">
-                <Button 
-                  v-if="currentStep > 1"
-                  variant="outline" 
-                  theme="gray" 
-                  @click="previousStep"
-                >
-                  <template #prefix>
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                    </svg>
-                  </template>
-                  {{ __('Previous') }}
-                </Button>
-                <div v-else></div>
-                
-                <div class="flex space-x-3">
-                  <Button variant="outline" theme="gray" @click="closeForm">
-                    {{ __('Cancel') }}
-                  </Button>
-                  <Button 
-                    v-if="currentStep < 2"
-                    variant="solid" 
-                    theme="blue" 
-                    @click="nextStep"
-                  >
-                    {{ __('Next') }}
-                    <template #suffix>
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                       </svg>
                     </template>
+                    {{ __('Previous') }}
                   </Button>
-                  <Button 
-                    v-else
-                    variant="solid" 
-                    theme="blue" 
-                    :loading="saving" 
-                    @click="save"
-                  >
-                    {{ form.name ? __('Update') : __('Create') }}
-                  </Button>
+                  <div v-else></div>
+
+                  <div class="flex space-x-3">
+                    <Button variant="outline" theme="gray" @click="closeForm">
+                      {{ __('Cancel') }}
+                    </Button>
+                    <Button
+                      v-if="currentStep < 2"
+                      variant="solid"
+                      theme="blue"
+                      @click="nextStep"
+                    >
+                      {{ __('Next') }}
+                      <template #suffix>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                      </template>
+                    </Button>
+                    <Button
+                      v-else
+                      variant="solid"
+                      theme="blue"
+                      :loading="saving"
+                      @click="save"
+                    >
+                      {{ form.name ? __('Update') : __('Create') }}
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </template>
-      </Dialog>
+        </div>
+      </div>
 
       <!-- AI Generation Modal -->
-      <Dialog 
-        v-model="showAIModal" 
-        :options="{ 
-          size: '5xl', 
-          title: __('Generate Job Description AI'),
-          closeOnClickOutside: true,
-          closeOnEscape: true
-        }"
-        @close="closeAIModal"
-      >
-        <template #body>
-          <div class="p-6 relative max-h-[80vh] overflow-y-auto">
-            <!-- Close button -->
-            <button
-              @click="closeAIModal"
-              class="absolute top-2 right-2 z-10 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
-              title="Close"
-            >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+      <div v-if="showAIModal" class="fixed inset-0 z-[60] overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen p-4 text-center">
+          <!-- Background overlay -->
+          <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeAIModal"></div>
 
-            <div class="grid grid-cols-2 gap-6">
-              <!-- Left Panel - Input Configuration -->
-              <div class="space-y-6">
-                <div>
-                  <FormControl
-                    v-model="aiForm.job_title"
-                    type="text"
-                    :label="__('Job Title')"
-                    :placeholder="__('job_title')"
-                    @input="updateMainFormJobTitle"
-                  />
-                </div>
-                
-                <div>
-                  <FormControl
-                    type="select"
-                    v-model="aiForm.tone"
-                    :options="[
-                      { label: __('Professional'), value: __('Professional') },
-                      { label: __('Friendly'), value: __('Friendly') },
-                      { label: __('Creative'), value: __('Creative') },
-                      { label: __('Formal'), value: __('Formal') },
-                      { label: __('Casual'), value: __('Casual') }
-                    ]"
-                    variant="outline"
-                    :placeholder="__('Select Tone')"
-                    :label="__('Tone')"
-                  />
-                </div>
-                
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('Thẻ chú thích') }}</label>
-                  <textarea
-                    v-model="aiForm.comments"
-                    rows="4"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    :placeholder="__('Write your comments here. Example: I want to create a job description for a software engineer with 3 years of experience in React and Node.js.')"
-                  ></textarea>
-                </div>
-                
-                <div class="pt-4">
-                  <Button
-                    variant="solid"
-                    theme="gray"
-                    @click="generateAIContent"
-                    :loading="aiGenerating"
-                    class="w-full"
-                  >
-                    {{ __('Generate') }}
-                  </Button>
-                </div>
-              </div>
-
-              <!-- Right Panel - Rich Text Editors -->
-              <div class="space-y-6">
-                <!-- Job Description -->
-                <div>
-                  <div class="flex items-center justify-between mb-2">
-                    <label class="block text-sm font-medium text-gray-700">{{ __('Job Description') }}</label>
-                    <Button
-                      v-if="aiForm.job_description"
-                      variant="outline"
-                      size="sm"
-                      class="mr-10"
-                      theme="blue"
-                      @click="rewriteWithAI('job_description')"
-                      :loading="rewritingSection === 'job_description'"
+          <!-- Modal panel -->
+          <div class="relative w-full max-w-6xl mx-auto bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+              <div class="sm:flex sm:items-start">
+                <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                  <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">
+                      {{ __('Generate Job Description AI') }}
+                    </h3>
+                    <button
+                      @click="closeAIModal"
+                      class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                      title="Close"
                     >
-                      <template #prefix>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
-                      </template>
-                      {{ __('Rewrite with AI') }}
-                    </Button>
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
                   </div>
-                  <div class="border border-gray-300 rounded-md">
-                    <div class="flex items-center space-x-2 p-2 border-b border-gray-200 bg-gray-50">
-                      <button class="p-1 hover:bg-gray-200 rounded" title="Heading">
-                        <span class="text-sm font-bold">H1</span>
-                      </button>
-                      <button class="p-1 hover:bg-gray-200 rounded" title="Paragraph">
-                        <span class="text-sm">T</span>
-                      </button>
-                      <button class="p-1 hover:bg-gray-200 rounded" title="Bold">
-                        <span class="text-sm font-bold">B</span>
-                      </button>
-                      <button class="p-1 hover:bg-gray-200 rounded" title="Italic">
-                        <span class="text-sm italic">I</span>
-                      </button>
-                      
+
+                  <!-- Scrollable content area -->
+                  <div class="max-h-[80vh] overflow-y-auto">
+                    <div class="p-6">
+                      <div class="grid grid-cols-2 gap-6">
+                        <!-- Left Panel - Input Configuration -->
+                        <div class="space-y-6">
+                          <div>
+                            <FormControl
+                              v-model="aiForm.job_title"
+                              type="text"
+                              :label="__('Job Title')"
+                              :placeholder="__('job_title')"
+                              @input="updateMainFormJobTitle"
+                            />
+                          </div>
+
+                          <div>
+                            <FormControl
+                              type="select"
+                              v-model="aiForm.tone"
+                              :options="[
+                                { label: __('Professional'), value: __('Professional') },
+                                { label: __('Friendly'), value: __('Friendly') },
+                                { label: __('Creative'), value: __('Creative') },
+                                { label: __('Formal'), value: __('Formal') },
+                                { label: __('Casual'), value: __('Casual') }
+                              ]"
+                              variant="outline"
+                              :placeholder="__('Select Tone')"
+                              :label="__('Tone')"
+                            />
+                          </div>
+
+                          <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('Thẻ chú thích') }}</label>
+                            <textarea
+                              v-model="aiForm.comments"
+                              rows="4"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              :placeholder="__('Write your comments here. Example: I want to create a job description for a software engineer with 3 years of experience in React and Node.js.')"
+                            ></textarea>
+                          </div>
+
+                          <div class="pt-4">
+                            <Button
+                              variant="solid"
+                              theme="gray"
+                              @click="generateAIContent"
+                              :loading="aiGenerating"
+                              class="w-full"
+                            >
+                              {{ __('Generate') }}
+                            </Button>
+                          </div>
+                        </div>
+
+                        <!-- Right Panel - Rich Text Editors -->
+                        <div class="space-y-6">
+                          <!-- Job Description -->
+                          <div>
+                            <div class="flex items-center justify-between mb-2">
+                              <label class="block text-sm font-medium text-gray-700">{{ __('Job Description') }}</label>
+                              <Button
+                                v-if="aiForm.job_description"
+                                variant="outline"
+                                size="sm"
+                                theme="blue"
+                                @click="rewriteWithAI('job_description')"
+                                :loading="rewritingSection === 'job_description'"
+                              >
+                                <template #prefix>
+                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                  </svg>
+                                </template>
+                                {{ __('Rewrite with AI') }}
+                              </Button>
+                            </div>
+                            <TextEditor
+                              ref="aiDescriptionEditor"
+                              variant="outline"
+                              editor-class="!prose-sm !max-w-full overflow-auto !w-full min-h-[200px] max-h-[300px] py-1.5 px-2 rounded border border-gray-300 bg-white hover:border-gray-400 hover:shadow-sm focus:bg-white focus:border-gray-500 focus:shadow-sm focus:ring-0 focus-visible:ring-2 focus-visible:ring-gray-400 text-gray-800 transition-colors"
+                              :bubbleMenu="true"
+                              :fixedMenu="true"
+                              :content="aiForm.job_description"
+                              :placeholder="__('Job Description')"
+                              @change="aiForm.job_description = $event"
+                            />
+                          </div>
+
+                          <!-- Job Requirement -->
+                          <div>
+                            <div class="flex items-center justify-between mb-2">
+                              <label class="block text-sm font-medium text-gray-700">{{ __('Job Requirement') }}</label>
+                              <Button
+                                v-if="aiForm.job_requirement"
+                                variant="outline"
+                                size="sm"
+                                theme="blue"
+                                @click="rewriteWithAI('job_requirement')"
+                                :loading="rewritingSection === 'job_requirement'"
+                              >
+                                <template #prefix>
+                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                  </svg>
+                                </template>
+                                {{ __('Rewrite with AI') }}
+                              </Button>
+                            </div>
+                            <TextEditor
+                              ref="aiRequirementEditor"
+                              variant="outline"
+                              editor-class="!prose-sm !max-w-full overflow-auto !w-full min-h-[200px] max-h-[300px] py-1.5 px-2 rounded border border-gray-300 bg-white hover:border-gray-400 hover:shadow-sm focus:bg-white focus:border-gray-500 focus:shadow-sm focus:ring-0 focus-visible:ring-2 focus-visible:ring-gray-400 text-gray-800 transition-colors"
+                              :bubbleMenu="true"
+                              :fixedMenu="true"
+                              :content="aiForm.job_requirement"
+                              :placeholder="__('Job Requirement')"
+                              @change="aiForm.job_requirement = $event"
+                            />
+                          </div>
+
+                          <!-- Job Benefits -->
+                          <div>
+                            <div class="flex items-center justify-between mb-2">
+                              <label class="block text-sm font-medium text-gray-700">{{ __('Job Benefits') }}</label>
+                              <Button
+                                v-if="aiForm.job_benefits"
+                                variant="outline"
+                                size="sm"
+                                theme="blue"
+                                @click="rewriteWithAI('job_benefits')"
+                                :loading="rewritingSection === 'job_benefits'"
+                              >
+                                <template #prefix>
+                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                  </svg>
+                                </template>
+                                {{ __('Rewrite with AI') }}
+                              </Button>
+                            </div>
+                            <TextEditor
+                              ref="aiBenefitsEditor"
+                              variant="outline"
+                              editor-class="!prose-sm !max-w-full overflow-auto !w-full min-h-[200px] max-h-[300px] py-1.5 px-2 rounded border border-gray-300 bg-white hover:border-gray-400 hover:shadow-sm focus:bg-white focus:border-gray-500 focus:shadow-sm focus:ring-0 focus-visible:ring-2 focus-visible:ring-gray-400 text-gray-800 transition-colors"
+                              :bubbleMenu="true"
+                              :fixedMenu="true"
+                              :content="aiForm.job_benefits"
+                              :placeholder="__('Job Benefits')"
+                              @change="aiForm.job_benefits = $event"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Job Posting Preview Section -->
+                      <div v-if="aiForm.job_description || aiForm.job_requirement || aiForm.job_benefits" class="mt-6">
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                          <div class="flex items-center justify-between mb-3">
+                            <h4 class="text-sm font-medium text-gray-900">{{ __('Job Posting Preview') }}</h4>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              @click="showPreview = !showPreview"
+                            >
+                              <svg v-if="showPreview" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                              </svg>
+                              <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                              </svg>
+                            </Button>
+                          </div>
+                          <div v-if="showPreview" class="space-y-4 text-sm">
+                            <div v-if="aiForm.job_description">
+                              <h5 class="font-medium text-gray-800">{{ __('Job Description') }}</h5>
+                              <div class="text-gray-600 mt-1" v-html="aiForm.job_description"></div>
+                            </div>
+                            <div v-if="aiForm.job_requirement">
+                              <h5 class="font-medium text-gray-800">{{ __('Requirements') }}</h5>
+                              <div class="text-gray-600 mt-1" v-html="aiForm.job_requirement"></div>
+                            </div>
+                            <div v-if="aiForm.job_benefits">
+                              <h5 class="font-medium text-gray-800">{{ __('Benefits') }}</h5>
+                              <div class="text-gray-600 mt-1" v-html="aiForm.job_benefits"></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Action Buttons -->
+                      <div v-if="aiForm.job_description || aiForm.job_requirement || aiForm.job_benefits" class="flex justify-between items-center pt-6 border-t border-gray-200 mt-6">
+                        <div class="flex space-x-3">
+                          <Button variant="outline" theme="gray" @click="previousAIVersion">
+                            {{ __('Bản trước') }}
+                          </Button>
+                          <Button variant="outline" theme="gray" @click="nextAIVersion">
+                            {{ __('Bản sau') }}
+                          </Button>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                          <!-- Success indicator -->
+                          <div v-if="contentApplied" class="flex items-center text-green-600 text-sm">
+                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            {{ __('Đã áp dụng vào form') }}
+                          </div>
+                          <Button
+                            variant="solid"
+                            theme="gray"
+                            @click="useGeneratedContent"
+                            class="bg-gray-800 text-white hover:bg-gray-900"
+                          >
+                            {{ __('Use Generated Content') }}
+                          </Button>
+                        </div>
+                      </div>
                     </div>
-                    <textarea
-                      v-model="aiForm.job_description"
-                      rows="6"
-                      class="w-full p-3 border-0 focus:outline-none resize-none"
-                      :placeholder="__('Job Description')"
-                    ></textarea>
                   </div>
                 </div>
-
-                <!-- Job Requirement -->
-                <div>
-                  <div class="flex items-center justify-between mb-2">
-                    <label class="block text-sm font-medium text-gray-700">{{ __('Job Requirement') }}</label>
-                    <Button
-                      v-if="aiForm.job_requirement"
-                      variant="outline"
-                      size="sm"
-                      class="mr-10"
-                      theme="blue"
-                      @click="rewriteWithAI('job_requirement')"
-                      :loading="rewritingSection === 'job_requirement'"
-                    >
-                      <template #prefix>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
-                      </template>
-                      {{ __('Rewrite with AI') }}
-                    </Button>
-                  </div>
-                  <div class="border border-gray-300 rounded-md">
-                    <div class="flex items-center space-x-2 p-2 border-b border-gray-200 bg-gray-50">
-                      <button class="p-1 hover:bg-gray-200 rounded" title="Heading">
-                        <span class="text-sm font-bold">H1</span>
-                      </button>
-                      <button class="p-1 hover:bg-gray-200 rounded" title="Paragraph">
-                        <span class="text-sm">T</span>
-                      </button>
-                      <button class="p-1 hover:bg-gray-200 rounded" title="Bold">
-                        <span class="text-sm font-bold">B</span>
-                      </button>
-                      <button class="p-1 hover:bg-gray-200 rounded" title="Italic">
-                        <span class="text-sm italic">I</span>
-                      </button>
-                      
-                    </div>
-                    <textarea
-                      v-model="aiForm.job_requirement"
-                      rows="6"
-                      class="w-full p-3 border-0 focus:outline-none resize-none"
-                      :placeholder="__('Job Requirement')"
-                    ></textarea>
-                  </div>
-                </div>
-
-                <!-- Job Benefits -->
-                <div>
-                  <div class="flex items-center justify-between mb-2">
-                    <label class="block text-sm font-medium text-gray-700">{{ __('Job Benefits') }}</label>
-                    <Button
-                      v-if="aiForm.job_benefits"
-                      variant="outline"
-                      class="mr-10"
-                      size="sm"
-                      theme="blue"
-                      @click="rewriteWithAI('job_benefits')"
-                      :loading="rewritingSection === 'job_benefits'"
-                    >
-                      <template #prefix>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
-                      </template>
-                      {{ __('Rewrite with AI') }}
-                    </Button>
-                  </div>
-                  <div class="border border-gray-300 rounded-md">
-                    <div class="flex items-center space-x-2 p-2 border-b border-gray-200 bg-gray-50">
-                      <button class="p-1 hover:bg-gray-200 rounded" title="Heading">
-                        <span class="text-sm font-bold">H1</span>
-                      </button>
-                      <button class="p-1 hover:bg-gray-200 rounded" title="Paragraph">
-                        <span class="text-sm">T</span>
-                      </button>
-                      <button class="p-1 hover:bg-gray-200 rounded" title="Bold">
-                        <span class="text-sm font-bold">B</span>
-                      </button>
-                      <button class="p-1 hover:bg-gray-200 rounded" title="Italic">
-                        <span class="text-sm italic">I</span>
-                      </button>
-                      
-                    </div>
-                    <textarea
-                      v-model="aiForm.job_benefits"
-                      rows="6"
-                      class="w-full p-3 border-0 focus:outline-none resize-none"
-                      :placeholder="__('Job Benefits')"
-                    ></textarea>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Job Posting Preview Section -->
-            <div v-if="aiForm.job_description || aiForm.job_requirement || aiForm.job_benefits" class="mt-6">
-              <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                <div class="flex items-center justify-between mb-3">
-                  <h4 class="text-sm font-medium text-gray-900">{{ __('Job Posting Preview') }}</h4>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    @click="showPreview = !showPreview"
-                  >
-                    <svg v-if="showPreview" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
-                    </svg>
-                    <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  </Button>
-                </div>
-                <div v-if="showPreview" class="space-y-4 text-sm">
-                  <div v-if="aiForm.job_description">
-                    <h5 class="font-medium text-gray-800">{{ __('Job Description') }}</h5>
-                    <div class="text-gray-600 mt-1" v-html="aiForm.job_description"></div>
-                  </div>
-                  <div v-if="aiForm.job_requirement">
-                    <h5 class="font-medium text-gray-800">{{ __('Requirements') }}</h5>
-                    <div class="text-gray-600 mt-1" v-html="aiForm.job_requirement"></div>
-                  </div>
-                  <div v-if="aiForm.job_benefits">
-                    <h5 class="font-medium text-gray-800">{{ __('Benefits') }}</h5>
-                    <div class="text-gray-600 mt-1" v-html="aiForm.job_benefits"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div v-if="aiForm.job_description || aiForm.job_requirement || aiForm.job_benefits" class="flex justify-between items-center pt-6 border-t border-gray-200 mt-6">
-              <div class="flex space-x-3">
-                <Button variant="outline" theme="gray" @click="previousAIVersion">
-                  {{ __('Bản trước') }}
-                </Button>
-                <Button variant="outline" theme="gray" @click="nextAIVersion">
-                  {{ __('Bản sau') }}
-                </Button>
-              </div>
-              <div class="flex items-center space-x-3">
-                <!-- Success indicator -->
-                <div v-if="contentApplied" class="flex items-center text-green-600 text-sm">
-                  <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                  </svg>
-                  {{ __('Đã áp dụng vào form') }}
-                </div>
-                <Button
-                  variant="solid"
-                  theme="gray"
-                  @click="useGeneratedContent"
-                  class="bg-gray-800 text-white hover:bg-gray-900"
-                >
-                  {{ __('Use Generated Content') }}
-                </Button>
               </div>
             </div>
           </div>
-        </template>
-      </Dialog>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -639,8 +625,8 @@ import { ref, reactive, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import Loading from '@/components/Loading.vue'
-import { Dialog, Breadcrumbs, Button, Select, FormControl, createResource } from 'frappe-ui'
-import { getFilteredJobOpenings, submitNewJobOpening, updateJobOpeningData, removeJobOpening } from '@/services/jobOpeningService'
+import { Dialog, Breadcrumbs, Button, Select, FormControl, createResource, TextEditor } from 'frappe-ui'
+import { getFilteredJobOpenings, submitNewJobOpening, updateJobOpeningData, removeJobOpening, getJobOpeningDetails } from '@/services/jobOpeningService'
 
 const router = useRouter()
 const breadcrumbs = [{ label: __('Job Openings'), route: { name: 'JobOpeningManagement' } }]
@@ -687,11 +673,11 @@ const loadOwners = async () => {
         limit_page_length: 100
       })
     })
-    
+
     if (response.ok) {
       const data = await response.json()
       console.log("data", data);
-      
+
       // Xử lý dữ liệu từ cấu trúc {keys: [...], values: [...]}
       if (data.message && data.message.values) {
         ownerOptions.value = data.message.values.map(user => ({
@@ -750,28 +736,11 @@ const openCreateDialog = () => {
   Object.keys(form).forEach(k => delete form[k])
   currentStep.value = 1
   showForm.value = true
-  isMainFormOpen.value = true
-  preventCloseMainForm.value = false
 }
 
-const handleMainModalClose = () => {
-  // Ngăn đóng modal chính bằng cách giữ nguyên showForm = true
-  showForm.value = true
-  return false
-}
-
-
-const handleAIModalClose = () => {
-  // Khi đóng modal AI (click outside hoặc ESC), giữ modal tạo job mở
-  showAIModal.value = false
-  // Modal tạo job vẫn mở
-}
-
-const closeForm = () => { 
+const closeForm = () => {
   showForm.value = false
   currentStep.value = 1
-  isMainFormOpen.value = false
-  preventCloseMainForm.value = false
 }
 
 const nextStep = () => {
@@ -802,10 +771,16 @@ const save = async () => {
   }
 }
 
-const edit = (item) => { 
-  Object.assign(form, item)
-  currentStep.value = 1
-  showForm.value = true 
+const edit = async (item) => {
+  loading.value = true
+  try {
+    const detail = await getJobOpeningDetails(item.name)
+    Object.assign(form, detail)
+    currentStep.value = 1
+    showForm.value = true
+  } finally {
+    loading.value = false
+  }
 }
 
 const view = (item) => router.push(`/job-openings/${item.name}`)
@@ -941,18 +916,17 @@ const useGeneratedContent = () => {
   form.description = aiForm.job_description
   form.requirements = aiForm.job_requirement
   form.benefits = aiForm.job_benefits
-  
+
   // Đánh dấu đã áp dụng
   contentApplied.value = true
-  
+
   // Reset sau 3 giây
   setTimeout(() => {
     contentApplied.value = false
   }, 3000)
-  
+
   // Đóng modal AI nhưng giữ modal tạo job mở
   showAIModal.value = false
-  preventCloseMainForm.value = false
 }
 
 const previousAIVersion = () => {
@@ -975,23 +949,10 @@ const nextAIVersion = () => {
   }
 }
 
-// Thêm biến để theo dõi trạng thái modal
-const isMainFormOpen = ref(false)
-const preventCloseMainForm = ref(false)
-
 // Sửa hàm mở modal AI
 const openAIModal = () => {
-  // Đảm bảo modal tạo job vẫn mở
-  if (!showForm.value) {
-    showForm.value = true
-    isMainFormOpen.value = true
-  }
-  
-  // Ngăn modal tạo job đóng khi modal AI mở
-  preventCloseMainForm.value = true
-  
   showAIModal.value = true
-  
+
   // Copy dữ liệu từ form chính vào AI form
   aiForm.job_title = form.job_title || ''
   aiForm.tone = __('Professional')
@@ -1001,8 +962,6 @@ const openAIModal = () => {
 // Cập nhật hàm đóng modal AI
 const closeAIModal = () => {
   showAIModal.value = false
-  // Cho phép modal tạo job đóng lại
-  preventCloseMainForm.value = false
 }
 
 const updateMainFormJobTitle = () => {
@@ -1015,22 +974,5 @@ onMounted(async () => {
   await reload()
 })
 
-// Thêm vào onMounted hoặc watch
-watch(showAIModal, (newVal) => {
-  if (newVal) {
-    // Thêm event listener khi modal AI mở
-    document.addEventListener('click', handleOutsideClick)
-  } else {
-    // Xóa event listener khi modal AI đóng
-    document.removeEventListener('click', handleOutsideClick)
-  }
-})
-
-const handleOutsideClick = (event) => {
-  // Kiểm tra nếu click ra ngoài modal AI
-  const modalElement = document.querySelector('[data-modal="ai-generation"]')
-  if (modalElement && !modalElement.contains(event.target)) {
-    closeAIModal()
-  }
-}
+// Xóa các event listener không cần thiết
 </script>
