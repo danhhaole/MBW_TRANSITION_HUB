@@ -1,0 +1,282 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:LOGJOB-{YY}{MM}{DD}-{#####}",
+ "creation": "2024-01-01 00:00:00",
+ "doctype": "DocType",
+ "document_type": "Document",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "job_info_section",
+  "job",
+  "job_title",
+  "column_break_3",
+  "connection",
+  "platform_type",
+  "sharing_details_section",
+  "message",
+  "schedule_type",
+  "column_break_8",
+  "scheduled_time",
+  "shared_at",
+  "image_url",
+  "status_section",
+  "status",
+  "column_break_12",
+  "retry_count",
+  "error_message",
+  "external_details_section",
+  "external_post_id",
+  "external_url",
+  "column_break_17",
+  "target_page_name",
+  "target_account_id",
+  "engagement_section",
+  "engagement_data",
+  "last_engagement_update",
+  "technical_details_section",
+  "share_data",
+  "response_data",
+  "column_break_24",
+  "created_by"
+ ],
+ "fields": [
+  {
+   "fieldname": "job_info_section",
+   "fieldtype": "Section Break",
+   "label": "Job Information"
+  },
+  {
+   "fieldname": "job",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Job",
+   "options": "JobOpening",
+   "reqd": 1
+  },
+  {
+   "fieldname": "job_title",
+   "fieldtype": "Data",
+   "label": "Job Title",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "connection",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "External Connection",
+   "options": "External Connection",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "connection.platform_type",
+   "fieldname": "platform_type",
+   "fieldtype": "Data",
+   "label": "Platform Type",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sharing_details_section",
+   "fieldtype": "Section Break",
+   "label": "Sharing Details"
+  },
+  {
+   "fieldname": "message",
+   "fieldtype": "Long Text",
+   "in_list_view": 1,
+   "label": "Share Message",
+   "reqd": 1
+  },
+  {
+   "default": "now",
+   "fieldname": "schedule_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Schedule Type",
+   "options": "now\nlater",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_8",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.schedule_type=='later'",
+   "fieldname": "scheduled_time",
+   "fieldtype": "Datetime",
+   "label": "Scheduled Time"
+  },
+  {
+   "fieldname": "shared_at",
+   "fieldtype": "Datetime",
+   "label": "Shared At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "status_section",
+   "fieldtype": "Section Break",
+   "label": "Status"
+  },
+  {
+   "default": "Pending",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Pending\nProcessing\nSuccess\nFailed\nCancelled",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_12",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "retry_count",
+   "fieldtype": "Int",
+   "label": "Retry Count"
+  },
+  {
+   "depends_on": "eval:doc.status=='Failed'",
+   "fieldname": "error_message",
+   "fieldtype": "Long Text",
+   "label": "Error Message",
+   "read_only": 1
+  },
+  {
+   "fieldname": "external_details_section",
+   "fieldtype": "Section Break",
+   "label": "External Platform Details"
+  },
+  {
+   "fieldname": "external_post_id",
+   "fieldtype": "Data",
+   "label": "External Post ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "external_url",
+   "fieldtype": "Data",
+   "label": "External Post URL",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_17",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "target_page_name",
+   "fieldtype": "Data",
+   "label": "Target Page/Account Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "target_account_id",
+   "fieldtype": "Data",
+   "label": "Target Account ID",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "engagement_section",
+   "fieldtype": "Section Break",
+   "label": "Engagement Metrics"
+  },
+  {
+   "fieldname": "engagement_data",
+   "fieldtype": "JSON",
+   "label": "Engagement Data"
+  },
+  {
+   "fieldname": "last_engagement_update",
+   "fieldtype": "Datetime",
+   "label": "Last Engagement Update",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "technical_details_section",
+   "fieldtype": "Section Break",
+   "label": "Technical Details"
+  },
+  {
+   "fieldname": "share_data",
+   "fieldtype": "JSON",
+   "label": "Share Configuration Data"
+  },
+  {
+   "fieldname": "response_data",
+   "fieldtype": "JSON",
+   "label": "Platform Response Data"
+  },
+  {
+   "fieldname": "column_break_24",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "created_by",
+   "fieldtype": "Link",
+   "label": "Created By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "image_url",
+   "fieldtype": "Small Text",
+   "label": "Image URL"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-08-29 16:41:39.764490",
+ "modified_by": "Administrator",
+ "module": "MBW Mira",
+ "name": "Job Share Log",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR User",
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

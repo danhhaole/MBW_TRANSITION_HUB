@@ -212,19 +212,30 @@
               <!-- DataSource Final Configuration (when specific source is selected) -->
               <div v-else-if="selectedSource === 'datasource' && dataSourceSelectionLevel === 3" class="space-y-4">
                 <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <div class="flex items-start">
-                    <FeatherIcon name="check-circle" class="h-5 w-5 text-green-400 mr-3 mt-0.5" />
-                    <div>
-                      <h4 class="text-sm font-medium text-green-800">
-                        {{ __('Data Source Selected') }}
-                      </h4>
-                      <div class="mt-1 text-sm text-green-700">
-                        <strong>{{ configData.selectedDataSource?.source_name }}</strong>
-                      </div>
-                      <div class="text-xs text-green-600 mt-1">
-                        {{ __('Type') }}: {{ selectedDataSourceType }}
+                  <div class="flex items-start justify-between">
+                    <div class="flex items-start">
+                      <FeatherIcon name="check-circle" class="h-5 w-5 text-green-400 mr-3 mt-0.5" />
+                      <div>
+                        <h4 class="text-sm font-medium text-green-800">
+                          {{ __('Data Source Selected') }}
+                        </h4>
+                        <div class="mt-1 text-sm text-green-700">
+                          <strong>{{ configData.selectedDataSource?.source_name }}</strong>
+                        </div>
+                        <div class="text-xs text-green-600 mt-1">
+                          {{ __('Type') }}: {{ selectedDataSourceType }}
+                        </div>
                       </div>
                     </div>
+                    <Button
+                      variant="ghost"
+                      theme="gray"
+                      size="sm"
+                      @click="clearDataSourceSelection"
+                      class="text-gray-500 hover:text-gray-700"
+                    >
+                      {{ __('Change') }}
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -240,13 +251,13 @@
               <!-- Search Configuration -->
               <div v-else-if="selectedSource === 'search'">
                 <p class="text-sm text-gray-600 mb-4">
-                  {{ __('You’ll manually set up your search in the next step.') }}
+                  {{ __("You'll manually set up your search in the next step.") }}
                 </p>
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <div class="flex">
                     <FeatherIcon name="info" class="h-5 w-5 text-blue-400 mt-0.5 mr-2" />
                     <div class="text-sm text-blue-800">
-                      {{ __('In the next step, you’ll choose the talent segments to search manually.') }}
+                      {{ __("In the next step, you'll choose the talent segments to search manually.") }}
                     </div>
                   </div>
                 </div>
@@ -255,16 +266,28 @@
               <!-- DataSource Final Configuration -->
               <div v-else-if="selectedSource === 'datasource' && selectedDataSourceId">
                 <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <div class="flex items-center">
-                    <FeatherIcon name="check-circle" class="h-5 w-5 text-green-400 mr-2" />
-                    <div>
-                      <div class="text-sm font-medium text-green-800">
-                        {{ __('Data Source Selected') }}
-                      </div>
-                      <div class="text-sm text-green-600">
-                        {{ configData.selectedDataSource?.source_name || 'Selected data source' }}
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                      <FeatherIcon name="check-circle" class="h-5 w-5 text-green-400 mr-2" />
+                      <div>
+                        <div class="text-sm font-medium text-green-800">
+                          {{ __('Data Source Selected') }}
+                        </div>
+                        <div class="text-sm text-green-600">
+                          {{ configData.selectedDataSource?.source_name || 'Selected data source' }}
+                        </div>
                       </div>
                     </div>
+                    <Button
+                      variant="ghost"
+                      theme="gray"
+                      size="sm"
+                      @click="clearDataSourceSelection"
+                      class="text-gray-500 hover:text-gray-700"
+                    >
+                      <FeatherIcon name="x" class="h-4 w-4 mr-1" />
+                      {{ __('Change') }}
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -733,6 +756,8 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { Dialog, Button, FeatherIcon } from 'frappe-ui'
+import { call } from 'frappe-ui'
+import useToast from '@/composables/useToast'
 import PoolConfig from './PoolConfig.vue'
 import AtsConfig from './AtsConfig.vue'
 import WebConfig from './WebConfig.vue'
@@ -790,7 +815,8 @@ const campaignData = ref({
 const selectedSource = ref(props.preselectedSegment ? 'search' : '')
 const selectedDataSourceType = ref('') // ATS, JobBoard, SocialNetwork, TalentPool
 const selectedDataSourceId = ref('') // Specific data source ID
-const filteredDataSources = ref([])
+const filteredDataSources = ref([]) // Filtered list to show
+const connectedDataSources = ref([]) // From External Connection API
 const loadingDataSources = ref(false)
 
 // Track data source selection level: 0=source, 1=type, 2=specific
@@ -830,6 +856,8 @@ const stepFormData = ref({
 
 const stepFormErrors = ref({})
 const stepFormLoading = ref(false)
+
+const { error: toastError } = useToast()
 
 // Translation helper function
 const __ = (text) => text
@@ -1043,6 +1071,27 @@ const loadDataSources = async () => {
       console.error('❌ Failed to load data sources:', response?.error || 'No success flag')
       dataSources.value = []
     }
+
+    // Load connected external connections as data sources from backend
+    try {
+      const ec = await call('mbw_mira.api.external_connections.get_connected_data_sources', {})
+      if (ec && ec.status === 'success' && Array.isArray(ec.data)) {
+        connectedDataSources.value = ec.data.map(item => ({
+          name: item.name,
+          source_name: item.source_name,
+          source_title: item.source_title,
+          description: item.description,
+          source_type: item.source_type,
+        }))
+      } else if (Array.isArray(ec)) {
+        connectedDataSources.value = ec
+      } else {
+        connectedDataSources.value = []
+      }
+    } catch (e) {
+      console.warn('⚠️ Failed to load connected external data sources', e)
+      connectedDataSources.value = []
+    }
   } catch (error) {
     console.error('💥 Error loading data sources:', error)
     dataSources.value = []
@@ -1140,11 +1189,14 @@ const selectDataSourceType = (sourceType) => {
   selectedDataSourceId.value = ''
   dataSourceSelectionLevel.value = 2 // ✅ Move to specific source selection to show the list
   
-  // Filter data sources by type
-  filteredDataSources.value = dataSources.value.filter(ds => ds.source_type === sourceType)
+  // Filter internal data sources by type
+  const internal = dataSources.value.filter(ds => ds.source_type === sourceType)
+  // Filter connected external connections mapped to this type
+  const external = connectedDataSources.value.filter(ds => ds.source_type === sourceType)
+  filteredDataSources.value = [...external, ...internal]
   
   console.log('✅ Filtered data sources:', filteredDataSources.value)
-  console.log('🎯 selectedDataSourceType now:', selectedDataSourceType.value)
+  console.log('�� selectedDataSourceType now:', selectedDataSourceType.value)
   console.log('🎯 dataSourceSelectionLevel now:', dataSourceSelectionLevel.value)
 }
 
@@ -1153,6 +1205,15 @@ const selectSpecificDataSource = (dataSource) => {
   campaignData.value.data_source_id = dataSource.name
   configData.value.selectedDataSource = dataSource
   dataSourceSelectionLevel.value = 3 // ✅ Specific data source selected - confirmed level
+}
+
+const clearDataSourceSelection = () => {
+  console.log('🔄 Clearing data source selection...')
+  selectedDataSourceId.value = ''
+  campaignData.value.data_source_id = ''
+  configData.value.selectedDataSource = ''
+  dataSourceSelectionLevel.value = 2 // Go back to source list
+  console.log('✅ Data source selection cleared')
 }
 
 // Campaign Steps Methods
@@ -1691,113 +1752,6 @@ const finalizeCampaign = async () => {
     activating.value = false
   }
 }
-
-
-// const finalizeCampaign = async () => {
-//   activating.value = true
-  
-//   try {
-//     if (!draftCampaign.value) {
-//       throw new Error(__('No draft campaign found'))
-//     }
-    
-//     console.log('🚀 Starting campaign finalization...')
-//     console.log('📋 Draft Campaign:', draftCampaign.value)
-//     console.log('📝 Campaign Steps to create:', campaignSteps.value)
-    
-//     // Update the draft campaign with final details
-//     const campaignUpdatePayload = {
-//       campaign_name: campaignData.value.campaign_name || draftCampaign.value.campaign_name,
-//       description: campaignData.value.description || draftCampaign.value.description,
-//       type: campaignData.value.type,
-//       status: 'DRAFT',
-//       start_date: new Date().toISOString().split('T')[0],
-//       end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-//       is_active: false,
-//       source_type: campaignData.value.source_type || 'Template',
-//       template_used: selectedTemplate.value?.name || null,
-//       steps_count: campaignSteps.value.length,
-//       source_file: campaignData.value.source_file || '',
-//       source_config: campaignData.value.source_config || null
-//     }
-    
-//     console.log('Finalizing campaign with payload:', campaignUpdatePayload)
-    
-//     // Update campaign using universal service
-//     const campaignResult = await campaignService.save(campaignUpdatePayload, draftCampaign.value.name)
-    
-//     if (campaignResult.success) {
-//       // Save all campaign steps (if any were created from template or manual)
-//       if (campaignSteps.value.length > 0) {
-//         console.log(`Saving ${campaignSteps.value.length} campaign steps`)
-        
-//         try {
-//           // Create CampaignStep records for each step
-//           const stepPromises = campaignSteps.value.map(async (step) => {
-//             const stepPayload = {
-//               campaign: draftCampaign.value.name,
-//               campaign_step_name: step.campaign_step_name,
-//               step_order: step.step_order,
-//               action_type: step.action_type,
-//               delay_in_days: step.delay_in_days || 0,
-//               template_content: step.template_content || '',
-//               action_config: step.action_config || null,
-//               status: 'DRAFT',
-//               is_active: 1
-//             }
-            
-//             console.log('Creating CampaignStep:', stepPayload)
-//             const result = await campaignStepService.save(stepPayload)
-            
-//             if (result.success) {
-//               console.log(`✅ CampaignStep created:`, result.data.name)
-//               return result.data
-//             } else {
-//               console.error(`❌ Failed to create CampaignStep:`, result.error)
-//               throw new Error(`Failed to create step "${step.campaign_step_name}": ${result.error}`)
-//             }
-//           })
-          
-//           // Wait for all steps to be created
-//           const createdSteps = await Promise.all(stepPromises)
-//           console.log(`✅ All ${createdSteps.length} campaign steps created successfully`)
-          
-//         } catch (stepError) {
-//           console.error('❌ Error creating campaign steps:', stepError)
-//           // Don't fail the entire campaign creation, just log the error
-//           alert(__('Campaign created successfully, but some steps failed to save. You can add steps manually later.') + '\n\nError: ' + stepError.message)
-//         }
-//       }
-      
-//       emit('success', {
-//         action: 'create',
-//         data: campaignResult.data
-//       })
-      
-//       closeWizard()
-//     } else {
-//       throw new Error(campaignResult.message || 'Failed to finalize campaign')
-//     }
-//   } catch (error) {
-//     console.error('Error finalizing campaign:', error)
-    
-//     let errorMessage = __('An error occurred while finalizing the campaign')
-    
-//     if (error.message.includes('campaign_name')) {
-//       errorMessage = __('Campaign name is invalid or already exists')
-//     } else if (error.message.includes('validation')) {
-//       errorMessage = __('Input data is not in the correct format')
-//     } else if (error.message.includes('network') || error.message.includes('fetch')) {
-//       errorMessage = __('Network connection error, please try again')
-//     } else if (error.message) {
-//       errorMessage = error.message
-//     }
-    
-//     alert(errorMessage)
-//   } finally {
-//     activating.value = false
-//   }
-// }
 
 const closeWizard = () => {
   show.value = false

@@ -1,0 +1,115 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-05-12 15:50:19.855634",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "connect_topcv_section",
+  "active_topcv",
+  "access_token_topcv",
+  "secret_key_topcv",
+  "api_access_token",
+  "status_topcv",
+  "connect_facebook_section",
+  "active_facebook",
+  "status_facebook",
+  "connect_linkedin_section",
+  "active_linkedin",
+  "status_linkedin"
+ ],
+ "fields": [
+  {
+   "fieldname": "connect_topcv_section",
+   "fieldtype": "Section Break",
+   "label": "Connect TOPCV"
+  },
+  {
+   "default": "0",
+   "fieldname": "active_topcv",
+   "fieldtype": "Check",
+   "label": "Active"
+  },
+  {
+   "fieldname": "access_token_topcv",
+   "fieldtype": "Password",
+   "label": "Access Token"
+  },
+  {
+   "fieldname": "secret_key_topcv",
+   "fieldtype": "Password",
+   "label": "Secret Key"
+  },
+  {
+   "fieldname": "api_access_token",
+   "fieldtype": "Data",
+   "label": "API Access Token",
+   "length": 1000
+  },
+  {
+   "default": "0",
+   "fieldname": "status_topcv",
+   "fieldtype": "Check",
+   "label": "Status"
+  },
+  {
+   "fieldname": "connect_facebook_section",
+   "fieldtype": "Section Break",
+   "label": "Connect Facebook"
+  },
+  {
+   "default": "0",
+   "fieldname": "active_facebook",
+   "fieldtype": "Check",
+   "label": "Active"
+  },
+  {
+   "default": "0",
+   "fieldname": "status_facebook",
+   "fieldtype": "Check",
+   "label": "Status"
+  },
+  {
+   "fieldname": "connect_linkedin_section",
+   "fieldtype": "Section Break",
+   "label": "Connect LinkedIn"
+  },
+  {
+   "default": "0",
+   "fieldname": "active_linkedin",
+   "fieldtype": "Check",
+   "label": "Active"
+  },
+  {
+   "default": "0",
+   "fieldname": "status_linkedin",
+   "fieldtype": "Check",
+   "label": "Status"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2025-05-15 08:31:39.338299",
+ "modified_by": "Administrator",
+ "module": "MBW Mira",
+ "name": "MIRA_Integration",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

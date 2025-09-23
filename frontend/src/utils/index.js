@@ -326,22 +326,22 @@ export async function setupListCustomizations(data, obj = {}) {
   return { actions, bulkActions }
 }
 
-export function copyToClipboard(text) {
-  if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard.writeText(text).then(showSuccessAlert)
-  } else {
-    let input = document.createElement('textarea')
-    document.body.appendChild(input)
-    input.value = text
-    input.select()
-    document.execCommand('copy')
-    showSuccessAlert()
-    document.body.removeChild(input)
-  }
-  function showSuccessAlert() {
-    toast.success(__('Copied to clipboard'))
-  }
-}
+// export function copyToClipboard(text) {
+//   if (navigator.clipboard && window.isSecureContext) {
+//     navigator.clipboard.writeText(text).then(showSuccessAlert)
+//   } else {
+//     let input = document.createElement('textarea')
+//     document.body.appendChild(input)
+//     input.value = text
+//     input.select()
+//     document.execCommand('copy')
+//     showSuccessAlert()
+//     document.body.removeChild(input)
+//   }
+//   function showSuccessAlert() {
+//     toast.success(__('Copied to clipboard'))
+//   }
+// }
 
 export const colors = [
   'gray',
@@ -467,22 +467,79 @@ export function runSequentially(functions) {
 }
 
 export function createToast({
-  message,
-  type = 'success', // 'success' | 'error' | 'warning' | 'info'
+  title = '',
+  text = '',
+  type = 'success', // kept for backward compatibility, not used to select method
   icon = null,
-  iconColor = '',
+  iconClasses = '',
   duration = 4000,
   closable = true,
   position = 'bottom-right', // 'top-right', 'bottom-right', etc.
   action = null // { label, altText, onClick }
 }) {
-  toast[type]({
-    text: message,
+  toast({
+    title,
+    text,
     duration,
     closable,
     position,
     icon,
-    iconClasses: iconColor,
+    iconClasses,
     action
   })
+}
+
+export function showToast(title, text, icon, iconClasses = null) {
+	if (!iconClasses) {
+		if (icon == 'check') {
+			iconClasses = 'bg-surface-green-3 text-ink-white rounded-md p-px'
+		} else if (icon == 'alert-circle') {
+			iconClasses = 'bg-yellow-600 text-ink-white rounded-md p-px'
+		} else {
+			iconClasses = 'bg-surface-red-5 text-ink-white rounded-md p-px'
+		}
+	}
+	createToast({
+		title: title,
+		text: htmlToText(text),
+		icon: icon,
+		iconClasses: iconClasses,
+		position: icon == 'check' ? 'bottom-right' : 'top-center',
+		duration: 5000,
+	})
+}
+
+export function errorMessage(title, message) {
+	createToast({
+		title: title || "Error",
+		text: message,
+		icon: "x",
+		iconClasses: "text-red-600",
+		position: 'top-center',
+		duration: 5000,
+	});
+}
+
+export function copyToClipboard(text) {
+	if (navigator.clipboard && window.isSecureContext) {
+		navigator.clipboard.writeText(text).then(show_success_alert);
+	} else {
+		let input = document.createElement("textarea");
+		document.body.appendChild(input);
+		input.value = text;
+		input.select();
+		document.execCommand("copy");
+		show_success_alert();
+		document.body.removeChild(input);
+	}
+	function show_success_alert() {
+		createToast({
+			title: "Copied to clipboard",
+			text: text,
+			icon: "check",
+			iconClasses: "text-green-600",
+			position: 'bottom-right',
+			duration: 3000,
+		});
+	}
 }

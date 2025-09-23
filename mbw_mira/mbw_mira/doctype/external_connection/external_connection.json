@@ -1,0 +1,440 @@
+{
+ "actions": [],
+ "creation": "2024-01-01 00:00:00",
+ "doctype": "DocType",
+ "document_type": "Document",
+ "engine": "InnoDB",
+ "field_order": [
+  "connection_info_section",
+  "platform_type",
+  "tenant_name",
+  "user_email",
+  "full_name",
+  "hook_url",
+  "redirect_url",
+  "column_break_1",
+  "connection_status",
+  "active_status",
+  "auto_reconnect",
+  "primary_account_id",
+  "authentication_section",
+  "secret_token",
+  "login_url",
+  "access_token",
+  "refresh_token",
+  "token_expiry",
+  "column_break_2",
+  "api_key",
+  "secret_key",
+  "client_id",
+  "client_secret",
+  "oauth_state",
+  "connected_accounts_section",
+  "connected_accounts",
+  "primary_account_info",
+  "account_metadata",
+  "configuration_section",
+  "sync_settings",
+  "permissions_config",
+  "column_break_3",
+  "sync_frequency",
+  "last_sync_time",
+  "next_sync_time",
+  "retry_count",
+  "max_retries",
+  "statistics_section",
+  "total_api_calls",
+  "successful_calls",
+  "failed_calls",
+  "total_webhooks",
+  "column_break_4",
+  "success_rate",
+  "last_api_call",
+  "last_webhook_received",
+  "average_response_time",
+  "tracking_section",
+  "created_at",
+  "updated_at",
+  "last_connected_at",
+  "last_disconnected_at",
+  "column_break_5",
+  "connected_by",
+  "last_activity",
+  "connection_notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "connection_info_section",
+   "fieldtype": "Section Break",
+   "label": "Connection Information"
+  },
+  {
+   "fieldname": "platform_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Platform Type",
+   "options": "Facebook\nZalo\nTopCV\nLinkedIn",
+   "reqd": 1
+  },
+  {
+   "description": "V\u00ed d\u1ee5: https://hireos.fastwork.vn",
+   "fieldname": "tenant_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Tenant Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "user_email",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "User Email",
+   "options": "Email",
+   "reqd": 1
+  },
+  {
+   "fieldname": "full_name",
+   "fieldtype": "Data",
+   "label": "Full Name"
+  },
+  {
+   "description": "URL WebHook c\u1ee7a h\u1ec7 th\u1ed1ng",
+   "fieldname": "hook_url",
+   "fieldtype": "Small Text",
+   "label": "Hook URL"
+  },
+  {
+   "description": "URL chuy\u1ec3n h\u01b0\u1edbng sau khi \u1ee7y quy\u1ec1n th\u00e0nh c\u00f4ng",
+   "fieldname": "redirect_url",
+   "fieldtype": "Small Text",
+   "label": "Redirect URL"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Pending",
+   "fieldname": "connection_status",
+   "fieldtype": "Select",
+   "label": "Connection Status",
+   "options": "Connected\nDisconnected\nPending\nFailed\nExpired"
+  },
+  {
+   "default": "1",
+   "fieldname": "active_status",
+   "fieldtype": "Check",
+   "label": "Active Status"
+  },
+  {
+   "default": "1",
+   "fieldname": "auto_reconnect",
+   "fieldtype": "Check",
+   "label": "Auto Reconnect"
+  },
+  {
+   "description": "ID c\u1ee7a t\u00e0i kho\u1ea3n ch\u00ednh \u0111\u01b0\u1ee3c k\u1ebft n\u1ed1i",
+   "fieldname": "primary_account_id",
+   "fieldtype": "Data",
+   "label": "Primary Account ID"
+  },
+  {
+   "fieldname": "authentication_section",
+   "fieldtype": "Section Break",
+   "label": "Authentication"
+  },
+  {
+   "description": "Kh\u00f3a b\u00ed m\u1eadt x\u00e1c th\u1ef1c to\u00e0n v\u1eb9n d\u1eef li\u1ec7u",
+   "fieldname": "secret_token",
+   "fieldtype": "Password",
+   "label": "Secret Token"
+  },
+  {
+   "description": "Link \u0111\u0103ng nh\u1eadp \u1ee7y quy\u1ec1n",
+   "fieldname": "login_url",
+   "fieldtype": "Small Text",
+   "label": "Login URL"
+  },
+  {
+   "fieldname": "access_token",
+   "fieldtype": "Password",
+   "label": "Access Token"
+  },
+  {
+   "fieldname": "refresh_token",
+   "fieldtype": "Password",
+   "label": "Refresh Token"
+  },
+  {
+   "fieldname": "token_expiry",
+   "fieldtype": "Datetime",
+   "label": "Token Expiry"
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "api_key",
+   "fieldtype": "Password",
+   "label": "API Key"
+  },
+  {
+   "fieldname": "client_id",
+   "fieldtype": "Data",
+   "label": "Client ID"
+  },
+  {
+   "fieldname": "client_secret",
+   "fieldtype": "Password",
+   "label": "Client Secret"
+  },
+  {
+   "fieldname": "oauth_state",
+   "fieldtype": "Data",
+   "label": "OAuth State"
+  },
+  {
+   "fieldname": "connected_accounts_section",
+   "fieldtype": "Section Break",
+   "label": "Connected Accounts"
+  },
+  {
+   "fieldname": "connected_accounts",
+   "fieldtype": "Table",
+   "label": "Connected Accounts",
+   "options": "External Connection Account"
+  },
+  {
+   "description": "Th\u00f4ng tin chi ti\u1ebft t\u00e0i kho\u1ea3n ch\u00ednh",
+   "fieldname": "primary_account_info",
+   "fieldtype": "JSON",
+   "label": "Primary Account Info"
+  },
+  {
+   "description": "Metadata b\u1ed5 sung c\u1ee7a t\u00e0i kho\u1ea3n",
+   "fieldname": "account_metadata",
+   "fieldtype": "JSON",
+   "label": "Account Metadata"
+  },
+  {
+   "fieldname": "configuration_section",
+   "fieldtype": "Section Break",
+   "label": "Configuration"
+  },
+  {
+   "description": "C\u1ea5u h\u00ecnh \u0111\u1ed3ng b\u1ed9",
+   "fieldname": "sync_settings",
+   "fieldtype": "JSON",
+   "label": "Sync Settings"
+  },
+  {
+   "description": "C\u1ea5u h\u00ecnh quy\u1ec1n h\u1ea1n chi ti\u1ebft",
+   "fieldname": "permissions_config",
+   "fieldtype": "JSON",
+   "label": "Permissions Config"
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Every 15 minutes",
+   "fieldname": "sync_frequency",
+   "fieldtype": "Select",
+   "label": "Sync Frequency",
+   "options": "Real-time\nEvery 5 minutes\nEvery 15 minutes\nEvery 30 minutes\nHourly\nDaily"
+  },
+  {
+   "fieldname": "last_sync_time",
+   "fieldtype": "Datetime",
+   "label": "Last Sync Time"
+  },
+  {
+   "fieldname": "next_sync_time",
+   "fieldtype": "Datetime",
+   "label": "Next Sync Time"
+  },
+  {
+   "default": "0",
+   "fieldname": "retry_count",
+   "fieldtype": "Int",
+   "label": "Retry Count"
+  },
+  {
+   "default": "3",
+   "fieldname": "max_retries",
+   "fieldtype": "Int",
+   "label": "Max Retries"
+  },
+  {
+   "fieldname": "statistics_section",
+   "fieldtype": "Section Break",
+   "label": "Statistics"
+  },
+  {
+   "default": "0",
+   "fieldname": "total_api_calls",
+   "fieldtype": "Int",
+   "label": "Total API Calls",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "successful_calls",
+   "fieldtype": "Int",
+   "label": "Successful Calls",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "failed_calls",
+   "fieldtype": "Int",
+   "label": "Failed Calls",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "total_webhooks",
+   "fieldtype": "Int",
+   "label": "Total Webhooks",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "success_rate",
+   "fieldtype": "Percent",
+   "label": "Success Rate",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_api_call",
+   "fieldtype": "Datetime",
+   "label": "Last API Call",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_webhook_received",
+   "fieldtype": "Datetime",
+   "label": "Last Webhook Received",
+   "read_only": 1
+  },
+  {
+   "fieldname": "average_response_time",
+   "fieldtype": "Float",
+   "label": "Average Response Time (ms)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "tracking_section",
+   "fieldtype": "Section Break",
+   "label": "Tracking"
+  },
+  {
+   "fieldname": "created_at",
+   "fieldtype": "Datetime",
+   "label": "Created At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "updated_at",
+   "fieldtype": "Datetime",
+   "label": "Updated At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_connected_at",
+   "fieldtype": "Datetime",
+   "label": "Last Connected At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_disconnected_at",
+   "fieldtype": "Datetime",
+   "label": "Last Disconnected At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "connected_by",
+   "fieldtype": "Link",
+   "label": "Connected By",
+   "options": "User"
+  },
+  {
+   "fieldname": "last_activity",
+   "fieldtype": "Datetime",
+   "label": "Last Activity",
+   "read_only": 1
+  },
+  {
+   "fieldname": "connection_notes",
+   "fieldtype": "Text",
+   "label": "Connection Notes"
+  },
+  {
+   "fieldname": "secret_key",
+   "fieldtype": "Password",
+   "label": "Secret Key"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-09-03 16:28:36.067238",
+ "modified_by": "Administrator",
+ "module": "MBW Mira",
+ "name": "External Connection",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Social Hub Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Social Hub User",
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "platform_type",
+ "track_changes": 1,
+ "track_seen": 1,
+ "track_views": 1
+}

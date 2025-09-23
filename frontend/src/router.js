@@ -118,7 +118,7 @@ const routes = [
 		component: LadiPageView,
 		meta: {
 			requiresAuth: true,
-			title: 'Ladi Page View'
+			title: 'Ladi Page View' 
 		}
 	},
 
@@ -127,6 +127,16 @@ const routes = [
 	{ path: '/register', name: 'RegisterPage', component: RegisterPage, meta: { public: true } },
 	{ path: '/unsubscribe', name: 'UnSubscribePage', component: UnSubscribePage, meta: { public: true } },
 	{ path: '/application', name: 'ApplicationPage', component: ApplicationPage, meta: { public: true } },
+	//Connectors
+	{
+		path: '/connectors',
+		name: 'Connectors',
+		component: () => import('@/pages/APIIntegrationList.vue'),
+		meta: {
+			requiresAuth: true,
+			title: 'External Social Management'
+		}
+	},
 ]
 
 

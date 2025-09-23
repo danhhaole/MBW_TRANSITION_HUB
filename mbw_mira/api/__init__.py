@@ -24,11 +24,27 @@ def create_candidate_segment():
     data = json.loads(frappe.request.data)
     if not data:
         frappe.throw("Data require")
-    
+
     return {
         "status": "queued",
         "message": "CandidateSegment creation has been queued."
     }
+
+
+@frappe.whitelist(allow_guest=True)
+def get_user_info():
+    if frappe.session.user == "Guest":
+        return None
+
+    user = frappe.db.get_value(
+        "User",
+        frappe.session.user,
+        "username,email,enabled,user_image,full_name",
+        as_dict=True,
+    )
+    
+    return user
+
 
 @frappe.whitelist()
 def complete_manual_action():
@@ -78,7 +94,7 @@ def create_campaign_with_steps_bg():
         "status": "queued",
         "message": frappe._("Campaign creation has been scheduled. You will be notified when it's done.")
     }
-# API Module for MBW Mira 
+# API Module for MBW Mira
 
 @frappe.whitelist(allow_guest=True)
 def get_translations():

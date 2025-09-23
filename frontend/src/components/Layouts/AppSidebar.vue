@@ -319,6 +319,12 @@ const links = [
         icon: NoteIcon,
         to: { name: 'CampaignTemplateManagement' }
       },
+      {
+        label: "Connectors",
+        icon: ExternalLinkIcon,
+        to: { name: 'Connectors' }
+        // to: 'Connectors'
+      },
       // {
       //   label: "Email Templates",
       //   icon: Email2Icon,
