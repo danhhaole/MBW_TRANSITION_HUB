@@ -11,6 +11,7 @@
   "step_order",
   "action_type",
   "delay_in_days",
+  "image",
   "template",
   "action_config"
  ],
@@ -51,12 +52,17 @@
    "fieldname": "action_config",
    "fieldtype": "JSON",
    "label": "Config"
+  },
+  {
+   "fieldname": "image",
+   "fieldtype": "Attach Image",
+   "label": "Image"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-06-28 08:41:11.984180",
+ "modified": "2025-09-24 11:41:30.340819",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "CampaignStep",

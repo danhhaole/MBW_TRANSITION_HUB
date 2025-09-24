@@ -436,7 +436,7 @@
                     </div>
                   </div>
 
-                  Step Job Opening (optional)
+                  <!-- Step Job Opening (optional) -->
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                       {{ __('Job Opening (optional)') }}
@@ -562,6 +562,44 @@
                     </div>
                   </div>
 
+                  <!-- Step Image (optional) -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                      {{ __('Step Image (optional)') }}
+                    </label>
+                    <div class="space-y-3">
+                      <!-- Image Preview -->
+                      <div v-if="stepFormData.image" class="flex items-center space-x-3">
+                        <img 
+                          :src="stepFormData.image" 
+                          alt="Step image preview"
+                          class="w-20 h-20 object-cover rounded-lg border border-gray-200"
+                        />
+                        <div class="flex-1">
+                          <p class="text-sm text-gray-600">{{ __('Current image') }}</p>
+                          <p class="text-xs text-gray-500 truncate">{{ stepFormData.image }}</p>
+                        </div>
+                      </div>
+                      
+                      <!-- Image Uploader -->
+                      <ImageUploader
+                        :image_url="stepFormData.image"
+                        image_type="image/*"
+                        @upload="(url, file) => {
+                          stepFormData.image = url
+                          console.log('Image uploaded:', url)
+                        }"
+                        @remove="() => {
+                          stepFormData.image = ''
+                          console.log('Image removed')
+                        }"
+                      />
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500">
+                      {{ __('Upload an image to represent this campaign step (optional)') }}
+                    </p>
+                  </div>
+
                   <!-- Form Actions -->
                   <div class="flex justify-end space-x-3">
                     <Button
@@ -592,6 +630,18 @@
                 <div class="space-y-2">
                   <div v-for="(step, index) in campaignSteps" :key="step.id || index" 
                        class="flex items-center p-3 bg-gray-50 rounded-lg border hover:bg-gray-100 transition-colors">
+                    <!-- Step Image -->
+                    <div v-if="step.image" class="w-10 h-10 rounded-lg overflow-hidden mr-3 flex-shrink-0">
+                      <img 
+                        :src="step.image" 
+                        :alt="step.campaign_step_name"
+                        class="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div v-else class="w-10 h-10 bg-gray-200 rounded-lg mr-3 flex-shrink-0 flex items-center justify-center">
+                      <FeatherIcon name="image" class="h-5 w-5 text-gray-400" />
+                    </div>
+                    
                     <span class="flex items-center justify-center w-6 h-6 bg-blue-100 text-blue-800 text-xs font-medium rounded-full mr-3">
                       {{ step.step_order }}
                     </span>
@@ -668,6 +718,18 @@
               <div v-if="campaignSteps.length > 0" class="space-y-2">
                 <div v-for="step in campaignSteps" :key="step.id || step.name" 
                      class="flex items-center p-3 bg-white rounded border">
+                  <!-- Step Image -->
+                  <div v-if="step.image" class="w-8 h-8 rounded overflow-hidden mr-3 flex-shrink-0">
+                    <img 
+                      :src="step.image" 
+                      :alt="step.campaign_step_name"
+                      class="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div v-else class="w-8 h-8 bg-gray-200 rounded mr-3 flex-shrink-0 flex items-center justify-center">
+                    <FeatherIcon name="image" class="h-4 w-4 text-gray-400" />
+                  </div>
+                  
                   <span class="flex items-center justify-center w-6 h-6 bg-blue-100 text-blue-800 text-xs font-medium rounded-full mr-3">
                     {{ step.step_order }}
                   </span>
@@ -786,6 +848,7 @@ import PoolConfig from './PoolConfig.vue'
 import AtsConfig from './AtsConfig.vue'
 import WebConfig from './WebConfig.vue'
 import FileConfig from './FileConfig.vue'
+import ImageUploader from '@/components/Controls/ImageUploader.vue'
 
 import { submitNewCampaign, searchCandidates } from '@/services/campaignService'
 import { 
@@ -877,7 +940,8 @@ const stepFormData = ref({
   step_order: 1,
   delay_in_days: 0,
   template_content: '',
-  action_config_string: ''
+  action_config_string: '',
+  image: '' // Sử dụng tên field đúng theo doctype
 })
 
 const stepFormErrors = ref({})
@@ -1349,6 +1413,7 @@ const createCampaignStepFromTemplate = async (templateStep) => {
       action_type: templateStep.action_type,
       delay_in_days: templateStep.delay_in_days || 0,
       template_content: templateStep.template_content || '',
+      image: templateStep.image || '', // Include image from template
       action_config: templateStep.action_config || null,
       status: 'DRAFT',
       is_active: true,
@@ -1381,6 +1446,7 @@ const addManualStep = () => {
   
   // Reset form and show inline form
   resetStepForm()
+  stepFormSelectedJobId.value = ''
   editingStep.value = null
   showStepForm.value = true
 }
@@ -1399,9 +1465,11 @@ const resetStepForm = () => {
     step_order: campaignSteps.value.length + 1,
     delay_in_days: 0,
     template_content: '',
-    action_config_string: ''
+    action_config_string: '',
+    image: '' // Reset image field
   }
   stepFormErrors.value = {}
+  stepFormSelectedJobId.value = ''
 }
 
 const setStepFormData = (step) => {
@@ -1411,9 +1479,12 @@ const setStepFormData = (step) => {
     step_order: step.step_order || campaignSteps.value.length + 1,
     delay_in_days: step.delay_in_days || 0,
     template_content: step.template_content || '',
-    action_config_string: step.action_config_string || (step.action_config ? JSON.stringify(step.action_config, null, 2) : '')
+    action_config_string: step.action_config_string || (step.action_config ? JSON.stringify(step.action_config, null, 2) : ''),
+    image: step.image || '' // Load existing image
   }
   stepFormErrors.value = {}
+  // Do not carry over previous job opening selection when editing/adding
+  stepFormSelectedJobId.value = ''
 }
 
 const validateStepForm = () => {
@@ -1459,6 +1530,7 @@ const handleStepFormSubmit = () => {
       step_order: stepFormData.value.step_order,
       delay_in_days: stepFormData.value.delay_in_days,
       template_content: stepFormData.value.template_content?.trim() || '',
+      image: stepFormData.value.image || '', // Include image với tên field đúng
       action_config: stepFormData.value.action_config_string?.trim() ? 
         (() => {
           try {
@@ -1490,9 +1562,10 @@ const handleStepFormSubmit = () => {
     // Sort steps by order
     campaignSteps.value.sort((a, b) => a.step_order - b.step_order)
     
-    // Close form
+    // Close form and reset transient selections
     showStepForm.value = false
     editingStep.value = null
+    stepFormSelectedJobId.value = ''
     
     console.log('Step saved:', stepData)
   } finally {
@@ -1793,32 +1866,34 @@ const onJobOpeningChange = async () => {
   }
 }
 
-// Helper: tạo toàn bộ CampaignStep trước
-const createAllSteps = async () => {
-  if (!draftCampaign.value) throw new Error('No draft campaign')
-
-  const promises = campaignSteps.value.map(step => {
-    const payload = {
-      campaign: draftCampaign.value.name,
-      campaign_step_name: step.campaign_step_name,
-      step_order: step.step_order,
-      action_type: step.action_type,
-      delay_in_days: step.delay_in_days || 0,
-      template_content: step.template_content || '',
-      action_config: step.action_config || null,
-      status: 'DRAFT',
-      is_active: 1
-    }
-    return campaignStepService.save(payload)
-  })
-
-  const results = await Promise.all(promises)
-  // cập nhật lại list steps bằng bản ghi server trả về (nếu cần cho UI)
-  campaignSteps.value = results
-    .filter(r => r?.success)
-    .map(r => r.data)
-
-  return campaignSteps.value.length
+// Helper function để tạo step với delay
+const createStepWithDelay = async (step, index, total) => {
+  // Thêm delay nhỏ giữa các step để tránh conflict
+  if (index > 0) {
+    await new Promise(resolve => setTimeout(resolve, 100)) // 100ms delay
+  }
+  
+  const payload = {
+    campaign: draftCampaign.value.name,
+    campaign_step_name: step.campaign_step_name,
+    step_order: step.step_order,
+    action_type: step.action_type,
+    delay_in_days: step.delay_in_days || 0,
+    template: step.template_content || '',
+    image: step.image || '',
+    action_config: step.action_config || null,
+    status: 'DRAFT',
+    is_active: 1
+  }
+  
+  console.log(`📝 Creating CampaignStep ${index + 1}/${total} with payload:`, payload)
+  console.log(`🖼️ Image field in payload:`, payload.image)
+  
+  const result = await campaignStepService.save(payload)
+  console.log(`✅ Step ${index + 1} created:`, result)
+  console.log(`🖼️ Step ${index + 1} image field:`, result.data?.image)
+  
+  return result
 }
 
 // Finalize: tạo step trước, update campaign sau
@@ -1833,15 +1908,60 @@ const finalizeCampaign = async () => {
     // 1) Tạo tất cả steps trước
     let stepCount = 0
     if (campaignSteps.value.length > 0) {
-      // try {
-      //   stepCount = await createAllSteps()
-      // } catch (e) {
-      //   console.error('❌ Create steps failed', e)
-      //   alert(__('Failed to create steps. Please try again.'))
-      //   return
-      // }
+      try {
+        console.log(`🔄 Starting to create ${campaignSteps.value.length} campaign steps...`)
+        
+        // Tạo từng step một cách tuần tự
+        for (let i = 0; i < campaignSteps.value.length; i++) {
+          const step = campaignSteps.value[i]
+          
+          const payload = {
+            campaign: draftCampaign.value.name,
+            campaign_step_name: step.campaign_step_name,
+            step_order: step.step_order,
+            action_type: step.action_type,
+            delay_in_days: step.delay_in_days || 0,
+            template: step.template_content || '',
+            image: step.image || '', // Include image
+            action_config: step.action_config || null,
+            status: 'DRAFT',
+            is_active: 1
+          }
+          
+          console.log(`📝 Creating step ${i + 1}/${campaignSteps.value.length}:`, step.campaign_step_name)
+          console.log(`🖼️ Step ${i + 1} image:`, payload.image)
+          console.log(`📋 Step ${i + 1} payload:`, payload)
+          
+          try {
+            const result = await campaignStepService.save(payload)
+            
+            if (result?.success) {
+              stepCount++
+              console.log(`✅ Step ${i + 1} created successfully:`, result.data)
+              console.log(`🖼️ Step ${i + 1} saved image:`, result.data?.image)
+            } else {
+              console.error(`❌ Step ${i + 1} creation failed:`, result)
+            }
+          } catch (stepError) {
+            console.error(`❌ Error creating step ${i + 1}:`, stepError)
+            // Tiếp tục với step tiếp theo thay vì dừng hoàn toàn
+          }
+          
+          // Thêm delay nhỏ giữa các step để tránh conflict
+          if (i < campaignSteps.value.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 200)) // 200ms delay
+          }
+        }
+        
+        console.log(`📊 Final result: Created ${stepCount}/${campaignSteps.value.length} campaign steps`)
+        
+      } catch (e) {
+        console.error('❌ Create steps failed', e)
+        alert(__('Failed to create steps. Please try again.'))
+        return
+      }
     }
-    console.log("campaignData.value", campaignData.value)
+    
     // 2) Update campaign sau khi đã có step
     const campaignUpdatePayload = {
       campaign_name: campaignData.value.campaign_name || draftCampaign.value.campaign_name,
@@ -1856,15 +1976,18 @@ const finalizeCampaign = async () => {
       steps_count: stepCount,
       source_file: campaignData.value.source_file || '',
       source_config: campaignData.value.source_config || null,
-      campaign_steps: campaignSteps.value,
       target_segment: campaignData.value.target_segment || null,
       job_opening: campaignData.value.job_opening || null
     }
+
+    console.log(' Campaign update payload:', campaignUpdatePayload)
 
     const campaignResult = await campaignService.save(
       campaignUpdatePayload,
       draftCampaign.value.name
     )
+
+    console.log('📋 Campaign update result:', campaignResult)
 
     if (!campaignResult.success) {
       throw new Error(campaignResult.message || 'Failed to finalize campaign')
@@ -1935,7 +2058,8 @@ const closeWizard = () => {
     step_order: 1,
     delay_in_days: 0,
     template_content: '',
-    action_config_string: ''
+    action_config_string: '',
+    image: '' // Reset image field
   }
   stepFormErrors.value = {}
   stepFormLoading.value = false

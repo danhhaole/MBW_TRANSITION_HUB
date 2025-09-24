@@ -4,13 +4,13 @@
     class="text-base"
     @success="
       (file) => {
-        $emit('upload', file.file_url)
+        $emit('upload', file.file_url, file.file)
       }
     "
   >
     <template v-slot="{ progress, uploading, openFileSelector }">
       <div class="flex items-end space-x-1">
-        <Button @click="openFileSelector">
+        <Button type="button" @click="openFileSelector">
           {{
             uploading
               ? `Uploading ${progress}%`
@@ -19,7 +19,7 @@
                 : 'Upload'
           }}
         </Button>
-        <Button v-if="image_url" @click="$emit('remove')">Remove</Button>
+        <Button v-if="image_url" type="button" @click="$emit('remove')">Remove</Button>
       </div>
     </template>
   </FileUploader>
