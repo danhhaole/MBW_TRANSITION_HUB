@@ -436,6 +436,27 @@
                     </div>
                   </div>
 
+                  Step Job Opening (optional)
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                      {{ __('Job Opening (optional)') }}
+                    </label>
+                    <select
+                      v-model="stepFormSelectedJobId"
+                      @change="onStepJobChange"
+                      :disabled="stepFormLoading || loadingJobOpenings"
+                      class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    >
+                      <option value="">{{ __('Select a job opening...') }}</option>
+                      <option v-for="job in jobOpeningsList" :key="job.name" :value="job.name">
+                        {{ job.job_title }} {{ job.job_code ? `(${job.job_code})` : '' }}
+                      </option>
+                    </select>
+                    <p class="mt-1 text-xs text-gray-500">
+                      {{ __('If selected, the job\'s description, requirements, and benefits will be inserted into Template Content.') }}
+                    </p>
+                  </div>
+
                   <div class="grid grid-cols-2 gap-4">
                     <!-- Action Type -->
                     <div>
@@ -678,6 +699,9 @@
               </p>
             </div>
           </div>
+
+          <!-- Step 6: Select Job Opening -->
+          
         </div>
 
         <!-- Footer Actions -->
@@ -773,6 +797,7 @@ import {
   campaignStepService
 } from '@/services/universalService'
 import { campaignTemplateDirectService } from '@/services/campaignTemplateDirectService.js'
+import { getFilteredJobOpenings, getJobOpeningDetails } from '@/services/jobOpeningService'
 import { campaignTemplateStepDirectService } from '@/services/campaignTemplateStepDirectService.js'
 import { processSkills } from '@/services/candidateService'
 import candidateDataSourceRepository from '@/repositories/candidateDataSourceRepository'
@@ -809,7 +834,8 @@ const campaignData = ref({
   source_type: '', // New field: 'DataSource', 'File', 'Search'
   source_file: '', // For File type
   data_source_id: '', // For DataSource type
-  source_config: null // New field to store file mapping, meta, and URL
+  source_config: null, // New field to store file mapping, meta, and URL
+  job_opening: '' // Changed from job_opening_id to job_opening
 })
 
 const selectedSource = ref(props.preselectedSegment ? 'search' : '')
@@ -857,6 +883,15 @@ const stepFormData = ref({
 const stepFormErrors = ref({})
 const stepFormLoading = ref(false)
 
+// Manual Step Job Opening selection state
+const stepFormSelectedJobId = ref('')
+
+// Job step state
+const selectedJobOpeningId = ref('')
+const jobOpeningsList = ref([])
+const loadingJobOpenings = ref(false)
+const selectedJobOpeningDetails = ref(null)
+
 const { error: toastError } = useToast()
 
 // Translation helper function
@@ -868,7 +903,8 @@ const steps = [
   { number: 2, label: 'Select Source' },
   { number: 3, label: 'Target Segment' },
   { number: 4, label: 'Campaign Steps' },
-  { number: 5, label: 'Review & Activate' }
+  { number: 5, label: 'Review & Activate' },
+  // { number: 6, label: 'Job' }
 ]
 
 // Source options - 3 fixed choices only
@@ -1003,7 +1039,8 @@ const modalTitle = computed(() => {
     2: 'Select Data Source',
     3: 'Select Target Segment',
     4: 'Create Campaign Steps',
-    5: 'Review & Activate'
+    5: 'Review & Activate',
+    // 6: 'Select Job Opening'
   }
   return titles[currentStep.value] || 'Create New Campaign'
 })
@@ -1036,6 +1073,8 @@ const canProceed = computed(() => {
   }
   // Bước 3: luôn cho phép qua, không bắt buộc chọn segment
   if (currentStep.value === 3) return true
+  // Bước 6: cần chọn job opening
+  // if (currentStep.value === 6) return !!selectedJobOpeningId.value
   return true
 })
 
@@ -1488,6 +1527,11 @@ const nextStep = async () => {
     }
   }
   
+  // Load job openings when moving to step 6
+  // if (currentStep.value === 5) {
+  //   await loadJobOpenings()
+  // }
+  
   if (currentStep.value < 5) {
     currentStep.value++
   }
@@ -1659,6 +1703,96 @@ const getSearchButtonText = () => {
   return __('Continue')
 }
 
+// Helpers for inserting job details into template
+const stripHtml = (html) => {
+  if (!html || typeof html !== 'string') return ''
+  return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim()
+}
+
+
+
+const buildJobDetailsForTemplate = (details) => {
+  console.log("details>>>", details);
+  if (!details) return ''
+  const parts = []
+  if (details.description) parts.push(`${__('Description')}:\n${stripHtml(details.description)}`)
+  if (details.requirements) parts.push(`${__('Requirements')}:\n${stripHtml(details.requirements)}`)
+  if (details.benefits) parts.push(`${__('Benefits')}:\n${stripHtml(details.benefits)}`)
+  return parts.join('\n\n')
+}
+
+// Called when job opening is chosen in the Manual Step form
+const onStepJobChange = async () => {
+  if (!stepFormSelectedJobId.value) {
+    stepFormData.value.template_content = ''
+    return
+  }
+  try {
+    const details = await getJobOpeningDetails(stepFormSelectedJobId.value)
+    if (!details) {
+      stepFormData.value.template_content = ''
+      return
+    }
+    const blockBody = buildJobDetailsForTemplate(details)
+    stepFormData.value.template_content = blockBody || ''
+  } catch (e) {
+    console.error('Failed to build job details for step template:', e)
+    stepFormData.value.template_content = ''
+  }
+}
+
+// Job step methods
+const loadJobOpenings = async () => {
+  loadingJobOpenings.value = true
+  try {
+    const result = await getFilteredJobOpenings({
+      limit: 50
+    })
+
+    console.log("result>>>", result);
+    
+    
+    if (result) {
+      jobOpeningsList.value = result.data || []
+    } else {
+      jobOpeningsList.value = []
+    }
+  } catch (error) {
+    console.error('Error loading job openings:', error)
+    jobOpeningsList.value = []
+  } finally {
+    loadingJobOpenings.value = false
+  }
+}
+
+const onJobOpeningChange = async () => {
+
+  console.log("selectedJobOpeningId.value>>>", selectedJobOpeningId.value);
+  
+  if (!selectedJobOpeningId.value) {
+    selectedJobOpeningDetails.value = null
+    campaignData.value.job_opening = ''
+    return
+  }
+  
+  campaignData.value.job_opening = selectedJobOpeningId.value
+  
+  try {
+    const details = await getJobOpeningDetails(selectedJobOpeningId.value)
+
+    console.log("details>>>", details);
+    
+    if (details) {
+      selectedJobOpeningDetails.value = details
+    } else {
+      selectedJobOpeningDetails.value = null
+    }
+  } catch (error) {
+    console.error('Error loading job details:', error)
+    selectedJobOpeningDetails.value = null
+  }
+}
+
 // Helper: tạo toàn bộ CampaignStep trước
 const createAllSteps = async () => {
   if (!draftCampaign.value) throw new Error('No draft campaign')
@@ -1723,7 +1857,8 @@ const finalizeCampaign = async () => {
       source_file: campaignData.value.source_file || '',
       source_config: campaignData.value.source_config || null,
       campaign_steps: campaignSteps.value,
-      target_segment: campaignData.value.target_segment || null
+      target_segment: campaignData.value.target_segment || null,
+      job_opening: campaignData.value.job_opening || null
     }
 
     const campaignResult = await campaignService.save(
@@ -1766,7 +1901,8 @@ const closeWizard = () => {
     source_type: '',
     source_file: '',
     data_source_id: '',
-    source_config: null
+    source_config: null,
+    job_opening: '' // Changed from job_opening_id to job_opening
   }
   selectedSource.value = props.preselectedSegment ? 'search' : ''
   selectedDataSourceType.value = ''
@@ -1804,6 +1940,12 @@ const closeWizard = () => {
   stepFormErrors.value = {}
   stepFormLoading.value = false
   draftCampaign.value = null
+  
+  // Reset job step states
+  selectedJobOpeningId.value = ''
+  jobOpeningsList.value = []
+  loadingJobOpenings.value = false
+  selectedJobOpeningDetails.value = null
   
   // Reset candidates
   mockCandidates.value = []
@@ -1878,6 +2020,13 @@ watch(
   },
   { deep: true }
 )
+
+// When the manual step form opens, ensure job openings list is loaded
+watch(showStepForm, async (val) => {
+  if (val && jobOpeningsList.value.length === 0) {
+    await loadJobOpenings()
+  }
+})
 
 // Watchers
 watch(() => props.modelValue, (newVal) => {

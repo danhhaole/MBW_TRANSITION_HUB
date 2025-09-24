@@ -9,7 +9,8 @@ import {
   formatCampaignDate,
   getCampaignStatusByDate,
   getUserOptions,
-  getTalentSegmentOptions
+  getTalentSegmentOptions,
+  getJobOpeningOptions
 } from '@/services/campaignService'
 import { getCampaigns } from '@/repositories/campaignRepository'
 
@@ -259,7 +260,8 @@ export const useCampaignForm = (initialData = null) => {
     end_date: initialData?.end_date || null,
     type: initialData?.type || 'NURTURING',
     status: initialData?.status || 'DRAFT',
-    target_segment: initialData?.target_segment || null
+    target_segment: initialData?.target_segment || null,
+    job_opening: initialData?.job_opening || null
   })
 
   const formErrors = ref({})
@@ -267,6 +269,7 @@ export const useCampaignForm = (initialData = null) => {
   const users = ref([])
   const talentSegments = ref([])
   const loadingOptions = ref(false)
+  const jobOpenings = ref([])
 
   // Validation rules theo Vuetify
   const campaignNameRules = [
@@ -317,9 +320,10 @@ export const useCampaignForm = (initialData = null) => {
   const loadOptions = async () => {
     loadingOptions.value = true
     try {
-      const [usersData, segmentsData] = await Promise.all([
+      const [usersData, segmentsData, jobOpeningsData] = await Promise.all([
         getUserOptions(),
-        getTalentSegmentOptions()
+        getTalentSegmentOptions(),
+        getJobOpeningOptions()
       ])
       
       users.value = usersData.map(user => ({
@@ -331,6 +335,11 @@ export const useCampaignForm = (initialData = null) => {
       talentSegments.value = segmentsData.map(segment => ({
         label: segment.title || segment.name,
         value: segment.name
+      }))
+
+      jobOpenings.value = jobOpeningsData.map(j => ({
+        label: j.job_title || j.name,
+        value: j.name
       }))
     } catch (error) {
       console.error('Failed to load options:', error)
@@ -374,7 +383,8 @@ export const useCampaignForm = (initialData = null) => {
       end_date: null,
       type: 'NURTURING',
       status: 'DRAFT',
-      target_segment: null
+      target_segment: null,
+      job_opening: null
     }
     formErrors.value = {}
     isValid.value = false
@@ -391,7 +401,8 @@ export const useCampaignForm = (initialData = null) => {
       end_date: data.end_date || null,
       type: data.type || 'NURTURING',
       status: data.status || 'DRAFT',
-      target_segment: data.target_segment || null
+      target_segment: data.target_segment || null,
+      job_opening: data.job_opening || null
     }
   }
 
@@ -411,7 +422,8 @@ export const useCampaignForm = (initialData = null) => {
     loadOptions,
     validateForm,
     resetForm,
-    setFormData
+    setFormData,
+    jobOpenings
   }
 }
 

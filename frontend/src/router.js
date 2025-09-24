@@ -57,6 +57,7 @@ const routes = [
 	{ alias: '/report', path: '/report', name: 'Report', component: () => import('@/pages/Report.vue') },
 	{ alias: '/settings', path: '/settings', name: 'Settings', component: () => import('@/pages/Settings.vue') },
 	{ path: '/:invalidpath', name: 'Invalid Page', component: () => import('@/pages/InvalidPage.vue') },
+	{ path: '/my-actions', name: 'MyActions', component: () => import('@/pages/MyActions.vue') },
 
 	// Talent Segment
 	{ path: '/talent-segments', name: 'TalentSegments', component: TalentSegments },

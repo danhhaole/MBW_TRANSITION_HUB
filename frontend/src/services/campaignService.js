@@ -6,7 +6,8 @@ import {
   deleteCampaign,
   searchCampaigns,
   getUsers,
-  getTalentSegments
+  getTalentSegments,
+  getJobOpenings
 } from '@/repositories/campaignRepository'
 
 // Lấy danh sách campaigns với filter
@@ -86,6 +87,17 @@ export const getTalentSegmentOptions = async () => {
   }
 }
 
+// Lấy danh sách job openings
+export const getJobOpeningOptions = async () => {
+  try {
+    const response = await getJobOpenings()
+    return Array.isArray(response) ? response : (response.data || [])
+  } catch (error) {
+    console.error('Failed to get job openings:', error)
+    return []
+  }
+}
+
 // Tạo mới campaign với validation
 export const submitNewCampaign = async (formData) => {
   try {
@@ -109,7 +121,8 @@ export const submitNewCampaign = async (formData) => {
       end_date: formData.end_date || null,
       type: formData.type || 'NURTURING',
       status: formData.status || 'DRAFT',
-      target_segment: formData.target_segment || null
+      target_segment: formData.target_segment || null,
+      job_opening: formData.job_opening || null
     })
     if (response) {
       return response
@@ -145,7 +158,8 @@ export const updateCampaignData = async (name, formData) => {
       end_date: formData.end_date || null,
       type: formData.type || 'NURTURING',
       status: formData.status || 'DRAFT',
-      target_segment: formData.target_segment || null
+      target_segment: formData.target_segment || null,
+      job_opening: formData.job_opening || null
     }
     const response = await updateCampaign(name, updateData)
     if (response) {

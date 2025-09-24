@@ -89,6 +89,14 @@
             :options="[{ label: __('Select Target Segment'), value: '' }, ...talentSegments]"
           />
 
+          <!-- Job Opening
+          <FormControl
+            v-model="form.job_opening"
+            type="select"
+            :label="__('Job Opening')"
+            :options="[{ label: __('Select Job Opening'), value: '' }, ...jobOpenings]"
+            :help="__('Select a job to attach this campaign to')"
+          /> -->
           <!-- Row 3: Start Date and End Date -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormControl
@@ -197,7 +205,8 @@ const {
   loadOptions,
   validateForm,
   resetForm,
-  setFormData
+  setFormData,
+  // jobOpenings
 } = useCampaignForm()
 
 const {

@@ -5,7 +5,7 @@ export const getCampaigns = async (options = {}) => {
   const {
     filters = {},
     or_filters = undefined,
-    fields = ['name', 'campaign_name', 'description', 'is_active', 'owner_id', 'start_date', 'end_date', 'type', 'status', 'target_segment', 'creation', 'modified', 'current', 'total'],
+    fields = ['name', 'campaign_name', 'description', 'is_active', 'owner_id', 'start_date', 'end_date', 'type', 'status', 'target_segment', 'creation', 'modified', 'current', 'total', 'job_opening'],
     order_by = 'modified desc',
     page_length = 20,
     start = 0
@@ -42,7 +42,7 @@ export const getCampaigns = async (options = {}) => {
 export const getCampaignStats = async () => {
   const result = await call('frappe.client.get_list', {
     doctype: 'Campaign',
-    fields: ['name', 'campaign_name', 'description', 'is_active', 'owner_id', 'start_date', 'end_date', 'type', 'status', 'target_segment', 'creation', 'modified', 'current', 'total'],
+    fields: ['name', 'campaign_name', 'description', 'is_active', 'owner_id', 'start_date', 'end_date', 'type', 'status', 'target_segment', 'creation', 'modified', 'current', 'total', 'job_opening'],
     filters: { enabled: 1 },
     order_by: 'full_name asc'
   })
@@ -110,5 +110,14 @@ export const getTalentSegments = async () => {
     doctype: 'TalentSegment',
     fields: ['name', 'title'],
     order_by: 'title asc'
+  })
+}
+
+// Thêm: Lấy danh sách Job Opening
+export const getJobOpenings = async () => {
+  return await call('frappe.client.get_list', {
+    doctype: 'JobOpening',
+    fields: ['name', 'job_title'],
+    order_by: 'modified desc'
   })
 } 

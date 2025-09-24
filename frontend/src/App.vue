@@ -5,6 +5,7 @@
     </component>
     <Dialogs />
   </FrappeUIProvider>
+  <ToastNotification />
 </template>
 
 <script setup>
@@ -12,6 +13,7 @@ import { Dialogs } from '@/utils/dialogs'
 import { sessionStore as session } from '@/stores/session'
 import { FrappeUIProvider, setConfig } from 'frappe-ui'
 import { computed, defineAsyncComponent, onMounted } from 'vue'
+import ToastNotification from '@/components/ToastNotification.vue'
 
 const MobileLayout = defineAsyncComponent(
   () => import('./components/Layouts/MobileLayout.vue'),

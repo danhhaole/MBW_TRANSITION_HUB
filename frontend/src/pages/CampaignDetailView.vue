@@ -125,6 +125,19 @@
                 </span>
               </div>
             </div>
+            <!-- <div>
+              			<label class="text-sm font-medium text-gray-700">{{ __('Job Opening') }}</label>
+              <div class="mt-1 flex items-center">
+                <button
+                  v-if="jobOpening"
+                  @click="viewJobOpening"
+                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 hover:bg-purple-200 cursor-pointer"
+                >
+                  {{ jobOpening.job_title }}
+                </button>
+                				<span v-else class="text-sm text-gray-500">{{ __('None') }}</span>
+              </div>
+            </div> -->
           </div>
           <div class="space-y-4">
             <div>
@@ -807,7 +820,8 @@ import {
   candidateService,
   candidateSegmentService,
   talentSegmentService,
-  actionService
+  actionService,
+  // jobOpeningService
 } from '../services/universalService'
 import { Dialog, Breadcrumbs, Button, FormControl } from 'frappe-ui'
 import CampaignForm from '@/components/campaign/CampaignForm.vue'
@@ -841,6 +855,7 @@ const campaignSteps = ref([])
 const candidateCampaigns = ref([])
 const actions = ref([])
 const availableCandidates = ref([])
+// const jobOpening = ref(null)
 
 // Modals
 const showStepModal = ref(false)
@@ -1014,6 +1029,10 @@ const loadCampaign = async () => {
       if (campaign.target_segment) {
         await loadTargetSegment()
       }
+      // Load job opening if exists
+      // if (campaign.job_opening) {
+      //   await loadJobOpening()
+      // }
     }
   } catch (error) {
     console.error('Error loading campaign:', error)
@@ -1160,6 +1179,18 @@ const loadAvailableCandidates = async () => {
     }
   } catch (error) {
     console.error('Error loading candidates:', error)
+  }
+}
+
+const loadJobOpening = async () => {
+  if (!campaign.job_opening) return
+  try {
+    const result = await jobOpeningService.getFormData(campaign.job_opening)
+    if (result.success) {
+      jobOpening.value = result.data
+    }
+  } catch (error) {
+    console.error('Error loading job opening:', error)
   }
 }
 
@@ -1529,6 +1560,7 @@ const handleCampaignUpdated = async () => {
   console.log('Campaign updated successfully')
   // Reload campaign data
   await loadCampaign()
+  // if (campaign.job_opening) await loadJobOpening()
 }
 
 const deleteCampaign = async () => {
@@ -1547,6 +1579,12 @@ const deleteCampaign = async () => {
 const viewTargetSegment = () => {
   if (targetSegment.value) {
     router.push(`/talent-segments/${targetSegment.value.name}/detail`)
+  }
+}
+
+const viewJobOpening = () => {
+  if (jobOpening.value) {
+    router.push(`/job-openings/${jobOpening.value.name}`)
   }
 }
 
