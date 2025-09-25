@@ -542,7 +542,6 @@
       </template>
     </Dialog>
   </div>
-  <ExtenalSharing/>
 </template>
 
 <script setup>
@@ -556,7 +555,6 @@ import ZaloConnectionForm from "@/components/Connectors/ZaloConnectionForm.vue";
 import CalcomConnectionForm from "@/components/Connectors/CalcomConnectionForm.vue";
 import TopcvConnectionForm from "@/components/Connectors/TopcvConnectionForm.vue";
 import useToast from "@/composables/useToast";
-import ExtenalSharing from "@/components/Connectors/ExtenalSharing.vue";
 // Simple notifier to standardize icon usage
 const {
   success: toastSuccess,

@@ -5,7 +5,7 @@ export const getCampaigns = async (options = {}) => {
   const {
     filters = {},
     or_filters = undefined,
-    fields = ['name', 'campaign_name', 'description', 'is_active', 'owner_id', 'start_date', 'end_date', 'type', 'status', 'target_segment', 'creation', 'modified', 'current', 'total', 'job_opening'],
+    fields = ['name', 'campaign_name', 'description', 'is_active', 'owner_id', 'start_date', 'end_date', 'type', 'status', 'target_segment', 'creation', 'modified', 'current', 'total'],
     order_by = 'modified desc',
     page_length = 20,
     start = 0
@@ -42,7 +42,7 @@ export const getCampaigns = async (options = {}) => {
 export const getCampaignStats = async () => {
   const result = await call('frappe.client.get_list', {
     doctype: 'Campaign',
-    fields: ['name', 'campaign_name', 'description', 'is_active', 'owner_id', 'start_date', 'end_date', 'type', 'status', 'target_segment', 'creation', 'modified', 'current', 'total', 'job_opening'],
+    fields: ['name', 'campaign_name', 'description', 'is_active', 'owner_id', 'start_date', 'end_date', 'type', 'status', 'target_segment', 'creation', 'modified', 'current', 'total'],
     filters: { enabled: 1 },
     order_by: 'full_name asc'
   })
@@ -118,6 +118,7 @@ export const getJobOpenings = async () => {
   return await call('frappe.client.get_list', {
     doctype: 'JobOpening',
     fields: ['name', 'job_title'],
-    order_by: 'modified desc'
+    order_by: 'modified desc',
+    limit_page_length: 1000
   })
 } 

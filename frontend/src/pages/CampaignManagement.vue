@@ -161,7 +161,7 @@
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCampaignList, useCampaignCRUD } from '../composables/useCampaign'
-import { useToast } from '@/composables/useToast'
+import useToast from '@/composables/useToast'
 import {
   CampaignTable,
   CampaignCardView,
@@ -214,7 +214,15 @@ const {
 } = useCampaignList()
 
 const { deleteCampaign } = useCampaignCRUD()
-const { showToast } = useToast()
+const { success, error, info } = useToast()
+
+// Wrapper để thống nhất cách hiển thị toast như kỳ vọng showToast
+const showToast = (message, type = 'info', duration = 3000) => {
+  const opts = { duration }
+  if (type === 'success') return success(message, opts)
+  if (type === 'error') return error(message, opts)
+  return info(message, opts)
+}
 
 // Status filter options
 const statusOptions = [
@@ -356,15 +364,15 @@ const handleRefresh = async () => {
 
 const handleDelete = async (campaign) => {
   try {
-    const success = await deleteCampaign(campaign.name, campaign.campaign_name)
+    const successDelete = await deleteCampaign(campaign.name, campaign.campaign_name)
 
-    if (success) {
+    if (successDelete) {
       showToast(__(`Campaign "${campaign.campaign_name}" deleted`), 'success')
       loadCampaigns()
     } else {
       showToast(__('Error deleting campaign'), 'error')
     }
-  } catch (error) {
+  } catch (errorDelete) {
     showToast(__('Error deleting campaign'), 'error')
   }
 }

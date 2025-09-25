@@ -8,15 +8,13 @@ from frappe.utils import get_files_path
 from frappe import _
 from frappe.utils.file_manager import save_file
 
-
-
 AI_BASEURL = frappe.conf.get("ai_baseurl") or "https://aihub.fastwork.vn/hr_agent/"
 AI_BASEURL_V2 = (
     frappe.conf.get("ai_baseurl_v2") or "https://aihub.fastwork.vn/hr_agent/"
 )
 
 
-AI_BASEURL_V2 = frappe.conf.get("ai_baseurl_v2") or "https://aihub.fastwork.vn/hr_agent"
+# AI_BASEURL_V2 = frappe.conf.get("ai_baseurl_v2") or "https://aihub.fastwork.vn/hr_agent"
 
 def request_data(**kwargs):
     # headers = {"Content-type": "application/json","x-api-key":"6Bwunlw3Fm1J23tGKZjb/WJXwBDI3gRY971+VUFOU+w="}
@@ -1039,6 +1037,7 @@ def generate_email_func(**kwargs):
 
 """Extract CV mới
 """
+
 
 
 def extract_cv_backend_v2(file_name):

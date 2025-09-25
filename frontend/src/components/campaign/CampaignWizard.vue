@@ -36,7 +36,8 @@
                 v-if="index < steps.length - 1"
                 class="flex-grow h-0.5 mx-2 transition-all duration-400"
                 :class="step.number < currentStep ? 'bg-blue-500' : 'bg-gray-300'"
-              />
+              >
+              </div>
             </template>
           </div>
         </div>
@@ -56,6 +57,54 @@
                 class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 :class="{ 'border-red-500': !campaignData.campaign_name && currentStep > 1 }"
               />
+            </div>
+
+            <!-- Status selection -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                {{ __('Status') }}
+              </label>
+              <select
+                v-model="campaignData.status"
+                class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              >
+                <option value="DRAFT">{{ __('DRAFT') }}</option>
+                <option value="ACTIVE">{{ __('ACTIVE') }}</option>
+                <option value="PAUSED">{{ __('PAUSED') }}</option>
+                <option value="ARCHIVED">{{ __('ARCHIVED') }}</option>
+              </select>
+            </div>
+
+            <!-- Start/End Datetime -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  {{ __('Start Date/Time') }}
+                </label>
+                <input
+                  v-model="campaignData.start_date"
+                  type="datetime-local"
+                  :min="minScheduledAt"
+                  class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+                <p class="mt-1 text-xs text-gray-500">
+                  {{ __('Local time') }} ({{ localTzLabel }})
+                </p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  {{ __('End Date/Time') }}
+                </label>
+                <input
+                  v-model="campaignData.end_date"
+                  type="datetime-local"
+                  :min="campaignData.start_date || minScheduledAt"
+                  class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+                <p class="mt-1 text-xs text-gray-500">
+                  {{ __('Local time') }} ({{ localTzLabel }})
+                </p>
+              </div>
             </div>
 
             <div>
@@ -195,13 +244,13 @@
                       <FeatherIcon :name="getDataSourceIcon(dataSource.source_type)" class="h-6 w-6 mr-3 text-gray-400" />
                       <div class="flex-1">
                         <div class="text-sm font-medium text-gray-900">
-                          {{ dataSource.source_name }}
+                          {{ dataSource.source_name || dataSource.source_title || dataSource.name }}
                         </div>
                         <div v-if="dataSource.source_title" class="text-xs text-gray-500 italic">
                           {{ dataSource.source_title }}
                         </div>
                         <div class="text-xs text-gray-500">
-                          {{ dataSource.description || __('External data source') }}
+                          {{ dataSource.description || __('Connected platform') }}
                         </div>
                       </div>
                     </div>
@@ -436,6 +485,44 @@
                     </div>
                   </div>
 
+                  <!-- Social Network: Select Page (connected_accounts) -->
+                  <div v-if="selectedSource === 'datasource' && selectedDataSourceType === 'SocialNetwork'">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                      {{ __('Select Social Page') }}
+                    </label>
+                    <select
+                      v-model="stepFormSelectedPageId"
+                      :disabled="loadingPages || stepFormLoading"
+                      class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    >
+                      <option value="">{{ __('Select a page...') }}</option>
+                      <option v-for="p in socialPages" :key="p.external_account_id" :value="p.external_account_id">
+                        {{ p.account_name }} ({{ p.account_type }})
+                      </option>
+                    </select>
+                    <p class="mt-1 text-xs text-gray-500">
+                      {{ __('Pages come from connected_accounts of External Connection') }}
+                    </p>
+                  </div>
+
+                  <!-- Step Schedule (Datetime) -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                      {{ __('Time Post News(optional)') }}
+                    </label>
+                    <input
+                      v-model="stepFormData.scheduled_at"
+                      type="datetime-local"
+                      :min="minScheduledAt"
+                      :disabled="stepFormLoading"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    />
+                    <p class="mt-1 text-xs text-gray-500">
+                      {{ __('Local time') }} ({{ localTzLabel }}) •
+                      {{ __('If empty, system will use Campaign start_date + delay_in_days') }}
+                    </p>
+                  </div>
+
                   <!-- Step Job Opening (optional) -->
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -647,6 +734,10 @@
                     </span>
                     <div class="flex-1">
                       <div class="text-sm font-medium text-gray-900">{{ step.campaign_step_name }}</div>
+                      <div class="text-xs text-gray-500">
+                        <span v-if="step.scheduled_at">{{ __('Scheduled at') }}: {{ step.scheduled_at }}</span>
+                        <span v-else>{{ __('Delay') }}: {{ step.delay_in_days || 0 }} {{ __('day(s)') }}</span>
+                      </div>
                       <div class="text-xs text-gray-500">{{ step.action_type }}{{ step.delay_in_days > 0 ? ` • ${step.delay_in_days} days delay` : '' }}</div>
                     </div>
                     <div class="flex items-center space-x-2">
@@ -663,6 +754,11 @@
               
               <!-- Add Step Button -->
               <div v-if="!showStepForm" class="text-center">
+                <!-- Debug info -->
+                <div class="text-xs text-gray-500 mb-2">
+                  Debug: showStepCreation={{ showStepCreation }}, stepCreationMode={{ stepCreationMode }}, showStepForm={{ showStepForm }}
+                </div>
+                
                 <Button variant="outline" theme="gray" @click="addManualStep">
                   <div class="flex items-center">
                     <FeatherIcon name="plus" class="h-4 w-4 mr-2" />
@@ -898,7 +994,9 @@ const campaignData = ref({
   source_file: '', // For File type
   data_source_id: '', // For DataSource type
   source_config: null, // New field to store file mapping, meta, and URL
-  job_opening: '' // Changed from job_opening_id to job_opening
+  job_opening: '', // Changed from job_opening_id to job_opening
+  start_date: '', // datetime-local
+  end_date: '' // datetime-local
 })
 
 const selectedSource = ref(props.preselectedSegment ? 'search' : '')
@@ -935,13 +1033,15 @@ const editingStep = ref(null)
 
 // Step Form State  
 const stepFormData = ref({
+  campaign: '',
   campaign_step_name: '',
   action_type: '',
   step_order: 1,
   delay_in_days: 0,
   template_content: '',
   action_config_string: '',
-  image: '' // Sử dụng tên field đúng theo doctype
+  image: '', // Sử dụng tên field đúng theo doctype
+  scheduled_at: ''
 })
 
 const stepFormErrors = ref({})
@@ -967,7 +1067,7 @@ const steps = [
   { number: 2, label: 'Select Source' },
   { number: 3, label: 'Target Segment' },
   { number: 4, label: 'Campaign Steps' },
-  { number: 5, label: 'Review & Activate' },
+  { number: 5, label: 'Review & Activate', },
   // { number: 6, label: 'Job' }
 ]
 
@@ -1292,14 +1392,18 @@ const selectDataSourceType = (sourceType) => {
   selectedDataSourceId.value = ''
   dataSourceSelectionLevel.value = 2 // ✅ Move to specific source selection to show the list
   
-  // Filter internal data sources by type
-  const internal = dataSources.value.filter(ds => ds.source_type === sourceType)
-  // Filter connected external connections mapped to this type
-  const external = connectedDataSources.value.filter(ds => ds.source_type === sourceType)
-  filteredDataSources.value = [...external, ...internal]
+  // Khi chọn SocialNetwork: chỉ hiển thị danh sách nền tảng đã kết nối từ External Connection
+  if (sourceType === 'SocialNetwork') {
+    filteredDataSources.value = connectedDataSources.value.filter(ds => ds.source_type === 'SocialNetwork')
+  } else {
+    // Mặc định: gộp internal và external theo loại
+    const internal = dataSources.value.filter(ds => ds.source_type === sourceType)
+    const external = connectedDataSources.value.filter(ds => ds.source_type === sourceType)
+    filteredDataSources.value = [...external, ...internal]
+  }
   
   console.log('✅ Filtered data sources:', filteredDataSources.value)
-  console.log('�� selectedDataSourceType now:', selectedDataSourceType.value)
+  console.log(' selectedDataSourceType now:', selectedDataSourceType.value)
   console.log('🎯 dataSourceSelectionLevel now:', dataSourceSelectionLevel.value)
 }
 
@@ -1406,8 +1510,6 @@ const createCampaignStepFromTemplate = async (templateStep) => {
   try {
     // Prepare step data for display (not creating DB record yet - will be done in finalize)
     const stepData = {
-      id: Date.now() + Math.random(), // Temporary unique ID for UI
-      campaign: draftCampaign.value?.name,
       campaign_step_name: templateStep.campaign_step_name,
       step_order: templateStep.step_order,
       action_type: templateStep.action_type,
@@ -1438,17 +1540,28 @@ const actionTypeOptions = [
 ]
 
 const addManualStep = () => {
+  console.log('🔍 addManualStep called')
+  console.log('🔍 draftCampaign.value:', draftCampaign.value)
+  console.log('🔍 showStepCreation:', showStepCreation.value)
+  console.log('🔍 stepCreationMode:', stepCreationMode.value)
+  console.log('🔍 showStepForm:', showStepForm.value)
+  
   // Ensure draft campaign exists
   if (!draftCampaign.value) {
+    console.error('❌ Draft campaign not found')
     alert(__('Draft campaign not found. Please go back to step 1 and try again.'))
     return
   }
+  
+  console.log('✅ Draft campaign exists, proceeding...')
   
   // Reset form and show inline form
   resetStepForm()
   stepFormSelectedJobId.value = ''
   editingStep.value = null
   showStepForm.value = true
+  
+  console.log('✅ Form opened, showStepForm:', showStepForm.value)
 }
 
 const editManualStep = (step) => {
@@ -1460,13 +1573,15 @@ const editManualStep = (step) => {
 
 const resetStepForm = () => {
   stepFormData.value = {
+    // campaign: '',
     campaign_step_name: '',
     action_type: '',
     step_order: campaignSteps.value.length + 1,
     delay_in_days: 0,
     template_content: '',
     action_config_string: '',
-    image: '' // Reset image field
+    image: '', // Reset image field
+    scheduled_at: ''
   }
   stepFormErrors.value = {}
   stepFormSelectedJobId.value = ''
@@ -1474,13 +1589,15 @@ const resetStepForm = () => {
 
 const setStepFormData = (step) => {
   stepFormData.value = {
+    campaign: draftCampaign.value.data.name || '',
     campaign_step_name: step.campaign_step_name || '',
     action_type: step.action_type || '',
     step_order: step.step_order || campaignSteps.value.length + 1,
     delay_in_days: step.delay_in_days || 0,
     template_content: step.template_content || '',
     action_config_string: step.action_config_string || (step.action_config ? JSON.stringify(step.action_config, null, 2) : ''),
-    image: step.image || '' // Load existing image
+    image: step.image || '', // Load existing image
+    scheduled_at: step.scheduled_at || ''
   }
   stepFormErrors.value = {}
   // Do not carry over previous job opening selection when editing/adding
@@ -1506,6 +1623,19 @@ const validateStepForm = () => {
     stepFormErrors.value.delay_in_days = __('Delay cannot be negative')
   }
   
+  // scheduled_at must not be in the past
+  if (stepFormData.value.scheduled_at) {
+    try {
+      const selected = new Date(stepFormData.value.scheduled_at)
+      const now = new Date()
+      if (selected.getTime() < now.getTime() - 60000) { // allow 1m drift
+        stepFormErrors.value.scheduled_at = __('Scheduled time cannot be in the past')
+      }
+    } catch (e) {
+      stepFormErrors.value.scheduled_at = __('Invalid datetime')
+    }
+  }
+  
   // Validate JSON config if provided
   if (stepFormData.value.action_config_string?.trim()) {
     try {
@@ -1524,13 +1654,18 @@ const handleStepFormSubmit = () => {
   stepFormLoading.value = true
   
   try {
+    const scheduledIso = stepFormData.value.scheduled_at
+      ? toIsoIfSet(stepFormData.value.scheduled_at)
+      : ''
     const stepData = {
+      campaign: draftCampaign.value?.data?.name || draftCampaign.value?.name, // ✅ Sửa: Đảm bảo có campaign
       campaign_step_name: stepFormData.value.campaign_step_name.trim(),
       action_type: stepFormData.value.action_type,
       step_order: stepFormData.value.step_order,
       delay_in_days: stepFormData.value.delay_in_days,
       template_content: stepFormData.value.template_content?.trim() || '',
       image: stepFormData.value.image || '', // Include image với tên field đúng
+      scheduled_at: scheduledIso,
       action_config: stepFormData.value.action_config_string?.trim() ? 
         (() => {
           try {
@@ -1541,17 +1676,23 @@ const handleStepFormSubmit = () => {
         })() : null
     }
     
+    // Attach selected social page to step metadata (kept in action_config)
+    if (selectedSource.value === 'datasource' && selectedDataSourceType.value === 'SocialNetwork' && stepFormSelectedPageId.value) {
+      stepData.action_config = stepData.action_config || {}
+      stepData.action_config.target_page_id = stepFormSelectedPageId.value
+    }
+    
     if (editingStep.value) {
       // Editing existing step
       const index = campaignSteps.value.findIndex(s => s.id === editingStep.value.id)
       if (index !== -1) {
-        campaignSteps.value[index] = { ...stepData, id: editingStep.value.id, campaign: draftCampaign.value?.name }
+        campaignSteps.value[index] = { ...stepData, id: editingStep.value.id, campaign: draftCampaign.value?.data?.name || draftCampaign.value?.name }
       }
     } else {
       // Adding new step
       const newStep = {
         id: Date.now(), // Temporary ID
-        campaign: draftCampaign.value?.name,
+        campaign: draftCampaign.value?.data?.name || draftCampaign.value?.name, // ✅ Sửa: Đảm bảo có campaign
         fromTemplate: false, // Mark as manually created
         ...stepData
       }
@@ -1566,6 +1707,7 @@ const handleStepFormSubmit = () => {
     showStepForm.value = false
     editingStep.value = null
     stepFormSelectedJobId.value = ''
+    stepFormSelectedPageId.value = ''
     
     console.log('Step saved:', stepData)
   } finally {
@@ -1873,14 +2015,16 @@ const createStepWithDelay = async (step, index, total) => {
     await new Promise(resolve => setTimeout(resolve, 100)) // 100ms delay
   }
   
+  console.log(`🔍 draftCampaign.value.name:`, draftCampaign.value.data.name)
   const payload = {
-    campaign: draftCampaign.value.name,
+    campaign: draftCampaign.value.data.name,
     campaign_step_name: step.campaign_step_name,
     step_order: step.step_order,
     action_type: step.action_type,
     delay_in_days: step.delay_in_days || 0,
     template: step.template_content || '',
     image: step.image || '',
+    scheduled_at: step.scheduled_at ? toIsoIfSet(step.scheduled_at) : null,
     action_config: step.action_config || null,
     status: 'DRAFT',
     is_active: 1
@@ -1889,9 +2033,12 @@ const createStepWithDelay = async (step, index, total) => {
   console.log(`📝 Creating CampaignStep ${index + 1}/${total} with payload:`, payload)
   console.log(`🖼️ Image field in payload:`, payload.image)
   
-  const result = await campaignStepService.save(payload)
+  console.log(`🔍 Calling campaignStepService.save with payload:`, payload)
+	const result = await campaignStepService.save(payload)
   console.log(`✅ Step ${index + 1} created:`, result)
+	console.log(`🔍 Step ${index + 1} campaign field:`, result.data?.campaign)
   console.log(`🖼️ Step ${index + 1} image field:`, result.data?.image)
+	console.log(`🔍 Step ${index + 1} campaign field:`, result.data?.campaign)
   
   return result
 }
@@ -1915,30 +2062,43 @@ const finalizeCampaign = async () => {
         for (let i = 0; i < campaignSteps.value.length; i++) {
           const step = campaignSteps.value[i]
           
+          console.log(`🔍 draftCampaign.value.name::::`, draftCampaign.value.campaign_name)
+          console.log(`🔍 draftCampaign.value:`, draftCampaign.value)
+          
+          // Kiểm tra xem draftCampaign có tồn tại không
+          if (!draftCampaign.value || !draftCampaign.value.data.name) {
+            console.error('❌ draftCampaign.value.name is missing:', draftCampaign.value)
+            throw new Error('Draft campaign not found or missing name')
+          }
+          
           const payload = {
-            campaign: draftCampaign.value.name,
+            campaign: draftCampaign.value.data.name, // ✅ ID của Campaign doctype
             campaign_step_name: step.campaign_step_name,
             step_order: step.step_order,
             action_type: step.action_type,
             delay_in_days: step.delay_in_days || 0,
             template: step.template_content || '',
-            image: step.image || '', // Include image
+            image: step.image || '',
+            scheduled_at: step.scheduled_at ? toIsoIfSet(step.scheduled_at) : null,
             action_config: step.action_config || null,
             status: 'DRAFT',
             is_active: 1
           }
+          console.log('🔍 payload>>>>>>>>>>>>>>>>>>>>>>>>>>:', payload)
           
           console.log(`📝 Creating step ${i + 1}/${campaignSteps.value.length}:`, step.campaign_step_name)
-          console.log(`🖼️ Step ${i + 1} image:`, payload.image)
+          console.log(`🔗 Campaign ID:`, payload.campaign)
           console.log(`📋 Step ${i + 1} payload:`, payload)
           
           try {
+            console.log(`🔍 Calling campaignStepService.save with payload:`, payload)
             const result = await campaignStepService.save(payload)
             
             if (result?.success) {
               stepCount++
               console.log(`✅ Step ${i + 1} created successfully:`, result.data)
-              console.log(`🖼️ Step ${i + 1} saved image:`, result.data?.image)
+              console.log(`🔗 Step ${i + 1} campaign field:`, result.data?.campaign)
+              console.log(`📝 Step ${i + 1} campaign_step_name:`, result.data?.campaign_step_name)
             } else {
               console.error(`❌ Step ${i + 1} creation failed:`, result)
             }
@@ -1962,14 +2122,29 @@ const finalizeCampaign = async () => {
       }
     }
     
+    // Build select_pages JSON from steps if SocialNetwork and pages selected
+    let selectPages = []
+    if (selectedSource.value === 'datasource' && selectedDataSourceType.value === 'SocialNetwork') {
+      // Aggregate unique page ids referenced in steps
+      const pageIds = new Set()
+      campaignSteps.value.forEach(s => {
+        const pageId = s?.action_config?.target_page_id
+        if (pageId) pageIds.add(pageId)
+      })
+      selectPages = Array.from(pageIds).map(pid => ({ page_id: pid }))
+    }
+    
     // 2) Update campaign sau khi đã có step
+    const startISO = toIsoIfSet(campaignData.value.start_date) || new Date().toISOString()
+    const endISO = toIsoIfSet(campaignData.value.end_date) || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+
     const campaignUpdatePayload = {
       campaign_name: campaignData.value.campaign_name || draftCampaign.value.campaign_name,
       description:   campaignData.value.description   || draftCampaign.value.description,
       type:          campaignData.value.type,
-      status: 'DRAFT',
-      start_date: new Date().toISOString().split('T')[0],
-      end_date:   new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      status: campaignData.value.status || 'DRAFT',
+      start_date: startISO,
+      end_date:   endISO,
       is_active: false,
       source_type: campaignData.value.source_type || 'Template',
       template_used: selectedTemplate.value?.name || null,
@@ -1977,14 +2152,15 @@ const finalizeCampaign = async () => {
       source_file: campaignData.value.source_file || '',
       source_config: campaignData.value.source_config || null,
       target_segment: campaignData.value.target_segment || null,
-      job_opening: campaignData.value.job_opening || null
+      job_opening: campaignData.value.job_opening || null,
+      select_pages: selectPages.length ? JSON.stringify(selectPages) : null
     }
 
     console.log(' Campaign update payload:', campaignUpdatePayload)
 
     const campaignResult = await campaignService.save(
       campaignUpdatePayload,
-      draftCampaign.value.name
+      draftCampaign.value.data.name
     )
 
     console.log('📋 Campaign update result:', campaignResult)
@@ -2025,7 +2201,10 @@ const closeWizard = () => {
     source_file: '',
     data_source_id: '',
     source_config: null,
-    job_opening: '' // Changed from job_opening_id to job_opening
+    job_opening: '',
+    start_date: '',
+    end_date: '',
+    last_scheduled_at: ''
   }
   selectedSource.value = props.preselectedSegment ? 'search' : ''
   selectedDataSourceType.value = ''
@@ -2053,13 +2232,15 @@ const closeWizard = () => {
   showStepForm.value = false
   editingStep.value = null
   stepFormData.value = {
+    campaign: '',
     campaign_step_name: '',
     action_type: '',
     step_order: 1,
     delay_in_days: 0,
     template_content: '',
     action_config_string: '',
-    image: '' // Reset image field
+    image: '', // Reset image field
+    scheduled_at: ''
   }
   stepFormErrors.value = {}
   stepFormLoading.value = false
@@ -2089,25 +2270,48 @@ const draftCampaignLoading = ref(false)
 // Create draft campaign when moving from step 1
 const createDraftCampaign = async () => {
   if (draftCampaign.value) return // Already created
-  
+  console.log('🔍 draftCampaign.value>>>>>>>>>>>>>>>>>>>>>>>>>>:', draftCampaign.value)
   draftCampaignLoading.value = true
   try {
     console.log('🔧 Creating draft campaign with user input...')
+    // Map selectedSource to source_type (DataSource | File | Search)
+    const sourceTypeMap = { datasource: 'DataSource', file: 'File', search: 'Search' }
+    const mappedSourceType = sourceTypeMap[selectedSource.value] || (campaignData.value.source_type || 'Search')
+
+    const startISO = toIsoIfSet(campaignData.value.start_date) || new Date().toISOString()
+    const endISO = toIsoIfSet(campaignData.value.end_date) || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+
     const draftPayload = {
       campaign_name: campaignData.value.campaign_name || (__('Draft Campaign') + ' ' + new Date().toLocaleString()),
       description: campaignData.value.description || __('Draft campaign - to be configured'),
       type: campaignData.value.type || 'NURTURING',
-      status: 'DRAFT',
-      start_date: new Date().toISOString().split('T')[0],
-      end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      is_active: false
+      status: campaignData.value.status || 'DRAFT',
+      start_date: startISO,
+      end_date: endISO,
+      is_active: false,
+      source_type: mappedSourceType
     }
-    
+    console.log('🔍 draftPayload>>>>>>>>>>>>>>>>>>>>>>>>>>:', draftPayload)
     const result = await campaignService.save(draftPayload)
+    console.log('🔍 result>>>>>>>>>>>>>>>>>>>>>>>>>>:', result)
     if (result.success) {
       draftCampaign.value = result.data
-      console.log('✅ Draft campaign created:', draftCampaign.value.name)
-      
+      console.log('✅ Draft campaign created:', draftCampaign.value.data.name)
+
+      // Sync start/end back to UI (convert ISO -> datetime-local string)
+      try {
+        if (draftCampaign.value.start_date) {
+          const d = new Date(draftCampaign.value.start_date)
+          campaignData.value.start_date = toLocalDatetimeInput(d)
+        }
+        if (draftCampaign.value.end_date) {
+          const d2 = new Date(draftCampaign.value.end_date)
+          campaignData.value.end_date = toLocalDatetimeInput(d2)
+        }
+      } catch (e) {
+        console.warn('Failed to map campaign dates to inputs', e)
+      }
+
       // Emit event to refresh the campaign list
       emit('draft-created', draftCampaign.value)
     } else {
@@ -2150,6 +2354,10 @@ watch(showStepForm, async (val) => {
   if (val && jobOpeningsList.value.length === 0) {
     await loadJobOpenings()
   }
+  // Also load social pages when SocialNetwork selected
+  if (val && selectedSource.value === 'datasource' && selectedDataSourceType.value === 'SocialNetwork') {
+    await loadSocialPages()
+  }
 })
 
 // Watchers
@@ -2169,6 +2377,69 @@ watch(show, (newVal) => {
 watch(() => configData.value.selectedSegment, (val) => {
   campaignData.value.target_segment = val
 })
+
+// Social pages state
+const socialPages = ref([])
+const loadingPages = ref(false)
+const stepFormSelectedPageId = ref('')
+
+// Load pages from External Connection connected_accounts
+const loadSocialPages = async () => {
+  try {
+    loadingPages.value = true
+    socialPages.value = []
+    // Expect connectedDataSources has the selected External Connection
+    const selected = configData.value.selectedDataSource
+    if (!selected || !selected.name) return
+    // Fetch accounts for this connection
+    const res = await call('mbw_mira.api.external_connections.get_account_details', {
+      connection_id: selected.name
+    })
+    if (res && res.status === 'success') {
+      const accounts = Array.isArray(res.data) ? res.data : (res.data ? [res.data] : [])
+      // Only active pages/users; prefer Page
+      socialPages.value = accounts.filter(a => a.connection_status !== 'Revoked')
+    }
+  } catch (e) {
+    console.warn('Failed to load social pages', e)
+    socialPages.value = []
+  } finally {
+    loadingPages.value = false
+  }
+}
+
+// Timezone helpers
+const pad2 = (n) => String(n).padStart(2, '0')
+const toLocalDatetimeInput = (d = new Date()) => {
+  const year = d.getFullYear()
+  const month = pad2(d.getMonth() + 1)
+  const day = pad2(d.getDate())
+  const hours = pad2(d.getHours())
+  const minutes = pad2(d.getMinutes())
+  return `${year}-${month}-${day}T${hours}:${minutes}`
+}
+const minScheduledAt = computed(() => toLocalDatetimeInput(new Date()))
+const localTzLabel = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Local'
+
+// Helpers for datetime-local -> ISO
+const toIsoIfSet = (localStr) => {
+  try {
+    if (!localStr) return null
+    
+    // Parse ngày giờ local mà không convert timezone
+    const [datePart, timePart] = localStr.split('T')
+    const [year, month, day] = datePart.split('-').map(Number)
+    const [hours, minutes] = timePart.split(':').map(Number)
+    
+    // Format thành ISO string mà không thay đổi timezone
+    const isoString = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`
+    
+    return isoString
+  } catch {
+    return null
+  }
+}
+
 </script>
 
 <style scoped>

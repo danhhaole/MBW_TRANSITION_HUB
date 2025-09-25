@@ -58,39 +58,34 @@ add_to_apps_screen = [
 
 # Home Pages
 # ----------
-
 # application home page (will override Website Settings)
 # home_page = "login"
 
 # website user home page (by Role)
 # role_home_page = {
-# 	"Role": "home_page"
+#     "Role": "home_page"
 # }
 
 # Generators
 # ----------
-
 # automatically create page for each record of this doctype
 # website_generators = ["Web Page"]
 
 # Jinja
 # ----------
-
 # add methods and filters to jinja environment
 # jinja = {
-# 	"methods": "mbw_mira.utils.jinja_methods",
-# 	"filters": "mbw_mira.utils.jinja_filters"
+#     "methods": "mbw_mira.utils.jinja_methods",
+#     "filters": "mbw_mira.utils.jinja_filters"
 # }
 
 # Installation
 # ------------
-
 # before_install = "mbw_mira.install.before_install"
 # after_install = "mbw_mira.install.after_install"
 
 # Uninstallation
 # ------------
-
 # before_uninstall = "mbw_mira.uninstall.before_uninstall"
 # after_uninstall = "mbw_mira.uninstall.after_uninstall"
 
@@ -121,11 +116,12 @@ add_to_apps_screen = [
 # Permissions evaluated in scripted ways
 
 # permission_query_conditions = {
-# 	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
+#     "Event":
+#     "frappe.desk.doctype.event.event.get_permission_query_conditions",
 # }
 #
 # has_permission = {
-# 	"Event": "frappe.desk.doctype.event.event.has_permission",
+#     "Event": "frappe.desk.doctype.event.event.has_permission",
 # }
 
 # DocType Class
@@ -133,7 +129,7 @@ add_to_apps_screen = [
 # Override standard doctype classes
 
 # override_doctype_class = {
-# 	"ToDo": "custom_app.overrides.CustomToDo"
+#     "ToDo": "custom_app.overrides.CustomToDo"
 # }
 
 # Document Events
@@ -141,11 +137,11 @@ add_to_apps_screen = [
 # Hook on document methods and events
 
 # doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
+#     "*": {
+#         "on_update": "method",
+#         "on_cancel": "method",
+#         "on_trash": "method"
+#     }
 # }
 
 # Scheduled Tasks
@@ -160,28 +156,29 @@ scheduler_events = {
             "mbw_mira.schedulers.fetch_ats_mbw_campaigns.run",
             "mbw_mira.schedulers.excel_source_campaigns.run",
             "mbw_mira.schedulers.auto_segment_talent_profiles.run",
-            "mbw_mira.schedulers.auto_share_social_posts.run"
+            "mbw_mira.schedulers.auto_share_social_posts.run",
         ],
         "0/2 * * * *": [
             "mbw_mira.schedulers.enroll_talent_campaign.run",
             "mbw_mira.schedulers.create_actions.run",
             "mbw_mira.schedulers.send_email_action.run",
-            "mbw_mira.schedulers.send_sms_action.run"
-            "mbw_mira.schedulers.auto_share_social_posts.run"
+            "mbw_mira.schedulers.send_sms_action.run",
+            "mbw_mira.schedulers.auto_share_social_posts.run",
         ],
     },
     "daily": [
-        "mbw_mira.schedulers.fetch_ats_mbw_campaigns.run",
+        # "mbw_mira.schedulers.fetch_ats_mbw_campaigns.run",
         "mbw_mira.schedulers.fetch_jobboard_topcv_campaigns.run",
         "mbw_mira.schedulers.fetch_jobboard_vietnamworks_campaigns.run",
         "mbw_mira.schedulers.fetch_social_facebook_campaigns.run",
-        "mbw_mira.schedulers.fetch_social_linkedin_campaigns.run"
+        "mbw_mira.schedulers.fetch_social_linkedin_campaigns.run",
+        "mbw_mira.schedulers.auto_share_social_posts.run",
     ],
     "hourly": [
         # "mbw_mira.schedulers.enroll_talent_campaign.run",
         # "mbw_mira.schedulers.send_email_action.run",
         # "mbw_mira.schedulers.send_sms_action.run",
-        "mbw_mira.schedulers.auto_share_social_posts.run"
+        "mbw_mira.schedulers.auto_share_social_posts.run",
         # "mbw_mira.schedulers.create_actions.run",
         # "mbw_mira.schedulers.auto_segment_talent_profiles.run",
         # "mbw_mira.schedulers.excel_source_campaigns.run"
@@ -193,7 +190,6 @@ scheduler_events = {
 
 # Testing
 # -------
-
 # before_tests = "mbw_mira.install.before_tests"
 
 # Overriding Methods
@@ -203,87 +199,4 @@ override_whitelisted_methods = {
     # "frappe.desk.doctype.event.event.get_events": "mbw_mira.event.get_events"
     "frappe.client.get_list": "mbw_mira.api.override.get_list_with_links"
 }
-#
-# each overriding function accepts a `data` argument;
-# generated from the base implementation of the doctype dashboard,
-# along with any modifications made in other Frappe apps
-# override_doctype_dashboards = {
-# 	"Task": "mbw_mira.task.get_dashboard_data"
-# }
-
-# exempt linked doctypes from being automatically cancelled
-#
-# auto_cancel_exempted_doctypes = ["Auto Repeat"]
-
-# Ignore links to specified DocTypes when deleting documents
-# -----------------------------------------------------------
-
-# ignore_links_on_delete = ["Communication", "ToDo"]
-
-# Request Events
-# ----------------
-# before_request = ["mbw_mira.utils.before_request"]
-# after_request = ["mbw_mira.utils.after_request"]
-
-# Job Events
-# ----------
-# before_job = ["mbw_mira.utils.before_job"]
-# after_job = ["mbw_mira.utils.after_job"]
-
-# User Data Protection
-# --------------------
-
-# user_data_fields = [
-# 	{
-# 		"doctype": "{doctype_1}",
-# 		"filter_by": "{filter_by}",
-# 		"redact_fields": ["{field_1}", "{field_2}"],
-# 		"partial": 1,
-# 	},
-# 	{
-# 		"doctype": "{doctype_2}",
-# 		"filter_by": "{filter_by}",
-# 		"partial": 1,
-# 	},
-# 	{
-# 		"doctype": "{doctype_3}",
-# 		"strict": False,
-# 	},
-# 	{
-# 		"doctype": "{doctype_4}"
-# 	}
-# ]
-
-# Authentication and authorization
-# --------------------------------
-
-# auth_hooks = [
-# 	"mbw_mira.auth.after_login",
-#  "mbw_mira.auth.after_logout",
-#  "mbw_mira.auth.on_login_failed",
-#  "mbw_mira.auth.before_login",
-#  "mbw_mira.auth.before_logout",
-#  "mbw_mira.auth.on_session_creation"
-# ]
-
-# Automatically update python controller files with type annotations for this app
-# export_python_type_annotations = True
-
-# default_log_clearing_doctypes = {
-# 	"Logging DocType Name": 30  # days to retain logs
-# }
-website_route_rules = [
-    {"from_route": "/mbw_mira/<path:app_path>", "to_route": "mbw_mira"},
-    {
-        "from_route": "/track/open",
-        "to_route": "mbw_mira.api.interaction.tracking_pixel",
-    },
-    {
-        "from_route": "/track/click",
-        "to_route": "mbw_mira.api.interaction.click_redirect",
-    },
-    {"from_route": "/track/event", "to_route": "mbw_mira.api.interaction.track"},
-    {"from_route": "/unsubscribe", "to_route": "mbw_mira.api.email.unsubscribe"},
-]
-
-bench_migrate = ["press.overrides.before_after_migrate"]
+# 

@@ -6,12 +6,20 @@ import frappe
 from frappe.model.document import Document
 
 class Campaign(Document):
-    pass
+    def validate(self):
+        """Validate và tự động set is_active dựa trên status"""
+        # Tự động set is_active = 1 khi status = "ACTIVE"
+        if self.status == "ACTIVE":
+            self.is_active = 1
+        # Tự động set is_active = 0 khi status khác "ACTIVE"
+        elif self.status in ["DRAFT", "PAUSED", "ARCHIVED"]:
+            self.is_active = 0
 
     def on_update(self):
         #Kiểm tra nếu có campaign_steps = [];
         if hasattr(self, 'campaign_steps'):
             insert_campaign_step(self.campaign_steps,self.name)
+            
     def on_trash(self):
         #Kiểm tra trạng thái là draff hoặc chưa active 
         if self.status == "DRAFT" or not self.is_active:

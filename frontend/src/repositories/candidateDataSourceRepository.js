@@ -13,7 +13,7 @@ export const getDataSources = async () => {
         'name',
         'source_name',
         'source_title',
-        'description',
+        'notes',
         'source_type',
         'is_active'
       ],

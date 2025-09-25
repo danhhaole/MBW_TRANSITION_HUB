@@ -76,9 +76,22 @@ class UniversalRepository {
 
   async save(data, name = null) {
     try {
+      // Route CampaignStep qua API để chuẩn hóa scheduled_at
+      if (this.doctype === 'CampaignStep') {
+        const payload = { ...(data || {}) }
+        if (name) payload.name = name
+        return await call('mbw_mira.api.campaign.save_campaign_step', payload)
+      }
+
       if (name) {
-        // Nếu data là object nhiều field thì truyền fieldname là object
-        // Nếu chỉ update 1 field thì truyền fieldname là string, value là giá trị
+        // Update
+        if (this.doctype === 'Campaign') {
+          // Dùng API update để chuẩn hóa datetime và JSON
+          const payload = { ...(data || {}), name }
+          return await call('mbw_mira.api.campaign.update_campaign', payload)
+        }
+        
+        // Generic update
         let setValueParams = {
           doctype: this.doctype,
           name
@@ -92,7 +105,15 @@ class UniversalRepository {
         }
         return await call('frappe.client.set_value', setValueParams)
       } else {
-        // create
+        // Create
+        if (this.doctype === 'Campaign') {
+          // Dùng API ORM để tránh lỗi OperationalError khi insert trực tiếp
+          return await call('mbw_mira.api.campaign.create_campaign', {
+            ...data
+          })
+        }
+        
+        // Generic create
         return await call('frappe.client.insert', {
           doc: {
             doctype: this.doctype,
@@ -132,11 +153,11 @@ class UniversalRepository {
   }
 }
 
-// Tạo instances cho tất cả doctype
+// Repositories mapping
 export const candidateSegmentRepository = new UniversalRepository('TalentProfilesSegment')
 export const candidateCampaignRepository = new UniversalRepository('TalentProfilesCampaign')
 export const actionRepository = new UniversalRepository('Action')
-export const interactionRepository = new UniversalRepository('Interaction')
+export const interactionRepository = new UniversalRepository('InteractionLog')
 export const emailLogRepository = new UniversalRepository('EmailLog')
 export const talentSegmentRepository = new UniversalRepository('TalentSegment')
 export const candidateRepository = new UniversalRepository('TalentProfiles')
@@ -145,5 +166,3 @@ export const campaignStepRepository = new UniversalRepository('CampaignStep')
 export const userRepository = new UniversalRepository('User')
 export const candidateDataSourceRepository = new UniversalRepository('CandidateDataSource')
 export const jobOpeningRepository = new UniversalRepository('JobOpening')
-
-export default UniversalRepository

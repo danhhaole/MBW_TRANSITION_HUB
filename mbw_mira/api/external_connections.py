@@ -1,9 +1,8 @@
 import datetime
 import frappe
 from frappe import _
-from frappe.utils import now, add_days, get_datetime, now_datetime, cint, flt, get_url
+from frappe.utils import now, add_days, get_datetime, now_datetime, get_url
 import json
-import hashlib
 import secrets
 import requests
 from typing import Dict, List, Optional, Any
@@ -1219,7 +1218,7 @@ def _share_to_facebook(connection, job, share_doc, share_data):
     try:
         # Get Facebook page ID from share_data or connection accounts
         page_id = share_data.get("target_page_id")
-        print("page_id>>>>>>>>>>>:",page_id)
+        print("page_id>>>>>>>>>>>:", page_id)
         url_image = share_data.get("image_url")
         if url_image and "http" not in url_image:
             url_image = f"{get_url_without_port()}{url_image}"
@@ -1377,8 +1376,8 @@ def _share_to_zalo(connection, job, share_doc, share_data):
                 error_msg = error_data.get(
                     "message", f"Zalo API error: HTTP {response.status_code}"
                 )
-            except:
-                error_msg = f"Zalo API error: HTTP {response.status_code}"
+            except Exception as e:
+                error_msg = f"Zalo API error: HTTP {response.status_code} {str(e)}"
 
             return {"success": False, "error": error_msg}
 

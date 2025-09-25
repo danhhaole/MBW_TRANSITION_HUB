@@ -202,7 +202,6 @@
             <svg v-else class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
             </svg>
-            {{ tab.label }} ({{ tab.count }})
           </button>
         </nav>
       </div>
@@ -318,7 +317,6 @@
                 <svg v-else class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                 </svg>
-                {{ __('Assign All from Segment') }}  ({{ availableCandidates.length }})
               </button>
               <button
                 @click="openCandidateModal()"
@@ -683,7 +681,6 @@
               type="select"
               :label="__('Starting Step')"
               :required="true"
-              :options="campaignSteps.map(step => ({ label: `Step ${step.step_order}: ${step.campaign_step_name}`, value: step.step_order }))"
               :help="campaignSteps.length === 0 ? __('No campaign steps found. Please add steps first.') : ''"
             />
 
@@ -733,7 +730,6 @@
               type="select"
               :label="__('Campaign Step')"
               :required="true"
-              :options="[{ label: __('Select campaign step'), value: '' }, ...campaignSteps.map(step => ({ label: `Step ${step.step_order}: ${step.campaign_step_name}`, value: step.name }))]"
             />
 
             <!-- Candidate Campaign -->
@@ -742,7 +738,6 @@
               type="select"
               :label="__('Candidate')"
               :required="true"
-              									:options="[{ label: __('Select candidate'), value: '' }, ...candidateCampaigns.map(cc => ({ label: cc.talent_id, value: cc.name }))]"
             />
 
             <!-- Status -->
@@ -811,7 +806,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { 
   campaignService, 
@@ -821,25 +816,21 @@ import {
   candidateSegmentService,
   talentSegmentService,
   actionService,
-  // jobOpeningService
 } from '../services/universalService'
+// import { campaignStepService as campaignStepServiceOriginal } from '../services/campaignStepService'
 import { Dialog, Breadcrumbs, Button, FormControl } from 'frappe-ui'
 import CampaignForm from '@/components/campaign/CampaignForm.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import moment from 'moment'
 
-
-
 const route = useRoute()
 const router = useRouter()
-const campaign = reactive({})
 
 // Breadcrumbs
 const breadcrumbs = computed(() => [
     { label: __('Campaigns'), route: { name: 'CampaignManagement' } },
     { label: campaign.campaign_name || __('Loading...'), route: { name: 'CampaignDetailView' } },
 ])
-
 
 // State
 const activeTab = ref('steps')
@@ -849,13 +840,12 @@ const loadingCandidates = ref(false)
 const loadingActions = ref(false)
 
 // Campaign data
-
+const campaign = ref({})
 const targetSegment = ref(null)
 const campaignSteps = ref([])
 const candidateCampaigns = ref([])
 const actions = ref([])
 const availableCandidates = ref([])
-// const jobOpening = ref(null)
 
 // Modals
 const showStepModal = ref(false)
@@ -922,56 +912,31 @@ const actionStatusOptions = [
   { label: __('Pending Manual'), value: 'PENDING_MANUAL' }
 ]
 
-// Table headers
-const stepHeaders = [
-  { label: 'Step Order', key: 'step_order' },
-  { label: 'Step Name', key: 'campaign_step_name' },
-  { label: 'Action Type', key: 'action_type' },
-  { label: 'Delay (Days)', key: 'delay_in_days' },
-  { label: 'Actions', key: 'actions', sortable: false }
-]
-
-const candidateHeaders = [
-  	{ label: 'Candidate', key: 'talent_id' },
-  { label: 'Status', key: 'status' },
-  { label: 'Current Step', key: 'current_step_order' },
-  { label: 'Enrolled At', key: 'enrolled_at' },
-  { label: 'Actions', key: 'actions', sortable: false }
-]
-
-const actionHeaders = [
-  { label: 'Campaign Step', key: 'campaign_step' },
-  { label: 'Status', key: 'status' },
-  { label: 'Scheduled At', key: 'scheduled_at' },
-  { label: 'Executed At', key: 'executed_at' },
-  { label: 'Actions', key: 'actions', sortable: false }
-]
-
 // Computed properties
 const tabs = computed(() => [
   {
     key: 'steps',
-    		label: __('Campaign Steps'),
+    label: __('Campaign Steps'),
     count: campaignSteps.value.length
   },
   {
     key: 'candidates',
-    		label: __('Assigned Profiles'),
+    label: __('Assigned Profiles'),
     count: candidateCampaigns.value.length
   },
   {
     key: 'actions',
-    		label: __('Actions'),
+    label: __('Actions'),
     count: actions.value.length
   },
   {
     key: 'analytics',
-    		label: __('Analytics'),
+    label: __('Analytics'),
     count: 0
   }
 ])
 
-// 1. Always sort campaignSteps by step_order ascending
+// Always sort campaignSteps by step_order ascending
 const sortedCampaignSteps = computed(() => {
   return [...campaignSteps.value].sort((a, b) => a.step_order - b.step_order)
 })
@@ -1024,15 +989,11 @@ const loadCampaign = async () => {
   try {
     const result = await campaignService.getFormData(route.params.id)
     if (result.success) {
-      Object.assign(campaign, result.data)
+      Object.assign(campaign.value, result.data)
       // Load target segment if exists
-      if (campaign.target_segment) {
+      if (campaign.value.target_segment) {
         await loadTargetSegment()
       }
-      // Load job opening if exists
-      // if (campaign.job_opening) {
-      //   await loadJobOpening()
-      // }
     }
   } catch (error) {
     console.error('Error loading campaign:', error)
@@ -1042,10 +1003,10 @@ const loadCampaign = async () => {
 }
 
 const loadTargetSegment = async () => {
-  if (!campaign.target_segment) return
+  if (!campaign.value.target_segment) return
   
   try {
-    const result = await talentSegmentService.getFormData(campaign.target_segment)
+    const result = await talentSegmentService.getFormData(campaign.value.target_segment)
     if (result.success) {
       targetSegment.value = result.data
     }
@@ -1076,7 +1037,7 @@ const loadCandidateCampaigns = async () => {
   try {
     const result = await candidateCampaignService.getList({
       filters: { campaign_id: route.params.id },
-      			fields: ['name', 'talent_id', 'status', 'current_step_order', 'enrolled_at']
+      fields: ['name', 'talent_id', 'status', 'current_step_order', 'enrolled_at']
     })
     if (result.success) {
       candidateCampaigns.value = result.data
@@ -1091,20 +1052,16 @@ const loadCandidateCampaigns = async () => {
 const loadActions = async () => {
   loadingActions.value = true
   try {
-    // Load actions for this campaign through TalentProfilesCampaign
     const candidateCampaignsResult = await candidateCampaignService.getList({
       filters: { campaign_id: route.params.id },
       fields: ['name']
     })
-    
     if (candidateCampaignsResult.success && candidateCampaignsResult.data.length > 0) {
       const candidateCampaignIds = candidateCampaignsResult.data.map(cc => cc.name)
-      
       const result = await actionService.getList({
         filters: { candidate_campaign_id: ['in', candidateCampaignIds] },
         fields: ['name', 'campaign_step', 'status', 'scheduled_at', 'executed_at']
       })
-      
       if (result.success) {
         actions.value = result.data
       }
@@ -1121,7 +1078,7 @@ const loadActions = async () => {
 
 const loadAvailableCandidates = async () => {
   try {
-    if (!campaign.target_segment) {
+    if (!campaign.value.target_segment) {
       // If no target segment, show all candidates
       const result = await candidateService.getList({
         fields: ['name', 'full_name'],
@@ -1136,34 +1093,28 @@ const loadAvailableCandidates = async () => {
     } else {
       // Get candidates from target segment through TalentProfilesSegment
       const candidateSegmentResult = await candidateSegmentService.getList({
-        filters: { segment_id: campaign.target_segment },
+        filters: { segment_id: campaign.value.target_segment },
         fields: ['talent_id']
       })
-      
       if (candidateSegmentResult.success && candidateSegmentResult.data.length > 0) {
         const candidateIds = candidateSegmentResult.data.map(cs => cs.talent_id)
-        
         // Get candidates already in this campaign
         const existingCandidateCampaigns = await candidateCampaignService.getList({
           filters: { campaign_id: route.params.id },
-          					fields: ['talent_id']
+          fields: ['talent_id']
         })
-        
-                const existingCandidateIds = existingCandidateCampaigns.success
+        const existingCandidateIds = existingCandidateCampaigns.success
           ? existingCandidateCampaigns.data.map(cc => cc.talent_id)
           : []
-        
         // Filter out candidates already in campaign
         const availableCandidateIds = candidateIds.filter(
           id => !existingCandidateIds.includes(id)
         )
-        
         if (availableCandidateIds.length > 0) {
           const candidateResult = await candidateService.getList({
             filters: { name: ['in', availableCandidateIds] },
             fields: ['name', 'full_name']
           })
-          
           if (candidateResult.success) {
             availableCandidates.value = candidateResult.data.map(item => ({
               label: item.full_name + ' (' + item.name + ')',
@@ -1179,18 +1130,6 @@ const loadAvailableCandidates = async () => {
     }
   } catch (error) {
     console.error('Error loading candidates:', error)
-  }
-}
-
-const loadJobOpening = async () => {
-  if (!campaign.job_opening) return
-  try {
-    const result = await jobOpeningService.getFormData(campaign.job_opening)
-    if (result.success) {
-      jobOpening.value = result.data
-    }
-  } catch (error) {
-    console.error('Error loading job opening:', error)
   }
 }
 
@@ -1217,212 +1156,29 @@ const closeStepModal = () => {
   })
 }
 
-const saveStep = async () => {
-  console.log('Saving step with data:', stepFormData)
-
-  savingStep.value = true
-  try {
-    const result = await campaignStepService.save(stepFormData, stepFormData.name)
-    if (result.success) {
-      closeStepModal()
-      loadCampaignSteps()
-    }
-  } catch (error) {
-    console.error('Error saving step:', error)
-  } finally {
-    savingStep.value = false
-  }
-}
-
-const deleteStep = async (step) => {
-  if (confirm('Are you sure you want to delete this step?')) {
-    try {
-      const result = await campaignStepService.delete(step.name)
-      if (result.success) {
-        // Sau khi xóa, lấy lại danh sách step và cập nhật lại step_order liên tục
-        await loadCampaignSteps()
-        // Dồn lại thứ tự
-        const steps = sortedCampaignSteps.value
-        for (let i = 0; i < steps.length; i++) {
-          if (steps[i].step_order !== i + 1) {
-            steps[i].step_order = i + 1
-            await campaignStepService.save(steps[i], steps[i].name)
-          }
-        }
-        await loadCampaignSteps()
-      }
-    } catch (error) {
-      console.error('Error deleting step:', error)
-    }
-  }
-}
-
-// 4. Add methods for move up/down/copy
-const moveStepUp = async (idx) => {
-  if (idx === 0) return
-  const steps = sortedCampaignSteps.value
-  const stepA = steps[idx]
-  const stepB = steps[idx - 1]
-  // Swap step_order
-  const temp = stepA.step_order
-  stepA.step_order = stepB.step_order
-  stepB.step_order = temp
-  // Save both
-  await campaignStepService.save(stepA, stepA.name)
-  await campaignStepService.save(stepB, stepB.name)
-  await loadCampaignSteps()
-}
-const moveStepDown = async (idx) => {
-  const steps = sortedCampaignSteps.value
-  if (idx === steps.length - 1) return
-  const stepA = steps[idx]
-  const stepB = steps[idx + 1]
-  // Swap step_order
-  const temp = stepA.step_order
-  stepA.step_order = stepB.step_order
-  stepB.step_order = temp
-  // Save both
-  await campaignStepService.save(stepA, stepA.name)
-  await campaignStepService.save(stepB, stepB.name)
-  await loadCampaignSteps()
-}
-const copyStep = async (step) => {
-  // Tạo step mới với thông tin giống step cũ, step_order = max + 1
-  const maxOrder = Math.max(...campaignSteps.value.map(s => s.step_order), 0)
-  const newStep = {
-    ...step,
-    name: undefined,
-    step_order: maxOrder + 1,
-    campaign_step_name: step.campaign_step_name + ' (Copy)'
-  }
-  await campaignStepService.save(newStep)
-  await loadCampaignSteps()
-}
-
 // Candidate methods
-const openCandidateModal = async () => {
+const openCandidateModal = () => {
   Object.keys(candidateFormData).forEach(key => {
     candidateFormData[key] = ''
   })
   candidateFormData.campaign_id = route.params.id
   candidateFormData.status = 'ACTIVE'
   candidateFormData.current_step_order = 1
-  
-  // Reload available candidates to get most up-to-date list
-  await loadAvailableCandidates()
-  
   showCandidateModal.value = true
 }
 
 const closeCandidateModal = () => {
   showCandidateModal.value = false
-}
-
-const assignCandidate = async () => {
-  console.log('Assigning candidate:', candidateFormData)
-  if (!candidateFormData.talent_id) return
-
-  savingCandidate.value = true
-  try {
-    const result = await candidateCampaignService.save(candidateFormData)
-    if (result.success) {
-      closeCandidateModal()
-      loadCandidateCampaigns()
-    }
-  } catch (error) {
-    console.error('Error assigning candidate:', error)
-  } finally {
-    savingCandidate.value = false
-  }
-}
-
-const startCandidateCampaign = async (item) => {
-  try {
-    const result = await candidateCampaignService.save(
-      { ...item, status: 'ACTIVE' },
-      item.name
-    )
-    if (result.success) {
-      loadCandidateCampaigns()
-    }
-  } catch (error) {
-    console.error('Error starting campaign:', error)
-  }
-}
-
-const pauseCandidateCampaign = async (item) => {
-  try {
-    const result = await candidateCampaignService.save(
-      { ...item, status: 'PAUSED' },
-      item.name
-    )
-    if (result.success) {
-      loadCandidateCampaigns()
-    }
-  } catch (error) {
-    console.error('Error pausing campaign:', error)
-  }
-}
-
-const unassignCandidate = async (item) => {
-  if (confirm('Are you sure you want to unassign this candidate?')) {
-    try {
-      const result = await candidateCampaignService.delete(item.name)
-      if (result.success) {
-        loadCandidateCampaigns()
-      }
-    } catch (error) {
-      console.error('Error unassigning candidate:', error)
-    }
-  }
-}
-
-const viewCandidateDetails = (item) => {
-  		router.push(`/candidates/${item.talent_id}`)
-}
-
-// Assign all candidates from segment
-const assignAllFromSegment = async () => {
-  if (!confirm(`Are you sure you want to assign all ${availableCandidates.value.length} candidates from the target segment to this campaign?`)) {
-    return
-  }
-  
-  assigningAll.value = true
-  try {
-            // Create TalentProfilesCampaign records for all available candidates
-    const promises = availableCandidates.value.map(candidate => 
-      candidateCampaignService.save({
-        talent_id: candidate.value,
-        campaign_id: route.params.id,
-        status: 'ACTIVE',
-        current_step_order: 1,
-        enrolled_at: moment().format("YYYY-MM-DD HH:mm:ss")
-      })
-    )
-    
-    await Promise.all(promises)
-    
-    // Reload data
-    await loadCandidateCampaigns()
-    await loadAvailableCandidates()
-    
-    console.log('Successfully assigned all candidates from segment')
-  } catch (error) {
-    console.error('Error assigning all candidates:', error)
-  } finally {
-    assigningAll.value = false
-  }
+  Object.keys(candidateFormData).forEach(key => {
+    candidateFormData[key] = ''
+  })
 }
 
 // Action methods
-const openActionModal = (action = null) => {
-  if (action) {
-    Object.assign(actionFormData, action)
-  } else {
-    Object.keys(actionFormData).forEach(key => {
-      actionFormData[key] = ''
-    })
-  }
+const openActionModal = () => {
+  Object.keys(actionFormData).forEach(key => {
+    actionFormData[key] = ''
+  })
   showActionModal.value = true
 }
 
@@ -1433,169 +1189,111 @@ const closeActionModal = () => {
   })
 }
 
-const saveAction = async () => {
-  savingAction.value = true
-  try {
-    const result = await actionService.save(actionFormData, actionFormData.name)
-    if (result.success) {
-      closeActionModal()
-      loadActions()
-    }
-  } catch (error) {
-    console.error('Error saving action:', error)
-  } finally {
-    savingAction.value = false
+// Load initial data
+onMounted(() => {
+  loadCampaign()
+  loadCampaignSteps()
+  loadCandidateCampaigns()
+  loadActions()
+  loadAvailableCandidates()
+})
+
+// Watchers
+watch(() => route.params.id, (newId, oldId) => {
+  if (newId !== oldId) {
+    loadCampaign()
+    loadCampaignSteps()
+    loadCandidateCampaigns()
+    loadActions()
+    loadAvailableCandidates()
   }
+})
+
+// Handlers
+const handleCampaignUpdated = (updatedCampaign) => {
+  Object.assign(campaign.value, updatedCampaign)
+  showEditCampaignModal.value = false
 }
 
-const viewActionDetails = (action) => {
-  // Implementation for viewing action details
-  openActionModal(action)
-}
-
-const deleteAction = async (action) => {
-  if (confirm('Are you sure you want to delete this action?')) {
-    try {
-      const result = await actionService.delete(action.name)
-      if (result.success) {
-        loadActions()
-      }
-    } catch (error) {
-      console.error('Error deleting action:', error)
-    }
-  }
-}
-
-// Utility methods
-const getStatusColor = (status) => {
-  const colors = {
-    'ACTIVE': 'success',
-    'PAUSED': 'warning',
-    'COMPLETED': 'primary',
-    'CANCELLED': 'error',
-    'DRAFT': 'grey',
-    'ARCHIVED': 'grey'
-  }
-  return colors[status] || 'grey'
-}
-
-const getTypeColor = (type) => {
-  const colors = {
-    'NURTURING': 'purple',
-    'ATTRACTION': 'blue'
-  }
-  return colors[type] || 'grey'
-}
-
-const getStepTypeColor = (type) => {
-  const colors = {
-    'SEND_EMAIL': 'blue',
-    'SEND_SMS': 'green',
-    'MANUAL_CALL': 'orange',
-    'MANUAL_TASK': 'purple'
-  }
-  return colors[type] || 'grey'
-}
-
-const getActionTypeColor = (type) => {
-  const colors = {
-    'SEND_EMAIL': 'blue',
-    'SEND_SMS': 'green',
-    'MANUAL_CALL': 'orange',
-    'MANUAL_TASK': 'purple'
-  }
-  return colors[type] || 'grey'
-}
-
-const getActionStatusColor = (status) => {
-  const colors = {
-    'SCHEDULED': 'info',
-    'EXECUTED': 'success',
-    'SKIPPED': 'warning',
-    'FAILED': 'error',
-    'PENDING_MANUAL': 'orange'
-  }
-  return colors[status] || 'grey'
+// Utility functions
+const formatDate = (date) => {
+  if (!date) return ''
+  return moment(date).format('DD/MM/YYYY HH:mm')
 }
 
 const formatDateTime = (date) => {
   if (!date) return ''
-  return new Date(date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
-
-const formatDate = (date) => {
-  if (!date) return ''
-  return new Date(date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  })
-}
-
-const getActiveCandidates = () => {
-  return candidateCampaigns.value.filter(item => item.status === 'ACTIVE').length
-}
-
-const getCompletedCandidates = () => {
-  return candidateCampaigns.value.filter(item => item.status === 'COMPLETED').length
+  return moment(date).format('DD/MM/YYYY HH:mm:ss')
 }
 
 const editCampaign = () => {
-  // Ensure we have loaded campaign data before opening modal
-  if (Object.keys(campaign).length === 0) {
-    console.warn('Campaign data not loaded yet')
-    return
-  }
-  // Open edit modal with current campaign data
   showEditCampaignModal.value = true
 }
 
-const handleCampaignUpdated = async () => {
-  console.log('Campaign updated successfully')
-  // Reload campaign data
-  await loadCampaign()
-  // if (campaign.job_opening) await loadJobOpening()
+const getActiveCandidates = () => {
+  return candidateCampaigns.value.filter(c => c.status === 'ACTIVE').length
 }
 
-const deleteCampaign = async () => {
-  if (confirm('Are you sure you want to delete this campaign?')) {
-    try {
-      const result = await campaignService.delete(route.params.id)
-      if (result.success) {
-        router.push('/campaigns')
-      }
-    } catch (error) {
-      console.error('Error deleting campaign:', error)
-    }
-  }
+const getCompletedCandidates = () => {
+  return candidateCampaigns.value.filter(c => c.status === 'COMPLETED').length
+}
+
+// Placeholder methods for actions
+const saveStep = () => {
+  // TODO: Implement save step
+}
+
+const assignCandidate = () => {
+  // TODO: Implement assign candidate
+}
+
+const saveAction = () => {
+  // TODO: Implement save action
+}
+
+const deleteStep = (step) => {
+  // TODO: Implement delete step
+}
+
+const moveStepUp = (index) => {
+  // TODO: Implement move step up
+}
+
+const moveStepDown = (index) => {
+  // TODO: Implement move step down
+}
+
+const assignAllFromSegment = () => {
+  // TODO: Implement assign all from segment
+}
+
+const startCandidateCampaign = (candidate) => {
+  // TODO: Implement start candidate campaign
+}
+
+const pauseCandidateCampaign = (candidate) => {
+  // TODO: Implement pause candidate campaign
+}
+
+const viewCandidateDetails = (candidate) => {
+  // TODO: Implement view candidate details
+}
+
+const unassignCandidate = (candidate) => {
+  // TODO: Implement unassign candidate
+}
+
+const viewActionDetails = (action) => {
+  // TODO: Implement view action details
+}
+
+const deleteAction = (action) => {
+  // TODO: Implement delete action
 }
 
 const viewTargetSegment = () => {
-  if (targetSegment.value) {
-    router.push(`/talent-segments/${targetSegment.value.name}/detail`)
-  }
+  // TODO: Implement view target segment
 }
-
-const viewJobOpening = () => {
-  if (jobOpening.value) {
-    router.push(`/job-openings/${jobOpening.value.name}`)
-  }
-}
-
-// Lifecycle
-onMounted(async () => {
-  await loadCampaign()
-  await loadCampaignSteps()
-  await loadCandidateCampaigns()
-  await loadActions()
-  await loadAvailableCandidates()
-})
 </script>
 
 <style scoped>

@@ -21,7 +21,9 @@
   "end_date",
   "source_config",
   "total",
-  "current"
+  "current",
+  "select_pages",
+  "last_shared_at"
  ],
  "fields": [
   {
@@ -48,12 +50,12 @@
   },
   {
    "fieldname": "start_date",
-   "fieldtype": "Date",
+   "fieldtype": "Datetime",
    "label": "Start Date"
   },
   {
    "fieldname": "end_date",
-   "fieldtype": "Date",
+   "fieldtype": "Datetime",
    "label": "End Date"
   },
   {
@@ -69,7 +71,7 @@
    "options": "DRAFT\nACTIVE\nPAUSED\nARCHIVED"
   },
   {
-   "description": "(Foreign Key -> TalentSegment) Ph\u00e2n kh\u00fac m\u1ee5c ti\u00eau.",
+   "description": "(Foreign Key -> TalentSegment) Phân khúc mục tiêu.",
    "fieldname": "target_segment",
    "fieldtype": "Link",
    "label": "Target Segment",
@@ -125,12 +127,22 @@
    "hidden": 1,
    "label": "Current",
    "read_only": 1
+  },
+  {
+   "fieldname": "select_pages",
+   "fieldtype": "JSON",
+   "label": "Select Page"
+  },
+  {
+   "fieldname": "last_shared_at",
+   "fieldtype": "Datetime",
+   "label": "Last Shared At"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-25 11:56:34.595855",
+ "modified": "2025-09-24 22:33:59.246406",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Campaign",

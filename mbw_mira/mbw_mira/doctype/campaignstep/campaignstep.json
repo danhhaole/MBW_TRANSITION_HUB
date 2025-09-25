@@ -11,9 +11,12 @@
   "step_order",
   "action_type",
   "delay_in_days",
+  "scheduled_at",
   "image",
   "template",
-  "action_config"
+  "action_config",
+  "shared_at",
+  "shared_post_id"
  ],
  "fields": [
   {
@@ -57,6 +60,21 @@
    "fieldname": "image",
    "fieldtype": "Attach Image",
    "label": "Image"
+  },
+  {
+   "fieldname": "scheduled_at",
+   "fieldtype": "Datetime",
+   "label": "Scheduled At"
+  },
+  {
+   "fieldname": "shared_at",
+   "fieldtype": "Datetime",
+   "label": "Shared At"
+  },
+  {
+   "fieldname": "shared_post_id",
+   "fieldtype": "Data",
+   "label": "Shared Post ID"
   }
  ],
  "grid_page_length": 50,

@@ -31,7 +31,7 @@ def get_notifications():
                 "notification_text": notification.notification_text,
                 "notification_type_doctype": notification.notification_type_doctype,
                 "notification_type_doc": notification.notification_type_doc,
-                "reference_doctype": notification.reference_doctype ,
+                "reference_doctype": notification.reference_doctype,
                 "reference_name": notification.reference_name,
                 "route_name": "",
             }

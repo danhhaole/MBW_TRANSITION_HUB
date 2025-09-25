@@ -101,12 +101,12 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormControl
               v-model="form.start_date"
-              type="date"
+              type="datetime"
               :label="__('Start Date')"
             />
             <FormControl
               v-model="form.end_date"
-              type="date"
+              type="datetime"
               :label="__('End Date')"
             />
           </div>
