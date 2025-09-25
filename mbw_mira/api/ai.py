@@ -7,10 +7,7 @@ import base64
 from frappe.utils import get_files_path
 from frappe import _
 from frappe.utils.file_manager import save_file
-from mbw_mira.mbw_mira.doctype.jobopening.jobopening import (
-    process_ai_generated_criteria,
-    get_job_description_for_ai,
-)
+
 
 
 AI_BASEURL = frappe.conf.get("ai_baseurl") or "https://aihub.fastwork.vn/hr_agent/"

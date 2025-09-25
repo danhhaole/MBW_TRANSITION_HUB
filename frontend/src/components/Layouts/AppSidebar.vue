@@ -236,6 +236,11 @@ const links = [
     to: 'JobOpeningManagement',
   },
   {
+    label: "Candidate",
+    icon: OrganizationsIcon,
+    to: 'CandidateManagementSimple',
+  },
+  {
       label: "My Tasks",
       icon: TaskIcon,
       to: { name: 'MyActions' },

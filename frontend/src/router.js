@@ -54,6 +54,8 @@ const routes = [
 	{ path: '/campaigns/:id', name: 'CampaignDetailView', component: CampaignDetailView },
 	{ path: '/job-openings', name: 'JobOpeningManagement', component: () => import('@/pages/JobOpeningManagement.vue') },
 	{ path: '/job-openings/:id', name: 'JobOpeningDetailView', component: () => import('@/pages/JobOpeningDetailView.vue') },
+	{ path: '/candidates-simple', name: 'CandidateManagementSimple', component: () => import('@/pages/CandidateManagementSimple.vue') },
+	{ path: '/candidates-simple/:id', name: 'CandidateDetailSimpleView', component: () => import('@/pages/CandidateDetailSimpleView.vue') },
 	{ alias: '/report', path: '/report', name: 'Report', component: () => import('@/pages/Report.vue') },
 	{ alias: '/settings', path: '/settings', name: 'Settings', component: () => import('@/pages/Settings.vue') },
 	{ path: '/:invalidpath', name: 'Invalid Page', component: () => import('@/pages/InvalidPage.vue') },
