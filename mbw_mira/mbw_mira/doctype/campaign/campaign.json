@@ -62,7 +62,7 @@
    "fieldname": "type",
    "fieldtype": "Select",
    "label": "Type",
-   "options": "NURTURING\nATTRACTION\nREFERRAL\nEVENT"
+   "options": "NURTURING\nATTRACTION\nREFERRAL\nEVENT\nRECRUITMENT"
   },
   {
    "fieldname": "status",
@@ -71,7 +71,7 @@
    "options": "DRAFT\nACTIVE\nPAUSED\nARCHIVED"
   },
   {
-   "description": "(Foreign Key -> TalentSegment) Phân khúc mục tiêu.",
+   "description": "(Foreign Key -> TalentSegment) Ph\u00e2n kh\u00fac m\u1ee5c ti\u00eau.",
    "fieldname": "target_segment",
    "fieldtype": "Link",
    "label": "Target Segment",
@@ -142,7 +142,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-09-24 22:33:59.246406",
+ "modified": "2025-09-26 10:10:02.622759",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Campaign",

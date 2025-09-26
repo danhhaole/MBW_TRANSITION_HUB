@@ -130,7 +130,7 @@
 
       <!-- Main content -->
       <div class="bg-white rounded-lg border border-gray-200">
-        <Loading v-if="loading" text="Loading campaigns..." />
+        <!-- <Loading v-if="loading" text="Loading campaigns..." /> -->
         <!-- Table/Card view -->
         <campaign-table v-if="viewMode === 'list'" :campaigns="campaigns" :loading="loading" :pagination="pagination"
           @page-change="goToPage" @edit="openEditDialog" @view="openViewDialog" @delete="handleDelete" />

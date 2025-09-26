@@ -1,732 +1,590 @@
 <template>
-  <Dialog v-model="show" :options="dialogOptions">
-    <template #body>
-      <div class="bg-white">
-        <!-- Header -->
-        <div class="flex justify-between items-center p-6 border-b border-gray-200">
-          <h2 class="text-xl font-bold text-gray-900">{{ __(modalTitle) }}</h2>
-          <Button
-            theme="gray"
-            variant="ghost"
-            class="w-7 h-7"
-            @click="closeWizard"
-          >
-            <FeatherIcon name="x" class="h-4 w-4" />
-          </Button>
-        </div>
-
-        <!-- Stepper -->
-        <div class="p-6 pb-4">
-          <div class="flex items-center">
-            <template v-for="(step, index) in steps" :key="step.number">
-              <div
-                class="flex flex-col items-center min-w-[80px]"
-                :class="getStepClass(step.number)"
-              >
-                <div class="w-10 h-10 rounded-full border-2 flex items-center justify-center font-semibold transition-all duration-300"
-                     :class="getStepIconClass(step.number)">
-                  <FeatherIcon v-if="step.number < currentStep" name="check" class="h-4 w-4" />
-                  <span v-else-if="step.number === 4">🎉</span>
-                  <span v-else>{{ step.number }}</span>
-                </div>
-                <span class="mt-1 text-xs font-medium text-center transition-all duration-300"
-                      :class="getStepLabelClass(step.number)">{{ step.label }}</span>
-              </div>
-              <div
-                v-if="index < steps.length - 1"
-                class="flex-grow h-0.5 mx-2 transition-all duration-400"
-                :class="step.number < currentStep ? 'bg-blue-500' : 'bg-gray-300'"
-              >
-              </div>
-            </template>
+  <div>
+    <Dialog v-model="show" :options="dialogOptions" :disableOutsideClickToClose="true">
+      <template #body>
+        <div class="bg-white">
+          <!-- Header -->
+          <div class="flex justify-between items-center p-6 border-b border-gray-200">
+            <h2 class="text-xl font-bold text-gray-900">{{ __(modalTitle) }}</h2>
+            <Button
+              theme="gray"
+              variant="ghost"
+              class="w-7 h-7"
+              @click="closeWizard"
+            >
+              <FeatherIcon name="x" class="h-4 w-4" />
+            </Button>
           </div>
-        </div>
 
-        <!-- Step Content -->
-        <div class="p-6">
-          <!-- Step 1: Campaign Information -->
-          <div v-if="currentStep === 1" class="space-y-4 animate-fadeIn">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                {{ __('Campaign Name') }} <span class="text-red-500">*</span>
-              </label>
-              <input
-                v-model="campaignData.campaign_name"
-                type="text"
-                :placeholder="__('Example: React Candidate Nurturing Q4/2024')"
-                class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                :class="{ 'border-red-500': !campaignData.campaign_name && currentStep > 1 }"
-              />
+          <!-- Stepper -->
+          <div class="p-6 pb-4">
+            <div class="flex items-center">
+              <template v-for="(step, index) in steps" :key="step.number">
+                <div
+                  class="flex flex-col items-center min-w-[80px]"
+                  :class="getStepClass(step.number)"
+                >
+                  <div class="w-10 h-10 rounded-full border-2 flex items-center justify-center font-semibold transition-all duration-300"
+                       :class="getStepIconClass(step.number)">
+                    <FeatherIcon v-if="step.number < currentStep" name="check" class="h-4 w-4" />
+                    <span v-else-if="step.number === 4">🎉</span>
+                    <span v-else>{{ step.number }}</span>
+                  </div>
+                  <span class="mt-1 text-xs font-medium text-center transition-all duration-300"
+                        :class="getStepLabelClass(step.number)">{{ step.label }}</span>
+                </div>
+                <div
+                  v-if="index < steps.length - 1"
+                  class="flex-grow h-0.5 mx-2 transition-all duration-400"
+                  :class="step.number < currentStep ? 'bg-blue-500' : 'bg-gray-300'"
+                >
+                </div>
+              </template>
             </div>
+          </div>
 
-            <!-- Status selection -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                {{ __('Status') }}
-              </label>
-              <select
-                v-model="campaignData.status"
-                class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              >
-                <option value="DRAFT">{{ __('DRAFT') }}</option>
-                <option value="ACTIVE">{{ __('ACTIVE') }}</option>
-                <option value="PAUSED">{{ __('PAUSED') }}</option>
-                <option value="ARCHIVED">{{ __('ARCHIVED') }}</option>
-              </select>
-            </div>
-
-            <!-- Start/End Datetime -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Step Content -->
+          <div class="p-6">
+            <!-- Step 1: Campaign Information -->
+            <div v-if="currentStep === 1" class="space-y-4 animate-fadeIn">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  {{ __('Start Date/Time') }}
+                  {{ __('Campaign Name') }} <span class="text-red-500">*</span>
                 </label>
                 <input
-                  v-model="campaignData.start_date"
-                  type="datetime-local"
-                  :min="minScheduledAt"
+                  v-model="campaignData.campaign_name"
+                  type="text"
+                  :placeholder="__('Example: React Candidate Nurturing Q4/2024')"
                   class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  :class="{ 'border-red-500': !campaignData.campaign_name && currentStep > 1 }"
                 />
-                <p class="mt-1 text-xs text-gray-500">
-                  {{ __('Local time') }} ({{ localTzLabel }})
-                </p>
               </div>
+
+              <!-- Status selection -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  {{ __('End Date/Time') }}
+                  {{ __('Status') }}
                 </label>
-                <input
-                  v-model="campaignData.end_date"
-                  type="datetime-local"
-                  :min="campaignData.start_date || minScheduledAt"
+                <select
+                  v-model="campaignData.status"
                   class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                />
-                <p class="mt-1 text-xs text-gray-500">
-                  {{ __('Local time') }} ({{ localTzLabel }})
-                </p>
+                >
+                  <option value="DRAFT">{{ __('DRAFT') }}</option>
+                  <option value="ACTIVE">{{ __('ACTIVE') }}</option>
+                  <option value="PAUSED">{{ __('PAUSED') }}</option>
+                  <option value="ARCHIVED">{{ __('ARCHIVED') }}</option>
+                </select>
               </div>
-            </div>
 
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                {{ __('Campaign Type') }} <span class="text-red-500">*</span>
-              </label>
+              <!-- Start/End Datetime -->
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div
-                  class="border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md"
-                  :class="campaignData.type === 'NURTURING' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'"
-                  @click="campaignData.type = 'NURTURING'"
-                >
-                  <div class="flex items-center">
-                    <div class="flex items-center justify-center w-8 h-8 rounded-full mr-3"
-                         :class="campaignData.type === 'NURTURING' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400'">
-                      <FeatherIcon name="heart" class="h-4 w-4" />
-                    </div>
-                    <div>
-                      <div class="text-sm font-medium" :class="campaignData.type === 'NURTURING' ? 'text-blue-900' : 'text-gray-900'">
-                        {{ __('Nurturing') }}
-                      </div>
-                      <div class="text-xs text-gray-500">
-                        {{ __('Long-term candidate engagement') }}
-                      </div>
-                    </div>
-                  </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    {{ __('Start Date/Time') }}
+                  </label>
+                  <input
+                    v-model="campaignData.start_date"
+                    type="datetime-local"
+                    :min="minScheduledAt"
+                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  />
+                  <p class="mt-1 text-xs text-gray-500">
+                    {{ __('Local time') }} ({{ localTzLabel }})
+                  </p>
                 </div>
-                
-                <div
-                  class="border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md"
-                  :class="campaignData.type === 'ATTRACTION' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'"
-                  @click="campaignData.type = 'ATTRACTION'"
-                >
-                  <div class="flex items-center">
-                    <div class="flex items-center justify-center w-8 h-8 rounded-full mr-3"
-                         :class="campaignData.type === 'ATTRACTION' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400'">
-                      <FeatherIcon name="magnet" class="h-4 w-4" />
-                    </div>
-                    <div>
-                      <div class="text-sm font-medium" :class="campaignData.type === 'ATTRACTION' ? 'text-blue-900' : 'text-gray-900'">
-                        {{ __('Attraction') }}
-                      </div>
-                      <div class="text-xs text-gray-500">
-                        {{ __('Active talent acquisition') }}
-                      </div>
-                    </div>
-                  </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    {{ __('End Date/Time') }}
+                  </label>
+                  <input
+                    v-model="campaignData.end_date"
+                    type="datetime-local"
+                    :min="campaignData.start_date || minScheduledAt"
+                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  />
+                  <p class="mt-1 text-xs text-gray-500">
+                    {{ __('Local time') }} ({{ localTzLabel }})
+                  </p>
                 </div>
               </div>
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                {{ __('Objective') }} <span class="text-red-500">*</span>
-              </label>
-              <textarea
-                v-model="campaignData.description"
-                rows="3"
-                :placeholder="__('Brief description of campaign purpose...')"
-                class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                :class="{ 'border-red-500': !campaignData.description && currentStep > 1 }"
-              />
-            </div>
-          </div>
 
-          <!-- Step 2: Select Source -->
-          <div v-if="currentStep === 2" class="animate-fadeIn">
-            <!-- Source Selection -->
-            <div v-if="!selectedSource" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div
-                v-for="source in sources"
-                :key="source.key"
-                class="border rounded-lg p-4 text-center cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg border-gray-200 hover:border-gray-300"
-                @click="selectSource(source.key)"
-              >
-                <FeatherIcon :name="getSourceIcon(source.key)" class="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                <div class="text-sm font-medium mb-1 text-gray-900">
-                  {{ source.title }}
-                </div>
-                <div class="text-xs text-gray-500">
-                  {{ source.description }}
-                </div>
-              </div>
-            </div>
-
-            <!-- Source Configuration -->
-            <div v-else class="space-y-4">
-              <div class="flex items-center space-x-2 mb-4">
-                <FeatherIcon :name="getSourceIcon(selectedSource)" class="h-6 w-6 text-blue-600" />
-                <h4 class="text-lg font-medium text-gray-900">
-                  {{ sources.find(s => s.key === selectedSource)?.title }} {{ __('Manually') }}
-                </h4>
-              </div>
-
-              <!-- Data Source Type Selection (when Data Source is selected) -->
-              <div v-if="selectedSource === 'datasource' && dataSourceSelectionLevel === 1" class="space-y-4">
-                <h4 class="text-lg font-medium text-gray-900 mb-4">{{ __('Select Data Source Type') }}</h4>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  {{ __('Campaign Type') }} <span class="text-red-500">*</span>
+                </label>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div
-                    v-for="sourceType in dataSourceTypes"
-                    :key="sourceType.key"
-                    class="border rounded-lg p-4 text-center cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg border-gray-200 hover:border-gray-300"
-                    @click="selectDataSourceType(sourceType.key)"
+                    class="border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md"
+                    :class="campaignData.type === 'NURTURING' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'"
+                    @click="campaignData.type = 'NURTURING'"
                   >
-                    <FeatherIcon :name="sourceType.icon" class="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                    <div class="text-sm font-medium mb-1 text-gray-900">
-                      {{ sourceType.title }}
+                    <div class="flex items-center">
+                      <div class="flex items-center justify-center w-8 h-8 rounded-full mr-3"
+                           :class="campaignData.type === 'NURTURING' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400'">
+                        <FeatherIcon name="heart" class="h-4 w-4" />
+                      </div>
+                      <div>
+                        <div class="text-sm font-medium" :class="campaignData.type === 'NURTURING' ? 'text-blue-900' : 'text-gray-900'">
+                          {{ __('Nurturing') }}
+                        </div>
+                        <div class="text-xs text-gray-500">
+                          {{ __('Long-term candidate engagement') }}
+                        </div>
+                      </div>
                     </div>
-                    <div class="text-xs text-gray-500">
-                      {{ sourceType.description }}
+                  </div>
+                  
+                  <div
+                    class="border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md"
+                    :class="campaignData.type === 'ATTRACTION' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'"
+                    @click="campaignData.type = 'ATTRACTION'"
+                  >
+                    <div class="flex items-center">
+                      <div class="flex items-center justify-center w-8 h-8 rounded-full mr-3"
+                           :class="campaignData.type === 'ATTRACTION' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400'">
+                        <FeatherIcon name="magnet" class="h-4 w-4" />
+                      </div>
+                      <div>
+                        <div class="text-sm font-medium" :class="campaignData.type === 'ATTRACTION' ? 'text-blue-900' : 'text-gray-900'">
+                          {{ __('Attraction') }}
+                        </div>
+                        <div class="text-xs text-gray-500">
+                          {{ __('Active talent acquisition') }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                  <div
+                    class="border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md"
+                    :class="campaignData.type === 'RECRUITMENT' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'"
+                    @click="campaignData.type = 'RECRUITMENT'"
+                  >
+                    <div class="flex items-center">
+                      <div class="flex items-center justify-center w-8 h-8 rounded-full mr-3"
+                           :class="campaignData.type === 'RECRUITMENT' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400'">
+                        <FeatherIcon name="heart" class="h-4 w-4" />
+                      </div>
+                      <div>
+                        <div class="text-sm font-medium" :class="campaignData.type === 'RECRUITMENT' ? 'text-blue-900' : 'text-gray-900'">
+                          {{ __('RECRUITMENT CAMPAIGN') }}
+                        </div>
+                        <div class="text-xs text-gray-500">
+                          {{ __('Recruitment Job') }}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
               
-              <!-- Specific Data Source Selection (when type is selected) -->
-              <div v-else-if="selectedSource === 'datasource' && dataSourceSelectionLevel === 2" class="space-y-4">
-                <div class="mb-4">
-                  <h4 class="text-lg font-medium text-gray-900">
-                    {{ __('Select') }} {{ selectedDataSourceType }} {{ __('Source') }}
-                  </h4>
-                </div>
-                
-                <div v-if="filteredDataSources.length === 0" class="text-center py-8">
-                  <div class="text-gray-500 mb-2">{{ __('No') }} {{ selectedDataSourceType }} {{ __('sources available') }}</div>
-                  <p class="text-xs text-gray-400">{{ __('Use the Back button to choose a different type') }}</p>
-                </div>
-                
-                <div v-else class="grid grid-cols-1 gap-3">
-                  <div
-                    v-for="dataSource in filteredDataSources"
-                    :key="dataSource.name"
-                    class="border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md border-gray-200 hover:border-gray-300"
-                    @click="selectSpecificDataSource(dataSource)"
-                  >
-                    <div class="flex items-center">
-                      <FeatherIcon :name="getDataSourceIcon(dataSource.source_type)" class="h-6 w-6 mr-3 text-gray-400" />
-                      <div class="flex-1">
-                        <div class="text-sm font-medium text-gray-900">
-                          {{ dataSource.source_name || dataSource.source_title || dataSource.name }}
-                        </div>
-                        <div v-if="dataSource.source_title" class="text-xs text-gray-500 italic">
-                          {{ dataSource.source_title }}
-                        </div>
-                        <div class="text-xs text-gray-500">
-                          {{ dataSource.description || __('Connected platform') }}
-                        </div>
-                      </div>
-                    </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  {{ __('Objective') }} <span class="text-red-500">*</span>
+                </label>
+                <textarea
+                  v-model="campaignData.description"
+                  rows="3"
+                  :placeholder="__('Brief description of campaign purpose...')"
+                  class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  :class="{ 'border-red-500': !campaignData.description && currentStep > 1 }"
+                />
+              </div>
+            </div>
+
+            <!-- Step 2: Select Source -->
+            <div v-if="currentStep === 2" class="animate-fadeIn">
+              <!-- Source Selection -->
+              <div v-if="!selectedSource" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div
+                  v-for="source in sources"
+                  :key="source.key"
+                  class="border rounded-lg p-4 text-center cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg border-gray-200 hover:border-gray-300"
+                  @click="selectSource(source.key)"
+                >
+                  <FeatherIcon :name="getSourceIcon(source.key)" class="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                  <div class="text-sm font-medium mb-1 text-gray-900">
+                    {{ source.title }}
+                  </div>
+                  <div class="text-xs text-gray-500">
+                    {{ source.description }}
                   </div>
                 </div>
               </div>
 
-              <!-- DataSource Final Configuration (when specific source is selected) -->
-              <div v-else-if="selectedSource === 'datasource' && dataSourceSelectionLevel === 3" class="space-y-4">
-                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <div class="flex items-start justify-between">
-                    <div class="flex items-start">
-                      <FeatherIcon name="check-circle" class="h-5 w-5 text-green-400 mr-3 mt-0.5" />
-                      <div>
-                        <h4 class="text-sm font-medium text-green-800">
-                          {{ __('Data Source Selected') }}
-                        </h4>
-                        <div class="mt-1 text-sm text-green-700">
-                          <strong>{{ configData.selectedDataSource?.source_name }}</strong>
-                        </div>
-                        <div class="text-xs text-green-600 mt-1">
-                          {{ __('Type') }}: {{ selectedDataSourceType }}
+              <!-- Source Configuration -->
+              <div v-else class="space-y-4">
+                <div class="flex items-center space-x-2 mb-4">
+                  <FeatherIcon :name="getSourceIcon(selectedSource)" class="h-6 w-6 text-blue-600" />
+                  <h4 class="text-lg font-medium text-gray-900">
+                    {{ sources.find(s => s.key === selectedSource)?.title }} {{ __('Manually') }}
+                  </h4>
+                </div>
+
+                <!-- Data Source Type Selection (when Data Source is selected) -->
+                <div v-if="selectedSource === 'datasource' && dataSourceSelectionLevel === 1" class="space-y-4">
+                  <h4 class="text-lg font-medium text-gray-900 mb-4">{{ __('Select Data Source Type') }}</h4>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div
+                      v-for="sourceType in dataSourceTypes"
+                      :key="sourceType.key"
+                      class="border rounded-lg p-4 text-center cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg border-gray-200 hover:border-gray-300"
+                      @click="selectDataSourceType(sourceType.key)"
+                    >
+                      <FeatherIcon :name="sourceType.icon" class="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                      <div class="text-sm font-medium mb-1 text-gray-900">
+                        {{ sourceType.title }}
+                      </div>
+                      <div class="text-xs text-gray-500">
+                        {{ sourceType.description }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Specific Data Source Selection (when type is selected) -->
+                <div v-else-if="selectedSource === 'datasource' && dataSourceSelectionLevel === 2" class="space-y-4">
+                  <div class="mb-4">
+                    <h4 class="text-lg font-medium text-gray-900">
+                      {{ __('Select') }} {{ selectedDataSourceType }} {{ __('Source') }}
+                    </h4>
+                  </div>
+                  
+                  <div v-if="filteredDataSources.length === 0" class="text-center py-8">
+                    <div class="text-gray-500 mb-2">{{ __('No') }} {{ selectedDataSourceType }} {{ __('sources available') }}</div>
+                    <p class="text-xs text-gray-400">{{ __('Use the Back button to choose a different type') }}</p>
+                  </div>
+                  
+                  <div v-else class="grid grid-cols-1 gap-3">
+                    <div
+                      v-for="dataSource in filteredDataSources"
+                      :key="dataSource.name"
+                      class="border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md border-gray-200 hover:border-gray-300"
+                      @click="selectSpecificDataSource(dataSource)"
+                    >
+                      <div class="flex items-center">
+                        <FeatherIcon :name="getDataSourceIcon(dataSource.source_type)" class="h-6 w-6 mr-3 text-gray-400" />
+                        <div class="flex-1">
+                          <div class="text-sm font-medium text-gray-900">
+                            {{ dataSource.source_name || dataSource.source_title || dataSource.name }}
+                          </div>
+                          <div v-if="dataSource.source_title" class="text-xs text-gray-500 italic">
+                            {{ dataSource.source_title }}
+                          </div>
+                          <div class="text-xs text-gray-500">
+                            {{ dataSource.description || __('Connected platform') }}
+                          </div>
                         </div>
                       </div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      theme="gray"
-                      size="sm"
-                      @click="clearDataSourceSelection"
-                      class="text-gray-500 hover:text-gray-700"
-                    >
-                      {{ __('Change') }}
-                    </Button>
+                  </div>
+                </div>
+
+                <!-- DataSource Final Configuration (when specific source is selected) -->
+                <div v-else-if="selectedSource === 'datasource' && dataSourceSelectionLevel === 3" class="space-y-4">
+                  <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div class="flex items-start justify-between">
+                      <div class="flex items-start">
+                        <FeatherIcon name="check-circle" class="h-5 w-5 text-green-400 mr-3 mt-0.5" />
+                        <div>
+                          <h4 class="text-sm font-medium text-green-800">
+                            {{ __('Data Source Selected') }}
+                          </h4>
+                          <div class="mt-1 text-sm text-green-700">
+                            <strong>{{ configData.selectedDataSource?.source_name }}</strong>
+                          </div>
+                          <div class="text-xs text-green-600 mt-1">
+                            {{ __('Type') }}: {{ selectedDataSourceType }}
+                          </div>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        theme="gray"
+                        size="sm"
+                        @click="clearDataSourceSelection"
+                        class="text-gray-500 hover:text-gray-700"
+                      >
+                        {{ __('Change') }}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- File Configuration -->
+                <div v-else-if="selectedSource === 'file'">
+                  <component
+                    :is="FileConfig"
+                    v-model="configData"
+                  />
+                </div>
+                
+                <!-- Search Configuration -->
+                <div v-else-if="selectedSource === 'search'">
+                  <p class="text-sm text-gray-600 mb-4">
+                    {{ __("You'll manually set up your search in the next step.") }}
+                  </p>
+                  <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div class="flex">
+                      <FeatherIcon name="info" class="h-5 w-5 text-blue-400 mt-0.5 mr-2" />
+                      <div class="text-sm text-blue-800">
+                        {{ __("In the next step, you'll choose the talent segments to search manually.") }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- DataSource Final Configuration -->
+                <div v-else-if="selectedSource === 'datasource' && selectedDataSourceId">
+                  <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center">
+                        <FeatherIcon name="check-circle" class="h-5 w-5 text-green-400 mr-2" />
+                        <div>
+                          <div class="text-sm font-medium text-green-800">
+                            {{ __('Data Source Selected') }}
+                          </div>
+                          <div class="text-sm text-green-600">
+                            {{ configData.selectedDataSource?.source_name || 'Selected data source' }}
+                          </div>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        theme="gray"
+                        size="sm"
+                        @click="clearDataSourceSelection"
+                        class="text-gray-500 hover:text-gray-700"
+                      >
+                        <FeatherIcon name="x" class="h-4 w-4 mr-1" />
+                        {{ __('Change') }}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
-              
-              <!-- File Configuration -->
-              <div v-else-if="selectedSource === 'file'">
+            </div>
+
+            <!-- Step 3: Select Target Segment -->
+            <div v-if="currentStep === 3" class="animate-fadeIn">
+              <div class="space-y-4">
+                <div class="text-center mb-6">
+                  <h4 class="text-lg font-medium text-gray-900 mb-2">{{ __('Select Target Segment') }}</h4>
+                  <p class="text-sm text-gray-600">{{ __('Choose the talent segment you want to target with this campaign') }}</p>
+                </div>
+                
+                <!-- Use existing PoolConfig component for segment selection -->
                 <component
-                  :is="FileConfig"
+                  :is="PoolConfig"
                   v-model="configData"
                 />
               </div>
-              
-              <!-- Search Configuration -->
-              <div v-else-if="selectedSource === 'search'">
-                <p class="text-sm text-gray-600 mb-4">
-                  {{ __("You'll manually set up your search in the next step.") }}
-                </p>
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <div class="flex">
-                    <FeatherIcon name="info" class="h-5 w-5 text-blue-400 mt-0.5 mr-2" />
-                    <div class="text-sm text-blue-800">
-                      {{ __("In the next step, you'll choose the talent segments to search manually.") }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- DataSource Final Configuration -->
-              <div v-else-if="selectedSource === 'datasource' && selectedDataSourceId">
-                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                      <FeatherIcon name="check-circle" class="h-5 w-5 text-green-400 mr-2" />
-                      <div>
-                        <div class="text-sm font-medium text-green-800">
-                          {{ __('Data Source Selected') }}
-                        </div>
-                        <div class="text-sm text-green-600">
-                          {{ configData.selectedDataSource?.source_name || 'Selected data source' }}
-                        </div>
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      theme="gray"
-                      size="sm"
-                      @click="clearDataSourceSelection"
-                      class="text-gray-500 hover:text-gray-700"
-                    >
-                      <FeatherIcon name="x" class="h-4 w-4 mr-1" />
-                      {{ __('Change') }}
-                    </Button>
-                  </div>
-                </div>
-              </div>
             </div>
-          </div>
 
-          <!-- Step 3: Select Target Segment -->
-          <div v-if="currentStep === 3" class="animate-fadeIn">
-            <div class="space-y-4">
-              <div class="text-center mb-6">
-                <h4 class="text-lg font-medium text-gray-900 mb-2">{{ __('Select Target Segment') }}</h4>
-                <p class="text-sm text-gray-600">{{ __('Choose the talent segment you want to target with this campaign') }}</p>
-              </div>
-              
-              <!-- Use existing PoolConfig component for segment selection -->
-              <component
-                :is="PoolConfig"
-                v-model="configData"
-              />
-            </div>
-          </div>
-
-          <!-- Step 4: Create Campaign Steps -->
-          <div v-if="currentStep === 4" class="animate-fadeIn">
-            <!-- Steps Creation Mode Selection -->
-            <div v-if="!showStepCreation" class="space-y-6">
-              <div class="text-center mb-6">
-                <h4 class="text-lg font-medium text-gray-900 mb-2">{{ __('How would you like to create campaign steps?') }}</h4>
-                <p class="text-sm text-gray-600">{{ __('Choose a method to define the workflow for your campaign') }}</p>
-              </div>
-              
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Use Template -->
-                <div
-                  class="border rounded-lg p-6 text-center cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg border-gray-200 hover:border-blue-300"
-                  @click="selectStepCreationMode('template')"
-                >
-                  <div class="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                    <FeatherIcon name="file-text" class="h-8 w-8 text-blue-600" />
-                  </div>
-                  <h5 class="text-lg font-medium text-gray-900 mb-2">{{ __('Use Template') }}</h5>
-                  <p class="text-sm text-gray-600 mb-4">{{ __('Select from pre-defined campaign templates with ready-made workflows') }}</p>
-                  <div class="text-xs text-blue-600 font-medium">{{ __('Recommended for consistency') }}</div>
+            <!-- Step 4: Create Campaign Steps -->
+            <div v-if="currentStep === 4" class="animate-fadeIn">
+              <!-- Steps Creation Mode Selection -->
+              <div v-if="!showStepCreation" class="space-y-6">
+                <div class="text-center mb-6">
+                  <h4 class="text-lg font-medium text-gray-900 mb-2">{{ __('How would you like to create campaign steps?') }}</h4>
+                  <p class="text-sm text-gray-600">{{ __('Choose a method to define the workflow for your campaign') }}</p>
                 </div>
                 
-                <!-- Create Manual -->
-                <div
-                  class="border rounded-lg p-6 text-center cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg border-gray-200 hover:border-green-300"
-                  @click="selectStepCreationMode('manual')"
-                >
-                  <div class="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                    <FeatherIcon name="plus-circle" class="h-8 w-8 text-green-600" />
-                  </div>
-                  <h5 class="text-lg font-medium text-gray-900 mb-2">{{ __('Create Manually') }}</h5>
-                  <p class="text-sm text-gray-600 mb-4">{{ __('Build custom workflow steps from scratch tailored to your needs') }}</p>
-                  <div class="text-xs text-green-600 font-medium">{{ __('Full customization') }}</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Template Selection -->
-            <div v-if="showStepCreation && stepCreationMode === 'template'" class="space-y-6">
-              <div class="mb-4">
-                <h4 class="text-lg font-medium text-gray-900">{{ __('Select Campaign Template') }}</h4>
-              </div>
-              
-              <!-- Loading Templates -->
-              <div v-if="loading" class="text-center py-8">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p class="text-gray-600">{{ __('Loading templates...') }}</p>
-              </div>
-              
-              <!-- Template List -->
-              <div v-else-if="campaignTemplates.length > 0" class="space-y-4">
-                <div class="text-sm text-gray-600 mb-3">
-                  {{ __('Found') }} {{ campaignTemplates.length }} {{ __('templates') }}
-                </div>
-                <div class="grid grid-cols-1 gap-4 max-h-80 overflow-y-auto">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <!-- Use Template -->
                   <div
-                    v-for="template in campaignTemplates"
-                    :key="template.name"
-                    class="border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md"
-                    :class="selectedTemplate?.name === template.name ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'"
-                    @click="selectTemplate(template)"
+                    class="border rounded-lg p-6 text-center cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg border-gray-200 hover:border-blue-300"
+                    @click="selectStepCreationMode('template')"
                   >
-                    <div class="flex items-center justify-between">
-                      <div class="flex-1">
-                        <h6 class="text-sm font-medium text-gray-900">{{ template.template_name }}</h6>
-                        <p class="text-xs text-gray-500 mt-1">{{ template.description || __('No description') }}</p>
-                        <div class="flex items-center mt-2 space-x-2">
-                          <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                            {{ template.campaign_type }}
-                          </span>
-                          <span class="text-xs text-gray-500">{{ template.step_count || 0 }} {{ __('steps') }}</span>
+                    <div class="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                      <FeatherIcon name="file-text" class="h-8 w-8 text-blue-600" />
+                    </div>
+                    <h5 class="text-lg font-medium text-gray-900 mb-2">{{ __('Use Template') }}</h5>
+                    <p class="text-sm text-gray-600 mb-4">{{ __('Select from pre-defined campaign templates with ready-made workflows') }}</p>
+                    <div class="text-xs text-blue-600 font-medium">{{ __('Recommended for consistency') }}</div>
+                  </div>
+                  
+                  <!-- Create Manual -->
+                  <div
+                    class="border rounded-lg p-6 text-center cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg border-gray-200 hover:border-green-300"
+                    @click="selectStepCreationMode('manual')"
+                  >
+                    <div class="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                      <FeatherIcon name="plus-circle" class="h-8 w-8 text-green-600" />
+                    </div>
+                    <h5 class="text-lg font-medium text-gray-900 mb-2">{{ __('Create Manually') }}</h5>
+                    <p class="text-sm text-gray-600 mb-4">{{ __('Build custom workflow steps from scratch tailored to your needs') }}</p>
+                    <div class="text-xs text-green-600 font-medium">{{ __('Full customization') }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Template Selection -->
+              <div v-if="showStepCreation && stepCreationMode === 'template'" class="space-y-6">
+                <div class="mb-4">
+                  <h4 class="text-lg font-medium text-gray-900">{{ __('Select Campaign Template') }}</h4>
+                </div>
+                
+                <!-- Loading Templates -->
+                <div v-if="loading" class="text-center py-8">
+                  <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <p class="text-gray-600">{{ __('Loading templates...') }}</p>
+                </div>
+                
+                <!-- Template List -->
+                <div v-else-if="campaignTemplates.length > 0" class="space-y-4">
+                  <div class="text-sm text-gray-600 mb-3">
+                    {{ __('Found') }} {{ campaignTemplates.length }} {{ __('templates') }}
+                  </div>
+                  <div class="grid grid-cols-1 gap-4 max-h-80 overflow-y-auto">
+                    <div
+                      v-for="template in campaignTemplates"
+                      :key="template.name"
+                      class="border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md"
+                      :class="selectedTemplate?.name === template.name ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'"
+                      @click="selectTemplate(template)"
+                    >
+                      <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                          <h6 class="text-sm font-medium text-gray-900">{{ template.template_name }}</h6>
+                          <p class="text-xs text-gray-500 mt-1">{{ template.description || __('No description') }}</p>
+                          <div class="flex items-center mt-2 space-x-2">
+                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                              {{ template.campaign_type }}
+                            </span>
+                            <span class="text-xs text-gray-500">{{ template.step_count || 0 }} {{ __('steps') }}</span>
+                          </div>
                         </div>
-                      </div>
-                      <div v-if="selectedTemplate?.name === template.name" class="text-blue-600">
-                        <FeatherIcon name="check-circle" class="h-5 w-5" />
+                        <div v-if="selectedTemplate?.name === template.name" class="text-blue-600">
+                          <FeatherIcon name="check-circle" class="h-5 w-5" />
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
+                
+                <!-- No Templates -->
+                <div v-else class="text-center py-8">
+                  <FeatherIcon name="inbox" class="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                  <p class="text-gray-500">{{ __('No campaign templates available') }}</p>
+                </div>
               </div>
-              
-              <!-- No Templates -->
-              <div v-else class="text-center py-8">
-                <FeatherIcon name="inbox" class="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                <p class="text-gray-500">{{ __('No campaign templates available') }}</p>
-              </div>
-            </div>
 
-            <!-- Manual Step Creation -->
-            <div v-if="showStepCreation && stepCreationMode === 'manual'" class="space-y-6">
-              <div class="mb-4">
-                <h4 class="text-lg font-medium text-gray-900">{{ __('Create Campaign Steps Manually') }}</h4>
-              </div>
-              
-              <!-- Step Form -->
-              <div v-if="showStepForm" class="bg-white border border-gray-200 rounded-lg p-6">
-                <div class="flex items-center justify-between mb-4">
-                  <h5 class="text-lg font-medium text-gray-900">
-                    {{ editingStep ? __('Edit Step') : __('Add New Step') }}
-                  </h5>
-                  <Button variant="ghost" theme="gray" @click="handleStepFormCancel" class="text-sm">
-                    <FeatherIcon name="x" class="h-4 w-4" />
+              <!-- Manual Step Creation -->
+              <div v-if="showStepCreation && stepCreationMode === 'manual'" class="space-y-6">
+                <div class="mb-4">
+                  <h4 class="text-lg font-medium text-gray-900">{{ __('Create Campaign Steps Manually') }}</h4>
+                </div>
+                
+                <!-- Current Steps List -->
+                <div v-if="campaignSteps.length > 0" class="space-y-3">
+                  <h5 class="text-sm font-medium text-gray-900">{{ __('Campaign Steps') }} ({{ campaignSteps.length }})</h5>
+                  <div class="space-y-2">
+                    <div v-for="(step, index) in campaignSteps" :key="step.id || index" 
+                         class="flex items-center p-3 bg-gray-50 rounded-lg border hover:bg-gray-100 transition-colors">
+                      <!-- Step Image -->
+                      <div v-if="step.image" class="w-10 h-10 rounded-lg overflow-hidden mr-3 flex-shrink-0">
+                        <img 
+                          :src="step.image" 
+                          :alt="step.campaign_step_name"
+                          class="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div v-else class="w-10 h-10 bg-gray-200 rounded-lg mr-3 flex-shrink-0 flex items-center justify-center">
+                        <FeatherIcon name="image" class="h-5 w-5 text-gray-400" />
+                      </div>
+                      
+                      <span class="flex items-center justify-center w-6 h-6 bg-blue-100 text-blue-800 text-xs font-medium rounded-full mr-3">
+                        {{ step.step_order }}
+                      </span>
+                      <div class="flex-1">
+                        <div class="text-sm font-medium text-gray-900">{{ step.campaign_step_name }}</div>
+                        <div class="text-xs text-gray-500">
+                          <span v-if="step.scheduled_at">{{ __('Scheduled at') }}: {{ step.scheduled_at }}</span>
+                          <span v-else>{{ __('Delay') }}: {{ step.delay_in_days || 0 }} {{ __('day(s)') }}</span>
+                        </div>
+                        <div class="text-xs text-gray-500">{{ step.action_type }}{{ step.delay_in_days > 0 ? ` • ${step.delay_in_days} days delay` : '' }}</div>
+                      </div>
+                      <div class="flex items-center space-x-2">
+                        <Button variant="ghost" theme="gray" size="sm" @click="editManualStep(step)" class="p-1">
+                          <FeatherIcon name="edit" class="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" theme="gray" size="sm" @click="removeStep(step)" class="p-1 text-red-600 hover:text-red-700">
+                          <FeatherIcon name="trash-2" class="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Add Step Button -->
+                <div v-if="!showStepForm" class="text-center">
+                  <Button variant="outline" theme="gray" @click="addManualStep">
+                    <div class="flex items-center">
+                      <FeatherIcon name="plus" class="h-4 w-4 mr-2" />
+                      {{ campaignSteps.length > 0 ? __('Add Another Step') : __('Add First Step') }}
+                    </div>
                   </Button>
                 </div>
                 
-                <form @submit.prevent="handleStepFormSubmit" class="space-y-4">
-                  <!-- Step Name -->
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                      {{ __('Step Name') }}
-                      <span class="text-red-500">*</span>
-                    </label>
-                    <input
-                      v-model="stepFormData.campaign_step_name"
-                      type="text"
-                      :placeholder="__('Enter step name...')"
-                      :disabled="stepFormLoading"
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      :class="{ 'border-red-500': stepFormErrors.campaign_step_name }"
-                    />
-                    <div v-if="stepFormErrors.campaign_step_name" class="mt-1 text-sm text-red-600">
-                      {{ stepFormErrors.campaign_step_name }}
+                <!-- Empty State -->
+                <div v-if="campaignSteps.length === 0 && !showStepForm" class="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
+                  <FeatherIcon name="zap" class="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                  <p class="text-gray-500 mb-4">{{ __('No steps created yet') }}</p>
+                  <Button variant="solid" theme="gray" @click="addManualStep">
+                    <div class="flex items-center">
+                      <FeatherIcon name="plus" class="h-4 w-4 mr-2" />
+                      {{ __('Create First Step') }}
                     </div>
-                  </div>
+                  </Button>
+                </div>
+              </div>
+            </div>
 
-                  <!-- Social Network: Select Page (connected_accounts) -->
-                  <div v-if="selectedSource === 'datasource' && selectedDataSourceType === 'SocialNetwork'">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                      {{ __('Select Social Page') }}
-                    </label>
-                    <select
-                      v-model="stepFormSelectedPageId"
-                      :disabled="loadingPages || stepFormLoading"
-                      class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    >
-                      <option value="">{{ __('Select a page...') }}</option>
-                      <option v-for="p in socialPages" :key="p.external_account_id" :value="p.external_account_id">
-                        {{ p.account_name }} ({{ p.account_type }})
-                      </option>
-                    </select>
-                    <p class="mt-1 text-xs text-gray-500">
-                      {{ __('Pages come from connected_accounts of External Connection') }}
-                    </p>
-                  </div>
-
-                  <!-- Step Schedule (Datetime) -->
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                      {{ __('Time Post News(optional)') }}
-                    </label>
-                    <input
-                      v-model="stepFormData.scheduled_at"
-                      type="datetime-local"
-                      :min="minScheduledAt"
-                      :disabled="stepFormLoading"
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    />
-                    <p class="mt-1 text-xs text-gray-500">
-                      {{ __('Local time') }} ({{ localTzLabel }}) •
-                      {{ __('If empty, system will use Campaign start_date + delay_in_days') }}
-                    </p>
-                  </div>
-
-                  <!-- Step Job Opening (optional) -->
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                      {{ __('Job Opening (optional)') }}
-                    </label>
-                    <select
-                      v-model="stepFormSelectedJobId"
-                      @change="onStepJobChange"
-                      :disabled="stepFormLoading || loadingJobOpenings"
-                      class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    >
-                      <option value="">{{ __('Select a job opening...') }}</option>
-                      <option v-for="job in jobOpeningsList" :key="job.name" :value="job.name">
-                        {{ job.job_title }} {{ job.job_code ? `(${job.job_code})` : '' }}
-                      </option>
-                    </select>
-                    <p class="mt-1 text-xs text-gray-500">
-                      {{ __('If selected, the job\'s description, requirements, and benefits will be inserted into Template Content.') }}
-                    </p>
-                  </div>
-
-                  <div class="grid grid-cols-2 gap-4">
-                    <!-- Action Type -->
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ __('Action Type') }}
-                        <span class="text-red-500">*</span>
-                      </label>
-                      <select
-                        v-model="stepFormData.action_type"
-                        :disabled="stepFormLoading"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        :class="{ 'border-red-500': stepFormErrors.action_type }"
-                      >
-                        <option v-for="option in actionTypeOptions" :key="option.value" :value="option.value" :disabled="option.disabled">
-                          {{ option.label }}
-                        </option>
-                      </select>
-                      <div v-if="stepFormErrors.action_type" class="mt-1 text-sm text-red-600">
-                        {{ stepFormErrors.action_type }}
-                      </div>
-                    </div>
-
-                    <!-- Step Order -->
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ __('Step Order') }}
-                        <span class="text-red-500">*</span>
-                      </label>
-                      <input
-                        v-model.number="stepFormData.step_order"
-                        type="number"
-                        min="1"
-                        max="999"
-                        :placeholder="__('Order...')"
-                        :disabled="stepFormLoading"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        :class="{ 'border-red-500': stepFormErrors.step_order }"
-                      />
-                      <div v-if="stepFormErrors.step_order" class="mt-1 text-sm text-red-600">
-                        {{ stepFormErrors.step_order }}
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Delay -->
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                      {{ __('Delay (Days)') }}
-                    </label>
-                    <input
-                      v-model.number="stepFormData.delay_in_days"
-                      type="number"
-                      min="0"
-                      max="365"
-                      :placeholder="__('0 for immediate execution')"
-                      :disabled="stepFormLoading"
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      :class="{ 'border-red-500': stepFormErrors.delay_in_days }"
-                    />
-                    <p class="mt-1 text-sm text-gray-500">
-                      {{ __('Number of days to wait before executing this step') }}
-                    </p>
-                    <div v-if="stepFormErrors.delay_in_days" class="mt-1 text-sm text-red-600">
-                      {{ stepFormErrors.delay_in_days }}
-                    </div>
-                  </div>
-
-                  <!-- Template Content -->
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                      {{ __('Template Content') }}
-                    </label>
-                    <textarea
-                      v-model="stepFormData.template_content"
-                      rows="4"
-                      :placeholder="__('Enter template content for this step...')"
-                      :disabled="stepFormLoading"
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    />
-                    <p class="mt-1 text-sm text-gray-500">
-                      {{ __('Content template for emails, SMS, or other actions') }}
-                    </p>
-                  </div>
-
-                  <!-- Action Config -->
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                      {{ __('Action Configuration') }}
-                    </label>
-                    <textarea
-                      v-model="stepFormData.action_config_string"
-                      rows="3"
-                      :placeholder="__('Enter JSON configuration...')"
-                      :disabled="stepFormLoading"
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm font-mono text-sm"
-                      :class="{ 'border-red-500': stepFormErrors.action_config_string }"
-                    />
-                    <p class="mt-1 text-sm text-gray-500">
-                      {{ __('JSON configuration for the action (optional)') }}
-                    </p>
-                    <div v-if="stepFormErrors.action_config_string" class="mt-1 text-sm text-red-600">
-                      {{ stepFormErrors.action_config_string }}
-                    </div>
-                  </div>
-
-                  <!-- Step Image (optional) -->
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                      {{ __('Step Image (optional)') }}
-                    </label>
-                    <div class="space-y-3">
-                      <!-- Image Preview -->
-                      <div v-if="stepFormData.image" class="flex items-center space-x-3">
-                        <img 
-                          :src="stepFormData.image" 
-                          alt="Step image preview"
-                          class="w-20 h-20 object-cover rounded-lg border border-gray-200"
-                        />
-                        <div class="flex-1">
-                          <p class="text-sm text-gray-600">{{ __('Current image') }}</p>
-                          <p class="text-xs text-gray-500 truncate">{{ stepFormData.image }}</p>
-                        </div>
-                      </div>
-                      
-                      <!-- Image Uploader -->
-                      <ImageUploader
-                        :image_url="stepFormData.image"
-                        image_type="image/*"
-                        @upload="(url, file) => {
-                          stepFormData.image = url
-                          console.log('Image uploaded:', url)
-                        }"
-                        @remove="() => {
-                          stepFormData.image = ''
-                          console.log('Image removed')
-                        }"
-                      />
-                    </div>
-                    <p class="mt-1 text-xs text-gray-500">
-                      {{ __('Upload an image to represent this campaign step (optional)') }}
-                    </p>
-                  </div>
-
-                  <!-- Form Actions -->
-                  <div class="flex justify-end space-x-3">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      theme="gray"
-                      @click="handleStepFormCancel"
-                      :disabled="stepFormLoading"
-                    >
-                      {{ __('Cancel') }}
-                    </Button>
-                    <Button
-                      type="submit"
-                      variant="solid"
-                      theme="gray"
-                      :loading="stepFormLoading"
-                      :disabled="stepFormLoading"
-                    >
-                      {{ editingStep ? __('Update Step') : __('Add Step') }}
-                    </Button>
-                  </div>
-                </form>
+            <!-- Step 5: Review & Activate -->
+            <div v-if="currentStep === 5" class="animate-fadeIn space-y-6">
+              <!-- Campaign Summary -->
+              <div class="text-center py-4">
+                <h3 class="text-xl font-bold mb-2 text-gray-900">{{ __('Review Campaign') }}</h3>
+                <p class="text-sm text-gray-600">{{ __('Review your campaign details and workflow before finalizing') }}</p>
               </div>
               
-              <!-- Current Steps List -->
-              <div v-if="campaignSteps.length > 0" class="space-y-3">
-                <h5 class="text-sm font-medium text-gray-900">{{ __('Campaign Steps') }} ({{ campaignSteps.length }})</h5>
-                <div class="space-y-2">
-                  <div v-for="(step, index) in campaignSteps" :key="step.id || index" 
-                       class="flex items-center p-3 bg-gray-50 rounded-lg border hover:bg-gray-100 transition-colors">
+              <!-- Campaign Info -->
+              <div class="bg-gray-50 rounded-lg p-4">
+                <h4 class="text-lg font-medium text-gray-900 mb-3">{{ __('Campaign Information') }}</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="text-sm font-medium text-gray-700">{{ __('Campaign Name') }}</label>
+                    <p class="text-sm text-gray-900">{{ campaignData.campaign_name || __('Untitled Campaign') }}</p>
+                  </div>
+                  <div>
+                    <label class="text-sm font-medium text-gray-700">{{ __('Type') }}</label>
+                    <p class="text-sm text-gray-900">{{ campaignData.type }}</p>
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="text-sm font-medium text-gray-700">{{ __('Description') }}</label>
+                    <p class="text-sm text-gray-900">{{ campaignData.description || __('No description') }}</p>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Campaign Steps -->
+              <div class="bg-blue-50 rounded-lg p-4">
+                <h4 class="text-lg font-medium text-gray-900 mb-3">{{ __('Campaign Workflow') }}</h4>
+                <div v-if="campaignSteps.length > 0" class="space-y-2">
+                  <div v-for="step in campaignSteps" :key="step.id || step.name" 
+                       class="flex items-center p-3 bg-white rounded border">
                     <!-- Step Image -->
-                    <div v-if="step.image" class="w-10 h-10 rounded-lg overflow-hidden mr-3 flex-shrink-0">
+                    <div v-if="step.image" class="w-8 h-8 rounded overflow-hidden mr-3 flex-shrink-0">
                       <img 
                         :src="step.image" 
                         :alt="step.campaign_step_name"
                         class="w-full h-full object-cover"
                       />
                     </div>
-                    <div v-else class="w-10 h-10 bg-gray-200 rounded-lg mr-3 flex-shrink-0 flex items-center justify-center">
-                      <FeatherIcon name="image" class="h-5 w-5 text-gray-400" />
+                    <div v-else class="w-8 h-8 bg-gray-200 rounded mr-3 flex-shrink-0 flex items-center justify-center">
+                      <FeatherIcon name="image" class="h-4 w-4 text-gray-400" />
                     </div>
                     
                     <span class="flex items-center justify-center w-6 h-6 bg-blue-100 text-blue-800 text-xs font-medium rounded-full mr-3">
@@ -734,205 +592,380 @@
                     </span>
                     <div class="flex-1">
                       <div class="text-sm font-medium text-gray-900">{{ step.campaign_step_name }}</div>
-                      <div class="text-xs text-gray-500">
-                        <span v-if="step.scheduled_at">{{ __('Scheduled at') }}: {{ step.scheduled_at }}</span>
-                        <span v-else>{{ __('Delay') }}: {{ step.delay_in_days || 0 }} {{ __('day(s)') }}</span>
-                      </div>
                       <div class="text-xs text-gray-500">{{ step.action_type }}{{ step.delay_in_days > 0 ? ` • ${step.delay_in_days} days delay` : '' }}</div>
                     </div>
-                    <div class="flex items-center space-x-2">
-                      <Button variant="ghost" theme="gray" size="sm" @click="editManualStep(step)" class="p-1">
-                        <FeatherIcon name="edit" class="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" theme="gray" size="sm" @click="removeStep(step)" class="p-1 text-red-600 hover:text-red-700">
-                        <FeatherIcon name="trash-2" class="h-4 w-4" />
-                      </Button>
+                  </div>
+                </div>
+                <div v-else class="text-center py-4 text-gray-500">
+                  {{ __('No steps configured') }}
+                </div>
+              </div>
+              
+              <!-- Template Info -->
+              <div v-if="selectedTemplate" class="bg-green-50 rounded-lg p-4">
+                <h4 class="text-lg font-medium text-gray-900 mb-2">{{ __('Template Used') }}</h4>
+                <p class="text-sm text-gray-600">{{ selectedTemplate.template_name }}</p>
+                <p class="text-xs text-gray-500">{{ selectedTemplate.description }}</p>
+              </div>
+              
+              <!-- Status -->
+              <div class="text-center">
+                <p class="text-sm text-gray-600 mb-2">
+                  {{ __('Campaign will be created in DRAFT status with') }} {{ campaignSteps.length }} {{ __('steps') }}
+                </p>
+                <p class="text-xs text-gray-500">
+                  {{ __('You can add profiles and activate the campaign after creation') }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Step 6: Select Job Opening -->
+            
+          </div>
+
+          <!-- Footer Actions -->
+          <div class="flex justify-between items-center p-4 border-t border-gray-200">
+            <Button
+              v-if="currentStep > 1"
+              variant="outline"
+              theme="gray"
+              @click="prevStep"
+              :disabled="loading"
+            >
+              {{ __('Back') }}
+            </Button>
+            
+            <div v-else></div>
+            
+            <div class="flex space-x-3">
+              <Button
+                v-if="currentStep < 4"
+                variant="solid"
+                theme="gray"
+                @click="nextStep"
+                :disabled="!canProceed"
+                :loading="currentStep === 1 && draftCampaignLoading"
+              >
+                {{ currentStep === 1 && draftCampaignLoading ? __('Creating Campaign...') : __('Continue') }}
+              </Button>
+              
+              <!-- Step 4: Campaign Steps -->
+              <Button
+                v-if="currentStep === 4 && !showStepCreation"
+                variant="solid"
+                theme="gray"
+                @click="nextStep"
+                :disabled="campaignSteps.length === 0 && !selectedTemplate"
+              >
+                {{ __('Continue to Review') }}
+              </Button>
+              
+              <Button
+                v-if="currentStep === 4 && showStepCreation && stepCreationMode === 'template'"
+                variant="solid"
+                theme="gray"
+                @click="nextStep"
+                :disabled="!selectedTemplate || campaignSteps.length === 0"
+              >
+                {{ __('Continue with Template') }}
+              </Button>
+              
+              <Button
+                v-if="currentStep === 4 && showStepCreation && stepCreationMode === 'manual'"
+                variant="solid"
+                theme="gray"
+                @click="nextStep"
+                :disabled="campaignSteps.length === 0"
+              >
+                {{ __('Continue with Steps') }}
+              </Button>
+              
+              <Button
+                v-if="currentStep === 5"
+                variant="solid"
+                theme="gray"
+                @click="finalizeCampaign"
+                :loading="activating"
+              >
+                {{ __('Finalize Campaign') }}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </template>
+    </Dialog>
+
+    <!-- Step Form Dialog -->
+    <Dialog v-model="showStepForm" :options="stepFormDialogOptions" :disableOutsideClickToClose="true">
+      <template #body>
+        <div class="bg-white">
+          <!-- Header -->
+          <div class="flex justify-between items-center p-6 border-b border-gray-200">
+            <h2 class="text-xl font-bold text-gray-900">
+              {{ editingStep ? __('Edit Step') : __('Add New Step') }}
+            </h2>
+            <Button
+              theme="gray"
+              variant="ghost"
+              class="w-7 h-7"
+              @click="handleStepFormCancel"
+            >
+              <FeatherIcon name="x" class="h-4 w-4" />
+            </Button>
+          </div>
+
+          <!-- Step Form Content -->
+          <div class="p-6">
+            <form @submit.prevent="handleStepFormSubmit" class="space-y-4">
+              <!-- Step Name -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  {{ __('Step Name') }}
+                  <span class="text-red-500">*</span>
+                </label>
+                <input
+                  v-model="stepFormData.campaign_step_name"
+                  type="text"
+                  :placeholder="__('Enter step name...')"
+                  :disabled="stepFormLoading"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  :class="{ 'border-red-500': stepFormErrors.campaign_step_name }"
+                />
+                <div v-if="stepFormErrors.campaign_step_name" class="mt-1 text-sm text-red-600">
+                  {{ stepFormErrors.campaign_step_name }}
+                </div>
+              </div>
+
+              <!-- Social Network: Select Page (connected_accounts) -->
+              <div v-if="selectedSource === 'datasource' && selectedDataSourceType === 'SocialNetwork'">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  {{ __('Select Social Page') }}
+                </label>
+                <select
+                  v-model="stepFormSelectedPageId"
+                  :disabled="loadingPages || stepFormLoading"
+                  class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                >
+                  <option value="">{{ __('Select a page...') }}</option>
+                  <option v-for="p in socialPages" :key="p.external_account_id" :value="p.external_account_id">
+                    {{ p.account_name }} ({{ p.account_type }})
+                  </option>
+                </select>
+                <p class="mt-1 text-xs text-gray-500">
+                  {{ __('Pages come from connected_accounts of External Connection') }}
+                </p>
+              </div>
+
+              <!-- Step Schedule (Datetime) -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  {{ __('Time Post News(optional)') }}
+                </label>
+                <input
+                  v-model="stepFormData.scheduled_at"
+                  type="datetime-local"
+                  :min="minScheduledAt"
+                  :disabled="stepFormLoading"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+                <p class="mt-1 text-xs text-gray-500">
+                  {{ __('Local time') }} ({{ localTzLabel }}) •
+                  {{ __('If empty, system will use Campaign start_date + delay_in_days') }}
+                </p>
+              </div>
+
+              <!-- Step Job Opening (optional) -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  {{ __('Job Opening (optional)') }}
+                </label>
+                <select
+                  v-model="stepFormSelectedJobId"
+                  @change="onStepJobChange"
+                  :disabled="stepFormLoading || loadingJobOpenings"
+                  class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                >
+                  <option value="">{{ __('Select a job opening...') }}</option>
+                  <option v-for="job in jobOpeningsList" :key="job.name" :value="job.name">
+                    {{ job.job_title }} {{ job.job_code ? `(${job.job_code})` : '' }}
+                  </option>
+                </select>
+                <p class="mt-1 text-xs text-gray-500">
+                  {{ __('If selected, the job\'s description, requirements, and benefits will be inserted into Template Content.') }}
+                </p>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <!-- Action Type -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    {{ __('Action Type') }}
+                    <span class="text-red-500">*</span>
+                  </label>
+                  <select
+                    v-model="stepFormData.action_type"
+                    :disabled="stepFormLoading"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    :class="{ 'border-red-500': stepFormErrors.action_type }"
+                  >
+                    <option v-for="option in actionTypeOptions" :key="option.value" :value="option.value" :disabled="option.disabled">
+                      {{ option.label }}
+                    </option>
+                  </select>
+                  <div v-if="stepFormErrors.action_type" class="mt-1 text-sm text-red-600">
+                    {{ stepFormErrors.action_type }}
+                  </div>
+                </div>
+
+                <!-- Step Order -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    {{ __('Step Order') }}
+                    <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    v-model.number="stepFormData.step_order"
+                    type="number"
+                    min="1"
+                    max="999"
+                    :placeholder="__('Order...')"
+                    :disabled="stepFormLoading"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    :class="{ 'border-red-500': stepFormErrors.step_order }"
+                  />
+                  <div v-if="stepFormErrors.step_order" class="mt-1 text-sm text-red-600">
+                    {{ stepFormErrors.step_order }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Delay -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  {{ __('Delay (Days)') }}
+                </label>
+                <input
+                  v-model.number="stepFormData.delay_in_days"
+                  type="number"
+                  min="0"
+                  max="365"
+                  :placeholder="__('0 for immediate execution')"
+                  :disabled="stepFormLoading"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  :class="{ 'border-red-500': stepFormErrors.delay_in_days }"
+                />
+                <p class="mt-1 text-sm text-gray-500">
+                  {{ __('Number of days to wait before executing this step') }}
+                </p>
+                <div v-if="stepFormErrors.delay_in_days" class="mt-1 text-sm text-red-600">
+                  {{ stepFormErrors.delay_in_days }}
+                </div>
+              </div>
+
+              <!-- Template Content -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  {{ __('Template Content') }}
+                </label>
+                <textarea
+                  v-model="stepFormData.template_content"
+                  rows="4"
+                  :placeholder="__('Enter template content for this step...')"
+                  :disabled="stepFormLoading"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+                <p class="mt-1 text-sm text-gray-500">
+                  {{ __('Content template for emails, SMS, or other actions') }}
+                </p>
+              </div>
+
+              <!-- Action Config -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  {{ __('Action Configuration') }}
+                </label>
+                <textarea
+                  v-model="stepFormData.action_config_string"
+                  rows="3"
+                  :placeholder="__('Enter JSON configuration...')"
+                  :disabled="stepFormLoading"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm font-mono text-sm"
+                  :class="{ 'border-red-500': stepFormErrors.action_config_string }"
+                />
+                <p class="mt-1 text-sm text-gray-500">
+                  {{ __('JSON configuration for the action (optional)') }}
+                </p>
+                <div v-if="stepFormErrors.action_config_string" class="mt-1 text-sm text-red-600">
+                  {{ stepFormErrors.action_config_string }}
+                </div>
+              </div>
+
+              <!-- Step Image (optional) -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  {{ __('Step Image (optional)') }}
+                </label>
+                <div class="space-y-3">
+                  <!-- Image Preview -->
+                  <div v-if="stepFormData.image" class="flex items-center space-x-3">
+                    <img 
+                      :src="stepFormData.image" 
+                      alt="Step image preview"
+                      class="w-20 h-20 object-cover rounded-lg border border-gray-200"
+                    />
+                    <div class="flex-1">
+                      <p class="text-sm text-gray-600">{{ __('Current image') }}</p>
+                      <p class="text-xs text-gray-500 truncate">{{ stepFormData.image }}</p>
                     </div>
                   </div>
-                </div>
-              </div>
-              
-              <!-- Add Step Button -->
-              <div v-if="!showStepForm" class="text-center">
-                <!-- Debug info -->
-                <div class="text-xs text-gray-500 mb-2">
-                  Debug: showStepCreation={{ showStepCreation }}, stepCreationMode={{ stepCreationMode }}, showStepForm={{ showStepForm }}
-                </div>
-                
-                <Button variant="outline" theme="gray" @click="addManualStep">
-                  <div class="flex items-center">
-                    <FeatherIcon name="plus" class="h-4 w-4 mr-2" />
-                    {{ campaignSteps.length > 0 ? __('Add Another Step') : __('Add First Step') }}
-                  </div>
-                </Button>
-              </div>
-              
-              <!-- Empty State -->
-              <div v-if="campaignSteps.length === 0 && !showStepForm" class="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
-                <FeatherIcon name="zap" class="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                <p class="text-gray-500 mb-4">{{ __('No steps created yet') }}</p>
-                <Button variant="solid" theme="gray" @click="addManualStep">
-                  <div class="flex items-center">
-                    <FeatherIcon name="plus" class="h-4 w-4 mr-2" />
-                    {{ __('Create First Step') }}
-                  </div>
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Step 5: Review & Activate -->
-          <div v-if="currentStep === 5" class="animate-fadeIn space-y-6">
-            <!-- Campaign Summary -->
-            <div class="text-center py-4">
-              <h3 class="text-xl font-bold mb-2 text-gray-900">{{ __('Review Campaign') }}</h3>
-              <p class="text-sm text-gray-600">{{ __('Review your campaign details and workflow before finalizing') }}</p>
-            </div>
-            
-            <!-- Campaign Info -->
-            <div class="bg-gray-50 rounded-lg p-4">
-              <h4 class="text-lg font-medium text-gray-900 mb-3">{{ __('Campaign Information') }}</h4>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label class="text-sm font-medium text-gray-700">{{ __('Campaign Name') }}</label>
-                  <p class="text-sm text-gray-900">{{ campaignData.campaign_name || __('Untitled Campaign') }}</p>
-                </div>
-                <div>
-                  <label class="text-sm font-medium text-gray-700">{{ __('Type') }}</label>
-                  <p class="text-sm text-gray-900">{{ campaignData.type }}</p>
-                </div>
-                <div class="md:col-span-2">
-                  <label class="text-sm font-medium text-gray-700">{{ __('Description') }}</label>
-                  <p class="text-sm text-gray-900">{{ campaignData.description || __('No description') }}</p>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Campaign Steps -->
-            <div class="bg-blue-50 rounded-lg p-4">
-              <h4 class="text-lg font-medium text-gray-900 mb-3">{{ __('Campaign Workflow') }}</h4>
-              <div v-if="campaignSteps.length > 0" class="space-y-2">
-                <div v-for="step in campaignSteps" :key="step.id || step.name" 
-                     class="flex items-center p-3 bg-white rounded border">
-                  <!-- Step Image -->
-                  <div v-if="step.image" class="w-8 h-8 rounded overflow-hidden mr-3 flex-shrink-0">
-                    <img 
-                      :src="step.image" 
-                      :alt="step.campaign_step_name"
-                      class="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div v-else class="w-8 h-8 bg-gray-200 rounded mr-3 flex-shrink-0 flex items-center justify-center">
-                    <FeatherIcon name="image" class="h-4 w-4 text-gray-400" />
-                  </div>
                   
-                  <span class="flex items-center justify-center w-6 h-6 bg-blue-100 text-blue-800 text-xs font-medium rounded-full mr-3">
-                    {{ step.step_order }}
-                  </span>
-                  <div class="flex-1">
-                    <div class="text-sm font-medium text-gray-900">{{ step.campaign_step_name }}</div>
-                    <div class="text-xs text-gray-500">{{ step.action_type }}{{ step.delay_in_days > 0 ? ` • ${step.delay_in_days} days delay` : '' }}</div>
-                  </div>
+                  <!-- Image Uploader -->
+                  <ImageUploader
+                    :image_url="stepFormData.image"
+                    image_type="image/*"
+                    @upload="(url, file) => {
+                      stepFormData.image = url
+                      console.log('Image uploaded:', url)
+                    }"
+                    @remove="() => {
+                      stepFormData.image = ''
+                      console.log('Image removed')
+                    }"
+                  />
                 </div>
+                <p class="mt-1 text-xs text-gray-500">
+                  {{ __('Upload an image to represent this campaign step (optional)') }}
+                </p>
               </div>
-              <div v-else class="text-center py-4 text-gray-500">
-                {{ __('No steps configured') }}
-              </div>
-            </div>
-            
-            <!-- Template Info -->
-            <div v-if="selectedTemplate" class="bg-green-50 rounded-lg p-4">
-              <h4 class="text-lg font-medium text-gray-900 mb-2">{{ __('Template Used') }}</h4>
-              <p class="text-sm text-gray-600">{{ selectedTemplate.template_name }}</p>
-              <p class="text-xs text-gray-500">{{ selectedTemplate.description }}</p>
-            </div>
-            
-            <!-- Status -->
-            <div class="text-center">
-              <p class="text-sm text-gray-600 mb-2">
-                {{ __('Campaign will be created in DRAFT status with') }} {{ campaignSteps.length }} {{ __('steps') }}
-              </p>
-              <p class="text-xs text-gray-500">
-                {{ __('You can add profiles and activate the campaign after creation') }}
-              </p>
-            </div>
+            </form>
           </div>
 
-          <!-- Step 6: Select Job Opening -->
-          
-        </div>
-
-        <!-- Footer Actions -->
-        <div class="flex justify-between items-center p-4 border-t border-gray-200">
-          <Button
-            v-if="currentStep > 1"
-            variant="outline"
-            theme="gray"
-            @click="prevStep"
-            :disabled="loading"
-          >
-            {{ __('Back') }}
-          </Button>
-          
-          <div v-else></div>
-          
-          <div class="flex space-x-3">
+          <!-- Footer Actions -->
+          <div class="flex justify-end space-x-3 p-6 border-t border-gray-200">
             <Button
-              v-if="currentStep < 4"
-              variant="solid"
+              type="button"
+              variant="outline"
               theme="gray"
-              @click="nextStep"
-              :disabled="!canProceed"
-              :loading="currentStep === 1 && draftCampaignLoading"
+              @click="handleStepFormCancel"
+              :disabled="stepFormLoading"
             >
-              {{ currentStep === 1 && draftCampaignLoading ? __('Creating Campaign...') : __('Continue') }}
+              {{ __('Cancel') }}
             </Button>
-            
-            <!-- Step 4: Campaign Steps -->
             <Button
-              v-if="currentStep === 4 && !showStepCreation"
+              type="submit"
               variant="solid"
               theme="gray"
-              @click="nextStep"
-              :disabled="campaignSteps.length === 0 && !selectedTemplate"
+              @click="handleStepFormSubmit"
+              :loading="stepFormLoading"
+              :disabled="stepFormLoading"
             >
-              {{ __('Continue to Review') }}
-            </Button>
-            
-            <Button
-              v-if="currentStep === 4 && showStepCreation && stepCreationMode === 'template'"
-              variant="solid"
-              theme="gray"
-              @click="nextStep"
-              :disabled="!selectedTemplate || campaignSteps.length === 0"
-            >
-              {{ __('Continue with Template') }}
-            </Button>
-            
-            <Button
-              v-if="currentStep === 4 && showStepCreation && stepCreationMode === 'manual'"
-              variant="solid"
-              theme="gray"
-              @click="nextStep"
-              :disabled="campaignSteps.length === 0"
-            >
-              {{ __('Continue with Steps') }}
-            </Button>
-            
-            <Button
-              v-if="currentStep === 5"
-              variant="solid"
-              theme="gray"
-              @click="finalizeCampaign"
-              :loading="activating"
-            >
-              {{ __('Finalize Campaign') }}
+              {{ editingStep ? __('Update Step') : __('Add Step') }}
             </Button>
           </div>
         </div>
-      </div>
-    </template>
-  </Dialog>
+      </template>
+    </Dialog>
+  </div>
 </template>
 
 <script setup>
@@ -2439,6 +2472,12 @@ const toIsoIfSet = (localStr) => {
     return null
   }
 }
+
+// Add step form dialog options
+const stepFormDialogOptions = computed(() => ({
+  title: editingStep.value ? __('Edit Step') : __('Add New Step'),
+  size: 'lg'
+}))
 
 </script>
 

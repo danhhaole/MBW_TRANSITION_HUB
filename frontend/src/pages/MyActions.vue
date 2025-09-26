@@ -134,25 +134,63 @@
         <!-- Edit Modal -->
         <Dialog v-model="showEdit" :options="{ title: __('Chỉnh sửa hành động'), size: 'xl' }">
           <template #body-content>
-            <div class="space-y-4">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormControl type="select" :label="__('Chiến dịch ứng cử viên')" v-model="editForm.talent_campaign_id" :options="editOptions.candidateCampaigns" />
-                <FormControl type="select" :label="__('Bước chiến dịch')" v-model="editForm.campaign_step" :options="editOptions.campaignSteps" />
+            <div class="p-6 space-y-6">
+              <!-- Task Info -->
+              <div v-if="currentEditTask" class="mb-2">
+                <div class="flex items-center gap-3 mb-3">
+                  <div class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600 font-semibold">
+                    {{ (currentEditTask.candidate || 'U').charAt(0).toUpperCase() }}
+                  </div>
+                  <div>
+                    <div class="text-base font-semibold text-gray-900">{{ currentEditTask.candidate || currentEditTask.assignee_name || __('Task') }}</div>
+                    <div class="text-sm text-gray-600">
+                      {{ __('Campaign') }}: {{ currentEditTask.campaign_name || '-' }}
+                    </div>
+                    <div class="text-xs text-gray-500">
+                      {{ __('Current status') }}: {{ getStatusLabel(currentEditTask.status) }}
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormControl type="select" :label="__('Trạng thái')" v-model="editForm.status" :options="statusOptions" />
-                <FormControl type="select" :label="__('Người được giao')" v-model="editForm.assignee_id" :options="editOptions.assignees" />
+
+              <!-- Action Selection -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-3">{{ __('Update status') }}:</label>
+                <div class="flex flex-wrap gap-2 mb-2">
+                  <button
+                    v-for="action in actionOptions"
+                    :key="action.value"
+                    :class="[
+                      'inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200',
+                      selectedAction === action.value ? getActionSelectedClass(action.color) : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300'
+                    ]"
+                    @click="selectedAction = action.value"
+                  >
+                    <svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
+                      <path v-if="action.icon === 'mdi-check-circle'" fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                      <path v-else-if="action.icon === 'mdi-skip-next'" d="M4.555 5.168A1 1 0 003 6v8a1 1 0 001.555.832L10 11.202V14a1 1 0 001.555.832l6-4a1 1 0 000-1.664l-6-4A1 1 0 0010 6v2.798l-5.445-3.63z"/>
+                      <path v-else-if="action.icon === 'mdi-alert-circle'" fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                    {{ action.label }}
+                  </button>
+                </div>
               </div>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormControl type="datetime-local" :label="__('Dự kiến tại')" v-model="editForm.scheduled_at" />
-                <FormControl type="datetime-local" :label="__('Thực hiện tại')" v-model="editForm.executed_at" />
+
+              <!-- Notes -->
+              <div>
+                <FormControl
+                  v-model="notes"
+                  type="textarea"
+                  :label="__('Notes')"
+                  :placeholder="__('Enter notes about the task execution...')"
+                  :rows="3"
+                />
               </div>
-              <FormControl type="textarea" :label="__('Kết quả (JSON)')" v-model="editForm.result" :rows="4" :placeholder="__('Nhập dữ liệu JSON hoặc để trống ...')" />
             </div>
           </template>
           <template #actions>
             <Button variant="ghost" @click="showEdit = false">{{ __('Cancel') }}</Button>
-            <Button variant="solid" :loading="savingEdit" @click="submitEdit">{{ __('Update') }}</Button>
+            <Button variant="solid" :disabled="!selectedAction" :loading="savingEdit" @click="submitEdit">{{ getActionButtonText() }}</Button>
           </template>
         </Dialog>
   
@@ -353,6 +391,30 @@
     executed_at: '',
     result: ''
   })
+  const currentEditTask = reactive({})
+  const selectedAction = ref('')
+  const notes = ref('')
+
+  const getStatusLabel = (status) => ({
+    'PENDING_MANUAL': __('Pending Manual'),
+    'SCHEDULED': __('Scheduled'),
+    'EXECUTED': __('Executed'),
+    'SKIPPED': __('Skipped'),
+    'FAILED': __('Failed')
+  }[status] || status)
+
+  const actionOptions = computed(() => ([
+    { value: 'EXECUTED', label: __('Complete'), color: 'success', icon: 'mdi-check-circle' },
+    { value: 'SKIPPED', label: __('Skip'), color: 'warning', icon: 'mdi-skip-next' },
+    { value: 'FAILED', label: __('Failed'), color: 'error', icon: 'mdi-alert-circle' }
+  ]))
+
+  const getActionSelectedClass = (color) => ({
+    success: 'bg-green-100 text-green-800 border border-green-300',
+    info: 'bg-blue-100 text-blue-800 border border-blue-300',
+    warning: 'bg-yellow-100 text-yellow-800 border border-yellow-300',
+    error: 'bg-red-100 text-red-800 border border-red-300'
+  }[color] || 'bg-blue-100 text-blue-800 border border-blue-300')
   
   // View modal logic
   const showView = ref(false)
@@ -451,6 +513,11 @@
         executed_at: data.executed_at ? String(data.executed_at).substring(0, 16) : (item.executed_at ? item.executed_at.substring(0, 16) : ''),
         result: data.result ? (typeof data.result === 'string' ? data.result : JSON.stringify(data.result)) : (item.result ? (typeof item.result === 'string' ? item.result : JSON.stringify(item.result)) : '')
       })
+      Object.assign(currentEditTask, {
+        candidate: data.candidate_name || item.candidate_name,
+        campaign_name: data.campaign_name || item.campaign_name,
+        status: data.status || item.status
+      })
     } catch (e) {
       // fallback dùng dữ liệu trong list
       Object.assign(editForm, {
@@ -463,28 +530,39 @@
         executed_at: item.executed_at ? item.executed_at.substring(0, 16) : '',
         result: item.result ? (typeof item.result === 'string' ? item.result : JSON.stringify(item.result)) : ''
       })
+      Object.assign(currentEditTask, {
+        candidate: item.candidate_name,
+        campaign_name: item.campaign_name,
+        status: item.status
+      })
     }
+    selectedAction.value = ''
+    notes.value = ''
     showEdit.value = true
   }
-  
+
+  const getActionButtonText = () => __('Update Task')
+
   const submitEdit = async () => {
+    if (!selectedAction.value) return
     savingEdit.value = true
     try {
       const updater = createResource({ url: 'mbw_mira.mbw_mira.doctype.action.action.update_action', method: 'POST' })
-      const res = await updater.submit({
+      const payload = {
         name: editForm.name,
-        talent_campaign_id: editForm.talent_campaign_id,
-        campaign_step: editForm.campaign_step,
-        status: editForm.status,
-        assignee_id: editForm.assignee_id || null,
-        scheduled_at: editForm.scheduled_at || null,
-        executed_at: editForm.executed_at || null,
-        result: editForm.result || ''
-      })
+        status: selectedAction.value,
+        // Only set executed_at when user marks Complete
+        executed_at: selectedAction.value === 'EXECUTED' ? new Date().toISOString() : null,
+        result: notes.value || ''
+      }
+      const res = await updater.submit(payload)
       if (res?.success) {
         toast.success(__('Cập nhật hành động thành công'))
         showEdit.value = false
         await loadData()
+        if (selectedAction.value === 'EXECUTED') {
+          activeTab.value = 'completed'
+        }
       } else {
         toast.error(res?.error || __('Cập nhật thất bại'))
       }
