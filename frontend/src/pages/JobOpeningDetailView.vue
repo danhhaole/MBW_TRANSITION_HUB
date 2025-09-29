@@ -140,15 +140,16 @@
               />
               
               <div class="grid grid-cols-2 gap-4">
-                <FormControl 
-                  v-model="editForm.job_code" 
-                  type="text" 
-                  :label="__('Job Code')" 
-                />
+                <!-- Ẩn job_code khỏi form chỉnh sửa -->
                 <FormControl 
                   v-model="editForm.department_name" 
                   type="text" 
                   :label="__('Department')" 
+                />
+                <FormControl 
+                  v-model="editForm.location_name" 
+                  type="text" 
+                  :label="__('Location')" 
                 />
               </div>
 

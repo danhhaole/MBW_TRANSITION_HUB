@@ -56,7 +56,7 @@ export const submitNewJobOpening = async (formData) => {
   }
   const payload = {
     job_title: formData.job_title.trim(),
-    job_code: formData.job_code || '',
+    // Không gửi job_code để server tự sinh
     description: formData.description || '',
     requirements: formData.requirements || '',
     benefits: formData.benefits || '',

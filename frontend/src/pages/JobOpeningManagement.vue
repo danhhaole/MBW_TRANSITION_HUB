@@ -226,7 +226,7 @@
 
               <div class="space-y-4">
                 <FormControl v-model="form.job_title" type="text" :label="__('Job Title')" :required="true" />
-                <FormControl v-model="form.job_code" type="text" :label="__('Job Code')" />
+                <!-- Ẩn job_code khỏi form tạo và chỉnh sửa -->
                 <div class="grid grid-cols-2 gap-4">
                   <FormControl v-model="form.department_name" type="text" :label="__('Department')" />
                   <FormControl v-model="form.location_name" type="text" :label="__('Location')" />
@@ -509,15 +509,15 @@
                   <div v-if="showPreview" class="space-y-4 text-sm">
                     <div v-if="aiForm.job_description">
                       <h5 class="font-medium text-gray-800">{{ __('Job Description') }}</h5>
-                      <div class="text-gray-600 mt-1" v-html="aiForm.job_description"></div>
+                      <div class="text-gray-600 mt-1" v-html="formatDescription(aiForm.job_description)"></div>
                     </div>
                     <div v-if="aiForm.job_requirement">
                       <h5 class="font-medium text-gray-800">{{ __('Requirements') }}</h5>
-                      <div class="text-gray-600 mt-1" v-html="aiForm.job_requirement"></div>
+                      <div class="text-gray-600 mt-1" v-html="formatRequirements(aiForm.job_requirement)"></div>
                     </div>
                     <div v-if="aiForm.job_benefits">
                       <h5 class="font-medium text-gray-800">{{ __('Benefits') }}</h5>
-                      <div class="text-gray-600 mt-1" v-html="aiForm.job_benefits"></div>
+                      <div class="text-gray-600 mt-1" v-html="formatBenefits(aiForm.job_benefits)"></div>
                     </div>
                   </div>
                 </div>
@@ -676,7 +676,114 @@ watch(searchText, () => {
 
 const openCreateDialog = () => {
   Object.keys(form).forEach(k => delete form[k])
+  
+  // Set default dates
+  const now = new Date()
+  
+  // Posting Date: đầu tháng hiện tại (ngày 1)
+  const postingDate = new Date(now.getFullYear(), now.getMonth(), 1)
+  
+  // Closing Date: cuối tháng hiện tại
+  // Cách này sẽ tự động tính đúng ngày cuối tháng
+  const closingDate = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+  
+  // Format thành YYYY-MM-DD và đảm bảo là local time
+  const formatDate = (date) => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+  
+  form.posting_date = formatDate(postingDate)
+  form.closing_date = formatDate(closingDate)
+  
+  console.log('Setting dates:', {
+    posting: form.posting_date,
+    closing: form.closing_date
+  })
+  
   showForm.value = true
+}
+
+const stripHtml = (html) => {
+  if (!html || typeof html !== 'string') return ''
+  return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim()
+}
+
+// Format Job Description - tách paragraph và bullet points với dấu -
+const formatDescription = (text) => {
+  if (!text) return ''
+  
+  const cleanText = stripHtml(text)
+  
+  // Tìm phần đầu tiên (paragraph đầu) và phần bullet points
+  const lines = cleanText.split('\n').filter(line => line.trim())
+  
+  if (lines.length === 0) return `<p>${cleanText}</p>`
+  
+  const result = []
+  let inBulletSection = false
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim()
+    
+    // Kiểm tra nếu bắt đầu bullet points (có dấu -, •, *, hoặc số)
+    if (line.match(/^[-•*\d+\.]/) || line.match(/^-/) || i > 2) {
+      if (!inBulletSection) {
+        inBulletSection = true
+      }
+      // Loại bỏ ký tự bullet cũ và thêm lại với format chuẩn
+      const cleanLine = line.replace(/^[-•*\s*\d+\.\s*]+/, '').trim()
+      if (cleanLine) {
+        result.push(`<p>- ${cleanLine}</p>`)
+      }
+    } else {
+      // Paragraph thường
+      if (line) {
+        result.push(`<p class="leading-relaxed">${line}</p>`)
+      }
+    }
+  }
+  
+  // Nếu không có bullet points, trả về paragraph đơn
+  if (!inBulletSection) {
+    return `<p class="leading-relaxed">${cleanText}</p>`
+  }
+  
+  // Chia thành paragraph đầu và bullet section
+  const paragraphs = result.filter(item => !item.includes('- '))
+  const bullets = result.filter(item => item.includes('- '))
+  
+  return paragraphs.join('') + 
+         (bullets.length > 0 ? `<div class="space-y-2 mt-4">${bullets.join('')}</div>` : '')
+}
+
+// Format Requirements - bullet points với dấu •
+const formatRequirements = (text) => {
+  if (!text) return ''
+  
+  const cleanText = stripHtml(text)
+  
+  // Tách thành các mục dựa trên xuống dòng và các dấu phân cách
+  const lines = cleanText.split(/[\n\r]+/).filter(line => line.trim())
+  
+  if (lines.length === 0) return `<p>${cleanText}</p>`
+  
+  const result = []
+  
+  for (const line of lines) {
+    const trimmedLine = line.trim()
+    if (trimmedLine) {
+      // Loại bỏ các ký tự bullet cũ và thêm lại với format chuẩn •
+      const cleanLine = trimmedLine.replace(/^[-•*\s*\d+\.\s*]+/, '').trim()
+      if (cleanLine) {
+        result.push(`<li>• ${cleanLine}</li>`)
+      }
+    }
+  }
+  
+  return result.length > 0 ? `<ul class="list-none space-y-3 text-gray-700">${result.join('')}</ul>` : `<p>${cleanText}</p>`
 }
 
 const closeForm = () => {

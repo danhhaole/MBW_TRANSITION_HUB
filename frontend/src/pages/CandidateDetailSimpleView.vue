@@ -183,7 +183,7 @@ const processedSkills = computed(() => {
 
 const load = async () => {
   const res = await call('frappe.client.get', { 
-    doctype: 'Candidate', 
+    doctype: 'Mira Candidate', 
     name: route.params.id,
     fields: ['*']
   })

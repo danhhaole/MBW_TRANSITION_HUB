@@ -4,7 +4,16 @@
       <template #left-header>
         <Breadcrumbs :items="breadcrumbs" />
       </template>
-      <template #right-header></template>
+      <template #right-header>
+        <Button variant="solid" theme="gray" @click="openCreateDialog" :loading="loading">
+          <template #prefix>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+          </template>
+          {{ __('Create Candidate') }}
+        </Button>
+      </template>
     </LayoutHeader>
 
     <div class="container mx-auto px-6 py-6">
@@ -45,6 +54,7 @@
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Source') }}</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Status') }}</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Email Opt Out') }}</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Actions') }}</th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
@@ -65,9 +75,29 @@
                     {{ item.email_opt_out ? __('Opted Out') : __('Active') }}
                   </span>
                 </td>
+                <td class="px-6 py-4">
+                  <div class="flex items-center justify-end gap-3">
+                    <button class="text-gray-500 hover:text-gray-700" @click="view(item)" title="{{ __('View') }}">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    </button>
+                    <button class="text-blue-600 hover:text-blue-700" @click="openEditDialog(item)" title="{{ __('Edit') }}">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5h2m-7.586 9.586a2 2 0 010-2.828l7.586-7.586a2 2 0 012.828 0l2.172 2.172a2 2 0 010 2.828l-7.586 7.586a2 2 0 01-1.414.586H6v-2.172a2 2 0 01.586-1.414z" />
+                      </svg>
+                    </button>
+                    <button class="text-red-600 hover:text-red-700" @click="remove(item)" title="{{ __('Delete') }}">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                </td>
               </tr>
               <tr v-if="items.length === 0">
-                <td colspan="6" class="px-6 py-8 text-center text-gray-500">{{ __('No records') }}</td>
+                <td colspan="7" class="px-6 py-8 text-center text-gray-500">{{ __('No records') }}</td>
               </tr>
             </tbody>
           </table>
@@ -89,6 +119,71 @@
         </div>
       </div>
     </div>
+
+    <Dialog v-model="showCreate" :options="{ title: isEditing ? __('Edit Candidate') : __('Create Candidate'), size: 'xl' }">
+      <template #body-content>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Full Name') }}</label>
+            <input v-model="form.full_name" type="text" class="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm" placeholder="Nguyễn Văn A" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Email') }}</label>
+            <input v-model="form.email" type="email" class="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm" placeholder="email@example.com" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Phone') }}</label>
+            <input v-model="form.phone" type="text" class="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm" placeholder="0912..." />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Source') }}</label>
+            <Select v-model="form.source" :options="sourceOptions.filter(o => o.value !== 'all')" placeholder="Select source" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Status') }}</label>
+            <Select v-model="form.status" :options="statusOptions.filter(o => o.value !== 'all')" placeholder="Select status" />
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('CV (PDF)') }}</label>
+            <div class="mb-3">
+              <Select v-model="cvMode" :options="cvModeOptions" class="min-w-48" size="md" variant="outlined" />
+            </div>
+            <div v-if="cvMode === 'upload'" class="space-y-2">
+              <input ref="fileInput" type="file" accept="application/pdf" @change="handleFileChange" class="block w-full text-sm" />
+              <div v-if="uploading" class="text-xs text-gray-500">{{ __('Uploading...') }}</div>
+              <div v-if="form.cv_original_url" class="text-xs text-green-700 break-words">{{ __('Uploaded to:') }} {{ form.cv_original_url }}</div>
+              <div v-if="uploadError" class="text-xs text-red-600">{{ uploadError }}</div>
+            </div>
+            <div v-else>
+              <input v-model="form.cv_original_url" type="url" placeholder="https://example.com/cv.pdf" class="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm" />
+            </div>
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('Skills') }}</label>
+            <div class="space-y-2">
+              <div class="flex flex-wrap gap-2">
+                <span v-for="(skill, index) in form.skills" :key="index" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  {{ skill }}
+                  <button type="button" @click="removeSkill(index)" class="ml-1.5 h-4 w-4 rounded-full inline-flex items-center justify-center text-blue-400 hover:bg-blue-200 hover:text-blue-500 focus:outline-none">
+                    <svg class="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
+                      <path stroke-linecap="round" stroke-width="1.5" d="m1 1 6 6m0-6-6 6" />
+                    </svg>
+                  </button>
+                </span>
+              </div>
+              <input v-model="newSkill" @input="handleSkillInput" @blur="finalizeSkillInput" type="text" :placeholder="__('Enter skills separated by commas (e.g. React, Vue, Pinia...)')" class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
+              <p class="text-xs text-gray-500">{{ __('Tip: You can enter multiple skills at once by separating them with commas') }}</p>
+            </div>
+          </div>
+        </div>
+      </template>
+      <template #actions>
+        <div class="flex items-center gap-2">
+          <Button variant="subtle" @click="closeCreateDialog">{{ __('Cancel') }}</Button>
+          <Button variant="solid" :loading="creating" @click="submitCreate">{{ isEditing ? __('Save') : __('Create') }}</Button>
+        </div>
+      </template>
+    </Dialog>
   </div>
 </template>
 
@@ -97,7 +192,7 @@ import { ref, reactive, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import Loading from '@/components/Loading.vue'
-import { Breadcrumbs, Button, Select } from 'frappe-ui'
+import { Breadcrumbs, Button, Select, Dialog, toast } from 'frappe-ui'
 import { call } from 'frappe-ui'
 
 const router = useRouter()
@@ -136,7 +231,7 @@ const fetchList = async () => {
   if (searchText.value && searchText.value.trim()) filterArray.push(['full_name', 'like', `%${searchText.value.trim()}%`])
 
   const res = await call('frappe.client.get_list', {
-    doctype: 'Candidate',
+    doctype: 'Mira Candidate',
     filters: filterArray.length ? filterArray : {},
     fields: ['name','full_name','email','phone','source','status','email_opt_out','creation'],
     order_by: 'modified desc',
@@ -144,7 +239,7 @@ const fetchList = async () => {
     limit_page_length: pagination.value.limit
   })
   const total = await call('frappe.client.get_count', {
-    doctype: 'Candidate',
+    doctype: 'Mira Candidate',
     filters: filterArray.length ? filterArray : {}
   })
   items.value = res || []
@@ -197,4 +292,225 @@ const goToPage = async (page) => {
 onMounted(async () => {
   await reload()
 })
+
+// Create/Edit dialog state
+const showCreate = ref(false)
+const creating = ref(false)
+const isEditing = ref(false)
+const editingName = ref('')
+const cvMode = ref('upload')
+const cvModeOptions = [
+  { label: __('Upload PDF'), value: 'upload' },
+  { label: __('Paste PDF URL'), value: 'link' }
+]
+const fileInput = ref(null)
+const uploading = ref(false)
+const uploadError = ref('')
+const newSkill = ref('')
+
+const form = reactive({
+  full_name: '',
+  email: '',
+  phone: '',
+  source: 'Manual',
+  status: 'NEW',
+  cv_original_url: '',
+  skills: []
+})
+
+function openCreateDialog() {
+  resetForm()
+  isEditing.value = false
+  showCreate.value = true
+}
+
+function openEditDialog(item) {
+  resetForm()
+  isEditing.value = true
+  editingName.value = item.name
+  // load full doc to populate
+  call('frappe.client.get', {
+    doctype: 'Mira Candidate',
+    name: item.name
+  }).then((doc) => {
+    form.full_name = doc.full_name || ''
+    form.email = doc.email || ''
+    form.phone = doc.phone || ''
+    form.source = doc.source || 'Manual'
+    form.status = doc.status || 'NEW'
+    form.cv_original_url = doc.cv_original_url || ''
+    try {
+      form.skills = doc.skills ? JSON.parse(doc.skills) : []
+      if (!Array.isArray(form.skills)) form.skills = []
+    } catch (e) {
+      form.skills = []
+    }
+    cvMode.value = form.cv_original_url ? 'link' : 'upload'
+    showCreate.value = true
+  })
+}
+
+function closeCreateDialog() {
+  showCreate.value = false
+}
+
+function resetForm() {
+  form.full_name = ''
+  form.email = ''
+  form.phone = ''
+  form.source = 'Manual'
+  form.status = 'NEW'
+  form.cv_original_url = ''
+  form.skills = []
+  cvMode.value = 'upload'
+  uploadError.value = ''
+  uploading.value = false
+  newSkill.value = ''
+  if (fileInput.value) fileInput.value.value = ''
+}
+
+function removeSkill(index) {
+  form.skills.splice(index, 1)
+  const remaining = form.skills.slice()
+  const hadTrailingComma = /,\s*$/.test(newSkill.value || '')
+  newSkill.value = remaining.join(', ') + (hadTrailingComma && remaining.length ? ', ' : '')
+}
+
+function addSkill() {
+  if (!newSkill.value) return
+  const parts = newSkill.value.split(',').map(s => s.trim()).filter(Boolean)
+  if (!parts.length) return
+  const unique = Array.from(new Set(parts))
+  form.skills = unique
+}
+
+function handleSkillInput(e) {
+  const value = e.target.value || ''
+  const tokens = value.split(',').map(s => s.trim()).filter(Boolean)
+  const unique = Array.from(new Set(tokens))
+  form.skills = unique
+}
+
+function finalizeSkillInput() {
+  const value = newSkill.value || ''
+  const tokens = value.split(',').map(s => s.trim()).filter(Boolean)
+  const unique = Array.from(new Set(tokens))
+  form.skills = unique
+  // keep the normalized text in the input
+  newSkill.value = unique.join(', ')
+}
+
+function handleFileChange(e) {
+  uploadError.value = ''
+  const file = e.target.files && e.target.files[0]
+  if (!file) return
+  if (file.type !== 'application/pdf') {
+    uploadError.value = __('Please select a PDF file')
+    return
+  }
+  uploadPDF(file)
+}
+
+async function uploadPDF(file) {
+  try {
+    uploading.value = true
+    const xhr = new XMLHttpRequest()
+    const promise = new Promise((resolve, reject) => {
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+          if (xhr.status === 200) {
+            let r = null
+            try { r = JSON.parse(xhr.responseText) } catch (e) { r = xhr.responseText }
+            const msg = r.message || r
+            form.cv_original_url = msg.file_url || ''
+            resolve(msg)
+          } else {
+            let err = null
+            try { err = JSON.parse(xhr.responseText) } catch (e) { err = xhr.responseText }
+            reject(err)
+          }
+        }
+      }
+      xhr.onerror = () => reject(__('Network error'))
+    })
+    xhr.open('POST', '/api/method/upload_file', true)
+    xhr.setRequestHeader('Accept', 'application/json')
+    if (window.csrf_token && window.csrf_token !== '{{ csrf_token }}') {
+      xhr.setRequestHeader('X-Frappe-CSRF-Token', window.csrf_token)
+    }
+    const formData = new FormData()
+    formData.append('file', file, file.name)
+    formData.append('is_private', '1')
+    formData.append('folder', 'Home/Attachments')
+    xhr.send(formData)
+    await promise
+  } catch (err) {
+    console.error('upload_file error:', err)
+    uploadError.value = __('Upload failed')
+  } finally {
+    uploading.value = false
+  }
+}
+
+async function submitCreate() {
+  if (!form.full_name || !form.full_name.trim()) {
+    toast.error(__('Full Name is required'))
+    return
+  }
+  if (cvMode.value === 'upload' && uploading.value) {
+    toast.error(__('Please wait until upload finishes'))
+    return
+  }
+  creating.value = true
+  try {
+    const skillsValue = form.skills && form.skills.length ? JSON.stringify(form.skills) : null
+    if (isEditing.value) {
+      const doc = {
+        doctype: 'Mira Candidate',
+        name: editingName.value,
+        full_name: form.full_name?.trim(),
+        email: form.email?.trim() || null,
+        phone: form.phone?.trim() || null,
+        source: form.source || null,
+        status: form.status || 'NEW',
+        cv_original_url: form.cv_original_url?.trim() || null,
+        skills: skillsValue
+      }
+      await call('frappe.client.save', { doc, ignore_version: 1 })
+      toast.success(__('Saved'))
+    } else {
+      const doc = {
+        doctype: 'Mira Candidate',
+        full_name: form.full_name?.trim(),
+        email: form.email?.trim() || null,
+        phone: form.phone?.trim() || null,
+        source: form.source || null,
+        status: form.status || 'NEW',
+        cv_original_url: form.cv_original_url?.trim() || null,
+        skills: skillsValue
+      }
+      await call('frappe.client.insert', { doc })
+      toast.success(__('Created'))
+    }
+    showCreate.value = false
+    await reload()
+  } catch (e) {
+    console.error(e)
+    toast.error(__('Failed to save'))
+  } finally {
+    creating.value = false
+  }
+}
+
+async function remove(item) {
+  if (!confirm(__('Delete this candidate?'))) return
+  try {
+    await call('frappe.client.delete', { doctype: 'Mira Candidate', name: item.name })
+    toast.success(__('Deleted'))
+    await reload()
+  } catch (e) {
+    console.error(e)
+    toast.error(__('Failed to delete'))
+  }
+}
 </script> 
