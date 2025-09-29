@@ -1,25 +1,20 @@
 {
  "actions": [],
- "autoname": "format:TLP-{YY}{MM}-{#####}",
+ "autoname": "format:CAN-{YY}{MM}-{#####}",
  "creation": "2025-06-26 13:45:35.507165",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "section_break_zprz",
   "full_name",
   "email",
   "phone",
-  "dob",
   "avatar",
   "headline",
   "source",
   "cv_original_url",
   "profile_data",
-  "position",
   "skills",
   "ai_summary",
-  "linkedin_url",
-  "portfolio_url",
   "status",
   "last_interaction",
   "email_opt_out"
@@ -86,61 +81,32 @@
    "label": "AI Summary"
   },
   {
-   "description": "\nNew\tH\u1ed3 s\u01a1 m\u1edbi thu th\u1eadp, ch\u01b0a \u0111\u01b0\u1ee3c x\u1eed l\u00fd\nSourced\tH\u1ed3 s\u01a1 \u0111\u00e3 \u0111\u01b0\u1ee3c ti\u1ebfp c\u1eadn t\u1eeb ngu\u1ed3n b\u00ean ngo\u00e0i (job boards, LinkedIn...)\nEnriched\tH\u1ed3 s\u01a1 \u0111\u00e3 \u0111\u01b0\u1ee3c b\u1ed5 sung th\u00f4ng tin (qua parsing CV, \u0111\u00e1nh gi\u00e1 k\u1ef9 n\u0103ng...)\nNurturing\t\u0110ang trong qu\u00e1 tr\u00ecnh nu\u00f4i d\u01b0\u1ee1ng \u2013 g\u1eedi email, t\u00e0i li\u1ec7u, ch\u0103m s\u00f3c\nEngaged\t\u1ee8ng vi\u00ean \u0111\u00e3 ph\u1ea3n h\u1ed3i, t\u01b0\u01a1ng t\u00e1c t\u00edch c\u1ef1c\nQualified\t\u0110\u00e3 \u0111\u01b0\u1ee3c \u0111\u00e1nh gi\u00e1 \u0111\u1ee7 \u0111i\u1ec1u ki\u1ec7n cho c\u00e1c v\u1ecb tr\u00ed\nCategorized\t\u0110\u00e3 \u0111\u01b0\u1ee3c ph\u00e2n lo\u1ea1i theo k\u1ef9 n\u0103ng, ng\u00e0nh ngh\u1ec1, m\u1ee5c ti\u00eau\nIn Campaign\t\u0110ang tham gia m\u1ed9t chi\u1ebfn d\u1ecbch tuy\u1ec3n d\u1ee5ng c\u1ee5 th\u1ec3\nArchived\tH\u1ed3 s\u01a1 kh\u00f4ng c\u00f2n \u0111\u01b0\u1ee3c theo d\u00f5i t\u00edch c\u1ef1c, nh\u01b0ng v\u1eabn l\u01b0u \u0111\u1ec3 tham kh\u1ea3o\nHired / Converted\t\u1ee8ng vi\u00ean \u0111\u00e3 \u0111\u01b0\u1ee3c tuy\u1ec3n d\u1ee5ng v\u00e0o h\u1ec7 th\u1ed1ng ch\u00ednh",
+   "description": "Enum\nTr\u1ea1ng th\u00e1i c\u1ee7a \u1ee9ng vi\u00ean trong vivu. C\u00e1c gi\u00e1 tr\u1ecb: NEW, SOURCED, NURTURING, ENGAGED, ARCHIVED.\n\n",
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
-   "options": "NEW\nSOURCED\nENRICHED\nNURTURING\nENGAGED\nQUALIFIED\nCATEGORIZED\nIN CAMPAIGN\nHIRED\nARCHIVED"
+   "options": "NEW\nSOURCED\nNURTURING\nENGAGED\nARCHIVED"
   },
   {
    "description": "Ng\u00e0y v\u00e0 gi\u1edd c\u1ee7a l\u1ea7n t\u01b0\u01a1ng t\u00e1c cu\u1ed1i c\u00f9ng (g\u1eedi email, m\u1edf email, v.v.).",
    "fieldname": "last_interaction",
    "fieldtype": "Datetime",
-   "label": "Last Interaction",
-   "read_only": 1
+   "label": "Last Mira Interaction"
   },
   {
    "default": "0",
    "fieldname": "email_opt_out",
    "fieldtype": "Check",
-   "label": "Email Opt Out",
-   "read_only": 1
-  },
-  {
-   "description": "H\u1ed3 S\u01a1 \u1ee8ng Vi\u00ean Ti\u1ec1m N\u0103ng, l\u00e0 n\u01a1i l\u01b0u tr\u1eef th\u00f4ng tin chi ti\u1ebft v\u1ec1 c\u00e1c \u1ee9ng vi\u00ean c\u00f3 ti\u1ec1m n\u0103ng, k\u1ec3 c\u1ea3 khi h\u1ecd kh\u00f4ng ch\u1ee7 \u0111\u1ed9ng t\u00ecm vi\u1ec7c.",
-   "fieldname": "section_break_zprz",
-   "fieldtype": "Section Break"
-  },
-  {
-   "description": "Ng\u00e0y sinh",
-   "fieldname": "dob",
-   "fieldtype": "Date",
-   "label": "DOB"
-  },
-  {
-   "fieldname": "linkedin_url",
-   "fieldtype": "Small Text",
-   "label": "Linkedin Url"
-  },
-  {
-   "fieldname": "portfolio_url",
-   "fieldtype": "Small Text",
-   "label": "Portfolio Url"
-  },
-  {
-   "description": "V\u1ecb tr\u00ed quan t\u00e2m",
-   "fieldname": "position",
-   "fieldtype": "Data",
-   "label": "Position"
+   "label": "Email Opt Out"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-28 08:31:36.471714",
+ "modified": "2025-07-03 14:42:00.266047",
  "modified_by": "Administrator",
  "module": "MBW Mira",
- "name": "TalentProfiles",
+ "name": "Mira Candidate",
  "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
@@ -160,6 +126,5 @@
  "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": [],
- "track_changes": 1
+ "states": []
 }

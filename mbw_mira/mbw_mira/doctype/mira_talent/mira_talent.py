@@ -6,7 +6,7 @@ from frappe.model.document import Document
 from frappe.utils import cstr, cint, flt, getdate, nowdate, get_datetime
 from mbw_mira.api.common import get_filter_options, get_form_data, get_list_data
 
-class CandidatePool(Document):
+class MiraTalent(Document):
 	pass
 
 
@@ -44,7 +44,7 @@ def get_candidate_pools_paginated(
         if search_conditions:
             filters["search_text"] = search_conditions
         
-        # Fields to fetch for CandidatePool
+        # Fields to fetch for MiraTalent
         fields = [
             "name", "applicant_id", "shortlist_date", "evaluation_score", 
             "interview_feedback", "status", "hired_date", "notes", 
@@ -53,7 +53,7 @@ def get_candidate_pools_paginated(
         
         # Get data using common function
         result = get_list_data(
-            doctype="CandidatePool",
+            doctype="MiraTalent",
             filters=filters,
             order_by=order_by,
             page_length=limit,
@@ -125,23 +125,23 @@ def get_candidate_pool_stats():
     Get candidate pool statistics - READ ONLY
     """
     try:
-        total = frappe.db.count("CandidatePool")
+        total = frappe.db.count("MiraTalent")
         
         # Count by status
-        shortlisted_count = frappe.db.count("CandidatePool", {"status": "Shortlisted"})
-        offered_count = frappe.db.count("CandidatePool", {"status": "Offered"})
-        hired_count = frappe.db.count("CandidatePool", {"status": "Hired"})
-        rejected_count = frappe.db.count("CandidatePool", {"status": "Rejected"})
+        shortlisted_count = frappe.db.count("MiraTalent", {"status": "Shortlisted"})
+        offered_count = frappe.db.count("MiraTalent", {"status": "Offered"})
+        hired_count = frappe.db.count("MiraTalent", {"status": "Hired"})
+        rejected_count = frappe.db.count("MiraTalent", {"status": "Rejected"})
         
         # Recently active (modified in last 7 days)
         from frappe.utils import add_days
         week_ago = add_days(nowdate(), -7)
-        recent_count = frappe.db.count("CandidatePool", {"modified": [">", week_ago]})
+        recent_count = frappe.db.count("MiraTalent", {"modified": [">", week_ago]})
         
         # Average evaluation score
         avg_score_result = frappe.db.sql("""
             SELECT AVG(evaluation_score) as avg_score 
-            FROM `tabCandidatePool` 
+            FROM `tabMiraTalent` 
             WHERE evaluation_score IS NOT NULL AND evaluation_score > 0
         """, as_dict=True)
         avg_score = round(avg_score_result[0].get("avg_score", 0), 2) if avg_score_result else 0
@@ -177,7 +177,7 @@ def search_candidate_pools(query="", limit=10):
             return {"success": True, "candidate_pools": []}
         
         candidate_pools = frappe.get_list(
-            "CandidatePool",
+            "MiraTalent",
             fields=["name", "applicant_id", "status", "evaluation_score"],
             filters=[
                 ["applicant_id", "like", f"%{query}%"],
@@ -212,7 +212,7 @@ def get_candidate_pool_by_name(name):
     Get candidate pool details by name - READ ONLY
     """
     try:
-        result = get_form_data("CandidatePool", name)
+        result = get_form_data("MiraTalent", name)
         if result.get("success"):
             candidate_pool = result["data"]
             
@@ -249,8 +249,8 @@ def get_candidate_pool_filter_options():
     Get filter options for candidate pools - READ ONLY
     """
     try:
-        # Get status options from CandidatePool doctype
-        status_result = get_filter_options("CandidatePool", "status")
+        # Get status options from MiraTalent doctype
+        status_result = get_filter_options("MiraTalent", "status")
         status_options = status_result.get("options", []) if status_result.get("success") else []
         
         # If no options from API, provide default status options from doctype definition

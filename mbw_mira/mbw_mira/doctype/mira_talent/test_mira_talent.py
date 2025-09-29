@@ -5,5 +5,5 @@
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestTalentSegment(FrappeTestCase):
+class TestMiraTalent(FrappeTestCase):
 	pass

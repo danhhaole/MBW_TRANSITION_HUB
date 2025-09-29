@@ -6,7 +6,7 @@ from frappe import _
 from frappe.model.document import Document
 import json
 
-class TalentProfilesSegment(Document):
+class Mira Talent Pool(Document):
     pass
 
     def validate(self):
@@ -20,7 +20,7 @@ class TalentProfilesSegment(Document):
 
 def validate_unique_candidate_segment(doc):
     """
-    Kiểm tra xem đã tồn tại TalentProfilesSegment với cùng
+    Kiểm tra xem đã tồn tại Mira Talent Pool với cùng
     talent_id + segment_id (ngoại trừ chính nó) hay chưa.
     """
     filters = {
@@ -28,37 +28,37 @@ def validate_unique_candidate_segment(doc):
         "segment_id": doc.segment_id,
     }
 
-    existing = frappe.db.exists("TalentProfilesSegment", filters)
+    existing = frappe.db.exists("Mira Talent Pool", filters)
 
     if existing and existing != doc.name:
         frappe.throw(
-            frappe._("A TalentProfilesSegment with Candidate <b>{0}</b> and Segment <b>{1}</b> already exists: <a href='/app/candidate-segment/{2}'>{2}</a>").format(
+            frappe._("A Mira Talent Pool with Candidate <b>{0}</b> and Segment <b>{1}</b> already exists: <a href='/app/candidate-segment/{2}'>{2}</a>").format(
                 doc.talent_id,
                 doc.segment_id,
                 existing
             ),
-            title=frappe._("Duplicate TalentProfilesSegment")
+            title=frappe._("Duplicate Mira Talent Pool")
         )
 
 def count_talentprofile_segment(segment_id):
     try:
-        total_candidate = frappe.db.count("TalentProfilesSegment",filters={"segment_id":segment_id})
+        total_candidate = frappe.db.count("Mira Talent Pool",filters={"segment_id":segment_id})
         print("===========total_candidate==============",total_candidate)
         if total_candidate and total_candidate > 0:
-            frappe.db.set_value("TalentSegment",segment_id,"candidate_count",total_candidate)
+            frappe.db.set_value("Mira Segment",segment_id,"candidate_count",total_candidate)
             frappe.db.commit()
     except Exception as e:
         pass
 
 def update_status_talent_profile(talent_id):
     #Trạng thái đã được phân loại
-    frappe.db.set_value("TalentProfiles",talent_id,"status","CATEGORIZED")
+    frappe.db.set_value("Mira Prospect",talent_id,"status","CATEGORIZED")
     frappe.db.commit()
 
 @frappe.whitelist(allow_guest=False)
 def bulk_insert_segments():
     """
-    Bulk insert TalentProfilesSegment records directly (no queue).
+    Bulk insert Mira Talent Pool records directly (no queue).
     Accepts JSON body or form_dict['data'].
     Returns status per record: success / duplicate / fail
     """
@@ -89,11 +89,11 @@ def bulk_insert_segments():
                     "segment_id": item.get("segment_id"),
                 }
 
-                if frappe.db.exists("TalentProfilesSegment", filters):
+                if frappe.db.exists("Mira Talent Pool", filters):
                     status_entry["status"] = "duplicate"
                     status_entry["message"] = "Record already exists"
                 else:
-                    doc = frappe.new_doc("TalentProfilesSegment")
+                    doc = frappe.new_doc("Mira Talent Pool")
                     doc.update(item)
                     doc.insert(ignore_permissions=True)
 

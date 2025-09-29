@@ -7,7 +7,7 @@ from mbw_mira.utils import find_candidates_fuzzy
 
 def process_segment(segment_id: str):
     """
-    Process auto-segmentation for one TalentSegment
+    Process auto-segmentation for one Mira Segment
     """
     #frappe.logger().info(f"[AutoSegment] Processing: {seg.name} - {seg.title}")
     # frappe.log_error("Lỗi",seg)
@@ -18,7 +18,7 @@ def process_segment(segment_id: str):
             for profile in matches:
                 if not check_exists(segment_id,profile.get("name")):
                     frappe.get_doc({
-                        "doctype": "TalentProfilesSegment",
+                        "doctype": "Mira Talent Pool",
                         "segment_id": segment_id,
                         "talent_id": profile.get("name"),
                         "match_score":profile.get("score"),
@@ -34,7 +34,7 @@ def process_segment(segment_id: str):
 
 
 def check_exists(segment_id,talent_id):
-    talent_degment_exists = frappe.db.exists("TalentProfilesSegment",{"segment_id":segment_id,"talent_id":talent_id})
+    talent_degment_exists = frappe.db.exists("Mira Talent Pool",{"segment_id":segment_id,"talent_id":talent_id})
     if talent_degment_exists:
         return True
     else:

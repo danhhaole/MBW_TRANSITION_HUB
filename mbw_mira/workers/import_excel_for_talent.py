@@ -102,9 +102,9 @@ def import_talentprofile_from_file(campaign_name: str):
                 skills_list = []
             profile_data = raw_data.get("profile_data")
             profile_data = None if pd.isna(profile_data) else profile_data
-            # 8. Chuẩn bị dữ liệu TalentProfiles
+            # 8. Chuẩn bị dữ liệu Mira Prospect
             doc_data = {
-                "doctype": "TalentProfiles",
+                "doctype": "Mira Prospect",
                 "full_name": raw_data.get("full_name"),
                 "email": raw_data.get("email"),
                 "phone": raw_data.get("phone"),
@@ -136,7 +136,7 @@ def import_talentprofile_from_file(campaign_name: str):
         return True
 
 def check_exists(email):
-    talent_exists = frappe.db.exists("TalentProfiles",{"email":email})
+    talent_exists = frappe.db.exists("Mira Prospect",{"email":email})
     if talent_exists:
         return True
     else:
@@ -202,7 +202,7 @@ def check_exists(email):
 #             "Skills": str(skills),
 #             "AI Summary": ai_summary,
 #             "Status": "NEW",
-#             "Last Interaction": None,
+#             "Last Mira Interaction": None,
 #             "Email Opt Out": 0
 #         })
 

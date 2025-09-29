@@ -20,6 +20,40 @@
  ],
  "fields": [
   {
+   "fieldname": "talent_id",
+   "fieldtype": "Link",
+   "label": "Talent Profile",
+   "options": "Mira Prospect"
+  },
+  {
+   "fieldname": "campaign_id",
+   "fieldtype": "Link",
+   "label": "Campaign",
+   "options": "Campaign"
+  },
+  {
+   "fieldname": "segment_id",
+   "fieldtype": "Link",
+   "label": "Segment",
+   "options": "Mira Segment"
+  },
+  {
+   "fieldname": "interaction_id",
+   "fieldtype": "Link",
+   "label": "Interaction",
+   "options": "Mira Interaction"
+  },
+  {
+   "fieldname": "application_date",
+   "fieldtype": "Datetime",
+   "label": "Application Date"
+  },
+  {
+   "fieldname": "position",
+   "fieldtype": "Data",
+   "label": "Application Position"
+  },
+  {
    "fieldname": "resume",
    "fieldtype": "Attach",
    "label": "Resume"
@@ -36,28 +70,6 @@
    "label": "Notes"
   },
   {
-   "fieldname": "talent_id",
-   "fieldtype": "Link",
-   "label": "Talent Profile",
-   "options": "TalentProfiles"
-  },
-  {
-   "fieldname": "campaign_id",
-   "fieldtype": "Link",
-   "label": "Campaign",
-   "options": "Campaign"
-  },
-  {
-   "fieldname": "application_date",
-   "fieldtype": "Datetime",
-   "label": "Application Date"
-  },
-  {
-   "fieldname": "position",
-   "fieldtype": "Data",
-   "label": "Application Position"
-  },
-  {
    "fieldname": "score",
    "fieldtype": "Float",
    "label": "Score"
@@ -67,24 +79,12 @@
    "fieldtype": "Select",
    "label": "Result",
    "options": "Pass\nFail"
-  },
-  {
-   "fieldname": "segment_id",
-   "fieldtype": "Link",
-   "label": "Segment",
-   "options": "TalentSegment"
-  },
-  {
-   "fieldname": "interaction_id",
-   "fieldtype": "Link",
-   "label": "Interaction",
-   "options": "Interaction"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-19 11:06:54.408093",
+ "modified": "2025-09-29 10:07:31.748803",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "ApplicantPool",

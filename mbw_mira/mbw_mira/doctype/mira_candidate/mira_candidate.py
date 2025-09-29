@@ -5,5 +5,5 @@
 from frappe.model.document import Document
 
 
-class Candidate(Document):
+class MiraCandidate(Document):
 	pass

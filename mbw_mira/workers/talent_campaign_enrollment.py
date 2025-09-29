@@ -4,7 +4,7 @@ from frappe.utils import now_datetime,add_days
 
 def enroll_talent_for_campaign(campaign_id):
     """
-    Worker: tìm ứng viên từ TalentProfiles theo campaign và tạo TalentProfilesCampaign.
+    Worker: tìm ứng viên từ Mira Prospect theo campaign và tạo TalentProfilesCampaign.
     """
     talent_profiles = get_talents_segment_for_campaign(campaign_id)
 
@@ -30,12 +30,12 @@ def enroll_talent_for_campaign(campaign_id):
 
 def get_talents_segment_for_campaign(campaign_id):
     """
-    Lấy danh talentSegment từ Campaign (TalentProfilesSegment)
-    Lấy TalentProfiles từ talentsegment
+    Lấy danh talentSegment từ Campaign (Mira Talent Pool)
+    Lấy Mira Prospect từ talentsegment
     """
     talent_segment = frappe.db.get_value("Campaign", campaign_id, "target_segment")
     talent_profiles = frappe.get_all(
-        "TalentProfilesSegment",
+        "Mira Talent Pool",
         filters={"segment_id": talent_segment},
         fields=["talent_id"],
     )

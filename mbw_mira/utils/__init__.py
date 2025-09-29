@@ -17,7 +17,7 @@ def send_email_job(talentprofile_id, action_id, step_id):
     """
 
     # Lấy thông tin candidate
-    talentprofiles = frappe.get_cached_doc("TalentProfiles", talentprofile_id)
+    talentprofiles = frappe.get_cached_doc("Mira Prospect", talentprofile_id)
     action = frappe.get_doc("Action", action_id)
     step = frappe.get_cached_doc("CampaignStep", step_id)
 
@@ -96,7 +96,7 @@ def send_email_job(talentprofile_id, action_id, step_id):
 
 def send_sms_job(talentprofile_id, action_id, step_id):
     try:
-        talentprofiles = frappe.get_cached_doc("TalentProfiles", talentprofile_id)
+        talentprofiles = frappe.get_cached_doc("Mira Prospect", talentprofile_id)
         action = frappe.get_doc("Action", action_id)
         step = frappe.get_cached_doc("CampaignStep", step_id)
         # Gửi thật nếu có provider
@@ -205,7 +205,7 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50):
         criteria_skills = []
 
         if segment_name:
-            criteria = frappe.db.get_value("TalentSegment", segment_name, "criteria")
+            criteria = frappe.db.get_value("Mira Segment", segment_name, "criteria")
 
         if criteria:
             try:
@@ -226,7 +226,7 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50):
 
         # --- Lấy danh sách ứng viên ---
         talent_profiles = frappe.get_all(
-            "TalentProfiles",
+            "Mira Prospect",
             filters={"status": "NEW"},
             fields=["name", "email", "full_name", "skills"],
         )

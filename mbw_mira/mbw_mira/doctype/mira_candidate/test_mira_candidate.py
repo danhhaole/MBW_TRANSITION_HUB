@@ -5,5 +5,5 @@
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestCandidatePool(FrappeTestCase):
+class TestMiraCandidate(FrappeTestCase):
 	pass

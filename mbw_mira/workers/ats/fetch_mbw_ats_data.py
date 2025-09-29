@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 def fetch_mbw_ats_data(campaign_name):
     """
-    Worker: Fetch ACTIVE campaign data from MBW ATS and save to TalentProfiles.
+    Worker: Fetch ACTIVE campaign data from MBW ATS and save to Mira Prospect.
     """
 
     # Lấy thông tin Campaign
@@ -44,7 +44,7 @@ def fetch_mbw_ats_data(campaign_name):
 
 def save_candidates_to_talent_pool(provider,candidates, campaign, source_name, segment_id):
     """
-    Chuẩn hóa & lưu danh sách ứng viên vào TalentProfiles
+    Chuẩn hóa & lưu danh sách ứng viên vào Mira Prospect
     """
     count = 0
     if candidates:
@@ -62,14 +62,14 @@ def save_candidates_to_talent_pool(provider,candidates, campaign, source_name, s
                 frappe.db.commit()
                 count += 1
             except Exception as e:
-                logger.error(f"[TalentProfiles] Failed to save {doc_data.get('full_name')} — {str(e)}", exc_info=True)
+                logger.error(f"[Mira Prospect] Failed to save {doc_data.get('full_name')} — {str(e)}", exc_info=True)
                 continue
     return count
 
 
 def map_mbw_ats_to_talentprofiles(record, campaign_name, source_name, segment_id=None):
     """
-    Chuẩn hóa dữ liệu từ MBW ATS → TalentProfiles
+    Chuẩn hóa dữ liệu từ MBW ATS → Mira Prospect
     """
 
     # Chuyển đổi status
@@ -101,7 +101,7 @@ def map_mbw_ats_to_talentprofiles(record, campaign_name, source_name, segment_id
     headline = record.get("can_last_workplace") or record.get("major_id")
 
     return {
-        "doctype": "TalentProfiles",
+        "doctype": "Mira Prospect",
         "full_name": record.get("can_full_name"),
         "email": record.get("can_email"),
         "phone": record.get("can_phone"),

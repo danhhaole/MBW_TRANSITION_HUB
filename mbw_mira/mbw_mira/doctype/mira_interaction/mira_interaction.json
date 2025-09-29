@@ -17,7 +17,7 @@
    "description": "Lo\u1ea1i h\u00e0nh vi c\u1ee7a \u1ee9ng vi\u00ean \u0111\u01b0\u1ee3c h\u1ec7 th\u1ed1ng ghi nh\u1eadn",
    "fieldname": "interaction_type",
    "fieldtype": "Select",
-   "label": "Interaction Type",
+   "label": "Mira Interaction Type",
    "options": "EMAIL_SENT\nEMAIL_DELIVERED\nEMAIL_BOUNCED\nEMAIL_OPENED\nEMAIL_CLICKED\nEMAIL_UNSUBSCRIBED\nEMAIL_REPLIED\nPAGE_VISITED\nFORM_SUBMITTED\nDOWNLOAD_TRIGGERED\nCHAT_STARTED\nCHAT_MESSAGE_SENT\nCHAT_COMPLETED\nCALL_MISSED\nCALL_COMPLETED\nSMS_SENT\nSMS_DELIVERED\nSMS_REPLIED\nAPPLICATION_SUBMITTED\nDOCUMENT_UPLOADED\nTEST_STARTED\nTEST_COMPLETED\nINTERVIEW_CONFIRMED\nINTERVIEW_RESCHEDULED"
   },
   {
@@ -43,16 +43,16 @@
    "fieldname": "talent_id",
    "fieldtype": "Link",
    "label": "Talent Profile",
-   "options": "TalentProfiles"
+   "options": "Mira Prospect"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-19 11:03:53.047703",
+ "modified": "2025-09-29 09:06:02.755587",
  "modified_by": "Administrator",
  "module": "MBW Mira",
- "name": "Interaction",
+ "name": "Mira Interaction",
  "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [

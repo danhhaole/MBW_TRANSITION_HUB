@@ -305,7 +305,7 @@ def submit_talent_profile():
 
     # 1. Check trùng email trong cùng campaign
     existing = frappe.db.exists(
-        "TalentProfiles",
+        "Mira Prospect",
         {"email": data["email"], "source": campaign_id}
     )
     if existing:
@@ -328,7 +328,7 @@ def submit_talent_profile():
         }
     # 3. Xây dữ liệu hồ sơ
     profile_fields = {
-        "doctype": "TalentProfiles",
+        "doctype": "Mira Prospect",
         "full_name": data["full_name"],
         "email": data["email"],
         "source": campaign_id,
@@ -411,13 +411,13 @@ def submit_application():
     if not campaign or not campaign.is_active:
         frappe.throw(_("This campaign is not active"))
 
-    # 2. Tìm hoặc tạo TalentProfiles
-    profile_name = frappe.db.get_value("TalentProfiles", {"email": email})
+    # 2. Tìm hoặc tạo Mira Prospect
+    profile_name = frappe.db.get_value("Mira Prospect", {"email": email})
     now = now_datetime()
 
     if not profile_name:
         profile = frappe.get_doc({
-            "doctype": "TalentProfiles",
+            "doctype": "Mira Prospect",
             "email": email,
             "full_name": full_name,
             "source": campaign_id,
@@ -427,7 +427,7 @@ def submit_application():
         profile.insert(ignore_permissions=True)
         frappe.db.commit()
     else:
-        profile = frappe.get_doc("TalentProfiles", profile_name)
+        profile = frappe.get_doc("Mira Prospect", profile_name)
         profile.status = "HIRED"
         profile.last_interaction = now
         profile.save(ignore_permissions=True)
@@ -462,7 +462,7 @@ def submit_application():
     frappe.db.commit()
 
     # 5. Ghi nhận tương tác - tránh spam (nếu đã có gần đây thì bỏ qua)
-    recent = frappe.db.exists("Interaction", {
+    recent = frappe.db.exists("Mira Interaction", {
         "talent_id": profile.name,
         "interaction_type": "APPLICATION_SUBMITTED",
         "reference_doctype": "ApplicantPool",
@@ -471,7 +471,7 @@ def submit_application():
 
     if not recent:
         interaction = frappe.get_doc({
-            "doctype": "Interaction",
+            "doctype": "Mira Interaction",
             "talent_id": profile.name,
             "interaction_type": "APPLICATION_SUBMITTED",
             "description": f"{profile.full_name} applied to campaign {campaign_id} for position {position}",
@@ -513,17 +513,17 @@ def get_campaign_details_for_submit():
         elif isinstance(campaign.target_segment, list):
             segment_names = campaign.target_segment
 
-    # Lấy danh sách TalentSegment (tránh quyền)
+    # Lấy danh sách Mira Segment (tránh quyền)
     segments = []
     if segment_names:
         segments = frappe.db.get_all(
-            "TalentSegment",
+            "Mira Segment",
             filters={"name": ["in", segment_names]},
             fields=["name", "title", "description", "criteria", "type"]
         )
     else:
         segments = frappe.db.get_all(
-            "TalentSegment",
+            "Mira Segment",
             fields=["name", "title", "description", "criteria", "type"]
         )
     if segments:

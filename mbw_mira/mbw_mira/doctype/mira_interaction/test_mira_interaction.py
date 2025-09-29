@@ -5,5 +5,5 @@
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestTalentProfiles(FrappeTestCase):
+class TestMiraInteraction(FrappeTestCase):
 	pass

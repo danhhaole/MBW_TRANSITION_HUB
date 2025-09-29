@@ -16,7 +16,7 @@ def track(candidate_id=None, action=None, type=None, url=None):
     }
 
     doc = frappe.get_doc({
-        "doctype": "Interaction",
+        "doctype": "Mira Interaction",
         "candidate_id": candidate_id,
         "interaction_type": type,
         "action": action,
@@ -26,7 +26,7 @@ def track(candidate_id=None, action=None, type=None, url=None):
     doc.insert(ignore_permissions=True)
     frappe.db.commit()
 
-    # 2. Flag Candidate Interaction last
+    # 2. Flag Candidate Mira Interaction last
     if frappe.db.exists("Candidate", candidate_id):
         frappe.db.set_value("Candidate", candidate_id, "last_interaction", now_datetime())
         frappe.db.commit()
@@ -107,9 +107,9 @@ def unsubscribe():
     if not verify_signature(params, sig):
         frappe.throw("Invalid signature")
 
-    # 1. Log Interaction
+    # 1. Log Mira Interaction
     frappe.get_doc({
-        "doctype": "Interaction",
+        "doctype": "Mira Interaction",
         "candidate_id": candidate_id,
         "action": action,
         "interaction_type": "EMAIL_UNSUBSCRIBED",

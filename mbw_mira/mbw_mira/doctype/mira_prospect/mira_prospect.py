@@ -8,7 +8,7 @@ from frappe.utils import now_datetime,nowdate,cint
 from mbw_mira.api.common import delete_doc, get_filter_options, get_form_data, get_list_data, save_doc
 
 
-class TalentProfiles(Document):
+class MiraProspect(Document):
 	pass
 
 	def validate(self):
@@ -16,38 +16,38 @@ class TalentProfiles(Document):
 		self.validate_unique_talent_profiles()
 
 	def after_insert(self):
-		#Sau khi insert nếu có postion thì đưa vào TalentProfilesSegment luôn, đối với trường hợp chiến dịch không có thiết lập phân loại
+		#Sau khi insert nếu có postion thì đưa vào MiraProspectSegment luôn, đối với trường hợp chiến dịch không có thiết lập phân loại
 		if self.position:
-			create_talentprofiles_segment(self)
+			create_mira_prospect_segment(self)
 			
 	def validate_unique_talent_profiles(self):
 			"""
-			Kiểm tra xem đã tồn tại TalentProfiles với cùng
+			Kiểm tra xem đã tồn tại MiraProspect với cùng
 			talent_id + candidate_id (ngoại trừ chính nó) hay chưa.
 			"""																												
 			filters = {
 				"email": self.email
 			}
 
-			existing = frappe.db.exists("TalentProfiles", filters)
+			existing = frappe.db.exists("MiraProspect", filters)
 
 			if existing and existing != self.name:
 				frappe.throw(
 				frappe._(
-					"A TalentProfiles with Email <b>{0}</b> already exists: <a href='/app/TalentProfiles/{1}'>{1}</a>"
+					"A MiraProspect with Email <b>{0}</b> already exists: <a href='/app/MiraProspect/{1}'>{1}</a>"
 				).format(self.email, existing),
-				title=frappe._("Duplicate TalentProfiles"),
+				title=frappe._("Duplicate MiraProspect"),
 			)
 
-def create_talentprofiles_segment(self):
+def create_mira_prospect_segment(self):
 	#Tìm talentsegment theo title (position)
-	segment = frappe.db.get_value("TalentSegment",{"title":self.position},"name")
+	segment = frappe.db.get_value("Mira Segment",{"title":self.position},"name")
 	if segment:
 		#Kiểm tra tồn tại profile trong segment chưa
-		profile_segment_exists = frappe.db.exists("TalentProfilesSegment",{"talent_id":self.name,"segment_id":segment})
+		profile_segment_exists = frappe.db.exists("MiraProspectSegment",{"talent_id":self.name,"segment_id":segment})
 		if not profile_segment_exists:
 			doc = frappe.get_doc({
-				"doctype":"TalentProfilesSegment",
+				"doctype":"MiraProspectSegment",
 				"talent_id":self.name,
     			"segment_id":segment,
 				"added_at": now_datetime(),
@@ -110,7 +110,7 @@ def get_talent_profiles_paginated(
         if search_conditions:
             filters["search_text"] = search_conditions
         
-        # Fields to fetch for TalentProfiles
+        # Fields to fetch for MiraProspect
         fields = [
             "name", "full_name", "email", "phone", "avatar", "headline", 
             "source", "skills", "ai_summary", "status", "last_interaction", 
@@ -119,7 +119,7 @@ def get_talent_profiles_paginated(
         
         # Get data using common function
         result = get_list_data(
-            doctype="TalentProfiles",
+            doctype="MiraProspect",
             filters=filters,
             order_by=order_by,
             page_length=limit,
@@ -175,19 +175,19 @@ def get_talent_profile_stats():
     Get talent profile statistics
     """
     try:
-        total = frappe.db.count("TalentProfiles")
+        total = frappe.db.count("MiraProspect")
         
         # Count by status
-        new_count = frappe.db.count("TalentProfiles", {"status": "NEW"})
-        sourced_count = frappe.db.count("TalentProfiles", {"status": "SOURCED"})
-        nurturing_count = frappe.db.count("TalentProfiles", {"status": "NURTURING"})
-        engaged_count = frappe.db.count("TalentProfiles", {"status": "ENGAGED"})
-        archived_count = frappe.db.count("TalentProfiles", {"status": "ARCHIVED"})
+        new_count = frappe.db.count("MiraProspect", {"status": "NEW"})
+        sourced_count = frappe.db.count("MiraProspect", {"status": "SOURCED"})
+        nurturing_count = frappe.db.count("MiraProspect", {"status": "NURTURING"})
+        engaged_count = frappe.db.count("MiraProspect", {"status": "ENGAGED"})
+        archived_count = frappe.db.count("MiraProspect", {"status": "ARCHIVED"})
         
         # Recently active (modified in last 7 days)
         from frappe.utils import add_days
         week_ago = add_days(nowdate(), -7)
-        recent_count = frappe.db.count("TalentProfiles", {"modified": [">", week_ago]})
+        recent_count = frappe.db.count("MiraProspect", {"modified": [">", week_ago]})
         
         return {
             "success": True,
@@ -220,7 +220,7 @@ def search_talent_profiles(query="", limit=10):
             return {"success": True, "talent_profiles": []}
         
         talent_profiles = frappe.get_list(
-            "TalentProfiles",
+            "MiraProspect",
             fields=["name", "full_name", "email", "headline", "status"],
             filters=[
                 ["full_name", "like", f"%{query}%"],
@@ -244,7 +244,7 @@ def get_talent_profile_by_name(name):
     Get talent profile details by name using common form data function
     """
     try:
-        result = get_form_data("TalentProfiles", name)
+        result = get_form_data("MiraProspect", name)
         if result.get("success"):
             talent_profile = result["data"]
             
@@ -277,7 +277,7 @@ def create_talent_profile(data):
         if "skills" in data and isinstance(data["skills"], list):
             data["skills"] = ", ".join(data["skills"])
         
-        result = save_doc("TalentProfiles", data)
+        result = save_doc("MiraProspect", data)
         
         if result.get("success"):
             talent_profile = result["data"]
@@ -309,7 +309,7 @@ def update_talent_profile(name, data):
         if "skills" in data and isinstance(data["skills"], list):
             data["skills"] = ", ".join(data["skills"])
         
-        result = save_doc("TalentProfiles", data, name)
+        result = save_doc("MiraProspect", data, name)
         
         if result.get("success"):
             talent_profile = result["data"]
@@ -334,7 +334,7 @@ def delete_talent_profile(name):
     Delete talent profile using common delete function
     """
     try:
-        result = delete_doc("TalentProfiles", name)
+        result = delete_doc("MiraProspect", name)
         return result
         
     except Exception as e:
@@ -348,8 +348,8 @@ def get_talent_profile_filter_options():
     Get filter options for talent profiles
     """
     try:
-        # Get status options from TalentProfiles doctype
-        status_result = get_filter_options("TalentProfiles", "status")
+        # Get status options from MiraProspect doctype
+        status_result = get_filter_options("MiraProspect", "status")
         status_options = status_result.get("options", []) if status_result.get("success") else []
         
         # If no options from API, provide default status options
@@ -363,7 +363,7 @@ def get_talent_profile_filter_options():
             ]
         
         # Get source options
-        source_result = get_filter_options("TalentProfiles", "source")
+        source_result = get_filter_options("MiraProspect", "source")
         source_options = source_result.get("options", []) if source_result.get("success") else []
         
         # If no options from API, provide default source options
@@ -379,7 +379,7 @@ def get_talent_profile_filter_options():
             ]
         
         # Get unique skills from talent profiles
-        talent_profiles = frappe.get_all("TalentProfiles", fields=["skills"], filters={"skills": ["!=", ""]})
+        talent_profiles = frappe.get_all("MiraProspect", fields=["skills"], filters={"skills": ["!=", ""]})
         all_skills = []
         for profile in talent_profiles:
             if profile.skills:

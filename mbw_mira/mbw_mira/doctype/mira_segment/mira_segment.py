@@ -7,7 +7,7 @@ from frappe.model.document import Document
 from mbw_mira.utils import find_candidates_fuzzy
 
 
-class TalentSegment(Document):
+class MiraSegment(Document):
 	pass
 
 @frappe.whitelist()

@@ -4,5 +4,5 @@ from .campaign_step import CampaignStep
 from .candidate import Candidate
 from .candidate_campaign import CandidateCampaign
 from .candidate_segment import CandidateSegment
-from .interaction import Interaction
-from .talent_segment import TalentSegment
+from .interaction import Mira Interaction
+from .talent_segment import Mira Segment
