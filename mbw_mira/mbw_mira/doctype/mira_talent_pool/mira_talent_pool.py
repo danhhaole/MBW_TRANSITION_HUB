@@ -6,7 +6,7 @@ from frappe import _
 from frappe.model.document import Document
 import json
 
-class Mira Talent Pool(Document):
+class Mira_Talent_Pool(Document):
     pass
 
     def validate(self):

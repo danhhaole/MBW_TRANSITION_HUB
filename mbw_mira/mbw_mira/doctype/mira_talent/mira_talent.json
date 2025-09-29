@@ -5,53 +5,133 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "applicant_id",
-  "shortlist_date",
-  "evaluation_score",
-  "interview_feedback",
-  "status",
-  "hired_date",
-  "notes"
+  
  ],
  "fields": [
-  {
-   "fieldname": "applicant_id",
-   "fieldtype": "Link",
-   "label": "Applicant",
-   "options": "ApplicantPool"
-  },
-  {
-   "fieldname": "shortlist_date",
-   "fieldtype": "Date",
-   "label": "Shortlist Date"
-  },
-  {
-   "fieldname": "evaluation_score",
-   "fieldtype": "Float",
-   "label": "Evaluation Score"
-  },
-  {
-   "fieldname": "interview_feedback",
-   "fieldtype": "Text",
-   "label": "Interview Feedback"
-  },
-  {
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "label": "Status",
-   "options": "Shortlisted\nOffered\nHired\nRejected"
-  },
-  {
-   "fieldname": "hired_date",
-   "fieldtype": "Date",
-   "label": "Hired Date"
-  },
-  {
-   "fieldname": "notes",
-   "fieldtype": "Text",
-   "label": "Notes"
-  }
- ],
+    {
+      "fieldname": "prospect",
+      "label": "Prospect",
+      "fieldtype": "Link",
+      "options": "Prospect",
+      "reqd": 1
+    },
+    {
+      "fieldname": "full_name",
+      "label": "Full Name",
+      "fieldtype": "Data",
+      "reqd": 1
+    },
+    {
+      "fieldname": "gender",
+      "label": "Gender",
+      "fieldtype": "Select",
+      "options": "Male\nFemale\nOther\nUnknown"
+    },
+    {
+      "fieldname": "date_of_birth",
+      "label": "Date of Birth",
+      "fieldtype": "Date"
+    },
+    {
+      "fieldname": "contact_email",
+      "label": "Contact Email",
+      "fieldtype": "Data",
+      "options": "Email"
+    },
+    {
+      "fieldname": "contact_phone",
+      "label": "Contact Phone",
+      "fieldtype": "Data"
+    },
+    {
+      "fieldname": "linkedin_profile",
+      "label": "LinkedIn Profile",
+      "fieldtype": "Data",
+      "options": "URL"
+    },
+    {
+      "fieldname": "facebook_profile",
+      "label": "Facebook Profile",
+      "fieldtype": "Data",
+      "options": "URL"
+    },
+    {
+      "fieldname": "zalo_profile",
+      "label": "Zalo Profile",
+      "fieldtype": "Data"
+    },
+    {
+      "fieldname": "current_location",
+      "label": "Current Location",
+      "fieldtype": "Data"
+    },
+    {
+      "fieldname": "preferred_location",
+      "label": "Preferred Location",
+      "fieldtype": "Data"
+    },
+    {
+      "fieldname": "skills",
+      "label": "Skills",
+      "fieldtype": "Small Text",
+      "description": "Comma-separated list of skills (e.g. Python, SQL, Communication)"
+    },
+    {
+      "fieldname": "experience_years",
+      "label": "Years of Experience",
+      "fieldtype": "Float"
+    },
+    {
+      "fieldname": "education",
+      "label": "Education",
+      "fieldtype": "Code",
+      "options": "JSON",
+      "description": "JSON array of education records"
+    },
+    {
+      "fieldname": "experience",
+      "label": "Work Experience",
+      "fieldtype": "Code",
+      "options": "JSON",
+      "description": "JSON array of work experience records"
+    },
+    {
+      "fieldname": "certifications",
+      "label": "Certifications",
+      "fieldtype": "Code",
+      "options": "JSON",
+      "description": "JSON array of certifications"
+    },
+    {
+      "fieldname": "languages",
+      "label": "Languages",
+      "fieldtype": "Code",
+      "options": "JSON",
+      "description": "JSON array of languages and proficiency"
+    },
+    {
+      "fieldname": "resume",
+      "label": "Resume",
+      "fieldtype": "Attach"
+    },
+    {
+      "fieldname": "current_status",
+      "label": "Current Status",
+      "fieldtype": "Select",
+      "options": "Active\nPassive\nNot Interested\nHired"
+    },
+    {
+      "fieldname": "talent_pool",
+      "label": "Talent Pool",
+      "fieldtype": "Link",
+      "options": "Talent Pool"
+    },
+    {
+      "fieldname": "notes",
+      "label": "Notes",
+      "fieldtype": "Long Text"
+    }
+  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],

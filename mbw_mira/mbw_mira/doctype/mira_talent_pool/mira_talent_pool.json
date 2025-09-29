@@ -28,7 +28,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Segment",
-   "options": "Mira Segment,
+   "options": "Mira Segment",
    "reqd": 1
   },
   {

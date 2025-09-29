@@ -5,7 +5,7 @@ import frappe
 from frappe.model.document import Document
 
 
-class Mira MiraInteraction(Document):
+class Mira_Interaction(Document):
 	pass
 
 	def on_update(self):

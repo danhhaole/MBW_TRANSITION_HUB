@@ -75,7 +75,7 @@
    "fieldname": "target_segment",
    "fieldtype": "Link",
    "label": "Target Segment",
-   "options": "Mira Segment
+   "options": "Mira Segment"
   },
   {
    "depends_on": "eval:doc.source_type == 'DataSource'",
