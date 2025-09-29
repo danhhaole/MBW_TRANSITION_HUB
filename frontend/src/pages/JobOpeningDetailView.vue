@@ -28,14 +28,14 @@
             <label class="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wide">
               {{ __('Job Code') }}
             </label>
-            <p class="text-sm font-medium text-gray-900">{{ data.job_code || 'JOB-222' }}</p>
+            <p class="text-sm font-medium text-gray-900">{{ data.job_code || '-' }}</p>
           </div>
           
           <div class="info-item">
             <label class="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wide">
               {{ __('Posting Date') }}
             </label>
-            <p class="text-sm font-medium text-gray-900">{{ formatDate(data.posting_date) || '25/09/2025' }}</p>
+            <p class="text-sm font-medium text-gray-900">{{ formatDate(data.posting_date) || '-' }}</p>
           </div>
           
           <div class="info-item">
@@ -49,7 +49,7 @@
             <label class="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wide">
               {{ __('Closing Date') }}
             </label>
-            <p class="text-sm font-medium text-gray-900">{{ formatDate(data.closing_date) || '25/09/2025' }}</p>
+            <p class="text-sm font-medium text-gray-900">{{ formatDate(data.closing_date) || '-' }}</p>
           </div>
           
           <div class="info-item">
@@ -88,53 +88,23 @@
       </div>
 
       <!-- Job Description Card -->
-      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      <div v-if="data.description" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
         <h2 class="text-lg font-semibold text-gray-900 mb-4">{{ __('Mô tả công việc') }}</h2>
         <div class="prose max-w-none text-gray-700">
-          <div v-if="data.description" v-html="data.description"></div>
-          <div v-else>
-            <p class="leading-relaxed">
-              Công ty Chúng tôi đang tìm kiếm một chuyên viên test để gia nhập đội ngũ phát triển sản phẩm. 
-              Vị trí này phù hợp với ứng viên có kinh nghiệm từ 1–2 năm trong lĩnh vực kiểm thử phần mềm, 
-              có khả năng làm việc trong môi trường Agile và Scrum. Bạn sẽ làm việc trực tiếp với các team phát triển, 
-              thiết kế và vận hành để đảm bảo chất lượng sản phẩm đạp ứng yêu cầu kỹ thuật và trải nghiệm người dùng. 
-              Mục tiêu chính của vị trí này là đảm bảo tính toàn vẹn, hiệu suất và độ tin cậy của hệ thống, 
-              đồng thời đóng góp vào việc cải tiến quy trình kiểm thử và phát triển sản phẩm.
-            </p>
-            
-            <h3 class="font-semibold text-gray-900 mt-6 mb-3">
-              Phân tích và thiết kế test case dựa trên yêu cầu sản phẩm và tài liệu kỹ thuật
-            </h3>
-            <div class="space-y-2">
-              <p>- Triển khai và thực hiện các test case để kiểm tra tính năng, hiệu suất và độ ổn định của hệ thống</p>
-              <p>- Phối hợp với team phát triển để xác định và theo dõi các lỗi, đề xuất giải pháp khắc phục</p>
-              <p>- Tham gia vào việc xây dựng và cải tiến quy trình kiểm thử, đảm bảo test coverage và chất lượng sản phẩm</p>
-              <p>- Đảm bảo sản phẩm đạp ứng các tiêu chuẩn kỹ thuật và yêu cầu của khách hàng</p>
-              <p>- Hỗ trợ các dự án mới, tham gia vào các thử nghiệm POC và nghiên cứu công nghệ mới</p>
-            </div>
-          </div>
+          <div v-html="formatDescription(data.description)"></div>
         </div>
       </div>
 
       <!-- Requirements Card -->
-      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      <div v-if="data.requirements" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
         <h2 class="text-lg font-semibold text-gray-900 mb-4">{{ __('Yêu cầu') }}</h2>
-        <div v-if="data.requirements" v-html="data.requirements" class="prose max-w-none text-gray-700"></div>
-        <ul v-else class="space-y-3 text-gray-700">
-          <li>• Tốt nghiệp Cao đẳng/Đại học chuyên ngành Công nghệ Thông tin hoặc các ngành liên quan</li>
-          <li>• Có ít nhất 1–2 năm kinh nghiệm trong lĩnh vực kiểm thử phần mềm, ưu tiên ứng viên có kinh nghiệm với các công cụ như Selenium, Postman, Jira, Git, và các framework kiểm thử</li>
-          <li>• Thành thạo các phương pháp kiểm thử chức năng, hiệu năng, tích hợp và hồi quy</li>
-          <li>• Có hiểu biết về quy trình Agile/Scrum và khả năng làm việc theo nhóm</li>
-          <li>• Có khả năng viết test case, thực hiện automation testing và báo cáo kết quả kiểm thử một cách chi tiết và chính xác</li>
-          <li>• Kỹ năng giao tiếp tốt, có khả năng làm việc độc lập và theo nhóm</li>
-          <li>• Tinh thần học hỏi, cầu tiến và khả năng thích ứng với công nghệ mới</li>
-        </ul>
+        <div v-html="formatRequirements(data.requirements)" class="prose max-w-none text-gray-700"></div>
       </div>
 
-      <!-- Benefits Card (if available) -->
-      <div v-if="data.benefits" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <!-- Benefits Card -->
+      <div v-if="data.benefits" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
         <h2 class="text-lg font-semibold text-gray-900 mb-4">{{ __('Quyền lợi') }}</h2>
-        <div v-html="data.benefits" class="prose max-w-none text-gray-700"></div>
+        <div v-html="formatBenefits(data.benefits)" class="prose max-w-none text-gray-700"></div>
       </div>
     </div>
 
@@ -279,20 +249,7 @@ import { Breadcrumbs, Button, FormControl, TextEditor } from 'frappe-ui'
 import { getJobOpeningDetails, updateJobOpeningData } from '@/services/jobOpeningService'
 
 const route = useRoute()
-const data = reactive({
-  job_title: 'test',
-  job_code: 'JOB-222',
-  department_name: '',
-  location_name: '',
-  posting_date: '2025-09-25',
-  closing_date: '2025-09-25',
-  owner_id: '',
-  approval_status: 'Draft',
-  total_applicants: 0,
-  description: '',
-  requirements: '',
-  benefits: ''
-})
+const data = reactive({})
 
 const showEditForm = ref(false)
 const saving = ref(false)
@@ -310,11 +267,108 @@ const statusOptions = [
   { label: 'Rejected', value: 'Rejected' }
 ]
 
+// Hàm stripHtml từ file CampaignWizard.vue
+const stripHtml = (html) => {
+  if (!html || typeof html !== 'string') return ''
+  return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim()
+}
+
+// Format Job Description - tách paragraph và bullet points với dấu -
+const formatDescription = (text) => {
+  if (!text) return ''
+  
+  const cleanText = stripHtml(text)
+  
+  // Tìm phần đầu tiên (paragraph đầu) và phần bullet points
+  const lines = cleanText.split('\n').filter(line => line.trim())
+  
+  if (lines.length === 0) return `<p>${cleanText}</p>`
+  
+  const result = []
+  let inBulletSection = false
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim()
+    
+    // Kiểm tra nếu bắt đầu bullet points (có dấu -, •, *, hoặc số)
+    if (line.match(/^[-•*\d+\.]/) || line.match(/^-/) || i > 2) {
+      if (!inBulletSection) {
+        inBulletSection = true
+      }
+      // Loại bỏ ký tự bullet cũ và thêm lại với format chuẩn
+      const cleanLine = line.replace(/^[-•*\s*\d+\.\s*]+/, '').trim()
+      if (cleanLine) {
+        result.push(`<p>- ${cleanLine}</p>`)
+      }
+    } else {
+      // Paragraph thường
+      if (line) {
+        result.push(`<p class="leading-relaxed">${line}</p>`)
+      }
+    }
+  }
+  
+  // Nếu không có bullet points, trả về paragraph đơn
+  if (!inBulletSection) {
+    return `<p class="leading-relaxed">${cleanText}</p>`
+  }
+  
+  // Chia thành paragraph đầu và bullet section
+  const paragraphs = result.filter(item => !item.includes('- '))
+  const bullets = result.filter(item => item.includes('- '))
+  
+  return paragraphs.join('') + 
+         (bullets.length > 0 ? `<div class="space-y-2 mt-4">${bullets.join('')}</div>` : '')
+}
+
+// Format Requirements - bullet points với dấu •
+const formatRequirements = (text) => {
+  if (!text) return ''
+  
+  const cleanText = stripHtml(text)
+  
+  // Tách thành các mục dựa trên xuống dòng và các dấu phân cách
+  const lines = cleanText.split(/[\n\r]+/).filter(line => line.trim())
+  
+  if (lines.length === 0) return `<p>${cleanText}</p>`
+  
+  const result = []
+  
+  for (const line of lines) {
+    const trimmedLine = line.trim()
+    if (trimmedLine) {
+      // Loại bỏ các ký tự bullet cũ và thêm lại với format chuẩn •
+      const cleanLine = trimmedLine.replace(/^[-•*\s*\d+\.\s*]+/, '').trim()
+      if (cleanLine) {
+        result.push(`<li>• ${cleanLine}</li>`)
+      }
+    }
+  }
+  
+  return result.length > 0 ? `<ul class="list-none space-y-3 text-gray-700">${result.join('')}</ul>` : `<p>${cleanText}</p>`
+}
+
+// Format Benefits - đơn giản hóa
+const formatBenefits = (text) => {
+  if (!text) return ''
+  
+  const cleanText = stripHtml(text)
+  
+  // Nếu có nhiều dòng, format như requirements
+  if (cleanText.includes('\n')) {
+    return formatRequirements(text)
+  }
+  
+  // Hiển thị đơn giản
+  return `<p class="leading-relaxed">${cleanText}</p>`
+}
+
 const load = async () => {
   try {
     if (route.params.id) {
       const res = await getJobOpeningDetails(route.params.id)
       Object.assign(data, res)
+      console.log('Loaded job data:', data) // Debug log
     }
   } catch (error) {
     console.error('Error loading job details:', error)
@@ -353,7 +407,7 @@ const badgeClass = (status) => ({
 }[status] || 'bg-gray-100 text-gray-800 border border-gray-200')
 
 const formatDate = (date) => {
-  if (!date) return ''
+  if (!date) return '-'
   return new Date(date).toLocaleDateString('vi-VN', { 
     year: 'numeric', 
     month: '2-digit', 

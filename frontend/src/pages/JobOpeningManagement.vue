@@ -216,203 +216,111 @@
       :disableOutsideClickToClose="true"
       >
         <template #body-content>
-          <div class="flex h-[600px] relative">
-            <!-- Left Panel - Steps -->
-            <div class="w-80 bg-gray-50 p-6 border-r border-gray-200">
+          <div class="p-6 max-h-[80vh] overflow-y-auto">
+            <!-- Basic Information Section -->
+            <div class="mb-8">
               <div class="mb-6">
-                <h3 class="text-lg font-semibold text-gray-900">
-                  {{ form.name ? __('Edit Job Opening') : __('Create Job Opening') }}
-                </h3>
-                <p class="text-sm text-gray-500 mt-1">
-                  {{ __('Complete 2 simple steps to') }} {{ form.name ? __('update your job opening') : __('create your job opening') }}
-                </p>
+                <h4 class="text-lg font-medium text-gray-900">{{ __('Basic Information') }}</h4>
+                <p class="text-sm text-gray-500">{{ __('Job title, position, and department') }}</p>
               </div>
 
-              <!-- Step 1 -->
-              <div class="flex items-center mb-4">
-                <div :class="[
-                  'flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium',
-                  currentStep >= 1 ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-600'
-                ]">
-                  <svg v-if="currentStep > 1" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                  </svg>
-                  <span v-else>1</span>
+              <div class="space-y-4">
+                <FormControl v-model="form.job_title" type="text" :label="__('Job Title')" :required="true" />
+                <FormControl v-model="form.job_code" type="text" :label="__('Job Code')" />
+                <div class="grid grid-cols-2 gap-4">
+                  <FormControl v-model="form.department_name" type="text" :label="__('Department')" />
+                  <FormControl v-model="form.location_name" type="text" :label="__('Location')" />
                 </div>
-                <div class="ml-3">
-                  <p class="text-sm font-medium text-gray-900">{{ __('Basic Information') }}</p>
-                  <p class="text-xs text-gray-500">{{ __('Job title, position, and department') }}</p>
+                <FormControl v-model="form.number_of_openings" type="number" :label="__('Number Of Openings')" />
+                <div class="grid grid-cols-2 gap-4">
+                  <FormControl v-model="form.posting_date" type="date" :label="__('Posting Date')" />
+                  <FormControl v-model="form.closing_date" type="date" :label="__('Closing Date')" />
                 </div>
-              </div>
-
-              <!-- Step 2 -->
-              <div class="flex items-center mb-6">
-                <div :class="[
-                  'flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium',
-                  currentStep >= 2 ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-600'
-                ]">
-                  <svg v-if="currentStep > 2" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                  </svg>
-                  <span v-else>2</span>
-                </div>
-                <div class="ml-3">
-                  <p class="text-sm font-medium text-gray-900">{{ __('Job Description') }}</p>
-                  <p class="text-xs text-gray-500">{{ __('Description, requirements, and responsibilities') }}</p>
-                </div>
-              </div>
-
-              <!-- Progress Bar -->
-              <div class="mt-6">
-                <div class="flex justify-between text-xs text-gray-500 mb-1">
-                  <span>{{ __('Progress') }}</span>
-                  <span>{{ currentStep }}/2</span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                  <div class="bg-blue-500 h-2 rounded-full transition-all duration-300" :style="{ width: `${(currentStep / 2) * 100}%` }"></div>
+                <div class="grid grid-cols-2 gap-4">
+                  <FormControl v-model="form.approval_status" type="select" :label="__('Status')" :options="statusOptions" />
+                  <FormControl v-model="form.owner_id" type="select" :label="__('Owner')" :options="ownerOptions" />
                 </div>
               </div>
             </div>
 
-            <!-- Right Panel - Content -->
-            <div class="flex-1 p-6 overflow-auto">
-              <!-- Step 1: Basic Information -->
-              <div v-if="currentStep === 1">
-                <div class="mb-6">
-                  <h4 class="text-lg font-medium text-gray-900">{{ __('Basic Information') }}</h4>
-                  <p class="text-sm text-gray-500">{{ __('Job title, position, and department') }}</p>
+            <!-- Job Description Section -->
+            <div class="mb-8">
+              <div class="flex items-center justify-between mb-6">
+                <div>
+                  <h4 class="text-lg font-medium text-gray-900">{{ __('Job Description') }}</h4>
+                  <p class="text-sm text-gray-500">{{ __('Description, requirements, and responsibilities') }}</p>
                 </div>
-
-                <div class="space-y-4">
-                  <FormControl v-model="form.job_title" type="text" :label="__('Job Title')" :required="true" />
-                  <FormControl v-model="form.job_code" type="text" :label="__('Job Code')" />
-                  <div class="grid grid-cols-2 gap-4">
-                    <FormControl v-model="form.department_name" type="text" :label="__('Department')" />
-                    <FormControl v-model="form.location_name" type="text" :label="__('Location')" />
-                  </div>
-                  <FormControl v-model="form.number_of_openings" type="number" :label="__('Number Of Openings')" />
-                  <div class="grid grid-cols-2 gap-4">
-                    <FormControl v-model="form.posting_date" type="date" :label="__('Posting Date')" />
-                    <FormControl v-model="form.closing_date" type="date" :label="__('Closing Date')" />
-                  </div>
-                  <div class="grid grid-cols-2 gap-4">
-                    <FormControl v-model="form.approval_status" type="select" :label="__('Status')" :options="statusOptions" />
-                    <FormControl v-model="form.owner_id" type="select" :label="__('Owner')" :options="ownerOptions" />
-                  </div>
-                </div>
-              </div>
-
-              <!-- Step 2: Job Description -->
-              <div v-if="currentStep === 2">
-                <div class="flex items-center justify-between mb-6">
-                  <div>
-                    <h4 class="text-lg font-medium text-gray-900">{{ __('Job Description') }}</h4>
-                    <p class="text-sm text-gray-500">{{ __('Description, requirements, and responsibilities') }}</p>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    class="mr-10"
-                    theme="blue"
-                    @click="openAIModal"
-                  >
-                    <template #prefix>
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
-                    </template>
-                    {{ __('AI Generation') }}
-                  </Button>
-                </div>
-
-                <div class="space-y-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('Job Description') }}</label>
-                    <TextEditor
-                      ref="descriptionEditor"
-                      variant="outline"
-                      editor-class="!prose-sm !max-w-full overflow-auto !w-full min-h-[120px] max-h-[150px] py-1.5 px-2 rounded border border-gray-300 bg-white hover:border-gray-400 hover:shadow-sm focus:bg-white focus:border-gray-500 focus:shadow-sm focus:ring-0 focus-visible:ring-2 focus-visible:ring-gray-400 text-gray-800 transition-colors"
-                      :bubbleMenu="true"
-                      :fixedMenu="true"
-                      :content="form.description"
-                      :placeholder="__('Provide a detailed description of the job responsibilities and day-to-day tasks')"
-                      @change="form.description = $event"
-                    />
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('Job Requirements') }}</label>
-                    <TextEditor
-                      ref="requirementsEditor"
-                      variant="outline"
-                      editor-class="!prose-sm !max-w-full overflow-auto !w-full min-h-[120px] max-h-[150px] py-1.5 px-2 rounded border border-gray-300 bg-white hover:border-gray-400 hover:shadow-sm focus:bg-white focus:border-gray-500 focus:shadow-sm focus:ring-0 focus-visible:ring-2 focus-visible:ring-gray-400 text-gray-800 transition-colors"
-                      :bubbleMenu="true"
-                      :fixedMenu="true"
-                      :content="form.requirements"
-                      :placeholder="__('Specify required qualifications, skills, experience, and education')"
-                      @change="form.requirements = $event"
-                    />
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('Benefits') }}</label>
-                    <TextEditor
-                      ref="benefitsEditor"
-                      variant="outline"
-                      editor-class="!prose-sm !max-w-full overflow-auto !w-full min-h-[120px] max-h-[150px] py-1.5 px-2 rounded border border-gray-300 bg-white hover:border-gray-400 hover:shadow-sm focus:bg-white focus:border-gray-500 focus:shadow-sm focus:ring-0 focus-visible:ring-2 focus-visible:ring-gray-400 text-gray-800 transition-colors"
-                      :bubbleMenu="true"
-                      :fixedMenu="true"
-                      :content="form.benefits"
-                      :placeholder="__('Highlight the benefits and what makes this role attractive')"
-                      @change="form.benefits = $event"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <!-- Navigation Buttons -->
-              <div class="flex justify-between pt-6 border-t border-gray-200 mt-6">
                 <Button
-                  v-if="currentStep > 1"
                   variant="outline"
-                  theme="gray"
-                  @click="previousStep"
+                  size="sm"
+                  theme="blue"
+                  @click="openAIModal"
                 >
                   <template #prefix>
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                   </template>
-                  {{ __('Previous') }}
+                  {{ __('AI Generation') }}
                 </Button>
-                <div v-else></div>
+              </div>
 
-                <div class="flex space-x-3">
-                  <Button variant="outline" theme="gray" @click="closeForm">
-                    {{ __('Cancel') }}
-                  </Button>
-                  <Button
-                    v-if="currentStep < 2"
-                    variant="solid"
-                    theme="gray"
-                    @click="nextStep"
-                  >
-                    {{ __('Next') }}
-                    <template #suffix>
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                      </svg>
-                    </template>
-                  </Button>
-                  <Button
-                    v-else
-                    variant="solid"
-                    theme="gray"
-                    :loading="saving"
-                    @click="save"
-                  >
-                    {{ form.name ? __('Update') : __('Create') }}
-                  </Button>
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('Job Description') }}</label>
+                  <TextEditor
+                    ref="descriptionEditor"
+                    variant="outline"
+                    editor-class="!prose-sm !max-w-full overflow-auto !w-full min-h-[120px] max-h-[150px] py-1.5 px-2 rounded border border-gray-300 bg-white hover:border-gray-400 hover:shadow-sm focus:bg-white focus:border-gray-500 focus:shadow-sm focus:ring-0 focus-visible:ring-2 focus-visible:ring-gray-400 text-gray-800 transition-colors"
+                    :bubbleMenu="true"
+                    :fixedMenu="true"
+                    :content="form.description"
+                    :placeholder="__('Provide a detailed description of the job responsibilities and day-to-day tasks')"
+                    @change="form.description = $event"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('Job Requirements') }}</label>
+                  <TextEditor
+                    ref="requirementsEditor"
+                    variant="outline"
+                    editor-class="!prose-sm !max-w-full overflow-auto !w-full min-h-[120px] max-h-[150px] py-1.5 px-2 rounded border border-gray-300 bg-white hover:border-gray-400 hover:shadow-sm focus:bg-white focus:border-gray-500 focus:shadow-sm focus:ring-0 focus-visible:ring-2 focus-visible:ring-gray-400 text-gray-800 transition-colors"
+                    :bubbleMenu="true"
+                    :fixedMenu="true"
+                    :content="form.requirements"
+                    :placeholder="__('Specify required qualifications, skills, experience, and education')"
+                    @change="form.requirements = $event"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('Benefits') }}</label>
+                  <TextEditor
+                    ref="benefitsEditor"
+                    variant="outline"
+                    editor-class="!prose-sm !max-w-full overflow-auto !w-full min-h-[120px] max-h-[150px] py-1.5 px-2 rounded border border-gray-300 bg-white hover:border-gray-400 hover:shadow-sm focus:bg-white focus:border-gray-500 focus:shadow-sm focus:ring-0 focus-visible:ring-2 focus-visible:ring-gray-400 text-gray-800 transition-colors"
+                    :bubbleMenu="true"
+                    :fixedMenu="true"
+                    :content="form.benefits"
+                    :placeholder="__('Highlight the benefits and what makes this role attractive')"
+                    @change="form.benefits = $event"
+                  />
                 </div>
               </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+              <Button variant="outline" theme="gray" @click="closeForm">
+                {{ __('Cancel') }}
+              </Button>
+              <Button
+                variant="solid"
+                theme="gray"
+                :loading="saving"
+                @click="save"
+              >
+                {{ form.name ? __('Update') : __('Create') }}
+              </Button>
             </div>
           </div>
         </template>
@@ -673,7 +581,6 @@ const viewMode = ref('list')
 const showForm = ref(false)
 const saving = ref(false)
 const form = reactive({})
-const currentStep = ref(1)
 const showAIModal = ref(false)
 const ownerOptions = ref([])
 const emit = defineEmits(['cancel'])
@@ -769,33 +676,11 @@ watch(searchText, () => {
 
 const openCreateDialog = () => {
   Object.keys(form).forEach(k => delete form[k])
-  currentStep.value = 1
   showForm.value = true
 }
 
 const closeForm = () => {
   showForm.value = false
-  currentStep.value = 1
-}
-
-const nextStep = () => {
-  // Validate Job Title before proceeding to next step
-  if (currentStep.value === 1) {
-    if (!form.job_title || form.job_title.trim() === '') {
-      toast.error(__('Please enter Job Title before continuing'))
-      return
-    }
-  }
-
-  if (currentStep.value < 2) {
-    currentStep.value++
-  }
-}
-
-const previousStep = () => {
-  if (currentStep.value > 1) {
-    currentStep.value--
-  }
 }
 
 const save = async () => {
@@ -829,7 +714,6 @@ const edit = async (item) => {
   try {
     const detail = await getJobOpeningDetails(item.name)
     Object.assign(form, detail)
-    currentStep.value = 1
     showForm.value = true
   } finally {
     loading.value = false
