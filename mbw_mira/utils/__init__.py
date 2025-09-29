@@ -4,7 +4,7 @@ import hashlib
 import json
 from rapidfuzz import fuzz
 from frappe.utils import now_datetime
-from mbw_mira.mbw_mira.doctype.mira_interaction.mira_interaction import create_interaction
+from mbw_mira.mbw_mira.doctype.mira_interaction.mira_interaction import create_mira_interaction
 from urllib.parse import unquote
 
 import csv
