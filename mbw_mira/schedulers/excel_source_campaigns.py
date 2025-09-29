@@ -19,7 +19,7 @@ def run():
     )
     for c in campaigns:
         frappe.enqueue(
-            "mbw_mira.workers.import_excel_for_talent.import_talentprofile_from_file",
+            "mbw_mira.workers.import_excel_for_talent.import_prospect_from_file",
             campaign_name=c.name,
             job_name=c.name,
             queue="short"
