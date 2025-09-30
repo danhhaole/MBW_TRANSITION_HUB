@@ -208,6 +208,64 @@
         </div>
       </div>
 
+      <!-- Create Options Dialog -->
+      <Dialog v-model="showCreateOptions" :options="{
+        title: __('Create Job Opening'),
+        size: '4xl',
+      }"
+      :disableOutsideClickToClose="true"
+      >
+        <template #body-content>
+          <div class="p-8">
+            <div class="text-center mb-8">
+              <h3 class="text-lg font-medium text-gray-900 mb-2">{{ __('Create Job Opening') }}</h3>
+              <p class="text-sm text-gray-500">{{ __('Please choose how you want to create a job opening.') }}</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- Create with Form Option -->
+              <div 
+                class="border-2 border-gray-200 rounded-lg p-6 cursor-pointer hover:border-blue-500 hover:shadow-md transition-all duration-200 group"
+                @click="openCreateForm"
+              >
+                <div class="text-center">
+                  <div class="mx-auto w-16 h-16 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-4 group-hover:bg-blue-100 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </div>
+                  <h4 class="text-lg font-semibold text-gray-900 mb-2">{{ __('Create with Form') }}</h4>
+                  <p class="text-sm text-gray-500">{{ __('Fill out information step by step.') }}</p>
+                </div>
+              </div>
+
+              <!-- Upload Excel/CSV Option -->
+              <div 
+                class="border-2 border-gray-200 rounded-lg p-6 cursor-pointer hover:border-green-500 hover:shadow-md transition-all duration-200 group"
+                @click="openUploadDialog"
+              >
+                <div class="text-center">
+                  <div class="mx-auto w-16 h-16 rounded-full bg-green-50 text-green-600 flex items-center justify-center mb-4 group-hover:bg-green-100 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <h4 class="text-lg font-semibold text-gray-900 mb-2">{{ __('Upload Excel/CSV') }}</h4>
+                  <p class="text-sm text-gray-500">{{ __('Upload Excel/CSV file to create multiple job openings.') }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 mt-8">
+              <Button variant="outline" theme="gray" @click="closeCreateOptions">
+                {{ __('Cancel') }}
+              </Button>
+            </div>
+          </div>
+        </template>
+      </Dialog>
+
       <!-- Job Opening Wizard Dialog -->
       <Dialog v-model="showForm" :options="{
         title: form.name ? __('Edit Job Opening') : __('Create Job Opening'),
@@ -555,6 +613,13 @@
           </div>
         </template>
       </Dialog>
+
+      <!-- Upload Excel Job Opening Modal -->
+      <UploadExcelJobOpeningModal
+        v-model="showUploadModal"
+        @created="handleJobOpeningsCreated"
+        @close="closeUploadModal"
+      />
     </div>
   </div>
 </template>
@@ -568,6 +633,7 @@ import { useToast } from '@/composables/useToast'
 const toast = useToast()
 import {Breadcrumbs, Button, Select, FormControl, createResource, TextEditor, Dialog } from 'frappe-ui'
 import { getFilteredJobOpenings, submitNewJobOpening, updateJobOpeningData, removeJobOpening, getJobOpeningDetails } from '@/services/jobOpeningService'
+import UploadExcelJobOpeningModal from '@/components/UploadExcelJobOpeningModal.vue'
 
 const router = useRouter()
 const breadcrumbs = [{ label: __('Job Openings'), route: { name: 'JobOpeningManagement' } }]
@@ -579,6 +645,8 @@ const searchText = ref('')
 const statusFilter = ref('all')
 const viewMode = ref('list')
 const showForm = ref(false)
+const showCreateOptions = ref(false)
+const showUploadModal = ref(false) // Thêm biến này
 const saving = ref(false)
 const form = reactive({})
 const showAIModal = ref(false)
@@ -675,6 +743,10 @@ watch(searchText, () => {
 })
 
 const openCreateDialog = () => {
+  showCreateOptions.value = true // Thay đổi từ showForm.value = true
+}
+
+const openCreateForm = () => {
   Object.keys(form).forEach(k => delete form[k])
   
   // Set default dates
@@ -703,7 +775,26 @@ const openCreateDialog = () => {
     closing: form.closing_date
   })
   
+  showCreateOptions.value = false
   showForm.value = true
+}
+
+const openUploadDialog = () => {
+  showCreateOptions.value = false
+  showUploadModal.value = true
+}
+
+const closeCreateOptions = () => {
+  showCreateOptions.value = false
+}
+
+const closeUploadModal = () => {
+  showUploadModal.value = false
+}
+
+const handleJobOpeningsCreated = async (result) => {
+  toast.success(__('Successfully created {{count}} job openings', { count: result.success }))
+  await reload()
 }
 
 const stripHtml = (html) => {
