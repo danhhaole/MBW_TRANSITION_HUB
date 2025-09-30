@@ -181,7 +181,7 @@ export const getCampaignOptions = async () => {
 
 export const getSegmentOptions = async () => {
   const data = await call('frappe.client.get_list', {
-    doctype: 'TalentSegment',
+    doctype: 'Mira Segment',
     fields: ['name', 'title'],
     limit_page_length: 1000
   })

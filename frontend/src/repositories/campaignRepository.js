@@ -104,10 +104,10 @@ export const getUsers = async () => {
   })
 }
 
-// Lấy danh sách TalentSegment
+// Lấy danh sách Mira Segment
 export const getTalentSegments = async () => {
   return await call('frappe.client.get_list', {
-    doctype: 'TalentSegment',
+    doctype: 'Mira Segment',
     fields: ['name', 'title'],
     order_by: 'title asc'
   })

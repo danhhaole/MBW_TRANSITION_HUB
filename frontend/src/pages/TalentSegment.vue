@@ -14,6 +14,6 @@
   
   
   let title = __('Talent Segments')
-  const breadcrumbs = [{ label: title, route: { name: 'TalentSegment' } }]
+  const breadcrumbs = [{ label: title, route: { name: 'Mira Segment' } }]
   </script>
   

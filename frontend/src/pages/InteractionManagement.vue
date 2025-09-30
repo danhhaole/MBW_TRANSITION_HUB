@@ -14,7 +14,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
           </template>
-          {{ __('Add New Interaction') }}
+          {{ __('Add New Mira Interaction') }}
         </Button>
       </template>
     </LayoutHeader>
@@ -398,7 +398,7 @@
       </div>
 
       <!-- Form Modal -->
-      <Dialog v-model="showFormModal" :options="{ title: formData.name ? 'Edit Interaction' : 'Add New Interaction', size: 'xl' }">
+      <Dialog v-model="showFormModal" :options="{ title: formData.name ? 'Edit Mira Interaction' : 'Add New Mira Interaction', size: 'xl' }">
         <template #body-content>
           <div class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -411,7 +411,7 @@
               />
               <FormControl
                 type="select"
-                label="Interaction Type"
+                label="Mira Interaction Type"
                 v-model="formData.interaction_type"
                 :options="interactionTypeOptions"
                 :required="true"
@@ -509,7 +509,7 @@ const showDeleteDialog = ref(false)
 const itemToDelete = ref(null)
 const showAdvancedFilters = ref(false)
 
-// Interaction type options matching doctype
+// Mira Interaction type options matching doctype
 const interactionTypeOptions = [
   { label: 'Email Sent', value: 'EMAIL_SENT' },
   { label: 'Email Delivered', value: 'EMAIL_DELIVERED' },

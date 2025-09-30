@@ -16,7 +16,7 @@ import CampaignDetailView from './pages/CampaignDetailView.vue'
 import CandidateManagement from './pages/CandidateManagement.vue'
 import CandidateDetailView from './pages/CandidateDetailView.vue'
 
-// Interaction Management
+// Mira Interaction Management
 import InteractionManagement from './pages/InteractionManagement.vue'
 
 // Action Management
@@ -48,7 +48,7 @@ import ApplicationPage from './pages/Public/ApplicationPage.vue'
 
 const routes = [
 	{ path: '/', name: 'Dashboard', component: () => import('@/pages/Dashboard.vue') },
-	{ alias: '/talentsegment', path: '/talentsegment', name: 'TalentSegment', component: () => import('@/pages/TalentSegment.vue') },
+	{ alias: '/talentsegment', path: '/talentsegment', name: 'Mira Segment', component: () => import('@/pages/Mira Segment.vue') },
 	{ alias: '/candidate', path: '/candidate', name: 'Candidate', component: () => import('@/pages/Candidate.vue') },
 	{ alias: '/campaigns', path: '/campaigns', name: 'CampaignManagement', component: CampaignManagement },
 	{ path: '/campaigns/:id', name: 'CampaignDetailView', component: CampaignDetailView },
@@ -70,7 +70,7 @@ const routes = [
 	{ path: '/candidates', name: 'CandidateManagement', component: CandidateManagement },
 	{ path: '/candidates/:id', name: 'CandidateDetailView', component: CandidateDetailView },
 
-	// Interaction & Action
+	// Mira Interaction & Action
 	{ path: '/interactions', name: 'InteractionManagement', component: InteractionManagement },
 	{ path: '/actions', name: 'ActionManagement', component: ActionManagement },
 

@@ -2,8 +2,8 @@ import { ref, reactive, computed, watch } from 'vue'
 import candidatePoolService from '@/services/candidatePoolService'
 
 /**
- * Composable for CandidatePool - READ ONLY
- * Quản lý state và cung cấp các chức năng chỉ xem cho CandidatePool
+ * Composable for Mira Talent - READ ONLY
+ * Quản lý state và cung cấp các chức năng chỉ xem cho Mira Talent
  */
 
 // Simple debounce function

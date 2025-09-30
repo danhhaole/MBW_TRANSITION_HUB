@@ -1091,7 +1091,7 @@ const loadAvailableCandidates = async () => {
         }))
       }
     } else {
-      // Get candidates from target segment through TalentProfilesSegment
+      // Get candidates from target segment through Mira Talent Pool
       const candidateSegmentResult = await candidateSegmentService.getList({
         filters: { segment_id: campaign.value.target_segment },
         fields: ['talent_id']

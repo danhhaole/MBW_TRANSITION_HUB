@@ -141,7 +141,7 @@
   
       // Lấy danh sách segment
       const segments = await call('frappe.client.get_list', {
-        doctype: 'TalentSegment',
+        doctype: 'Mira Segment',
         fields: ['name', 'title'],
         order_by: 'title asc',
         limit_page_length: 1000

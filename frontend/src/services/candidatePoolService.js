@@ -1,8 +1,8 @@
 import candidatePoolRepository from '@/repositories/candidatePoolRepository'
 
 /**
- * Service for CandidatePool - READ ONLY
- * Xử lý business logic cho CandidatePool
+ * Service for Mira Talent - READ ONLY
+ * Xử lý business logic cho Mira Talent
  */
 
 // Format candidate pool status with color

@@ -15,7 +15,7 @@ import {
 	validateTalentSegmentForm,
 } from '@/services/talentSegmentService'
 
-// Composable chính cho TalentSegment
+// Composable chính cho Mira Segment
 export const useTalentSegment = () => {
 	const segments = ref([])
 	const selectedSegment = ref(null)
@@ -68,7 +68,7 @@ export const useTalentSegment = () => {
 				}
 			}
 
-			// Get candidates for this segment from TalentProfilesSegment records
+			// Get candidates for this segment from Mira Talent Pool records
 			const candidateSegmentData = await getSegmentCandidates(segment.name)
 			console.log(candidateSegmentData)
 			// Extract candidate info for team members display

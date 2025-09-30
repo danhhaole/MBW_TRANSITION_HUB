@@ -152,7 +152,7 @@
 									'ACTIVE').length /
 									candidates.length) * 100) : 0}}%
 							</div>
-							<div class="text-sm text-purple-700">{{ __('Interaction Rate') }}</div>
+							<div class="text-sm text-purple-700">{{ __('Mira Interaction Rate') }}</div>
 						</div>
 					</div>
 				</div>
@@ -889,18 +889,18 @@ const loadCandidates = async () => {
 	loadingCandidates.value = true
 	console.log('loadCandidates called with segment ID:', route.params.id)
 	try {
-		// First, get all TalentProfilesSegment records for this segment
+		// First, get all Mira Talent Pool records for this segment
 		console.log('Fetching candidate segments...')
 		const candidateSegmentResult = await candidateSegmentService.getList({
 			filters: { segment_id: route.params.id },
 			fields: ['name', 'talent_id', 'added_at', 'added_by', 'match_score'],
 		})
-		console.log('TalentProfilesSegment API result:', candidateSegmentResult)
+		console.log('Mira Talent Pool API result:', candidateSegmentResult)
 
 		if (candidateSegmentResult.success && candidateSegmentResult.data.length > 0) {
 			// Get candidate IDs from the relationship
 			const candidateIds = candidateSegmentResult.data.map((cs) => cs.talent_id)
-			console.log('TalentProfilesSegment records found:', candidateSegmentResult.data)
+			console.log('Mira Talent Pool records found:', candidateSegmentResult.data)
 			console.log('Extracted talent_ids:', candidateIds)
 
 			// Then get the actual candidate data using universal service
@@ -909,7 +909,7 @@ const loadCandidates = async () => {
 				page_length: 1000,
 				fields: ['name', 'full_name', 'email', 'phone', 'status', 'skills', 'headline', 'last_interaction']
 			})
-			console.log('TalentProfiles API result:', candidateResult)
+			console.log('Mira Prospect API result:', candidateResult)
 
 			if (candidateResult && candidateResult.success && candidateResult.data) {
 				// Merge the data - add segment relationship info to candidate data
@@ -1007,7 +1007,7 @@ const contactCandidate = (candidate) => {
 const removeFromSegment = async (candidate) => {
 	if (confirm('Are you sure you want to remove this candidate from the segment?')) {
 		try {
-			// Delete the TalentProfilesSegment relationship
+			// Delete the Mira Talent Pool relationship
 			if (candidate.candidate_segment_id) {
 				const result = await candidateSegmentService.delete(candidate.candidate_segment_id)
 				if (result.success) {

@@ -469,7 +469,7 @@
 				<!-- Interactions Tab -->
 				<div v-if="activeTab === 'interactions'">
 					<div class="flex justify-between items-center mb-6">
-						<h3 class="text-lg font-medium text-gray-900">Interaction History</h3>
+						<h3 class="text-lg font-medium text-gray-900">Mira Interaction History</h3>
 						<Button @click="openInteractionModal()">
 							<div class="flex items-center">
 								<svg
@@ -485,7 +485,7 @@
 										d="M12 6v6m0 0v6m0-6h6m-6 0H6"
 									/>
 								</svg>
-								Add Interaction
+								Add Mira Interaction
 							</div>
 						</Button>
 					</div>
@@ -995,7 +995,7 @@
 			</template>
 		</Dialog>
 
-		<!-- Interaction Modal -->
+		<!-- Mira Interaction Modal -->
 		<Dialog
 			:model-value="showInteractionModal"
 			@update:model-value="showInteractionModal = $event"
@@ -1030,7 +1030,7 @@
 								</div>
 								<div>
 									<h3 class="text-lg font-medium text-gray-900">
-										{{ __('Add Interaction') }}
+										{{ __('Add Mira Interaction') }}
 									</h3>
 									<p class="text-sm text-gray-500">
 										{{ __('Record a new interaction with profile') }}
@@ -1061,7 +1061,7 @@
 							<FormControl
 								v-model="interactionFormData.interaction_type"
 								type="select"
-								label="{{ __('Interaction Type') }}"
+								label="{{ __('Mira Interaction Type') }}"
 								:options="interactionTypeOptions"
 								:required="true"
 							/>
@@ -1087,7 +1087,7 @@
 									clip-rule="evenodd"
 								/>
 							</svg>
-							{{ __('Interaction will be recorded') }}
+							{{ __('Mira Interaction will be recorded') }}
 						</div>
 						<div class="flex space-x-3">
 							<Button variant="outline" @click="closeInteractionModal"
@@ -2251,7 +2251,7 @@ const deleteCandidate = async () => {
 	}
 }
 
-// Interaction methods
+// Mira Interaction methods
 const openInteractionModal = () => {
 	Object.keys(interactionFormData).forEach((key) => {
 		if (key !== 'talent_id') {

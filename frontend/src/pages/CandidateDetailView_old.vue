@@ -320,13 +320,13 @@
         <v-window-item value="interactions">
           <div class="pa-6">
             <div class="d-flex justify-space-between align-center mb-4">
-              <h3 class="text-h6">Interaction History</h3>
+              <h3 class="text-h6">Mira Interaction History</h3>
               <v-btn
                 color="primary"
                 prepend-icon="mdi-plus"
                 @click="openInteractionModal()"
               >
-                Add Interaction
+                Add Mira Interaction
               </v-btn>
             </div>
             

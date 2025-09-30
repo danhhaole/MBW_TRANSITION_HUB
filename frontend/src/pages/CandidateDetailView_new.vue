@@ -313,14 +313,14 @@
         <!-- Interactions Tab -->
         <div v-if="activeTab === 'interactions'">
           <div class="flex justify-between items-center mb-6">
-            <h3 class="text-lg font-medium text-gray-900">Interaction History</h3>
+            <h3 class="text-lg font-medium text-gray-900">Mira Interaction History</h3>
             <Button
               @click="openInteractionModal()"
             >
               <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
               </svg>
-              Add Interaction
+              Add Mira Interaction
             </Button>
           </div>
           
@@ -567,12 +567,12 @@
       </template>
     </Dialog>
 
-    <!-- Interaction Modal -->
+    <!-- Mira Interaction Modal -->
     <Dialog
       :model-value="showInteractionModal"
       @update:model-value="showInteractionModal = $event"
       :options="{
-        title: 'Add Interaction',
+        title: 'Add Mira Interaction',
         size: 'md'
       }"
     >
@@ -581,7 +581,7 @@
           <FormControl
             v-model="interactionFormData.interaction_type"
             type="select"
-            label="Interaction Type"
+            label="Mira Interaction Type"
             :options="interactionTypeOptions"
             :required="true"
           />
@@ -1388,7 +1388,7 @@ const deleteCandidate = async () => {
   }
 }
 
-// Interaction methods
+// Mira Interaction methods
 const openInteractionModal = () => {
   Object.keys(interactionFormData).forEach(key => {
     if (key !== 'candidate_id') {

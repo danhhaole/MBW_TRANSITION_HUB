@@ -154,13 +154,13 @@ class UniversalRepository {
 }
 
 // Repositories mapping
-export const candidateSegmentRepository = new UniversalRepository('TalentProfilesSegment')
+export const candidateSegmentRepository = new UniversalRepository('Mira Talent Pool')
 export const candidateCampaignRepository = new UniversalRepository('TalentProfilesCampaign')
 export const actionRepository = new UniversalRepository('Action')
 export const interactionRepository = new UniversalRepository('InteractionLog')
 export const emailLogRepository = new UniversalRepository('EmailLog')
-export const talentSegmentRepository = new UniversalRepository('TalentSegment')
-export const candidateRepository = new UniversalRepository('TalentProfiles')
+export const talentSegmentRepository = new UniversalRepository('Mira Segment')
+export const candidateRepository = new UniversalRepository('Mira Prospect')
 export const campaignRepository = new UniversalRepository('Campaign')
 export const campaignStepRepository = new UniversalRepository('CampaignStep')
 export const userRepository = new UniversalRepository('User')

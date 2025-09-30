@@ -182,12 +182,12 @@
                 <template #body-content>
                     <div class="space-y-4 w-full">
                         <FormControl type="text" label="Name" v-model="editItem.name" :disabled="true" />
-                        <Link v-model="editItem.talent_id" :doctype="'TalentProfiles'" label="Talent Profile"
+                        <Link v-model="editItem.talent_id" :doctype="'Mira Prospect'" label="Talent Profile"
                             :disabled="true" />
                         <Link v-model="editItem.campaign_id" :doctype="'Campaign'" label="Campaign" :disabled="true" />
-                        <Link v-model="editItem.segment_id" :doctype="'TalentSegment'" label="Segment"
+                        <Link v-model="editItem.segment_id" :doctype="'Mira Segment'" label="Segment"
                             :disabled="true" />
-                        <Link v-model="editItem.interaction_id" :doctype="'Interaction'" label="Interaction"
+                        <Link v-model="editItem.interaction_id" :doctype="'Mira Interaction'" label="Mira Interaction"
                             :disabled="true" />
                         <DateTimePicker v-model="editItem.application_date" label="Application Date" :disabled="true" />
                         <FormControl type="text" label="Application Position" v-model="editItem.position" />
@@ -221,7 +221,7 @@
                         <FormControl type="text" label="Talent Profile" :model-value="viewItem.talent_id" disabled />
                         <FormControl type="text" label="Campaign" :model-value="viewItem.campaign_id" disabled />
                         <FormControl type="text" label="Segment" :model-value="viewItem.segment_id" disabled />
-                        <FormControl type="text" label="Interaction" :model-value="viewItem.interaction_id" disabled />
+                        <FormControl type="text" label="Mira Interaction" :model-value="viewItem.interaction_id" disabled />
                         <FormControl type="text" label="Application Date"
                             :model-value="formatDate(viewItem.application_date)" disabled />
                         <FormControl type="text" label="Application Position" :model-value="viewItem.position"

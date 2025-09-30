@@ -2,8 +2,8 @@
 import { call } from 'frappe-ui'
 
 /**
- * TalentProfiles Repository
- * Xử lý tất cả các API calls liên quan đến TalentProfiles
+ * Mira Prospect Repository
+ * Xử lý tất cả các API calls liên quan đến Mira Prospect
  */
 
 // Lấy danh sách talent profiles (get_list)
@@ -17,7 +17,7 @@ export const getCandidates = async (options = {}) => {
     start = 0
   } = options
   const data = await call('frappe.client.get_list', {
-    doctype: 'TalentProfiles',
+    doctype: 'Mira Prospect',
     filters,
     or_filters,
     fields,
@@ -26,7 +26,7 @@ export const getCandidates = async (options = {}) => {
     limit_page_length: page_length
   })
   const total = await call('frappe.client.get_count', {
-    doctype: 'TalentProfiles',
+    doctype: 'Mira Prospect',
     filters
   })
   return {
@@ -49,7 +49,7 @@ export const getCandidateStats = async () => {
   // Nếu có endpoint riêng thì giữ lại, nếu không thì dùng get_list hoặc custom frappe.client.call
   // Ví dụ: lấy tổng số theo status
   return await call('frappe.client.get_list', {
-    doctype: 'TalentProfiles',
+    doctype: 'Mira Prospect',
     fields: ['status'],
     group_by: 'status'
   })
@@ -58,7 +58,7 @@ export const getCandidateStats = async () => {
 // Search talent profiles for autocomplete
 export const searchCandidates = async (query, limit = 10) => {
   return await call('frappe.client.get_list', {
-    doctype: 'TalentProfiles',
+    doctype: 'Mira Prospect',
     filters: [['full_name', 'like', `%${query}%`]],
     limit_page_length: limit
   })
@@ -67,7 +67,7 @@ export const searchCandidates = async (query, limit = 10) => {
 // Get single talent profile by name
 export const getCandidate = async (name) => {
   return await call('frappe.client.get', {
-    doctype: 'TalentProfiles',
+    doctype: 'Mira Prospect',
     name
   })
 }
@@ -76,7 +76,7 @@ export const getCandidate = async (name) => {
 export const createCandidate = async (candidateData) => {
   return await call('frappe.client.insert', {
     doc: {
-      doctype: 'TalentProfiles',
+      doctype: 'Mira Prospect',
       ...candidateData
     }
   })
@@ -85,7 +85,7 @@ export const createCandidate = async (candidateData) => {
 // Update talent profile
 export const updateCandidate = async (name, candidateData) => {
   return await call('frappe.client.set_value', {
-    doctype: 'TalentProfiles',
+    doctype: 'Mira Prospect',
     name,
     fieldname: candidateData
   })
@@ -94,7 +94,7 @@ export const updateCandidate = async (name, candidateData) => {
 // Delete talent profile
 export const deleteCandidate = async (name) => {
   return await call('frappe.client.delete', {
-    doctype: 'TalentProfiles',
+    doctype: 'Mira Prospect',
     name
   })
 }
@@ -102,8 +102,8 @@ export const deleteCandidate = async (name) => {
 // Get filter options (ví dụ lấy distinct các trường)
 export const getFilterOptions = async () => {
   return {
-    status: await call('frappe.client.get_list', { doctype: 'TalentProfiles', fields: ['status'], distinct: true }),
-    source: await call('frappe.client.get_list', { doctype: 'TalentProfiles', fields: ['source'], distinct: true }),
-    skills: await call('frappe.client.get_list', { doctype: 'TalentProfiles', fields: ['skills'], distinct: true })
+    status: await call('frappe.client.get_list', { doctype: 'Mira Prospect', fields: ['status'], distinct: true }),
+    source: await call('frappe.client.get_list', { doctype: 'Mira Prospect', fields: ['source'], distinct: true }),
+    skills: await call('frappe.client.get_list', { doctype: 'Mira Prospect', fields: ['skills'], distinct: true })
   }
 } 

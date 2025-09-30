@@ -1170,7 +1170,7 @@ const mockCandidates = ref([])
 // Load candidates from segment
 const loadCandidatesFromSegment = async (segmentId) => {
   try {
-    // Get candidates from target segment through TalentProfilesSegment
+    // Get candidates from target segment through Mira Talent Pool
     const candidateSegmentResult = await candidateSegmentService.getList({
       filters: { segment_id: segmentId },
       fields: ['talent_id']
@@ -2375,7 +2375,7 @@ watch(
     campaignData.value.source_file = cfg?.selectedFile?.name || '' // để BE biết file
     campaignData.value.source_config = JSON.stringify({
       file_name: cfg?.selectedFile?.name || '',
-      meta_doctype: 'TalentProfiles',          // đổi nếu khác
+      meta_doctype: 'Mira Prospect',          // đổi nếu khác
       field_mapping
     })
   },

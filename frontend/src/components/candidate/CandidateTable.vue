@@ -17,7 +17,7 @@
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Position') }}</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Skills') }}</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Source') }}</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Last Interaction') }}</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Last Mira Interaction') }}</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Engagement Score') }}</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Status') }}</th>
             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Actions') }}</th>
@@ -152,7 +152,7 @@
               <span v-else class="text-gray-500">-</span>
             </td>
 
-            <!-- Last Interaction Column -->
+            <!-- Last Mira Interaction Column -->
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
               {{ formatRelativeTime(candidate.last_interaction) }}
             </td>
@@ -433,7 +433,7 @@ const headers = [
     width: '120px'
   },
   {
-    title: 'Last Interaction',
+    title: 'Last Mira Interaction',
     key: 'last_interaction',
     align: 'start',
     sortable: false,

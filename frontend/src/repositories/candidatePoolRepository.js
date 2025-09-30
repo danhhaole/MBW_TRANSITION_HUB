@@ -1,7 +1,7 @@
 import { call } from 'frappe-ui'
 
 /**
- * Repository for CandidatePool - READ ONLY
+ * Repository for Mira Talent - READ ONLY
  * Chỉ có chức năng xem, không có CRUD
  */
 
