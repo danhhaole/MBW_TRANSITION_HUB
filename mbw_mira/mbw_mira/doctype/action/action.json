@@ -54,13 +54,13 @@
    "fieldname": "talent_campaign_id",
    "fieldtype": "Link",
    "label": "TalentProfile Campaign",
-   "options": "TalentProfilesCampaign"
+   "options": "Mira Talent Campaign"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-19 11:03:07.631787",
+ "modified": "2025-10-01 16:07:58.295512",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Action",

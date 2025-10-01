@@ -5,12 +5,12 @@ import frappe
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestTalentProfilesCampaign(FrappeTestCase):
+class TestMiraTalentCampaign(FrappeTestCase):
 	pass
 
 	def test_duplicate_candidate_campaign(self):
 		doc1 = frappe.get_doc({
-			"doctype": "TalentProfilesCampaign",
+			"doctype": "MiraTalentCampaign",
 			"candidate_id": "CAN-2506-00005",
 			"campaign_id": "CPG-250630-00011",
 			"status": "ACTIVE"
@@ -18,7 +18,7 @@ class TestTalentProfilesCampaign(FrappeTestCase):
 
 		with self.assertRaises(frappe.ValidationError):
 			doc2 = frappe.get_doc({
-				"doctype": "TalentProfilesCampaign",
+				"doctype": "MiraTalentCampaign",
 				"candidate_id": "CAN-2506-00005",
 				"campaign_id": "CPG-250630-00011",
 				"status": "ACTIVE"

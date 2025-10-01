@@ -231,7 +231,7 @@ const links = [
     to: 'CampaignManagement',
   },
   {
-    label: "JobOpening",
+    label: "Job Opening",
     icon: OrganizationsIcon,
     to: 'JobOpeningManagement',
   },
@@ -287,15 +287,15 @@ const links = [
     to: 'Report',
     submenu: [
       {
-        label: "Talent Profiles",
+        label: "Prospect",
         icon: ContactsIcon,
         to: { name: 'CandidateManagement' },
       },
-      {
-        label: "Applicant Pool",
-        icon: NoteIcon,
-        to: { name: 'ApplicantPoolManagement' },
-      },
+      // {
+      //   label: "Applicant Pool",
+      //   icon: NoteIcon,
+      //   to: { name: 'ApplicantPoolManagement' },
+      // },
       {
         label: "Interactions",
         icon: ReplyIcon,

@@ -20,13 +20,13 @@ class Action(Document):
 
 
 def update_step_result_talent_campaign(doc):
-	"""Update trạng thái TalentProfilesCampaign khi action đã thực hiện
+	"""Update trạng thái Mira Talent Campaign khi action đã thực hiện
 
 	Args:
 		doc (dict): _description_
 	""" 
-	#Action có 2 trạng thái này thì update TalentProfilesCampaign
-	talent_campaign = frappe.get_doc("TalentProfilesCampaign", doc.talent_campaign_id)
+	#Action có 2 trạng thái này thì update Mira Talent Campaign
+	talent_campaign = frappe.get_doc("Mira Talent Campaign", doc.talent_campaign_id)
 	if talent_campaign.status != "ACTIVE":
 		return
 

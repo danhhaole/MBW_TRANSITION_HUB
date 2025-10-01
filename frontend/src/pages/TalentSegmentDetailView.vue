@@ -951,7 +951,7 @@ const loadRelatedCampaigns = async () => {
 		if (candidateSegmentResult.success && candidateSegmentResult.data.length > 0) {
 			const candidateIds = candidateSegmentResult.data.map((cs) => cs.talent_id)
 
-			// Then get campaigns that have these candidates through TalentProfilesCampaign
+			// Then get campaigns that have these candidates through Mira Talent Campaign
 			const candidateCampaignResult = await candidateCampaignService.getList({
 				filters: { talent_id: ['in', candidateIds] },
 				fields: ['campaign_id'],

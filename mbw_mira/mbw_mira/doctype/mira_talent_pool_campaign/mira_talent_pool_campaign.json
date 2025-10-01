@@ -2,7 +2,7 @@
  "actions": [],
  "allow_rename": 1,
  "autoname": "format:CAN-CPG-{YY}{MM}{DD}-{#####}",
- "creation": "2025-06-27 14:59:48.010299",
+ "creation": "2025-10-01 16:34:05.010111",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
@@ -15,10 +15,30 @@
  ],
  "fields": [
   {
+   "description": "(Foreign Key -> Talent Pool)",
+   "fieldname": "campaign_id",
+   "fieldtype": "Link",
+   "label": "Campaign",
+   "options": "Campaign"
+  },
+  {
+   "description": "(Foreign Key -> Talent Pool)",
+   "fieldname": "talent_id",
+   "fieldtype": "Link",
+   "label": "Talent Pool",
+   "options": "Mira Talent"
+  },
+  {
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
    "options": "ACTIVE\nPAUSED\nCOMPLETED\nCANCELLED"
+  },
+  {
+   "description": "Th\u1eddi \u0111i\u1ec3m \u1ee9ng vi\u00ean \u0111\u01b0\u1ee3c th\u00eam v\u00e0o chi\u1ebfn d\u1ecbch.",
+   "fieldname": "enrolled_at",
+   "fieldtype": "Datetime",
+   "label": "Enrolled At"
   },
   {
    "description": "Tham chi\u1ebfu \u0111\u1ebfn order trong CampaignStep \u0111\u1ec3 x\u00e1c \u0111\u1ecbnh b\u01b0\u1edbc hi\u1ec7n t\u1ea1i.",
@@ -31,35 +51,15 @@
    "fieldname": "next_action_at",
    "fieldtype": "Datetime",
    "label": "Next Action At"
-  },
-  {
-   "description": "Th\u1eddi \u0111i\u1ec3m \u1ee9ng vi\u00ean \u0111\u01b0\u1ee3c th\u00eam v\u00e0o chi\u1ebfn d\u1ecbch.",
-   "fieldname": "enrolled_at",
-   "fieldtype": "Datetime",
-   "label": "Enrolled At"
-  },
-  {
-   "description": "(Foreign Key -> Campaign)",
-   "fieldname": "campaign_id",
-   "fieldtype": "Link",
-   "label": "Campaign",
-   "options": "Campaign"
-  },
-  {
-   "description": "(Foreign Key -> Candidate)",
-   "fieldname": "talent_id",
-   "fieldtype": "Link",
-   "label": "Talent Profile",
-   "options": "Mira Prospect"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-09-29 09:06:00.766606",
+ "modified": "2025-10-01 16:34:46.385815",
  "modified_by": "Administrator",
  "module": "MBW Mira",
- "name": "Mira Talent Campaign",
+ "name": "Mira Talent Pool Campaign",
  "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [

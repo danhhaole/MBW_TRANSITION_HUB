@@ -49,14 +49,14 @@
    "description": "(Foreign Key -> Candidate)",
    "fieldname": "talent_id",
    "fieldtype": "Link",
-   "label": "Talent Profile",
-   "options": "Mira Prospect"
+   "label": "Talent",
+   "options": "Mira Talent"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-09-29 09:06:00.766606",
+ "modified": "2025-10-01 16:08:38.653950",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Talent Campaign",
