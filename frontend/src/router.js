@@ -78,7 +78,7 @@ const routes = [
 	{ 
 		path: '/ladi-pages/:id/view', 
 		name: 'ladi-page-view',
-		component: LadiPageView,
+		component: ()=>import('@/pages/LadiPageView.vue'),
 		meta: {
 			requiresAuth: true,
 			title: 'Ladi Page View' 
