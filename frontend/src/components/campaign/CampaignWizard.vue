@@ -299,15 +299,27 @@
                           </div>
                         </div>
                       </div>
-                      <Button
-                        variant="ghost"
-                        theme="gray"
-                        size="sm"
-                        @click="clearDataSourceSelection"
-                        class="text-gray-500 hover:text-gray-700"
-                      >
-                        {{ __('Change') }}
-                      </Button>
+                      <div class="flex items-center gap-2">
+                        <Button
+                          v-if="selectedSource === 'datasource' && selectedDataSourceType === 'SocialNetwork'"
+                          variant="ghost"
+                          theme="gray"
+                          size="sm"
+                          class="text-gray-500 hover:text-gray-700"
+                          @click="openSocialConfigEditor"
+                        >
+                          {{ __('Edit') }}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          theme="gray"
+                          size="sm"
+                          @click="clearDataSourceSelection"
+                          class="text-gray-500 hover:text-gray-700"
+                        >
+                          {{ __('Change') }}
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -737,7 +749,7 @@
               </div>
 
               <!-- Social Network: Select Page (connected_accounts) -->
-              <div v-if="selectedSource === 'datasource' && selectedDataSourceType === 'SocialNetwork'">
+              <div v-if="showStepSocialFields && selectedSource === 'datasource' && selectedDataSourceType === 'SocialNetwork'">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   {{ __('Select Social Page') }}
                 </label>
@@ -757,25 +769,31 @@
               </div>
 
               <!-- Step Schedule (Datetime) -->
-              <div>
+              <div v-if="showStepSocialFields">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  {{ __('Time Post News(optional)') }}
+                  {{ __('Time Post News') }}
                 </label>
                 <input
+                  ref="scheduledAtInput"
                   v-model="stepFormData.scheduled_at"
                   type="datetime-local"
                   :min="minScheduledAt"
                   :disabled="stepFormLoading"
+                  :step="60"
+                  @focus="openScheduledAtPicker"
+                  @click="openScheduledAtPicker"
                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
                 <p class="mt-1 text-xs text-gray-500">
-                  {{ __('Local time') }} ({{ localTzLabel }}) •
-                  {{ __('If empty, system will use Campaign start_date + delay_in_days') }}
+                  {{ __('Local time') }} ({{ localTzLabel }})
                 </p>
+                <div v-if="stepFormErrors.scheduled_at" class="mt-1 text-sm text-red-600">
+                  {{ stepFormErrors.scheduled_at }}
+                </div>
               </div>
 
               <!-- Step Job Opening (optional) -->
-              <div>
+              <div v-if="showStepSocialFields">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   {{ __('Job Opening (optional)') }}
                 </label>
@@ -829,7 +847,8 @@
                     min="1"
                     max="999"
                     :placeholder="__('Order...')"
-                    :disabled="stepFormLoading"
+                    :disabled="true"
+                    readonly
                     class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     :class="{ 'border-red-500': stepFormErrors.step_order }"
                   />
@@ -901,7 +920,7 @@
               </div>
 
               <!-- Step Image (optional) -->
-              <div>
+              <div v-if="showStepSocialFields">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   {{ __('Step Image (optional)') }}
                 </label>
@@ -962,6 +981,113 @@
               {{ editingStep ? __('Update Step') : __('Add Step') }}
             </Button>
           </div>
+        </div>
+      </template>
+    </Dialog>
+
+    <!-- Social Network Config Modal -->
+    <Dialog v-model="showSocialConfigModal" :options="{ title: __('Social Network Configuration'), size: 'lg' }">
+      <template #body>
+        <div class="p-6 space-y-4">
+          <!-- Modal Header with Close Button -->
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center space-x-2">
+              <FeatherIcon name="users" class="h-5 w-5 text-blue-600" />
+              <h3 class="text-base font-medium text-gray-900">{{ __('Select Page & Schedule') }}</h3>
+            </div>
+            <Button theme="gray" variant="ghost" class="w-7 h-7" @click="showSocialConfigModal = false">
+              <FeatherIcon name="x" class="h-4 w-4" />
+            </Button>
+          </div>
+
+          <!-- Select Social Page -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              {{ __('Select Social Page') }}
+            </label>
+            <select
+              v-model="configData.socialConfig.page_id"
+              :disabled="loadingPages"
+              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            >
+              <option value="">{{ __('Select a page...') }}</option>
+              <option v-for="p in socialPages" :key="p.external_account_id" :value="p.external_account_id">
+                {{ p.account_name }} ({{ p.account_type }})
+              </option>
+            </select>
+          </div>
+
+          <!-- Schedule -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              {{ __('Time Post News') }}
+            </label>
+            <input
+              v-model="configData.socialConfig.scheduled_at"
+              type="datetime-local"
+              :min="minScheduledAt"
+              :step="60"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            />
+            <p class="mt-1 text-xs text-gray-500">{{ __('Local time') }} ({{ localTzLabel }})</p>
+          </div>
+
+          <!-- Job Opening -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              {{ __('Job Opening (optional)') }}
+            </label>
+            <select
+              v-model="configData.socialConfig.job_opening"
+              :disabled="loadingJobOpenings"
+              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            >
+              <option value="">{{ __('Select a job opening...') }}</option>
+              <option v-for="job in jobOpeningsList" :key="job.name" :value="job.name">
+                {{ job.job_title }} {{ job.job_code ? `(${job.job_code})` : '' }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Image Uploader -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              {{ __('Step Image (optional)') }}
+            </label>
+            <ImageUploader
+              :image_url="configData.socialConfig.image"
+              image_type="image/*"
+              @upload="(url) => { configData.socialConfig.image = url }"
+              @remove="() => { configData.socialConfig.image = '' }"
+            />
+            <!-- Image URL input -->
+            <div class="mt-2">
+              <label class="block text-xs font-medium text-gray-500 mb-1">{{ __('Image URL') }}</label>
+              <input
+                v-model="configData.socialConfig.image"
+                type="text"
+                placeholder="https://..."
+                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              />
+            </div>
+            <!-- Preview -->
+            <div v-if="configData.socialConfig.image" class="mt-3">
+              <label class="block text-xs font-medium text-gray-500 mb-1">{{ __('Preview') }}</label>
+              <img :src="configData.socialConfig.image" alt="Preview" class="max-h-40 rounded border" />
+            </div>
+          </div>
+
+          <!-- Inline Actions (visible even if footer is hidden) -->
+          <div class="flex items-center justify-end gap-2 pt-2">
+            <Button variant="outline" theme="gray" @click="showSocialConfigModal = false">{{ __('Cancel') }}</Button>
+            <Button variant="solid" theme="gray" @click="confirmSocialConfig">{{ __('Continue') }}</Button>
+          </div>
+        </div>
+      </template>
+      <template #actions>
+        <div class="flex items-center gap-2 p-3">
+          <Button variant="outline" theme="gray" @click="showSocialConfigModal = false">{{ __('Cancel') }}</Button>
+          <Button variant="solid" theme="gray" @click="confirmSocialConfig">{{ __('Continue') }}</Button>
         </div>
       </template>
     </Dialog>
@@ -1049,7 +1175,13 @@ const configData = ref({
   selectedFile: null,
   uploadedFileUrl: '',
   filePreview: [],
-  fileHeaders: []
+  fileHeaders: [],
+  socialConfig: {
+    page_id: '',
+    scheduled_at: '',
+    job_opening: '',
+    image: ''
+  }
 })
 const selectedCandidates = ref(new Set())
 const realCandidates = ref([]) // Replace mockCandidates
@@ -1445,6 +1577,20 @@ const selectSpecificDataSource = (dataSource) => {
   campaignData.value.data_source_id = dataSource.name
   configData.value.selectedDataSource = dataSource
   dataSourceSelectionLevel.value = 3 // ✅ Specific data source selected - confirmed level
+
+  // Nếu là SocialNetwork thì mở modal cấu hình
+  if (selectedSource.value === 'datasource' && selectedDataSourceType.value === 'SocialNetwork') {
+    loadSocialPages()
+    if (jobOpeningsList.value.length === 0) {
+      loadJobOpenings()
+    }
+    if (!configData.value.socialConfig?.scheduled_at) {
+      const now = new Date()
+      const plus30m = new Date(now.getTime() + 30 * 60 * 1000)
+      configData.value.socialConfig.scheduled_at = toLocalDatetimeInput(plus30m)
+    }
+    showSocialConfigModal.value = true
+  }
 }
 
 const clearDataSourceSelection = () => {
@@ -1648,7 +1794,8 @@ const validateStepForm = () => {
     stepFormErrors.value.action_type = __('Action type is required')
   }
   
-  if (!stepFormData.value.step_order || stepFormData.value.step_order < 1) {
+  // step_order optional: nếu trống/không hợp lệ sẽ để BE tự gán
+  if (stepFormData.value.step_order != null && stepFormData.value.step_order < 1) {
     stepFormErrors.value.step_order = __('Step order must be at least 1')
   }
   
@@ -1687,6 +1834,22 @@ const handleStepFormSubmit = () => {
   stepFormLoading.value = true
   
   try {
+    // Fallback: if SocialNetwork and fields empty, use socialConfig
+    if (selectedSource.value === 'datasource' && selectedDataSourceType.value === 'SocialNetwork') {
+      if (!stepFormSelectedPageId.value && configData.value.socialConfig?.page_id) {
+        stepFormSelectedPageId.value = configData.value.socialConfig.page_id
+      }
+      if (!stepFormData.value.scheduled_at && configData.value.socialConfig?.scheduled_at) {
+        stepFormData.value.scheduled_at = configData.value.socialConfig.scheduled_at
+      }
+      if (!stepFormSelectedJobId.value && configData.value.socialConfig?.job_opening) {
+        stepFormSelectedJobId.value = configData.value.socialConfig.job_opening
+      }
+      if (!stepFormData.value.image && configData.value.socialConfig?.image) {
+        stepFormData.value.image = configData.value.socialConfig.image
+      }
+    }
+
     const scheduledIso = stepFormData.value.scheduled_at
       ? toIsoIfSet(stepFormData.value.scheduled_at)
       : ''
@@ -1694,7 +1857,7 @@ const handleStepFormSubmit = () => {
       campaign: draftCampaign.value?.data?.name || draftCampaign.value?.name, // ✅ Sửa: Đảm bảo có campaign
       campaign_step_name: stepFormData.value.campaign_step_name.trim(),
       action_type: stepFormData.value.action_type,
-      step_order: stepFormData.value.step_order,
+      // step_order: chỉ gửi nếu hợp lệ, để BE auto-increment khi thiếu
       delay_in_days: stepFormData.value.delay_in_days,
       template_content: stepFormData.value.template_content?.trim() || '',
       image: stepFormData.value.image || '', // Include image với tên field đúng
@@ -1709,12 +1872,19 @@ const handleStepFormSubmit = () => {
         })() : null
     }
     
-    // Attach selected social page to step metadata (kept in action_config)
-    if (selectedSource.value === 'datasource' && selectedDataSourceType.value === 'SocialNetwork' && stepFormSelectedPageId.value) {
-      stepData.action_config = stepData.action_config || {}
-      stepData.action_config.target_page_id = stepFormSelectedPageId.value
+    if (Number.isFinite(stepFormData.value.step_order) && stepFormData.value.step_order > 0) {
+      stepData.step_order = stepFormData.value.step_order
     }
     
+    // Attach selected social page to step metadata (kept in action_config)
+    if (selectedSource.value === 'datasource' && selectedDataSourceType.value === 'SocialNetwork') {
+      const pageId = stepFormSelectedPageId.value || configData.value.socialConfig?.page_id
+      if (pageId) {
+        stepData.action_config = stepData.action_config || {}
+        stepData.action_config.target_page_id = pageId
+      }
+    }
+
     if (editingStep.value) {
       // Editing existing step
       const index = campaignSteps.value.findIndex(s => s.id === editingStep.value.id)
@@ -2248,7 +2418,13 @@ const closeWizard = () => {
     selectedFile: null,
     uploadedFileUrl: '',
     filePreview: [],
-    fileHeaders: []
+    fileHeaders: [],
+    socialConfig: {
+      page_id: '',
+      scheduled_at: '',
+      job_opening: '',
+      image: ''
+    }
   }
   filteredDataSources.value = []
   selectedCandidates.value.clear()
@@ -2390,6 +2566,19 @@ watch(showStepForm, async (val) => {
   // Also load social pages when SocialNetwork selected
   if (val && selectedSource.value === 'datasource' && selectedDataSourceType.value === 'SocialNetwork') {
     await loadSocialPages()
+    // Auto-fill from socialConfig
+    if (configData.value.socialConfig) {
+      stepFormSelectedPageId.value = configData.value.socialConfig.page_id || ''
+      stepFormData.value.scheduled_at = configData.value.socialConfig.scheduled_at || ''
+      stepFormSelectedJobId.value = configData.value.socialConfig.job_opening || ''
+      if (configData.value.socialConfig.image) {
+        stepFormData.value.image = configData.value.socialConfig.image
+      }
+      // Template content
+      if (!stepFormData.value.template_content && configData.value.socialConfig.template_content) {
+        stepFormData.value.template_content = configData.value.socialConfig.template_content
+      }
+    }
   }
 })
 
@@ -2404,6 +2593,22 @@ watch(show, (newVal) => {
     // Clean up draft campaign if wizard is closed without completion
     // TODO: Optionally delete draft campaign
   }
+  // Khi mở wizard lần đầu, set mặc định start_date = now và end_date = start_date + 30 ngày nếu chưa có
+  if (newVal) {
+    try {
+      if (!campaignData.value.start_date) {
+        const now = new Date()
+        campaignData.value.start_date = toLocalDatetimeInput(now)
+      }
+      if (!campaignData.value.end_date) {
+        const base = campaignData.value.start_date ? new Date(campaignData.value.start_date) : new Date()
+        const plus30 = new Date(base.getTime() + 30 * 24 * 60 * 60 * 1000)
+        campaignData.value.end_date = toLocalDatetimeInput(plus30)
+      }
+    } catch (e) {
+      console.warn('Failed to initialize start/end dates', e)
+    }
+  }
 })
 
 // Đồng bộ target_segment với configData.selectedSegment
@@ -2415,6 +2620,7 @@ watch(() => configData.value.selectedSegment, (val) => {
 const socialPages = ref([])
 const loadingPages = ref(false)
 const stepFormSelectedPageId = ref('')
+const scheduledAtInput = ref(null)
 
 // Load pages from External Connection connected_accounts
 const loadSocialPages = async () => {
@@ -2478,6 +2684,64 @@ const stepFormDialogOptions = computed(() => ({
   title: editingStep.value ? __('Edit Step') : __('Add New Step'),
   size: 'lg'
 }))
+
+const openScheduledAtPicker = (e) => {
+  try {
+    // Ưu tiên gọi trên target nếu có
+    if (e && e.target && typeof e.target.showPicker === 'function') {
+      e.target.showPicker()
+      return
+    }
+    // Gọi trên ref nếu hỗ trợ
+    if (scheduledAtInput.value && typeof scheduledAtInput.value.showPicker === 'function') {
+      scheduledAtInput.value.showPicker()
+    }
+  } catch (err) {
+    // Trình duyệt không hỗ trợ showPicker, bỏ qua
+  }
+}
+
+// State for Social Network configuration modal
+const showSocialConfigModal = ref(false)
+
+const confirmSocialConfig = async () => {
+  try {
+    // Nếu đã chọn job opening ở bước 2, chuẩn bị trước nội dung template
+    const jobId = configData.value.socialConfig?.job_opening
+    if (jobId) {
+      try {
+        const details = await getJobOpeningDetails(jobId)
+        const blockBody = buildJobDetailsForTemplate(details)
+        // Lưu sẵn để dùng ở Step 4
+        configData.value.socialConfig.template_content = blockBody || ''
+      } catch (e) {
+        console.warn('Failed to build template from job opening at step 2', e)
+        configData.value.socialConfig.template_content = ''
+      }
+    }
+  } finally {
+    // Đóng modal
+    showSocialConfigModal.value = false
+  }
+}
+
+// Hide step form fields for SocialNetwork (moved to modal)
+const showStepSocialFields = computed(() => !(selectedSource.value === 'datasource' && selectedDataSourceType.value === 'SocialNetwork'))
+
+const openSocialConfigEditor = async () => {
+  if (selectedSource.value === 'datasource' && selectedDataSourceType.value === 'SocialNetwork') {
+    await loadSocialPages()
+    if (jobOpeningsList.value.length === 0) {
+      await loadJobOpenings()
+    }
+    if (!configData.value.socialConfig?.scheduled_at) {
+      const now = new Date()
+      const plus30m = new Date(now.getTime() + 30 * 60 * 1000)
+      configData.value.socialConfig.scheduled_at = toLocalDatetimeInput(plus30m)
+    }
+    showSocialConfigModal.value = true
+  }
+}
 
 </script>
 

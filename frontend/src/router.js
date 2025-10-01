@@ -70,8 +70,8 @@ const routes = [
 	{ path: '/candidates', name: 'CandidateManagement', component: CandidateManagement },
 	{ path: '/candidates/:id', name: 'CandidateDetailView', component: CandidateDetailView },
 
-	// Mira Interaction & Action
-	{ path: '/interactions', name: 'InteractionManagement', component: InteractionManagement },
+	// Interaction & Action
+	// { path: '/interactions', name: 'InteractionManagement', component: InteractionManagement },
 	{ path: '/actions', name: 'ActionManagement', component: ActionManagement },
 
 	// Email Log
@@ -79,7 +79,7 @@ const routes = [
 
 	// Data Sources
 	{ path: '/data-sources', name: 'CandidateDataSourceManagement', component: CandidateDataSourceManagement },
-	{ path: '/data-sources-direct', name: 'CandidateDataSourceManagementDirect', component: CandidateDataSourceManagementDirect },
+	// { path: '/data-sources-direct', name: 'CandidateDataSourceManagementDirect', component: CandidateDataSourceManagementDirect },
 
 	// Campaign Templates
 	{ path: '/campaign-templates', name: 'CampaignTemplateManagement', component: () => import('@/pages/CampaignTemplateManagement.vue') },

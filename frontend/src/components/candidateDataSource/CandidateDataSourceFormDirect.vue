@@ -95,6 +95,7 @@
                   type="text"
                   :placeholder="__('Enter data source name')"
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  :disabled="true"
                   required
                 />
               </div>
@@ -106,15 +107,16 @@
                 </label>
                 <select
                   v-model="formData.source_type"
+                  :disabled="true"
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 >
-                  <option value="">{{ __('-- Select source type --') }}</option>
+                  <!-- <option value="">{{ __('-- Select source type --') }}</option> -->
                   <option value="ATS">{{ __('ATS') }}</option>
-                  <option value="JobBoard">{{ __('Job Board') }}</option>
-                  <option value="SocialNetwork">{{ __('Social Network') }}</option>
+                  <!-- <option value="JobBoard">{{ __('Job Board') }}</option>
+                  <option value="Social Network">{{ __('Social Network') }}</option>
                   <option value="Manual">{{ __('Manual') }}</option>
-                  <option value="Other">{{ __('Other') }}</option>
+                  <option value="Other">{{ __('Other') }}</option> -->
                 </select>
               </div>
 
@@ -214,29 +216,6 @@
                   <option value="Active">{{ __('Active') }}</option>
                   <option value="Inactive">{{ __('Inactive') }}</option>
                 </select>
-              </div>
-
-              <!-- Sync Frequency -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('Sync Frequency (minutes)') }}</label>
-                <input
-                  v-model.number="formData.sync_frequency_minutes"
-                  type="number"
-                  min="1"
-                  placeholder="60"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <!-- Notes -->
-              <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('Notes') }}</label>
-                <textarea
-                  v-model="formData.notes"
-                  rows="3"
-                  :placeholder="__('Notes about the data source...')"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                ></textarea>
               </div>
 
               <!-- Active Status -->
@@ -350,8 +329,8 @@ const fieldTabs = ref([])
 
 // Form data với enhanced structure
 const formData = reactive({
-  source_name: '',
-  source_type: '',
+  source_name: 'MBW ATS',
+  source_type: 'ATS',
   api_base_url: '',
   auth_method: '',
   client_id: '',
@@ -391,8 +370,8 @@ const isEdit = computed(() => !!props.dataSource)
 // Methods
 const resetForm = () => {
   Object.assign(formData, {
-    source_name: '',
-    source_type: '',
+    source_name: 'MBW ATS',
+    source_type: 'ATS',
     api_base_url: '',
     auth_method: '',
     client_id: '',
@@ -437,10 +416,53 @@ const loadFieldLayout = async () => {
     
     if (response.success && response.data && response.data.fieldLayout) {
       fieldTabs.value = response.data.fieldLayout
+
+      // Lọc bỏ các field không muốn hiển thị trong form
+      const hiddenFields = new Set(['last_sync_at', 'sync_frequency_minutes', 'last_error', 'notes'])
+      fieldTabs.value = fieldTabs.value.map(tab => ({
+        ...tab,
+        sections: (tab.sections || []).map(sec => ({
+          ...sec,
+          columns: (sec.columns || []).map(col => ({
+            ...col,
+            fields: (col.fields || []).map(f => {
+              const fname = (f.fieldname || '').trim()
+              if (hiddenFields.has(fname)) return null
+              if (fname === 'source_name') {
+                // Khóa Source Name và đặt mặc định MBW_ATS
+                return {
+                  ...f,
+                  read_only: 1,
+                  disabled: true,
+                  default: 'MBW ATS'
+                }
+              }
+              if (fname === 'source_type') {
+                // Khóa Source Type và chỉ hiển thị ATS
+                return {
+                  ...f,
+                  read_only: 1,
+                  disabled: true,
+                  default: 'ATS',
+                  options: 'ATS'
+                }
+              }
+              return f
+            }).filter(Boolean)
+          }))
+        }))
+      }))
+
+      // Force Source Type = ATS khi dùng FieldLayout
+      formData.source_type = 'ATS'
+      formData.source_name = 'MBW ATS'
       
       // Load existing document data nếu edit mode
       if (response.data.doc) {
         setFormData(response.data.doc)
+        // Giữ ATS và MBW_ATS bất kể dữ liệu cũ
+        formData.source_type = 'ATS'
+        formData.source_name = 'MBW ATS'
       }
     } else {
       // Fallback: không sử dụng FieldLayout
