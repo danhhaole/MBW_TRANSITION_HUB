@@ -4,19 +4,14 @@ import { userResource } from '@/stores/user'
 import { sessionStore } from '@/stores/session'
 
 // Talent Segment
-import TalentSegmentDetail from './pages/TalentSegmentDetail.vue'
-
-// Campaign Management
-import CampaignManagement from './pages/CampaignManagement.vue'
-import CampaignDetailView from './pages/CampaignDetailView.vue'
 
 
 const routes = [
 	{ path: '/', name: 'Dashboard', component: () => import('@/pages/Dashboard.vue') },
 	{ alias: '/talentsegment', path: '/talentsegment', name: 'Talet Segment', component: () => import('@/pages/TalentSegment.vue') },
 	{ alias: '/candidate', path: '/candidate', name: 'Candidate', component: () => import('@/pages/Candidate.vue') },
-	{ alias: '/campaigns', path: '/campaigns', name: 'CampaignManagement', component: CampaignManagement },
-	{ path: '/campaigns/:id', name: 'CampaignDetailView', component: CampaignDetailView },
+	{ alias: '/campaigns', path: '/campaigns', name: 'CampaignManagement', component: import('@/pages/CampaignManagement.vue') },
+	{ path: '/campaigns/:id', name: 'CampaignDetailView', component: import('@/pages/CampaignDetailView.vue') },
 	{ path: '/job-openings', name: 'JobOpeningManagement', component: () => import('@/pages/JobOpeningManagement.vue') },
 	{ path: '/job-openings/:id', name: 'JobOpeningDetailView', component: () => import('@/pages/JobOpeningDetailView.vue') },
 	{ path: '/candidates-simple', name: 'CandidateManagementSimple', component: () => import('@/pages/CandidateManagementSimple.vue') },
@@ -43,8 +38,8 @@ const routes = [
 	{ path: '/email-logs', name: 'EmailLogManagement', component: ()=>import('@/pages/EmailLogManagement.vue') },
 
 	// Data Sources
-	{ path: '/data-sources', name: 'CandidateDataSourceManagement', component: CandidateDataSourceManagement },
-	{ path: '/data-sources-direct', name: 'CandidateDataSourceManagementDirect', component: CandidateDataSourceManagementDirect },
+	{ path: '/data-sources', name: 'CandidateDataSourceManagement', component: ()=>import('@/pages/CandidateDataSourceManagement.vue') },
+	{ path: '/data-sources-direct', name: 'CandidateDataSourceManagementDirect', component: ()=>import('@/pages/CandidateDataSourceManagementDirect.vue') },
 
 	// Campaign Templates
 	{ path: '/campaign-templates', name: 'CampaignTemplateManagement', component: () => import('@/pages/CampaignTemplateManagement.vue') },
