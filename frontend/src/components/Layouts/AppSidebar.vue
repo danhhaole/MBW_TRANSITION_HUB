@@ -319,11 +319,11 @@ const links = [
     icon: TaskIcon,
     to: 'Settings',
     submenu: [
-      {
-        label: "integrations",
-        icon: ExternalLinkIcon,
-        to: { name: 'CandidateDataSourceManagementDirect' }
-      },
+      // {
+      //   label: "integrations",
+      //   icon: ExternalLinkIcon,
+      //   to: { name: 'CandidateDataSourceManagementDirect' }
+      // },
       {
         label: "Campaign Templates",
         icon: NoteIcon,

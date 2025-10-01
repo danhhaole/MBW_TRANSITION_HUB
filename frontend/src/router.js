@@ -43,8 +43,8 @@ const routes = [
 	{ path: '/email-logs', name: 'EmailLogManagement', component: ()=>import('@/pages/EmailLogManagement.vue') },
 
 	// Data Sources
-	{ path: '/data-sources', name: 'CandidateDataSourceManagement', component: ()=>import('@/pages/CandidateDataSourceManagement.vue') },
-	{ path: '/data-sources-direct', name: 'CandidateDataSourceManagementDirect', component: ()=>import('@/pages/CandidateDataSourceManagementDirect.vue') },
+	{ path: '/data-sources', name: 'CandidateDataSourceManagement', component: CandidateDataSourceManagement },
+	{ path: '/data-sources-direct', name: 'CandidateDataSourceManagementDirect', component: CandidateDataSourceManagementDirect },
 
 	// Campaign Templates
 	{ path: '/campaign-templates', name: 'CampaignTemplateManagement', component: () => import('@/pages/CampaignTemplateManagement.vue') },
