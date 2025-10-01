@@ -496,7 +496,7 @@
                     <div v-for="(step, index) in campaignSteps" :key="step.id || index" 
                          class="flex items-center p-3 bg-gray-50 rounded-lg border hover:bg-gray-100 transition-colors">
                       <!-- Step Image -->
-                      <div v-if="step.image" class="w-10 h-10 rounded-lg overflow-hidden mr-3 flex-shrink-0">
+                      <!-- <div v-if="step.image" class="w-10 h-10 rounded-lg overflow-hidden mr-3 flex-shrink-0">
                         <img 
                           :src="step.image" 
                           :alt="step.campaign_step_name"
@@ -505,7 +505,7 @@
                       </div>
                       <div v-else class="w-10 h-10 bg-gray-200 rounded-lg mr-3 flex-shrink-0 flex items-center justify-center">
                         <FeatherIcon name="image" class="h-5 w-5 text-gray-400" />
-                      </div>
+                      </div> -->
                       
                       <span class="flex items-center justify-center w-6 h-6 bg-blue-100 text-blue-800 text-xs font-medium rounded-full mr-3">
                         {{ step.step_order }}
