@@ -1020,7 +1020,7 @@ const loadCampaignSteps = async () => {
   try {
     const result = await campaignStepService.getList({
       filters: { campaign: route.params.id },
-      fields: ['name', 'campaign_step_name', 'step_order', 'action_type', 'delay_in_days']
+      fields: ['name', 'campaign_step_name', 'step_order', 'action_type', 'delay_in_days', 'template' ]
     })
     if (result.success) {
       campaignSteps.value = result.data
@@ -1238,10 +1238,25 @@ const getCompletedCandidates = () => {
   return candidateCampaigns.value.filter(c => c.status === 'COMPLETED').length
 }
 
-// Placeholder methods for actions
-const saveStep = () => {
-  // TODO: Implement save step
+const saveStep = async () => {
+  savingStep.value = true
+  try {
+    // Nếu có name thì update, còn không thì insert
+    const result = await campaignStepService.save(stepFormData, stepFormData.name || null)
+
+    if (result.success) {
+      await loadCampaignSteps()
+      closeStepModal()
+    } else {
+      console.error('Error saving step:', result.error || result)
+    }
+  } catch (err) {
+    console.error('Error saving step:', err)
+  } finally {
+    savingStep.value = false
+  }
 }
+
 
 const assignCandidate = () => {
   // TODO: Implement assign candidate
