@@ -157,7 +157,7 @@ class UniversalRepository {
 export const candidateSegmentRepository = new UniversalRepository('Mira Talent Pool')
 export const candidateCampaignRepository = new UniversalRepository('TalentProfilesCampaign')
 export const actionRepository = new UniversalRepository('Action')
-export const interactionRepository = new UniversalRepository('InteractionLog')
+export const interactionRepository = new UniversalRepository('Mira Interaction')
 export const emailLogRepository = new UniversalRepository('EmailLog')
 export const talentSegmentRepository = new UniversalRepository('Mira Segment')
 export const candidateRepository = new UniversalRepository('Mira Prospect')
