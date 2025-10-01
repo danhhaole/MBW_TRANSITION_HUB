@@ -79,13 +79,13 @@
             <tbody class="bg-white divide-y divide-gray-200">
               <tr v-for="item in items" :key="item.name" class="hover:bg-gray-50">
                 <td class="px-6 py-4">
-                  <button class="text-left text-gray-900 hover:underline" @click="view(item)">{{ item.job_title }}</button>
+                  <button class="text-left text-gray-900 text-base hover:underline" @click="view(item)">{{ item.job_title }}</button>
                 </td>
                 <td class="px-6 py-4">
-                  <span :class="badgeClass(item.approval_status)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">{{ item.approval_status }}</span>
+                  <span :class="badgeClass(item.approval_status)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-base font-medium">{{ item.approval_status }}</span>
                 </td>
-                <td class="px-6 py-4">{{ formatDate(item.creation) }}</td>
-                <td class="px-6 py-4">{{ item.owner_id }}</td>
+                <td class="px-6 py-4 text-base">{{ formatDate(item.creation) }}</td>
+                <td class="px-6 py-4 text-base">{{ item.owner_id }}</td>
                 <td class="px-6 py-4 space-x-2">
                   <button @click="view(item)" class="text-gray-600 hover:text-black" title="View">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
