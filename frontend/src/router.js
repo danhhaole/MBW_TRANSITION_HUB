@@ -60,7 +60,7 @@ const routes = [
 	{ 
 		path: '/ladi-pages', 
 		name: 'ladi-pages',
-		component: () => import('./pages/Ladi/LadiPageManagement.vue'),
+		component: () => import('@/pages/Ladi/LadiPageManagement.vue'),
 		meta: {
 			requiresAuth: true,
 			title: 'Ladi Page Management'
