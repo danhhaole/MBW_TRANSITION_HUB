@@ -7,7 +7,7 @@
  "engine": "InnoDB",
  "field_order": [
   "campaign_id",
-  "talent_id",
+  "talentpool_id",
   "status",
   "enrolled_at",
   "current_step_order",
@@ -20,13 +20,6 @@
    "fieldtype": "Link",
    "label": "Campaign",
    "options": "Campaign"
-  },
-  {
-   "description": "(Foreign Key -> Talent Pool)",
-   "fieldname": "talent_id",
-   "fieldtype": "Link",
-   "label": "Talent Pool",
-   "options": "Mira Talent"
   },
   {
    "fieldname": "status",
@@ -51,12 +44,19 @@
    "fieldname": "next_action_at",
    "fieldtype": "Datetime",
    "label": "Next Action At"
+  },
+  {
+   "description": "(Foreign Key -> Talent Pool)",
+   "fieldname": "talentpool_id",
+   "fieldtype": "Link",
+   "label": "Talent Pool",
+   "options": "Mira Talent"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-01 16:34:46.385815",
+ "modified": "2025-10-01 16:36:15.968297",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Talent Pool Campaign",
