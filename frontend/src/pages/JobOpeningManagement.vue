@@ -211,7 +211,7 @@
       <!-- Create Options Dialog -->
       <Dialog v-model="showCreateOptions" :options="{
         title: __('Create Job Opening'),
-        size: '4xl',
+        size: '2xl',
       }"
       :disableOutsideClickToClose="true"
       >

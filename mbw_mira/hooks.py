@@ -154,20 +154,18 @@ add_to_apps_screen = [
 scheduler_events = {
     "cron": {
         "* * * * *": [  # ✅ Chạy mỗi phút
-            "mbw_mira.schedulers.auto_share_social_posts.run"
+           
         ],
         "0/1 * * * *": [
             "mbw_mira.schedulers.fetch_ats_mbw_campaigns.run",
             "mbw_mira.schedulers.excel_source_campaigns.run",
             "mbw_mira.schedulers.auto_segment_talent_profiles.run",
-            "mbw_mira.schedulers.auto_share_social_posts.run"
         ],
         "0/2 * * * *": [
             "mbw_mira.schedulers.enroll_talent_campaign.run",
             "mbw_mira.schedulers.create_actions.run",
             "mbw_mira.schedulers.send_email_action.run",
             "mbw_mira.schedulers.send_sms_action.run"
-            "mbw_mira.schedulers.auto_share_social_posts.run"
         ],
     },
     "daily": [
@@ -181,7 +179,6 @@ scheduler_events = {
         # "mbw_mira.schedulers.enroll_talent_campaign.run",
         # "mbw_mira.schedulers.send_email_action.run",
         # "mbw_mira.schedulers.send_sms_action.run",
-        "mbw_mira.schedulers.auto_share_social_posts.run"
         # "mbw_mira.schedulers.create_actions.run",
         # "mbw_mira.schedulers.auto_segment_talent_profiles.run",
         # "mbw_mira.schedulers.excel_source_campaigns.run"

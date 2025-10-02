@@ -129,7 +129,7 @@
     <!-- Edit Form Dialog -->
     <Dialog v-model="showEditForm" :options="{
       title: __('Edit Job Opening'),
-      size: '6xl',
+      size: '3xl',
     }" :disableOutsideClickToClose="true">
 
       <template #body-title>
