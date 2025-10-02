@@ -44,14 +44,13 @@ def insert_campaign_step(steps,campaign_name):
         step_name =[]
         for step in steps:
             if step.get("campaign_step_name"):
-                campaign_step =frappe.get_doc({
+                campaign_step = frappe.get_doc({
                     "doctype": "CampaignStep",
                     "campaign_step_name": step.get("campaign_step_name"),
                     "campaign": campaign_name,
                     "step_order": int(step.get("step_order")),
                     "action_type": step.get("action_type"),
                     "delay_in_days": int(step.get("delay_in_days")),
-                    "template": step.get("template_content"),
                     "action_config": step.get("action_config")  # optional: nếu muốn phân công tự động
                 })
                 campaign_step.insert(ignore_permissions=True)

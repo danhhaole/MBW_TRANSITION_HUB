@@ -28,7 +28,7 @@
    "fieldname": "action_type",
    "fieldtype": "Select",
    "label": "Action Type",
-   "options": "SEND_EMAIL\nSEND_SMS\nMANUAL_CALL\nMANUAL_TASK"
+   "options": "SEND_EMAIL\nSEND_SMS\nPOST_TO_FACEBOOK\nPOST_TO_ZALO\nMANUAL_CALL\nMANUAL_TASK"
   },
   {
    "fieldname": "delay_in_days",
@@ -80,7 +80,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-09-24 11:41:30.340819",
+ "modified": "2025-10-02 11:36:11.228590",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "CampaignStep",

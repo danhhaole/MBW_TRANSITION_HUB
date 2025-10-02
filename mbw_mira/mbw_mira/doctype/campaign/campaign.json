@@ -23,13 +23,40 @@
   "total",
   "current",
   "select_pages",
-  "last_shared_at"
+  "last_shared_at",
+  "section_break_social_media",
+  "social_page_id",
+  "social_page_name",
+  "post_schedule_time",
+  "template_content",
+  "social_media_images",
+  "mira_talent",
+  "mira_talent_pool",
+  "mira_prospect"
  ],
  "fields": [
   {
    "fieldname": "campaign_name",
    "fieldtype": "Data",
    "label": "Campaign Name"
+  },
+  {
+   "fieldname": "mira_talent",
+   "fieldtype": "Link",
+   "label": "Mira Talent Campaign",
+   "options": "MiraTalent"
+  },
+  {
+   "fieldname": "mira_talent_pool",
+   "fieldtype": "Link",
+   "label": "Mira Talent Pool Campaign",
+   "options": "MiraTalentPool"
+  },
+  {
+   "fieldname": "mira_prospect",
+   "fieldtype": "Link",
+   "label": "Mira Prospect Campaign",
+   "options": "MiraProspect"
   },
   {
    "fieldname": "description",
@@ -41,6 +68,44 @@
    "fieldname": "is_active",
    "fieldtype": "Check",
    "label": "Active"
+  },
+  {
+   "fieldname": "section_break_social_media",
+   "fieldtype": "Section Break",
+   "label": "Social Media Settings",
+   "collapsible": 1,
+   "collapsed": 1
+  },
+  {
+   "fieldname": "social_page_id",
+   "fieldtype": "Data",
+   "label": "Social Page ID",
+   "hidden": 1
+  },
+  {
+   "fieldname": "social_page_name",
+   "fieldtype": "Data",
+   "label": "Social Media Page"
+  },
+  {
+   "fieldname": "post_schedule_time",
+   "fieldtype": "Datetime",
+   "label": "Scheduled Post Time"
+  },
+  {
+   "fieldname": "template_content",
+   "fieldtype": "Long Text",
+   "label": "Post Content"
+  },
+  {
+   "fieldname": "social_media_images",
+   "fieldtype": "Attach Image",
+   "label": "Post Images",
+   "allow_multiple": 1
+  },
+  {
+   "fieldname": "column_break_social_media_end",
+   "fieldtype": "Column Break"
   },
   {
    "fieldname": "owner_id",

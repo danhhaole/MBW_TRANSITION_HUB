@@ -96,8 +96,28 @@ def create_campaign(**kwargs):
 
     # Optional links
     doc.target_segment = kwargs.get("target_segment") or None
+    
+    # Social media fields
+    doc.social_page_id = kwargs.get("social_page_id") or ""
+    doc.social_page_name = kwargs.get("social_page_name") or ""
+    doc.post_schedule_time = _parse_datetime(kwargs.get("post_schedule_time"))
+    doc.template_content = kwargs.get("template_content") or ""
+    
+    # Handle social_media_images which could be a JSON string or list
+    social_media_images = kwargs.get("social_media_images")
+    if social_media_images:
+        if isinstance(social_media_images, str):
+            try:
+                # Try to parse if it's a JSON string
+                social_media_images = json.loads(social_media_images)
+            except json.JSONDecodeError:
+                # If not JSON, keep as is
+                pass
+        doc.social_media_images = json.dumps(social_media_images) if isinstance(social_media_images, (list, dict)) else social_media_images
+    
     doc.insert(ignore_permissions=True)
     print(f"🔍 Campaign created: name={doc.name}, campaign_name={doc.campaign_name}")
+    print(f"🔍 Social media info - page_id: {doc.social_page_id}, scheduled: {doc.post_schedule_time}")
     return {"status": "success", "data": doc.as_dict()}
 
 @frappe.whitelist(allow_guest=True)
@@ -150,15 +170,14 @@ def update_campaign(**kwargs):
     # Source info
     if "source_type" in kwargs:
         source_type = kwargs.get("source_type", "Search")
-        if source_type in ("DataSource", "File", "Search"):
-            doc.source_type = source_type
+        doc.source_type = source_type
     
     if "source_file" in kwargs:
         doc.source_file = kwargs.get("source_file", "")
 
-    # JSON fields
-    if "source_config" in kwargs:
-        source_config = kwargs.get("source_config")
+    # Handle JSON fields
+    if 'source_config' in kwargs:
+        source_config = kwargs['source_config']
         if isinstance(source_config, str):
             try:
                 source_config = json.loads(source_config)
@@ -170,6 +189,31 @@ def update_campaign(**kwargs):
             except Exception:
                 source_config = None
         doc.source_config = source_config
+        
+    # Handle social media fields
+    if 'social_page_id' in kwargs:
+        doc.social_page_id = kwargs.get('social_page_id') or ''
+    if 'social_page_name' in kwargs:
+        doc.social_page_name = kwargs.get('social_page_name') or ''
+    if 'post_schedule_time' in kwargs:
+        doc.post_schedule_time = _parse_datetime(kwargs.get('post_schedule_time'))
+    if 'template_content' in kwargs:
+        doc.template_content = kwargs.get('template_content') or ''
+        
+    # Handle social_media_images which could be a JSON string or list
+    if 'social_media_images' in kwargs:
+        social_media_images = kwargs['social_media_images']
+        if social_media_images:
+            if isinstance(social_media_images, str):
+                try:
+                    # Try to parse if it's a JSON string
+                    social_media_images = json.loads(social_media_images)
+                except json.JSONDecodeError:
+                    # If not JSON, keep as is
+                    pass
+            doc.social_media_images = json.dumps(social_media_images) if isinstance(social_media_images, (list, dict)) else social_media_images
+        else:
+            doc.social_media_images = ''
 
     if "select_pages" in kwargs:
         select_pages = kwargs.get("select_pages")
@@ -244,12 +288,43 @@ def save_campaign_step(**kwargs):
     for field in [
         "template",
         "image",
-        "step_order",
         "delay_in_days",
     ]:
         if field in kwargs:
             print(f"🔍 Setting {field} = {kwargs.get(field)}")
             setattr(doc, field, kwargs.get(field))
+
+    # Auto-increment step_order nếu không được cung cấp hợp lệ
+    provided_step_order = kwargs.get("step_order")
+    if is_update:
+        # Update: tôn trọng step_order nếu người dùng gửi
+        if provided_step_order is not None:
+            try:
+                doc.step_order = int(provided_step_order)
+            except Exception:
+                pass
+    else:
+        # Create mới: nếu không gửi hoặc không hợp lệ, tự gán = max(step_order) + 1 trong Campaign
+        next_order = None
+        try:
+            if provided_step_order is not None and int(provided_step_order) > 0:
+                next_order = int(provided_step_order)
+            elif campaign_value:
+                max_rows = frappe.get_all(
+                    "CampaignStep",
+                    filters={"campaign": campaign_value},
+                    fields=["max(step_order) as max_order"],
+                )
+                max_order = 0
+                if max_rows and isinstance(max_rows, list):
+                    row = max_rows[0] or {}
+                    max_order = (row.get("max_order") or 0) or 0
+                next_order = int(max_order) + 1
+        except Exception as e:
+            print(f"🔍 Failed to compute next step_order: {e}")
+            next_order = None
+        if next_order:
+            doc.step_order = next_order
 
     # action_config may be JSON
 
@@ -283,7 +358,7 @@ def test_auto_post_scheduler(**kwargs):
     Test API để chạy auto post scheduler thủ công
     """
     try:
-        from mbw_mira.schedulers.auto_share_social_posts import run
+        from mbw_mira.schedulers.post_to_facebook_action import run
         print("🧪 Running auto post scheduler manually...")
         run()
         return {"status": "success", "message": "Auto post scheduler completed"}
