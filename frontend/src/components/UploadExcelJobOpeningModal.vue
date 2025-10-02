@@ -4,7 +4,7 @@
           <!-- Header với Progress Steps -->
           <div class="flex items-center justify-between p-5 border-b">
               <div class="flex-1">
-                  <h3 class="text-xl font-semibold mb-3">{{ __("Upload Candidates") }}</h3>
+                  <h3 class="text-xl font-semibold mb-3">{{ __("Upload Job Openings") }}</h3>
 
                   <!-- Progress Steps -->
                   <div class="flex items-center space-x-4">
@@ -44,7 +44,7 @@
               <div v-if="currentStep === 'upload'" class="step-content">
                   <div class="step-header">
                       <h4 class="step-title">{{ __("Step 1: Prepare Your Data") }}</h4>
-                      <p class="step-description">{{ __("Download the template and prepare your candidate data") }}</p>
+                      <p class="step-description">{{ __("Download the template and prepare your job opening data") }}</p>
                   </div>
 
                   <!-- Template Download Section -->
@@ -88,7 +88,7 @@
                               </div>
                               <div>
                                   <h5 class="card-title">{{ __("Select Job Position") }}</h5>
-                                  <p class="card-subtitle">{{ __("Link candidates to a specific job (optional)") }}</p>
+                                  <p class="card-subtitle">{{ __("Link job openings to a specific job (optional)") }}</p>
                               </div>
                           </div>
                       </div>
@@ -140,7 +140,7 @@
               <div v-if="currentStep === 'processing'" class="step-content">
                   <div class="step-header">
                       <h4 class="step-title">{{ __("Step 2: Processing File") }}</h4>
-                      <p class="step-description">{{ __("Analyzing your file and extracting data") }}</p>
+                      <p class="step-description">{{ __("Analyzing your job openings file and extracting data") }}</p>
                   </div>
 
                   <div class="card">
@@ -156,7 +156,7 @@
               <div v-if="currentStep === 'mapping'" class="step-content">
                   <div class="step-header">
                       <h4 class="step-title">{{ __("Step 3: Review and Map Fields") }}</h4>
-                      <p class="step-description">{{ __("Review your data and map columns to candidate fields") }}</p>
+                      <p class="step-description">{{ __("Review your data and map columns to job opening fields") }}</p>
                       <button class="btn btn-outline mt-4" @click="goBackToUpload">
                           <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -226,7 +226,7 @@
                           <div class="flex items-center justify-between">
                               <div>
                                   <h5 class="card-title">{{ __("Field Mapping") }}</h5>
-                                  <p class="card-subtitle">{{ __("Map your file columns to candidate fields") }}</p>
+                                  <p class="card-subtitle">{{ __("Map your file columns to job opening fields") }}</p>
                               </div>
                               <div class="flex space-x-2">
                                   <button class="btn btn-outline btn-sm" @click="autoMapFields">
@@ -327,7 +327,7 @@
               <div v-if="currentStep === 'importing'" class="step-content">
                   <div class="step-header">
                       <h4 class="step-title">{{ __("Step 4: Importing Data") }}</h4>
-                      <p class="step-description">{{ __("Processing and importing your candidate data") }}</p>
+                      <p class="step-description">{{ __("Processing and importing your job opening data") }}</p>
                   </div>
 
                   <div class="card">
@@ -452,7 +452,7 @@
                               </svg>
                               {{ __("Proceed with Import") }}
                           </button>
-                          <button v-if="!validateOnly && importResults.success > 0" class="btn btn-primary" @click="goToCandidateList">
+                          <button v-if="!validateOnly && importResults.success > 0" class="btn btn-primary" @click="goToJobList">
                               <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                               </svg>
@@ -516,7 +516,7 @@
                               <div class="text-gray-500">{{ __("Failed") }}</div>
                           </div>
                           <div class="text-center">
-                              <div class="font-medium text-orange-600">{{ session.retry_candidates || 0 }}</div>
+                              <div class="font-medium text-orange-600">{{ session.retry_job_openings || 0 }}</div>
                               <div class="text-gray-500">{{ __("Can Retry") }}</div>
                           </div>
                       </div>
@@ -524,7 +524,7 @@
                       <div class="flex justify-between items-center">
                           <div class="text-sm text-gray-500">{{ session.error_summary || __("No errors") }}</div>
                           <div class="flex space-x-2">
-                              <button v-if="session.can_retry && session.retry_candidates > 0" class="btn btn-outline btn-sm" @click="retrySession(session.name)" :disabled="retryingSessions.includes(session.name)">
+                              <button v-if="session.can_retry && session.retry_job_openings > 0" class="btn btn-outline btn-sm" @click="retrySession(session.name)" :disabled="retryingSessions.includes(session.name)">
                                   <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                   </svg>
@@ -1055,9 +1055,15 @@ const downloadErrorLog = () => {
   URL.revokeObjectURL(url)
 }
 
-const goToCandidateList = () => {
+const goToJobList = () => {
   closeModal()
-  router.push({ name: 'JobOpeningManagement' })
+  router.push({
+    name: 'JobOpeningManagement',
+    query: { t: Date.now() } // Add timestamp to force component reload
+  }).then(() => {
+    // Force reload the page to ensure fresh data
+    window.location.reload()
+  })
 }
 
 // Style helper methods

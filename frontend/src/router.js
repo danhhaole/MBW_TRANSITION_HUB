@@ -100,6 +100,8 @@ const routes = [
 			title: 'External Social Management'
 		}
 	},
+	{ path: '/job/:id', name: 'JobOpeningPublicView', component: () => import("@/pages/Public/JobOpeningPublicView.vue"), meta: { public: true, title: 'Chi tiết công việc' } },
+	{ path: '/jobs/:jobUrlCms', name: 'JobOpeningPublicViewCMS', component: () => import("@/pages/Public/JobOpeningPublicView.vue"), meta: { public: true, title: 'Chi tiết công việc' } },
 ]
 
 

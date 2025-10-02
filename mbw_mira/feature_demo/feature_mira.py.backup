@@ -1,0 +1,237 @@
+import json
+import os
+import pkgutil
+import frappe
+
+APP_MODULE = "MBW Mira"  # fallback nếu module data không cung cấp
+
+MIRA_ROLES = {
+    "1": "HR Manager",
+    "2": "HR User",
+    "3": "Social Hub Manager",
+    "4": "Social Hub User",
+}
+
+FAKE_ROLE_MAP = {
+    "campaign_full_access": [MIRA_ROLES["1"], MIRA_ROLES["2"], MIRA_ROLES["4"] ],
+    "campaign_view_only": [MIRA_ROLES["3"], MIRA_ROLES["4"] ],
+    "campaign_creation": [MIRA_ROLES["1"], MIRA_ROLES["2"], MIRA_ROLES["4"] ],
+    "campaign_execution": [MIRA_ROLES["1"], MIRA_ROLES["2"], MIRA_ROLES["4"] ],
+    "template_management": [MIRA_ROLES["1"], MIRA_ROLES["2"], MIRA_ROLES["4"] ],
+    "lead_full_access": [MIRA_ROLES["1"], MIRA_ROLES["2"], MIRA_ROLES["4"] ],
+    "lead_view_only": [MIRA_ROLES["3"], MIRA_ROLES["4"]],
+    "contact_full_access": [MIRA_ROLES["1"], MIRA_ROLES["2"], MIRA_ROLES["4"] ],
+    "contact_view_only": [MIRA_ROLES["3"] ],
+    "customer_full_access": [MIRA_ROLES["1"], MIRA_ROLES["2"] ],
+    "customer_view_only": [MIRA_ROLES["3"] ],
+    "ladi_page_full_access": [MIRA_ROLES["1"] ]
+}
+def _doctype_installed(doctype_name: str) -> bool:
+    return bool(frappe.db.exists("DocType", doctype_name))
+
+def ensure_roles():
+    print("=== Ensure MBW Mira Roles ===")
+    for role_name in MIRA_ROLES.values():
+        if frappe.db.exists("Role", role_name):
+            frappe.db.set_value("Role", role_name, "desk_access", 0)
+            print(f"• Role exists: {role_name}")
+        else:
+            frappe.get_doc({
+                "doctype": "Role",
+                "role_name": role_name,
+                "desk_access": 0,
+                "home_page": ""
+            }).insert(ignore_permissions=True)
+            print(f"✔ Created Role: {role_name}")
+
+def _perm_row_from_json(p: dict) -> dict:
+    def f(k): return 1 if int(p.get(k, 0) or 0) else 0
+    return {
+        "doctype_name": p.get("doctype"),
+        "is_select": f("read"),
+        "is_create": f("create"),
+        "is_email":  f("email"),
+        "is_export": f("export"),
+        "is_read":   f("read"),
+        "is_delete": f("delete"),
+        "is_report": f("report"),
+        "is_share":  f("share"),
+        "is_write":  f("write"),
+        "is_print":  f("print"),
+        "is_import": f("import"),
+    }
+
+def _upsert_feature_from_file(feature: dict, module_feature_mira: str):
+    dn = feature["feature_name"]
+    if frappe.db.exists("MBW Feature Settings", dn):
+        doc = frappe.get_doc("MBW Feature Settings", dn)
+        is_new = False
+    else:
+        doc = frappe.new_doc("MBW Feature Settings")
+        doc.feature_name = dn
+        is_new = True
+
+    doc.feature_name = dn
+    doc.label = feature.get("label", dn)
+    doc.description = feature.get("description", "")
+    doc.module = module_feature_mira
+    doc.is_active = 1 if int(feature.get("is_active", 0) or 0) else 0
+
+    # Permissions
+    doc.set("permissions", [])
+    for p in feature.get("permissions", []):
+        if not _doctype_installed(p.get("doctype")):
+            print(f"  ! Skip permission for missing doctype: {p.get('doctype')}")
+            continue
+        perm_data = _perm_row_from_json(p)
+        doc.append("permissions", perm_data)
+
+    # Roles - Skip for now as field may not exist
+
+    if is_new:
+        doc.insert(ignore_permissions=True)
+        print(f"✔ Created Feature: {dn}")
+    else:
+        doc.save(ignore_permissions=True)
+        print(f"~ Updated Feature: {dn}")
+
+def ensure_features_role_link(feature_name:str, role_name:str):
+    key = {"feature_name": feature_name, "role": role_name}
+    if not frappe.db.exists("MBW Feature Role Permission", key):
+        frappe.get_doc(
+            {
+                "doctype": "MBW Feature Role Permission",
+                "feature_name": feature_name,
+                "role": role_name,
+                "is_active": 1,
+            }
+        ).insert(ignore_permissions=True)
+        print(f"✔ Linked: {feature_name} ↔ {role_name}")
+    else:
+        print(f"• Link exists: {feature_name} ↔ {role_name}")
+
+
+def _load_feature_data() -> dict:
+    """
+    Ưu tiên import module Python (mbw_ats.config.featureMira).
+    Fallback: tìm JSON trong app (mbw_ats/config/featureMira.json) để dev tiện soát.
+    """
+    # 1) import Python module
+    try:
+        from mbw_mira.config.featureMira import FEATURES_MIRA
+
+        if isinstance(FEATURES_MIRA, dict) and FEATURES_MIRA.get("modules"):
+            return FEATURES_MIRA
+    except Exception as e:
+        print(f"[feature_seeder] WARN: cannot import FEATURES_MIRA from module: {e}")
+
+    # 2) fallback: JSON trong app
+    json_path = frappe.get_app_path("mbw_mira", "mbw_mira", "config", "featureMira.json")
+    if os.path.exists(json_path):
+        with open(json_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    # 3) fallback cuối: resource package
+    try:
+        raw = pkgutil.get_data("mbw_mira", "mbw_mira/config/featureMira.json")
+        if raw:
+            return json.loads(raw.decode("utf-8"))
+    except Exception:
+        pass
+
+    raise FileNotFoundError(
+        "Không tìm thấy FEATURES_MIRA (module) hoặc featureMira.json trong app"
+    )
+
+
+def _iter_features(data: dict):
+    """Yield (feature_dict, module_feature_mira)"""
+    global APP_MODULE
+    if data.get("feature_mira"):
+        APP_MODULE = data["feature_mira"]
+
+    modules = data.get("modules", []) or []
+    for m in modules:
+        module_feature_mira = (
+            data.get("feature_mira") or APP_MODULE
+        )  # dùng feature_mira app (“MBW MIRA”) làm module cho Feature
+        for feature in m.get("features", []) or []:
+            yield feature, module_feature_mira
+
+
+# ---------------------------- public APIs ----------------------------
+def seed():
+    """Roles → Features (import từ module Python) → Links. Không cần tham số."""
+    ensure_roles()
+
+    need = [
+        "MBW Feature Settings",
+        "MBW Feature Setting Detail",
+        "MBW Feature Role Permission",
+    ]
+    missing = [dt for dt in need if not _doctype_installed(dt)]
+    if missing:
+        print("⏭️ Skip seeding features: missing DocTypes ->", ", ".join(missing))
+        print(
+            "👉 bench migrate rồi chạy lại: bench --site <yoursite> execute mbw_mira.scripts.feature_seeder.seed"
+        )
+        return {"skipped_missing_doctypes": missing}
+
+    data = _load_feature_data()
+    print("=== Read features from Python module: mbw_mira.config.featureMira ===")
+    print(f"APP_MODULE (from data['feature_mira']) = {data.get('feature_mira') or APP_MODULE}")
+
+    print("=== Upsert Features ===")
+    feature_names = []
+    for feature, module_feature_mira in _iter_features(data):
+        _upsert_feature_from_file(feature, module_feature_mira)
+        feature_names.append(feature["feature_name"])
+
+    print("=== Link Feature ↔ Role ===")
+    for fname, roles in FAKE_ROLE_MAP.items():
+        if fname not in feature_names:
+            continue
+        for r in roles:
+            ensure_features_role_link(fname, r)
+
+    frappe.db.commit()
+    print("✅ DONE seed")
+    return {"features": feature_names}
+
+
+def print_payload():
+    """In payload đọc từ module Python (KHÔNG ghi DB)."""
+    data = _load_feature_data()
+    module_feature_mira = data.get("feature_mira") or APP_MODULE
+
+    features_payload = []
+    for feature, _module in _iter_features(data):
+        features_payload.append(
+            {
+                **feature,
+                "module": module_feature_mira,
+                "permissions": [
+                    _perm_row_from_json(p) for p in feature.get("permissions", []) or []
+                ],
+            }
+        )
+
+    print("=== ROLES ===")
+    print(json.dumps(MIRA_ROLES, ensure_ascii=False, indent=2))
+    print("\n=== MBW Feature Settings (from module) ===")
+    print(json.dumps(features_payload, ensure_ascii=False, indent=2))
+
+    print("\n=== MBW Feature Role Permission (links; map mặc định) ===")
+    links = [
+        {
+            "doctype": "MBW Feature Role Permission",
+            "feature_name": fname,
+            "role": role,
+            "is_active": 1,
+        }
+        for fname, roles in FAKE_ROLE_MAP.items()
+        for role in roles
+        if any(f["feature_name"] == fname for f in features_payload)
+    ]
+    print(json.dumps(links, ensure_ascii=False, indent=2))
+    return {"feature_count": len(features_payload), "link_count": len(links)}
