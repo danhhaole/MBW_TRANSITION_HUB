@@ -99,7 +99,7 @@
 							<div class="text-2xl font-bold text-blue-900">
 								{{ talentSegment.candidate_count || 0 }}
 							</div>
-							<div class="text-sm text-blue-700">{{ __('Total Candidates') }}</div>
+							<div class="text-sm text-blue-700">{{ __('Total Talents') }}</div>
 						</div>
 					</div>
 				</div>
@@ -116,7 +116,7 @@
 							<div class="text-2xl font-bold text-green-900">
 								{{candidates.filter(c => c.status === 'ACTIVE').length}}
 							</div>
-							<div class="text-sm text-green-700">{{ __('Active Candidates') }}</div>
+							<div class="text-sm text-green-700">{{ __('Active Talents') }}</div>
 						</div>
 					</div>
 				</div>
@@ -179,7 +179,7 @@
 								d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
 						</svg>
 					</template>
-					{{ __('Add Profile') }}
+					{{ __('Add Talent') }}
 				</Button>
 
 				<Button variant="solid" theme="gray" @click="showAnalytics = !showAnalytics">
@@ -226,12 +226,12 @@
 				</div>
 			</div>
 
-			<!-- Candidates Section -->
+			<!-- Talents Section -->
 			<div class="bg-white rounded-lg shadow-sm border border-gray-200">
 				<div class="p-6">
 					<div class="flex justify-between items-center mb-6">
 						<h3 class="text-lg font-medium text-gray-900">
-							{{ __('Profiles in this segment') }}
+							{{ __('Talents in this segment') }}
 						</h3>
 						<div class="flex items-center space-x-3">
 							<div class="relative">
@@ -255,19 +255,19 @@
 											d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
 									</svg>
 								</template>
-								{{ __('Add Profile') }}
+								{{ __('Add Talent') }}
 							</Button>
 						</div>
 					</div>
 
-					<!-- Candidates Table -->
+					<!-- Talents Table -->
 					<div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
 						<table class="min-w-full divide-y divide-gray-300">
 							<thead class="bg-gray-50">
 								<tr>
 									<th scope="col"
 										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-										{{ __('Profile') }}
+										{{ __('Talent') }}
 									</th>
 									<th scope="col"
 										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -311,7 +311,7 @@
 								</tr>
 								<tr v-else-if="filteredCandidates.length === 0">
 									<td colspan="6" class="px-6 py-4 text-center text-gray-500">
-										{{ __('No candidates found') }}
+										{{ __('No talents found') }}
 									</td>
 								</tr>
 								<tr v-else v-for="candidate in filteredCandidates" :key="candidate.name"
@@ -417,10 +417,10 @@
 					<div class="mb-6 flex items-center justify-between">
 						<div>
 							<h3 class="text-xl font-semibold leading-6 text-gray-900">
-								{{ __('Add Profiles to Segment') }}
+								{{ __('Add Talents to Segment') }}
 							</h3>
 							<p class="mt-1 text-sm text-gray-500">
-								{{ __('Select profiles to add to') }} "{{ talentSegment.title }}"
+								{{ __('Select talents to add to') }} "{{ talentSegment.title }}"
 							</p>
 						</div>
 						<div class="flex items-center gap-1">
@@ -454,7 +454,7 @@
 						<!-- Find Matches Button -->
 						<div>
 							<label class="block text-sm font-medium text-gray-700 mb-3">
-								{{ __('Find Matching Candidates') }}
+								{{ __('Find Matching Talents') }}
 							</label>
 							<div class="flex gap-2">
 								<Button variant="solid" theme="gray" :loading="loadingSuggestedCandidates"
@@ -477,16 +477,16 @@
 									</path>
 								</svg>
 								<p class="text-sm text-gray-500">
-									{{ __('Finding matching candidates...') }}
+									{{ __('Finding matching talents...') }}
 								</p>
 							</div>
 						</div>
 
-						<!-- Candidates List -->
+						<!-- Talents List -->
 						<div v-else-if="suggestedCandidates.length > 0" class="space-y-4">
 							<div class="flex items-center justify-between">
 								<h4 class="text-sm font-medium text-gray-900">
-									{{ __('Suggested Candidates') }} ({{ suggestedCandidates.length }})
+									{{ __('Suggested Talents') }} ({{ suggestedCandidates.length }})
 								</h4>
 								<div class="flex items-center gap-2">
 									<Button variant="ghost" theme="gray" size="sm" @click="selectAllCandidates">
@@ -553,18 +553,18 @@
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
 									d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
 							</svg>
-							<h4 class="text-lg font-medium text-gray-600 mb-2">{{ __('No candidates found') }}</h4>
+							<h4 class="text-lg font-medium text-gray-600 mb-2">{{ __('No talents found') }}</h4>
 							<p class="text-gray-500">
 								{{ __('Try adjusting the minimum score or search criteria') }}
 							</p>
 						</div>
 
-						<!-- Selected Candidates Summary -->
+						<!-- Selected Talents Summary -->
 						<div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
 							<div class="flex items-center justify-between">
 								<div>
 									<h4 class="text-sm font-medium text-gray-900">
-										{{ __('Selected Candidates') }} ({{ selectedCandidates.length }})
+										{{ __('Selected Talents') }} ({{ selectedCandidates.length }})
 									</h4>
 									<p class="text-sm text-gray-700 mt-1">
 										{{ __('Ready to add to segment') }}
@@ -598,21 +598,17 @@
 
 		<!-- Edit Talent Segment Modal -->
 		<Dialog v-model="showEditTalentSegmentModal" :options="editSegmentDialogOptions">
-			<template #body>
-				<div class="bg-white px-4 pb-6 pt-5 sm:px-6">
-					<div class="mb-5 flex items-center justify-between">
-						<div>
-							<h3 class="text-2xl font-semibold leading-6 text-gray-900">
-								{{ __('Edit Pool') }}
-							</h3>
-						</div>
+			<template #body-content>
+				<div class="bg-white ">
+					<!-- <div class="mb-5 flex items-center justify-between">
+						
 						<div class="flex items-center gap-1">
 							<Button variant="ghost" class="w-7" @click="showEditTalentSegmentModal = false">
 								<FeatherIcon name="x" class="h-4 w-4" />
 							</Button>
 						</div>
-					</div>
-					<div class="max-h-[60vh] overflow-y-auto">
+					</div> -->
+					<div class="max-h-[60vh] overflow-y-auto p-4">
 						<TalentSegmentForm ref="formRef" :segment="editingSegmentData" @success="handleTalentSegmentUpdated"
 							@cancel="handleEditModalClose" />
 					</div>
@@ -712,7 +708,7 @@ const filteredSuggestedCandidates = computed(() => {
 
 // Dialog options
 const addCandidateDialogOptions = computed(() => ({
-	title: __('Add Candidates to Segment'),
+	title: __('Add Talents to Segment'),
 	size: '3xl',
 }))
 
@@ -951,7 +947,7 @@ const loadRelatedCampaigns = async () => {
 		if (candidateSegmentResult.success && candidateSegmentResult.data.length > 0) {
 			const candidateIds = candidateSegmentResult.data.map((cs) => cs.talent_id)
 
-			// Then get campaigns that have these candidates through TalentProfilesCampaign
+			// Then get campaigns that have these candidates through Mira Talent Campaign
 			const candidateCampaignResult = await candidateCampaignService.getList({
 				filters: { talent_id: ['in', candidateIds] },
 				fields: ['campaign_id'],

@@ -26,7 +26,8 @@
   "meta_title",
   "meta_description",
   "open_graph_title",
-  "open_graph_description"
+  "open_graph_description",
+  "job_url_cms"
  ],
  "fields": [
   {
@@ -143,12 +144,17 @@
    "fieldname": "open_graph_description",
    "fieldtype": "Text",
    "label": "Open Graph Description"
+  },
+  {
+   "fieldname": "job_url_cms",
+   "fieldtype": "Code",
+   "label": "Job Url"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-09-18 10:19:32.587556",
+ "modified": "2025-10-02 13:58:54.426349",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "JobOpening",

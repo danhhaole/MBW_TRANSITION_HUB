@@ -35,7 +35,7 @@ Lưu trữ hồ sơ không còn được Theo dõi tích cực, NHưng vẫn lư
 1 year ago,1 năm trước
 "@John, can you please check this?","@John, bạn có thể vui lòng kiểm tra cái này được không?"
 A TalentProfiles with Email <b>{0}</b> already exists: <a href='/app/TalentProfiles/{1}'>{1}</a>,Một TalentProfiles có email <b> {0} </b> đã tồn tại: <a href = '/app/TalentProfiles/{1}'> {1} </a>
-A TalentProfilesCampaign with Campaign <b>{0}</b> and Candidate <b>{1}</b> already exists: <a href='/app/candidate-campaign/{2}'>{2}</a>,TalentProfileScampaign với chiến dịch <b> {0} </b> và ứng cử viên <b> {1} </b> đã tồn tại: <a href = '/app
+A Mira Talent Campaign with Campaign <b>{0}</b> and Candidate <b>{1}</b> already exists: <a href='/app/candidate-campaign/{2}'>{2}</a>,TalentProfileScampaign với chiến dịch <b> {0} </b> và ứng cử viên <b> {1} </b> đã tồn tại: <a href = '/app
 A TalentProfilesSegment with Candidate <b>{0}</b> and Segment <b>{1}</b> already exists: <a href='/app/candidate-segment/{2}'>{2}</a>,Một tài năng với ứng cử viên <b> {0} </b> và phân đoạn <b> {1} </b> đã tồn tại: <a href = '/app
 ACTIVE,KÍCH HOẠT
 AI Summary,Tóm tắt AI
@@ -337,7 +337,7 @@ Create New,Tạo mới
 Create New Campaign,Tạo chiến dịch mới
 Create New Pool,Thêm tiêu chí
 Create New Request,Thêm mới
-Create New Talent Pool,Thêm tiêu chí
+Create Talent Pool,Thêm tiêu chí
 Create Pool,Thêm tiêu chí
 Create Talent Pool,Tạo nhóm tài năng
 Create Template,Tạo mẫu
@@ -437,7 +437,7 @@ Duplicate,Nhân bản
 Duplicate Action,Hành động trùng lặp
 Duplicate Step,Bước trùng lặp
 Duplicate TalentProfiles,Trùng lặp tài năng
-Duplicate TalentProfilesCampaign,Trùng lặp TalentProfileScampaign
+Duplicate Mira Talent Campaign,Trùng lặp TalentProfileScampaign
 Duplicate TalentProfilesSegment,Trùng lặp TalentProfilessegment
 Duration:,Khoảng thời gian:
 "Dữ liệu có cấu trúc do AI bóc tách từ CV, bao gồm lịch sử công việc, học vấn.","Dữ liệu đó là cấu trúc làm ai bóc tách từ cv, bao"
@@ -1197,7 +1197,7 @@ Talent pool has been saved successfully,Bể bơi tài năng đã được cứu
 TalentPool,Talentpool
 TalentProfile Campaign,Chiến dịch TalentProfile
 TalentProfiles,Talentprofiles
-TalentProfilesCampaign,TalentProfileScampaign
+Mira Talent Campaign,TalentProfileScampaign
 TalentProfilesSegment,TalentProfilessegment
 TalentSegment,Tài năng
 Target Candidates,Mục tiêu ứng cử viên

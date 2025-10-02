@@ -4,10 +4,10 @@ from frappe.utils import now_datetime
 
 def create_action_for_talent_campaign(talent_campaign_id):
     """
-    Worker: Tạo Action cho TalentProfilesCampaign ở bước hiện tại.
+    Worker: Tạo Action cho Mira Talent Campaign ở bước hiện tại.
     """
     try:
-        tc = frappe.db.get_value("TalentProfilesCampaign", talent_campaign_id,["name","campaign_id","current_step_order"],as_dict=1)
+        tc = frappe.db.get_value("Mira Talent Campaign", talent_campaign_id,["name","campaign_id","current_step_order"],as_dict=1)
 
         # lấy CampaignStep hiện tại
         step = get_campaign_step(tc.campaign_id, tc.current_step_order)

@@ -5,137 +5,164 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  
+  "prospect",
+  "full_name",
+  "gender",
+  "date_of_birth",
+  "contact_email",
+  "contact_phone",
+  "linkedin_profile",
+  "facebook_profile",
+  "zalo_profile",
+  "current_location",
+  "preferred_location",
+  "skills",
+  "tags",
+  "source",
+  "experience_years",
+  "education",
+  "experience",
+  "certifications",
+  "languages",
+  "resume",
+  "current_status",
+  "notes"
  ],
  "fields": [
-    {
-      "fieldname": "prospect",
-      "label": "Prospect",
-      "fieldtype": "Link",
-      "options": "Prospect",
-      "reqd": 1
-    },
-    {
-      "fieldname": "full_name",
-      "label": "Full Name",
-      "fieldtype": "Data",
-      "reqd": 1
-    },
-    {
-      "fieldname": "gender",
-      "label": "Gender",
-      "fieldtype": "Select",
-      "options": "Male\nFemale\nOther\nUnknown"
-    },
-    {
-      "fieldname": "date_of_birth",
-      "label": "Date of Birth",
-      "fieldtype": "Date"
-    },
-    {
-      "fieldname": "contact_email",
-      "label": "Contact Email",
-      "fieldtype": "Data",
-      "options": "Email"
-    },
-    {
-      "fieldname": "contact_phone",
-      "label": "Contact Phone",
-      "fieldtype": "Data"
-    },
-    {
-      "fieldname": "linkedin_profile",
-      "label": "LinkedIn Profile",
-      "fieldtype": "Data",
-      "options": "URL"
-    },
-    {
-      "fieldname": "facebook_profile",
-      "label": "Facebook Profile",
-      "fieldtype": "Data",
-      "options": "URL"
-    },
-    {
-      "fieldname": "zalo_profile",
-      "label": "Zalo Profile",
-      "fieldtype": "Data"
-    },
-    {
-      "fieldname": "current_location",
-      "label": "Current Location",
-      "fieldtype": "Data"
-    },
-    {
-      "fieldname": "preferred_location",
-      "label": "Preferred Location",
-      "fieldtype": "Data"
-    },
-    {
-      "fieldname": "skills",
-      "label": "Skills",
-      "fieldtype": "Small Text",
-      "description": "Comma-separated list of skills (e.g. Python, SQL, Communication)"
-    },
-    {
-      "fieldname": "experience_years",
-      "label": "Years of Experience",
-      "fieldtype": "Float"
-    },
-    {
-      "fieldname": "education",
-      "label": "Education",
-      "fieldtype": "Code",
-      "options": "JSON",
-      "description": "JSON array of education records"
-    },
-    {
-      "fieldname": "experience",
-      "label": "Work Experience",
-      "fieldtype": "Code",
-      "options": "JSON",
-      "description": "JSON array of work experience records"
-    },
-    {
-      "fieldname": "certifications",
-      "label": "Certifications",
-      "fieldtype": "Code",
-      "options": "JSON",
-      "description": "JSON array of certifications"
-    },
-    {
-      "fieldname": "languages",
-      "label": "Languages",
-      "fieldtype": "Code",
-      "options": "JSON",
-      "description": "JSON array of languages and proficiency"
-    },
-    {
-      "fieldname": "resume",
-      "label": "Resume",
-      "fieldtype": "Attach"
-    },
-    {
-      "fieldname": "current_status",
-      "label": "Current Status",
-      "fieldtype": "Select",
-      "options": "Active\nPassive\nNot Interested\nHired"
-    },
-    {
-      "fieldname": "talent_pool",
-      "label": "Talent Pool",
-      "fieldtype": "Link",
-      "options": "Talent Pool"
-    },
-    {
-      "fieldname": "notes",
-      "label": "Notes",
-      "fieldtype": "Long Text"
-    }
-  ],
+  {
+   "fieldname": "prospect",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Prospect",
+   "options": "Mira Prospect",
+   "reqd": 1
+  },
+  {
+   "fieldname": "full_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Full Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "gender",
+   "fieldtype": "Select",
+   "label": "Gender",
+   "options": "Male\nFemale\nOther\nUnknown"
+  },
+  {
+   "fieldname": "date_of_birth",
+   "fieldtype": "Date",
+   "label": "Date of Birth"
+  },
+  {
+   "fieldname": "contact_email",
+   "fieldtype": "Data",
+   "label": "Contact Email",
+   "options": "Email"
+  },
+  {
+   "fieldname": "contact_phone",
+   "fieldtype": "Data",
+   "label": "Contact Phone"
+  },
+  {
+   "fieldname": "linkedin_profile",
+   "fieldtype": "Data",
+   "label": "LinkedIn Profile",
+   "options": "URL"
+  },
+  {
+   "fieldname": "facebook_profile",
+   "fieldtype": "Data",
+   "label": "Facebook Profile",
+   "options": "URL"
+  },
+  {
+   "fieldname": "zalo_profile",
+   "fieldtype": "Data",
+   "label": "Zalo Profile"
+  },
+  {
+   "fieldname": "current_location",
+   "fieldtype": "Data",
+   "label": "Current Location"
+  },
+  {
+   "fieldname": "preferred_location",
+   "fieldtype": "Data",
+   "label": "Preferred Location"
+  },
+  {
+   "description": "Comma-separated list of skills (e.g. Python, SQL, Communication)",
+   "fieldname": "skills",
+   "fieldtype": "Small Text",
+   "label": "Skills"
+  },
+  {
+   "fieldname": "experience_years",
+   "fieldtype": "Float",
+   "label": "Years of Experience"
+  },
+  {
+   "description": "JSON array of education records",
+   "fieldname": "education",
+   "fieldtype": "Code",
+   "label": "Education",
+   "options": "JSON"
+  },
+  {
+   "description": "JSON array of work experience records",
+   "fieldname": "experience",
+   "fieldtype": "Code",
+   "label": "Work Experience",
+   "options": "JSON"
+  },
+  {
+   "description": "JSON array of certifications",
+   "fieldname": "certifications",
+   "fieldtype": "Code",
+   "label": "Certifications",
+   "options": "JSON"
+  },
+  {
+   "description": "JSON array of languages and proficiency",
+   "fieldname": "languages",
+   "fieldtype": "Code",
+   "label": "Languages",
+   "options": "JSON"
+  },
+  {
+   "fieldname": "resume",
+   "fieldtype": "Attach",
+   "label": "Resume"
+  },
+  {
+   "fieldname": "current_status",
+   "fieldtype": "Select",
+   "label": "Current Status",
+   "options": "Active\nPassive\nNot Interested\nHired"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Long Text",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "tags",
+   "fieldtype": "JSON",
+   "label": "Tags"
+  },
+  {
+   "fieldname": "source",
+   "fieldtype": "Small Text",
+   "label": "Source"
+  }
+ ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-16 16:48:28.670015",
+ "modified": "2025-10-02 16:06:20.676095",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Talent",

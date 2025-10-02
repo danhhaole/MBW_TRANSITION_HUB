@@ -4,7 +4,7 @@ from frappe.utils import now_datetime,add_days
 
 def enroll_talent_for_campaign(campaign_id):
     """
-    Worker: tìm ứng viên từ Mira Prospect theo campaign và tạo TalentProfilesCampaign.
+    Worker: tìm ứng viên từ Mira Prospect theo campaign và tạo Mira Talent Campaign.
     """
     talent_profiles = get_talents_segment_for_campaign(campaign_id)
 
@@ -60,14 +60,14 @@ def get_first_campaign_step(campaign_id):
 
 def create_talent_campaign(campaign_id, profile, first_step):
     """
-    Tạo mới TalentProfilesCampaign, chỉ set current_step_order nếu có
+    Tạo mới Mira Talent Campaign, chỉ set current_step_order nếu có
     """
     try:
         next_action_at = add_days(now_datetime(), first_step.get("delay_in_days") or 0)
         if not check_exists(campaign_id,profile.get("talent_id")):
             doc = frappe.get_doc(
                 {
-                    "doctype": "TalentProfilesCampaign",
+                    "doctype": "Mira Talent Campaign",
                     "campaign_id": campaign_id,
                     "talent_id": profile.get("talent_id"),
                     "status": "ACTIVE",
@@ -86,7 +86,7 @@ def create_talent_campaign(campaign_id, profile, first_step):
         return None
 
 def check_exists(campaign_id,talent_id):
-    talent_campaign_exists = frappe.db.exists("TalentProfilesCampaign",{"campaign_id":campaign_id,"talent_id":talent_id})
+    talent_campaign_exists = frappe.db.exists("Mira Talent Campaign",{"campaign_id":campaign_id,"talent_id":talent_id})
     if talent_campaign_exists:
         return True
     else:

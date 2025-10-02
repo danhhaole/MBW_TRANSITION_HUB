@@ -626,7 +626,7 @@
                   {{ __('Campaign will be created in DRAFT status with') }} {{ campaignSteps.length }} {{ __('steps') }}
                 </p>
                 <p class="text-xs text-gray-500">
-                  {{ __('You can add profiles and activate the campaign after creation') }}
+                  {{ __('You can add talent and activate the campaign after creation') }}
                 </p>
               </div>
             </div>
@@ -1358,7 +1358,7 @@ const rules = {
 // Dialog options
 const dialogOptions = computed(() => ({
   title: modalTitle.value,
-  size: '2xl'
+  size: 'xl'
 }))
 
 // Computed

@@ -37,7 +37,7 @@ msgid " (New)"
 msgstr ""
 
 #. Description of the 'Campaign' (Link) field in DocType
-#. 'TalentProfilesCampaign'
+#. 'Mira Talent Campaign'
 #: mbw_mira/mbw_mira/doctype/talentprofilescampaign/talentprofilescampaign.json
 msgid "(Foreign Key -> Campaign)"
 msgstr ""
@@ -48,7 +48,7 @@ msgid "(Foreign Key -> CampaignStep) Bước đã tạo ra hành động này."
 msgstr ""
 
 #. Description of the 'Talent Profile' (Link) field in DocType
-#. 'TalentProfilesCampaign'
+#. 'Mira Talent Campaign'
 #: mbw_mira/mbw_mira/doctype/talentprofilescampaign/talentprofilescampaign.json
 msgid "(Foreign Key -> Candidate)"
 msgstr ""
@@ -114,7 +114,7 @@ msgid "A TalentProfiles with Email <b>{0}</b> already exists: <a href='/app/Tale
 msgstr ""
 
 #: mbw_mira/mbw_mira/doctype/talentprofilescampaign/talentprofilescampaign.py:31
-msgid "A TalentProfilesCampaign with Campaign <b>{0}</b> and Candidate <b>{1}</b> already exists: <a href='/app/candidate-campaign/{2}'>{2}</a>"
+msgid "A Mira Talent Campaign with Campaign <b>{0}</b> and Candidate <b>{1}</b> already exists: <a href='/app/candidate-campaign/{2}'>{2}</a>"
 msgstr ""
 
 #: mbw_mira/mbw_mira/doctype/talentprofilessegment/talentprofilessegment.py:35
@@ -122,7 +122,7 @@ msgid "A TalentProfilesSegment with Candidate <b>{0}</b> and Segment <b>{1}</b> 
 msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Campaign'
-#. Option for the 'Status' (Select) field in DocType 'TalentProfilesCampaign'
+#. Option for the 'Status' (Select) field in DocType 'Mira Talent Campaign'
 #: mbw_mira/mbw_mira/doctype/campaign/campaign.json
 #: mbw_mira/mbw_mira/doctype/talentprofilescampaign/talentprofilescampaign.json
 msgid "ACTIVE"
@@ -997,7 +997,7 @@ msgstr ""
 msgid "CALL_MISSED"
 msgstr ""
 
-#. Option for the 'Status' (Select) field in DocType 'TalentProfilesCampaign'
+#. Option for the 'Status' (Select) field in DocType 'Mira Talent Campaign'
 #: mbw_mira/mbw_mira/doctype/talentprofilescampaign/talentprofilescampaign.json
 msgid "CANCELLED"
 msgstr ""
@@ -1027,7 +1027,7 @@ msgstr ""
 msgid "CHAT_STARTED"
 msgstr ""
 
-#. Option for the 'Status' (Select) field in DocType 'TalentProfilesCampaign'
+#. Option for the 'Status' (Select) field in DocType 'Mira Talent Campaign'
 #: mbw_mira/mbw_mira/doctype/talentprofilescampaign/talentprofilescampaign.json
 msgid "COMPLETED"
 msgstr ""
@@ -1061,7 +1061,7 @@ msgstr ""
 #. Name of a DocType
 #. Label of a Link field in DocType 'CampaignStep'
 #. Label of a Link field in DocType 'LadiPage'
-#. Label of a Link field in DocType 'TalentProfilesCampaign'
+#. Label of a Link field in DocType 'Mira Talent Campaign'
 #: frontend/src/components/shared/TaskUpdateModal.vue:23
 #: frontend/src/pages/Ladi/LadiPageFormModal.vue:31
 #: frontend/src/pages/Ladi/LadiPageManagement.vue:70
@@ -1714,7 +1714,7 @@ msgstr ""
 
 #: frontend/src/components/talent-segment/TalentSegmentListView.vue:65
 #: frontend/src/pages/TalentSegmentManagement.vue:246
-msgid "Create New Talent Pool"
+msgid "Create Talent Pool"
 msgstr ""
 
 #: frontend/src/pages/TalentSegmentManagement.vue:27
@@ -1830,7 +1830,7 @@ msgstr ""
 msgid "Current Step"
 msgstr ""
 
-#. Label of a Int field in DocType 'TalentProfilesCampaign'
+#. Label of a Int field in DocType 'Mira Talent Campaign'
 #: mbw_mira/mbw_mira/doctype/talentprofilescampaign/talentprofilescampaign.json
 msgid "Current Step Order"
 msgstr ""
@@ -2231,7 +2231,7 @@ msgid "Duplicate TalentProfiles"
 msgstr ""
 
 #: mbw_mira/mbw_mira/doctype/talentprofilescampaign/talentprofilescampaign.py:34
-msgid "Duplicate TalentProfilesCampaign"
+msgid "Duplicate Mira Talent Campaign"
 msgstr ""
 
 #: mbw_mira/mbw_mira/doctype/talentprofilessegment/talentprofilessegment.py:40
@@ -2567,7 +2567,7 @@ msgstr ""
 msgid "Engagement Score"
 msgstr ""
 
-#. Label of a Datetime field in DocType 'TalentProfilesCampaign'
+#. Label of a Datetime field in DocType 'Mira Talent Campaign'
 #: frontend/src/pages/CampaignDetailView.vue:330
 #: mbw_mira/mbw_mira/doctype/talentprofilescampaign/talentprofilescampaign.json
 msgid "Enrolled At"
@@ -4141,7 +4141,7 @@ msgstr ""
 msgid "Next 6 Months"
 msgstr ""
 
-#. Label of a Datetime field in DocType 'TalentProfilesCampaign'
+#. Label of a Datetime field in DocType 'Mira Talent Campaign'
 #: mbw_mira/mbw_mira/doctype/talentprofilescampaign/talentprofilescampaign.json
 msgid "Next Action At"
 msgstr ""
@@ -4669,7 +4669,7 @@ msgid "PAGE_VISITED"
 msgstr ""
 
 #. Option for the 'Status' (Select) field in DocType 'Campaign'
-#. Option for the 'Status' (Select) field in DocType 'TalentProfilesCampaign'
+#. Option for the 'Status' (Select) field in DocType 'Mira Talent Campaign'
 #: mbw_mira/mbw_mira/doctype/campaign/campaign.json
 #: mbw_mira/mbw_mira/doctype/talentprofilescampaign/talentprofilescampaign.json
 msgid "PAUSED"
@@ -5883,7 +5883,7 @@ msgstr ""
 #. Label of a Select field in DocType 'EmailLog'
 #. Label of a Select field in DocType 'EmailTemplateEditor'
 #. Label of a Select field in DocType 'TalentProfiles'
-#. Label of a Select field in DocType 'TalentProfilesCampaign'
+#. Label of a Select field in DocType 'Mira Talent Campaign'
 #: frontend/src/components/campaign/CampaignForm.vue:57
 #: frontend/src/components/campaign/CampaignTable.vue:13
 #: frontend/src/components/candidate/CandidateEditModal.vue:93
@@ -6119,7 +6119,7 @@ msgstr ""
 
 #. Label of a Link field in DocType 'ApplicantPool'
 #. Label of a Link field in DocType 'Interaction'
-#. Label of a Link field in DocType 'TalentProfilesCampaign'
+#. Label of a Link field in DocType 'Mira Talent Campaign'
 #. Label of a Link field in DocType 'TalentProfilesSegment'
 #: frontend/src/pages/CandidateManagement.vue:155
 #: mbw_mira/mbw_mira/doctype/applicantpool/applicantpool.json
@@ -6167,7 +6167,7 @@ msgstr ""
 
 #. Name of a DocType
 #: mbw_mira/mbw_mira/doctype/talentprofilescampaign/talentprofilescampaign.json
-msgid "TalentProfilesCampaign"
+msgid "Mira Talent Campaign"
 msgstr ""
 
 #. Name of a DocType
@@ -6307,7 +6307,7 @@ msgid "Testing..."
 msgstr ""
 
 #. Description of the 'Current Step Order' (Int) field in DocType
-#. 'TalentProfilesCampaign'
+#. 'Mira Talent Campaign'
 #: mbw_mira/mbw_mira/doctype/talentprofilescampaign/talentprofilescampaign.json
 msgid "Tham chiếu đến order trong CampaignStep để xác định bước hiện tại."
 msgstr ""
@@ -6418,7 +6418,7 @@ msgid "Thời điểm Access Token hết hạn"
 msgstr ""
 
 #. Description of the 'Next Action At' (Datetime) field in DocType
-#. 'TalentProfilesCampaign'
+#. 'Mira Talent Campaign'
 #: mbw_mira/mbw_mira/doctype/talentprofilescampaign/talentprofilescampaign.json
 msgid "Thời điểm dự kiến cho hành động tiếp theo."
 msgstr ""
@@ -6430,7 +6430,7 @@ msgid "Thời điểm đồng bộ gần nhất"
 msgstr ""
 
 #. Description of the 'Enrolled At' (Datetime) field in DocType
-#. 'TalentProfilesCampaign'
+#. 'Mira Talent Campaign'
 #: mbw_mira/mbw_mira/doctype/talentprofilescampaign/talentprofilescampaign.json
 msgid "Thời điểm ứng viên được thêm vào chiến dịch."
 msgstr ""

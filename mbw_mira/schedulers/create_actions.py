@@ -4,12 +4,12 @@ from frappe.utils import now_datetime
 
 def run():
     """
-    Quét TalentProfilesCampaign ACTIVE đến hạn và enqueue worker tạo Action.
+    Quét Mira Talent Campaign ACTIVE đến hạn và enqueue worker tạo Action.
     """
     now = now_datetime()
 
     campaigns = frappe.get_all(
-        "TalentProfilesCampaign",
+        "Mira Talent Campaign",
         filters={
             "status": "ACTIVE",
             "next_action_at": ("<=", now)

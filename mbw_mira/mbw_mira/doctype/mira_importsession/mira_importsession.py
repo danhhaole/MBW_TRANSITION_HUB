@@ -1210,6 +1210,20 @@ def retry_failed_import(session_id: str):
         frappe.log_error(frappe.get_traceback(), "Import Retry Error")
         frappe.throw(_("Retry failed: {0}").format(str(e)))
 
+@frappe.whitelist()
+def get_import_progress(session_id: str):
+    """Get import progress for a session"""
+    try:
+        session = frappe.get_doc("Mira ImportSession", session_id)
+        summary = session.get_summary()
+        summary["logs"] = session.get_logs(50)  # Get last 50 logs
+        return summary
+    except frappe.DoesNotExistError:
+        return {"status": "Not Found"}
+    except Exception as e:
+        frappe.log_error(f"Error getting import progress: {str(e)}", "Import Progress Error")
+        return {"status": "Error", "message": str(e)}
+
 
 # def validate_and_get_candidate_source(source):
 #     """Validate and return candidate source ID"""

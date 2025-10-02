@@ -38,7 +38,7 @@
               {{ __('Type') }}
             </th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              {{ __('Total Profiles') }}
+              {{ __('Total Talents') }}
             </th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               {{ __('Status') }}
@@ -53,20 +53,6 @@
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
           <!-- Create button row -->
-          <!-- <tr v-if="hasCreateButton" class="hover:bg-gray-50">
-            <td colspan="6" class="px-6 py-4">
-              <div class="flex items-center justify-center">
-                <Button variant="outline" theme="gray" @click="$emit('create')" class="flex items-center">
-                  <template #prefix>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                    </svg>
-                  </template>
-                  {{ __('Create New Talent Pool') }}
-                </Button>
-              </div>
-            </td>
-          </tr> -->
 
           <!-- Segment rows -->
           <tr v-for="segment in segments" :key="segment.name" class="hover:bg-gray-50" v-show="!segment.isCreateButton">

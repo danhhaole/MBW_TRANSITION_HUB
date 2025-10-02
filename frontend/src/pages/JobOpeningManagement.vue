@@ -215,13 +215,14 @@
       }"
       :disableOutsideClickToClose="true"
       >
-        <template #body-content>
-          <div class="p-8">
-            <div class="text-center mb-8">
-              <h3 class="text-lg font-medium text-gray-900 mb-2">{{ __('Create Job Opening') }}</h3>
-              <p class="text-sm text-gray-500">{{ __('Please choose how you want to create a job opening.') }}</p>
-            </div>
+        <template #body-title>
+          <div class="mb-8">
+            <h3 class="text-lg font-medium text-gray-900 mb-2">{{ __('Create Job Opening') }}</h3>
+            <p class="text-sm text-gray-500">{{ __('Please choose how you want to create a job opening.') }}</p>
+          </div>
+        </template>
 
+        <template #body-content>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <!-- Create with Form Option -->
               <div 
@@ -255,15 +256,17 @@
                 </div>
               </div>
             </div>
+        </template>
 
-            <!-- Action Buttons -->
-            <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 mt-8">
-              <Button variant="outline" theme="gray" @click="closeCreateOptions">
-                {{ __('Cancel') }}
-              </Button>
-            </div>
+        <template #actions>
+          <!-- Action Buttons -->
+          <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 mt-8">
+            <Button variant="outline" theme="gray" @click="closeCreateOptions">
+              {{ __('Cancel') }}
+            </Button>
           </div>
         </template>
+        
       </Dialog>
 
       <!-- Job Opening Wizard Dialog -->
@@ -273,15 +276,17 @@
       }"
       :disableOutsideClickToClose="true"
       >
+        <template #body-title>
+          <div>
+            <h4 class="text-lg font-medium text-gray-900">{{ __('Basic Information') }}</h4>
+            <p class="text-sm text-gray-500">{{ __('Job title, position, and department') }}</p>
+          </div>
+        </template>
+      
         <template #body-content>
-          <div class="p-6 max-h-[80vh] overflow-y-auto">
+          <div class="overflow-y-auto">
             <!-- Basic Information Section -->
             <div class="mb-8">
-              <div class="mb-6">
-                <h4 class="text-lg font-medium text-gray-900">{{ __('Basic Information') }}</h4>
-                <p class="text-sm text-gray-500">{{ __('Job title, position, and department') }}</p>
-              </div>
-
               <div class="space-y-4">
                 <FormControl v-model="form.job_title" type="text" :label="__('Job Title')" :required="true" />
                 <!-- Ẩn job_code khỏi form tạo và chỉnh sửa -->
@@ -302,7 +307,7 @@
             </div>
 
             <!-- Job Description Section -->
-            <div class="mb-8">
+            <div>
               <div class="flex items-center justify-between mb-6">
                 <div>
                   <h4 class="text-lg font-medium text-gray-900">{{ __('Job Description') }}</h4>
@@ -366,20 +371,23 @@
               </div>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-              <Button variant="outline" theme="gray" @click="closeForm">
-                {{ __('Cancel') }}
-              </Button>
-              <Button
-                variant="solid"
-                theme="gray"
-                :loading="saving"
-                @click="save"
-              >
-                {{ form.name ? __('Update') : __('Create') }}
-              </Button>
-            </div>
+          </div>
+        </template>
+
+        <template #actions>
+          <!-- Action Buttons -->
+          <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+            <Button variant="outline" theme="gray" @click="closeForm">
+              {{ __('Cancel') }}
+            </Button>
+            <Button
+              variant="solid"
+              theme="gray"
+              :loading="saving"
+              @click="save"
+            >
+              {{ form.name ? __('Update') : __('Create') }}
+            </Button>
           </div>
         </template>
       </Dialog>
@@ -389,6 +397,13 @@
         title: __('Generate Job Description AI'),
         size: '6xl'
       }">
+        <template #body-title>
+          <div>
+            <h4 class="text-lg font-medium text-gray-900">{{ __('Generate Job Description AI') }}</h4>
+            <p class="text-sm text-gray-500">{{ __('Generate job description AI') }}</p>
+          </div>
+        </template>
+
         <template #body-content>
           <div class="max-h-[80vh] overflow-y-auto">
             <div class="p-6">
@@ -573,42 +588,44 @@
                       <h5 class="font-medium text-gray-800">{{ __('Requirements') }}</h5>
                       <div class="text-gray-600 mt-1" v-html="formatRequirements(aiForm.job_requirement)"></div>
                     </div>
-                    <div v-if="aiForm.job_benefits">
+                    <!-- <div v-if="aiForm.job_benefits">
                       <h5 class="font-medium text-gray-800">{{ __('Benefits') }}</h5>
                       <div class="text-gray-600 mt-1" v-html="formatBenefits(aiForm.job_benefits)"></div>
-                    </div>
+                    </div> -->
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </template>
 
-              <!-- Action Buttons -->
-              <div v-if="aiForm.job_description || aiForm.job_requirement || aiForm.job_benefits" class="flex justify-between items-center pt-6 border-t border-gray-200 mt-6">
-                <div class="flex space-x-3">
-                  <Button variant="outline" theme="gray" @click="previousAIVersion">
-                    {{ __('Bản trước') }}
-                  </Button>
-                  <Button variant="outline" theme="gray" @click="nextAIVersion">
-                    {{ __('Bản sau') }}
-                  </Button>
-                </div>
-                <div class="flex items-center space-x-3">
-                  <!-- Success indicator -->
-                  <div v-if="contentApplied" class="flex items-center text-green-600 text-sm">
-                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                    </svg>
-                    {{ __('Đã áp dụng vào form') }}
-                  </div>
-                  <Button
-                    variant="solid"
-                    theme="gray"
-                    @click="useGeneratedContent"
-                    class="bg-gray-800 text-white hover:bg-gray-900"
-                  >
-                    {{ __('Use Generated Content') }}
-                  </Button>
-                </div>
+        <template #actions>
+          <!-- Action Buttons -->
+          <div v-if="aiForm.job_description || aiForm.job_requirement || aiForm.job_benefits" class="flex justify-between items-center pt-6 border-t border-gray-200 mt-6">
+            <div class="flex space-x-3">
+              <Button variant="outline" theme="gray" @click="previousAIVersion">
+                {{ __('Bản trước') }}
+              </Button>
+              <Button variant="outline" theme="gray" @click="nextAIVersion">
+                {{ __('Bản sau') }}
+              </Button>
+            </div>
+            <div class="flex items-center space-x-3">
+              <!-- Success indicator -->
+              <div v-if="contentApplied" class="flex items-center text-green-600 text-sm">
+                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+                {{ __('Đã áp dụng vào form') }}
               </div>
+              <Button
+                variant="solid"
+                theme="gray"
+                @click="useGeneratedContent"
+                class="bg-gray-800 text-white hover:bg-gray-900"
+              >
+                {{ __('Use Generated Content') }}
+              </Button>
             </div>
           </div>
         </template>
@@ -1092,6 +1109,19 @@ const openAIModal = () => {
   aiForm.job_title = form.job_title || ''
   aiForm.tone = __('Professional')
   aiForm.comments = ''
+  
+  // Copy existing job data to AI form if in edit mode
+  if (form.description) aiForm.job_description = form.description
+  if (form.requirements) aiForm.job_requirement = form.requirements
+  if (form.benefits) aiForm.job_benefits = form.benefits
+  
+  // Reset AI history when opening with new data
+  aiHistory.value = [{
+    job_description: aiForm.job_description || '',
+    job_requirement: aiForm.job_requirement || '',
+    job_benefits: aiForm.job_benefits || ''
+  }]
+  currentAIIndex.value = 0
 }
 
 // Cập nhật hàm đóng modal AI

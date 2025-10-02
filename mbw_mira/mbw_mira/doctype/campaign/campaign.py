@@ -19,6 +19,8 @@ class Campaign(Document):
         #Kiểm tra nếu có campaign_steps = [];
         if hasattr(self, 'campaign_steps'):
             insert_campaign_step(self.campaign_steps,self.name)
+        if hasattr(self, "prospects"):
+            insert_campaign_prospect(self.prospects,self.name)
             
     def on_trash(self):
         #Kiểm tra trạng thái là draff hoặc chưa active 
@@ -64,6 +66,16 @@ def insert_campaign_step(steps,campaign_name):
 def delete_campaign_step():
     pass
 
+def insert_campaign_prospect(prospects,campaign_name):
+    try:
+        prospects_arr =[]
+        for item in prospects:
+            if item.get("name"):
+                pass
+                
+    except Exception as e:
+        frappe.log_error(f"Lỗi {str(e)}")
+        return None
 
 
 @frappe.whitelist()

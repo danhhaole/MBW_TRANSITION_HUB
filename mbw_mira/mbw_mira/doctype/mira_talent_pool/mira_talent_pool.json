@@ -1,7 +1,7 @@
 {
  "actions": [],
- "autoname": "format:SEG-CAN-{YY}{MM}{DD}-{#####}",
- "creation": "2025-06-26 14:09:25.251188",
+ "allow_rename": 1,
+ "creation": "2025-10-02 15:57:30.514128",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
@@ -12,6 +12,18 @@
   "added_by"
  ],
  "fields": [
+  {
+   "fieldname": "talent_id",
+   "fieldtype": "Link",
+   "label": "Talent",
+   "options": "Mira Talent"
+  },
+  {
+   "fieldname": "segment_id",
+   "fieldtype": "Link",
+   "label": "Segment",
+   "options": "Mira Segment"
+  },
   {
    "fieldname": "added_at",
    "fieldtype": "Datetime",
@@ -24,22 +36,6 @@
    "options": "User"
   },
   {
-   "fieldname": "segment_id",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Segment",
-   "options": "Mira Segment",
-   "reqd": 1
-  },
-  {
-   "fieldname": "talent_id",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Talent Profile",
-   "options": "Mira Prospect",
-   "reqd": 1
-  },
-  {
    "fieldname": "match_score",
    "fieldtype": "Float",
    "label": "Match Score"
@@ -48,11 +44,10 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-09-29 10:02:36.863998",
+ "modified": "2025-10-02 16:01:26.372808",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Talent Pool",
- "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {

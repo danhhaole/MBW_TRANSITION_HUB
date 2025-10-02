@@ -244,7 +244,7 @@ export default UniversalService
 // New service functions for talent segment operations
 export const findTalentProfilesBySegment = async (segmentId, minScore = 50) => {
 	try {
-		const result = await call('mbw_mira.mbw_mira.doctype.talentsegment.talentsegment.find_talentprofile_by_segment', {
+		const result = await call('mbw_mira.mbw_mira.doctype.mira_segment.mira_segment.find_talentprofile_by_segment', {
 			segment_id: segmentId,
 			min_score: Number(minScore)
 		})
