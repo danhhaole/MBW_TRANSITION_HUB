@@ -9,35 +9,50 @@ from mbw_mira.api.common import delete_doc, get_filter_options, get_form_data, g
 
 
 class MiraProspect(Document):
-	pass
+	
+    def validate(self):
+        # Check trùng talent_id,candidate_id
+        self.validate_unique_prospect()
 
-	def validate(self):
-		# Check trùng talent_id,candidate_id
-		self.validate_unique_prospect()
-
-	def after_insert(self):
-		pass
-		
 			
-	def validate_unique_prospect(self):
-			"""
-			Kiểm tra xem đã tồn tại Mira Prospect với cùng
-			talent_id + candidate_id (ngoại trừ chính nó) hay chưa.
-			"""																												
-			filters = {
-				"email": self.email
-			}
+    def validate_unique_prospect(self):
+        """
+        Kiểm tra xem đã tồn tại Mira Prospect với cùng
+        talent_id + candidate_id (ngoại trừ chính nó) hay chưa.
+        """																												
+        filters = {
+            "email": self.email
+        }
 
-			existing = frappe.db.exists("Mira Prospect", filters)
+        existing = frappe.db.exists("Mira Prospect", filters)
 
-			if existing and existing != self.name:
-				frappe.throw(
-				frappe._(
-					"A Mira Prospect with Email <b>{0}</b> already exists: <a href='/app/Mira Prospect/{1}'>{1}</a>"
-				).format(self.email, existing),
-				title=frappe._("Duplicate Mira Prospect"),
-			)
+        if existing and existing != self.name:
+            frappe.throw(
+            frappe._(
+                "A Mira Prospect with Email <b>{0}</b> already exists: <a href='/app/Mira Prospect/{1}'>{1}</a>"
+            ).format(self.email, existing),
+            title=frappe._("Duplicate Mira Prospect"),
+        )
+    @staticmethod
+    def create_mira_prospect(data: dict) ->str:
+        if not data:
+            frappe.throw(frappe._("Missing data for creating Mira Prospect"))
 
+        doc = frappe.new_doc("Mira Prospect")
+
+        # Map dữ liệu từ dict vào doc
+        meta = frappe.get_meta("Mira Prospect")
+        allowed_fields = [f.fieldname for f in meta.fields]
+
+        for field, value in data.items():
+            if field in allowed_fields:
+                doc.set(field, value)
+
+        # Insert vào DB
+        doc.insert(ignore_permissions=True)
+        frappe.db.commit()
+
+        return doc.name
 def create_mira_prospect_segment(self):
 	#Tìm talentsegment theo title (position)
 	segment = frappe.db.get_value("Mira Segment",{"title":self.position},"name")
@@ -61,7 +76,6 @@ def create_mira_prospect_segment(self):
 #   "match_score",
 #   "added_at",
 #   "added_by"
-
 
 
 

@@ -34,8 +34,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Prospect",
-   "options": "Mira Prospect",
-   "reqd": 1
+   "options": "Mira Prospect"
   },
   {
    "fieldname": "full_name",
@@ -150,7 +149,7 @@
   },
   {
    "fieldname": "tags",
-   "fieldtype": "JSON",
+   "fieldtype": "Small Text",
    "label": "Tags"
   },
   {
@@ -162,7 +161,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-02 16:06:20.676095",
+ "modified": "2025-10-02 17:28:17.309571",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Talent",

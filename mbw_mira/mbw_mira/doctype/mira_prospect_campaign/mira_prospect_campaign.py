@@ -19,7 +19,7 @@ class MiraProspectCampaign(Document):
         "campaign_id": campaign_id,
 		}
 
-		existing = frappe.db.exists("Mira Talent Pool", filters)
+		existing = frappe.db.exists("Mira Prospect Campaign", filters)
 		if existing:
 			return True
 		else:

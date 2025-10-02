@@ -16,7 +16,7 @@ class MiraTalentCampaign(Document):
 
 def validate_unique_candidate_campaign(doc):
     """
-    Kiểm tra xem đã tồn tại MiraTalentCampaign với cùng
+    Kiểm tra xem đã tồn tại Mira Talent Campaign với cùng
     talent_id + campaign_id (ngoại trừ chính nó) hay chưa.
     """
     filters = {
@@ -24,20 +24,20 @@ def validate_unique_candidate_campaign(doc):
         "campaign_id": doc.campaign_id,
     }
 
-    existing = frappe.db.exists("MiraTalentCampaign", filters)
+    existing = frappe.db.exists("Mira Talent Campaign", filters)
 
     if existing and existing != doc.name:
         frappe.throw(
             frappe._(
-                "A MiraTalentCampaign with Campaign <b>{0}</b> and Candidate <b>{1}</b> already exists: <a href='/app/candidate-campaign/{2}'>{2}</a>"
+                "A Mira Talent Campaign with Campaign <b>{0}</b> and Candidate <b>{1}</b> already exists: <a href='/app/candidate-campaign/{2}'>{2}</a>"
             ).format(doc.campaign_id, doc.talent_id, existing),
-            title=frappe._("Duplicate MiraTalentCampaign"),
+            title=frappe._("Duplicate Mira Talent Campaign"),
         )
 
 
 @frappe.whitelist()
 def process_candidate_campaign_active():
-    """Lấy danh sách MiraTalentCampaign
+    """Lấy danh sách Mira Talent Campaign
     - Kiểm tra bản ghi thỏa mãn điều kiện để tạo ra Action
     """
     candidate_campaigns = _get_active_candidate_campaigns()
@@ -78,13 +78,13 @@ def process_candidate_campaign_active():
 
 def _get_active_candidate_campaigns() -> dict:
     """
-    Lấy danh sách MiraTalentCampaign:
+    Lấy danh sách Mira Talent Campaign:
     - status = ACTIVE
     - next_action_at <= hôm nay
     """
 
     candidate_campaigns = frappe.get_all(
-        "MiraTalentCampaign",
+        "Mira Talent Campaign",
         filters={"status": "ACTIVE", "next_action_at": ["<=", now_datetime()]},
         fields=["*"],
     )

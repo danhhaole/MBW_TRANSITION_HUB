@@ -7,7 +7,36 @@ from frappe.utils import cstr, cint, flt, getdate, nowdate, get_datetime
 from mbw_mira.api.common import get_filter_options, get_form_data, get_list_data
 
 class MiraTalent(Document):
-	pass
+    
+    def before_insert(self):
+        #Trước khi tạo talent thì tạo prospect
+        if not self.prospect:
+            prospect_data = {
+                "first_name": self.full_name.split(" ")[0] if self.full_name else None,
+                "last_name": " ".join(self.full_name.split(" ")[1:]) if self.full_name and len(self.full_name.split(" ")) > 1 else None,
+                "full_name": self.full_name,
+                "gender": self.gender,
+                "date_of_birth": self.date_of_birth,
+                "email": self.contact_email,
+                "phone_number": self.contact_phone,
+                "linkedin_profile": self.linkedin_profile,
+                "facebook_profile": self.facebook_profile,
+                "zalo_profile": self.zalo_profile,
+                "current_location": self.current_location,
+                "preferred_location": self.preferred_location,
+                "skills": self.skills,
+                "experience_years": self.experience_years,
+                "source": self.source,
+                "resume": self.resume,
+                "notes": self.notes
+            }
+
+            # Gọi hàm create_mira_prospect đã có sẵn
+            prospect = frappe.new_doc("Mira Prospect")
+            prospect_name = prospect.create_mira_prospect(prospect_data)
+
+            # Gán lại vào Talent
+            self.prospect = prospect_name
 
 
 
