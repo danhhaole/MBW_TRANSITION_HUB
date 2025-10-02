@@ -15,7 +15,7 @@
 										d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
 								</svg>
 							</template>
-							{{ __('Add Talent Profile') }}
+							{{ __('Add Prospect') }}
 						</Button>
 					</div>
 			</template>
@@ -139,7 +139,7 @@
 			</div>
 
 			<!-- Loading State -->
-			<Loading v-if="loading && candidates.length === 0" text="Loading candidates..." />
+			<Loading v-if="loading && prospects.length === 0" text="Loading prospects..." />
 
 			<!-- Content Views -->
 			<div v-else>
@@ -152,7 +152,7 @@
 								<tr>
 									<th
 										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-										{{ __('Talent Profile') }}
+										{{ __('Name') }}
 									</th>
 									<th
 										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -214,8 +214,8 @@
 								</template>
 
 								<!-- Candidate Rows -->
-								<template v-else-if="candidates.length > 0">
-									<tr v-for="candidate in candidates" :key="candidate.name"
+								<template v-else-if="prospects.length > 0">
+									<tr v-for="candidate in prospects" :key="candidate.name"
 										class="hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
 										@click="openViewModal(candidate)">
 										<!-- Candidate Info -->
@@ -365,7 +365,7 @@
 
 					<!-- Page info -->
 					<div class="text-sm text-gray-600">
-						{{ __('Showing') }} {{ pagination.showing_from }} {{ __('to') }} {{ pagination.showing_to }} {{ __('of') }} {{ pagination.total }} {{ __('candidates') }}
+						{{ __('Showing') }} {{ pagination.showing_from }} {{ __('to') }} {{ pagination.showing_to }} {{ __('of') }} {{ pagination.total }} {{ __('prospects') }}
 					</div>
 
 					<!-- Page navigation -->
@@ -528,6 +528,7 @@ const {
 
 const { showToast, showSuccess, showError } = useToast()
 
+const prospects = candidates
 // Debug logs removed
 
 // Local state (removed currentView since we only have card view)
@@ -704,7 +705,7 @@ const openCreateModal = () => {
 
 const openViewModal = (candidate) => {
 	// Navigate to candidate detail view instead of opening modal
-	router.push(`/candidates/${candidate.name}`)
+	router.push(`/prospects/${candidate.name}`)
 }
 
 const openEditModal = (candidate) => {
@@ -839,12 +840,12 @@ const handleExport = () => {
 		// TODO: Implement actual export logic
 		// For now, just show a message
 		showError('Export functionality is under development')
-		console.log('Export candidates requested')
+		console.log('Export prospects requested')
 
 		// Sample CSV export structure (commented out until actual implementation)
 		/*
 		const csvHeaders = ['Họ tên', 'Email', 'Điện thoại', 'Kỹ năng', 'Trạng thái', 'Nguồn']
-		const csvData = candidates.value.map(candidate => [
+		const csvData = prospects.value.map(candidate => [
 			candidate.full_name,
 			candidate.email,
 			candidate.phone,

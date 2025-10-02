@@ -291,11 +291,11 @@ const links = [
         icon: ContactsIcon,
         to: { name: 'CandidateManagement' },
       },
-      // {
-      //   label: "Applicant Pool",
-      //   icon: NoteIcon,
-      //   to: { name: 'ApplicantPoolManagement' },
-      // },
+      {
+        label: "Talents",
+        icon: NoteIcon,
+        to: { name: 'Talent' },
+      },
       {
         label: "Interactions",
         icon: ReplyIcon,

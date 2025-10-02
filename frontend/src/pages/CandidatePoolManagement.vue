@@ -335,7 +335,7 @@ import LayoutHeader from '@/components/LayoutHeader.vue'
 import Loading from '@/components/Loading.vue'
 import CandidatePoolViewModal from '@/components/candidate-pool/CandidatePoolViewModal.vue'
 
-const breadcrumbs = [{ label: __('Candidate Pools'), route: { name: 'CandidatePoolManagement' } }]
+const breadcrumbs = [{ label: __('Talent'), route: { name: 'Talent' } }]
 
 // Router
 const router = useRouter()

@@ -27,8 +27,8 @@ const routes = [
 	{ path: '/talent-segments/:id/detail', name: 'TalentSegmentDetailView', component: () =>import('@/pages/TalentSegmentDetailView.vue') },
 
 	// Candidate
-	{ path: '/candidates', name: 'CandidateManagement', component: ()=> import('@/pages/CandidateManagement.vue') },
-	{ path: '/candidates/:id', name: 'CandidateDetailView', component: () => import('@/pages/CandidateDetailView.vue') },
+	{ path: '/prospects', name: 'CandidateManagement', component: ()=> import('@/pages/CandidateManagement.vue') },
+	{ path: '/prospects/:id', name: 'CandidateDetailView', component: () => import('@/pages/CandidateDetailView.vue') },
 
 	// Mira Interaction & Action
 	{ path: '/interactions', name: 'InteractionManagement', component: ()=>import('@/pages/InteractionManagement.vue') },
@@ -46,7 +46,7 @@ const routes = [
 	{ path: '/campaign-template/:id', name: 'CampaignTemplateDetail', component: () => import('@/pages/CampaignTemplateDetail.vue') },
 
 	// Candidate Pool
-	{ path: '/candidate-pools', name: 'CandidatePoolManagement', component: ()=>import('@/pages/CandidatePoolManagement.vue') },
+	{ path: '/talents', name: 'CandidatePoolManagement', component: ()=>import('@/pages/CandidatePoolManagement.vue') },
 
 	
 
