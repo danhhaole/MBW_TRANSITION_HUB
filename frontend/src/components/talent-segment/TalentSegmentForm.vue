@@ -1,5 +1,5 @@
 <template>
-	<div class="max-w-2xl mx-auto">
+	<div class="mx-auto">
 		<form @submit.prevent="handleSubmit" class="space-y-6">
 			<!-- Title -->
 			<div>
@@ -78,7 +78,7 @@
 				<!-- Skills Selection -->
 				<div class="mb-4">
 					<label class="block text-sm font-medium text-gray-700 mb-2">
-						{{ __('Required Skills') }}
+						{{ __('Skills') }}
 					</label>
 					<div class="space-y-2">
 						<div class="flex flex-wrap gap-2">
@@ -110,7 +110,51 @@
 						</p>
 					</div>
 				</div>
+				<!-- Tags -->
+				<div class="mb-4">
+					<label class="block text-sm font-medium text-gray-700 mb-2">
+						{{ __('Tags') }}
+					</label>
+					<div class="space-y-2">
+						<div class="flex flex-wrap gap-2">
+							<span v-for="(tag, index) in criteriaForm.tags" :key="index"
+								class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+								{{ tag }}
+								<button type="button" @click="removeTag(index)"
+									class="ml-1.5 h-4 w-4 rounded-full inline-flex items-center justify-center text-blue-400 hover:bg-blue-200 hover:text-blue-500 focus:outline-none">
+									<svg class="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
+										<path stroke-linecap="round" stroke-width="1.5" d="m1 1 6 6m0-6-6 6" />
+									</svg>
+								</button>
+							</span>
+						</div>
 
+						<!-- Preview của skills sẽ được thêm (optional) -->
+						<div v-if="previewTags.length > 0" class="flex flex-wrap gap-2">
+							<span class="text-xs text-gray-500 w-full">{{ __('Will be added:') }}</span>
+							<span v-for="(tag, index) in previewTags" :key="`preview-${index}`"
+								class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border-2 border-dashed border-gray-300">
+								{{ tag }}
+							</span>
+						</div>
+						<input v-model="newTag" @keydown.enter.prevent="addTag" type="text"
+							:placeholder="__('Enter Tags separated by commas (e.g. Job Fair 2025...)')"
+							class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
+						<p class="text-xs text-gray-500">
+							{{ __('Tip: You can enter multiple tag at once by separating them with commas') }}
+						</p>
+					</div>
+				</div>
+				<div class="mb-4">
+					<label class="block text-sm font-medium text-gray-700 mb-2">
+						{{ __('Source') }}
+					</label>
+					<div class="space-y-2">
+						<input v-model="criteriaForm.source" type="text"
+							:placeholder="__('Enter source (e.g. Hanoi, Ho Chi Minh City...)')"
+							class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
+					</div>
+				</div>
 				<!-- Experience Years -->
 				<div class="mb-4">
 					<label class="block text-sm font-medium text-gray-700 mb-2">
@@ -228,6 +272,7 @@ const errors = ref({})
 // Form fields for new skills and locations
 const newSkill = ref('')
 const newLocation = ref('')
+const newTag = ref('')
 
 const formData = ref({
 	title: '',
@@ -241,6 +286,8 @@ const formData = ref({
 // Criteria form for better UX
 const criteriaForm = ref({
 	skills: [],
+	tags:[],
+	source:"",
 	experienceOperator: '>=',
 	experienceYears: null,
 	locations: [],
@@ -256,7 +303,7 @@ const typeOptions = [
 		value: 'MANUAL',
 	},
 	{
-		title: __('Automatic (AI)'),
+		title: __('Automatic'),
 		value: 'DYNAMIC',
 	},
 ]
@@ -299,6 +346,10 @@ const convertFormToCriteria = () => {
 		criteria.skills = criteriaForm.value.skills
 	}
 
+	if (criteriaForm.value.tags?.length > 0) {
+		criteria.tags = criteriaForm.value.tags
+	}
+
 	if (criteriaForm.value.experienceYears !== null && criteriaForm.value.experienceYears !== '') {
 		criteria.experienceYears = `${criteriaForm.value.experienceOperator}${criteriaForm.value.experienceYears}`
 	}
@@ -309,6 +360,9 @@ const convertFormToCriteria = () => {
 
 	if (criteriaForm.value.educationLevel) {
 		criteria.educationLevel = criteriaForm.value.educationLevel
+	}
+	if (criteriaForm.value.source !== null){
+		criteria.source = criteriaForm.value.source
 	}
 
 	if (criteriaForm.value.salaryMin !== null || criteriaForm.value.salaryMax !== null) {
@@ -334,6 +388,8 @@ const parseCriteriaToForm = (criteriaJson) => {
 
 		criteriaForm.value = {
 			skills: criteria.skills || [],
+			tags:criteria.tags || [],
+			source:criteria.source || '',
 			experienceOperator: '>=',
 			experienceYears: null,
 			locations: criteria.locations || [],
@@ -355,6 +411,8 @@ const parseCriteriaToForm = (criteriaJson) => {
 		console.error('Error parsing criteria JSON:', error)
 		criteriaForm.value = {
 			skills: [],
+			tags:[],
+			source:"",
 			experienceOperator: '>=',
 			experienceYears: null,
 			locations: [],
@@ -412,6 +470,36 @@ const removeSkill = (index) => {
 	criteriaForm.value.skills.splice(index, 1)
 }
 
+//Tags
+const addTag = () => {
+	if (!newTag.value.trim()) return;
+
+	// Tách chuỗi bằng dấu phẩy và xử lý từng skill
+	const tagsToAdd = newTag.value
+		.split(',')
+		.map(tag => tag.trim())
+		.filter(tag => tag.length > 0) // Loại bỏ string rỗng
+		.filter(tag => !criteriaForm.value.tags.includes(tag)); // Loại bỏ skill đã tồn tại
+
+	// Thêm tất cả skills vào mảng
+	criteriaForm.value.tags.push(...tagsToAdd);
+
+	// Clear input
+	newTag.value = '';
+};
+const previewTags = computed(() => {
+	if (!newTag.value.trim()) return [];
+
+	return newTag.value
+		.split(',')
+		.map(tag => tag.trim())
+		.filter(tag => tag.length > 0);
+});
+
+const removeTag = (index) => {
+	criteriaForm.value.tags.splice(index, 1)
+}
+
 // Locations management
 const addLocation = () => {
 	if (
@@ -439,6 +527,8 @@ const resetForm = () => {
 
 	criteriaForm.value = {
 		skills: [],
+		tags:[],
+		source:"",
 		experienceOperator: '>=',
 		experienceYears: null,
 		locations: [],

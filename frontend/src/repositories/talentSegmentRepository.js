@@ -86,7 +86,7 @@ export const searchTalentSegments = async (searchText) => {
 export const getTalentSegmentCandidates = async (segmentId, filters = {}) => {
   const data = await call('frappe.client.get_list', {
     doctype: 'Mira Talent Pool',
-    fields: ['talent_id', 'added_at', 'added_by', 'match_score'],
+    fields: ['*'],
     filters: { segment_id: segmentId, ...filters },
     order_by: 'added_at desc',
     page_length: 50

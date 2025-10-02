@@ -239,11 +239,11 @@
     <!-- Create/Edit Dialog -->
     <Dialog v-model="showCreateForm" :options="createDialogOptions">
       <template #body-title>
-        <div class="bg-white px-4 pb-6 pt-5 sm:px-6">
+        <div class="bg-white">
           <div class="mb-5 flex items-center justify-between">
             <div>
               <h3 class="text-2xl font-semibold leading-6 text-gray-900">
-                {{ editingSegment ? __('Edit Talent Pool') : __('Create New Talent Pool') }}
+                {{ editingSegment ? __('Edit Talent Pool') : __('Create Talent Pool') }}
               </h3>
             </div>
           </div>
@@ -411,12 +411,12 @@ const isDebugMode = computed(() => {
 
 // Dialog options
 const createDialogOptions = computed(() => ({
-  title: editingSegment.value ? 'Edit Talent Pool' : 'Create New Talent Pool',
+  title: editingSegment.value ? __('Edit Talent Pool') : __('Create Talent Pool'),
   size: '3xl'
 }))
 
 const deleteDialogOptions = computed(() => ({
-  title: 'Confirm Delete',
+  title: __('Confirm Delete'),
   size: 'sm'
 }))
 

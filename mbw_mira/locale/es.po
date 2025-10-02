@@ -1716,7 +1716,7 @@ msgstr ""
 
 #: frontend/src/components/talent-segment/TalentSegmentListView.vue:65
 #: frontend/src/pages/TalentSegmentManagement.vue:246
-msgid "Create New Talent Pool"
+msgid "Create Talent Pool"
 msgstr ""
 
 #: frontend/src/pages/TalentSegmentManagement.vue:27

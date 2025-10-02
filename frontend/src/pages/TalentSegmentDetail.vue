@@ -69,7 +69,7 @@
       <!-- Stats Cards -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-white">
-          <div class="text-sm opacity-90 mb-1">{{ __('Total Profiles') }}</div>
+          <div class="text-sm opacity-90 mb-1">{{ __('Total Talent') }}</div>
           <div class="text-3xl font-bold mb-2">{{ candidateCount }}</div>
           <div class="text-sm flex items-center">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -138,7 +138,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
             </svg>
           </template>
-          {{ __('Add Profiles') }}
+          {{ __('Add Talents') }}
         </Button>
         
         <Button
@@ -171,13 +171,13 @@
       <!-- Candidates Table -->
       <div class="bg-white rounded-lg shadow-sm border border-gray-200">
         <div class="flex justify-between items-center p-6 border-b border-gray-200">
-          <h2 class="text-lg font-semibold text-gray-900">{{ __('Profiles in this Pool') }}</h2>
+          <h2 class="text-lg font-semibold text-gray-900">{{ __('Talent in this Pool') }}</h2>
           <div class="flex items-center space-x-3">
             <div class="relative">
               <input
                 v-model="candidateSearch"
                 type="text"
-                placeholder="{{ __('Search profiles...') }}"
+                placeholder="{{ __('Search talents...') }}"
                 class="block w-80 pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               />
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -283,13 +283,13 @@
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <span class="ml-2">{{ __('Loading profiles...') }}</span>
+                    <span class="ml-2">{{ __('Loading talents...') }}</span>
                   </div>
                 </td>
               </tr>
               <tr v-else-if="paginatedCandidates.length === 0">
                 <td colspan="6" class="px-6 py-4 text-center text-gray-500">
-                  {{ __('No profiles found') }}
+                  {{ __('No talent found') }}
                 </td>
               </tr>
               <tr v-else v-for="candidate in paginatedCandidates" :key="candidate.id" class="hover:bg-gray-50">

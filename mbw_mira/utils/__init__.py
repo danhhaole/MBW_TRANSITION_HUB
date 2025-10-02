@@ -64,7 +64,7 @@ def send_email_job(talentprofile_id, action_id, step_id):
             template=template,
             template_args=template_args,
         )
-        create_interaction(
+        create_mira_interaction(
             {
                 "talent_id": talentprofile_id,
                 "interaction_type": "EMAIL_SENT",
@@ -104,7 +104,7 @@ def send_sms_job(talentprofile_id, action_id, step_id):
         message = None
         talent_id = talentprofiles.name
 
-        create_interaction(
+        create_mira_interaction(
             {
                 "talent_id": talent_id,
                 "interaction_type": "SMS_SENT",
@@ -203,7 +203,8 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50):
     try:
         # --- Load tiêu chí kỹ năng ---
         criteria_skills = []
-
+        criteria_tags = []
+        criteria_source = ''
         if segment_name:
             criteria = frappe.db.get_value("Mira Segment", segment_name, "criteria")
 
@@ -211,10 +212,17 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50):
             try:
                 criteria_dict = json.loads(criteria or "{}")
                 raw_skills = criteria_dict.get("skills", [])
+                raw_tags = criteria_dict.get("tags", [])
+                criteria_source = criteria_dict.get("source", [])
                 if isinstance(raw_skills, str):
                     criteria_skills = [unquote(s.strip().lower()) for s in raw_skills.split(",")]
                 elif isinstance(raw_skills, list):
                     criteria_skills = [unquote(s.strip().lower()) for s in raw_skills]
+
+                if isinstance(raw_tags, str):
+                    criteria_tags = [unquote(s.strip().lower()) for s in raw_tags.split(",")]
+                elif isinstance(raw_tags, list):
+                    criteria_tags = [unquote(s.strip().lower()) for s in raw_tags]
             except Exception as e:
                 frappe.log_error(f"Lỗi khi đọc criteria JSON: {e}")
                 return []
@@ -226,38 +234,62 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50):
 
         # --- Lấy danh sách ứng viên ---
         talent_profiles = frappe.get_all(
-            "Mira Prospect",
+            "Mira Talent",
             filters={"status": "NEW"},
-            fields=["name", "email", "full_name", "skills"],
+            fields=["name", "email", "full_name", "skills","tags","source"],
         )
 
         results = []
 
         for c in talent_profiles:
-            raw_skills = c.get("skills")
-            if not raw_skills:
+            talent_skills = c.get("skills")
+            talent_tags = c.get("skills")
+            talent_source = c.get("source")
+            if not talent_skills or not talent_tags or not talent_source:
                 continue
 
             # Chuyển skills thành list nếu là chuỗi
-            if isinstance(raw_skills, str):
-                candidate_skills = [unquote(s.strip().lower()) for s in raw_skills.split(",")]
-            elif isinstance(raw_skills, list):
-                candidate_skills = [unquote(s.strip().lower()) for s in raw_skills]
+            if isinstance(talent_skills, str):
+                candidate_skills = [unquote(s.strip().lower()) for s in talent_skills.split(",")]
+            elif isinstance(talent_skills, list):
+                candidate_skills = [unquote(s.strip().lower()) for s in talent_skills]
             else:
                 continue
 
+            if isinstance(talent_tags, str):
+                candidate_tags = [unquote(s.strip().lower()) for s in talent_tags.split(",")]
+            elif isinstance(talent_tags, list):
+                candidate_tags = [unquote(s.strip().lower()) for s in talent_tags]
+            else:
+                continue
+            
             # --- Tính điểm fuzzy ---
             total_score = 0
-            for crit_skill in criteria_skills:
-                best_score = max(
-                    [
-                        fuzz.token_sort_ratio(crit_skill, cand_skill)
-                        for cand_skill in candidate_skills
-                    ],
-                    default=0,
-                )
-                total_score += best_score
+            if criteria_skills:
+                for crit_skill in criteria_skills:
+                    best_score = max(
+                        [
+                            fuzz.token_sort_ratio(crit_skill, cand_skill)
+                            for cand_skill in candidate_skills
+                        ],
+                        default=0,
+                    )
+                    total_score += best_score
 
+            if criteria_tags:
+                for criteria_tag in criteria_tags:
+                    best_score = max(
+                        [
+                            fuzz.token_sort_ratio(criteria_tags, candidate_tag)
+                            for candidate_tag in candidate_tags
+                        ],
+                        default=0,
+                    )
+                    total_score += best_score
+            if talent_source:
+                best_score = fuzz.token_sort_ratio(talent_source, criteria_source) or 0
+                total_score += best_score
+            
             avg_score = total_score / len(criteria_skills)
             # frappe.log_error(f"Score {avg_score}")
             if avg_score >= min_score:
@@ -268,6 +300,8 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50):
                         "full_name": c.full_name,
                         "skills": candidate_skills,
                         "criteria_skills": criteria_skills,
+                        "tags":criteria_tags,
+                        "source":criteria_source,
                         "score": round(avg_score, 2),
                     }
                 )
