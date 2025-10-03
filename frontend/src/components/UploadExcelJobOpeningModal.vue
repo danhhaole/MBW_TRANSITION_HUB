@@ -717,7 +717,7 @@ const downloadTemplate = async () => {
       if (response.file_url) {
           const link = document.createElement('a')
           link.href = response.file_url
-          link.download = response.file_name || 'candidate_import_template.xlsx'
+          link.download = response.file_name || 'job_import_template.xlsx'
           link.target = '_blank'
           link.style.display = 'none'
 

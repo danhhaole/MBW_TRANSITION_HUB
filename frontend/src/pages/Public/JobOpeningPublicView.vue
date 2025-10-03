@@ -358,10 +358,10 @@
 		</div>
 
 		<!-- Apply Modal -->
-		<!-- <Dialog v-model="showApplyModal" :options="{ size: 'xl' }">
+		<Dialog v-model="showApplyModal" :options="{ size: 'xl' }" :disableOutsideClickToClose="true">
 			<template #body-title>
 				<h3 class="text-xl font-semibold">
-					{{ __("Apply for position") }}: {{ jobData?.jo_public_title }}
+					{{ __("Apply for position") }}: {{ jobData?.job_title }}
 				</h3>
 			</template>
 			<template #body-content>
@@ -372,7 +372,7 @@
 					@cancel="showApplyModal = false"
 				/>
 			</template>
-		</Dialog> -->
+		</Dialog>
 
 		<!-- Share Dialog -->
 		<ShareDialog
@@ -388,7 +388,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { call, FeatherIcon, Button, Dialog } from "frappe-ui";
-// import JobApplicationForm from "@/components/JobApplicationForm.vue";
+import JobApplicationForm from "@/components/JobApplicationForm.vue";
 import ShareDialog from "@/components/ShareDialog.vue";
 
 const route = useRoute();
@@ -414,8 +414,8 @@ const showShareModal = ref(false);
 
 // Computed
 const isDeadlinePassed = computed(() => {
-	if (!jobData.value?.jo_application_deadline) return false;
-	const deadline = new Date(jobData.value.jo_application_deadline);
+	if (!jobData.value?.closing_date) return false;
+	const deadline = new Date(jobData.value.closing_date);
 	const now = new Date();
 	return deadline < now;
 });

@@ -245,6 +245,121 @@ class MiraImportsession(Document):
 
 
 @frappe.whitelist()
+@frappe.whitelist()
+def download_candidate_template():
+	"""Generate and download import template Excel file for Candidate"""
+	try:
+		# Get Mira Candidate fields
+		meta = frappe.get_meta("Mira Candidate")
+		
+		# Define important fields in order
+		important_fields = [
+			'full_name', 'email', 'phone', 'headline', 'source',
+			'cv_original_url', 'skills', 'status'
+		]
+		
+		template_fields = []
+		# Add important fields first
+		for fieldname in important_fields:
+			field = meta.get_field(fieldname)
+			if field:
+				template_fields.append({
+					'fieldname': field.fieldname,
+					'label': field.label,
+					'fieldtype': field.fieldtype,
+					'required': field.reqd if hasattr(field, 'reqd') else False,
+					'options': field.options if hasattr(field, 'options') else ''
+				})
+		
+		# Create template DataFrame with headers and sample data
+		headers = []
+		sample_data = {}
+		
+		for field in template_fields:
+			header = f"{field['label']}"
+			if field.get('required'):
+				header += " *"
+			headers.append(header)
+			
+			# Add sample data
+			if field['fieldname'] == 'full_name':
+				sample_data[header] = 'Nguyễn Văn A'
+			elif field['fieldname'] == 'email':
+				sample_data[header] = 'nguyen.van.a@example.com'
+			elif field['fieldname'] == 'phone':
+				sample_data[header] = '0912345678'
+			elif field['fieldname'] == 'headline':
+				sample_data[header] = 'Senior Software Engineer at ABC Company'
+			elif field['fieldname'] == 'source':
+				sample_data[header] = 'LinkedIn_Sourcing'
+			elif field['fieldname'] == 'cv_original_url':
+				sample_data[header] = 'https://example.com/cv/nguyen-van-a.pdf'
+			elif field['fieldname'] == 'skills':
+				sample_data[header] = 'Python, JavaScript, React, Node.js'
+			elif field['fieldname'] == 'status':
+				sample_data[header] = 'NEW'
+			else:
+				sample_data[header] = ''
+		
+		# Create DataFrame with sample data
+		df = pd.DataFrame([sample_data])
+		
+		# Save to temporary file and return
+		import tempfile
+		
+		with tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False) as tmp:
+			with pd.ExcelWriter(tmp.name, engine='openpyxl') as writer:
+				df.to_excel(writer, sheet_name='Candidate Template', index=False)
+				
+				# Get workbook and worksheet for styling
+				workbook = writer.book
+				worksheet = writer.sheets['Candidate Template']
+				
+				# Style headers
+				from openpyxl.styles import Font, PatternFill, Alignment
+				
+				header_font = Font(bold=True, color="FFFFFF")
+				header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+				center_alignment = Alignment(horizontal="center", vertical="center")
+				
+				# Apply styling to header row
+				for col_num, header in enumerate(headers, 1):
+					cell = worksheet.cell(row=1, column=col_num)
+					cell.font = header_font
+					cell.fill = header_fill
+					cell.alignment = center_alignment
+				
+				# Set column widths
+				for col_num, header in enumerate(headers, 1):
+					column_letter = worksheet.cell(row=1, column=col_num).column_letter
+					worksheet.column_dimensions[column_letter].width = max(len(str(header)) + 5, 15)
+			
+			# Read file content
+			with open(tmp.name, 'rb') as f:
+				content = f.read()
+			
+			# Clean up
+			os.unlink(tmp.name)
+		
+		# Create file document
+		file_doc = frappe.get_doc({
+			"doctype": "File",
+			"file_name": f"candidate_import_template_{frappe.utils.now_datetime().strftime('%Y%m%d_%H%M%S')}.xlsx",
+			"content": content,
+			"is_private": 0
+		})
+		file_doc.save(ignore_permissions=True)
+		
+		return {
+			"file_url": file_doc.file_url,
+			"file_name": file_doc.file_name
+		}
+		
+	except Exception as e:
+		frappe.log_error(frappe.get_traceback(), "Candidate Template Generation Error")
+		frappe.throw(_("Error generating candidate template: {0}").format(str(e)))
+
+@frappe.whitelist()
 def download_import_template():
 	"""Generate and download import template Excel file for Job Opening"""
 	try:

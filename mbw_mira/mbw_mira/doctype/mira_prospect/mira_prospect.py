@@ -355,6 +355,107 @@ def delete_talent_profile(name):
         return {"success": False, "error": str(e)}
 
 
+@frappe.whitelist(allow_guest=True)
+def submit_job_application():
+    """
+    Handle job application form submission
+    Allow guest access and ignore permissions for this endpoint
+    """
+    try:
+        # Get form data from request
+        form_data = frappe.form_dict
+        files = frappe.request.files
+        
+        # Handle file upload if exists
+        if 'resume' in files:
+            file = files['resume']
+            file_doc = frappe.get_doc({
+                'doctype': 'File',
+                'file_name': file.filename,
+                'content': file.stream.read(),
+                'attached_to_doctype': 'Mira Prospect',
+                'attached_to_name': None,  # Will be set after creating the prospect
+                'attached_to_field': 'resume'
+            })
+            file_doc.save(ignore_permissions=True)
+            form_data['resume'] = file_doc.file_url
+
+        # Basic validation
+        required_fields = ['first_name', 'email', 'phone_number']
+        for field in required_fields:
+            if not form_data.get(field):
+                return {"success": False, "error": f"Missing required field: {field}"}
+
+        # Map form data to document fields
+        doc_data = {
+            'first_name': form_data.get('first_name'),
+            'email': form_data.get('email'),
+            'phone_number': form_data.get('phone_number'),
+            'current_company': form_data.get('current_company', ''),
+            'current_designation': form_data.get('current_designation', ''),
+            'experience_years': form_data.get('experience_years'),
+            'linkedin_profile': form_data.get('linkedin_profile', ''),
+            'notes': form_data.get('notes', '')
+        }
+        
+        # Add resume if exists
+        if 'resume' in form_data:
+            doc_data['resume'] = form_data['resume']
+
+        # Create new prospect document
+        doc = frappe.new_doc("Mira Prospect")
+        doc.update(doc_data)
+        
+        # Map form data to document fields
+        field_mapping = {
+            'full_name': 'full_name',
+            'email': 'email',
+            'phone_number': 'phone_number',
+            'current_designation': 'current_position',
+            'current_company': 'current_company',
+            'experience_years': 'years_of_experience',
+            'linkedin_profile': 'linkedin_profile',
+            'notes': 'notes'
+        }
+
+        for form_field, doc_field in field_mapping.items():
+            if form_field in form_data:
+                doc.set(doc_field, form_data[form_field])
+
+        doc.date = nowdate()
+
+        # Handle file upload if exists
+        if 'resume' in form_data and form_data['resume']:
+            # You might want to handle file upload separately using frappe.upload_file()
+            # For now, we'll just store the file name
+            doc.resume = form_data['resume'].name
+
+        # Save the document with ignore_permissions
+        doc.flags.ignore_permissions = True
+        doc.insert(ignore_permissions=True)
+
+        # If there's a resume file, you might want to attach it here
+        # This is a placeholder for file attachment logic
+        # if 'resume' in form_data and form_data['resume']:
+        #     attach_file_to_doc("Mira Prospect", doc.name, form_data['resume'])
+
+        return {
+            "success": True,
+            "message": "Ứng tuyển thành công! Cảm ơn bạn đã nộp đơn.",
+            "prospect_id": doc.name
+        }
+
+    except Exception as e:
+        frappe.log_error(
+            title="Job Application Error",
+            message=f"Error in submit_job_application: {str(e)}\nForm Data: {form_data}"
+        )
+        return {
+            "success": False,
+            "error": "Có lỗi xảy ra khi gửi đơn ứng tuyển. Vui lòng thử lại sau."
+        }
+
+
 @frappe.whitelist()
 def get_talent_profile_filter_options():
     """

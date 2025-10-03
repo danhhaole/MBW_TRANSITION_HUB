@@ -5,7 +5,7 @@
         <Breadcrumbs :items="breadcrumbs" />
       </template>
       <template #right-header>
-        <Button variant="solid" theme="gray" @click="openCreateDialog" :loading="loading">
+        <Button variant="solid" theme="gray" @click="showCreateOptions = true" :loading="loading">
           <template #prefix>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -13,6 +13,75 @@
           </template>
           {{ __('Create Candidate') }}
         </Button>
+
+        <!-- Create Options Modal -->
+        <Dialog v-model="showCreateOptions" :options="{ title: __('Create New Candidate'), size: '3xl' }">
+          <template #body-content>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
+              <!-- Option 1: Manual Entry -->
+              <div 
+                @click="() => { showCreateOptions = false; openCreateDialog(); }"
+                class="group p-6 border-2 border-dashed border-gray-300 rounded-lg text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors"
+              >
+                <div class="text-center">
+                  <div class="mx-auto w-16 h-16 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-4 group-hover:bg-blue-100 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </div>
+                  <h4 class="text-lg font-semibold text-gray-900 mb-2">{{ __('Add Manually') }}</h4>
+                  <p class="text-sm text-gray-500">{{ __('Create a new candidate by filling out the form.') }}</p>
+                </div>
+              </div>
+
+              <!-- Option 2: From LinkedIn (Disabled) -->
+              <div
+                class="group p-6 border-2 border-dashed border-gray-200 rounded-lg text-center cursor-not-allowed opacity-50"
+              >
+                <div class="text-center">
+                  <div class="mx-auto w-16 h-16 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="h-8 w-8">
+                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                    </svg>
+                  </div>
+                  <h4 class="text-lg font-semibold text-gray-400 mb-2">{{ __('Upload PDF') }}</h4>
+                  <p class="text-sm text-gray-400">{{ __('Coming soon') }}</p>
+                </div>
+              </div>
+
+              <!-- Option 3: From Job Portal (Disabled) -->
+              <div
+                class="group p-6 border-2 border-dashed border-gray-200 rounded-lg text-center cursor-not-allowed opacity-50"
+              >
+                <div class="text-center">
+                  <div class="mx-auto w-16 h-16 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                    </svg>
+                  </div>
+                  <h4 class="text-lg font-semibold text-gray-400 mb-2">{{ __('Upload Multi PDF') }}</h4>
+                  <p class="text-sm text-gray-400">{{ __('Coming soon') }}</p>
+                </div>
+              </div>
+
+              <!-- Option 4: Import Excel/CSV -->
+              <div
+                @click="openUploadExcelDialog"
+                class="group p-6 border-2 border-dashed border-gray-300 rounded-lg text-center cursor-pointer hover:border-green-500 hover:bg-green-50 transition-colors"
+              >
+                <div class="text-center">
+                  <div class="mx-auto w-16 h-16 rounded-full bg-green-50 text-green-600 flex items-center justify-center mb-4 group-hover:bg-green-100 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <h4 class="text-lg font-semibold text-gray-900 mb-2">{{ __('Import Excel/CSV') }}</h4>
+                  <p class="text-sm text-gray-500">{{ __('Upload Excel/CSV file to create multiple candidates.') }}</p>
+                </div>
+              </div>
+            </div>
+          </template>
+        </Dialog>
       </template>
     </LayoutHeader>
 
@@ -171,7 +240,15 @@
                   </button>
                 </span>
               </div>
-              <input v-model="newSkill" @input="handleSkillInput" @blur="finalizeSkillInput" type="text" :placeholder="__('Enter skills separated by commas (e.g. React, Vue, Pinia...)')" class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
+              <input 
+                v-model="newSkill" 
+                @input="handleSkillInput" 
+                @keydown.enter.prevent="() => { finalizeSkillInput(); newSkill = ''; }"
+                @blur="finalizeSkillInput" 
+                type="text" 
+                :placeholder="__('Enter skills separated by commas (e.g. React, Vue, Pinia...)')" 
+                class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" 
+              />
               <p class="text-xs text-gray-500">{{ __('Tip: You can enter multiple skills at once by separating them with commas') }}</p>
             </div>
           </div>
@@ -188,7 +265,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref, reactive, onMounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import Loading from '@/components/Loading.vue'
@@ -196,6 +273,7 @@ import { Breadcrumbs, Button, Select, Dialog, toast } from 'frappe-ui'
 import { call } from 'frappe-ui'
 
 const router = useRouter()
+const showCreateOptions = ref(false)
 const breadcrumbs = [{ label: __('Candidates'), route: { name: 'CandidateManagementSimple' } }]
 
 const loading = ref(false)
@@ -318,10 +396,15 @@ const form = reactive({
   skills: []
 })
 
-function openCreateDialog() {
+async function openCreateDialog() {
   resetForm()
   isEditing.value = false
   showCreate.value = true
+  showCreateOptions.value = false
+  await nextTick()
+  // Focus the first input field when dialog opens
+  const firstInput = document.querySelector('input')
+  if (firstInput) firstInput.focus()
 }
 
 function openEditDialog(item) {
@@ -352,6 +435,13 @@ function openEditDialog(item) {
 
 function closeCreateDialog() {
   showCreate.value = false
+  showCreateOptions.value = false
+}
+
+function openUploadExcelDialog() {
+  console.log('Excel upload dialog would open here')
+  showCreateOptions.value = false
+  toast.success('Excel upload feature will be implemented here')
 }
 
 function resetForm() {
