@@ -272,7 +272,7 @@
       <!-- Job Opening Wizard Dialog -->
       <Dialog v-model="showForm" :options="{
         title: form.name ? __('Edit Job Opening') : __('Create Job Opening'),
-        size: '6xl',
+        size: '3xl',
       }"
       :disableOutsideClickToClose="true"
       >
@@ -395,7 +395,7 @@
       <!-- AI Generation Dialog -->
       <Dialog v-model="showAIModal" :options="{
         title: __('Generate Job Description AI'),
-        size: '6xl'
+        size: '3xl'
       }">
         <template #body-title>
           <div>
