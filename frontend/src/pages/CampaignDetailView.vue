@@ -300,137 +300,199 @@
         </div>
 
         <!-- Other tabs content -->
-        <div v-if="activeTab === 'candidates'">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-medium text-gray-900">{{ __('Assigned Profiles') }}</h3>
-            <div class="flex items-center space-x-2">
-              <button
-                v-if="campaign.target_segment && availableCandidates.length > 0"
-                @click="assignAllFromSegment"
-                :disabled="assigningAll"
-                class="inline-flex items-center px-4 py-2 border border-green-300 text-sm font-medium rounded-lg text-green-700 bg-white hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
-              >
-                <svg v-if="assigningAll" class="animate-spin -ml-1 mr-2 h-4 w-4 text-green-700" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <svg v-else class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                </svg>
-              </button>
-              <button
-                @click="openCandidateModal()"
-                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                </svg>
-                {{ __('Assign Profile') }}
-              </button>
+<div v-if="activeTab === 'candidates'">
+  <div class="flex justify-between items-center mb-4">
+    <h3 class="text-lg font-medium text-gray-900">{{ __('Talent Campaign') }}</h3>
+    <div class="flex items-center space-x-2">
+      <!-- Nút mở modal manual -->
+      <button
+        @click="openCandidateModal()"
+        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+      >
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+        </svg>
+        {{ __('Add Manual Talent') }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Talent Campaign Table -->
+  <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+    <table class="min-w-full divide-y divide-gray-300">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            {{ __('Full Name') }}
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            {{ __('ID') }}
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            {{ __('Email') }}
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            {{ __('Phone') }}
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            {{ __('Source') }}
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            {{ __('Actions') }}
+          </th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        <!-- Empty -->
+        <tr v-if="talentCampaignRecords.length === 0" class="text-center">
+          <td colspan="6" class="px-6 py-4 text-sm text-gray-500">
+            {{ __('No profiles assigned') }}
+          </td>
+        </tr>
+
+        <!-- Rows -->
+        <tr
+          v-else
+          v-for="record in talentCampaignRecords"
+          :key="record.name"
+          class="hover:bg-gray-50"
+        >
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+            {{ record.full_name }}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            {{ record.name }}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            {{ record.email || '-' }}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            {{ record.phone_number || '-' }}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm">
+            <span
+              v-if="record.__source === 'manual'"
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-800"
+            >
+              Manual
+            </span>
+            <span
+              v-else-if="record.__source === 'mira_talent'"
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+            >
+              Mira Talent
+            </span>
+            <span
+              v-else-if="record.__source === 'mira_prospect'"
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
+            >
+              Mira Prospect
+            </span>
+            <span
+              v-else-if="record.__source === 'mira_segment_talent'"
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800"
+            >
+              Segment Talent
+            </span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+            <!-- Edit chỉ hiện với manual -->
+            <button
+              v-if="record.__source === 'manual'"
+              @click="openCandidateModal(record)"
+              class="text-blue-600 hover:text-blue-900"
+              title="Edit Candidate (manual)"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+              </svg>
+            </button>
+
+            <!-- Unassign luôn có -->
+            <button
+              @click="unassignCandidate(record)"
+              class="text-red-600 hover:text-red-900"
+              title="Unassign Candidate"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div v-if="activeTab === 'mira_candidates'">
+  <div class="flex justify-between items-center mb-4">
+    <h3 class="text-lg font-medium text-gray-900">{{ __('Mira Candidates') }}</h3>
+  </div>
+
+  <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+    <table class="min-w-full divide-y divide-gray-300">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Avatar') }}</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Full Name') }}</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Email') }}</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Phone') }}</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Headline') }}</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Source') }}</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Status') }}</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Last Interaction') }}</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        <tr v-if="loadingMiraCandidates" class="text-center">
+          <td colspan="8" class="px-6 py-4">
+            <div class="flex justify-center">
+              <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
             </div>
-          </div>
-          
-          <!-- Candidate Campaigns Table -->
-          <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-            <table class="min-w-full divide-y divide-gray-300">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Profile') }}</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Status') }}</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Current Step') }}</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Enrolled At') }}</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Actions') }}</th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-                <tr v-if="loadingCandidates" class="text-center">
-                  <td colspan="5" class="px-6 py-4 text-sm text-gray-500">
-                    <div class="flex justify-center">
-                      <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-black"></div>
-                    </div>
-                  </td>
-                </tr>
-                <tr v-else-if="candidateCampaigns.length === 0" class="text-center">
-                  <td colspan="5" class="px-6 py-4 text-sm text-gray-500">{{ __('No profiles assigned') }}</td>
-                </tr>
-                <tr v-else v-for="candidate in candidateCampaigns" :key="candidate.name" class="hover:bg-gray-50">
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="flex items-center">
-                      <div class="flex-shrink-0 h-8 w-8">
-                        <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                          <span class="text-sm font-medium text-blue-600">
-                            							{{ candidate.talent_id?.charAt(0)?.toUpperCase() || 'C' }}
-                          </span>
-                        </div>
-                      </div>
-                      <div class="ml-3">
-                        						<div class="text-sm font-medium text-gray-900">{{ candidate.talent_id }}</div>
-                        <div class="text-sm text-gray-500">{{ __('Profile') }}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <span 
-                      :class="getStatusClasses(candidate.status)"
-                      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                    >
-                      {{ candidate.status }}
-                    </span>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      {{ __('Step') }} {{ candidate.current_step_order }}
-                    </span>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {{ formatDate(candidate.enrolled_at) }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                    <button
-                      v-if="candidate.status === 'Draft' || candidate.status === 'Paused'"
-                      @click="startCandidateCampaign(candidate)"
-                      class="text-green-600 hover:text-green-900"
-                      title="Start Campaign"
-                    >
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h8m2-10a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                      </svg>
-                    </button>
-                    <button
-                      v-if="candidate.status === 'Active'"
-                      @click="pauseCandidateCampaign(candidate)"
-                      class="text-yellow-600 hover:text-yellow-900"
-                      title="Pause Campaign"
-                    >
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                      </svg>
-                    </button>
-                    <button
-                      @click="viewCandidateDetails(candidate)"
-                      class="text-blue-600 hover:text-blue-900"
-                      title="View Details"
-                    >
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                      </svg>
-                    </button>
-                    <button
-                      @click="unassignCandidate(candidate)"
-                      class="text-red-600 hover:text-red-900"
-                      title="Unassign Candidate"
-                    >
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                      </svg>
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+          </td>
+        </tr>
+        <tr v-else-if="miraCandidates.length === 0" class="text-center">
+          <td colspan="8" class="px-6 py-4 text-sm text-gray-500">
+            {{ __('No Mira Candidates found') }}
+          </td>
+        </tr>
+        <tr v-else v-for="c in miraCandidates" :key="c.name" class="hover:bg-gray-50">
+          <td class="px-6 py-4 whitespace-nowrap">
+            <img v-if="c.avatar" :src="c.avatar" alt="avatar" class="h-8 w-8 rounded-full object-cover"/>
+            <div v-else class="h-8 w-8 rounded-full bg-gray-200"></div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ c.full_name }}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ c.email || '-' }}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ c.phone || '-' }}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ c.headline || '-' }}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ c.source || '-' }}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm">
+            <span
+              :class="{
+                'bg-gray-100 text-gray-800': c.status === 'NEW',
+                'bg-blue-100 text-blue-800': c.status === 'SOURCED',
+                'bg-yellow-100 text-yellow-800': c.status === 'NURTURING',
+                'bg-green-100 text-green-800': c.status === 'ENGAGED',
+                'bg-red-100 text-red-800': c.status === 'ARCHIVED'
+              }"
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+            >
+              {{ c.status }}
+            </span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            {{ formatDateTime(c.last_interaction) || '-' }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
         
         <div v-if="activeTab === 'actions'">
           <div class="flex justify-between items-center mb-4">
@@ -639,74 +701,64 @@
     </Dialog>
 
     <!-- Candidate Assignment Modal with Frappe UI Dialog -->
-    <Dialog
-      v-model="showCandidateModal"
-      :options="{
-        size: 'md'
-      }"
-    >
-      <template #body>
-        <div class="flex justify-between items-center mb-4 px-6 pt-6">
-          <h3 class="text-lg font-medium text-gray-900">
-            {{ __('Assign Profile to Campaign') }}
-          </h3>
-          <Button variant="outline" theme="gray" @click="closeCandidateModal" class="flex items-center">
-           <FeatherIcon name="x" class="w-4 h-4" />
+<Dialog v-model="showCandidateModal" :options="{ size: 'md' }">
+  <template #body>
+    <div class="flex justify-between items-center mb-4 px-6 pt-6">
+      <h3 class="text-lg font-medium text-gray-900">
+        {{ candidateFormData.name ? __('Edit Manual Talent') : __('Add Manual Talent') }}
+      </h3>
+      <Button variant="outline" theme="gray" @click="closeCandidateModal" class="flex items-center">
+        <FeatherIcon name="x" class="w-4 h-4" />
+      </Button>
+    </div>
+
+    <div class="px-6 pb-6">
+      <div class="space-y-4">
+        <!-- Full Name -->
+        <FormControl
+          v-model="candidateFormData.full_name"
+          type="text"
+          :label="__('Full Name')"
+          :required="true"
+          :placeholder="__('Enter full name')"
+        />
+
+        <!-- Email -->
+        <FormControl
+          v-model="candidateFormData.email"
+          type="email"
+          :label="__('Email')"
+          :placeholder="__('Enter email address')"
+        />
+
+        <!-- Phone -->
+        <FormControl
+          v-model="candidateFormData.phone_number"
+          type="text"
+          :label="__('Phone Number')"
+          :placeholder="__('Enter phone number')"
+        />
+
+        <!-- Buttons -->
+        <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <Button variant="outline" theme="gray" @click="closeCandidateModal">
+            {{ __('Cancel') }}
+          </Button>
+          <Button
+            variant="solid"
+            theme="gray"
+            :loading="savingCandidate"
+            :disabled="!candidateFormData.full_name"
+            @click="assignCandidate"
+          >
+            {{ candidateFormData.name ? __('Update') : __('Save') }}
           </Button>
         </div>
-        <div class="px-6 pb-6">
-          <div class="space-y-4">
-            <!-- Candidate Selection -->
-            <FormControl
-              v-model="candidateFormData.talent_id"
-              type="select"
-              :label="__('Select Candidate')"
-              :required="true"
-              :options="[{ label: __('Choose a candidate'), value: '' }, ...availableCandidates]"
-              :help="availableCandidates.length === 0 ? (campaign.target_segment ? __('No available candidates found. All candidates from the target segment are already assigned.') : __('No available candidates found.')) : ''"
-            />
+      </div>
+    </div>
+  </template>
+</Dialog>
 
-            <!-- Status -->
-            <FormControl
-              v-model="candidateFormData.status"
-              type="select"
-              :label="__('Initial Status')"
-              :required="true"
-              :options="statusOptions"
-            />
-
-            <!-- Starting Step -->
-            <FormControl
-              v-model="candidateFormData.current_step_order"
-              type="select"
-              :label="__('Starting Step')"
-              :required="true"
-              :help="campaignSteps.length === 0 ? __('No campaign steps found. Please add steps first.') : ''"
-            />
-
-            <!-- Buttons -->
-            <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-              <Button
-                variant="outline"
-                theme="gray"
-                @click="closeCandidateModal"
-              >
-                {{ __('Cancel') }}
-              </Button>
-              <Button
-                variant="solid"
-                theme="gray"
-                :loading="savingCandidate"
-                :disabled="!candidateFormData.talent_id || campaignSteps.length === 0"
-                @click="assignCandidate"
-              >
-                {{ __('Assign Candidate') }}
-              </Button>
-            </div>
-          </div>
-        </div>
-      </template>
-    </Dialog>
 
     <!-- Action Modal with Frappe UI Dialog -->
     <Dialog
@@ -818,19 +870,13 @@ import {
   actionService,
 } from '../services/universalService'
 // import { campaignStepService as campaignStepServiceOriginal } from '../services/campaignStepService'
-import { Dialog, Breadcrumbs, Button, FormControl } from 'frappe-ui'
+import { Dialog, Breadcrumbs, Button, FormControl, call } from 'frappe-ui'
 import CampaignForm from '@/components/campaign/CampaignForm.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import moment from 'moment'
 
 const route = useRoute()
 const router = useRouter()
-
-// Breadcrumbs
-const breadcrumbs = computed(() => [
-    { label: __('Campaigns'), route: { name: 'CampaignManagement' } },
-    { label: campaign.campaign_name || __('Loading...'), route: { name: 'CampaignDetailView' } },
-])
 
 // State
 const activeTab = ref('steps')
@@ -858,6 +904,34 @@ const savingStep = ref(false)
 const savingCandidate = ref(false)
 const assigningAll = ref(false)
 
+const miraCandidates = ref([])
+const loadingMiraCandidates = ref(false)
+
+const talentCampaignRecords = ref([])  // dữ liệu resolved từ mira_talent_campaign
+
+const breadcrumbs = computed(() => [
+    { label: __('Campaigns'), route: { name: 'CampaignManagement' } },
+    { label: campaign.value.campaign_name || __('Loading...'), route: { name: 'CampaignDetailView' } },
+])
+
+console.log(campaign)
+
+function normalizeTalentCampaign(raw) {
+  if (!raw) return []
+  let parsed
+  try { parsed = JSON.parse(raw) } catch { return [] }
+  if (Array.isArray(parsed)) return parsed
+  if (parsed.type && parsed.records) return [parsed]
+  return []
+}
+
+const campaignSelection = computed(() => normalizeTalentCampaign(campaign.value?.mira_talent_campaign))
+const isManualCampaign = computed(() => {
+  // true nếu record đang render có source manual (xử lý trong template row)
+  return (record) => record.__source === 'manual'
+})
+
+
 // Form data
 const stepFormData = reactive({
   name: '',
@@ -870,10 +944,10 @@ const stepFormData = reactive({
 })
 
 const candidateFormData = reactive({
-  talent_id: '',
-  campaign_id: route.params.id,
-  status: 'ACTIVE',
-  current_step_order: 1
+  name: '',            // optional: để detect edit
+  full_name: '',
+  email: '',
+  phone_number: ''
 })
 
 const actionFormData = reactive({
@@ -885,6 +959,41 @@ const actionFormData = reactive({
   executed_at: '',
   notes: ''
 })
+
+const loadTalentCampaign = async () => {
+  try {
+    const blocks = normalizeTalentCampaign(campaign.value.mira_talent_campaign)
+    let all = []
+
+    for (const block of blocks) {
+      if (block.type === "manual") {
+        all.push(...block.records.map(r => ({ ...r, __source: "manual" })))
+      } else if (block.type === "mira_talent" || block.type === "mira_segment_talent") {
+        const res = await call("frappe.client.get_list", {
+          doctype: "Mira Talent",
+          fields: ["name", "full_name", "contact_email", "contact_phone"],
+          filters: [["name", "in", block.records]],
+          limit_page_length: 1000,
+        })
+        all.push(...res.map(r => ({ ...r, __source: block.type })))
+      } else if (block.type === "mira_prospect") {
+        const res = await call("frappe.client.get_list", {
+          doctype: "Mira Prospect",
+          fields: ["name", "full_name", "email", "phone_number"],
+          filters: [["name", "in", block.records]],
+          limit_page_length: 1000,
+        })
+        all.push(...res.map(r => ({ ...r, __source: block.type })))
+      }
+    }
+
+    talentCampaignRecords.value = all
+  } catch (err) {
+    console.error("Error loading Talent Campaign:", err)
+    talentCampaignRecords.value = []
+  }
+}
+
 
 // Loading states for actions
 const savingAction = ref(false)
@@ -923,6 +1032,11 @@ const tabs = computed(() => [
     key: 'candidates',
     label: __('Assigned Profiles'),
     count: candidateCampaigns.value.length
+  },
+  {
+    key: 'mira_candidates',
+    label: __('Mira Candidates'),
+    count: miraCandidates.value.length   // 👈 tab mới
   },
   {
     key: 'actions',
@@ -995,6 +1109,7 @@ const loadCampaign = async () => {
         await loadTargetSegment()
       }
     }
+    await loadTalentCampaign()
   } catch (error) {
     console.error('Error loading campaign:', error)
   } finally {
@@ -1157,15 +1272,23 @@ const closeStepModal = () => {
 }
 
 // Candidate methods
-const openCandidateModal = () => {
+const openCandidateModal = (record = null) => {
+  // reset trước
   Object.keys(candidateFormData).forEach(key => {
     candidateFormData[key] = ''
   })
-  candidateFormData.campaign_id = route.params.id
-  candidateFormData.status = 'ACTIVE'
-  candidateFormData.current_step_order = 1
+
+  if (record) {
+    // record từ talentCampaignRecords (manual)
+    candidateFormData.name = record.name
+    candidateFormData.full_name = record.full_name
+    candidateFormData.email = record.email || ''
+    candidateFormData.phone_number = record.phone_number || ''
+  }
+
   showCandidateModal.value = true
 }
+
 
 const closeCandidateModal = () => {
   showCandidateModal.value = false
@@ -1189,10 +1312,40 @@ const closeActionModal = () => {
   })
 }
 
+const loadMiraCandidates = async () => {
+  loadingMiraCandidates.value = true
+  try {
+    const res = await call("frappe.client.get_list", {
+      doctype: "Mira Candidate",
+      fields: [
+        "name",
+        "full_name",
+        "email",
+        "phone",
+        "avatar",
+        "headline",
+        "source",
+        "skills",
+        "status",
+        "last_interaction"
+      ],
+      filters: { campaign_id: route.params.id },
+      limit_page_length: 100
+    })
+    miraCandidates.value = res
+  } catch (err) {
+    console.error("Error loading Mira Candidates:", err)
+    miraCandidates.value = []
+  } finally {
+    loadingMiraCandidates.value = false
+  }
+}
+
 // Load initial data
 onMounted(() => {
   loadCampaign()
   loadCampaignSteps()
+  loadMiraCandidates()
   loadCandidateCampaigns()
   loadActions()
   loadAvailableCandidates()
@@ -1257,10 +1410,53 @@ const saveStep = async () => {
   }
 }
 
+// Thêm mới hoặc update
+const assignCandidate = async () => {
+  savingCandidate.value = true
+  try {
+    let current = normalizeTalentCampaign(campaign.value.mira_talent_campaign)
 
-const assignCandidate = () => {
-  // TODO: Implement assign candidate
+    let manualBlock = current.find(b => b.type === "manual")
+    if (!manualBlock) {
+      manualBlock = { type: "manual", records: [] }
+      current.push(manualBlock)
+    }
+
+    if (candidateFormData.name) {
+      // edit
+      const idx = manualBlock.records.findIndex(r => r.name === candidateFormData.name)
+      if (idx !== -1) {
+        manualBlock.records[idx] = { ...candidateFormData }
+      }
+    } else {
+      // add mới
+      manualBlock.records.push({
+        name: "MTL-" + Date.now(),
+        full_name: candidateFormData.full_name,
+        email: candidateFormData.email,
+        phone_number: candidateFormData.phone_number
+      })
+    }
+
+    await call("frappe.client.set_value", {
+      doctype: "Campaign",
+      name: route.params.id,
+      fieldname: "mira_talent_campaign",
+      value: JSON.stringify(current)
+    })
+
+    campaign.value.mira_talent_campaign = JSON.stringify(current)
+    await loadTalentCampaign()
+    closeCandidateModal()
+  } catch (err) {
+    console.error("Error saving manual talent:", err)
+  } finally {
+    savingCandidate.value = false
+  }
 }
+
+
+
 
 const saveAction = () => {
   // TODO: Implement save action
@@ -1294,9 +1490,37 @@ const viewCandidateDetails = (candidate) => {
   // TODO: Implement view candidate details
 }
 
-const unassignCandidate = (candidate) => {
-  // TODO: Implement unassign candidate
+const unassignCandidate = async (record) => {
+  try {
+    let current = normalizeTalentCampaign(campaign.value.mira_talent_campaign)
+
+    if (record.__source === "manual") {
+      let manualBlock = current.find(b => b.type === "manual")
+      if (manualBlock) {
+        manualBlock.records = manualBlock.records.filter(r => r.name !== record.name)
+      }
+    } else {
+      let block = current.find(b => b.type === record.__source)
+      if (block) {
+        block.records = block.records.filter(id => id !== record.name)
+      }
+    }
+
+    await call("frappe.client.set_value", {
+      doctype: "Campaign",
+      name: route.params.id,
+      fieldname: "mira_talent_campaign",
+      value: JSON.stringify(current)
+    })
+
+    campaign.value.mira_talent_campaign = JSON.stringify(current)
+    await loadTalentCampaign()
+  } catch (err) {
+    console.error("Error unassigning candidate:", err)
+  }
 }
+
+
 
 const viewActionDetails = (action) => {
   // TODO: Implement view action details

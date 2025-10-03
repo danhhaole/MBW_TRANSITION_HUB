@@ -450,46 +450,89 @@
       </div>
     </div>
 
-    <!-- Lựa chọn nguồn -->
-    <div class="flex space-x-6 mb-4">
-      <label class="flex items-center space-x-2">
-        <input type="radio" value="mira_talent" v-model="searchSource" />
-        <span>Mira Talent</span>
-      </label>
-      <label class="flex items-center space-x-2">
-        <input type="radio" value="mira_prospect" v-model="searchSource" />
-        <span>Mira Prospect</span>
-      </label>
-      <label class="flex items-center space-x-2">
-        <input type="radio" value="mira_segment_talent" v-model="searchSource" />
-        <span>Mira Talent (Theo Segment)</span>
-      </label>
-    </div>
+<!-- Chọn nguồn -->
+<div class="flex space-x-6 mb-4">
+  <label class="flex items-center space-x-2">
+    <input type="radio" value="mira_talent" v-model="searchSource" />
+    <span>Mira Talent</span>
+  </label>
+  <label class="flex items-center space-x-2">
+    <input type="radio" value="mira_prospect" v-model="searchSource" />
+    <span>Mira Prospect</span>
+  </label>
+  <label class="flex items-center space-x-2">
+    <input type="radio" value="mira_segment_talent" v-model="searchSource" />
+    <span>Mira Talent (Theo Segment)</span>
+  </label>
+</div>
 
-    <!-- Search box -->
-    <div v-if="searchSource" class="mb-4">
-      <input
-        v-model="searchKeyword"
-        type="text"
-        placeholder="Search candidates..."
-        class="w-full border rounded px-3 py-2 text-sm"
-        @input="fetchRecords"
-      />
-    </div>
+<!-- Nếu chọn Mira Segment thì hiển thị autocomplete -->
+<div v-if="searchSource === 'mira_segment_talent'" class="mb-4">
+  <Link
+    doctype="Mira Segment"
+    v-model="selectedSegment"
+    :placeholder="__('Chọn Segment...')"
+  />
+</div>
+
+<!-- Search box (luôn có khi đã chọn nguồn) -->
+<div v-if="searchSource" class="mb-4">
+  <input
+    v-model="searchKeyword"
+    type="text"
+    placeholder="Search candidates..."
+    class="w-full border rounded px-3 py-2 text-sm"
+  />
+</div>
 
     <!-- Danh sách ứng viên -->
-    <div v-if="records.length" class="mt-2 max-h-60 overflow-y-auto border rounded p-2 bg-white">
-      <ul class="space-y-2">
-        <li v-for="r in records" :key="r.name" class="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            :value="r.name"
-            v-model="selectedCandidates"
-          />
-          <span>{{ r.full_name }}</span>
-        </li>
-      </ul>
+    <div v-if="records.length" class="mt-2 max-h-72 overflow-y-auto grid grid-cols-2 gap-3">
+  <div
+    v-for="r in records"
+    :key="r.name"
+    class="cursor-pointer border rounded-lg p-3 bg-white shadow-sm flex items-center space-x-3 transition-all"
+    :class="{
+      'border-blue-500 ring-2 ring-blue-200': selectedCandidates.includes(r.name),
+      'hover:border-gray-300': !selectedCandidates.includes(r.name),
+    }"
+    @click="toggleCandidate(r.name)"
+  >
+    <input
+      type="checkbox"
+      :value="r.name"
+      v-model="selectedCandidates"
+      class="hidden"
+    />
+    <div
+      class="w-5 h-5 flex items-center justify-center border rounded-full"
+      :class="selectedCandidates.includes(r.name) ? 'bg-blue-500 border-blue-500 text-white' : 'border-gray-300'"
+    >
+      <svg
+        v-if="selectedCandidates.includes(r.name)"
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-3 w-3"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M16.707 5.293a1 1 0 010 1.414L8.414 15l-4.121-4.121a1 1 0 111.414-1.414L8.414 12.172l7.293-7.293a1 1 0 011.414 0z"
+          clip-rule="evenodd"
+        />
+      </svg>
     </div>
+    <div class="flex flex-col gap-2">
+
+      <span class="text-sm font-medium">{{ r.full_name }}</span>
+      <span class="text-sm text-gray-500">{{ r.name }}</span>
+    </div>
+  </div>
+</div>
+<!-- Trạng thái rỗng -->
+<div v-else-if="searchSource" class="mt-4 text-center text-gray-500 text-sm border rounded p-4 bg-gray-50">
+  {{ __("Không có ứng viên nào, vui lòng thử lại hoặc chọn Segment khác.") }}
+</div>
+
   </div>
 </div>
 
@@ -970,7 +1013,6 @@
                 variant="solid"
                 theme="gray"
                 @click="nextStep"
-                :disabled="campaignSteps.length === 0 && !selectedTemplate"
               >
                 {{ __("Continue to Review") }}
               </Button>
@@ -1486,6 +1528,7 @@ import { call } from "frappe-ui";
 import PoolConfig from "./PoolConfig.vue";
 import FileConfig from "./FileConfig.vue";
 import ImageUploader from "@/components/Controls/ImageUploader.vue";
+import Link from "@/components/Controls/Link.vue";
 
 import {
   campaignService,
@@ -1499,6 +1542,7 @@ import {
   getJobOpeningDetails,
 } from "@/services/jobOpeningService";
 import candidateDataSourceRepository from "@/repositories/candidateDataSourceRepository";
+import { debounce } from "@/utils/debounce";
 
 // Props & Emits
 const props = defineProps({
@@ -1525,6 +1569,14 @@ const currentStep = ref(1);
 const loading = ref(false);
 const activating = ref(false);
 
+//chọn nguồn
+const searchSource = ref(null);
+const searchKeyword = ref("");
+const selectedSegment = ref("");
+const records = ref([]);
+const selectedCandidates = ref([]);
+const miraTalentCampaign = ref({ type: null, records: [] });
+
 // Form data
 const campaignData = ref({
   campaign_name: "",
@@ -1539,6 +1591,7 @@ const campaignData = ref({
   job_opening: "", // Changed from job_opening_id to job_opening
   start_date: "", // datetime-local
   end_date: "", // datetime-local
+  mira_talent_campaign: "", // JSON string for MIRA Talent source
 });
 
 const selectedSource = ref(props.preselectedSegment ? "search" : "");
@@ -1553,11 +1606,6 @@ const dataSourceSelectionLevel = ref(0);
 
 
 // search start
-const searchSource = ref(null);
-const searchKeyword = ref("");
-const records = ref([]);
-const selectedCandidates = ref([]);
-const miraTalentCampaign = ref({ type: null, records: [] });
 
 // Fetch data
 async function fetchRecords() {
@@ -1571,15 +1619,22 @@ async function fetchRecords() {
   } else if (searchSource.value === "mira_prospect") {
     doctype = "Mira Prospect";
   } else if (searchSource.value === "mira_segment_talent") {
+    if (!selectedSegment.value) {
+      records.value = []; // chưa chọn segment thì clear list
+      return;
+    }
     doctype = "Mira Talent";
-    filters = { segment_id: "123" }; // TODO: dynamic segment_id
+    filters = { segment_id: selectedSegment.value };
   }
 
   try {
+    const baseFilters = filters ? [filters] : [];
     const res = await call("frappe.client.get_list", {
       doctype,
       fields: ["name", "full_name"],
-      filters: searchKeyword.value ? [["full_name", "like", `%${searchKeyword.value}%`]] : filters,
+      filters: searchKeyword.value
+        ? [...baseFilters, ["full_name", "like", `%${searchKeyword.value}%`]]
+        : baseFilters,
       limit_page_length: 50,
     });
     records.value = res;
@@ -1589,20 +1644,59 @@ async function fetchRecords() {
   }
 }
 
-// Watch khi đổi nguồn
+// ✅ bọc fetchRecords bằng debounce
+const fetchRecordsDebounced = debounce(fetchRecords, 400);
+
+function toggleCandidate(name) {
+  if (selectedCandidates.value.includes(name)) {
+    selectedCandidates.value = selectedCandidates.value.filter((c) => c !== name);
+  } else {
+    selectedCandidates.value = [...selectedCandidates.value, name];
+  }
+}
+
+// Reset khi đổi nguồn
 watch(searchSource, () => {
   selectedCandidates.value = [];
+  selectedSegment.value = ""; // ✅ reset cả segment
+  records.value = [];
   miraTalentCampaign.value = { type: searchSource.value, records: [] };
-  fetchRecords();
+
+  if (searchSource.value !== "mira_segment_talent") {
+    fetchRecords();
+  }
 });
 
-// Watch khi chọn ứng viên
-watch(selectedCandidates, (newVal) => {
-  miraTalentCampaign.value = {
-    type: searchSource.value,
-    records: newVal,
-  };
-  console.log("miraTalentCampaign JSON", miraTalentCampaign.value);
+// Watch segment để query mới
+watch(selectedSegment, (val) => {
+  if (searchSource.value === "mira_segment_talent" && val) {
+    selectedCandidates.value = [];
+    records.value = [];
+    fetchRecords();
+  }
+});
+
+
+// Watch candidates để update JSON
+watch(
+  selectedCandidates,
+  (newVal) => {
+    miraTalentCampaign.value = {
+      type: searchSource.value,
+      records: newVal,
+      ...(searchSource.value === "mira_segment_talent" && selectedSegment.value
+        ? { segment_id: selectedSegment.value }
+        : {}),
+    };
+    console.log("miraTalentCampaign JSON", miraTalentCampaign.value);
+  },
+  { deep: true }
+);
+
+// Watch searchKeyword để trigger debounced fetch
+watch(searchKeyword, () => {
+  if (!searchSource.value) return;
+  fetchRecordsDebounced();
 });
 
 // search end
@@ -1859,6 +1953,7 @@ const canProceed = computed(() => {
   }
   // Bước 3: luôn cho phép qua, không bắt buộc chọn segment
   if (currentStep.value === 3) return true;
+  if (currentStep.value === 4) return true; // Chưa bắt buộc có bước nào
   // Bước 6: cần chọn job opening
   // if (currentStep.value === 6) return !!selectedJobOpeningId.value
   return true;
@@ -2692,6 +2787,8 @@ const finalizeCampaign = async () => {
         ? new Date(campaignData.value.end_date).toISOString()
         : null;
 
+        console.log(miraTalentCampaign.value);
+
       // First update the campaign with basic info
       const updatePayload = {
         campaign_name: campaignData.value.campaign_name,
@@ -2703,6 +2800,9 @@ const finalizeCampaign = async () => {
         source_type: campaignData.value.source_type || "",
         source_file: campaignData.value.source_file || "",
         source_config: campaignData.value.source_config || null,
+        mira_talent_campaign: stringifyIfNeeded(
+         miraTalentCampaign.value || null
+        ),
         // Add social media fields
         social_page_id: configData.value.socialConfig?.page_id || "",
         social_page_name:
@@ -2718,6 +2818,7 @@ const finalizeCampaign = async () => {
               ? JSON.stringify(configData.value.socialConfig.image) 
               : configData.value.socialConfig.image)
           : "",
+        
       };
 
       // Save or update campaign steps
@@ -2918,6 +3019,13 @@ const finalizeCampaign = async () => {
         configData.value.socialConfig?.image ||
         draftCampaign.value.social_media_images ||
         "",
+mira_talent_campaign: JSON.stringify(
+  Array.isArray(miraTalentCampaign.value)
+    ? miraTalentCampaign.value
+    : miraTalentCampaign.value
+      ? [miraTalentCampaign.value]
+      : []
+),
     };
 
     console.log(" Campaign update payload:", campaignUpdatePayload);
