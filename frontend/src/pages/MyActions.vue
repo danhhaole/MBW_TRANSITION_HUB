@@ -13,7 +13,7 @@
             class="px-3 py-1.5 rounded-md text-sm"
             :class="activeTab==='pending' ? 'bg-black text-white' : 'bg-white text-gray-700 border hover:text-gray-900'"
             @click="setTab('pending')"
-          >{{ __('All tasks') }}</button>
+          >{{ __('Pedding') }}</button>
           <button
             class="px-3 py-1.5 rounded-md text-sm"
             :class="activeTab==='completed' ? 'bg-black text-white' : 'bg-white text-gray-700 border hover:text-gray-900'"
@@ -42,19 +42,19 @@
                           <svg viewBox="0 0 24 24" width="16" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 text-blue-500"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
                       </div>
                       <div>
-                        <div class="text-gray-900 font-medium">{{ item.campaign_step_name || item.campaign_step }}</div>
-                        <div class="text-xs text-gray-500">{{ item.campaign_name }}</div>
+                        <div class="text-gray-900 text-base font-medium">{{ item.campaign_step_name || item.campaign_step }}</div>
+                        <div class="text-base text-gray-500">{{ item.campaign_name }}</div>
                       </div>
                     </div>
                   </td>
                   <td class="px-6 py-4">
-                    <span :class="badgeClass(labelStatus(item.status))" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">{{ labelStatus(item.status) }}</span>
+                    <span :class="badgeClass(labelStatus(item.status))" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-base font-medium">{{ labelStatus(item.status) }}</span>
                   </td>
-                  <td class="px-6 py-4">{{ formatDate(item.creation) }}</td>
+                  <td class="text-base px-6 py-4">{{ formatDate(item.creation) }}</td>
                   <td class="px-6 py-4">
                     <div class="flex items-center gap-2">
                       <button
-                        class="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                        class="inline-flex items-center px-3 py-1.5 rounded-md text-base font-medium text-white bg-blue-600 hover:bg-blue-700"
                         @click="activeTab === 'completed' ? openView(item) : openEdit(item)"
                       >
                         {{ activeTab === 'completed' ? __('Xem chi tiết') : __('Cập nhật') }}

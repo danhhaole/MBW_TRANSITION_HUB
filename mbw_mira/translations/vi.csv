@@ -1425,3 +1425,4 @@ yesterday,Hôm qua
 "⚠️ No class found for doctype: {0}, it is mandatory to have a class for the parent doctype. it can be empty, but it should be present.","Không tìm thấy lớp nào cho doctype: {0}, bắt buộc phải có một lớp cho cha mẹ doctype. Nó có thể trống, nhưng nó nên có mặt."
 ⚠️ No data found for parent field: {0},Không tìm thấy dữ liệu cho trường cha: {0}
 ⚠️ No row found for idx: {0} in parent field: {1},⚠ Không tìm thấy hàng cho idx: {0} trong trường cha: {1}
+Create New Request Job,Thêm mới tin tuyển dụng

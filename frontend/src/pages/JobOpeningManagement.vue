@@ -167,7 +167,7 @@
               <div class="mx-auto w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6"/></svg>
               </div>
-              <div class="mt-3 font-medium">{{ __('Create New Request') }}</div>
+              <div class="mt-3 font-medium">{{ __('Create New Request Job') }}</div>
               <div class="text-xs text-gray-500">{{ __('Start a new jobopening') }}</div>
             </div>
           </div>
@@ -301,7 +301,7 @@
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                   <FormControl v-model="form.approval_status" type="select" :label="__('Status')" :options="statusOptions" />
-                  <FormControl v-model="form.owner_id" type="select" :label="__('Owner')" :options="ownerOptions" />
+                  <!-- <FormControl v-model="form.owner_id" type="select" :label="__('Owner')" :options="ownerOptions" /> -->
                 </div>
               </div>
             </div>
@@ -766,6 +766,9 @@ const openCreateDialog = () => {
 const openCreateForm = () => {
   Object.keys(form).forEach(k => delete form[k])
   
+  // Set default status to Draft
+  form.approval_status = 'Draft'
+  
   // Set default dates
   const now = new Date()
   
@@ -787,7 +790,8 @@ const openCreateForm = () => {
   form.posting_date = formatDate(postingDate)
   form.closing_date = formatDate(closingDate)
   
-  console.log('Setting dates:', {
+  console.log('Setting default values:', {
+    status: form.approval_status,
     posting: form.posting_date,
     closing: form.closing_date
   })

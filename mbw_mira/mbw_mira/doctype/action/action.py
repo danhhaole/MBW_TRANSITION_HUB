@@ -191,8 +191,8 @@ def get_my_actions(page=1, limit=20, search="", assigned_to="@me", include_unass
         # Pending: chỉ lấy PENDING_MANUAL (và SCHEDULED nếu include_scheduled_as_pending)
         pending_filters = common_filters.copy()
         statuses_pending = ["PENDING_MANUAL"]
-        if cint(include_scheduled_as_pending):
-            statuses_pending.append("SCHEDULED")
+        # if cint(include_scheduled_as_pending):
+        #     statuses_pending.append("SCHEDULED")
         pending_filters["status"] = ["in", statuses_pending]
         
         # Xử lý search cho pending

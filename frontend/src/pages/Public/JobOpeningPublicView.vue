@@ -140,7 +140,7 @@
 										{{
 											isDeadlinePassed
 												? __("Deadline passed")
-												: __("Apply now")
+												: __("Leave your contact information")
 										}}
 									</span>
 								</button>
