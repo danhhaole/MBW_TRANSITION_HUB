@@ -436,26 +436,64 @@
                 </div>
 
                 <!-- Search Configuration -->
+                <!-- CampaignWizard.vue -->
                 <div v-else-if="selectedSource === 'search'">
-                  <p class="text-sm text-gray-600 mb-4">
-                    {{ __("You'll manually set up your search in the next step.") }}
-                  </p>
-                  <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <div class="flex">
-                      <FeatherIcon
-                        name="info"
-                        class="h-5 w-5 text-blue-400 mt-0.5 mr-2"
-                      />
-                      <div class="text-sm text-blue-800">
-                        {{
-                          __(
-                            "In the next step, you'll choose the talent segments to search manually."
-                          )
-                        }}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+  <p class="text-sm text-gray-600 mb-4">
+    {{ __("You'll manually set up your search in the next step.") }}
+  </p>
+
+  <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+    <div class="flex mb-4">
+      <FeatherIcon name="info" class="h-5 w-5 text-blue-400 mt-0.5 mr-2" />
+      <div class="text-sm text-blue-800">
+        {{ __("In the next step, you'll choose the talent segments to search manually.") }}
+      </div>
+    </div>
+
+    <!-- Lựa chọn nguồn -->
+    <div class="flex space-x-6 mb-4">
+      <label class="flex items-center space-x-2">
+        <input type="radio" value="mira_talent" v-model="searchSource" />
+        <span>Mira Talent</span>
+      </label>
+      <label class="flex items-center space-x-2">
+        <input type="radio" value="mira_prospect" v-model="searchSource" />
+        <span>Mira Prospect</span>
+      </label>
+      <label class="flex items-center space-x-2">
+        <input type="radio" value="mira_segment_talent" v-model="searchSource" />
+        <span>Mira Talent (Theo Segment)</span>
+      </label>
+    </div>
+
+    <!-- Search box -->
+    <div v-if="searchSource" class="mb-4">
+      <input
+        v-model="searchKeyword"
+        type="text"
+        placeholder="Search candidates..."
+        class="w-full border rounded px-3 py-2 text-sm"
+        @input="fetchRecords"
+      />
+    </div>
+
+    <!-- Danh sách ứng viên -->
+    <div v-if="records.length" class="mt-2 max-h-60 overflow-y-auto border rounded p-2 bg-white">
+      <ul class="space-y-2">
+        <li v-for="r in records" :key="r.name" class="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            :value="r.name"
+            v-model="selectedCandidates"
+          />
+          <span>{{ r.full_name }}</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
 
                 <!-- DataSource Final Configuration -->
                 <div v-else-if="selectedSource === 'datasource' && selectedDataSourceId">
@@ -1512,6 +1550,62 @@ const loadingDataSources = ref(false);
 
 // Track data source selection level: 0=source, 1=type, 2=specific
 const dataSourceSelectionLevel = ref(0);
+
+
+// search start
+const searchSource = ref(null);
+const searchKeyword = ref("");
+const records = ref([]);
+const selectedCandidates = ref([]);
+const miraTalentCampaign = ref({ type: null, records: [] });
+
+// Fetch data
+async function fetchRecords() {
+  if (!searchSource.value) return;
+
+  let doctype = "";
+  let filters = {};
+
+  if (searchSource.value === "mira_talent") {
+    doctype = "Mira Talent";
+  } else if (searchSource.value === "mira_prospect") {
+    doctype = "Mira Prospect";
+  } else if (searchSource.value === "mira_segment_talent") {
+    doctype = "Mira Talent";
+    filters = { segment_id: "123" }; // TODO: dynamic segment_id
+  }
+
+  try {
+    const res = await call("frappe.client.get_list", {
+      doctype,
+      fields: ["name", "full_name"],
+      filters: searchKeyword.value ? [["full_name", "like", `%${searchKeyword.value}%`]] : filters,
+      limit_page_length: 50,
+    });
+    records.value = res;
+  } catch (e) {
+    console.error("Error fetching records", e);
+    records.value = [];
+  }
+}
+
+// Watch khi đổi nguồn
+watch(searchSource, () => {
+  selectedCandidates.value = [];
+  miraTalentCampaign.value = { type: searchSource.value, records: [] };
+  fetchRecords();
+});
+
+// Watch khi chọn ứng viên
+watch(selectedCandidates, (newVal) => {
+  miraTalentCampaign.value = {
+    type: searchSource.value,
+    records: newVal,
+  };
+  console.log("miraTalentCampaign JSON", miraTalentCampaign.value);
+});
+
+// search end
 
 // Data for form submission
 const configData = ref({
