@@ -361,7 +361,7 @@
 		<Dialog v-model="showApplyModal" :options="{ size: 'xl' }" :disableOutsideClickToClose="true">
 			<template #body-title>
 				<h3 class="text-xl font-semibold">
-					{{ __("Apply for position") }}: {{ jobData?.job_title }}
+					{{ __("Jobopening name") }}: {{ jobData?.job_title }}
 				</h3>
 			</template>
 			<template #body-content>

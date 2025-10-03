@@ -262,11 +262,15 @@
       </template>
     </Dialog>
   </div>
+  
+  <!-- Upload Excel Modal -->
+  <UploadExcelCandidateModal v-model="showUploadExcelModal" />
 </template>
 
 <script setup>
 import { ref, reactive, onMounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
+import UploadExcelCandidateModal from '@/components/UploadExcelCandidateModal.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import Loading from '@/components/Loading.vue'
 import { Breadcrumbs, Button, Select, Dialog, toast } from 'frappe-ui'
@@ -274,6 +278,7 @@ import { call } from 'frappe-ui'
 
 const router = useRouter()
 const showCreateOptions = ref(false)
+const showUploadExcelModal = ref(false)
 const breadcrumbs = [{ label: __('Candidates'), route: { name: 'CandidateManagementSimple' } }]
 
 const loading = ref(false)
@@ -439,9 +444,8 @@ function closeCreateDialog() {
 }
 
 function openUploadExcelDialog() {
-  console.log('Excel upload dialog would open here')
   showCreateOptions.value = false
-  toast.success('Excel upload feature will be implemented here')
+  showUploadExcelModal.value = true
 }
 
 function resetForm() {
