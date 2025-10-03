@@ -15,7 +15,7 @@ export const getCandidatePools = (params = {}) => {
     order_by = "modified desc"
   } = params
 
-  return call('mbw_mira.mbw_mira.mira_talent.mira_talent.get_candidate_pools_paginated', {
+  return call('mbw_mira.mbw_mira.doctype.mira_talent.mira_talent.get_candidate_pools_paginated', {
     page,
     limit,
     search,
@@ -26,12 +26,12 @@ export const getCandidatePools = (params = {}) => {
 
 // Get candidate pool statistics
 export const getCandidatePoolStats = () => {
-  return call('mbw_mira.mbw_mira.mira_talent.mira_talent.get_candidate_pool_stats')
+  return call('mbw_mira.mbw_mira.doctype.mira_talent.mira_talent.get_candidate_pool_stats')
 }
 
 // Search candidate pools
 export const searchCandidatePools = (query = "", limit = 10) => {
-  return call('mbw_mira.mbw_mira.mira_talent.mira_talent.search_candidate_pools', {
+  return call('mbw_mira.mbw_mira.doctype.mira_talent.mira_talent.search_candidate_pools', {
     query,
     limit
   })
@@ -39,14 +39,14 @@ export const searchCandidatePools = (query = "", limit = 10) => {
 
 // Get candidate pool by name
 export const getCandidatePoolByName = (name) => {
-  return call('mbw_mira.mbw_mira.mira_talent.mira_talent.get_candidate_pool_by_name', {
+  return call('mbw_mira.mbw_mira.doctype.mira_talent.mira_talent.get_candidate_pool_by_name', {
     name
   })
 }
 
 // Get filter options
 export const getCandidatePoolFilterOptions = () => {
-  return call('mbw_mira.mbw_mira.mira_talent.mira_talent.get_candidate_pool_filter_options')
+  return call('mbw_mira.mbw_mira.doctype.mira_talent.mira_talent.get_candidate_pool_filter_options')
 }
 
 export default {

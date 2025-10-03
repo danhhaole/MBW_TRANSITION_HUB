@@ -226,8 +226,8 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50):
             except Exception as e:
                 frappe.log_error(f"Lỗi khi đọc criteria JSON: {e}")
                 return []
-
-        if not criteria_skills:
+        
+        if not criteria_skills and not criteria_tags and not criteria_source:
             frappe.throw(
                 f"Không tìm thấy kỹ năng trong tiêu chí segment '{segment_name}'"
             )
@@ -235,38 +235,40 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50):
         # --- Lấy danh sách ứng viên ---
         talent_profiles = frappe.get_all(
             "Mira Talent",
-            filters={"status": "NEW"},
-            fields=["name", "email", "full_name", "skills","tags","source"],
+            # filters={"status": "NEW"},
+            fields=["name", "contact_email", "full_name", "skills","tags","source"],
         )
+        
 
         results = []
 
         for c in talent_profiles:
             talent_skills = c.get("skills")
-            talent_tags = c.get("skills")
+            talent_tags = c.get("tags")
             talent_source = c.get("source")
-            if not talent_skills or not talent_tags or not talent_source:
-                continue
+            # if not talent_skills or not talent_tags or not talent_source:
+            #     continue
 
+            
             # Chuyển skills thành list nếu là chuỗi
-            if isinstance(talent_skills, str):
-                candidate_skills = [unquote(s.strip().lower()) for s in talent_skills.split(",")]
-            elif isinstance(talent_skills, list):
-                candidate_skills = [unquote(s.strip().lower()) for s in talent_skills]
-            else:
-                continue
+            if talent_skills:
+                if isinstance(talent_skills, str):
+                    candidate_skills = [unquote(s.strip().lower()) for s in talent_skills.split(",")]
+                elif isinstance(talent_skills, list):
+                    candidate_skills = [unquote(s.strip().lower()) for s in talent_skills]
+            
+            if talent_tags:
+                if isinstance(talent_tags, str):
+                    candidate_tags = [unquote(s.strip().lower()) for s in talent_tags.split(",")]
+                elif isinstance(talent_tags, list):
+                    candidate_tags = [unquote(s.strip().lower()) for s in talent_tags]
+            
 
-            if isinstance(talent_tags, str):
-                candidate_tags = [unquote(s.strip().lower()) for s in talent_tags.split(",")]
-            elif isinstance(talent_tags, list):
-                candidate_tags = [unquote(s.strip().lower()) for s in talent_tags]
-            else:
-                continue
             
             # --- Tính điểm fuzzy ---
             total_score = 0
-            if criteria_skills:
-                for crit_skill in criteria_skills:
+            if criteria_skills:                
+                for crit_skill in criteria_skills:                    
                     best_score = max(
                         [
                             fuzz.token_sort_ratio(crit_skill, cand_skill)
@@ -275,17 +277,19 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50):
                         default=0,
                     )
                     total_score += best_score
-
+                    
             if criteria_tags:
+                
                 for criteria_tag in criteria_tags:
                     best_score = max(
                         [
-                            fuzz.token_sort_ratio(criteria_tags, candidate_tag)
+                            fuzz.token_sort_ratio(criteria_tag, candidate_tag)
                             for candidate_tag in candidate_tags
                         ],
                         default=0,
                     )
                     total_score += best_score
+                    
             if talent_source:
                 best_score = fuzz.token_sort_ratio(talent_source, criteria_source) or 0
                 total_score += best_score
@@ -296,7 +300,7 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50):
                 results.append(
                     {
                         "name": c.name,
-                        "email": c.email,
+                        "email": c.contact_email,
                         "full_name": c.full_name,
                         "skills": candidate_skills,
                         "criteria_skills": criteria_skills,

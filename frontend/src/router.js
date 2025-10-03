@@ -46,7 +46,7 @@ const routes = [
 	{ path: '/campaign-template/:id', name: 'CampaignTemplateDetail', component: () => import('@/pages/CampaignTemplateDetail.vue') },
 
 	// Candidate Pool
-	{ path: '/talents', name: 'CandidatePoolManagement', component: ()=>import('@/pages/CandidatePoolManagement.vue') },
+	{ path: '/talents', name: 'Talent', component: ()=>import('@/pages/CandidatePoolManagement.vue') },
 
 	
 

@@ -14,7 +14,7 @@
 					<div class="grid grid-cols-1 md:grid-cols-6 gap-4 items-center">
 						<!-- Search -->
 						<div class="md:col-span-2">
-							<FormControl v-model="filters.search" type="text" :placeholder="__('Search candidate pools...')"
+							<FormControl v-model="filters.search" type="text" :placeholder="__('Search talent...')"
 								:prefix-icon="'search'" @input="debouncedSearch" />
 						</div>
 
@@ -74,7 +74,7 @@
 			</div>
 
 			<!-- Loading State -->
-			<Loading v-if="loading && candidatePools.length === 0" text="Loading candidate pools..." />
+			<Loading v-if="loading && candidatePools.length === 0" text="Loading talent..." />
 
 			<!-- Content Views -->
 			<div v-else>
@@ -84,177 +84,67 @@
 						<table class="min-w-full divide-y divide-gray-200">
 							<!-- Table Header -->
 							<thead class="bg-gray-50">
-								<tr>
-									<th
-										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-										{{ __('Applicant') }}
-									</th>
-									<th
-										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-										{{ __('Status') }}
-									</th>
-									<th
-										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-										{{ __('Evaluation Score') }}
-									</th>
-									<th
-										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-										{{ __('Shortlist Date') }}
-									</th>
-									<th
-										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-										{{ __('Hired Date') }}
-									</th>
-									<th
-										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-										{{ __('Actions') }}
-									</th>
-								</tr>
-							</thead>
+	<tr>
+		<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+			{{ __('Full Name') }}
+		</th>
+		<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+			{{ __('Contact Email') }}
+		</th>
+		<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+			{{ __('Contact Phone') }}
+		</th>
+		<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+			{{ __('Skills') }}
+		</th>
+		<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+			{{ __('Current Status') }}
+		</th>
+		<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+			{{ __('Actions') }}
+		</th>
+	</tr>
+</thead>
 
-							<!-- Table Body -->
-							<tbody class="bg-white divide-y divide-gray-200">
-								<!-- Loading State -->
-								<template v-if="loading">
-									<tr v-for="n in 10" :key="n" class="animate-pulse">
-										<td class="px-6 py-4 whitespace-nowrap">
-											<div class="flex items-center">
-												<div class="w-10 h-10 bg-gray-300 rounded-full mr-4"></div>
-												<div>
-													<div class="h-4 bg-gray-300 rounded w-32 mb-2"></div>
-													<div class="h-3 bg-gray-200 rounded w-24"></div>
-												</div>
-											</div>
-										</td>
-										<td class="px-6 py-4 whitespace-nowrap">
-											<div class="h-6 bg-gray-200 rounded w-20"></div>
-										</td>
-										<td class="px-6 py-4 whitespace-nowrap">
-											<div class="h-4 bg-gray-200 rounded w-16"></div>
-										</td>
-										<td class="px-6 py-4 whitespace-nowrap">
-											<div class="h-4 bg-gray-200 rounded w-24"></div>
-										</td>
-										<td class="px-6 py-4 whitespace-nowrap">
-											<div class="h-4 bg-gray-200 rounded w-24"></div>
-										</td>
-										<td class="px-6 py-4 whitespace-nowrap">
-											<div class="w-8 h-8 bg-gray-200 rounded-full"></div>
-										</td>
-									</tr>
-								</template>
+<tbody class="bg-white divide-y divide-gray-200">
+	<tr v-for="talent in candidatePools" :key="talent.name"
+		class="hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
+		@click="openViewModal(talent)">
+		
+		<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+			{{ talent.full_name }}
+		</td>
+		<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+			{{ talent.contact_email }}
+		</td>
+		<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+			{{ talent.contact_phone }}
+		</td>
+		<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+			{{ talent.skills }}
+		</td>
+		<td class="px-6 py-4 whitespace-nowrap">
+			<span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium"
+				:class="getStatusClasses(talent.current_status)">
+				{{ talent.current_status }}
+			</span>
+		</td>
+		<td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+			<button
+				class="inline-flex items-center justify-center w-8 h-8 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-full transition-colors duration-200"
+				@click.stop="openViewModal(talent)" title="Xem chi tiết">
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+						d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+						d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+				</svg>
+			</button>
+		</td>
+	</tr>
+</tbody>
 
-								<!-- Candidate Pool Rows -->
-								<template v-else-if="candidatePools.length > 0">
-									<tr v-for="pool in candidatePools" :key="pool.name"
-										class="hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
-										@click="openViewModal(pool)">
-										<!-- Applicant Info -->
-										<td class="px-6 py-4 whitespace-nowrap">
-											<div class="flex items-center">
-												<div class="flex-shrink-0 mr-4">
-													<Avatar :shape="'circle'" :label="pool.avatarText" size="md" />
-												</div>
-												<div class="min-w-0 flex-1">
-													<div class="text-sm font-medium text-gray-900 truncate">
-														{{ pool.applicant_name || pool.applicant_id }}
-													</div>
-													<div class="text-sm text-gray-500 truncate">
-														{{ pool.applicant_email || 'Chưa có email' }}
-													</div>
-													<div class="text-sm text-gray-500 truncate">
-														{{ pool.applicant_position || 'Chưa có vị trí' }}
-													</div>
-												</div>
-											</div>
-										</td>
 
-										<!-- Status -->
-										<td class="px-6 py-4 whitespace-nowrap">
-											<span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium"
-												:class="getStatusClasses(pool.statusInfo.color)">
-												{{ pool.statusInfo.text }}
-											</span>
-										</td>
-
-										<!-- Evaluation Score -->
-										<td class="px-6 py-4 whitespace-nowrap">
-											<div class="flex items-center">
-												<span class="text-sm font-medium text-gray-900 mr-2">
-													{{ pool.evaluation_score ? pool.evaluation_score.toFixed(1) : '-' }}
-												</span>
-												<div v-if="pool.evaluation_score" class="w-16">
-													<div class="w-full bg-gray-200 rounded-full h-1.5">
-														<div class="h-1.5 rounded-full transition-all duration-300"
-															:class="getScoreBarColor(pool.scoreColor)"
-															:style="`width: ${Math.min(pool.evaluation_score, 100)}%`">
-														</div>
-													</div>
-												</div>
-											</div>
-										</td>
-
-										<!-- Shortlist Date -->
-										<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-											{{ pool.formattedShortlistDate }}
-										</td>
-
-										<!-- Hired Date -->
-										<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-											{{ pool.formattedHiredDate }}
-										</td>
-
-										<!-- Actions -->
-										<td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-											<div class="flex items-center space-x-1">
-												<button
-													class="inline-flex items-center justify-center w-8 h-8 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-full transition-colors duration-200"
-													@click.stop="openViewModal(pool)" title="Xem chi tiết">
-													<svg class="w-4 h-4" fill="none" stroke="currentColor"
-														viewBox="0 0 24 24">
-														<path stroke-linecap="round" stroke-linejoin="round"
-															stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-														<path stroke-linecap="round" stroke-linejoin="round"
-															stroke-width="2"
-															d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-													</svg>
-												</button>
-											</div>
-										</td>
-									</tr>
-								</template>
-
-								<!-- Empty State -->
-								<template v-else>
-									<tr>
-										<td colspan="6" class="px-6 py-12 text-center">
-											<div class="flex flex-col items-center justify-center">
-												<svg class="w-16 h-16 text-gray-300 mb-4" fill="none"
-													stroke="currentColor" viewBox="0 0 24 24">
-													<path stroke-linecap="round" stroke-linejoin="round"
-														stroke-width="1"
-														d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-												</svg>
-												<h3 class="text-lg font-medium text-gray-900 mb-2">
-													{{ hasFilters ? __('No candidate pools found') : __('No candidate pools found')
-													}}
-												</h3>
-												<p class="text-sm text-gray-500 max-w-sm mb-6">
-													{{ hasFilters
-														? __('Try changing the filter to find suitable candidate pools.')
-														: __('No candidate pools available.')
-													}}
-												</p>
-												<button v-if="hasFilters"
-													class="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50 transition-colors"
-													@click="clearFilters">
-													{{ __('Clear Filters') }}
-												</button>
-											</div>
-										</td>
-									</tr>
-								</template>
-							</tbody>
 						</table>
 					</div>
 				</div>
@@ -274,7 +164,7 @@
 					<!-- Page info -->
 					<div class="text-sm text-gray-600">
 						{{ __('Showing') }} {{ pagination.showing_from }} {{ __('to') }} {{ pagination.showing_to }} {{ __('of') }}
-						{{ pagination.total }} {{ __('candidate pools') }}
+						{{ pagination.total }} {{ __('talent') }}
 					</div>
 
 					<!-- Page navigation -->
