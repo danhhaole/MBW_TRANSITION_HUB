@@ -257,7 +257,7 @@ const submitForm = async () => {
     console.log("result",result);
     
     
-    if (result.status == 200) {
+    if (result.message.success) {
       toast.success('Đơn ứng tuyển của bạn đã được gửi thành công!');
       resetForm();
       emit('success');
