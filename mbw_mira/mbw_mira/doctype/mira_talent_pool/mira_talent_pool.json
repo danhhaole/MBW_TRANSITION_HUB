@@ -9,7 +9,8 @@
   "segment_id",
   "match_score",
   "added_at",
-  "added_by"
+  "added_by",
+  "test"
  ],
  "fields": [
   {
@@ -39,12 +40,17 @@
    "fieldname": "match_score",
    "fieldtype": "Float",
    "label": "Match Score"
+  },
+  {
+   "fieldname": "test",
+   "fieldtype": "Data",
+   "label": "et"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-02 16:01:26.372808",
+ "modified": "2025-10-03 15:45:35.233486",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Talent Pool",
