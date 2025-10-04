@@ -235,11 +235,11 @@ const links = [
     icon: OrganizationsIcon,
     to: 'JobOpeningManagement',
   },
-  {
-    label: "Candidate",
-    icon: OrganizationsIcon,
-    to: 'CandidateManagementSimple',
-  },
+  // {
+  //   label: "Candidate",
+  //   icon: OrganizationsIcon,
+  //   to: 'CandidateManagementSimple',
+  // },
   {
       label: "My Tasks",
       icon: TaskIcon,
