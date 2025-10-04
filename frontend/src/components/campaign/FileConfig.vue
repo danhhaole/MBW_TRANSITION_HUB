@@ -200,7 +200,7 @@ import { FileUploader, Button, FormControl, call } from 'frappe-ui'
 // Props & Emits
 const props = defineProps({
   modelValue: { type: Object, default: () => ({}) },
-  metaDoctype: { type: String, default: 'Candidate' } // Doctype đích
+  metaDoctype: { type: String, default: 'Mira Talent' } // Doctype đích
 })
 const emit = defineEmits(['update:modelValue'])
 
