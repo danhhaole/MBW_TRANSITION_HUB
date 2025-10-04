@@ -15,7 +15,6 @@ class MiraTalentPool(Document):
     def on_update(self):
         count_talentprofile_segment(self.segment_id)
         #Cập nhật phân trạng thái CATEGORIZED vào thông tin hồ sơ
-        update_status_talent_profile(self.talent_id)
         
 
 def validate_unique_candidate_segment(doc):

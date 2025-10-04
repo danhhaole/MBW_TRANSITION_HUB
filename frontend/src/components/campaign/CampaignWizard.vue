@@ -451,18 +451,18 @@
     </div>
 
 <!-- Chọn nguồn -->
-<div class="flex space-x-6 mb-4">
-  <label class="flex items-center space-x-2">
-    <input type="radio" value="mira_talent" v-model="searchSource" />
-    <span>Mira Talent</span>
-  </label>
+<div class="flex space-x-6 mb-4 text-sm">
   <label class="flex items-center space-x-2">
     <input type="radio" value="mira_prospect" v-model="searchSource" />
-    <span>Mira Prospect</span>
+    <span>Contact</span>
+  </label>
+  <label class="flex items-center space-x-2">
+    <input type="radio" value="mira_talent" v-model="searchSource" />
+    <span>Talent</span>
   </label>
   <label class="flex items-center space-x-2">
     <input type="radio" value="mira_segment_talent" v-model="searchSource" />
-    <span>Mira Talent (Theo Segment)</span>
+    <span>Talent Pool</span>
   </label>
 </div>
 
@@ -1611,38 +1611,70 @@ const dataSourceSelectionLevel = ref(0);
 async function fetchRecords() {
   if (!searchSource.value) return;
 
-  let doctype = "";
-  let filters = {};
-
-  if (searchSource.value === "mira_talent") {
-    doctype = "Mira Talent";
-  } else if (searchSource.value === "mira_prospect") {
-    doctype = "Mira Prospect";
-  } else if (searchSource.value === "mira_segment_talent") {
-    if (!selectedSegment.value) {
-      records.value = []; // chưa chọn segment thì clear list
-      return;
-    }
-    doctype = "Mira Talent";
-    filters = { segment_id: selectedSegment.value };
-  }
-
   try {
-    const baseFilters = filters ? [filters] : [];
-    const res = await call("frappe.client.get_list", {
-      doctype,
-      fields: ["name", "full_name"],
-      filters: searchKeyword.value
-        ? [...baseFilters, ["full_name", "like", `%${searchKeyword.value}%`]]
-        : baseFilters,
-      limit_page_length: 50,
-    });
-    records.value = res;
+    if (searchSource.value === "mira_talent") {
+      const res = await call("frappe.client.get_list", {
+        doctype: "Mira Talent",
+        fields: ["name", "full_name"],
+        filters: searchKeyword.value
+          ? [["full_name", "like", `%${searchKeyword.value}%`]]
+          : [],
+        limit_page_length: 50,
+      });
+      records.value = res;
+
+    } else if (searchSource.value === "mira_prospect") {
+      const res = await call("frappe.client.get_list", {
+        doctype: "Mira Prospect",
+        fields: ["name", "full_name"],
+        filters: searchKeyword.value
+          ? [["full_name", "like", `%${searchKeyword.value}%`]]
+          : [],
+        limit_page_length: 50,
+      });
+      records.value = res;
+
+    } else if (searchSource.value === "mira_segment_talent") {
+      if (!selectedSegment.value) {
+        records.value = [];
+        return;
+      }
+
+      // 1. Lấy talent_id từ bảng Mira Talent Pool
+      const poolRes = await call("frappe.client.get_list", {
+        doctype: "Mira Talent Pool",
+        fields: ["talent_id"],
+        filters: { segment_id: selectedSegment.value },
+        limit_page_length: 1000, // lấy đủ hết
+      });
+
+      const talentIds = poolRes.map(r => r.talent_id);
+      if (!talentIds.length) {
+        records.value = [];
+        return;
+      }
+
+      // 2. Lấy thông tin từ Mira Talent
+      const talentRes = await call("frappe.client.get_list", {
+        doctype: "Mira Talent",
+        fields: ["name", "full_name"],
+        filters: searchKeyword.value
+          ? [
+              ["name", "in", talentIds],
+              ["full_name", "like", `%${searchKeyword.value}%`],
+            ]
+          : [["name", "in", talentIds]],
+        limit_page_length: 50,
+      });
+
+      records.value = talentRes;
+    }
   } catch (e) {
     console.error("Error fetching records", e);
     records.value = [];
   }
 }
+
 
 // ✅ bọc fetchRecords bằng debounce
 const fetchRecordsDebounced = debounce(fetchRecords, 400);
@@ -2293,8 +2325,8 @@ const actionTypeOptions = [
   { label: __("Select action type..."), value: "", disabled: true },
   { label: __("Send Email"), value: "SEND_EMAIL" },
   { label: __("Send SMS"), value: "SEND_SMS" },
-  { label: __("Post to Facebook"), value: "POST_TO_FACEBOOK" },
-  { label: __("Post to Zalo"), value: "POST_TO_ZALO" },
+  // { label: __("Post to Facebook"), value: "POST_TO_FACEBOOK" },
+  // { label: __("Post to Zalo"), value: "POST_TO_ZALO" },
   { label: __("Manual Call"), value: "MANUAL_CALL" },
   { label: __("Manual Task"), value: "MANUAL_TASK" },
 ];

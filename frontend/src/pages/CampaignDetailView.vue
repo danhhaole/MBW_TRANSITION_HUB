@@ -176,32 +176,48 @@
       <div class="bg-white rounded-t-lg">
         <nav class="flex px-2 border-b" aria-label="Tabs">
           <button
-            v-for="tab in tabs"
-            :key="tab.key"
-            @click="activeTab = tab.key"
-            :class="[
-              'flex items-center py-4 px-6 text-sm font-medium border-b-2',
-              activeTab === tab.key
-                ? 'border-black text-black'
-                : 'border-transparent text-gray-600 hover:text-black hover:border-black'
-            ]"
-          >
+              v-for="tab in tabs"
+              :key="tab.key"
+              @click="activeTab = tab.key"
+              :class="[
+                'flex items-center py-4 px-6 text-sm font-medium border-b-2',
+                activeTab === tab.key
+                  ? 'border-black text-black'
+                  : 'border-transparent text-gray-600 hover:text-black hover:border-black'
+              ]"
+            >
             <!-- Chart Timeline Icon for Steps -->
             <svg v-if="tab.key === 'steps'" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
             </svg>
-            <!-- Users Icon for Candidates -->
+            <!-- Users Icon for Assigned Profiles (Talent Campaign) -->
             <svg v-else-if="tab.key === 'candidates'" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
             </svg>
+
             <!-- Lightning Icon for Actions -->
             <svg v-else-if="tab.key === 'actions'" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13 10V3L4 14h7v7l9-11h-7z"/>
             </svg>
+
+            <!-- Document Icon for Mira Candidates -->
+            <svg v-else-if="tab.key === 'mira_candidates'" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5l2 2h5a2 2 0 012 2v14a2 2 0 01-2 2z"/>
+            </svg>
+
             <!-- Chart Icon for Analytics -->
             <svg v-else class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
             </svg>
+
+            <span>{{ tab.label }}</span>
+
+            <!-- Optional count -->
+            
           </button>
         </nav>
       </div>
@@ -1030,7 +1046,7 @@ const tabs = computed(() => [
   },
   {
     key: 'candidates',
-    label: __('Assigned Profiles'),
+    label: __('Assigned Talent'),
     count: candidateCampaigns.value.length
   },
   {
