@@ -283,4 +283,3 @@ website_route_rules = [
     {"from_route": "/unsubscribe", "to_route": "mbw_mira.api.email.unsubscribe"},
 ]
 
-bench_migrate = ["press.overrides.before_after_migrate"]

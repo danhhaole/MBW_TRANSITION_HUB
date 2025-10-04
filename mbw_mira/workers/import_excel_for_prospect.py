@@ -20,7 +20,7 @@ def import_prospect_from_file(campaign_name: str):
     )
 
     if not campaign:
-        frappe.log_error("Import Prospect", f"Campaign not found: {campaign_name}")
+        frappe.log_error("Import Talent", f"Campaign not found: {campaign_name}")
         return
 
     # 2. Kiểm tra trạng thái hợp lệ
@@ -28,27 +28,27 @@ def import_prospect_from_file(campaign_name: str):
     if not campaign.is_active or campaign.status != "ACTIVE" \
             or not campaign.start_date or not campaign.end_date \
             or campaign.start_date > today or campaign.end_date < today:
-        frappe.log_error("Import Prospect", f"Campaign is not active or out of range: {campaign_name}")
+        frappe.log_error("Import Talent", f"Campaign is not active or out of range: {campaign_name}")
         return
 
     # 3. Parse source_config JSON
     try:
         source_config = json.loads(campaign.source_config or "{}")
     except Exception as e:
-        frappe.log_error("Import Prospect", f"Failed to parse source_config JSON: {e}")
+        frappe.log_error("Import Talent", f"Failed to parse source_config JSON: {e}")
         return
 
     file_name = campaign.source_file.split("/")[-1]
     field_mapping = source_config.get("field_mapping", [])
 
     if not file_name or not field_mapping:
-        frappe.log_error("Import Prospect", f"Missing file name or field mapping for campaign: {campaign_name}")
+        frappe.log_error("Import Talent", f"Missing file name or field mapping for campaign: {campaign_name}")
         return
 
     # 4. Tìm file đã upload trong File doctype
     file_url = frappe.db.get_value("File", {"file_name": file_name}, "file_url")
     if not file_url:
-        frappe.log_error("Import Prospect", f"File not found in File doctype: {file_name}")
+        frappe.log_error("Import Talent", f"File not found in File doctype: {file_name}")
         return
 
     file_path = frappe.get_site_path("public", file_url.lstrip("/"))
@@ -60,12 +60,12 @@ def import_prospect_from_file(campaign_name: str):
         elif file_name.endswith((".xls", ".xlsx")):
             df = pd.read_excel(file_path)
         else:
-            frappe.log_error("Import Prospect", f"Unsupported file format: {file_name}")
+            frappe.log_error("Import Talent", f"Unsupported file format: {file_name}")
             return
 
         df = df.where(pd.notnull(df), None)  # Convert NaN thành None
     except Exception as e:
-        frappe.log_error("Import Prospect", f"Error reading file {file_name}: {e}")
+        frappe.log_error("Import Talent", f"Error reading file {file_name}: {e}")
         return
 
     inserted = 0
@@ -99,7 +99,7 @@ def import_prospect_from_file(campaign_name: str):
 
             # 8. Chuẩn bị dữ liệu cho Mira Prospect mới
             doc_data = {
-                "doctype": "Mira Prospect",
+                "doctype": "Mira Talent",
                 "first_name": raw_data.get("first_name") or "",
                 "last_name": raw_data.get("last_name") or "",
                 "full_name": (raw_data.get("first_name") or "") + " " + (raw_data.get("last_name") or ""),
