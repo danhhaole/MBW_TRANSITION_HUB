@@ -155,10 +155,10 @@ def get_candidate_pool_stats():
         total = frappe.db.count("Mira Talent")
         
         # Count by status
-        shortlisted_count = frappe.db.count("Mira Talent", {"status": "Shortlisted"})
-        offered_count = frappe.db.count("Mira Talent", {"status": "Offered"})
-        hired_count = frappe.db.count("Mira Talent", {"status": "Hired"})
-        rejected_count = frappe.db.count("Mira Talent", {"status": "Rejected"})
+        shortlisted_count = frappe.db.count("Mira Talent")
+        offered_count = frappe.db.count("Mira Talent")
+        hired_count = frappe.db.count("Mira Talent")
+        rejected_count = frappe.db.count("Mira Talent")
         
         # Recently active (modified in last 7 days)
         from frappe.utils import add_days
