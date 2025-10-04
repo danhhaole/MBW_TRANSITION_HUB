@@ -30,33 +30,14 @@
   "post_schedule_time",
   "template_content",
   "social_media_images",
-  "mira_talent",
-  "mira_talent_pool",
-  "mira_prospect"
+  "mira_talent_campaign",
+  "column_break_social_media_end"
  ],
  "fields": [
   {
    "fieldname": "campaign_name",
    "fieldtype": "Data",
    "label": "Campaign Name"
-  },
-  {
-   "fieldname": "mira_talent",
-   "fieldtype": "Link",
-   "label": "Mira Talent Campaign",
-   "options": "MiraTalent"
-  },
-  {
-   "fieldname": "mira_talent_pool",
-   "fieldtype": "Link",
-   "label": "Mira Talent Pool Campaign",
-   "options": "MiraTalentPool"
-  },
-  {
-   "fieldname": "mira_prospect",
-   "fieldtype": "Link",
-   "label": "Mira Prospect Campaign",
-   "options": "MiraProspect"
   },
   {
    "fieldname": "description",
@@ -70,17 +51,16 @@
    "label": "Active"
   },
   {
+   "collapsible": 1,
    "fieldname": "section_break_social_media",
    "fieldtype": "Section Break",
-   "label": "Social Media Settings",
-   "collapsible": 1,
-   "collapsed": 1
+   "label": "Social Media Settings"
   },
   {
    "fieldname": "social_page_id",
    "fieldtype": "Data",
-   "label": "Social Page ID",
-   "hidden": 1
+   "hidden": 1,
+   "label": "Social Page ID"
   },
   {
    "fieldname": "social_page_name",
@@ -100,8 +80,7 @@
   {
    "fieldname": "social_media_images",
    "fieldtype": "Attach Image",
-   "label": "Post Images",
-   "allow_multiple": 1
+   "label": "Post Images"
   },
   {
    "fieldname": "column_break_social_media_end",
@@ -202,12 +181,16 @@
    "fieldname": "last_shared_at",
    "fieldtype": "Datetime",
    "label": "Last Shared At"
+  },
+  {
+   "fieldname": "mira_talent_campaign",
+   "fieldtype": "JSON",
+   "label": "Mira Talent Campaign"
   }
  ],
- "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-09-29 10:02:37.173570",
+ "modified": "2025-10-03 16:42:11.752033",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Campaign",
@@ -227,7 +210,6 @@
    "write": 1
   }
  ],
- "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []

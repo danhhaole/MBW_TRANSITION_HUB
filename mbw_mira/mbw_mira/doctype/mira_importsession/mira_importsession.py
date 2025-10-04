@@ -243,7 +243,7 @@ class MiraImportsession(Document):
 			}
 		)
 
-
+# Candidate
 @frappe.whitelist()
 @frappe.whitelist()
 def download_candidate_template():
@@ -359,6 +359,177 @@ def download_candidate_template():
 		frappe.log_error(frappe.get_traceback(), "Candidate Template Generation Error")
 		frappe.throw(_("Error generating candidate template: {0}").format(str(e)))
 
+@frappe.whitelist()
+def upload_and_preview_candidate():
+	"""Enhanced preview endpoint with better error handling and encoding support for Candidate"""
+	try:
+		uploaded = frappe.request.files.get('file')
+		if not uploaded:
+			frappe.throw(_("No file uploaded"))
+
+		filename = uploaded.filename or ""
+		ext = filename.split(".")[-1].lower()
+
+		# Validate file type
+		if ext not in ['csv', 'xls', 'xlsx']:
+			frappe.throw(_("Unsupported file type. Only CSV, XLS, XLSX files are allowed."))
+
+		# Read file into DataFrame with improved error handling
+		try:
+			file_bytes = uploaded.read()
+			bio = io.BytesIO(file_bytes)
+			
+			df = None
+			if ext == "csv":
+				# Try multiple encodings for CSV
+				encodings = ['utf-8', 'latin-1', 'cp1252', 'iso-8859-1']
+				for encoding in encodings:
+					try:
+						bio.seek(0)
+						df = pd.read_csv(bio, encoding=encoding)
+						break
+					except (UnicodeDecodeError, UnicodeError):
+						continue
+				
+				if df is None:
+					frappe.throw(_("Unable to read CSV file. Please check file encoding."))
+					
+			elif ext in ("xls", "xlsx"):
+				try:
+					df = pd.read_excel(bio, engine='openpyxl' if ext == 'xlsx' else None)
+				except Exception as e:
+					frappe.throw(_("Error reading Excel file: {0}").format(str(e)))
+
+			# Validate DataFrame
+			if df is None or df.empty:
+				frappe.throw(_("File is empty or cannot be read"))
+
+			# Clean column names and remove empty rows
+			df.columns = [str(col).strip() for col in df.columns]
+			df = df.dropna(how='all')
+			
+			if df.empty:
+				frappe.throw(_("No valid data found in file"))
+
+		except Exception as e:
+			frappe.log_error(frappe.get_traceback(), "Candidate Import Preview Read Error")
+			frappe.throw(_("Failed to read file: {0}").format(str(e)))
+
+		# Prepare response data
+		columns = [str(c) for c in df.columns.tolist()]
+		sample = df.head(10).fillna("").to_dict(orient="records")
+
+		# Get available fields from JobOpening for mapping suggestions
+		meta = frappe.get_meta("Mira Candidate")
+		available_fields = []
+		for field in meta.fields:
+			if field.fieldtype not in ['Section Break', 'Column Break', 'Tab Break', 'HTML']:
+				available_fields.append({
+					'fieldname': field.fieldname,
+					'label': field.label,
+					'fieldtype': field.fieldtype,
+					'reqd': field.reqd
+				})
+
+		return {
+			"filename": filename,
+			"columns": columns,
+			"sample": sample,
+			"total_rows": len(df),
+			"available_fields": available_fields
+		}
+		
+	except Exception as e:
+		frappe.log_error(frappe.get_traceback(), "Candidate Upload Preview Error")
+		frappe.throw(_("Preview failed: {0}").format(str(e)))
+
+@frappe.whitelist()
+def import_with_mapping_candidate():
+	"""Enhanced import with mapping using Mira Importsession for tracking (Candidate)"""
+	try:
+		# Get form data
+		uploaded = frappe.request.files.get('file')
+		mapping_raw = frappe.form_dict.get('mapping', '{}')
+		selected_job_opening = frappe.form_dict.get('selected_job_opening') or frappe.form_dict.get('job_opening')
+		batch_size = int(frappe.form_dict.get('batch_size', 100))
+		validate_only = frappe.form_dict.get('validate_only', '0') == '1'
+		skip_duplicates = frappe.form_dict.get('skip_duplicates', '1') == '1'
+
+		if not uploaded:
+			frappe.throw(_("No file uploaded"))
+
+		# Save file to Frappe
+		file_doc = save_file(
+			fname=uploaded.filename,
+			content=uploaded.read(),
+			dt="Mira Importsession",
+			dn=uploaded.filename,
+			is_private=0
+		)
+
+		try:
+			# Read file with pandas
+			df = read_file_to_dataframe(file_doc.get_full_path(), uploaded.filename)
+			# Process mapping
+			mapping = json.loads(mapping_raw)
+			if not mapping:
+				frappe.throw(_("Field mapping is required"))
+
+			# Create a more flexible mapping that handles case and spaces
+			reversed_mapping = {}
+			for field, col_name in mapping.items():
+				# Normalize the column name by lowercasing and removing extra spaces
+				normalized_col = str(col_name).lower().strip()
+				reversed_mapping[normalized_col] = field
+
+			# Create import session
+			session = create_import_session_candidate(
+				file_name=uploaded.filename,
+				file_url=file_doc.file_url,
+				total_rows=len(df),
+				import_type="Candidate",
+				selected_job_opening=selected_job_opening,
+				field_mapping=reversed_mapping,  # Use the reversed mapping
+				batch_size=batch_size,
+				validate_only=validate_only,
+				skip_duplicates=skip_duplicates
+			)
+			session.add_simple_log("info", f"Import session started for {len(df)} rows")
+			session.update_status("Processing")
+
+			if validate_only:
+				# Only validate, don't insert
+				print("1=>>>>>>>>>>>>>>>>>>>>1", mapping)
+				print("2=>>>>>>>>>>>>>>>>>>>>2", session)
+				results = validate_import_data_with_session_candidate(df, mapping, session)
+			else:
+				# Process and insert data
+				results = process_import_data_with_session_candidate(df, mapping, selected_job_opening, session, batch_size)
+
+			# Update session with final results
+			if results.get("failed", 0) == 0:
+				session.update_status("Completed")
+			else:
+				session.update_status("Completed")
+				session.error_summary = f"{results['failed']} rows failed during import"
+
+			return {
+				**results,
+				"session_id": session.name
+			}
+
+		finally:
+			# Clean up temporary file
+			try:
+				frappe.delete_doc("File", file_doc.name, ignore_permissions=True)
+			except:
+				pass
+
+	except Exception as e:
+		frappe.log_error(frappe.get_traceback(), "Job Opening Import Error")
+		frappe.throw(_("Import failed: {0}").format(str(e)))
+
+# Job
 @frappe.whitelist()
 def download_import_template():
 	"""Generate and download import template Excel file for Job Opening"""
@@ -480,7 +651,6 @@ def download_import_template():
 		frappe.log_error(frappe.get_traceback(), "Job Opening Template Generation Error")
 		frappe.throw(_("Failed to generate template: {0}").format(str(e)))
 
-
 @frappe.whitelist()
 def upload_and_preview():
 	"""Enhanced preview endpoint with better error handling and encoding support for Job Opening"""
@@ -565,7 +735,85 @@ def upload_and_preview():
 		frappe.log_error(frappe.get_traceback(), "Job Opening Upload Preview Error")
 		frappe.throw(_("Preview failed: {0}").format(str(e)))
 
+@frappe.whitelist()
+def import_with_mapping():
+	"""Enhanced import with mapping using Mira Importsession for tracking (Job Opening)"""
+	try:
+		# Get form data
+		uploaded = frappe.request.files.get('file')
+		mapping_raw = frappe.form_dict.get('mapping', '{}')
+		selected_job_opening = frappe.form_dict.get('selected_job_opening') or frappe.form_dict.get('job_opening')
+		batch_size = int(frappe.form_dict.get('batch_size', 100))
+		validate_only = frappe.form_dict.get('validate_only', '0') == '1'
+		skip_duplicates = frappe.form_dict.get('skip_duplicates', '1') == '1'
 
+		if not uploaded:
+			frappe.throw(_("No file uploaded"))
+
+		# Save file to Frappe
+		file_doc = save_file(
+			fname=uploaded.filename,
+			content=uploaded.read(),
+			dt="Mira Importsession",
+			dn=uploaded.filename,
+			is_private=0
+		)
+
+		try:
+			# Read file with pandas
+			df = read_file_to_dataframe(file_doc.get_full_path(), uploaded.filename)
+			# Process mapping
+			mapping = json.loads(mapping_raw)
+			if not mapping:
+				frappe.throw(_("Field mapping is required"))
+
+			# Create import session
+			session = create_import_session(
+				file_name=uploaded.filename,
+				file_url=file_doc.file_url,
+				total_rows=len(df),
+				import_type="Job Opening",
+				selected_job_opening=selected_job_opening,
+				field_mapping=mapping,
+				batch_size=batch_size,
+				validate_only=validate_only,
+				skip_duplicates=skip_duplicates
+			)
+			session.add_simple_log("info", f"Import session started for {len(df)} rows")
+			session.update_status("Processing")
+
+			if validate_only:
+				# Only validate, don't insert
+				results = validate_import_data_with_session(df, mapping, selected_job_opening, session)
+			else:
+				# Process and insert data
+				results = process_import_data_with_session(df, mapping, selected_job_opening, session, batch_size)
+
+			# Update session with final results
+			if results.get("failed", 0) == 0:
+				session.update_status("Completed")
+			else:
+				session.update_status("Completed")
+				session.error_summary = f"{results['failed']} rows failed during import"
+
+			return {
+				**results,
+				"session_id": session.name
+			}
+
+		finally:
+			# Clean up temporary file
+			try:
+				frappe.delete_doc("File", file_doc.name, ignore_permissions=True)
+			except:
+				pass
+
+	except Exception as e:
+		frappe.log_error(frappe.get_traceback(), "Job Opening Import Error")
+		frappe.throw(_("Import failed: {0}").format(str(e)))
+
+
+# Hàm chung
 @frappe.whitelist()
 def get_import_sessions():
 	"""Get list of import sessions with summary"""
@@ -617,27 +865,27 @@ def get_import_sessions():
 
 @frappe.whitelist()
 def delete_import_session(session_id: str):
-    """Delete an import session and its logs"""
-    try:
-        session = frappe.get_doc("Mira ImportSession", session_id)
-        
-        if session.status == "Processing":
-            frappe.throw(_("Cannot delete a session that is currently processing"))
-        
-        # Delete associated logs first
-        frappe.db.delete("ImportLog", {"parent": session_id})
-        
-        # Delete the session
-        frappe.delete_doc("ImportSession", session_id, ignore_permissions=True)
-        frappe.db.commit()
-        
-        return {
-            "message": _("Import session deleted successfully")
-        }
-        
-    except Exception as e:
-        frappe.log_error(f"Error deleting import session: {str(e)}", "Delete Import Session Error")
-        frappe.throw(_("Failed to delete session: {0}").format(str(e)))
+	"""Delete an import session and its logs"""
+	try:
+		session = frappe.get_doc("Mira ImportSession", session_id)
+		
+		if session.status == "Processing":
+			frappe.throw(_("Cannot delete a session that is currently processing"))
+		
+		# Delete associated logs first
+		frappe.db.delete("ImportLog", {"parent": session_id})
+		
+		# Delete the session
+		frappe.delete_doc("ImportSession", session_id, ignore_permissions=True)
+		frappe.db.commit()
+		
+		return {
+			"message": _("Import session deleted successfully")
+		}
+		
+	except Exception as e:
+		frappe.log_error(f"Error deleting import session: {str(e)}", "Delete Import Session Error")
+		frappe.throw(_("Failed to delete session: {0}").format(str(e)))
 
 @frappe.whitelist()
 def export_failed_rows(session_id: str):
@@ -765,86 +1013,9 @@ def export_failed_rows(session_id: str):
 		frappe.throw(_("Failed to export failed rows: {0}").format(str(e)))
 
 
-@frappe.whitelist()
-def import_with_mapping():
-	"""Enhanced import with mapping using Mira Importsession for tracking (Job Opening)"""
-	try:
-		# Get form data
-		uploaded = frappe.request.files.get('file')
-		mapping_raw = frappe.form_dict.get('mapping', '{}')
-		selected_job_opening = frappe.form_dict.get('selected_job_opening') or frappe.form_dict.get('job_opening')
-		batch_size = int(frappe.form_dict.get('batch_size', 100))
-		validate_only = frappe.form_dict.get('validate_only', '0') == '1'
-		skip_duplicates = frappe.form_dict.get('skip_duplicates', '1') == '1'
-
-		if not uploaded:
-			frappe.throw(_("No file uploaded"))
-
-		# Save file to Frappe
-		file_doc = save_file(
-			fname=uploaded.filename,
-			content=uploaded.read(),
-			dt="Mira Importsession",
-			dn=uploaded.filename,
-			is_private=0
-		)
-
-		try:
-			# Read file with pandas
-			df = read_file_to_dataframe(file_doc.get_full_path(), uploaded.filename)
-			# Process mapping
-			mapping = json.loads(mapping_raw)
-			if not mapping:
-				frappe.throw(_("Field mapping is required"))
-
-			# Create import session
-			session = create_import_session(
-				file_name=uploaded.filename,
-				file_url=file_doc.file_url,
-				total_rows=len(df),
-				import_type="Job Opening",
-				selected_job_opening=selected_job_opening,
-				field_mapping=mapping,
-				batch_size=batch_size,
-				validate_only=validate_only,
-				skip_duplicates=skip_duplicates
-			)
-			session.add_simple_log("info", f"Import session started for {len(df)} rows")
-			session.update_status("Processing")
-
-			if validate_only:
-				# Only validate, don't insert
-				results = validate_import_data_with_session(df, mapping, selected_job_opening, session)
-			else:
-				# Process and insert data
-				results = process_import_data_with_session(df, mapping, selected_job_opening, session, batch_size)
-
-			# Update session with final results
-			if results.get("failed", 0) == 0:
-				session.update_status("Completed")
-			else:
-				session.update_status("Completed")
-				session.error_summary = f"{results['failed']} rows failed during import"
-
-			return {
-				**results,
-				"session_id": session.name
-			}
-
-		finally:
-			# Clean up temporary file
-			try:
-				frappe.delete_doc("File", file_doc.name, ignore_permissions=True)
-			except:
-				pass
-
-	except Exception as e:
-		frappe.log_error(frappe.get_traceback(), "Job Opening Import Error")
-		frappe.throw(_("Import failed: {0}").format(str(e)))
-
-
 # ===== HELPER FUNCTIONS FOR JOB OPENING IMPORT =====
 
+#job 1
 def create_import_session(file_name, file_url, total_rows, import_type="Job Opening",
 						 selected_job_opening=None, field_mapping=None, batch_size=100,
 						 validate_only=False, skip_duplicates=True, **kwargs):
@@ -870,6 +1041,31 @@ def create_import_session(file_name, file_url, total_rows, import_type="Job Open
 	frappe.db.commit()
 	return session
 
+#can 1
+def create_import_session_candidate(file_name, file_url, total_rows, import_type="Mira Candidate",
+						 selected_job_opening=None, field_mapping=None, batch_size=100,
+						 validate_only=False, skip_duplicates=True, **kwargs):
+	"""Create a new import session (Mira Importsession)"""
+	session = frappe.new_doc("Mira Importsession")
+	session.file_name = file_name
+	session.file_url = file_url
+	session.total_rows = total_rows
+	session.import_type = import_type
+	session.selected_job_opening = selected_job_opening
+	session.field_mapping = json.dumps(field_mapping) if field_mapping else None
+	session.status = "Pending"
+	session.batch_size = batch_size
+	session.validate_only = 1 if validate_only else 0
+	session.skip_duplicates = 1 if skip_duplicates else 0
+	session.created_by = frappe.session.user
+	session.started_at = frappe.utils.now()
+	# Set any additional kwargs
+	for key, value in kwargs.items():
+		if hasattr(session, key):
+			setattr(session, key, value)
+	session.insert(ignore_permissions=True)
+	frappe.db.commit()
+	return session
 
 def read_file_to_dataframe(file_path: str, filename: str) -> pd.DataFrame:
 	"""Read file into DataFrame with proper error handling"""
@@ -912,7 +1108,17 @@ def map_row_data(row: pd.Series, mapping: Dict) -> Dict:
 				job_opening_data[field_name] = str(value).strip()
 	return job_opening_data
 
+def map_row_data_candidate(row: pd.Series, mapping: Dict) -> Dict:
+	"""Map row data according to field mapping (Excel Header -> DocField)"""
+	job_opening_data: Dict[str, Any] = {}
+	for field_name, column_name in mapping.items():
+		if column_name and column_name in row.index:
+			value = row[column_name]
+			if pd.notna(value) and str(value).strip():
+				job_opening_data[field_name] = str(value).strip()
+	return job_opening_data
 
+# check trùng của job
 def get_existing_job_titles() -> Set[str]:
 	"""Get existing job titles to prevent duplicates within this import"""
 	return set([
@@ -921,7 +1127,211 @@ def get_existing_job_titles() -> Set[str]:
 		)
 	])
 
+# check trùng của candidate
+def get_existing_emails() -> Set[str]:
+	"""Get all existing candidate emails from Mira Candidate to prevent duplicates"""
+	return set([
+		email[0] for email in frappe.db.sql(
+			"SELECT email FROM `tabMira Candidate` WHERE email IS NOT NULL AND email != ''"
+		)
+	])
 
+# của candidate 1
+def validate_and_process_candidate(candidate_data: Dict, existing_emails: Set = None) -> Dict:
+	"""Enhanced validation with better error messages and field processing"""
+	processed = {}
+	errors = []
+	# Required field validation
+	required_fields = {
+		"full_name": _("Full Name"),
+		"email": _("Email")
+	}
+	print("candidate_data1111111=>>>>>>>>>>>>>>>", candidate_data)
+	for field, label in required_fields.items():
+		value = candidate_data.get(field, "").strip()
+		if not value:
+			errors.append(_("Missing required field: {0}").format(label))
+		else:
+			processed[field] = value
+	# Email validation and duplicate check
+	email = candidate_data.get("email", "").strip().lower()
+	if email:
+		if not validate_email(email):
+			errors.append(_("Invalid email format: {0}").format(email))
+		elif existing_emails and email in existing_emails:
+			errors.append(_("Email already exists: {0}").format(email))
+		else:
+			processed["email"] = email
+			if existing_emails is not None:
+				existing_emails.add(email)
+	
+	# Process other fields
+	field_processors = {
+		"full_name": lambda x: process_text_field(x, 140),
+		"phone": process_phone_number,
+		"avatar": lambda x: process_text_field(x, 255),
+		"headline": lambda x: process_text_field(x, 140),
+		"source": lambda x: process_text_field(x, 140),
+		"cv_original_url": lambda x: process_text_field(x, 500),
+		"skills": lambda x: process_text_field(x, 1000),
+		"ai_summary": lambda x: process_text_field(x, 10000)  # For long text
+	}
+	
+	for field, processor in field_processors.items():
+		if field in candidate_data and candidate_data[field]:
+			try:
+				result = processor(candidate_data[field])
+				if result is not None:
+					processed[field] = result
+			except Exception as e:
+				errors.append(_("Error processing {0}: {1}").format(field, str(e)))
+	
+	# Set default status if not provided
+	if "status" not in processed:
+		processed["status"] = "NEW"
+	
+	if errors:
+		raise frappe.ValidationError("; ".join(errors))
+	
+	return processed
+
+#của candidate 2
+def validate_import_data_with_session_candidate(df: pd.DataFrame, mapping: Dict, session=None) -> Dict:
+	"""Validate candidate import data with session tracking
+	
+	Args:
+		df: DataFrame containing the imported data
+		mapping: Dictionary mapping Excel columns to candidate fields
+		session: Optional import session for tracking progress
+	
+	Returns:
+		Dict containing validation results and logs
+	"""   
+	results = {
+		"success": 0,
+		"failed": 0,
+		"total": len(df),
+		"logs": []
+	}
+
+	print("df=>>>>>>>>>>>>>>>11111: ", df.iterrows())
+	
+	# Get existing emails using the helper function
+	existing_emails = get_existing_emails()
+	seen_emails = set()  # Track emails in current import to catch duplicates
+	
+	for idx, row in df.iterrows():
+		start_time = time.time()
+		row_number = idx + 2  # +2 because Excel rows are 1-based and we have a header
+		
+		try:
+			# Map row data to candidate fields
+			candidate_data = {}
+			mapped_fields = []
+
+			print("mapping3=>>>>>>>>>>>>>>>", mapping)
+			print("maaapping 4=>>>", mapping.items())
+			print("row4=>>>>", row)
+			phong = 0
+			for excel_col, field_name in mapping.items():
+				print("excel_col", excel_col)
+				print("field_name", field_name)
+				if excel_col in row:
+					phong += 1
+					print("excel_col in row", excel_col in row)
+					print("value", value)
+					print("candidate_data", candidate_data)
+					value = str(row[excel_col]).strip()
+					candidate_data[field_name] = value
+					mapped_fields.append(f"{excel_col} -> {field_name}")
+				else:
+					print(f"DEBUG: Column {excel_col} not found or empty in row {row_number}")
+			
+			
+			# Validate and process candidate data
+			try:
+				print("candidate_data11111=>>>>>>>>>>>>>>>")
+				existing_emails_combined = existing_emails.union(seen_emails)
+				print("222222=>>>>>>>>>>>>>>>", existing_emails_combined)
+				processed_data = validate_and_process_candidate(
+					candidate_data, 
+					existing_emails_combined
+				)
+				print("33333333=>>>>>>>>>>>>>>>", processed_data)
+				print("candidate_data22222=>>>>>>>>>>>>>>>")
+				# Check for duplicate email in current import
+				email = processed_data.get("email", "").lower()
+				if email and email in seen_emails:
+					error_msg = f"Duplicate email in import: {email}"
+					raise frappe.ValidationError(error_msg)
+				processing_time = time.time() - start_time
+				print("candidate_data33333=>>>>>>>>>>>>>>>")
+				if session:
+					session.mark_success(
+						row_number=row_number,
+						candidate_name=processed_data.get("full_name", "Unknown"),
+						processing_time=processing_time
+					)
+				
+				results["success"] += 1
+				log_msg = f"Successfully validated row {row_number}"
+				results["logs"].append({
+					"row": row_number,
+					"status": "success",
+					"message": log_msg,
+					"candidate": processed_data.get("full_name", "Unknown")
+				})
+				
+			except Exception as e:
+				results["failed"] += 1
+				error_msg = str(e)
+				results["logs"].append({
+					"row": row_number,
+					"status": "error",
+					"message": error_msg
+				})
+				if session:
+					session.add_simple_log("error", f"Row {row_number}: {error_msg}")
+				continue
+				
+		except Exception as e:
+			results["failed"] += 1
+			error_msg = str(e)
+			results["logs"].append({
+				"row": row_number,
+				"status": "error",
+				"message": error_msg
+			})
+			if session:
+				session.add_simple_log("error", f"Row {row_number}: {error_msg}")
+			if session:
+				session.mark_failure(
+					row_number=row_number,
+					candidate_name=candidate_data.get("full_name", "Unknown") if 'candidate_data' in locals() else "Unknown",
+					error_message=error_msg,
+					processing_time=processing_time
+				)
+			
+			results["failed"] += 1
+			results["logs"].append({
+				"row_number": row_number,
+				"candidate_name": candidate_data.get("full_name", "Unknown") if 'candidate_data' in locals() else "Unknown",
+				"status": "error",
+				"message": error_msg
+			})
+		
+		# Update session progress periodically
+		if session and idx % 10 == 0:
+			session.save(ignore_permissions=True)
+			frappe.db.commit()
+	
+	if session:
+		session.save(ignore_permissions=True)
+		frappe.db.commit()
+	
+	return results
+
+# của job 1
 def validate_and_process_job_opening(job_opening_data: Dict, existing_titles: Set = None) -> Dict:
 	"""Validate and normalize JobOpening data"""
 	processed: Dict[str, Any] = {}
@@ -973,7 +1383,7 @@ def validate_and_process_job_opening(job_opening_data: Dict, existing_titles: Se
 		raise frappe.ValidationError("; ".join(errors))
 	return processed
 
-
+# của job 2
 def validate_import_data_with_session(df: pd.DataFrame, mapping: Dict, selected_job_opening: str = None, session=None) -> Dict:
 	"""Validate import data with session tracking (no insert)"""
 	results = {"success": 0, "failed": 0, "total": len(df), "logs": []}
@@ -1030,7 +1440,7 @@ def validate_import_data_with_session(df: pd.DataFrame, mapping: Dict, selected_
 		frappe.db.commit()
 	return results
 
-
+#của job 3
 def process_import_data_with_session(df: pd.DataFrame, mapping: Dict, selected_job_opening: str, session, batch_size: int = 100) -> Dict:
 	"""Process and insert import data with session tracking"""
 	results = {"success": 0, "failed": 0, "total": len(df), "logs": []}
@@ -1059,7 +1469,7 @@ def process_import_data_with_session(df: pd.DataFrame, mapping: Dict, selected_j
 		time.sleep(0.1)
 	return results
 
-
+#job 4 
 def process_batch_with_session(df: pd.DataFrame, mapping: Dict, selected_job_opening: str,
 								existing_titles: Set, start_offset: int = 0, session=None) -> Dict:
 	"""Process a single batch (insert JobOpening docs)"""
@@ -1109,6 +1519,118 @@ def process_batch_with_session(df: pd.DataFrame, mapping: Dict, selected_job_ope
 				"message": error_msg
 			})
 	return batch_results
+
+#can 3
+def process_import_data_with_session_candidate(df: pd.DataFrame, mapping: Dict, selected_job_opening: str, session, batch_size: int = 100) -> Dict:
+	"""Process and insert candidate import data with session tracking"""
+	results = {"success": 0, "failed": 0, "total": len(df), "logs": []}
+	existing_emails = get_existing_emails()
+	for start_idx in range(0, len(df), batch_size):
+		end_idx = min(start_idx + batch_size, len(df))
+		batch_df = df.iloc[start_idx:end_idx]
+		batch_results = process_batch_with_session_candidate(
+			batch_df, mapping, selected_job_opening, existing_emails, start_idx, session
+		)
+		
+		results["success"] += batch_results["success"]
+		results["failed"] += batch_results["failed"]
+		results["logs"].extend(batch_results["logs"])
+		
+		# Commit and publish progress
+		session.save(ignore_permissions=True)
+		frappe.db.commit()
+		
+		frappe.publish_realtime(
+			'import_progress',
+			{
+				'session_id': session.name,
+				'processed': end_idx,
+				'total': len(df),
+				'success': results["success"],
+				'failed': results["failed"],
+				'progress_percentage': (end_idx / len(df)) * 100
+			}
+		)
+		time.sleep(0.1)
+	return results
+
+#can 4
+def process_batch_with_session_candidate(df: pd.DataFrame, mapping: Dict, job_opening: str, 
+							  existing_emails: Set, start_offset: int = 0, session=None) -> Dict:
+	"""Process a single batch with session tracking for Mira_Candidate"""
+	batch_results = {
+		"success": 0,
+		"failed": 0,
+		"logs": [],
+		"new_emails": []
+	}
+	
+	for idx, row in df.iterrows():
+		actual_row_num = start_offset + idx + 1
+		start_time = time.time()
+		
+		try:
+			# Map fields
+			candidate_data = map_row_data(row, mapping)
+			if job_opening:
+				candidate_data["job_opening"] = job_opening
+			
+			# Validate and process
+			processed_data = validate_and_process_candidate(candidate_data, existing_emails)
+			
+			# Create candidate document
+			doc = frappe.get_doc({
+				"doctype": "Mira_Candidate",
+				**processed_data
+			})
+			doc.insert(ignore_permissions=True)
+			
+			processing_time = time.time() - start_time
+			
+			# Track new email
+			email = processed_data.get("email")
+			if email:
+				batch_results["new_emails"].append(email.lower())
+			
+			if session:
+				session.mark_success(
+					row_number=actual_row_num,
+					candidate_name=processed_data.get("full_name", "Unknown"),
+					document_name=doc.name,
+					processing_time=processing_time
+				)
+			
+			batch_results["success"] += 1
+			batch_results["logs"].append({
+				"row_number": actual_row_num,
+				"candidate_name": processed_data.get("full_name", "Unknown"),
+				"status": "success",
+				"message": _("Successfully created: {0}").format(doc.name),
+				"document_name": doc.name
+			})
+			
+		except Exception as e:
+			processing_time = time.time() - start_time
+			error_msg = str(e)
+			
+			if session:
+				session.mark_failure(
+					row_number=actual_row_num,
+					candidate_name=candidate_data.get("full_name", "Unknown") if 'candidate_data' in locals() else "Unknown",
+					error_message=error_msg,
+					processing_time=processing_time
+				)
+			
+			batch_results["failed"] += 1
+			batch_results["logs"].append({
+				"row_number": actual_row_num,
+				"candidate_name": candidate_data.get("full_name", "Unknown") if 'candidate_data' in locals() else "Unknown",
+				"status": "error",
+				"message": error_msg
+			})
+	
+	return batch_results
+
 
 
 def process_text_field(value: Any, max_length: int = None) -> Optional[str]:
@@ -1183,161 +1705,164 @@ def process_owner_id(owner: Any) -> Optional[str]:
 		return owner_str
 	return frappe.session.user
 
+#chung
 @frappe.whitelist()
 def cancel_import_session(session_id: str):
-    """Cancel an active import session"""
-    try:
-        session = frappe.get_doc("Mira ImportSession", session_id)
-        
-        if session.status not in ["Processing", "Pending"]:
-            frappe.throw(_("Can only cancel sessions that are pending or in progress"))
-        
-        session.update_status("Cancelled")
-        session.add_simple_log("warning", "Import session cancelled by user")
-        
-        # Note: This won't stop background jobs that are already running
-        # You might need additional logic to handle job cancellation
-        
-        return {
-            "message": _("Import session cancelled successfully"),
-            "status": "Cancelled"
-        }
-        
-    except Exception as e:
-        frappe.log_error(f"Error cancelling import session: {str(e)}", "Cancel Import Error")
-        frappe.throw(_("Failed to cancel import: {0}").format(str(e)))
+	"""Cancel an active import session"""
+	try:
+		session = frappe.get_doc("Mira ImportSession", session_id)
+		
+		if session.status not in ["Processing", "Pending"]:
+			frappe.throw(_("Can only cancel sessions that are pending or in progress"))
+		
+		session.update_status("Cancelled")
+		session.add_simple_log("warning", "Import session cancelled by user")
+		
+		# Note: This won't stop background jobs that are already running
+		# You might need additional logic to handle job cancellation
+		
+		return {
+			"message": _("Import session cancelled successfully"),
+			"status": "Cancelled"
+		}
+		
+	except Exception as e:
+		frappe.log_error(f"Error cancelling import session: {str(e)}", "Cancel Import Error")
+		frappe.throw(_("Failed to cancel import: {0}").format(str(e)))
 
 @frappe.whitelist()
 def get_retry_job_opening(session_id: str):
-    """Get list of failed rows that can be retried"""
-    try:
-        session = frappe.get_doc("Mira ImportSession", session_id)
-        
-        failed_logs = frappe.get_all(
-            "Mira ImportLog",
-            filters={
-                "parent": session_id,
-                "status": "Failed"
-            },
-            fields=["row_number", "job_title", "error_message", "processing_time"],
-            order_by="row_number"
-        )
-        
-        return {
-            "session_name": session.name,
-            "total_failed": len(failed_logs),
-            "failed_rows": failed_logs,
-            "can_retry": len(failed_logs) > 0 and session.status in ["Completed", "Failed"]
-        }
-        
-    except frappe.DoesNotExistError:
-        return {"error": "Session not found"}
-    except Exception as e:
-        frappe.log_error(f"Error getting retry candidates: {str(e)}", "Retry Candidates Error")
-        return {"error": str(e)}
+	"""Get list of failed rows that can be retried"""
+	try:
+		session = frappe.get_doc("Mira ImportSession", session_id)
+		
+		failed_logs = frappe.get_all(
+			"Mira ImportLog",
+			filters={
+				"parent": session_id,
+				"status": "Failed"
+			},
+			fields=["row_number", "job_title", "error_message", "processing_time"],
+			order_by="row_number"
+		)
+		
+		return {
+			"session_name": session.name,
+			"total_failed": len(failed_logs),
+			"failed_rows": failed_logs,
+			"can_retry": len(failed_logs) > 0 and session.status in ["Completed", "Failed"]
+		}
+		
+	except frappe.DoesNotExistError:
+		return {"error": "Session not found"}
+	except Exception as e:
+		frappe.log_error(f"Error getting retry candidates: {str(e)}", "Retry Candidates Error")
+		return {"error": str(e)}
 
+#chung
 @frappe.whitelist()
-def retry_failed_import(session_id: str):
-    """Retry failed rows from an import session"""
-    try:
-        session = frappe.get_doc("Mira ImportSession", session_id)
-        
-        if session.status not in ["Completed", "Failed"]:
-            frappe.throw(_("Cannot retry an import that is still in progress"))
-        
-        # Get failed import logs
-        failed_logs = frappe.get_all(
-            "Mira ImportLog",
-            filters={
-                "parent": session_id,
-                "status": "Failed"
-            },
-            fields=["row_number", "job_title", "error_message"]
-        )
-        
-        if not failed_logs:
-            return {
-                "retried": 0,
-                "message": _("No failed rows to retry")
-            }
-        
-        # Re-read the original file if it still exists
-        original_file = frappe.db.get_value("File", {"file_url": session.file_url}, "name")
-        if not original_file:
-            frappe.throw(_("Original import file no longer exists. Cannot retry."))
-        
-        file_doc = frappe.get_doc("File", original_file)
-        df = read_file_to_dataframe(file_doc.get_full_path(), session.file_name)
-        
-        # Get the field mapping
-        mapping = json.loads(session.field_mapping) if session.field_mapping else {}
-        if not mapping:
-            frappe.throw(_("Field mapping not found in session"))
-        
-        # Create new retry session
-        retry_session = create_import_session(
-            file_name=f"RETRY_{session.file_name}",
-            file_url=session.file_url,
-            total_rows=len(failed_logs),
-            import_type=session.import_type,
-            job_opening=session.job_opening,
-            field_mapping=mapping,
-            batch_size=session.batch_size,
-            validate_only=False,  # Always process for retry
-            skip_duplicates=session.skip_duplicates,
-            parent_session=session_id
-        )
-        
-        retry_session.add_simple_log("info", f"Retry session started for {len(failed_logs)} failed rows from session {session_id}")
-        retry_session.update_status("Processing")
-        
-        # Extract failed row numbers
-        failed_row_numbers = [log.row_number - 1 for log in failed_logs]  # Convert to 0-based index
-        failed_df = df.iloc[failed_row_numbers]
-        
-        # Process the failed rows
-        results = process_import_data_with_session(
-            failed_df, 
-            mapping, 
-            session.job_opening, 
-            retry_session, 
-            session.batch_size
-        )
-        
-        # Update retry session status
-        if results["failed"] == 0:
-            retry_session.update_status("Completed")
-            retry_session.add_simple_log("success", f"All {results['success']} rows processed successfully")
-        else:
-            retry_session.update_status("Completed")
-            retry_session.error_summary = f"{results['failed']} rows still failed after retry"
-            retry_session.add_simple_log("warning", f"{results['success']} succeeded, {results['failed']} still failed")
-        
-        return {
-            "retried": len(failed_logs),
-            "success": results["success"],
-            "failed": results["failed"],
-            "retry_session_id": retry_session.name,
-            "message": _(f"Retry completed: {results['success']} successful, {results['failed']} still failed")
-        }
-        
-    except Exception as e:
-        frappe.log_error(frappe.get_traceback(), "Import Retry Error")
-        frappe.throw(_("Retry failed: {0}").format(str(e)))
+def delete_import_session(session_id: str):
+	"""Retry failed rows from an import session"""
+	try:
+		session = frappe.get_doc("Mira ImportSession", session_id)
+		
+		if session.status not in ["Completed", "Failed"]:
+			frappe.throw(_("Cannot retry an import that is still in progress"))
+		
+		# Get failed import logs
+		failed_logs = frappe.get_all(
+			"Mira ImportLog",
+			filters={
+				"parent": session_id,
+				"status": "Failed"
+			},
+			fields=["row_number", "job_title", "error_message"]
+		)
+		
+		if not failed_logs:
+			return {
+				"retried": 0,
+				"message": _("No failed rows to retry")
+			}
+		
+		# Re-read the original file if it still exists
+		original_file = frappe.db.get_value("File", {"file_url": session.file_url}, "name")
+		if not original_file:
+			frappe.throw(_("Original import file no longer exists. Cannot retry."))
+		
+		file_doc = frappe.get_doc("File", original_file)
+		df = read_file_to_dataframe(file_doc.get_full_path(), session.file_name)
+		
+		# Get the field mapping
+		mapping = json.loads(session.field_mapping) if session.field_mapping else {}
+		if not mapping:
+			frappe.throw(_("Field mapping not found in session"))
+		
+		# Create new retry session
+		retry_session = create_import_session(
+			file_name=f"RETRY_{session.file_name}",
+			file_url=session.file_url,
+			total_rows=len(failed_logs),
+			import_type=session.import_type,
+			job_opening=session.job_opening,
+			field_mapping=mapping,
+			batch_size=session.batch_size,
+			validate_only=False,  # Always process for retry
+			skip_duplicates=session.skip_duplicates,
+			parent_session=session_id
+		)
+		
+		retry_session.add_simple_log("info", f"Retry session started for {len(failed_logs)} failed rows from session {session_id}")
+		retry_session.update_status("Processing")
+		
+		# Extract failed row numbers
+		failed_row_numbers = [log.row_number - 1 for log in failed_logs]  # Convert to 0-based index
+		failed_df = df.iloc[failed_row_numbers]
+		
+		# Process the failed rows
+		results = process_import_data_with_session(
+			failed_df, 
+			mapping, 
+			session.job_opening, 
+			retry_session, 
+			session.batch_size
+		)
+		
+		# Update retry session status
+		if results["failed"] == 0:
+			retry_session.update_status("Completed")
+			retry_session.add_simple_log("success", f"All {results['success']} rows processed successfully")
+		else:
+			retry_session.update_status("Completed")
+			retry_session.error_summary = f"{results['failed']} rows still failed after retry"
+			retry_session.add_simple_log("warning", f"{results['success']} succeeded, {results['failed']} still failed")
+		
+		return {
+			"retried": len(failed_logs),
+			"success": results["success"],
+			"failed": results["failed"],
+			"retry_session_id": retry_session.name,
+			"message": _(f"Retry completed: {results['success']} successful, {results['failed']} still failed")
+		}
+		
+	except Exception as e:
+		frappe.log_error(frappe.get_traceback(), "Import Retry Error")
+		frappe.throw(_("Retry failed: {0}").format(str(e)))
 
+# chung
 @frappe.whitelist()
 def get_import_progress(session_id: str):
-    """Get import progress for a session"""
-    try:
-        session = frappe.get_doc("Mira ImportSession", session_id)
-        summary = session.get_summary()
-        summary["logs"] = session.get_logs(50)  # Get last 50 logs
-        return summary
-    except frappe.DoesNotExistError:
-        return {"status": "Not Found"}
-    except Exception as e:
-        frappe.log_error(f"Error getting import progress: {str(e)}", "Import Progress Error")
-        return {"status": "Error", "message": str(e)}
+	"""Get import progress for a session"""
+	try:
+		session = frappe.get_doc("Mira ImportSession", session_id)
+		summary = session.get_summary()
+		summary["logs"] = session.get_logs(50)  # Get last 50 logs
+		return summary
+	except frappe.DoesNotExistError:
+		return {"status": "Not Found"}
+	except Exception as e:
+		frappe.log_error(f"Error getting import progress: {str(e)}", "Import Progress Error")
+		return {"status": "Error", "message": str(e)}
 
 
 # def validate_and_get_candidate_source(source):
@@ -1356,62 +1881,62 @@ def get_import_progress(session_id: str):
 #     """Process gender with Vietnamese and English support"""
 #     if not gender:
 #         return None
-    
+	
 #     gender_str = str(gender).lower().strip()
-    
+	
 #     # Vietnamese mappings
 #     male_variants = ['nam', 'male', 'm', 'boy', 'man', '1']
 #     female_variants = ['nữ', 'nu', 'female', 'f', 'girl', 'woman', '0']
-    
+	
 #     if gender_str in male_variants:
 #         return 'Nam'
 #     elif gender_str in female_variants:
 #         return 'Nữ'
-    
+	
 #     return None
 
-# def process_phone_number(phone: Any) -> Optional[str]:
-#     """Enhanced phone number processing"""
-#     if not phone:
-#         return None
-    
-#     phone_str = str(phone).strip()
-#     if not phone_str:
-#         return None
-    
-#     # Remove formatting but keep + for international numbers
-#     cleaned = re.sub(r'[^\d+]', '', phone_str)
-    
-#     # Handle international format
-#     if cleaned.startswith('+'):
-#         cleaned = '+' + re.sub(r'[^\d]', '', cleaned[1:])
-#     else:
-#         cleaned = re.sub(r'[^\d]', '', cleaned)
-    
-#     # Validate length
-#     digit_only = re.sub(r'[^\d]', '', cleaned)
-#     if len(digit_only) < 10 or len(digit_only) > 15:
-#         return None
-    
-#     return cleaned[:20]  # Limit total length
+def process_phone_number(phone: Any) -> Optional[str]:
+    """Enhanced phone number processing"""
+    if not phone:
+        return None
+	
+    phone_str = str(phone).strip()
+    if not phone_str:
+        return None
+	
+    # Remove formatting but keep + for international numbers
+    cleaned = re.sub(r'[^\d+]', '', phone_str)
+	
+    # Handle international format
+    if cleaned.startswith('+'):
+        cleaned = '+' + re.sub(r'[^\d]', '', cleaned[1:])
+    else:
+        cleaned = re.sub(r'[^\d]', '', cleaned)
+	
+    # Validate length
+    digit_only = re.sub(r'[^\d]', '', cleaned)
+    if len(digit_only) < 10 or len(digit_only) > 15:
+        return None
+	
+    return cleaned[:20]  # Limit total length
 
 
-# def validate_email(email: str) -> bool:
-#     """Enhanced email validation"""
-#     if not email:
-#         return False
-    
-#     # Basic format check
-#     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-#     if not re.match(pattern, email):
-#         return False
-    
-#     # Additional checks
-#     if len(email) > 254:  # Email length limit
-#         return False
-    
-#     local, domain = email.split('@')
-#     if len(local) > 64:  # Local part length limit
-#         return False
-    
-#     return True
+def validate_email(email: str) -> bool:
+	"""Enhanced email validation"""
+	if not email:
+		return False
+	
+	# Basic format check
+	pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+	if not re.match(pattern, email):
+		return False
+	
+	# Additional checks
+	if len(email) > 254:  # Email length limit
+		return False
+	
+	local, domain = email.split('@')
+	if len(local) > 64:  # Local part length limit
+		return False
+	
+	return True

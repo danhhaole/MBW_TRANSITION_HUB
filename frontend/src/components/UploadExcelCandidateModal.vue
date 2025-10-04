@@ -1,5 +1,5 @@
 <template>
-    <Dialog v-model="show" :options="{ size: '5xl' }">
+    <Dialog v-model="internalShow" :options="{ size: '5xl' }">
         <template #body>
             <!-- Header với Progress Steps -->
             <div class="flex items-center justify-between p-5 border-b">
@@ -440,7 +440,8 @@
                                     <div class="flex justify-between items-start">
                                         <div class="flex-1">
                                             <div class="font-medium text-sm">
-                                                {{ __("Row") }} {{ log.row_number }}: {{ log.job_title || 'Unknown' }}
+                                                {{ log }}
+                                                {{ __("Row") }} {{ log.row_number }}: {{ log.full_name || 'Unknown' }}
                                             </div>
                                             <div class="text-sm text-gray-600 mt-1">{{ log.message }}</div>
                                         </div>
@@ -626,6 +627,15 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:modelValue'])
+
+const internalShow = computed({
+  get() {
+    return props.modelValue
+  },
+  set(value) {
+    emit('update:modelValue', value)
+  }
+})
 
 // Steps configuration
 const steps = ref([
@@ -843,7 +853,7 @@ const processFilePreview = async (file) => {
         const formData = new FormData()
         formData.append('file', file)
 
-        const response = await fetch('/api/method/mbw_mira.mbw_mira.doctype.mira_importsession.mira_importsession.upload_and_preview', {
+        const response = await fetch('/api/method/mbw_mira.mbw_mira.doctype.mira_importsession.mira_importsession.upload_and_preview_candidate', {
             method: 'POST',
             headers: {
                 'X-Frappe-CSRF-Token': window.csrf_token
@@ -951,10 +961,10 @@ const processImport = async (validationOnly = false) => {
         const formData = new FormData()
         formData.append('file', selectedFile.value)
         formData.append('mapping', JSON.stringify(fieldMapping.value))
-        formData.append('candidate', selectedJob.value || '')
+        formData.append('job_opening', selectedJob.value || '')
         formData.append('validate_only', validationOnly ? '1' : '0')
 
-        const response = await fetch('/api/method/mbw_mira.mbw_mira.doctype.mira_importsession.mira_importsession.import_with_mapping', {
+        const response = await fetch('/api/method/mbw_mira.mbw_mira.doctype.mira_importsession.mira_importsession.import_with_mapping_candidate', {
             method: 'POST',
             headers: {
                 'X-Frappe-CSRF-Token': window.csrf_token
@@ -969,6 +979,7 @@ const processImport = async (validationOnly = false) => {
         const result = await response.json()
 
         if (result.message) {
+            console.log(result.message)
             importResults.value = result.message
             sessionId.value = result.message.session_id
 
@@ -1197,6 +1208,7 @@ const viewSessionDetails = async (sessionName) => {
             session_id: sessionName
         })
 
+        import_with_mapping_candidate.value = details
         if (details) {
             selectedSessionDetails.value = details
             showSessionDetails.value = true
@@ -1207,6 +1219,7 @@ const viewSessionDetails = async (sessionName) => {
     }
 }
 
+// delete session (dont)
 const deleteSession = async (sessionName) => {
     if (!confirm(__('Are you sure you want to delete this import session?'))) {
         return

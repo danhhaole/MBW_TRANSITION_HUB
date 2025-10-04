@@ -130,7 +130,7 @@ def update_campaign(**kwargs):
     - start_date, end_date, is_active
     - source_type, source_file, source_config
     - target_segment, job_opening, template_used
-    - steps_count, select_pages
+    - steps_count, select_pages, mira_talent_campaign
     """
     name = kwargs.get("name")
     if not name:
@@ -189,6 +189,15 @@ def update_campaign(**kwargs):
             except Exception:
                 source_config = None
         doc.source_config = source_config
+    
+    if 'mira_talent_campaign' in kwargs:
+        mira_talent_campaign = kwargs['mira_talent_campaign']
+        if isinstance(mira_talent_campaign, (list, dict)):
+            try:
+                mira_talent_campaign = json.dumps(mira_talent_campaign)
+            except Exception:
+                mira_talent_campaign = None
+        doc.mira_talent_campaign = mira_talent_campaign
         
     # Handle social media fields
     if 'social_page_id' in kwargs:

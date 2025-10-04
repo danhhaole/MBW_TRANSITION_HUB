@@ -1,16 +1,16 @@
 <template>
   <div class="job-application-form">
-    <h2 class="text-2xl font-bold mb-6">Ứng tuyển vị trí</h2>
-    <p class="text-gray-600 mb-6">Vui lòng điền đầy đủ thông tin bên dưới để ứng tuyển</p>
+    <h2 class="text-2xl font-bold mb-6">{{ ('Leave Infomation') }}</h2>
+    <p class="text-gray-600 mb-6">{{ ('Please fill in the information below') }}</p>
     
     <form @submit.prevent="submitForm" class="space-y-4">
       <!-- Full Name -->
       <div class="form-group">
-        <label for="first_name" class="block text-sm font-medium text-gray-700 mb-1">Họ và tên <span class="text-red-500">*</span></label>
+        <label for="full_name" class="block text-sm font-medium text-gray-700 mb-1">{{ ('Full Name') }} <span class="text-red-500">*</span></label>
         <input
           type="text"
-          id="first_name"
-          v-model="formData.first_name"
+          id="full_name"
+          v-model="formData.full_name"
           class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
         >
@@ -18,11 +18,11 @@
 
       <!-- Email -->
       <div class="form-group">
-        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email <span class="text-red-500">*</span></label>
+        <label for="contact_email" class="block text-sm font-medium text-gray-700 mb-1">{{ ('Email') }} <span class="text-red-500">*</span></label>
         <input
-          type="email"
-          id="email"
-          v-model="formData.email"
+          type="contact_email"
+          id="contact_email"
+          v-model="formData.contact_email"
           class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
         >
@@ -30,18 +30,18 @@
 
       <!-- Phone -->
       <div class="form-group">
-        <label for="phone_number" class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại <span class="text-red-500">*</span></label>
+        <label for="contact_phone" class="block text-sm font-medium text-gray-700 mb-1">{{ ('Phone Number') }} <span class="text-red-500">*</span></label>
         <input
           type="tel"
-          id="phone_number"
-          v-model="formData.phone_number"
+          id="contact_phone"
+          v-model="formData.contact_phone"
           class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
         >
       </div>
 
       <!-- Current Position -->
-      <div class="form-group">
+      <!-- <div class="form-group">
         <label for="current_designation" class="block text-sm font-medium text-gray-700 mb-1">Vị trí hiện tại</label>
         <input
           type="text"
@@ -49,10 +49,10 @@
           v-model="formData.current_designation"
           class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-      </div>
+      </div> -->
 
       <!-- Current Company -->
-      <div class="form-group">
+      <!-- <div class="form-group">
         <label for="current_company" class="block text-sm font-medium text-gray-700 mb-1">Công ty hiện tại</label>
         <input
           type="text"
@@ -60,10 +60,10 @@
           v-model="formData.current_company"
           class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-      </div>
+      </div> -->
 
       <!-- Years of Experience -->
-      <div class="form-group">
+      <!-- <div class="form-group">
         <label for="experience_years" class="block text-sm font-medium text-gray-700 mb-1">Số năm kinh nghiệm</label>
         <input
           type="number"
@@ -72,10 +72,10 @@
           min="0"
           class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-      </div>
+      </div> -->
 
       <!-- Resume Upload -->
-      <div class="form-group">
+      <!-- <div class="form-group">
         <label class="block text-sm font-medium text-gray-700 mb-1">Tải lên CV của bạn</label>
         <div class="mt-1 flex items-center">
           <input
@@ -97,11 +97,11 @@
           <span class="ml-3 text-sm text-gray-700" v-else>{{ formData.resume.name }}</span>
         </div>
         <p class="mt-1 text-xs text-gray-500">Hỗ trợ: PDF, DOC, DOCX (tối đa 5MB)</p>
-      </div>
+      </div> -->
 
       <!-- LinkedIn Profile -->
       <div class="form-group">
-        <label for="linkedin_profile" class="block text-sm font-medium text-gray-700 mb-1">LinkedIn Profile (nếu có)</label>
+        <label for="linkedin_profile" class="block text-sm font-medium text-gray-700 mb-1">{{ ('LinkedIn Profile') }}</label>
         <input
           type="url"
           id="linkedin_profile"
@@ -113,7 +113,7 @@
 
       <!-- Notes -->
       <div class="form-group">
-        <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">Ghi chú (nếu có)</label>
+        <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">{{ ('Notes') }}</label>
         <textarea
           id="notes"
           v-model="formData.notes"
@@ -148,9 +148,9 @@ const isSubmitting = ref(false);
 const resumeInput = ref(null);
 
 const formData = reactive({
-  first_name: '',
-  email: '',
-  phone_number: '',
+  full_name: '',
+  contact_email: '',
+  contact_phone: '',
   current_designation: '',
   current_company: '',
   experience_years: null,
@@ -181,9 +181,9 @@ const handleFileUpload = (event) => {
 
 const resetForm = () => {
   Object.assign(formData, {
-    first_name: '',
-    email: '',
-    phone_number: '',
+    full_name: '',
+    contact_email: '',
+    contact_phone: '',
     current_designation: '',
     current_company: '',
     experience_years: null,
@@ -202,21 +202,21 @@ const submitForm = async () => {
     isSubmitting.value = true;
     
     // Basic validation
-    if (!formData.first_name || !formData.email || !formData.phone_number) {
+    if (!formData.full_name || !formData.contact_email || !formData.contact_phone) {
       toast.error('Vui lòng điền đầy đủ các trường bắt buộc');
       return;
     }
     
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
+    if (!emailRegex.test(formData.contact_email)) {
       toast.error('Vui lòng nhập địa chỉ email hợp lệ');
       return;
     }
     
     // Phone number validation (basic)
     const phoneRegex = /^[0-9\-\+]{9,15}$/;
-    if (!phoneRegex.test(formData.phone_number)) {
+    if (!phoneRegex.test(formData.contact_phone)) {
       toast.error('Vui lòng nhập số điện thoại hợp lệ');
       return;
     }
@@ -237,7 +237,7 @@ const submitForm = async () => {
     });
 
     // Call the API to submit the job application
-    const response = await fetch('/api/method/mbw_mira.mbw_mira.doctype.mira_prospect.mira_prospect.submit_job_application', {
+    const response = await fetch('/api/method/mbw_mira.mbw_mira.doctype.mira_talent.mira_talent.submit_job_application', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -257,12 +257,43 @@ const submitForm = async () => {
     console.log("result",result);
     
     
-    if (result.message.success) {
+    if (result.message && result.message.success) {
       toast.success('Đơn ứng tuyển của bạn đã được gửi thành công!');
       resetForm();
       emit('success');
     } else {
-      throw new Error(result.error || 'Có lỗi xảy ra khi gửi đơn ứng tuyển');
+      // Try to parse server messages for more detailed error
+      let errorMessage = 'Có lỗi xảy ra khi gửi đơn ứng tuyển';
+      let serverMessage = null;
+      
+      if (result._server_messages) {
+        try {
+          const messages = JSON.parse(result._server_messages);
+          if (Array.isArray(messages) && messages.length > 0) {
+            const firstMessage = JSON.parse(messages[0]);
+            serverMessage = firstMessage.message || errorMessage;
+            // Remove HTML tags from the message for cleaner display
+            serverMessage = serverMessage.replace(/<[^>]*>?/gm, '');
+            console.log("serverMessage",serverMessage);
+            
+          }
+        } catch (e) {
+          console.error('Error parsing server messages:', e);
+        }
+      }
+      
+      // Use server message if available, otherwise fall back to other error messages
+      const displayMessage = serverMessage || result.message?.error || errorMessage;
+      
+      // Show the error message in toast
+      toast.error(displayMessage);
+      
+      // Also log the full error for debugging
+      console.error('Form submission error:', {
+        serverMessage,
+        message: result.message,
+        fullResult: result
+      });
     }
     
   } catch (error) {
@@ -282,7 +313,6 @@ const handleCancel = () => {
 <style scoped>
 .job-application-form {
   max-width: 600px;
-  padding: 2rem;
   background-color: white;
   border-radius: 0.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
