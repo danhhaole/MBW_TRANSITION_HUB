@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "creation": "2025-10-02 15:57:30.514128",
+ "creation": "2025-10-04 08:44:37.770359",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
@@ -25,6 +25,11 @@
    "options": "Mira Segment"
   },
   {
+   "fieldname": "match_score",
+   "fieldtype": "Float",
+   "label": "Match Score"
+  },
+  {
    "fieldname": "added_at",
    "fieldtype": "Datetime",
    "label": "Added At"
@@ -34,17 +39,12 @@
    "fieldtype": "Link",
    "label": "Added By",
    "options": "User"
-  },
-  {
-   "fieldname": "match_score",
-   "fieldtype": "Float",
-   "label": "Match Score"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-04 08:17:55.276415",
+ "modified": "2025-10-04 08:47:24.493789",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Talent Pool",
