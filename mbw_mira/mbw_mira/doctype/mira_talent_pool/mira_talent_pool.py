@@ -6,8 +6,8 @@ from frappe import _
 from frappe.model.document import Document
 import json
 
-class Mira_Talent_Pool(Document):
-    pass
+class MiraTalentPool(Document):
+    
 
     def validate(self):
         validate_unique_candidate_segment(self)
