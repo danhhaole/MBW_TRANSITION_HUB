@@ -153,9 +153,6 @@ add_to_apps_screen = [
 
 scheduler_events = {
     "cron": {
-        "* * * * *": [  # ✅ Chạy mỗi phút
-           
-        ],
         "0/1 * * * *": [
             "mbw_mira.schedulers.fetch_ats_mbw_campaigns.run",
             "mbw_mira.schedulers.excel_source_campaigns.run",
