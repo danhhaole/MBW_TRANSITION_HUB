@@ -84,7 +84,7 @@ class MiraImportsession(Document):
 			minutes = int((estimated_seconds % 3600) / 60)
 			self.estimated_time_remaining = f"{hours}h {minutes}m"
 	
-	def add_simple_log(self, status, message, row_number=None, job_title=None, 
+	def add_simple_log(self, status, message, row_number=None, job_title=None,
 					  document_name=None, processing_time=None):
 		"""Add a simple log entry without child table"""
 		try:
@@ -126,6 +126,48 @@ class MiraImportsession(Document):
 		except Exception as e:
 			frappe.log_error(f"Failed to add log: {str(e)}", "ImportSession Log Error")
 	
+	def add_simple_log_candidate(self, status, message, row_number=None, full_name=None,
+								  document_name=None, processing_time=None):
+		"""Add a simple log entry without child table"""
+		try:
+			# Initialize temp logs if not exists
+			if not hasattr(self, '_temp_logs_candidate'):
+				self._temp_logs_candidate = []
+			
+			log_entry = {
+				"timestamp": now(),
+				"status": status,
+				"message": message,
+				"row_number": row_number,
+				"full_name": full_name,
+				"document_name": document_name,
+				"processing_time": processing_time
+			}
+			
+			self._temp_logs_candidate.append(log_entry)
+			
+			# Store in error_summary as JSON (keep last 100 entries)
+			if len(self._temp_logs_candidate) > 100:
+				self._temp_logs_candidate = self._temp_logs_candidate[-100:]
+			
+			# Update error_summary field with logs
+			try:
+				existing_logs = []
+				if self.error_summary_candidate:
+					existing_logs = json.loads(self.error_summary_candidate)
+				
+				existing_logs.append(log_entry)
+				if len(existing_logs) > 100:
+					existing_logs = existing_logs[-100:]
+				
+				self.error_summary_candidate = json.dumps(existing_logs)
+			except Exception as e:
+				# If JSON parsing fails, start fresh
+				self.error_summary_candidate = json.dumps([log_entry])
+				
+		except Exception as e:
+			frappe.log_error(f"Failed to add log: {str(e)}", "ImportSession Log Error")
+
 	def update_status(self, status, save=True):
 		"""Update session status"""
 		old_status = self.status
@@ -171,6 +213,19 @@ class MiraImportsession(Document):
 			document_name=document_name,
 			processing_time=processing_time
 		)
+	
+	def mark_success_candidate(self, row_number=None, full_name=None, document_name=None, 
+					processing_time=None):
+		"""Mark a row as successfully processed"""
+		self.success_count = (self.success_count or 0) + 1
+		self.add_simple_log_candidate(
+			status="success",
+			message=f"Successfully created candidate: {document_name}",
+			row_number=row_number,
+			full_name=full_name,
+			document_name=document_name,
+			processing_time=processing_time
+		)
 		
 	def mark_failure(self, row_number=None, job_title=None, error_message=None, 
 					processing_time=None):
@@ -181,6 +236,18 @@ class MiraImportsession(Document):
 			message=error_message or "Processing failed",
 			row_number=row_number,
 			job_title=job_title,
+			processing_time=processing_time
+		)
+
+	def mark_failure_candidate(self, row_number=None, full_name=None, error_message=None, 
+					processing_time=None):
+		"""Mark a row as failed"""
+		self.failed_count = (self.failed_count or 0) + 1
+		self.add_simple_log_candidate(
+			status="error",
+			message=error_message or "Processing failed",
+			row_number=row_number,
+			full_name=full_name,
 			processing_time=processing_time
 		)
 		
@@ -287,7 +354,7 @@ def download_candidate_template():
 			elif field['fieldname'] == 'email':
 				sample_data[header] = 'nguyen.van.a@example.com'
 			elif field['fieldname'] == 'phone':
-				sample_data[header] = '0912345678'
+				sample_data[header] = '091234567823'
 			elif field['fieldname'] == 'headline':
 				sample_data[header] = 'Senior Software Engineer at ABC Company'
 			elif field['fieldname'] == 'source':
@@ -317,6 +384,7 @@ def download_candidate_template():
 				
 				# Style headers
 				from openpyxl.styles import Font, PatternFill, Alignment
+				from openpyxl.utils import get_column_letter
 				
 				header_font = Font(bold=True, color="FFFFFF")
 				header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
@@ -329,9 +397,17 @@ def download_candidate_template():
 					cell.fill = header_fill
 					cell.alignment = center_alignment
 				
-				# Set column widths
+				# 👉 Giữ nguyên số 0 đầu của số điện thoại bằng cách định dạng cột "Phone" là text
 				for col_num, header in enumerate(headers, 1):
-					column_letter = worksheet.cell(row=1, column=col_num).column_letter
+					column_letter = get_column_letter(col_num)
+					
+					# Nếu header có chữ "phone" => format text
+					if 'phone' in header.lower():
+						for row in range(2, len(df) + 2):  # từ hàng 2 (dữ liệu)
+							cell = worksheet.cell(row=row, column=col_num)
+							cell.number_format = '@'  # '@' = định dạng text
+					
+					# Thiết lập độ rộng cột
 					worksheet.column_dimensions[column_letter].width = max(len(str(header)) + 5, 15)
 			
 			# Read file content
@@ -374,7 +450,6 @@ def upload_and_preview_candidate():
 		if ext not in ['csv', 'xls', 'xlsx']:
 			frappe.throw(_("Unsupported file type. Only CSV, XLS, XLSX files are allowed."))
 
-		# Read file into DataFrame with improved error handling
 		try:
 			file_bytes = uploaded.read()
 			bio = io.BytesIO(file_bytes)
@@ -386,7 +461,8 @@ def upload_and_preview_candidate():
 				for encoding in encodings:
 					try:
 						bio.seek(0)
-						df = pd.read_csv(bio, encoding=encoding)
+						# 👉 Force all columns to string
+						df = pd.read_csv(bio, encoding=encoding, dtype=str, keep_default_na=False)
 						break
 					except (UnicodeDecodeError, UnicodeError):
 						continue
@@ -396,7 +472,8 @@ def upload_and_preview_candidate():
 					
 			elif ext in ("xls", "xlsx"):
 				try:
-					df = pd.read_excel(bio, engine='openpyxl' if ext == 'xlsx' else None)
+					# 👉 Force all cells to be read as strings to keep leading zeros (e.g. phone numbers)
+					df = pd.read_excel(bio, dtype=str, engine='openpyxl' if ext == 'xlsx' else None)
 				except Exception as e:
 					frappe.throw(_("Error reading Excel file: {0}").format(str(e)))
 
@@ -411,6 +488,9 @@ def upload_and_preview_candidate():
 			if df.empty:
 				frappe.throw(_("No valid data found in file"))
 
+			# ✅ Convert all values to string (avoid float/int converting again)
+			df = df.applymap(lambda x: str(x).strip() if pd.notna(x) else "")
+
 		except Exception as e:
 			frappe.log_error(frappe.get_traceback(), "Candidate Import Preview Read Error")
 			frappe.throw(_("Failed to read file: {0}").format(str(e)))
@@ -419,7 +499,7 @@ def upload_and_preview_candidate():
 		columns = [str(c) for c in df.columns.tolist()]
 		sample = df.head(10).fillna("").to_dict(orient="records")
 
-		# Get available fields from JobOpening for mapping suggestions
+		# Get available fields from Mira Candidate for mapping suggestions
 		meta = frappe.get_meta("Mira Candidate")
 		available_fields = []
 		for field in meta.fields:
@@ -447,18 +527,19 @@ def upload_and_preview_candidate():
 def import_with_mapping_candidate():
 	"""Enhanced import with mapping using Mira Importsession for tracking (Candidate)"""
 	try:
-		# Get form data
+		# 1️⃣ Nhận dữ liệu từ form
 		uploaded = frappe.request.files.get('file')
 		mapping_raw = frappe.form_dict.get('mapping', '{}')
 		selected_job_opening = frappe.form_dict.get('selected_job_opening') or frappe.form_dict.get('job_opening')
 		batch_size = int(frappe.form_dict.get('batch_size', 100))
 		validate_only = frappe.form_dict.get('validate_only', '0') == '1'
 		skip_duplicates = frappe.form_dict.get('skip_duplicates', '1') == '1'
+		print(">>>>>>>>>>>>>>>>>>> 1. Bắt đầu import_with_mapping_candidate")
 
 		if not uploaded:
 			frappe.throw(_("No file uploaded"))
 
-		# Save file to Frappe
+		# 2️⃣ Lưu file tạm vào Frappe File
 		file_doc = save_file(
 			fname=uploaded.filename,
 			content=uploaded.read(),
@@ -466,52 +547,63 @@ def import_with_mapping_candidate():
 			dn=uploaded.filename,
 			is_private=0
 		)
+		print(">>>>>>>>>>>>>>>>>>> 2. File đã được lưu:", file_doc.file_url)
 
 		try:
-			# Read file with pandas
+			# 3️⃣ Đọc file vào dataframe
+			print(">>>>>>>>>>>>>>>>>>> 3. Đọc file bằng pandas...")
 			df = read_file_to_dataframe(file_doc.get_full_path(), uploaded.filename)
-			# Process mapping
+			print(f">>>>>>>>>>>>>>>>>>> 3.1 File có {len(df)} dòng, {len(df.columns)} cột")
+
+			# 4️⃣ Parse mapping
 			mapping = json.loads(mapping_raw)
 			if not mapping:
 				frappe.throw(_("Field mapping is required"))
+			print(">>>>>>>>>>>>>>>>>>> 4. Mapping gốc từ frontend:", mapping)
 
-			# Create a more flexible mapping that handles case and spaces
-			reversed_mapping = {}
-			for field, col_name in mapping.items():
-				# Normalize the column name by lowercasing and removing extra spaces
-				normalized_col = str(col_name).lower().strip()
-				reversed_mapping[normalized_col] = field
+			# 5️⃣ Chuẩn hoá mapping (Excel header → field hệ thống)
+			normalized_mapping = {}
+			for source_col, target_field in mapping.items():
+				if target_field:
+					normalized_mapping[str(source_col).strip().lower()] = str(target_field).strip()
 
-			# Create import session
+			print(">>>>>>>>>>>>>>>>>>> 5. Mapping sau chuẩn hoá (Excel header -> field hệ thống):", normalized_mapping)
+
+			# 6️⃣ Tạo import session
 			session = create_import_session_candidate(
 				file_name=uploaded.filename,
 				file_url=file_doc.file_url,
 				total_rows=len(df),
 				import_type="Candidate",
 				selected_job_opening=selected_job_opening,
-				field_mapping=reversed_mapping,  # Use the reversed mapping
+				field_mapping=normalized_mapping,  # mapping chiều đúng
 				batch_size=batch_size,
 				validate_only=validate_only,
 				skip_duplicates=skip_duplicates
 			)
-			session.add_simple_log("info", f"Import session started for {len(df)} rows")
+			session.add_simple_log_candidate("info", f"Import session started for {len(df)} rows")
 			session.update_status("Processing")
 
-			if validate_only:
-				# Only validate, don't insert
-				print("1=>>>>>>>>>>>>>>>>>>>>1", mapping)
-				print("2=>>>>>>>>>>>>>>>>>>>>2", session)
-				results = validate_import_data_with_session_candidate(df, mapping, session)
-			else:
-				# Process and insert data
-				results = process_import_data_with_session_candidate(df, mapping, selected_job_opening, session, batch_size)
+			print(">>>>>>>>>>>>>>>>>>> 6. Session tạo thành công:", session.name)
 
-			# Update session with final results
+			# 7️⃣ Chạy chế độ validate hoặc insert
+			if validate_only:
+				print(">>>>>>>>>>>>>>>>>>> 7. Chế độ kiểm tra dữ liệu (validate only)")
+				results = validate_import_data_with_session_candidate(df, normalized_mapping, session)
+			else:
+				print(">>>>>>>>>>>>>>>>>>> 8. Chế độ nhập dữ liệu thực tế (insert)")
+				results = process_import_data_with_session_candidate(df, normalized_mapping, selected_job_opening, session, batch_size)
+
+			print(">>>>>>>>>>>>>>>>>>> 8. Kết quả xử lý:", results)
+
+			# 9️⃣ Cập nhật trạng thái session
 			if results.get("failed", 0) == 0:
 				session.update_status("Completed")
 			else:
 				session.update_status("Completed")
 				session.error_summary = f"{results['failed']} rows failed during import"
+
+			print(">>>>>>>>>>>>>>>>>>> 9. Import hoàn tất")
 
 			return {
 				**results,
@@ -519,15 +611,18 @@ def import_with_mapping_candidate():
 			}
 
 		finally:
-			# Clean up temporary file
+			# 🔟 Xoá file tạm
 			try:
 				frappe.delete_doc("File", file_doc.name, ignore_permissions=True)
-			except:
-				pass
+				print(">>>>>>>>>>>>>>>>>>> 10. File tạm đã xoá")
+			except Exception as cleanup_err:
+				print(">>>>>>>>>>>>>>>>>>> 10. Lỗi khi xoá file tạm:", cleanup_err)
 
 	except Exception as e:
-		frappe.log_error(frappe.get_traceback(), "Job Opening Import Error")
+		frappe.log_error(frappe.get_traceback(), "Candidate Import Error")
 		frappe.throw(_("Import failed: {0}").format(str(e)))
+
+
 
 # Job
 @frappe.whitelist()
@@ -1108,15 +1203,44 @@ def map_row_data(row: pd.Series, mapping: Dict) -> Dict:
 				job_opening_data[field_name] = str(value).strip()
 	return job_opening_data
 
-def map_row_data_candidate(row: pd.Series, mapping: Dict) -> Dict:
-	"""Map row data according to field mapping (Excel Header -> DocField)"""
-	job_opening_data: Dict[str, Any] = {}
-	for field_name, column_name in mapping.items():
-		if column_name and column_name in row.index:
-			value = row[column_name]
-			if pd.notna(value) and str(value).strip():
-				job_opening_data[field_name] = str(value).strip()
-	return job_opening_data
+def map_row_data_candidate(row: pd.Series, mapping) -> Dict:
+	print(">>>>>>>>>>>>>>>>>>> 7.3.1")
+	candidate_data: Dict[str, Any] = {}
+	print(">>>>>>>>>>>>>>>>>>> 7.3.2")
+
+	try:
+		if hasattr(mapping, "field_mapping"):
+			print(">>>>>>>>>>>>>>>>>>> 7.3.2.1 mapping là MiraImportsession object")
+			try:
+				mapping_raw = getattr(mapping, "field_mapping") or "{}"
+				mapping = json.loads(mapping_raw)
+			except Exception as e:
+				print(">>>>>>>>>>>>>>>>>>> 7.3.2.2 lỗi parse JSON mapping:", e)
+				mapping = {}
+
+		print(">>>>>>>>>>>>>>>>>>> 7.3.2 mapping sau khi xử lý:", mapping)
+		print(">>>>>>>>>>>>>>>>>>> 7.3.2 row:", row.to_dict())
+
+	except Exception as e:
+		print(">>>>>>>>>>>>>>>>>>>>>>>>>7.3.3", e)
+
+	try:
+		# lowercase map for column matching
+		row_lower_map = {col.lower(): col for col in row.index}
+
+		for field_name, column_name in mapping.items():
+			col_lower = column_name.lower()
+			if col_lower in row_lower_map:
+				actual_col = row_lower_map[col_lower]
+				value = row[actual_col]
+				print(f">>>>>>>>>>>>>>>>>>> 7.3.4 matched '{field_name}' -> '{actual_col}' = {value}")
+				if pd.notna(value) and str(value).strip():
+					candidate_data[field_name] = str(value).strip()
+	except Exception as e:
+		print(">>>>>>>>>>>>>>>>>>> 7.3.7", e)
+
+	print(">>>>>>>>>>>>>>>>>>> 7.3.8 candidate_data:", candidate_data)
+	return candidate_data
 
 # check trùng của job
 def get_existing_job_titles() -> Set[str]:
@@ -1139,6 +1263,7 @@ def get_existing_emails() -> Set[str]:
 # của candidate 1
 def validate_and_process_candidate(candidate_data: Dict, existing_emails: Set = None) -> Dict:
 	"""Enhanced validation with better error messages and field processing"""
+	
 	processed = {}
 	errors = []
 	# Required field validation
@@ -1146,24 +1271,31 @@ def validate_and_process_candidate(candidate_data: Dict, existing_emails: Set = 
 		"full_name": _("Full Name"),
 		"email": _("Email")
 	}
-	print("candidate_data1111111=>>>>>>>>>>>>>>>", candidate_data)
+	
 	for field, label in required_fields.items():
-		value = candidate_data.get(field, "").strip()
-		if not value:
-			errors.append(_("Missing required field: {0}").format(label))
+		value = candidate_data.get(field, "")
+		if not value or not str(value).strip():
+			err_msg = f"Missing required field: {label}"
+			errors.append(err_msg)
 		else:
-			processed[field] = value
+			processed_value = str(value).strip()
+			processed[field] = processed_value
 	# Email validation and duplicate check
-	email = candidate_data.get("email", "").strip().lower()
+	email = str(candidate_data.get("email", "")).strip().lower()
+	
 	if email:
 		if not validate_email(email):
-			errors.append(_("Invalid email format: {0}").format(email))
+			err_msg = f"Invalid email format: {email}"
+			errors.append(err_msg)
 		elif existing_emails and email in existing_emails:
-			errors.append(_("Email already exists: {0}").format(email))
+			err_msg = f"Email already exists: {email}"
+			errors.append(err_msg)
 		else:
 			processed["email"] = email
 			if existing_emails is not None:
 				existing_emails.add(email)
+	else:
+		print("- Email is empty or missing")
 	
 	# Process other fields
 	field_processors = {
@@ -1196,16 +1328,8 @@ def validate_and_process_candidate(candidate_data: Dict, existing_emails: Set = 
 	return processed
 
 #của candidate 2
-def validate_import_data_with_session_candidate(df: pd.DataFrame, mapping: Dict, session=None) -> Dict:
+def validate_import_data_with_session_candidate(df: pd.DataFrame,job_opening, mapping: Dict, session=None) -> Dict:
 	"""Validate candidate import data with session tracking
-	
-	Args:
-		df: DataFrame containing the imported data
-		mapping: Dictionary mapping Excel columns to candidate fields
-		session: Optional import session for tracking progress
-	
-	Returns:
-		Dict containing validation results and logs
 	"""   
 	results = {
 		"success": 0,
@@ -1213,105 +1337,62 @@ def validate_import_data_with_session_candidate(df: pd.DataFrame, mapping: Dict,
 		"total": len(df),
 		"logs": []
 	}
-
-	print("df=>>>>>>>>>>>>>>>11111: ", df.iterrows())
-	
+	print(">>>>>>>>>>>>>>>>>>> 7.1")
 	# Get existing emails using the helper function
 	existing_emails = get_existing_emails()
 	seen_emails = set()  # Track emails in current import to catch duplicates
-	
+	print(">>>>>>>>>>>>>>>>>>> 7.2")
 	for idx, row in df.iterrows():
 		start_time = time.time()
-		row_number = idx + 2  # +2 because Excel rows are 1-based and we have a header
+		row_number = idx + 1
+
+		print(">>>>>>>>>>>>>>>>>>> 7.2row", row)
+		print(">>>>>>>>>>>>>>>>>>> 7.2map", mapping)
 		
 		try:
-			# Map row data to candidate fields
-			candidate_data = {}
-			mapped_fields = []
+			print(">>>>>>>>>>>>>>>>>>> 7.3")
+			candidate_data = map_row_data_candidate(row, mapping)
+			print(">>>>>>>>>>>>>>>>>>> 7.4")
+			print(">>>>>>>>>>>>>>>>>>> 7.4", candidate_data)
 
-			print("mapping3=>>>>>>>>>>>>>>>", mapping)
-			print("maaapping 4=>>>", mapping.items())
-			print("row4=>>>>", row)
-			phong = 0
-			for excel_col, field_name in mapping.items():
-				print("excel_col", excel_col)
-				print("field_name", field_name)
-				if excel_col in row:
-					phong += 1
-					print("excel_col in row", excel_col in row)
-					print("value", value)
-					print("candidate_data", candidate_data)
-					value = str(row[excel_col]).strip()
-					candidate_data[field_name] = value
-					mapped_fields.append(f"{excel_col} -> {field_name}")
-				else:
-					print(f"DEBUG: Column {excel_col} not found or empty in row {row_number}")
+			processed_data = validate_and_process_candidate(candidate_data, existing_emails)
+			print(">>>>>>>>>>>>>>>>>>> 7.5")
+			print(">>>>>>>>>>>>>>>>>>> 7.5", processed_data)
 			
+			email = processed_data.get("email", "").lower()
+			if email and email in seen_emails:
+				raise frappe.ValidationError(_("Duplicate email in import file: {0}").format(email))
+			if email:
+				seen_emails.add(email)
 			
-			# Validate and process candidate data
-			try:
-				print("candidate_data11111=>>>>>>>>>>>>>>>")
-				existing_emails_combined = existing_emails.union(seen_emails)
-				print("222222=>>>>>>>>>>>>>>>", existing_emails_combined)
-				processed_data = validate_and_process_candidate(
-					candidate_data, 
-					existing_emails_combined
+			processing_time = time.time() - start_time
+
+			if session:
+				session.mark_success_candidate(
+					row_number=row_number,
+					full_name=processed_data.get("full_name", "Unknown"),
+					processing_time=processing_time
 				)
-				print("33333333=>>>>>>>>>>>>>>>", processed_data)
-				print("candidate_data22222=>>>>>>>>>>>>>>>")
-				# Check for duplicate email in current import
-				email = processed_data.get("email", "").lower()
-				if email and email in seen_emails:
-					error_msg = f"Duplicate email in import: {email}"
-					raise frappe.ValidationError(error_msg)
-				processing_time = time.time() - start_time
-				print("candidate_data33333=>>>>>>>>>>>>>>>")
-				if session:
-					session.mark_success(
-						row_number=row_number,
-						candidate_name=processed_data.get("full_name", "Unknown"),
-						processing_time=processing_time
-					)
-				
-				results["success"] += 1
-				log_msg = f"Successfully validated row {row_number}"
-				results["logs"].append({
-					"row": row_number,
-					"status": "success",
-					"message": log_msg,
-					"candidate": processed_data.get("full_name", "Unknown")
-				})
-				
-			except Exception as e:
-				results["failed"] += 1
-				error_msg = str(e)
-				results["logs"].append({
-					"row": row_number,
-					"status": "error",
-					"message": error_msg
-				})
-				if session:
-					session.add_simple_log("error", f"Row {row_number}: {error_msg}")
-				continue
+			results["success"] += 1
+			results["logs"].append({
+				"row_number": row_number,
+				"full_name": processed_data.get("full_name", "Unknown"),
+				"status": "success",
+				"message": _("Validation passed")
+			})
 				
 		except Exception as e:
-			results["failed"] += 1
+			processing_time = time.time() - start_time
 			error_msg = str(e)
-			results["logs"].append({
-				"row": row_number,
-				"status": "error",
-				"message": error_msg
-			})
+
 			if session:
-				session.add_simple_log("error", f"Row {row_number}: {error_msg}")
-			if session:
-				session.mark_failure(
+				session.mark_failure_candidate(
 					row_number=row_number,
-					candidate_name=candidate_data.get("full_name", "Unknown") if 'candidate_data' in locals() else "Unknown",
+					full_name=candidate_data.get("full_name", "Unknown") if 'candidate_data' in locals() else "Unknown",
 					error_message=error_msg,
 					processing_time=processing_time
 				)
-			
+
 			results["failed"] += 1
 			results["logs"].append({
 				"row_number": row_number,
@@ -1580,7 +1661,7 @@ def process_batch_with_session_candidate(df: pd.DataFrame, mapping: Dict, job_op
 			
 			# Create candidate document
 			doc = frappe.get_doc({
-				"doctype": "Mira_Candidate",
+				"doctype": "Mira Candidate",
 				**processed_data
 			})
 			doc.insert(ignore_permissions=True)
@@ -1593,9 +1674,9 @@ def process_batch_with_session_candidate(df: pd.DataFrame, mapping: Dict, job_op
 				batch_results["new_emails"].append(email.lower())
 			
 			if session:
-				session.mark_success(
+				session.mark_success_candidate(
 					row_number=actual_row_num,
-					candidate_name=processed_data.get("full_name", "Unknown"),
+					full_name=processed_data.get("full_name", "Unknown"),
 					document_name=doc.name,
 					processing_time=processing_time
 				)
@@ -1614,9 +1695,9 @@ def process_batch_with_session_candidate(df: pd.DataFrame, mapping: Dict, job_op
 			error_msg = str(e)
 			
 			if session:
-				session.mark_failure(
+				session.mark_failure_candidate(
 					row_number=actual_row_num,
-					candidate_name=candidate_data.get("full_name", "Unknown") if 'candidate_data' in locals() else "Unknown",
+					full_name=candidate_data.get("full_name", "Unknown") if 'candidate_data' in locals() else "Unknown",
 					error_message=error_msg,
 					processing_time=processing_time
 				)
@@ -1915,7 +1996,7 @@ def process_phone_number(phone: Any) -> Optional[str]:
 	
     # Validate length
     digit_only = re.sub(r'[^\d]', '', cleaned)
-    if len(digit_only) < 10 or len(digit_only) > 15:
+    if len(digit_only) <= 10 or len(digit_only) > 15:
         return None
 	
     return cleaned[:20]  # Limit total length

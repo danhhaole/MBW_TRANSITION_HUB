@@ -440,7 +440,6 @@
                                     <div class="flex justify-between items-start">
                                         <div class="flex-1">
                                             <div class="font-medium text-sm">
-                                                {{ log }}
                                                 {{ __("Row") }} {{ log.row_number }}: {{ log.full_name || 'Unknown' }}
                                             </div>
                                             <div class="text-sm text-gray-600 mt-1">{{ log.message }}</div>
@@ -1208,7 +1207,6 @@ const viewSessionDetails = async (sessionName) => {
             session_id: sessionName
         })
 
-        import_with_mapping_candidate.value = details
         if (details) {
             selectedSessionDetails.value = details
             showSessionDetails.value = true
