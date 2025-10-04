@@ -79,61 +79,77 @@ def import_prospect_from_file(campaign_name: str):
                 raw_data[target_field] = row.get(source_col)
 
             # 7. Chuẩn hóa dữ liệu: xử lý skills
-            skills_value = raw_data.get("skills") or "[]"
-            skills_list = []
-
+            skills_value = raw_data.get("skills") or ""
             if isinstance(skills_value, list):
-                skills_list = skills_value
+                skills_text = ", ".join(skills_value)
             elif isinstance(skills_value, str):
                 try:
-                    skills_list = json.loads(skills_value)
-                    if not isinstance(skills_list, list):
-                        raise ValueError
+                    parsed = json.loads(skills_value)
+                    if isinstance(parsed, list):
+                        skills_text = ", ".join(parsed)
+                    else:
+                        skills_text = skills_value
                 except:
                     try:
-                        skills_list = ast.literal_eval(skills_value)
-                        if not isinstance(skills_list, list):
-                            raise ValueError
+                        parsed = ast.literal_eval(skills_value)
+                        if isinstance(parsed, list):
+                            skills_text = ", ".join(parsed)
+                        else:
+                            skills_text = skills_value
                     except:
-                        skills_list = [s.strip() for s in skills_value.split(",") if s.strip()]
-
+                        skills_text = skills_value
+            else:
+                skills_text = ""
+            def parse_json_field(val):
+                if not val:
+                    return "[]"
+                if isinstance(val, (list, dict)):
+                    return json.dumps(val, ensure_ascii=False)
+                if isinstance(val, str):
+                    try:
+                        parsed = json.loads(val)
+                        return json.dumps(parsed, ensure_ascii=False)
+                    except:
+                        try:
+                            parsed = ast.literal_eval(val)
+                            return json.dumps(parsed, ensure_ascii=False)
+                        except:
+                            return "[]"
+                return "[]"
             # 8. Chuẩn bị dữ liệu cho Mira Prospect mới
             doc_data = {
                 "doctype": "Mira Talent",
-                "first_name": raw_data.get("first_name") or "",
-                "last_name": raw_data.get("last_name") or "",
-                "full_name": (raw_data.get("first_name") or "") + " " + (raw_data.get("last_name") or ""),
+                "full_name": raw_data.get("full_name"),
                 "gender": raw_data.get("gender"),
                 "date_of_birth": raw_data.get("date_of_birth"),
-                "email": raw_data.get("email"),
-                "phone_number": raw_data.get("phone_number") or raw_data.get("phone"),
-                "alternate_phone": raw_data.get("alternate_phone"),
+                "contact_email": raw_data.get("contact_email"),
+                "contact_phone": raw_data.get("contact_phone"),
+                "linkedin_profile": raw_data.get("linkedin_profile"),
                 "facebook_profile": raw_data.get("facebook_profile"),
                 "zalo_profile": raw_data.get("zalo_profile"),
-                "linkedin_profile": raw_data.get("linkedin_profile"),
                 "current_location": raw_data.get("current_location"),
                 "preferred_location": raw_data.get("preferred_location"),
-                "skills": json.dumps(skills_list),
+                "skills": skills_text,
                 "experience_years": raw_data.get("experience_years"),
-                "current_company": raw_data.get("current_company"),
-                "current_designation": raw_data.get("current_designation"),
-                "expected_salary": raw_data.get("expected_salary"),
-                "current_salary": raw_data.get("current_salary"),
-                "source": raw_data.get("source") or "Excel Import",
+                "education": parse_json_field(raw_data.get("education")),
+                "experience": parse_json_field(raw_data.get("experience")),
+                "certifications": parse_json_field(raw_data.get("certifications")),
+                "languages": parse_json_field(raw_data.get("languages")),
                 "resume": raw_data.get("resume"),
-                "email_opt_out": raw_data.get("email_opt_out") or 0,
+                "current_status": raw_data.get("current_status") or "Active",
+                "talent_pool": raw_data.get("talent_pool"),
                 "notes": raw_data.get("notes") or ""
             }
 
-            # 9. Insert nếu chưa tồn tại
+            # 6. Insert nếu chưa tồn tại
             try:
-                if not check_exists(raw_data.get("email")):
+                if not check_talent_exists(raw_data.get("contact_email")):
                     doc = frappe.get_doc(doc_data)
                     doc.insert(ignore_permissions=True)
                     frappe.db.commit()
                     inserted += 1
             except Exception as e:
-                frappe.log_error("Failed to insert", f"Failed to insert: {doc_data.get('full_name')} — {e}")
+                frappe.log_error("Failed to insert Talent", f"{doc_data.get('full_name')} — {e}")
 
         # 10. Gửi sự kiện realtime nếu cần
         frappe.publish_realtime('import_Prospect_from_file', message={'campaign': campaign_name})
@@ -141,5 +157,7 @@ def import_prospect_from_file(campaign_name: str):
         return True
 
 
-def check_exists(email):
-    return frappe.db.exists("Mira Prospect", {"email": email}) is not None
+def check_talent_exists(email):
+    if not email:
+        return False
+    return frappe.db.exists("Mira Talent", {"contact_email": email}) is not None

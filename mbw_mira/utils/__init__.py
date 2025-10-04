@@ -17,12 +17,12 @@ def send_email_job(talentprofile_id, action_id, step_id):
     """
 
     # Lấy thông tin candidate
-    talentprofiles = frappe.get_cached_doc("Mira Prospect", talentprofile_id)
+    talentprofiles = frappe.get_cached_doc("Mira Talent", talentprofile_id)
     action = frappe.get_doc("Action", action_id)
     step = frappe.get_cached_doc("CampaignStep", step_id)
 
     logger = frappe.logger("campaign")
-    if not talentprofiles.email:
+    if not talentprofiles.contact_email:
         frappe.throw("Candidate does not have an email.")
     # Nếu ứng viên đã unsubcrible
     if talentprofiles.email_opt_out:
