@@ -1,4 +1,5 @@
 import { call } from 'frappe-ui'
+import { createResource } from 'frappe-ui'
 
 // Lấy danh sách Mira Segment với filter, phân trang, tìm kiếm nhiều trường dùng or_filters
 export const getTalentSegments = async (options = {}) => {
@@ -83,24 +84,67 @@ export const searchTalentSegments = async (searchText) => {
 }
 
 // Lấy danh sách ứng viên trong phân khúc
-export const getTalentSegmentCandidates = async (segmentId, filters = {}) => {
+export const getTalentSegmentTalent = async (segmentId, filters = {}) => {
+  const { page = 1, page_size = 20 } = filters
+  const start = (page - 1) * page_size
+  
   const data = await call('frappe.client.get_list', {
     doctype: 'Mira Talent Pool',
-    fields: ['*'],
-    filters: { segment_id: segmentId, ...filters },
-    order_by: 'added_at desc',
-    page_length: 50
+    fields: ['talent_id', 'added_at', 'added_by'],
+    filters: { segment_id: segmentId },
+    limit_start: start,
+    limit_page_length: page_size
   })
-  return { data }
+  
+  const total = await call('frappe.client.get_count', {
+    doctype: 'Mira Talent Pool',
+    filters: { segment_id: segmentId }
+  })
+  
+  return {
+    data: data || [],
+    pagination: {
+      total: total || 0,
+      page: page,
+      limit: page_size,
+      pages: Math.ceil((total || 0) / page_size),
+      has_next: (start + page_size) < total,
+      has_prev: start > 0,
+      showing_from: start + 1,
+      showing_to: Math.min(start + page_size, total)
+    }
+  }
 }
 
+// Lấy danh sách talent với thông tin pool
+export const getTalentWithPool = createResource({
+  url: 'mbw_mira.mbw_mira.doctype.mira_talent_pool.mira_talent_pool.get_talent_with_pool',
+  method: 'GET',
+  auto: false,
+  onSuccess: (data) => {
+    return {
+      data: data.data || [],
+      pagination: {
+        total: data.total || 0,
+        page: data.page || 1,
+        limit: data.page_size || 20,
+        pages: data.total_pages || 1,
+        has_next: (data.page || 1) < (data.total_pages || 1),
+        has_prev: (data.page || 1) > 1,
+        showing_from: ((data.page || 1) - 1) * (data.page_size || 20) + 1,
+        showing_to: Math.min((data.page || 1) * (data.page_size || 20), data.total || 0)
+      }
+    }
+  }
+})
+
 // Thêm ứng viên vào phân khúc
-export const addCandidateToSegment = async (segmentId, candidateId) => {
+export const addCandidateToSegment = async (segmentId, talentId) => {
   return await call('frappe.client.insert', {
     doc: {
       doctype: 'Mira Talent Pool',
       segment_id: segmentId,
-      talent_id: candidateId,
+      talent_id: talentId,
       added_at: new Date().toISOString(),
       added_by: 'Administrator' // TODO: lấy user hiện tại nếu cần
     }
@@ -108,12 +152,12 @@ export const addCandidateToSegment = async (segmentId, candidateId) => {
 }
 
 // Xóa ứng viên khỏi phân khúc
-export const removeCandidateFromSegment = async (segmentId, candidateId) => {
+export const removeCandidateFromSegment = async (segmentId, talentId) => {
   // Tìm record Mira Talent Pool
   const segments = await call('frappe.client.get_list', {
     doctype: 'Mira Talent Pool',
     fields: ['name'],
-    filters: { segment_id: segmentId, talent_id: candidateId }
+    filters: { segment_id: segmentId, talent_id: talentId }
   })
   if (segments && segments.length > 0) {
     await call('frappe.client.delete', {
@@ -124,4 +168,17 @@ export const removeCandidateFromSegment = async (segmentId, candidateId) => {
   } else {
     return { success: false, message: 'Không tìm thấy ứng viên trong phân khúc' }
   }
-} 
+}
+
+export default {
+  getTalentSegments,
+  getTalentSegmentByName,
+  createTalentSegment,
+  updateTalentSegment,
+  deleteTalentSegment,
+  searchTalentSegments,
+  getTalentSegmentTalent,
+  addCandidateToSegment,
+  removeCandidateFromSegment,
+  getTalentWithPool
+}
