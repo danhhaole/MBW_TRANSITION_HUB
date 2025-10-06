@@ -1,10 +1,26 @@
 import TaskStatusIcon from '@/components/Icons/TaskStatusIcon.vue'
 import TaskPriorityIcon from '@/components/Icons/TaskPriorityIcon.vue'
+
+import { useDateFormat, useTimeAgo } from "@vueuse/core";
 import { usersStore } from '@/stores/users'
 import { gemoji } from 'gemoji'
 import { getMeta } from '@/stores/meta'
 import { toast, dayjsLocal, dayjs, getConfig } from 'frappe-ui'
 import { h } from 'vue'
+
+
+export const catStatusColor = {
+	Active: "green",
+	Inactive: "red",
+	1: "green",
+	0: "red",
+};
+
+
+export function dateFormat(date, format) {
+	const _format = format || "DD-MM-YYYY HH:mm:ss";
+	return useDateFormat(date, _format).value;
+}
 
 export function formatTime(seconds) {
   const days = Math.floor(seconds / (3600 * 24))
@@ -70,7 +86,15 @@ export function timeAgo(date) {
 function getBrowserTimezone() {
   return Intl.DateTimeFormat().resolvedOptions().timeZone
 }
-
+export function setupAssignees(data) {
+	let { getUser } = usersStore();
+	let assignees = data._assign || [];
+	data._assignedTo = assignees.map((user) => ({
+		name: user,
+		image: getUser(user).user_image,
+		label: getUser(user).full_name,
+	}));
+}
 export function prettyDate(date, mini = false) {
   if (!date) return ''
 

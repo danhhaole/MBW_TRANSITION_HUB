@@ -505,7 +505,7 @@ function getParams() {
 }
 
 list.value = createResource({
-  url: 'crm.api.doc.get_data',
+  url: 'mbw_mira.api.doc.get_data',
   params: getParams(),
   cache: [props.doctype, route.query.view, route.params.viewType],
   onSuccess(data) {
@@ -722,7 +722,7 @@ function removeQuickFilter(f) {
 }
 
 const updateQuickFilters = createResource({
-  url: 'crm.api.doc.update_quick_filters',
+  url: 'mbw_mira.api.doc.update_quick_filters',
   onSuccess() {
     customizeQuickFilter.value = false
 
@@ -814,7 +814,7 @@ const quickFilterList = computed(() => {
 })
 
 const quickFilters = createResource({
-  url: 'crm.api.doc.get_quick_filters',
+  url: 'mbw_mira.api.doc.get_quick_filters',
   params: { doctype: props.doctype },
   cache: ['Quick Filters', props.doctype],
   onSuccess(filters) {

@@ -25,7 +25,7 @@ class MiraFormScript(Document):
 
 def get_mira_form_script(dt, view="Form"):
 	"""Returns the form script for the given doctype"""
-	MiraFormScript = frappe.qb.DocType("Form Script")
+	MiraFormScript = frappe.qb.DocType("Mira Form Script")
 	query = (
 		frappe.qb.from_(MiraFormScript)
 		.select("script")

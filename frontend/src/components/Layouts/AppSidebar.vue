@@ -345,7 +345,11 @@ const links = [
         icon: NoteIcon,
         to: 'ladi-pages',
       },
-
+      { label: __("Email Templates"),
+        icon: "file",
+        to: "ListEmailTemplate",
+        feature: "emailtemplate_full_access" 
+      },
     ]
   },
 

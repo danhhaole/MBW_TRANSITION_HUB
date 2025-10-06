@@ -84,6 +84,35 @@ const routes = [
 			title: 'Ladi Page View' 
 		}
 	},
+	// Email Template
+	{
+		path: "/email-template",
+		name: "ListEmailTemplate",
+		component: () => import("@/pages/mira_email_template/MIRA_Email_Template.vue"),
+		props: true,
+		meta: { doctype: "MIRA_Email_Template" },
+	},
+	{
+		path: '/email-template/new',
+		name: 'NewEmailTemplate',
+		component: () => import("@/pages/mira_email_template/EmailTemplateForm.vue"),
+		props: true,
+		meta: { doctype: "MIRA_Email_Template" },
+	},
+	{
+		path: '/email-template/:name',
+		name: 'EditEmailTemplate',
+		props: true,
+		meta: { doctype: "MIRA_Email_Template" },
+		component: () => import("@/pages/mira_email_template/EmailTemplateForm.vue"),
+	},
+	{
+		path: "/mira_email_template/:templateType/:id", // Trang chỉnh sửa email
+		name: "mira_email_template_edit",
+		component: () => import("@/pages/mira_email_template/EmailTemplateForm.vue"),
+		props: true,
+		meta: { doctype: "MIRA_Email_Template" },
+	},
 
 	// Public Route
 	{ path: '/ladi/:slug', name: 'LadiPage', component: ()=>import('@/pages/Public/LadiPage.vue'), meta: { public: true } },

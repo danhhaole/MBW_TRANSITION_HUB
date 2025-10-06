@@ -1,0 +1,153 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:template_id",
+ "creation": "2025-03-17 14:35:54.110810",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "template_id",
+  "template_name",
+  "subject",
+  "column_break_opyh",
+  "template_type",
+  "default_template",
+  "section_break_wspf",
+  "message",
+  "html_content",
+  "css_content",
+  "project_data",
+  "attachment",
+  "auto_send",
+  "is_active",
+  "created_by",
+  "creation",
+  "sync_id"
+ ],
+ "fields": [
+  {
+   "fieldname": "created_by",
+   "fieldtype": "Link",
+   "label": "Created By",
+   "options": "User",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "creation",
+   "fieldtype": "Datetime",
+   "label": "Created On",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "template_name",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "Template Name"
+  },
+  {
+   "fieldname": "template_type",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Template Type",
+   "options": "confirm-email\ninvited-email\nreject-email\nother-email"
+  },
+  {
+   "fieldname": "subject",
+   "fieldtype": "Small Text",
+   "label": "Subject"
+  },
+  {
+   "fieldname": "message",
+   "fieldtype": "Text Editor",
+   "label": "Message"
+  },
+  {
+   "fieldname": "attachment",
+   "fieldtype": "Attach",
+   "label": "Attachment"
+  },
+  {
+   "default": "0",
+   "fieldname": "auto_send",
+   "fieldtype": "Check",
+   "label": "Auto Send"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "label": "Active"
+  },
+  {
+   "fieldname": "column_break_opyh",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_wspf",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "template_id",
+   "fieldtype": "Data",
+   "label": "Template ID",
+   "unique": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "default_template",
+   "fieldtype": "Check",
+   "label": "Default Template"
+  },
+  {
+   "fieldname": "sync_id",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "SyncID"
+  },
+  {
+   "fieldname": "html_content",
+   "fieldtype": "Code",
+   "label": "HTML Content"
+  },
+  {
+   "fieldname": "css_content",
+   "fieldtype": "Code",
+   "label": "CSS Content"
+  },
+  {
+   "fieldname": "project_data",
+   "fieldtype": "Code",
+   "label": "JSON Project Data"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-08-08 10:37:42.404601",
+ "modified_by": "Administrator",
+ "module": "MBW Mira",
+ "name": "MIRA_Email_Template",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "show_title_field_in_link": 1,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "template_name"
+}

@@ -258,7 +258,7 @@ const params = computed(() => {
 })
 
 const fields = createResource({
-  url: 'crm.api.doc.get_fields_meta',
+  url: 'mbw_mira.api.doc.get_fields_meta',
   params: params.value,
   cache: ['fieldsMeta', props.doctype],
   auto: true,

@@ -146,7 +146,7 @@ function updateAssignees() {
     .map((assignee) => assignee.name)
 
   if (removedAssignees.length) {
-    call('crm.api.doc.remove_assignments', {
+    call('mbw_mira.api.doc.remove_assignments', {
       doctype: props.doctype,
       name: props.doc.name,
       assignees: JSON.stringify(removedAssignees),

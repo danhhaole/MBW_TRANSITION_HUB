@@ -10,7 +10,7 @@ from frappe.utils import make_filter_tuple
 from pypika import Criterion
 
 from mbw_mira.api.views import get_views
-from mbw_mira.mbw_mira.doctype.form_script.form_script import get_form_script
+from mbw_mira.mbw_mira.doctype.mira_form_script.mira_form_script import get_mira_form_script
 # from mbw_mira.utils import get_dynamic_linked_docs, get_linked_docs
 
 
@@ -558,8 +558,8 @@ def get_data(
 			0
 		].total_count,
 		"row_count": len(data),
-		"form_script": get_form_script(doctype),
-		"list_script": get_form_script(doctype, "List"),
+		"form_script": get_mira_form_script(doctype),
+		"list_script": get_mira_form_script(doctype, "List"),
 		"view_type": view_type,
 	}
 
@@ -800,13 +800,13 @@ def delete_bulk_docs(doctype, items, delete_linked=False):
 
 	items = frappe.parse_json(items)
 	for doc in items:
-		linked_docs = get_linked_docs_of_document(doctype, doc)
+		linked_docs = get_linked_docs_of_document(doctype, doc) or []
 		for linked_doc in linked_docs:
 			remove_linked_doc_reference(
 				[
 					{
-						"doctype": linked_doc["reference_doctype"],
-						"docname": linked_doc["reference_docname"],
+						"doctype": linked_doc.get("reference_doctype"),
+						"docname": linked_doc.get("reference_docname"),
 					}
 				],
 				remove_contact=doctype == "Contact",
