@@ -11,7 +11,7 @@ from pypika import Criterion
 
 from mbw_mira.api.views import get_views
 from mbw_mira.mbw_mira.doctype.form_script.form_script import get_form_script
-from mbw_mira.utils import get_dynamic_linked_docs, get_linked_docs
+# from mbw_mira.utils import get_dynamic_linked_docs, get_linked_docs
 
 
 @frappe.whitelist()
@@ -751,32 +751,8 @@ def getCounts(d, doctype):
 
 @frappe.whitelist()
 def get_linked_docs_of_document(doctype, docname):
-	doc = frappe.get_doc(doctype, docname)
-	linked_docs = get_linked_docs(doc)
-	dynamic_linked_docs = get_dynamic_linked_docs(doc)
-
-	linked_docs.extend(dynamic_linked_docs)
-	linked_docs = list({doc["reference_docname"]: doc for doc in linked_docs}.values())
-
-	docs_data = []
-	for doc in linked_docs:
-		data = frappe.get_doc(doc["reference_doctype"], doc["reference_docname"])
-		title = data.get("title")
-		if data.doctype == "CRM Call Log":
-			title = f"Call from {data.get('from')} to {data.get('to')}"
-
-		if data.doctype == "CRM Deal":
-			title = data.get("organization")
-
-		docs_data.append(
-			{
-				"doc": data.doctype,
-				"title": title or data.get("name"),
-				"reference_docname": doc["reference_docname"],
-				"reference_doctype": doc["reference_doctype"],
-			}
-		)
-	return docs_data
+	
+	return None
 
 
 def remove_doc_link(doctype, docname):
