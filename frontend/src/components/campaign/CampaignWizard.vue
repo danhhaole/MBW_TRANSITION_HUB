@@ -1625,7 +1625,7 @@ async function fetchRecords() {
 
     } else if (searchSource.value === "mira_prospect") {
       const res = await call("frappe.client.get_list", {
-        doctype: "Mira Prospect",
+        doctype: "Mira Contact",
         fields: ["name", "full_name"],
         filters: searchKeyword.value
           ? [["full_name", "like", `%${searchKeyword.value}%`]]
@@ -3272,7 +3272,7 @@ watch(
     campaignData.value.source_file = cfg?.selectedFile?.name || ""; // để BE biết file
     campaignData.value.source_config = JSON.stringify({
       file_name: cfg?.selectedFile?.name || "",
-      meta_doctype: "Mira Prospect", // đổi nếu khác
+      meta_doctype: "Mira Contact", // đổi nếu khác
       field_mapping,
     });
   },

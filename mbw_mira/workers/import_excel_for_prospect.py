@@ -116,7 +116,7 @@ def import_prospect_from_file(campaign_name: str):
                         except:
                             return "[]"
                 return "[]"
-            # 8. Chuẩn bị dữ liệu cho Mira Prospect mới
+            # 8. Chuẩn bị dữ liệu cho Mira Contact mới
             doc_data = {
                 "doctype": "Mira Talent",
                 "full_name": raw_data.get("full_name"),

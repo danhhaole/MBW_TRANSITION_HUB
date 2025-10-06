@@ -23,7 +23,7 @@
    "fieldname": "talent_id",
    "fieldtype": "Link",
    "label": "Talent Profile",
-   "options": "Mira Prospect"
+   "options": "Mira Contact"
   },
   {
    "fieldname": "campaign_id",
@@ -84,7 +84,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-09-29 10:07:31.748803",
+ "modified": "2025-10-06 11:27:13.563405",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "ApplicantPool",

@@ -403,7 +403,7 @@
               v-else-if="record.__source === 'mira_prospect'"
               class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
             >
-              Mira Prospect
+              Mira Contact
             </span>
             <span
               v-else-if="record.__source === 'mira_segment_talent'"
@@ -994,7 +994,7 @@ const loadTalentCampaign = async () => {
         all.push(...res.map(r => ({ ...r, __source: block.type })))
       } else if (block.type === "mira_prospect") {
         const res = await call("frappe.client.get_list", {
-          doctype: "Mira Prospect",
+          doctype: "Mira Contact",
           fields: ["name", "full_name", "email", "phone_number"],
           filters: [["name", "in", block.records]],
           limit_page_length: 1000,

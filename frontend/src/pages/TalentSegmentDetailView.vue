@@ -905,7 +905,7 @@ const loadCandidates = async () => {
 				page_length: 1000,
 				fields: ['name', 'full_name', 'email', 'phone', 'status', 'skills', 'headline', 'last_interaction']
 			})
-			console.log('Mira Prospect API result:', candidateResult)
+			console.log('Mira Contact API result:', candidateResult)
 
 			if (candidateResult && candidateResult.success && candidateResult.data) {
 				// Merge the data - add segment relationship info to candidate data

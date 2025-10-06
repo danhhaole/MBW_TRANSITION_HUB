@@ -338,7 +338,7 @@
             />
             <Link
               v-model="editItem.talent_id"
-              :doctype="'Mira Prospect'"
+              :doctype="'Mira Contact'"
               label="Talent Profile"
               :disabled="true"
             />

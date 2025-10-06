@@ -8,7 +8,7 @@ from frappe.utils import now_datetime,nowdate,cint
 from mbw_mira.api.common import delete_doc, get_filter_options, get_form_data, get_list_data, save_doc
 
 
-class MiraProspect(Document):
+class MiraContact(Document):
 	
     def validate(self):
         # Check trùng talent_id,candidate_id
@@ -34,7 +34,7 @@ class MiraProspect(Document):
             title=frappe._("Duplicate Mira Prospect"),
         )
     @staticmethod
-    def create_mira_prospect(data: dict) ->str:
+    def create_mira_contact(data: dict) ->str:
         if not data:
             frappe.throw(frappe._("Missing data for creating Mira Prospect"))
 
@@ -53,15 +53,15 @@ class MiraProspect(Document):
         frappe.db.commit()
 
         return doc.name
-def create_mira_prospect_segment(self):
+def create_mira_contact_segment(self):
 	#Tìm talentsegment theo title (position)
 	segment = frappe.db.get_value("Mira Segment",{"title":self.position},"name")
 	if segment:
 		#Kiểm tra tồn tại profile trong segment chưa
-		profile_segment_exists = frappe.db.exists("MiraProspectSegment",{"talent_id":self.name,"segment_id":segment})
+		profile_segment_exists = frappe.db.exists("MiraContactSegment",{"talent_id":self.name,"segment_id":segment})
 		if not profile_segment_exists:
 			doc = frappe.get_doc({
-				"doctype":"MiraProspectSegment",
+				"doctype":"MiraContactSegment",
 				"talent_id":self.name,
     			"segment_id":segment,
 				"added_at": now_datetime(),

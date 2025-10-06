@@ -17,7 +17,7 @@
    "fieldname": "prospect_id",
    "fieldtype": "Link",
    "label": "Prospect",
-   "options": "Mira Prospect"
+   "options": "Mira Contact"
   },
   {
    "fieldname": "campaign_id",
@@ -50,7 +50,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-01 16:06:11.695980",
+ "modified": "2025-10-06 11:27:14.929477",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Prospect Campaign",

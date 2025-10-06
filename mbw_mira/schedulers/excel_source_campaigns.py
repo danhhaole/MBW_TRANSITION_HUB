@@ -22,6 +22,7 @@ def run():
             "mbw_mira.workers.import_excel_for_talent.import_prospect_from_file",
             campaign_name=c.name,
             job_name=c.name,
+            source_target=c.source_target,
             queue="short"
         )
     return True
