@@ -117,64 +117,7 @@ def bulk_insert_segments():
 
 import frappe
 
-@frappe.whitelist()
-def get_talent_with_pool(page=1, page_size=20):
-    """
-    Lấy danh sách talent có phân trang, kèm theo tên Talent Pool mà họ thuộc về.
-    Nếu talent không thuộc pool nào thì hiển thị 'Không phân loại'.
-    """
-    page = int(page)
-    page_size = int(page_size)
-    offset = (page - 1) * page_size
-
-    # Lấy tổng số bản ghi
-    total_count = frappe.db.count("Mira Talent")
-
-    # Lấy danh sách talent theo trang
-    talents = frappe.db.get_all(
-        "Mira Talent",
-        fields=["name", "full_name", "contact_email", "contact_phone"],
-        order_by="modified desc",
-        limit_start=offset,
-        limit_page_length=page_size,
-    )
-
-    # Lấy các pool liên quan đến những talent trong trang này
-    talent_ids = [t["name"] for t in talents]
-    if not talent_ids:
-        return {
-            "data": [],
-            "total": 0,
-            "page": page,
-            "page_size": page_size,
-            "total_pages": 0,
-        }
-
-    pools = frappe.db.sql(
-        """
-        SELECT tp.talent_id, s.title AS segment_title
-        FROM `tabMira Talent Pool` tp
-        JOIN `tabMira Segment` s ON s.name = tp.segment_id
-        WHERE tp.talent_id IN %s
-        """,
-        (tuple(talent_ids),),
-        as_dict=True,
-    )
-
-    # Mapping talent_id -> danh sách pool
-    segment_map = {}
-    for p in pools:
-        segment_map.setdefault(p["talent_id"], []).append(p["segment_title"])
-
-    # Gán pool vào từng talent
-    for t in talents:
-        pools = segment_map.get(t["name"])
-        t["talent_pools"] = ", ".join(pools) if pools else "Không phân loại"
-
-    return {
-        "data": talents,
-        "total": total_count,
-        "page": page,
-        "page_size": page_size,
-        "total_pages": (total_count + page_size - 1) // page_size,
-    }
+@frappe.whitelist(allow_guest=True)
+def get_talent_pool():
+     talent_pool = frappe.db.get_all("Mira Talent Pool", fields=["name","creation","owner","match_score","talent_id","talent_id.full_name","talent_id.contact_email","talent_id.contact_phone","segment_id","segment_id.title"])
+     return talent_pool

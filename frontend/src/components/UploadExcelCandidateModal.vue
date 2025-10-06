@@ -77,7 +77,7 @@
                     </div>
 
                     <!-- Job Selection -->
-                    <div class="card mb-6">
+                    <!-- <div class="card mb-6">
                         <div class="card-header">
                             <div class="flex items-center">
                                 <div class="icon-circle bg-green-100 text-green-600 mr-3">
@@ -97,7 +97,7 @@
                             <Link :doctype="'JobOpening'" v-model="selectedJob"
                                 :placeholder="__('Select job opening')" />
                         </div>
-                    </div>
+                    </div> -->
 
                     <!-- Upload Area -->
                     <div class="card">
