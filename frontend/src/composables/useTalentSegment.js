@@ -5,7 +5,7 @@ import {
 	createNewTalentSegment,
 	updateTalentSegmentDetails,
 	deleteTalentSegmentById,
-	getSegmentCandidates,
+	getSegmentTalent,
 	addCandidateToTalentSegment,
 	removeCandidateFromTalentSegment,
 	getUserOptions,
@@ -69,7 +69,7 @@ export const useTalentSegment = () => {
 			}
 
 			// Get candidates for this segment from Mira Talent Pool records
-			const candidateSegmentData = await getSegmentCandidates(segment.name)
+			const candidateSegmentData = await getSegmentTalent(segment.name)
 			console.log(candidateSegmentData)
 			// Extract candidate info for team members display
 			const teamMembers = candidateSegmentData
@@ -305,7 +305,7 @@ export const useTalentSegmentCandidates = (segmentId) => {
 		loading.value = true
 		error.value = null
 		try {
-			const data = await getSegmentCandidates(segmentId)
+			const data = await getSegmentTalent(segmentId)
 			candidates.value = data
 		} catch (err) {
 			error.value = err.message
