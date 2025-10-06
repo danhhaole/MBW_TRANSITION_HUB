@@ -17,31 +17,31 @@ class MiraContact(Document):
 			
     def validate_unique_prospect(self):
         """
-        Kiểm tra xem đã tồn tại Mira Prospect với cùng
+        Kiểm tra xem đã tồn tại Mira Contact với cùng
         talent_id + candidate_id (ngoại trừ chính nó) hay chưa.
         """																												
         filters = {
             "email": self.email
         }
 
-        existing = frappe.db.exists("Mira Prospect", filters)
+        existing = frappe.db.exists("Mira Contact", filters)
 
         if existing and existing != self.name:
             frappe.throw(
             frappe._(
-                "A Mira Prospect with Email <b>{0}</b> already exists: <a href='/app/Mira Prospect/{1}'>{1}</a>"
+                "A Mira Contact with Email <b>{0}</b> already exists: <a href='/app/Mira Contact/{1}'>{1}</a>"
             ).format(self.email, existing),
-            title=frappe._("Duplicate Mira Prospect"),
+            title=frappe._("Duplicate Mira Contact"),
         )
     @staticmethod
     def create_mira_contact(data: dict) ->str:
         if not data:
-            frappe.throw(frappe._("Missing data for creating Mira Prospect"))
+            frappe.throw(frappe._("Missing data for creating Mira Contact"))
 
-        doc = frappe.new_doc("Mira Prospect")
+        doc = frappe.new_doc("Mira Contact")
 
         # Map dữ liệu từ dict vào doc
-        meta = frappe.get_meta("Mira Prospect")
+        meta = frappe.get_meta("Mira Contact")
         allowed_fields = [f.fieldname for f in meta.fields]
 
         for field, value in data.items():
@@ -58,10 +58,10 @@ def create_mira_contact_segment(self):
 	segment = frappe.db.get_value("Mira Segment",{"title":self.position},"name")
 	if segment:
 		#Kiểm tra tồn tại profile trong segment chưa
-		profile_segment_exists = frappe.db.exists("MiraContactSegment",{"talent_id":self.name,"segment_id":segment})
+		profile_segment_exists = frappe.db.exists("Mira Contact Segment",{"talent_id":self.name,"segment_id":segment})
 		if not profile_segment_exists:
 			doc = frappe.get_doc({
-				"doctype":"MiraContactSegment",
+				"doctype":"Mira Contact Segment",
 				"talent_id":self.name,
     			"segment_id":segment,
 				"added_at": now_datetime(),
@@ -123,7 +123,7 @@ def get_prospects_paginated(
         if search_conditions:
             filters["search_text"] = search_conditions
         
-        # Fields to fetch for Mira Prospect
+        # Fields to fetch for Mira Contact
         fields = [
             "name", "full_name", "email", "phone", "avatar", "headline", 
             "source", "skills", "ai_summary", "status", "last_interaction", 
@@ -132,7 +132,7 @@ def get_prospects_paginated(
         
         # Get data using common function
         result = get_list_data(
-            doctype="Mira Prospect",
+            doctype="Mira Contact",
             filters=filters,
             order_by=order_by,
             page_length=limit,
@@ -188,19 +188,19 @@ def get_talent_profile_stats():
     Get talent profile statistics
     """
     try:
-        total = frappe.db.count("Mira Prospect")
+        total = frappe.db.count("Mira Contact")
         
         # Count by status
-        new_count = frappe.db.count("Mira Prospect", {"status": "NEW"})
-        sourced_count = frappe.db.count("Mira Prospect", {"status": "SOURCED"})
-        nurturing_count = frappe.db.count("Mira Prospect", {"status": "NURTURING"})
-        engaged_count = frappe.db.count("Mira Prospect", {"status": "ENGAGED"})
-        archived_count = frappe.db.count("Mira Prospect", {"status": "ARCHIVED"})
+        new_count = frappe.db.count("Mira Contact", {"status": "NEW"})
+        sourced_count = frappe.db.count("Mira Contact", {"status": "SOURCED"})
+        nurturing_count = frappe.db.count("Mira Contact", {"status": "NURTURING"})
+        engaged_count = frappe.db.count("Mira Contact", {"status": "ENGAGED"})
+        archived_count = frappe.db.count("Mira Contact", {"status": "ARCHIVED"})
         
         # Recently active (modified in last 7 days)
         from frappe.utils import add_days
         week_ago = add_days(nowdate(), -7)
-        recent_count = frappe.db.count("Mira Prospect", {"modified": [">", week_ago]})
+        recent_count = frappe.db.count("Mira Contact", {"modified": [">", week_ago]})
         
         return {
             "success": True,
@@ -233,7 +233,7 @@ def search_talent_profiles(query="", limit=10):
             return {"success": True, "talent_profiles": []}
         
         talent_profiles = frappe.get_list(
-            "Mira Prospect",
+            "Mira Contact",
             fields=["name", "full_name", "email", "headline", "status"],
             filters=[
                 ["full_name", "like", f"%{query}%"],
@@ -257,7 +257,7 @@ def get_talent_profile_by_name(name):
     Get talent profile details by name using common form data function
     """
     try:
-        result = get_form_data("Mira Prospect", name)
+        result = get_form_data("Mira Contact", name)
         if result.get("success"):
             talent_profile = result["data"]
             
@@ -290,7 +290,7 @@ def create_talent_profile(data):
         if "skills" in data and isinstance(data["skills"], list):
             data["skills"] = ", ".join(data["skills"])
         
-        result = save_doc("Mira Prospect", data)
+        result = save_doc("Mira Contact", data)
         
         if result.get("success"):
             talent_profile = result["data"]
@@ -322,7 +322,7 @@ def update_talent_profile(name, data):
         if "skills" in data and isinstance(data["skills"], list):
             data["skills"] = ", ".join(data["skills"])
         
-        result = save_doc("Mira Prospect", data, name)
+        result = save_doc("Mira Contact", data, name)
         
         if result.get("success"):
             talent_profile = result["data"]
@@ -347,7 +347,7 @@ def delete_talent_profile(name):
     Delete talent profile using common delete function
     """
     try:
-        result = delete_doc("Mira Prospect", name)
+        result = delete_doc("Mira Contact", name)
         return result
         
     except Exception as e:
@@ -373,7 +373,7 @@ def submit_job_application():
                 'doctype': 'File',
                 'file_name': file.filename,
                 'content': file.stream.read(),
-                'attached_to_doctype': 'Mira Prospect',
+                'attached_to_doctype': 'Mira Contact',
                 'attached_to_name': None,  # Will be set after creating the prospect
                 'attached_to_field': 'resume'
             })
@@ -403,7 +403,7 @@ def submit_job_application():
             doc_data['resume'] = form_data['resume']
 
         # Create new prospect document
-        doc = frappe.new_doc("Mira Prospect")
+        doc = frappe.new_doc("Mira Contact")
         doc.update(doc_data)
         
         # Map form data to document fields
@@ -437,7 +437,7 @@ def submit_job_application():
         # If there's a resume file, you might want to attach it here
         # This is a placeholder for file attachment logic
         # if 'resume' in form_data and form_data['resume']:
-        #     attach_file_to_doc("Mira Prospect", doc.name, form_data['resume'])
+        #     attach_file_to_doc("Mira Contact", doc.name, form_data['resume'])
 
         return {
             "success": True,
@@ -462,8 +462,8 @@ def get_talent_profile_filter_options():
     Get filter options for talent profiles
     """
     try:
-        # Get status options from Mira Prospect doctype
-        status_result = get_filter_options("Mira Prospect", "status")
+        # Get status options from Mira Contact doctype
+        status_result = get_filter_options("Mira Contact", "status")
         status_options = status_result.get("options", []) if status_result.get("success") else []
         
         # If no options from API, provide default status options
@@ -477,7 +477,7 @@ def get_talent_profile_filter_options():
             ]
         
         # Get source options
-        source_result = get_filter_options("Mira Prospect", "source")
+        source_result = get_filter_options("Mira Contact", "source")
         source_options = source_result.get("options", []) if source_result.get("success") else []
         
         # If no options from API, provide default source options
@@ -493,7 +493,7 @@ def get_talent_profile_filter_options():
             ]
         
         # Get unique skills from talent profiles
-        talent_profiles = frappe.get_all("Mira Prospect", fields=["skills"], filters={"skills": ["!=", ""]})
+        talent_profiles = frappe.get_all("Mira Contact", fields=["skills"], filters={"skills": ["!=", ""]})
         all_skills = []
         for profile in talent_profiles:
             if profile.skills:

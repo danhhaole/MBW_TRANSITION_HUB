@@ -60,7 +60,7 @@ def create_prospect_campaign(campaign_id, prospect):
         if not check_exists(campaign_id,prospect):
             doc = frappe.get_doc(
                 {
-                    "doctype": "Mira Prospect Campaign",
+                    "doctype": "Mira Contact Campaign",
                     "campaign_id": campaign_id,
                     "prospect_id": prospect,
                     "status": "ACTIVE",
@@ -79,7 +79,7 @@ def create_prospect_campaign(campaign_id, prospect):
         return None
 
 def check_exists(campaign_id,prospect_id):
-    prospect_campaign_exists = frappe.db.exists("Mira Prospect Campaign",{"campaign_id":campaign_id,"prospect_id":prospect_id})
+    prospect_campaign_exists = frappe.db.exists("Mira Contact Campaign",{"campaign_id":campaign_id,"prospect_id":prospect_id})
     if prospect_campaign_exists:
         return True
     else:

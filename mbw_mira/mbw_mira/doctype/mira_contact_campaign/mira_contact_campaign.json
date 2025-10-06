@@ -5,7 +5,7 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "prospect_id",
+  "contact_id",
   "campaign_id",
   "status",
   "current_step_order",
@@ -13,12 +13,6 @@
   "enrolled_at"
  ],
  "fields": [
-  {
-   "fieldname": "prospect_id",
-   "fieldtype": "Link",
-   "label": "Prospect",
-   "options": "Mira Contact"
-  },
   {
    "fieldname": "campaign_id",
    "fieldtype": "Link",
@@ -45,15 +39,21 @@
    "fieldname": "enrolled_at",
    "fieldtype": "Datetime",
    "label": "Enrolled At"
+  },
+  {
+   "fieldname": "contact_id",
+   "fieldtype": "Link",
+   "label": "Contact",
+   "options": "Mira Contact"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-06 11:27:14.929477",
+ "modified": "2025-10-06 11:57:43.951856",
  "modified_by": "Administrator",
  "module": "MBW Mira",
- "name": "Mira Prospect Campaign",
+ "name": "Mira Contact Campaign",
  "owner": "Administrator",
  "permissions": [
   {

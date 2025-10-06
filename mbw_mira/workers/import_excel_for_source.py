@@ -2,6 +2,7 @@ import frappe
 import pandas as pd
 import json
 from datetime import datetime
+from frappe.utils import getdate
 import ast
 
 def import_contact_from_file(campaign_name: str):
@@ -27,7 +28,7 @@ def import_contact_from_file(campaign_name: str):
     today = datetime.today().date()
     if not campaign.is_active or campaign.status != "ACTIVE" \
             or not campaign.start_date or not campaign.end_date \
-            or campaign.start_date > today or campaign.end_date < today:
+            or getdate(campaign.start_date) > today or getdate(campaign.end_date) < today:
         frappe.log_error("Import TalentProfile", f"Campaign is not active or out of range: {campaign_name}")
         return
 
@@ -102,23 +103,47 @@ def import_contact_from_file(campaign_name: str):
                 skills_list = []
             profile_data = raw_data.get("profile_data")
             profile_data = None if pd.isna(profile_data) else profile_data
-            # 8. Chuẩn bị dữ liệu TalentProfiles
+            # 8. Chuẩn bị dữ liệu Mira Contact
             doc_data = {
-                "doctype": "TalentProfiles",
-                "full_name": raw_data.get("full_name"),
+                "doctype": "Mira Contact",
+                "first_name": raw_data.get("first_name") or "",
+                "last_name": raw_data.get("last_name") or "",
+                "full_name": raw_data.get("full_name") or f"{raw_data.get('first_name','')} {raw_data.get('last_name','')}".strip(),
+                "gender": raw_data.get("gender"),
+                "date_of_birth": raw_data.get("date_of_birth"),
                 "email": raw_data.get("email"),
-                "phone": raw_data.get("phone"),
-                "source": raw_data.get("source") or "Excel Import",
+                "phone_number": raw_data.get("phone_number"),
+                "alternate_phone": raw_data.get("alternate_phone"),
+                "facebook_profile": raw_data.get("facebook_profile"),
+                "zalo_profile": raw_data.get("zalo_profile"),
+                "linkedin_profile": raw_data.get("linkedin_profile"),
+                "telegram_id": raw_data.get("telegram_id"),
+                "whatsapp_id": raw_data.get("whatsapp_id"),
+                "other_social": raw_data.get("other_social"),
+                "current_designation": raw_data.get("current_designation"),
+                "current_company": raw_data.get("current_company"),
+                "industry": raw_data.get("industry"),
+                "experience_years": raw_data.get("experience_years"),
+                "expected_salary": raw_data.get("expected_salary"),
+                "current_salary": raw_data.get("current_salary"),
+                "education_raw": raw_data.get("education_raw"),
+                "experience_raw": raw_data.get("experience_raw"),
                 "skills": json.dumps(skills_list),
-                "avatar": "",
-                "headline": raw_data.get("headline") or "",
-                "cv_original_url": raw_data.get("cv_original_url") or "",
-                "profile_data": profile_data,
-                "ai_summary": raw_data.get("ai_summary")  or "",
-                "status": "NEW",
-                "last_interaction": None,
-                "email_opt_out": 0
+                "resume": raw_data.get("resume"),
+                "notes": raw_data.get("notes") or "",
+                "email_opt_out": 1,
+                "sms_opt_out": 1,
+                "preferred_contact_channel": raw_data.get("preferred_contact_channel"),
+                "last_campaign_id": raw_data.get("last_campaign_id"),
+                "last_campaign_status": raw_data.get("last_campaign_status"),
+                "source": raw_data.get("source") or "Excel Import",
+                "profile_url": raw_data.get("profile_url"),
+                "crawl_batch_id": raw_data.get("crawl_batch_id"),
+                "status": raw_data.get("status") or "NEW",
+                "quality_score": raw_data.get("quality_score"),
+                "is_duplicate": raw_data.get("is_duplicate") or 0,
             }
+
 
             # 9. Insert nếu chưa tồn tại
             try:
@@ -136,7 +161,7 @@ def import_contact_from_file(campaign_name: str):
         return True
 
 def check_exists(email):
-    talent_exists = frappe.db.exists("TalentProfiles",{"email":email})
+    talent_exists = frappe.db.exists("Mira Contact",{"contact_email":email})
     if talent_exists:
         return True
     else:

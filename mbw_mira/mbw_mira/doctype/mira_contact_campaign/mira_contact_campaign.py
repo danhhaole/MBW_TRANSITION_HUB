@@ -5,12 +5,12 @@ import frappe
 from frappe.model.document import Document
 
 
-class MiraProspectCampaign(Document):
+class MiraContactCampaign(Document):
 	pass
 
 	def create_prospect_campaign(self, prospect_id, campaign_id):
 		if not self.prospect_campaign_exists(prospect_id,campaign_id):
-			doc = frappe.new_doc("Mira Prospect Campaign")
+			doc = frappe.new_doc("Mira Contact Campaign")
 			
 
 	def prospect_campaign_exists(prospect_id, campaign_id)->bool:
@@ -19,7 +19,7 @@ class MiraProspectCampaign(Document):
         "campaign_id": campaign_id,
 		}
 
-		existing = frappe.db.exists("Mira Prospect Campaign", filters)
+		existing = frappe.db.exists("Mira Contact Campaign", filters)
 		if existing:
 			return True
 		else:
