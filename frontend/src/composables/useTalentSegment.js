@@ -6,8 +6,8 @@ import {
 	updateTalentSegmentDetails,
 	deleteTalentSegmentById,
 	getSegmentTalent,
-	addCandidateToTalentSegment,
-	removeCandidateFromTalentSegment,
+	addTalentToSegment,
+	removeTalentFromSegment,
 	getUserOptions,
 	calculateEngagementRate,
 	formatDate,
@@ -321,7 +321,7 @@ export const useTalentSegmentCandidates = (segmentId) => {
 		success.value = false
 
 		try {
-			await addCandidateToTalentSegment(segmentId, candidateId)
+			await addTalentToSegment(segmentId, candidateId)
 			success.value = true
 			await loadCandidates() // Refresh list
 			return true
@@ -339,7 +339,7 @@ export const useTalentSegmentCandidates = (segmentId) => {
 		success.value = false
 
 		try {
-			await removeCandidateFromTalentSegment(segmentId, candidateId)
+			await removeTalentFromSegment(segmentId, candidateId)
 			success.value = true
 			await loadCandidates() // Refresh list
 			return true
