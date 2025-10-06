@@ -10,8 +10,8 @@ class MiraTalent(Document):
     
     def before_insert(self):
         #Trước khi tạo talent thì tạo prospect
-        if not self.prospect:
-            prospect_data = {
+        if not self.contact_id:
+            contact_data = {
                 "first_name": self.full_name.split(" ")[0] if self.full_name else None,
                 "last_name": " ".join(self.full_name.split(" ")[1:]) if self.full_name and len(self.full_name.split(" ")) > 1 else None,
                 "full_name": self.full_name,
@@ -33,7 +33,7 @@ class MiraTalent(Document):
 
             # Gọi hàm create_mira_prospect đã có sẵn
             contact = frappe.new_doc("Mira Contact")
-            contact_name = contact.create_mira_contact(prospect_data)
+            contact_name = contact.create_mira_contact(contact_data)
 
             # Gán lại vào Talent
             self.contact_id = contact_name
@@ -329,7 +329,7 @@ def submit_job_application():
             form_data['resume'] = file_doc.file_url
 
         # Basic validation
-        required_fields = ['full_name', 'contact_email', 'contact_phone']
+        required_fields = ['full_name', 'email', 'phone']
         for field in required_fields:
             if not form_data.get(field):
                 return {"success": False, "error": f"Missing required field: {field}"}
@@ -337,8 +337,8 @@ def submit_job_application():
         # Map form data to document fields
         doc_data = {
             'full_name': form_data.get('full_name'),
-            'contact_email': form_data.get('contact_email'),
-            'contact_phone': form_data.get('contact_phone'),
+            'email': form_data.get('email'),
+            'phone': form_data.get('phone'),
             'current_company': form_data.get('current_company', ''),
             'current_designation': form_data.get('current_designation', ''),
             'experience_years': form_data.get('experience_years'),
@@ -357,8 +357,8 @@ def submit_job_application():
         # Map form data to document fields
         field_mapping = {
             'full_name': 'full_name',
-            'contact_email': 'email',
-            'contact_phone': 'phone_number',
+            'email': 'email',
+            'phone': 'phone',
             'current_designation': 'current_position',
             'current_company': 'current_company',
             'experience_years': 'years_of_experience',

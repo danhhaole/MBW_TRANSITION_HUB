@@ -305,7 +305,7 @@ def submit_talent_profile():
 
     # 1. Check trùng email trong cùng campaign
     existing = frappe.db.exists(
-        "Mira Prospect",
+        "Mira Contact",
         {"email": data["email"], "source": campaign_id}
     )
     if existing:
@@ -328,7 +328,7 @@ def submit_talent_profile():
         }
     # 3. Xây dữ liệu hồ sơ
     profile_fields = {
-        "doctype": "Mira Prospect",
+        "doctype": "Mira Contact",
         "full_name": data["full_name"],
         "email": data["email"],
         "source": campaign_id,
@@ -411,13 +411,13 @@ def submit_application():
     if not campaign or not campaign.is_active:
         frappe.throw(_("This campaign is not active"))
 
-    # 2. Tìm hoặc tạo Mira Prospect
-    profile_name = frappe.db.get_value("Mira Prospect", {"email": email})
+    # 2. Tìm hoặc tạo Mira Contact
+    profile_name = frappe.db.get_value("Mira Contact", {"email": email})
     now = now_datetime()
 
     if not profile_name:
         profile = frappe.get_doc({
-            "doctype": "Mira Prospect",
+            "doctype": "Mira Contact",
             "email": email,
             "full_name": full_name,
             "source": campaign_id,
@@ -427,7 +427,7 @@ def submit_application():
         profile.insert(ignore_permissions=True)
         frappe.db.commit()
     else:
-        profile = frappe.get_doc("Mira Prospect", profile_name)
+        profile = frappe.get_doc("Mira Contact", profile_name)
         profile.status = "HIRED"
         profile.last_interaction = now
         profile.save(ignore_permissions=True)

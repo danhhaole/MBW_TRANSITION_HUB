@@ -287,7 +287,7 @@ const links = [
     to: 'Report',
     submenu: [
       {
-        label: "Prospect",
+        label: "Contact",
         icon: ContactsIcon,
         to: { name: 'CandidateManagement' },
       },
