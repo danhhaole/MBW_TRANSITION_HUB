@@ -7,8 +7,6 @@ import {
 	emailLogRepository,
 	talentSegmentRepository,
 	candidateRepository,
-	campaignRepository,
-	campaignStepRepository,
 	userRepository,
 	candidateDataSourceRepository,
 	jobOpeningRepository,
@@ -163,8 +161,6 @@ export const interactionService = new UniversalService(interactionRepository)
 export const emailLogService = new UniversalService(emailLogRepository)
 export const talentSegmentService = new UniversalService(talentSegmentRepository)
 export const candidateService = new UniversalService(candidateRepository)
-export const campaignService = new UniversalService(campaignRepository)
-export const campaignStepService = new UniversalService(campaignStepRepository)
 export const userService = new UniversalService(userRepository)
 export const candidateDataSourceService = new UniversalService(candidateDataSourceRepository)
 export const jobOpeningService = new UniversalService(jobOpeningRepository)

@@ -1382,11 +1382,11 @@ import {
 	candidateService,
 	candidateCampaignService,
 	candidateSegmentService,
-	campaignService,
 	talentSegmentService,
 	interactionService,
 	emailLogService,
 } from '../services/universalService'
+import { useCampaignStore } from '@/stores/campaign'
 import { processSkills, skillsToString } from '../services/candidateService'
 import LayoutHeader from '../components/LayoutHeader.vue'
 import CandidateEditModal from '../components/candidate/CandidateEditModal.vue'
@@ -1396,6 +1396,9 @@ import CandidateEditModal from '../components/candidate/CandidateEditModal.vue'
 
 const route = useRoute()
 const router = useRouter()
+
+// Campaign store
+const campaignStore = useCampaignStore()
 
 // Breadcrumbs
 const breadcrumbs = computed(() => [
@@ -2044,11 +2047,11 @@ const loadEmailLogs = async () => {
 
 const loadAvailableCampaigns = async () => {
 	try {
-		const result = await campaignService.getList({
-			fields: ['name', 'campaign_name'],
-			page_length: 1000,
+		const result = await campaignStore.getFilteredCampaigns({
+			limit: 1000,
+			page: 1
 		})
-		if (result.success) {
+		if (result && result.data) {
 			availableCampaigns.value = result.data.map((item) => ({
 				label: item.campaign_name || item.name,
 				value: item.name,

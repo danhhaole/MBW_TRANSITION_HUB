@@ -466,7 +466,8 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button, Dialog, FormControl, Badge } from 'frappe-ui'
-import { actionService, candidateCampaignService, campaignStepService, userService } from '../services/universalService'
+import { actionService, candidateCampaignService, userService } from '../services/universalService'
+import { useCampaignStepStore } from '@/stores/campaignStep'
 import { debounce } from 'lodash'
 import { createResource, Breadcrumbs } from 'frappe-ui'
 import { ToastContainer } from '@/components/shared'
@@ -474,6 +475,9 @@ import LayoutHeader from '@/components/LayoutHeader.vue'
 import Loading from '@/components/Loading.vue'
 
 const router = useRouter()
+
+// Campaign step store
+const campaignStepStore = useCampaignStepStore()
 
 // Translation helper
 
@@ -633,11 +637,10 @@ const loadFilterOptions = async () => {
     }
     
     // Load campaign steps
-    const campaignStepResult = await campaignStepService.getList({
-      fields: ['name', 'campaign_step_name', 'campaign'],
-      page_length: 1000
+    const campaignStepResult = await campaignStepStore.getFilteredCampaignSteps({
+      limit: 1000
     })
-    if (campaignStepResult.success) {
+    if (campaignStepResult && campaignStepResult.data) {
       filterOptions.campaignSteps = campaignStepResult.data.map(item => ({
         label: `${item.campaign_step_name} (${item.campaign})`,
         value: item.name

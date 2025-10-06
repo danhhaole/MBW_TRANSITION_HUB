@@ -384,53 +384,35 @@
             {{ record.email || '-' }}
           </td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-            {{ record.phone_number || '-' }}
+            {{ record.phone || '-' }}
           </td>
           <td class="px-6 py-4 whitespace-nowrap text-sm">
             <span
-              v-if="record.__source === 'manual'"
-              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-800"
-            >
-              Manual
-            </span>
-            <span
-              v-else-if="record.__source === 'mira_talent'"
+              v-if="record.__source === 'mira_talent'"
               class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
             >
-              Mira Talent
+              Talent
+              <span v-if="record.segment" class="ml-1 text-xs opacity-75">({{ record.segment }})</span>
             </span>
             <span
-              v-else-if="record.__source === 'mira_prospect'"
+              v-else-if="record.__source === 'mira_contact'"
               class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
             >
-              Mira Contact
+              Contact
             </span>
             <span
-              v-else-if="record.__source === 'mira_segment_talent'"
-              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800"
+              v-else
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-800"
             >
-              Segment Talent
+              Unknown
             </span>
           </td>
           <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-            <!-- Edit chỉ hiện với manual -->
-            <button
-              v-if="record.__source === 'manual'"
-              @click="openCandidateModal(record)"
-              class="text-blue-600 hover:text-blue-900"
-              title="Edit Candidate (manual)"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-              </svg>
-            </button>
-
-            <!-- Unassign luôn có -->
+            <!-- Unassign button -->
             <button
               @click="unassignCandidate(record)"
               class="text-red-600 hover:text-red-900"
-              title="Unassign Candidate"
+              title="Remove from Campaign"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -869,6 +851,209 @@
       :campaign="campaign"
       @success="handleCampaignUpdated"
     />
+    
+    <!-- Add Talent/Contact Modal -->
+    <Dialog v-model="showAddTalentModal" :options="{ title: __('Add Talent/Contact to Campaign'), size: 'xl' }">
+      <template #body-content>
+        <div class="space-y-6">
+          <!-- Source Selection -->
+          <div>
+            <h4 class="text-lg font-medium text-gray-900 mb-4">{{ __('Select Source') }}</h4>
+            <div class="flex space-x-6 mb-4 text-sm">
+              <label class="flex items-center space-x-2">
+                <input type="radio" value="mira_contact" v-model="searchSource" />
+                <span>Contact</span>
+              </label>
+              <label class="flex items-center space-x-2">
+                <input type="radio" value="mira_talent" v-model="searchSource" />
+                <span>Talent</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Segment Filter for Talent -->
+          <div v-if="searchSource === 'mira_talent'" class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              {{ __("Filter by Segment (Optional)") }}
+            </label>
+            <Link
+              doctype="Mira Segment"
+              v-model="selectedSegment"
+              :placeholder="__('Select segment to filter talents...')"
+            />
+            <p class="mt-1 text-xs text-gray-500">
+              {{ __("Leave empty to show all talents") }}
+            </p>
+          </div>
+
+          <!-- Search Box -->
+          <div v-if="searchSource" class="mb-4">
+            <input
+              v-model="searchKeyword"
+              type="text"
+              placeholder="Search candidates..."
+              class="w-full border rounded px-3 py-2 text-sm"
+            />
+          </div>
+
+          <!-- Advanced Filters -->
+          <div v-if="searchSource" class="mb-4">
+            <details class="border rounded-lg">
+              <summary class="px-4 py-2 bg-gray-50 cursor-pointer text-sm font-medium text-gray-700 hover:bg-gray-100">
+                {{ __('Advanced Filters') }}
+              </summary>
+              <div class="p-4 space-y-4">
+                <!-- Contact Filters -->
+                <div v-if="searchSource === 'mira_contact'" class="space-y-3">
+                  <h5 class="text-sm font-medium text-gray-900">{{ __('Contact Filters') }}</h5>
+                  <div class="flex flex-wrap gap-4">
+                    <label class="flex items-center space-x-2">
+                      <input type="checkbox" v-model="advancedFilters.missingEmail" class="rounded" />
+                      <span class="text-sm">{{ __('Missing Email') }}</span>
+                    </label>
+                    <label class="flex items-center space-x-2">
+                      <input type="checkbox" v-model="advancedFilters.missingPhone" class="rounded" />
+                      <span class="text-sm">{{ __('Missing Phone') }}</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Talent Filters -->
+                <div v-if="searchSource === 'mira_talent'" class="space-y-3">
+                  <h5 class="text-sm font-medium text-gray-900">{{ __('Talent Filters') }}</h5>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-xs font-medium text-gray-700 mb-1">{{ __('Skills') }}</label>
+                      <input
+                        v-model="advancedFilters.skills"
+                        type="text"
+                        placeholder="e.g. JavaScript, Python"
+                        class="w-full border rounded px-2 py-1 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium text-gray-700 mb-1">{{ __('Tags') }}</label>
+                      <input
+                        v-model="advancedFilters.tags"
+                        type="text"
+                        placeholder="e.g. Senior, Remote"
+                        class="w-full border rounded px-2 py-1 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium text-gray-700 mb-1">{{ __('Min Experience (Years)') }}</label>
+                      <input
+                        v-model.number="advancedFilters.minExperienceYears"
+                        type="number"
+                        min="0"
+                        placeholder="0"
+                        class="w-full border rounded px-2 py-1 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium text-gray-700 mb-1">{{ __('Max Experience (Years)') }}</label>
+                      <input
+                        v-model.number="advancedFilters.maxExperienceYears"
+                        type="number"
+                        min="0"
+                        placeholder="20"
+                        class="w-full border rounded px-2 py-1 text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <!-- Results List -->
+          <div v-if="records.length" class="mt-2">
+            <!-- Summary -->
+            <div class="flex justify-between items-center mb-3 text-sm text-gray-600">
+              <span>{{ __('Showing') }} {{ records.length }} {{ __('of') }} {{ totalRecords }} {{ __('records') }}</span>
+              <span v-if="selectedCandidates.length">{{ selectedCandidates.length }} {{ __('selected') }}</span>
+            </div>
+            
+            <!-- List -->
+            <div class="max-h-80 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div
+                v-for="r in records"
+                :key="r.name"
+                class="cursor-pointer border rounded-lg p-3 bg-white shadow-sm flex items-center space-x-3 transition-all"
+                :class="{
+                  'border-blue-500 ring-2 ring-blue-200': selectedCandidates.includes(r.name),
+                  'hover:border-gray-300': !selectedCandidates.includes(r.name),
+                }"
+                @click="toggleCandidate(r.name)"
+              >
+                <div
+                  class="w-5 h-5 flex items-center justify-center border rounded-full flex-shrink-0"
+                  :class="selectedCandidates.includes(r.name) ? 'bg-blue-500 border-blue-500 text-white' : 'border-gray-300'"
+                >
+                  <svg
+                    v-if="selectedCandidates.includes(r.name)"
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-3 w-3"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414L8.414 15l-4.121-4.121a1 1 0 111.414-1.414L8.414 12.172l7.293-7.293a1 1 0 011.414 0z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm font-medium text-gray-900 truncate">{{ r.full_name }}</div>
+                  <div class="text-xs text-gray-500 truncate">{{ r.name }}</div>
+                  <div v-if="r.email" class="text-xs text-gray-400 truncate">{{ r.email }}</div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Load More Button -->
+            <div v-if="canLoadMore" class="mt-4 text-center">
+              <Button 
+                variant="outline" 
+                @click="loadMoreRecords"
+                :loading="searchLoading"
+                class="text-sm"
+              >
+                {{ __('Load More') }} ({{ totalRecords - records.length }} {{ __('remaining') }})
+              </Button>
+            </div>
+            
+            <!-- Loading Indicator -->
+            <div v-if="searchLoading && currentPage === 1" class="mt-4 text-center text-gray-500 text-sm">
+              <div class="animate-spin inline-block w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full mr-2"></div>
+              {{ __('Loading...') }}
+            </div>
+          </div>
+          
+          <!-- Empty State -->
+          <div v-else-if="searchSource && !searchLoading" class="mt-4 text-center text-gray-500 text-sm border rounded p-4 bg-gray-50">
+            {{ __("No data found, please try again or select a different source.") }}
+          </div>
+          
+          <!-- Initial Loading State -->
+          <div v-else-if="searchLoading && currentPage === 1" class="mt-4 text-center text-gray-500 text-sm">
+            <div class="animate-spin inline-block w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full mr-2"></div>
+            {{ __('Loading...') }}
+          </div>
+        </div>
+      </template>
+      
+      <template #actions>
+        <Button variant="solid" @click="addToCampaign" :loading="addingTooltip" :disabled="!selectedCandidates.length">
+          {{ __('Add to Campaign') }} ({{ selectedCandidates.length }})
+        </Button>
+        <Button variant="ghost" @click="closeCandidateModal">
+          {{ __('Cancel') }}
+        </Button>
+      </template>
+    </Dialog>
+    
     </div>
   </div>
 </template>
@@ -877,22 +1062,27 @@
 import { ref, reactive, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { 
-  campaignService, 
-  campaignStepService, 
   candidateCampaignService,
   candidateService,
   candidateSegmentService,
   talentSegmentService,
   actionService,
 } from '../services/universalService'
-// import { campaignStepService as campaignStepServiceOriginal } from '../services/campaignStepService'
+import { useCampaignStore } from '@/stores/campaign'
+import { useCampaignStepStore } from '@/stores/campaignStep'
 import { Dialog, Breadcrumbs, Button, FormControl, call } from 'frappe-ui'
+import { debounce } from 'lodash-es'
 import CampaignForm from '@/components/campaign/CampaignForm.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import moment from 'moment'
+import Link from "@/components/Controls/Link.vue";
 
 const route = useRoute()
 const router = useRouter()
+
+// Campaign store
+const campaignStore = useCampaignStore()
+const campaignStepStore = useCampaignStepStore()
 
 // State
 const activeTab = ref('steps')
@@ -978,32 +1168,81 @@ const actionFormData = reactive({
 
 const loadTalentCampaign = async () => {
   try {
-    const blocks = normalizeTalentCampaign(campaign.value.mira_talent_campaign)
     let all = []
 
-    for (const block of blocks) {
-      if (block.type === "manual") {
-        all.push(...block.records.map(r => ({ ...r, __source: "manual" })))
-      } else if (block.type === "mira_talent" || block.type === "mira_segment_talent") {
-        const res = await call("frappe.client.get_list", {
+    // 1. Load from Mira Talent Campaign table
+    try {
+      const talentCampaignRes = await call("frappe.client.get_list", {
+        doctype: "Mira Talent Campaign",
+        fields: ["name", "talent_id", "status"],
+        filters: [["campaign_id", "=", route.params.id]],
+        limit_page_length: 1000,
+      })
+      
+      if (talentCampaignRes.length > 0) {
+        const talentIds = talentCampaignRes.map(tc => tc.talent_id)
+        const talentRes = await call("frappe.client.get_list", {
           doctype: "Mira Talent",
-          fields: ["name", "full_name", "contact_email", "contact_phone"],
-          filters: [["name", "in", block.records]],
+          fields: ["name", "full_name", "email", "phone"],
+          filters: [["name", "in", talentIds]],
           limit_page_length: 1000,
         })
-        all.push(...res.map(r => ({ ...r, __source: block.type })))
-      } else if (block.type === "mira_prospect") {
-        const res = await call("frappe.client.get_list", {
-          doctype: "Mira Contact",
-          fields: ["name", "full_name", "email", "phone_number"],
-          filters: [["name", "in", block.records]],
-          limit_page_length: 1000,
+        
+        // Merge talent data with campaign data
+        const talentData = talentRes.map(talent => {
+          const campaignRecord = talentCampaignRes.find(tc => tc.talent_id === talent.name)
+          return {
+            ...talent,
+            campaign_record_id: campaignRecord.name,
+            status: campaignRecord.status,
+            segment: campaignRecord.segment,
+            __source: "mira_talent"
+          }
         })
-        all.push(...res.map(r => ({ ...r, __source: block.type })))
+        
+        all.push(...talentData)
       }
+    } catch (err) {
+      console.error("Error loading Mira Talent Campaign:", err)
+    }
+
+    // 2. Load from Mira Contact Campaign table
+    try {
+      const contactCampaignRes = await call("frappe.client.get_list", {
+        doctype: "Mira Contact Campaign",
+        fields: ["name", "contact_id", "status"],
+        filters: [["campaign_id", "=", route.params.id]],
+        limit_page_length: 1000,
+      })
+      
+      if (contactCampaignRes.length > 0) {
+        const contactIds = contactCampaignRes.map(cc => cc.contact_id)
+        const contactRes = await call("frappe.client.get_list", {
+          doctype: "Mira Contact",
+          fields: ["name", "full_name", "email", "phone"],
+          filters: [["name", "in", contactIds]],
+          limit_page_length: 1000,
+        })
+        
+        // Merge contact data with campaign data
+        const contactData = contactRes.map(contact => {
+          const campaignRecord = contactCampaignRes.find(cc => cc.contact_id === contact.name)
+          return {
+            ...contact,
+            campaign_record_id: campaignRecord.name,
+            status: campaignRecord.status,
+            __source: "mira_contact"
+          }
+        })
+        
+        all.push(...contactData)
+      }
+    } catch (err) {
+      console.error("Error loading Mira Contact Campaign:", err)
     }
 
     talentCampaignRecords.value = all
+    console.log('Loaded talent campaign records:', all)
   } catch (err) {
     console.error("Error loading Talent Campaign:", err)
     talentCampaignRecords.value = []
@@ -1117,9 +1356,9 @@ const getActionStatusClasses = (status) => {
 const loadCampaign = async () => {
   loading.value = true
   try {
-    const result = await campaignService.getFormData(route.params.id)
-    if (result.success) {
-      Object.assign(campaign.value, result.data)
+    const result = await campaignStore.getCampaignDetails(route.params.id)
+    if (result) {
+      Object.assign(campaign.value, result)
       // Load target segment if exists
       if (campaign.value.target_segment) {
         await loadTargetSegment()
@@ -1149,11 +1388,11 @@ const loadTargetSegment = async () => {
 const loadCampaignSteps = async () => {
   loadingSteps.value = true
   try {
-    const result = await campaignStepService.getList({
-      filters: { campaign: route.params.id },
-      fields: ['name', 'campaign_step_name', 'step_order', 'action_type', 'delay_in_days', 'template' ]
+    const result = await campaignStepStore.getFilteredCampaignSteps({
+      campaign: route.params.id,
+      limit: 1000
     })
-    if (result.success) {
+    if (result && result.data) {
       campaignSteps.value = result.data
     }
   } catch (error) {
@@ -1287,31 +1526,341 @@ const closeStepModal = () => {
   })
 }
 
-// Candidate methods
-const openCandidateModal = (record = null) => {
-  // reset trước
-  Object.keys(candidateFormData).forEach(key => {
-    candidateFormData[key] = ''
-  })
+// Add Talent/Contact Modal States
+const showAddTalentModal = ref(false)
+const searchSource = ref(null)
+const searchKeyword = ref('')
+const selectedSegment = ref('')
+const records = ref([])
+const selectedCandidates = ref([])
+const currentPage = ref(1)
+const pageSize = ref(20)
+const totalRecords = ref(0)
+const searchLoading = ref(false)
+const addingTooltip = ref(false)
 
-  if (record) {
-    // record từ talentCampaignRecords (manual)
-    candidateFormData.name = record.name
-    candidateFormData.full_name = record.full_name
-    candidateFormData.email = record.email || ''
-    candidateFormData.phone_number = record.phone_number || ''
+// Advanced filters
+const advancedFilters = reactive({
+  // Contact filters
+  missingEmail: false,
+  missingPhone: false,
+  // Talent filters
+  skills: '',
+  tags: '',
+  minExperienceYears: null,
+  maxExperienceYears: null
+})
+
+// Existing records in campaign (to exclude)
+const existingRecords = ref({
+  talents: [],
+  contacts: []
+})
+
+// Load existing records to exclude from search
+const loadExistingRecords = async () => {
+  try {
+    // Load existing talents
+    const talentCampaignRes = await call('frappe.client.get_list', {
+      doctype: 'Mira Talent Campaign',
+      fields: ['talent_id'],
+      filters: [['campaign_id', '=', route.params.id]],
+      limit_page_length: 1000,
+    })
+    existingRecords.value.talents = talentCampaignRes.map(tc => tc.talent_id)
+    
+    // Load existing contacts
+    const contactCampaignRes = await call('frappe.client.get_list', {
+      doctype: 'Mira Contact Campaign',
+      fields: ['contact_id'],
+      filters: [['campaign_id', '=', route.params.id]],
+      limit_page_length: 1000,
+    })
+    existingRecords.value.contacts = contactCampaignRes.map(cc => cc.contact_id)
+    
+    console.log('Existing records loaded:', existingRecords.value)
+  } catch (error) {
+    console.error('Error loading existing records:', error)
   }
+}
 
-  showCandidateModal.value = true
+// Candidate methods
+const openCandidateModal = async (record = null) => {
+  showAddTalentModal.value = true
+  // Load existing records first
+  await loadExistingRecords()
+  // Reset search state
+  searchSource.value = null
+  searchKeyword.value = ''
+  selectedSegment.value = ''
+  records.value = []
+  selectedCandidates.value = []
+  currentPage.value = 1
+  totalRecords.value = 0
+  // Reset advanced filters
+  Object.keys(advancedFilters).forEach(key => {
+    if (typeof advancedFilters[key] === 'boolean') {
+      advancedFilters[key] = false
+    } else {
+      advancedFilters[key] = key.includes('Years') ? null : ''
+    }
+  })
 }
 
 
 const closeCandidateModal = () => {
-  showCandidateModal.value = false
-  Object.keys(candidateFormData).forEach(key => {
-    candidateFormData[key] = ''
-  })
+  showAddTalentModal.value = false
+  // Reset search state
+  searchSource.value = null
+  searchKeyword.value = ''
+  selectedSegment.value = ''
+  records.value = []
+  selectedCandidates.value = []
+  currentPage.value = 1
+  totalRecords.value = 0
 }
+
+// Search functions (copied from CampaignWizard)
+const fetchRecords = async (page = 1) => {
+  if (!searchSource.value) return
+
+  searchLoading.value = true
+  try {
+    const startIndex = (page - 1) * pageSize.value
+    
+    if (searchSource.value === 'mira_talent') {
+      let filters = []
+      
+      // Exclude existing talents in campaign
+      if (existingRecords.value.talents.length > 0) {
+        filters.push(['name', 'not in', existingRecords.value.talents])
+      }
+      
+      // Filter by segment if selected
+      if (selectedSegment.value) {
+        const poolRes = await call('frappe.client.get_list', {
+          doctype: 'Mira Talent Pool',
+          fields: ['talent_id'],
+          filters: { segment_id: selectedSegment.value },
+          limit_page_length: 1000,
+        })
+        
+        const talentIds = poolRes.map(r => r.talent_id)
+        if (!talentIds.length) {
+          records.value = []
+          totalRecords.value = 0
+          return
+        }
+        
+        filters.push(['name', 'in', talentIds])
+      }
+      
+      // Add search filter if exists
+      if (searchKeyword.value) {
+        filters.push(['full_name', 'like', `%${searchKeyword.value}%`])
+      }
+      
+      // Advanced filters for talents
+      if (advancedFilters.skills) {
+        filters.push(['skills', 'like', `%${advancedFilters.skills}%`])
+      }
+      
+      if (advancedFilters.tags) {
+        filters.push(['tags', 'like', `%${advancedFilters.tags}%`])
+      }
+      
+      if (advancedFilters.minExperienceYears !== null) {
+        filters.push(['experience_years', '>=', advancedFilters.minExperienceYears])
+      }
+      
+      if (advancedFilters.maxExperienceYears !== null) {
+        filters.push(['experience_years', '<=', advancedFilters.maxExperienceYears])
+      }
+      
+      const res = await call('frappe.client.get_list', {
+        doctype: 'Mira Talent',
+        fields: ['name', 'full_name', 'email', 'phone', 'skills', 'tags', 'experience_years'],
+        filters: filters,
+        limit_start: startIndex,
+        limit_page_length: pageSize.value,
+      })
+      
+      const countRes = await call('frappe.client.get_count', {
+        doctype: 'Mira Talent',
+        filters: filters,
+      })
+      
+      records.value = page === 1 ? res : [...records.value, ...res]
+      totalRecords.value = countRes
+
+    } else if (searchSource.value === 'mira_contact') {
+      let filters = []
+      
+      // Exclude existing contacts in campaign
+      if (existingRecords.value.contacts.length > 0) {
+        filters.push(['name', 'not in', existingRecords.value.contacts])
+      }
+      
+      // Add search filter if exists
+      if (searchKeyword.value) {
+        filters.push(['full_name', 'like', `%${searchKeyword.value}%`])
+      }
+      
+      // Advanced filters for contacts
+      if (advancedFilters.missingEmail) {
+        filters.push(['email', 'in', ['', null]])
+      }
+      
+      if (advancedFilters.missingPhone) {
+        filters.push(['phone', 'in', ['', null]])
+      }
+      
+      const res = await call('frappe.client.get_list', {
+        doctype: 'Mira Contact',
+        fields: ['name', 'full_name', 'email', 'phone'],
+        filters: filters,
+        limit_start: startIndex,
+        limit_page_length: pageSize.value,
+      })
+      
+      const countRes = await call('frappe.client.get_count', {
+        doctype: 'Mira Contact',
+        filters: filters,
+      })
+      
+      records.value = page === 1 ? res : [...records.value, ...res]
+      totalRecords.value = countRes
+    }
+    
+    currentPage.value = page
+  } catch (e) {
+    console.error('Error fetching records', e)
+    records.value = []
+    totalRecords.value = 0
+  } finally {
+    searchLoading.value = false
+  }
+}
+
+const loadMoreRecords = () => {
+  if (searchLoading.value) return
+  const nextPage = currentPage.value + 1
+  const maxPages = Math.ceil(totalRecords.value / pageSize.value)
+  
+  if (nextPage <= maxPages) {
+    fetchRecords(nextPage)
+  }
+}
+
+const canLoadMore = computed(() => {
+  const maxPages = Math.ceil(totalRecords.value / pageSize.value)
+  return currentPage.value < maxPages && !searchLoading.value
+})
+
+const toggleCandidate = (name) => {
+  if (selectedCandidates.value.includes(name)) {
+    selectedCandidates.value = selectedCandidates.value.filter((c) => c !== name)
+  } else {
+    selectedCandidates.value = [...selectedCandidates.value, name]
+  }
+}
+
+// Add selected candidates to campaign
+const addToCampaign = async () => {
+  if (!selectedCandidates.value.length) {
+    alert(__('Please select at least one candidate'))
+    return
+  }
+  
+  addingTooltip.value = true
+  try {
+    const recordType = searchSource.value
+    let doctype = ''
+    let recordField = ''
+    
+    if (recordType === 'mira_talent') {
+      doctype = 'Mira Talent Campaign'
+      recordField = 'talent_id'
+    } else if (recordType === 'mira_contact') {
+      doctype = 'Mira Contact Campaign'
+      recordField = 'contact_id'
+    }
+    
+    const promises = selectedCandidates.value.map(async (recordId) => {
+      const payload = {
+        campaign_id: route.params.id,
+        [recordField]: recordId,
+        status: 'ACTIVE',
+        ...(recordType === 'mira_talent' && selectedSegment.value 
+          ? { segment: selectedSegment.value } 
+          : {})
+      }
+      
+      return await call('frappe.client.insert', {
+        doc: {
+          doctype: doctype,
+          ...payload
+        }
+      })
+    })
+    
+    await Promise.all(promises)
+    
+    // Reload data and close modal
+    await loadTalentCampaign()
+    closeCandidateModal()
+    
+    console.log(`Successfully added ${selectedCandidates.value.length} records to campaign`)
+  } catch (error) {
+    console.error('Error adding to campaign:', error)
+    alert(__('Error adding records to campaign. Please try again.'))
+  } finally {
+    addingTooltip.value = false
+  }
+}
+
+// Watch functions for search
+watch(searchSource, () => {
+  selectedCandidates.value = []
+  selectedSegment.value = ''
+  records.value = []
+  currentPage.value = 1
+  totalRecords.value = 0
+  
+  if (searchSource.value) {
+    fetchRecords(1)
+  }
+})
+
+watch(selectedSegment, (val) => {
+  if (searchSource.value === 'mira_talent') {
+    selectedCandidates.value = []
+    records.value = []
+    currentPage.value = 1
+    totalRecords.value = 0
+    fetchRecords(1)
+  }
+})
+
+// Debounced search
+const fetchRecordsDebounced = debounce(fetchRecords, 400)
+
+watch(searchKeyword, () => {
+  if (!searchSource.value) return
+  currentPage.value = 1
+  records.value = []
+  totalRecords.value = 0
+  fetchRecordsDebounced(1)
+})
+
+// Watch advanced filters
+watch(advancedFilters, () => {
+  if (!searchSource.value) return
+  currentPage.value = 1
+  records.value = []
+  totalRecords.value = 0
+  fetchRecordsDebounced(1)
+}, { deep: true })
 
 // Action methods
 const openActionModal = () => {
@@ -1411,13 +1960,21 @@ const saveStep = async () => {
   savingStep.value = true
   try {
     // Nếu có name thì update, còn không thì insert
-    const result = await campaignStepService.save(stepFormData, stepFormData.name || null)
+    let result
+    console.log(stepFormData.name)
+    if (stepFormData.name) {
+      console.log("Update")
+      result = await campaignStepStore.updateCampaignStep(stepFormData.name, stepFormData)
+    } else {
+      console.log("Insert")
+      result = await campaignStepStore.createCampaignStep(stepFormData)
+    }
 
-    if (result.success) {
+    if (result) {
       await loadCampaignSteps()
       closeStepModal()
     } else {
-      console.error('Error saving step:', result.error || result)
+      console.error('Error saving step:', result)
     }
   } catch (err) {
     console.error('Error saving step:', err)
@@ -1478,16 +2035,63 @@ const saveAction = () => {
   // TODO: Implement save action
 }
 
-const deleteStep = (step) => {
-  // TODO: Implement delete step
+const deleteStep = async (step) => {
+  try {
+    if (confirm(`Bạn có chắc chắn muốn xóa bước "${step.campaign_step_name}"?`)) {
+      await campaignStepStore.deleteCampaignStep(step.name)
+      await loadCampaignSteps() // Reload danh sách sau khi xóa
+    }
+  } catch (error) {
+    console.error('Error deleting step:', error)
+  }
 }
 
-const moveStepUp = (index) => {
-  // TODO: Implement move step up
+const moveStepUp = async (index) => {
+  if (index <= 0) return // Không thể move up step đầu tiên
+  
+  try {
+    const currentStep = campaignSteps.value[index]
+    const previousStep = campaignSteps.value[index - 1]
+    
+    // Swap step_order
+    const tempOrder = currentStep.step_order
+    currentStep.step_order = previousStep.step_order
+    previousStep.step_order = tempOrder
+    
+    // Update cả 2 steps (chỉ step_order)
+    await Promise.all([
+      campaignStepStore.updateStepOrder(currentStep.name, currentStep.step_order),
+      campaignStepStore.updateStepOrder(previousStep.name, previousStep.step_order)
+    ])
+    
+    await loadCampaignSteps() // Reload để cập nhật thứ tự
+  } catch (error) {
+    console.error('Error moving step up:', error)
+  }
 }
 
-const moveStepDown = (index) => {
-  // TODO: Implement move step down
+const moveStepDown = async (index) => {
+  if (index >= campaignSteps.value.length - 1) return // Không thể move down step cuối cùng
+  
+  try {
+    const currentStep = campaignSteps.value[index]
+    const nextStep = campaignSteps.value[index + 1]
+    
+    // Swap step_order
+    const tempOrder = currentStep.step_order
+    currentStep.step_order = nextStep.step_order
+    nextStep.step_order = tempOrder
+    
+    // Update cả 2 steps (chỉ step_order)
+    await Promise.all([
+      campaignStepStore.updateStepOrder(currentStep.name, currentStep.step_order),
+      campaignStepStore.updateStepOrder(nextStep.name, nextStep.step_order)
+    ])
+    
+    await loadCampaignSteps() // Reload để cập nhật thứ tự
+  } catch (error) {
+    console.error('Error moving step down:', error)
+  }
 }
 
 const assignAllFromSegment = () => {
@@ -1507,32 +2111,31 @@ const viewCandidateDetails = (candidate) => {
 }
 
 const unassignCandidate = async (record) => {
+  if (!confirm(__('Are you sure you want to remove this record from the campaign?'))) {
+    return
+  }
+  
   try {
-    let current = normalizeTalentCampaign(campaign.value.mira_talent_campaign)
-
-    if (record.__source === "manual") {
-      let manualBlock = current.find(b => b.type === "manual")
-      if (manualBlock) {
-        manualBlock.records = manualBlock.records.filter(r => r.name !== record.name)
-      }
-    } else {
-      let block = current.find(b => b.type === record.__source)
-      if (block) {
-        block.records = block.records.filter(id => id !== record.name)
-      }
+    // Delete from the appropriate campaign table based on source
+    if (record.__source === 'mira_talent') {
+      await call('frappe.client.delete', {
+        doctype: 'Mira Talent Campaign',
+        name: record.campaign_record_id
+      })
+    } else if (record.__source === 'mira_contact') {
+      await call('frappe.client.delete', {
+        doctype: 'Mira Contact Campaign',
+        name: record.campaign_record_id
+      })
     }
-
-    await call("frappe.client.set_value", {
-      doctype: "Campaign",
-      name: route.params.id,
-      fieldname: "mira_talent_campaign",
-      value: JSON.stringify(current)
-    })
-
-    campaign.value.mira_talent_campaign = JSON.stringify(current)
+    
+    // Reload the data
     await loadTalentCampaign()
+    
+    console.log('Successfully removed record from campaign')
   } catch (err) {
-    console.error("Error unassigning candidate:", err)
+    console.error('Error unassigning candidate:', err)
+    alert(__('Error removing record from campaign. Please try again.'))
   }
 }
 

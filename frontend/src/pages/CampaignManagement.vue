@@ -270,10 +270,13 @@ import { ToastContainer } from "@/components/shared";
 import { Button, Breadcrumbs, Select } from "frappe-ui";
 import LayoutHeader from "@/components/LayoutHeader.vue";
 import Loading from "@/components/Loading.vue";
-import { campaignService } from "@/services/universalService";
+import { useCampaignStore } from "@/stores/campaign";
 
 // Router
 const router = useRouter();
+
+// Campaign store
+const campaignStore = useCampaignStore();
 
 // Breadcrumbs
 const breadcrumbs = [{ label: __("Campaigns"), route: { name: "CampaignManagement" } }];

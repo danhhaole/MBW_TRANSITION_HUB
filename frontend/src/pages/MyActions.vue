@@ -259,13 +259,17 @@
   <script setup>
   import { ref, reactive, computed, onMounted } from 'vue'
   import { createResource, Breadcrumbs, FeatherIcon, Dialog, FormControl, Button } from 'frappe-ui'
-  import { candidateCampaignService, campaignStepService, userService } from '../services/universalService'
+  import { candidateCampaignService, userService } from '../services/universalService'
+  import { useCampaignStepStore } from '@/stores/campaignStep'
   import { ToastContainer } from '@/components/shared'
   import { useToast } from '@/composables/useToast'
   import LayoutHeader from '@/components/LayoutHeader.vue'
   const breadcrumbs = [
     { label: __('My Tasks'), route: { name: 'MyActions' } }
   ]
+  
+  // Campaign step store
+  const campaignStepStore = useCampaignStepStore()
   
   const activeTab = ref('pending')
   const loading = ref(false)
@@ -448,11 +452,10 @@
         }))
       }
   
-      const campaignStepResult = await campaignStepService.getList({
-        fields: ['name', 'campaign_step_name', 'campaign'],
-        page_length: 1000
+      const campaignStepResult = await campaignStepStore.getFilteredCampaignSteps({
+        limit: 1000
       })
-      if (campaignStepResult.success) {
+      if (campaignStepResult && campaignStepResult.data) {
         editOptions.campaignSteps = campaignStepResult.data.map(i => ({
           label: `${i.campaign_step_name} (${i.campaign})`,
           value: i.name,

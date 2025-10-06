@@ -594,14 +594,17 @@ import {
   candidateService, 
   candidateCampaignService,
   candidateSegmentService,
-  campaignService,
   talentSegmentService,
   interactionService,
   emailLogService
 } from '../services/universalService'
+import { useCampaignStore } from '@/stores/campaign'
 
 const route = useRoute()
 const router = useRouter()
+
+// Campaign store
+const campaignStore = useCampaignStore()
 
 // State
 const activeTab = ref('campaigns')
@@ -802,18 +805,21 @@ const loadEmailLogs = async () => {
 
 const loadAvailableCampaigns = async () => {
   try {
-    const result = await campaignService.getList({
-      fields: ['name', 'campaign_name'],
-      page_length: 1000
+    const result = await campaignStore.getFilteredCampaigns({
+      limit: 1000,
+      page: 1
     })
-    if (result.success) {
+    if (result && result.data) {
       availableCampaigns.value = result.data.map(item => ({
-        title: item.campaign_name || item.name,
+        label: item.campaign_name || item.name,
         value: item.name
       }))
+    } else {
+      availableCampaigns.value = []
     }
   } catch (error) {
     console.error('Error loading campaigns:', error)
+    availableCampaigns.value = []
   }
 }
 

@@ -633,11 +633,11 @@ import {
 	talentSegmentService,
 	candidateSegmentService,
 	candidateCampaignService,
-	campaignService,
 	candidateService,
 	findTalentProfilesBySegment,
 	bulkInsertSegments,
 } from '../services/universalService'
+import { useCampaignStore } from '@/stores/campaign'
 import { processSkills } from '../services/candidateService'
 import { usersStore } from '@/stores/users'
 import { Button, Dialog, Breadcrumbs, FeatherIcon } from 'frappe-ui'
@@ -651,6 +651,9 @@ import moment from 'moment'
 const { getUser } = usersStore()
 const route = useRoute()
 const router = useRouter()
+
+// Campaign store
+const campaignStore = useCampaignStore()
 
 // Breadcrumbs
 const breadcrumbs = computed(() => {
@@ -959,13 +962,17 @@ const loadRelatedCampaigns = async () => {
 				]
 
 				// Get the actual campaign data
-				const campaignResult = await campaignService.getList({
-					filters: { name: ['in', campaignIds] },
-					fields: ['name', 'campaign_name', 'status', 'start_date'],
+				const campaignResult = await campaignStore.getFilteredCampaigns({
+					limit: 1000,
+					page: 1
 				})
 
-				if (campaignResult.success) {
-					relatedCampaigns.value = campaignResult.data
+				if (campaignResult && campaignResult.data) {
+					// Filter campaigns by the campaignIds we need
+					const filteredCampaigns = campaignResult.data.filter(campaign => 
+						campaignIds.includes(campaign.name)
+					)
+					relatedCampaigns.value = filteredCampaigns
 				}
 			}
 		} else {

@@ -453,26 +453,27 @@
 <!-- Chọn nguồn -->
 <div class="flex space-x-6 mb-4 text-sm">
   <label class="flex items-center space-x-2">
-    <input type="radio" value="mira_prospect" v-model="searchSource" />
+    <input type="radio" value="mira_contact" v-model="searchSource" />
     <span>Contact</span>
   </label>
   <label class="flex items-center space-x-2">
     <input type="radio" value="mira_talent" v-model="searchSource" />
     <span>Talent</span>
   </label>
-  <label class="flex items-center space-x-2">
-    <input type="radio" value="mira_segment_talent" v-model="searchSource" />
-    <span>Talent Pool</span>
-  </label>
 </div>
-
-<!-- Nếu chọn Mira Segment thì hiển thị autocomplete -->
-<div v-if="searchSource === 'mira_segment_talent'" class="mb-4">
+<!-- Nếu chọn Talent thì hiển thị bộ lọc segment (tùy chọn) -->
+<div v-if="searchSource === 'mira_talent'" class="mb-4">
+  <label class="block text-sm font-medium text-gray-700 mb-2">
+    {{ __("Filter by Segment (Optional)") }}
+  </label>
   <Link
     doctype="Mira Segment"
     v-model="selectedSegment"
-    :placeholder="__('Chọn Segment...')"
+    :placeholder="__('Select segment to filter talents...')"
   />
+  <p class="mt-1 text-xs text-gray-500">
+    {{ __("Leave empty to show all talents") }}
+  </p>
 </div>
 
 <!-- Search box (luôn có khi đã chọn nguồn) -->
@@ -485,53 +486,151 @@
   />
 </div>
 
-    <!-- Danh sách ứng viên -->
-    <div v-if="records.length" class="mt-2 max-h-72 overflow-y-auto grid grid-cols-2 gap-3">
-  <div
-    v-for="r in records"
-    :key="r.name"
-    class="cursor-pointer border rounded-lg p-3 bg-white shadow-sm flex items-center space-x-3 transition-all"
-    :class="{
-      'border-blue-500 ring-2 ring-blue-200': selectedCandidates.includes(r.name),
-      'hover:border-gray-300': !selectedCandidates.includes(r.name),
-    }"
-    @click="toggleCandidate(r.name)"
-  >
-    <input
-      type="checkbox"
-      :value="r.name"
-      v-model="selectedCandidates"
-      class="hidden"
-    />
-    <div
-      class="w-5 h-5 flex items-center justify-center border rounded-full"
-      :class="selectedCandidates.includes(r.name) ? 'bg-blue-500 border-blue-500 text-white' : 'border-gray-300'"
-    >
-      <svg
-        v-if="selectedCandidates.includes(r.name)"
-        xmlns="http://www.w3.org/2000/svg"
-        class="h-3 w-3"
-        viewBox="0 0 20 20"
-        fill="currentColor"
-      >
-        <path
-          fill-rule="evenodd"
-          d="M16.707 5.293a1 1 0 010 1.414L8.414 15l-4.121-4.121a1 1 0 111.414-1.414L8.414 12.172l7.293-7.293a1 1 0 011.414 0z"
-          clip-rule="evenodd"
-        />
-      </svg>
-    </div>
-    <div class="flex flex-col gap-2">
+<!-- Advanced Filters -->
+<div v-if="searchSource" class="mb-4">
+  <details class="border rounded-lg">
+    <summary class="px-4 py-2 bg-gray-50 cursor-pointer text-sm font-medium text-gray-700 hover:bg-gray-100">
+      {{ __("Advanced Filters") }}
+    </summary>
+    <div class="p-4 space-y-4">
+      <!-- Contact Filters -->
+      <div v-if="searchSource === 'mira_contact'" class="space-y-3">
+        <h5 class="text-sm font-medium text-gray-900">{{ __("Contact Filters") }}</h5>
+        <div class="flex flex-wrap gap-4">
+          <label class="flex items-center space-x-2">
+            <input type="checkbox" v-model="advancedFilters.missingEmail" class="rounded" />
+            <span class="text-sm">{{ __("Missing Email") }}</span>
+          </label>
+          <label class="flex items-center space-x-2">
+            <input type="checkbox" v-model="advancedFilters.missingPhone" class="rounded" />
+            <span class="text-sm">{{ __("Missing Phone") }}</span>
+          </label>
+        </div>
+      </div>
 
-      <span class="text-sm font-medium">{{ r.full_name }}</span>
-      <span class="text-sm text-gray-500">{{ r.name }}</span>
+      <!-- Talent Filters -->
+      <div v-if="searchSource === 'mira_talent'" class="space-y-3">
+        <h5 class="text-sm font-medium text-gray-900">{{ __("Talent Filters") }}</h5>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">{{ __("Skills") }}</label>
+            <input
+              v-model="advancedFilters.skills"
+              type="text"
+              placeholder="e.g. JavaScript, Python"
+              class="w-full border rounded px-2 py-1 text-sm"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">{{ __("Tags") }}</label>
+            <input
+              v-model="advancedFilters.tags"
+              type="text"
+              placeholder="e.g. Senior, Remote"
+              class="w-full border rounded px-2 py-1 text-sm"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">{{ __("Min Experience (Years)") }}</label>
+            <input
+              v-model.number="advancedFilters.minExperienceYears"
+              type="number"
+              min="0"
+              placeholder="0"
+              class="w-full border rounded px-2 py-1 text-sm"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">{{ __("Max Experience (Years)") }}</label>
+            <input
+              v-model.number="advancedFilters.maxExperienceYears"
+              type="number"
+              min="0"
+              placeholder="20"
+              class="w-full border rounded px-2 py-1 text-sm"
+            />
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
+  </details>
 </div>
-<!-- Trạng thái rỗng -->
-<div v-else-if="searchSource" class="mt-4 text-center text-gray-500 text-sm border rounded p-4 bg-gray-50">
-  {{ __("Không có ứng viên nào, vui lòng thử lại hoặc chọn Segment khác.") }}
-</div>
+
+    <!-- Danh sách ứng viên -->
+    <div v-if="records.length" class="mt-2">
+      <!-- Hiển thị thông tin tổng kết -->
+      <div class="flex justify-between items-center mb-3 text-sm text-gray-600">
+        <span>{{ __('Showing') }} {{ records.length }} {{ __('of') }} {{ totalRecords }} {{ __('records') }}</span>
+        <span v-if="selectedCandidates.length">{{ selectedCandidates.length }} {{ __('selected') }}</span>
+      </div>
+      
+      <!-- Danh sách -->
+      <div class="max-h-80 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div
+          v-for="r in records"
+          :key="r.name"
+          class="cursor-pointer border rounded-lg p-3 bg-white shadow-sm flex items-center space-x-3 transition-all"
+          :class="{
+            'border-blue-500 ring-2 ring-blue-200': selectedCandidates.includes(r.name),
+            'hover:border-gray-300': !selectedCandidates.includes(r.name),
+          }"
+          @click="toggleCandidate(r.name)"
+        >
+          <div
+            class="w-5 h-5 flex items-center justify-center border rounded-full flex-shrink-0"
+            :class="selectedCandidates.includes(r.name) ? 'bg-blue-500 border-blue-500 text-white' : 'border-gray-300'"
+          >
+            <svg
+              v-if="selectedCandidates.includes(r.name)"
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-3 w-3"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414L8.414 15l-4.121-4.121a1 1 0 111.414-1.414L8.414 12.172l7.293-7.293a1 1 0 011.414 0z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium text-gray-900 truncate">{{ r.full_name }}</div>
+            <div class="text-xs text-gray-500 truncate">{{ r.name }}</div>
+            <div v-if="r.email" class="text-xs text-gray-400 truncate">{{ r.email }}</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Load more button -->
+      <div v-if="canLoadMore" class="mt-4 text-center">
+        <Button 
+          variant="outline" 
+          @click="loadMoreRecords"
+          :loading="searchLoading"
+          class="text-sm"
+        >
+          {{ __('Load More') }} ({{ totalRecords - records.length }} {{ __('remaining') }})
+        </Button>
+      </div>
+      
+      <!-- Loading indicator -->
+      <div v-if="searchLoading && currentPage === 1" class="mt-4 text-center text-gray-500 text-sm">
+        <div class="animate-spin inline-block w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full mr-2"></div>
+        {{ __('Loading...') }}
+      </div>
+    </div>
+    
+    <!-- Trạng thái rỗng -->
+    <div v-else-if="searchSource && !searchLoading" class="mt-4 text-center text-gray-500 text-sm border rounded p-4 bg-gray-50">
+      {{ __("Không có dữ liệu nào, vui lòng thử lại hoặc chọn nguồn khác.") }}
+    </div>
+    
+    <!-- Loading trạng thái ban đầu -->
+    <div v-else-if="searchLoading && currentPage === 1" class="mt-4 text-center text-gray-500 text-sm">
+      <div class="animate-spin inline-block w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full mr-2"></div>
+      {{ __('Loading...') }}
+    </div>
 
   </div>
 </div>
@@ -1057,485 +1156,50 @@
     </Dialog>
 
     <!-- Step Form Dialog -->
-    <Dialog
+    <StepFormDialog
       v-model="showStepForm"
-      :options="stepFormDialogOptions"
-      :disableOutsideClickToClose="true"
-    >
-      <template #body>
-        <div class="bg-white">
-          <!-- Header -->
-          <div class="flex justify-between items-center p-6 border-b border-gray-200">
-            <h2 class="text-xl font-bold text-gray-900">
-              {{ editingStep ? __("Edit Step") : __("Add New Step") }}
-            </h2>
-            <Button
-              theme="gray"
-              variant="ghost"
-              class="w-7 h-7"
-              @click="handleStepFormCancel"
-            >
-              <FeatherIcon name="x" class="h-4 w-4" />
-            </Button>
-          </div>
-
-          <!-- Step Form Content -->
-          <div class="p-6">
-            <form @submit.prevent="handleStepFormSubmit" class="space-y-4">
-              <!-- Step Name -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  {{ __("Step Name") }}
-                  <span class="text-red-500">*</span>
-                </label>
-                <input
-                  v-model="stepFormData.campaign_step_name"
-                  type="text"
-                  :placeholder="__('Enter step name...')"
-                  :disabled="stepFormLoading"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  :class="{ 'border-red-500': stepFormErrors.campaign_step_name }"
-                />
-                <div
-                  v-if="stepFormErrors.campaign_step_name"
-                  class="mt-1 text-sm text-red-600"
-                >
-                  {{ stepFormErrors.campaign_step_name }}
-                </div>
-              </div>
-
-              <!-- Social Network: Select Page (connected_accounts) -->
-              <!-- <div v-if="showStepSocialFields && selectedSource === 'datasource' && selectedDataSourceType === 'SocialNetwork'">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  {{ __('Select Social Page') }}
-                </label>
-                <select
-                  v-model="stepFormSelectedPageId"
-                  :disabled="loadingPages || stepFormLoading"
-                  class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                >
-                  <option value="">{{ __('Select a page...') }}</option>
-                  <option v-for="p in socialPages" :key="p.external_account_id" :value="p.external_account_id">
-                    {{ p.account_name }} ({{ p.account_type }})
-                  </option>
-                </select>
-                <p class="mt-1 text-xs text-gray-500">
-                  {{ __('Pages come from connected_accounts of External Connection') }}
-                </p>
-              </div> -->
-
-              <!-- Step Schedule (Datetime) -->
-              <!-- <div v-if="showStepSocialFields">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  {{ __('Time Post News') }}
-                </label>
-                <input
-                  ref="scheduledAtInput"
-                  v-model="stepFormData.scheduled_at"
-                  type="datetime-local"
-                  :min="minScheduledAt"
-                  :disabled="stepFormLoading"
-                  :step="60"
-                  @focus="openScheduledAtPicker"
-                  @click="openScheduledAtPicker"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                />
-                <p class="mt-1 text-xs text-gray-500">
-                  {{ __('Local time') }} ({{ localTzLabel }})
-                </p>
-                <div v-if="stepFormErrors.scheduled_at" class="mt-1 text-sm text-red-600">
-                  {{ stepFormErrors.scheduled_at }}
-                </div>
-              </div> -->
-
-              <!-- Step Job Opening (optional) -->
-              <!-- <div v-if="showStepSocialFields">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  {{ __('Job Opening (optional)') }}
-                </label>
-                <select
-                  v-model="stepFormSelectedJobId"
-                  @change="onStepJobChange"
-                  :disabled="stepFormLoading || loadingJobOpenings"
-                  class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                >
-                  <option value="">{{ __('Select a job opening...') }}</option>
-                  <option v-for="job in jobOpeningsList" :key="job.name" :value="job.name">
-                    {{ job.job_title }} {{ job.job_code ? `(${job.job_code})` : '' }}
-                  </option>
-                </select>
-                <p class="mt-1 text-xs text-gray-500">
-                  {{ __('If selected, the job\'s description, requirements, and benefits will be inserted into Template Content.') }}
-                </p>
-              </div> -->
-
-              <div class="grid grid-cols-2 gap-4">
-                <!-- Action Type -->
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
-                    {{ __("Action Type") }}
-                    <span class="text-red-500">*</span>
-                  </label>
-                  <select
-                    v-model="stepFormData.action_type"
-                    :disabled="stepFormLoading"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    :class="{ 'border-red-500': stepFormErrors.action_type }"
-                  >
-                    <option
-                      v-for="option in actionTypeOptions"
-                      :key="option.value"
-                      :value="option.value"
-                      :disabled="option.disabled"
-                    >
-                      {{ option.label }}
-                    </option>
-                  </select>
-                  <div
-                    v-if="stepFormErrors.action_type"
-                    class="mt-1 text-sm text-red-600"
-                  >
-                    {{ stepFormErrors.action_type }}
-                  </div>
-                </div>
-
-                <!-- Step Order -->
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
-                    {{ __("Step Order") }}
-                    <span class="text-red-500">*</span>
-                  </label>
-                  <input
-                    v-model.number="stepFormData.step_order"
-                    type="number"
-                    min="1"
-                    max="999"
-                    :placeholder="__('Order...')"
-                    :disabled="true"
-                    readonly
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    :class="{ 'border-red-500': stepFormErrors.step_order }"
-                  />
-                  <div v-if="stepFormErrors.step_order" class="mt-1 text-sm text-red-600">
-                    {{ stepFormErrors.step_order }}
-                  </div>
-                </div>
-              </div>
-
-              <!-- Delay -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  {{ __("Delay (Days)") }}
-                </label>
-                <input
-                  v-model.number="stepFormData.delay_in_days"
-                  type="number"
-                  min="0"
-                  max="365"
-                  :placeholder="__('0 for immediate execution')"
-                  :disabled="stepFormLoading"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  :class="{ 'border-red-500': stepFormErrors.delay_in_days }"
-                />
-                <p class="mt-1 text-sm text-gray-500">
-                  {{ __("Number of days to wait before executing this step") }}
-                </p>
-                <div
-                  v-if="stepFormErrors.delay_in_days"
-                  class="mt-1 text-sm text-red-600"
-                >
-                  {{ stepFormErrors.delay_in_days }}
-                </div>
-              </div>
-
-              <!-- Template Content -->
-              <!-- <div v-if="showStepSocialFields && selectedSource === 'datasource' && selectedDataSourceType === 'SocialNetwork'">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  {{ __('Template Content') }}
-                </label>
-                <textarea
-                  v-model="stepFormData.template_content"
-                  rows="4"
-                  :placeholder="__('Enter template content for this step...')"
-                  :disabled="stepFormLoading"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                />
-                <p class="mt-1 text-sm text-gray-500">
-                  {{ __('Content template for emails, SMS, or other actions') }}
-                </p>
-              </div> -->
-
-              <!-- Action Config -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  {{ __("Action Configuration") }}
-                </label>
-                <textarea
-                  v-model="stepFormData.action_config_string"
-                  rows="3"
-                  :placeholder="__('Enter JSON configuration...')"
-                  :disabled="stepFormLoading"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm font-mono text-sm"
-                  :class="{ 'border-red-500': stepFormErrors.action_config_string }"
-                />
-                <p class="mt-1 text-sm text-gray-500">
-                  {{ __("JSON configuration for the action (optional)") }}
-                </p>
-                <div
-                  v-if="stepFormErrors.action_config_string"
-                  class="mt-1 text-sm text-red-600"
-                >
-                  {{ stepFormErrors.action_config_string }}
-                </div>
-              </div>
-
-              <!-- Step Image (optional) -->
-              <!-- <div v-if="showStepSocialFields">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  {{ __('Step Image (optional)') }}
-                </label>
-                <div class="space-y-3">
-                  <div v-if="stepFormData.image" class="flex items-center space-x-3">
-                    <img 
-                      :src="stepFormData.image" 
-                      alt="Step image preview"
-                      class="w-20 h-20 object-cover rounded-lg border border-gray-200"
-                    />
-                    <div class="flex-1">
-                      <p class="text-sm text-gray-600">{{ __('Current image') }}</p>
-                      <p class="text-xs text-gray-500 truncate">{{ stepFormData.image }}</p>
-                    </div>
-                  </div>
-                  
-                  <ImageUploader
-                    :image_url="stepFormData.image"
-                    image_type="image/*"
-                    @upload="(url, file) => {
-                      stepFormData.image = url
-                      console.log('Image uploaded:', url)
-                    }"
-                    @remove="() => {
-                      stepFormData.image = ''
-                      console.log('Image removed')
-                    }"
-                  />
-                </div>
-                <p class="mt-1 text-xs text-gray-500">
-                  {{ __('Upload an image to represent this campaign step (optional)') }}
-                </p>
-              </div> -->
-            </form>
-          </div>
-
-          <!-- Footer Actions -->
-          <div class="flex justify-end space-x-3 p-6 border-t border-gray-200">
-            <Button
-              type="button"
-              variant="outline"
-              theme="gray"
-              @click="handleStepFormCancel"
-              :disabled="stepFormLoading"
-            >
-              {{ __("Cancel") }}
-            </Button>
-            <Button
-              type="submit"
-              variant="solid"
-              theme="gray"
-              @click="handleStepFormSubmit"
-              :loading="stepFormLoading"
-              :disabled="stepFormLoading"
-            >
-              {{ editingStep ? __("Update Step") : __("Add Step") }}
-            </Button>
-          </div>
-        </div>
-      </template>
-    </Dialog>
+      :editing-step="editingStep"
+      :campaign-steps="campaignSteps"
+      :draft-campaign="draftCampaign"
+      @submit="handleStepFormSubmit"
+      @cancel="handleStepFormCancel"
+    />
 
     <!-- Social Network Config Modal -->
-    <Dialog
+    <SocialNetworkConfigDialog
       v-model="showSocialConfigModal"
-      :options="{ title: __('Social Network Configuration'), size: 'lg' }"
-    >
-      <template #body>
-        <div class="p-6 space-y-4">
-          <!-- Modal Header with Close Button -->
-          <div class="flex items-center justify-between mb-2">
-            <div class="flex items-center space-x-2">
-              <FeatherIcon name="users" class="h-5 w-5 text-blue-600" />
-              <h3 class="text-base font-medium text-gray-900">
-                {{ __("Select Page & Schedule") }}
-              </h3>
-            </div>
-            <Button
-              theme="gray"
-              variant="ghost"
-              class="w-7 h-7"
-              @click="showSocialConfigModal = false"
-            >
-              <FeatherIcon name="x" class="h-4 w-4" />
-            </Button>
-          </div>
-
-          <!-- Select Social Page -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              {{ __("Select Social Page") }}
-            </label>
-            <select
-              v-model="configData.socialConfig.page_id"
-              :disabled="loadingPages"
-              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            >
-              <option value="">{{ __("Select a page...") }}</option>
-              <option
-                v-for="p in socialPages"
-                :key="p.external_account_id"
-                :value="p.external_account_id"
-              >
-                {{ p.account_name }} ({{ p.account_type }})
-              </option>
-            </select>
-          </div>
-
-          <!-- Schedule -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              {{ __("Time Post News") }}
-            </label>
-            <input
-              v-model="configData.socialConfig.scheduled_at"
-              type="datetime-local"
-              :min="minScheduledAt"
-              :step="60"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            />
-            <p class="mt-1 text-xs text-gray-500">
-              {{ __("Local time") }} ({{ localTzLabel }})
-            </p>
-          </div>
-
-          <!-- Job Opening -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              {{ __("Job Opening (optional)") }}
-            </label>
-            <select
-              v-model="configData.socialConfig.job_opening"
-              :disabled="loadingJobOpenings"
-              @change="onSocialJobOpeningChange"
-              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            >
-              <option value="">{{ __("Select a job opening...") }}</option>
-              <option v-for="job in jobOpeningsList" :key="job.name" :value="job.name">
-                {{ job.job_title }} {{ job.job_code ? `(${job.job_code})` : "" }}
-              </option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              {{ __("Template Content") }}
-            </label>
-            <textarea
-              v-model="stepFormData.template_content"
-              rows="4"
-              :placeholder="__('Enter template content for this step...')"
-              :disabled="stepFormLoading"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            />
-            <p class="mt-1 text-sm text-gray-500">
-              {{ __("Content template for emails, SMS, or other actions") }}
-            </p>
-          </div>
-
-          <!-- Image Uploader -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              {{ __("Step Image (optional)") }}
-            </label>
-            <ImageUploader
-              :image_url="configData.socialConfig.image"
-              image_type="image/*"
-              @upload="
-                (url) => {
-                  configData.socialConfig.image = url;
-                }
-              "
-              @remove="
-                () => {
-                  configData.socialConfig.image = '';
-                }
-              "
-            />
-            <!-- Image URL input -->
-            <div class="mt-2">
-              <label class="block text-xs font-medium text-gray-500 mb-1">{{
-                __("Image URL")
-              }}</label>
-              <input
-                v-model="configData.socialConfig.image"
-                type="text"
-                placeholder="https://..."
-                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
-            </div>
-            <!-- Preview -->
-            <div v-if="configData.socialConfig.image" class="mt-3">
-              <label class="block text-xs font-medium text-gray-500 mb-1">{{
-                __("Preview")
-              }}</label>
-              <img
-                :src="configData.socialConfig.image"
-                alt="Preview"
-                class="max-h-40 rounded border"
-              />
-            </div>
-          </div>
-
-          <!-- Inline Actions (visible even if footer is hidden) -->
-          <div class="flex items-center justify-end gap-2 pt-2">
-            <Button
-              variant="outline"
-              theme="gray"
-              @click="showSocialConfigModal = false"
-              >{{ __("Cancel") }}</Button
-            >
-            <Button variant="solid" theme="gray" @click="confirmSocialConfig">{{
-              __("Continue")
-            }}</Button>
-          </div>
-        </div>
-      </template>
-      <template #actions>
-        <div class="flex items-center gap-2 p-3">
-          <Button variant="outline" theme="gray" @click="showSocialConfigModal = false">{{
-            __("Cancel")
-          }}</Button>
-          <Button variant="solid" theme="gray" @click="confirmSocialConfig">{{
-            __("Continue")
-          }}</Button>
-        </div>
-      </template>
-    </Dialog>
+      :social-config="configData.socialConfig"
+      :social-pages="socialPages"
+      :job-openings-list="jobOpeningsList"
+      :loading-pages="loadingPages"
+      :loading-job-openings="loadingJobOpenings"
+      :min-scheduled-at="minScheduledAt"
+      :local-tz-label="localTzLabel"
+      @update:social-config="updateSocialConfig"
+      @confirm="confirmSocialConfig"
+      @cancel="() => showSocialConfigModal = false"
+      @job-opening-change="onSocialJobOpeningChange"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from "vue";
+import { ref, computed, watch, onMounted, reactive } from "vue";
 import { Dialog, Button, FeatherIcon } from "frappe-ui";
 import { call } from "frappe-ui";
 import PoolConfig from "./PoolConfig.vue";
 import FileConfig from "./FileConfig.vue";
 import ImageUploader from "@/components/Controls/ImageUploader.vue";
 import Link from "@/components/Controls/Link.vue";
+import StepFormDialog from "./StepFormDialog.vue";
+import SocialNetworkConfigDialog from "./SocialNetworkConfigDialog.vue";
 
 import {
-  campaignService,
   candidateService,
   candidateSegmentService,
-  campaignStepService,
 } from "@/services/universalService";
+import { useCampaignStore } from "@/stores/campaign";
+import { useCampaignStepStore } from "@/stores/campaignStep";
 import { campaignTemplateDirectService } from "@/services/campaignTemplateDirectService.js";
 import {
   getFilteredJobOpenings,
@@ -1569,6 +1233,10 @@ const currentStep = ref(1);
 const loading = ref(false);
 const activating = ref(false);
 
+// Campaign store
+const campaignStore = useCampaignStore();
+const campaignStepStore = useCampaignStepStore();
+
 //chọn nguồn
 const searchSource = ref(null);
 const searchKeyword = ref("");
@@ -1576,6 +1244,24 @@ const selectedSegment = ref("");
 const records = ref([]);
 const selectedCandidates = ref([]);
 const miraTalentCampaign = ref({ type: null, records: [] });
+
+// Pagination states
+const currentPage = ref(1);
+const pageSize = ref(20);
+const totalRecords = ref(0);
+const searchLoading = ref(false);
+
+// Advanced filters
+const advancedFilters = reactive({
+  // Contact filters
+  missingEmail: false,
+  missingPhone: false,
+  // Talent filters
+  skills: '',
+  tags: '',
+  minExperienceYears: null,
+  maxExperienceYears: null
+});
 
 // Form data
 const campaignData = ref({
@@ -1607,77 +1293,141 @@ const dataSourceSelectionLevel = ref(0);
 
 // search start
 
-// Fetch data
-async function fetchRecords() {
+// Fetch data with pagination
+async function fetchRecords(page = 1) {
   if (!searchSource.value) return;
 
+  searchLoading.value = true;
   try {
+    const startIndex = (page - 1) * pageSize.value;
+    
     if (searchSource.value === "mira_talent") {
+      let filters = [];
+      
+      // Nếu có segment thì lọc theo segment
+      if (selectedSegment.value) {
+        // Lấy talent_id từ Mira Talent Pool
+        const poolRes = await call("frappe.client.get_list", {
+          doctype: "Mira Talent Pool",
+          fields: ["talent_id"],
+          filters: { segment_id: selectedSegment.value },
+          limit_page_length: 1000,
+        });
+        
+        const talentIds = poolRes.map(r => r.talent_id);
+        if (!talentIds.length) {
+          records.value = [];
+          totalRecords.value = 0;
+          return;
+        }
+        
+        filters.push(["name", "in", talentIds]);
+      }
+      
+      // Thêm filter tìm kiếm nếu có
+      if (searchKeyword.value) {
+        filters.push(["full_name", "like", `%${searchKeyword.value}%`]);
+      }
+      
+      // Advanced filters for talents
+      if (advancedFilters.skills) {
+        filters.push(["skills", "like", `%${advancedFilters.skills}%`]);
+      }
+      
+      if (advancedFilters.tags) {
+        filters.push(["tags", "like", `%${advancedFilters.tags}%`]);
+      }
+      
+      if (advancedFilters.minExperienceYears !== null) {
+        filters.push(["experience_years", ">=", advancedFilters.minExperienceYears]);
+      }
+      
+      if (advancedFilters.maxExperienceYears !== null) {
+        filters.push(["experience_years", "<=", advancedFilters.maxExperienceYears]);
+      }
+      
       const res = await call("frappe.client.get_list", {
         doctype: "Mira Talent",
-        fields: ["name", "full_name"],
-        filters: searchKeyword.value
-          ? [["full_name", "like", `%${searchKeyword.value}%`]]
-          : [],
-        limit_page_length: 50,
+        fields: ["name", "full_name", "email", "phone", "skills", "tags", "experience_years"],
+        filters: filters,
+        limit_start: startIndex,
+        limit_page_length: pageSize.value,
       });
-      records.value = res;
+      
+      // Get total count
+      const countRes = await call("frappe.client.get_count", {
+        doctype: "Mira Talent",
+        filters: filters,
+      });
+      
+      records.value = page === 1 ? res : [...records.value, ...res];
+      totalRecords.value = countRes;
 
-    } else if (searchSource.value === "mira_prospect") {
+    } else if (searchSource.value === "mira_contact") {
+      let filters = [];
+      
+      // Add search filter if exists
+      if (searchKeyword.value) {
+        filters.push(["full_name", "like", `%${searchKeyword.value}%`]);
+      }
+      
+      // Advanced filters for contacts
+      if (advancedFilters.missingEmail) {
+        filters.push(["email", "in", ["", null]]);
+      }
+      
+      if (advancedFilters.missingPhone) {
+        filters.push(["phone", "in", ["", null]]);
+      }
+      
       const res = await call("frappe.client.get_list", {
         doctype: "Mira Contact",
-        fields: ["name", "full_name"],
-        filters: searchKeyword.value
-          ? [["full_name", "like", `%${searchKeyword.value}%`]]
-          : [],
-        limit_page_length: 50,
+        fields: ["name", "full_name", "email", "phone"],
+        filters: filters,
+        limit_start: startIndex,
+        limit_page_length: pageSize.value,
       });
-      records.value = res;
-
-    } else if (searchSource.value === "mira_segment_talent") {
-      if (!selectedSegment.value) {
-        records.value = [];
-        return;
-      }
-
-      // 1. Lấy talent_id từ bảng Mira Talent Pool
-      const poolRes = await call("frappe.client.get_list", {
-        doctype: "Mira Talent Pool",
-        fields: ["talent_id"],
-        filters: { segment_id: selectedSegment.value },
-        limit_page_length: 1000, // lấy đủ hết
+      
+      // Get total count
+      const countRes = await call("frappe.client.get_count", {
+        doctype: "Mira Contact",
+        filters: filters,
       });
-
-      const talentIds = poolRes.map(r => r.talent_id);
-      if (!talentIds.length) {
-        records.value = [];
-        return;
-      }
-
-      // 2. Lấy thông tin từ Mira Talent
-      const talentRes = await call("frappe.client.get_list", {
-        doctype: "Mira Talent",
-        fields: ["name", "full_name"],
-        filters: searchKeyword.value
-          ? [
-              ["name", "in", talentIds],
-              ["full_name", "like", `%${searchKeyword.value}%`],
-            ]
-          : [["name", "in", talentIds]],
-        limit_page_length: 50,
-      });
-
-      records.value = talentRes;
+      
+      records.value = page === 1 ? res : [...records.value, ...res];
+      totalRecords.value = countRes;
     }
+    
+    currentPage.value = page;
   } catch (e) {
     console.error("Error fetching records", e);
     records.value = [];
+    totalRecords.value = 0;
+  } finally {
+    searchLoading.value = false;
   }
 }
 
 
 // ✅ bọc fetchRecords bằng debounce
 const fetchRecordsDebounced = debounce(fetchRecords, 400);
+
+// Load more records
+function loadMoreRecords() {
+  if (searchLoading.value) return;
+  const nextPage = currentPage.value + 1;
+  const maxPages = Math.ceil(totalRecords.value / pageSize.value);
+  
+  if (nextPage <= maxPages) {
+    fetchRecords(nextPage);
+  }
+}
+
+// Check if can load more
+const canLoadMore = computed(() => {
+  const maxPages = Math.ceil(totalRecords.value / pageSize.value);
+  return currentPage.value < maxPages && !searchLoading.value;
+});
 
 function toggleCandidate(name) {
   if (selectedCandidates.value.includes(name)) {
@@ -1692,22 +1442,34 @@ watch(searchSource, () => {
   selectedCandidates.value = [];
   selectedSegment.value = ""; // ✅ reset cả segment
   records.value = [];
+  currentPage.value = 1;
+  totalRecords.value = 0;
   miraTalentCampaign.value = { type: searchSource.value, records: [] };
+  
+  // Reset advanced filters
+  Object.keys(advancedFilters).forEach(key => {
+    if (typeof advancedFilters[key] === 'boolean') {
+      advancedFilters[key] = false;
+    } else {
+      advancedFilters[key] = key.includes('Years') ? null : '';
+    }
+  });
 
-  if (searchSource.value !== "mira_segment_talent") {
-    fetchRecords();
+  if (searchSource.value) {
+    fetchRecords(1);
   }
 });
 
-// Watch segment để query mới
+// Watch segment để query mới (chỉ áp dụng cho talent)
 watch(selectedSegment, (val) => {
-  if (searchSource.value === "mira_segment_talent" && val) {
+  if (searchSource.value === "mira_talent") {
     selectedCandidates.value = [];
     records.value = [];
-    fetchRecords();
+    currentPage.value = 1;
+    totalRecords.value = 0;
+    fetchRecords(1);
   }
 });
-
 
 // Watch candidates để update JSON
 watch(
@@ -1716,7 +1478,7 @@ watch(
     miraTalentCampaign.value = {
       type: searchSource.value,
       records: newVal,
-      ...(searchSource.value === "mira_segment_talent" && selectedSegment.value
+      ...(searchSource.value === "mira_talent" && selectedSegment.value
         ? { segment_id: selectedSegment.value }
         : {}),
     };
@@ -1728,8 +1490,20 @@ watch(
 // Watch searchKeyword để trigger debounced fetch
 watch(searchKeyword, () => {
   if (!searchSource.value) return;
-  fetchRecordsDebounced();
+  currentPage.value = 1;
+  records.value = [];
+  totalRecords.value = 0;
+  fetchRecordsDebounced(1);
 });
+
+// Watch advanced filters
+watch(advancedFilters, () => {
+  if (!searchSource.value) return;
+  currentPage.value = 1;
+  records.value = [];
+  totalRecords.value = 0;
+  fetchRecordsDebounced(1);
+}, { deep: true });
 
 // search end
 
@@ -1761,22 +1535,6 @@ const editingStep = ref(null);
 // Track originally loaded step IDs to detect deletions in edit mode
 const originalStepIds = ref([]);
 
-// Step Form State
-const stepFormData = ref({
-  campaign: "",
-  campaign_step_name: "",
-  action_type: "",
-  step_order: 1,
-  delay_in_days: 0,
-  template_content: "",
-  action_config_string: "",
-  image: "", // Sử dụng tên field đúng theo doctype
-  scheduled_at: "",
-});
-
-const stepFormErrors = ref({});
-const stepFormLoading = ref(false);
-
 // Manual Step Job Opening selection state
 const stepFormSelectedJobId = ref("");
 
@@ -1805,7 +1563,7 @@ const sources = computed(() => [
   {
     key: "search",
     title: "Search",
-    description: "Search and select candidates",
+    description: "Search and select from Contacts and Talents",
     icon: "search",
     type: "fixed",
     source_type: "Search",
@@ -2010,10 +1768,8 @@ const onSocialJobOpeningChange = async () => {
       const blockBody = buildJobDetailsForTemplate(details);
       console.log("Nội dung mẫu đã tạo:", blockBody);
 
-      stepFormData.value = {
-        ...stepFormData.value,
-        template_content: blockBody,
-      };
+      // Template content will be handled by the dialog component
+      console.log("Template content generated:", blockBody);
     }
   } catch (error) {
     console.error("Lỗi khi tải chi tiết công việc:", error);
@@ -2348,7 +2104,6 @@ const addManualStep = () => {
   console.log("✅ Draft campaign exists, proceeding...");
 
   // Reset form and show inline form
-  resetStepForm();
   stepFormSelectedJobId.value = "";
   editingStep.value = null;
   showStepForm.value = true;
@@ -2357,205 +2112,64 @@ const addManualStep = () => {
 };
 
 const editManualStep = (step) => {
-  // Load step data into form
-  setStepFormData(step);
   editingStep.value = step;
   showStepForm.value = true;
 };
 
-const resetStepForm = () => {
-  stepFormData.value = {
-    // campaign: '',
-    campaign_step_name: "",
-    action_type: "",
-    step_order: campaignSteps.value.length + 1,
-    delay_in_days: 0,
-    template_content: "",
-    action_config_string: "",
-    image: "", // Reset image field
-    scheduled_at: "",
-  };
-  stepFormErrors.value = {};
-  stepFormSelectedJobId.value = "";
-};
-
-const setStepFormData = (step) => {
-  stepFormData.value = {
-    campaign: draftCampaign.value?.data?.name || props.editCampaign?.name || "",
-    campaign_step_name: step.campaign_step_name || "",
-    action_type: step.action_type || "",
-    step_order: step.step_order || campaignSteps.value.length + 1,
-    delay_in_days: step.delay_in_days || 0,
-    template_content: step.template_content || "",
-    action_config_string:
-      step.action_config_string ||
-      (step.action_config ? JSON.stringify(step.action_config, null, 2) : ""),
-    image: step.image || "", // Load existing image
-    scheduled_at: step.scheduled_at || "",
-  };
-  stepFormErrors.value = {};
-  // Do not carry over previous job opening selection when editing/adding
-  stepFormSelectedJobId.value = "";
-};
-
-const validateStepForm = () => {
-  stepFormErrors.value = {};
-
-  if (!stepFormData.value.campaign_step_name?.trim()) {
-    stepFormErrors.value.campaign_step_name = __("Step name is required");
-  }
-
-  if (!stepFormData.value.action_type?.trim()) {
-    stepFormErrors.value.action_type = __("Action type is required");
-  }
-
-  // step_order optional: nếu trống/không hợp lệ sẽ để BE tự gán
-  if (stepFormData.value.step_order != null && stepFormData.value.step_order < 1) {
-    stepFormErrors.value.step_order = __("Step order must be at least 1");
-  }
-
-  if (stepFormData.value.delay_in_days < 0) {
-    stepFormErrors.value.delay_in_days = __("Delay cannot be negative");
-  }
-
-  // scheduled_at must not be in the past
-  if (stepFormData.value.scheduled_at) {
-    try {
-      const selected = new Date(stepFormData.value.scheduled_at);
-      const now = new Date();
-      if (selected.getTime() < now.getTime() - 60000) {
-        // allow 1m drift
-        stepFormErrors.value.scheduled_at = __("Scheduled time cannot be in the past");
-      }
-    } catch (e) {
-      stepFormErrors.value.scheduled_at = __("Invalid datetime");
+const handleStepFormSubmit = (event) => {
+  const { stepData, isEditing, editingStepId } = event;
+  
+  // Attach selected social page to step metadata (kept in action_config)
+  if (
+    selectedSource.value === "datasource" &&
+    selectedDataSourceType.value === "SocialNetwork"
+  ) {
+    const pageId = configData.value.socialConfig?.page_id;
+    if (pageId) {
+      stepData.action_config = stepData.action_config || {};
+      stepData.action_config.target_page_id = pageId;
     }
   }
 
-  // Validate JSON config if provided
-  if (stepFormData.value.action_config_string?.trim()) {
-    try {
-      JSON.parse(stepFormData.value.action_config_string);
-    } catch (e) {
-      stepFormErrors.value.action_config_string = __("Invalid JSON format");
-    }
-  }
-
-  return Object.keys(stepFormErrors.value).length === 0;
-};
-
-const handleStepFormSubmit = () => {
-  if (!validateStepForm()) return;
-
-  stepFormLoading.value = true;
-
-  try {
-    // Fallback: if SocialNetwork and fields empty, use socialConfig
-    if (
-      selectedSource.value === "datasource" &&
-      selectedDataSourceType.value === "SocialNetwork"
-    ) {
-      if (!stepFormSelectedPageId.value && configData.value.socialConfig?.page_id) {
-        stepFormSelectedPageId.value = configData.value.socialConfig.page_id;
-      }
-      if (
-        !stepFormData.value.scheduled_at &&
-        configData.value.socialConfig?.scheduled_at
-      ) {
-        stepFormData.value.scheduled_at = configData.value.socialConfig.scheduled_at;
-      }
-      if (!stepFormSelectedJobId.value && configData.value.socialConfig?.job_opening) {
-        stepFormSelectedJobId.value = configData.value.socialConfig.job_opening;
-      }
-      if (!stepFormData.value.image && configData.value.socialConfig?.image) {
-        stepFormData.value.image = configData.value.socialConfig.image;
-      }
-    }
-
-    const scheduledIso = stepFormData.value.scheduled_at
-      ? toIsoIfSet(stepFormData.value.scheduled_at)
-      : "";
-    const stepData = {
-      campaign: draftCampaign.value?.data?.name || draftCampaign.value?.name, // ✅ Sửa: Đảm bảo có campaign
-      campaign_step_name: stepFormData.value.campaign_step_name.trim(),
-      action_type: stepFormData.value.action_type,
-      // step_order: chỉ gửi nếu hợp lệ, để BE auto-increment khi thiếu
-      delay_in_days: stepFormData.value.delay_in_days,
-      template_content: stepFormData.value.template_content?.trim() || "",
-      image: stepFormData.value.image || "", // Include image với tên field đúng
-      scheduled_at: scheduledIso,
-      action_config: stepFormData.value.action_config_string?.trim()
-        ? (() => {
-            try {
-              return JSON.parse(stepFormData.value.action_config_string);
-            } catch {
-              return stepFormData.value.action_config_string;
-            }
-          })()
-        : null,
-    };
-
-    if (
-      Number.isFinite(stepFormData.value.step_order) &&
-      stepFormData.value.step_order > 0
-    ) {
-      stepData.step_order = stepFormData.value.step_order;
-    }
-
-    // Attach selected social page to step metadata (kept in action_config)
-    if (
-      selectedSource.value === "datasource" &&
-      selectedDataSourceType.value === "SocialNetwork"
-    ) {
-      const pageId =
-        stepFormSelectedPageId.value || configData.value.socialConfig?.page_id;
-      if (pageId) {
-        stepData.action_config = stepData.action_config || {};
-        stepData.action_config.target_page_id = pageId;
-      }
-    }
-
-    if (editingStep.value) {
-      // Editing existing step
-      const index = campaignSteps.value.findIndex((s) => s.id === editingStep.value.id);
-      if (index !== -1) {
-        campaignSteps.value[index] = {
-          ...stepData,
-          id: editingStep.value.id,
-          campaign: draftCampaign.value?.data?.name || draftCampaign.value?.name,
-        };
-      }
-    } else {
-      // Adding new step
-      const newStep = {
-        id: Date.now(), // Temporary ID
-        campaign: draftCampaign.value?.data?.name || draftCampaign.value?.name, // ✅ Sửa: Đảm bảo có campaign
-        fromTemplate: false, // Mark as manually created
+  if (isEditing) {
+    // Editing existing step
+    const index = campaignSteps.value.findIndex((s) => s.id === editingStepId);
+    if (index !== -1) {
+      campaignSteps.value[index] = {
         ...stepData,
+        id: editingStepId,
+        campaign: draftCampaign.value?.data?.name || draftCampaign.value?.name,
       };
-      campaignSteps.value.push(newStep);
-      console.log("📝 Added manual campaign step:", newStep);
     }
-
-    // Sort steps by order
-    campaignSteps.value.sort((a, b) => a.step_order - b.step_order);
-
-    // Close form and reset transient selections
-    showStepForm.value = false;
-    editingStep.value = null;
-    stepFormSelectedJobId.value = "";
-    stepFormSelectedPageId.value = "";
-
-    console.log("Step saved:", stepData);
-  } finally {
-    stepFormLoading.value = false;
+  } else {
+    // Adding new step
+    const newStep = {
+      id: Date.now(), // Temporary ID
+      campaign: draftCampaign.value?.data?.name || draftCampaign.value?.name,
+      fromTemplate: false, // Mark as manually created
+      ...stepData,
+    };
+    campaignSteps.value.push(newStep);
+    console.log("📝 Added manual campaign step:", newStep);
   }
+
+  // Sort steps by order
+  campaignSteps.value.sort((a, b) => a.step_order - b.step_order);
+
+  // Reset editing state
+  editingStep.value = null;
+
+  console.log("Step saved:", stepData);
 };
 
 const handleStepFormCancel = () => {
   showStepForm.value = false;
   editingStep.value = null;
-  resetStepForm();
+};
+
+// Method to update social config from the dialog
+const updateSocialConfig = (newConfig) => {
+  configData.value.socialConfig = { ...newConfig };
 };
 
 const removeStep = (step) => {
@@ -2692,20 +2306,18 @@ const buildJobDetailsForTemplate = (details) => {
 // Called when job opening is chosen in the Manual Step form
 const onStepJobChange = async () => {
   if (!stepFormSelectedJobId.value) {
-    stepFormData.value.template_content = "";
     return;
   }
   try {
     const details = await getJobOpeningDetails(stepFormSelectedJobId.value);
     if (!details) {
-      stepFormData.value.template_content = "";
       return;
     }
     const blockBody = buildJobDetailsForTemplate(details);
-    stepFormData.value.template_content = blockBody || "";
+    console.log("Job details template generated:", blockBody);
+    // Template content will be handled by the dialog component
   } catch (e) {
     console.error("Failed to build job details for step template:", e);
-    stepFormData.value.template_content = "";
   }
 };
 
@@ -2794,14 +2406,65 @@ const createStepWithDelay = async (step, index, total) => {
   console.log(`📝 Creating CampaignStep ${index + 1}/${total} with payload:`, payload);
   console.log(`🖼️ Image field in payload:`, payload.image);
 
-  console.log(`🔍 Calling campaignStepService.save with payload:`, payload);
-  const result = await campaignStepService.save(payload);
+  console.log(`🔍 Calling campaignStepStore.createCampaignStep with payload:`, payload);
+  const result = await campaignStepStore.createCampaignStep(payload);
   console.log(`✅ Step ${index + 1} created:`, result);
   console.log(`🔍 Step ${index + 1} campaign field:`, result.data?.campaign);
   console.log(`🖼️ Step ${index + 1} image field:`, result.data?.image);
   console.log(`🔍 Step ${index + 1} campaign field:`, result.data?.campaign);
 
   return result;
+};
+
+// Create campaign records for talents or contacts
+const createCampaignRecords = async (campaignName) => {
+  if (!miraTalentCampaign.value.records || miraTalentCampaign.value.records.length === 0) {
+    return;
+  }
+
+  const recordType = miraTalentCampaign.value.type;
+  let doctype = '';
+  let recordField = '';
+  
+  if (recordType === 'mira_talent') {
+    doctype = 'Mira Talent Campaign';
+    recordField = 'talent_id';
+  } else if (recordType === 'mira_contact') {
+    doctype = 'Mira Contact Campaign';
+    recordField = 'contact_id';
+  } else {
+    console.warn('Unknown record type:', recordType);
+    return;
+  }
+
+  console.log(`Creating ${doctype} records for campaign:`, campaignName);
+  
+  try {
+    const promises = miraTalentCampaign.value.records.map(async (recordId) => {
+      const payload = {
+        campaign_id: campaignName,
+        [recordField]: recordId,
+        status: 'ACTIVE',
+        ...(recordType === 'mira_talent' && miraTalentCampaign.value.segment_id 
+          ? { segment: miraTalentCampaign.value.segment_id } 
+          : {})
+      };
+      
+      return await call('frappe.client.insert', {
+        doc: {
+          doctype: doctype,
+          ...payload
+        }
+      });
+    });
+    
+    const results = await Promise.all(promises);
+    console.log(`Successfully created ${results.length} ${doctype} records`);
+    return results;
+  } catch (error) {
+    console.error(`Error creating ${doctype} records:`, error);
+    throw error;
+  }
 };
 
 // Finalize: create (draft flow) or update (edit flow)
@@ -2870,18 +2533,18 @@ const finalizeCampaign = async () => {
 
         if (s.id) {
           keptIds.add(s.id);
-          await campaignStepService.save(stepPayload, s.id);
+          await campaignStepStore.updateCampaignStep(s.id, stepPayload);
         } else {
-          const created = await campaignStepService.save(stepPayload);
-          if (created?.data?.name) keptIds.add(created.data.name);
+          const created = await campaignStepStore.createCampaignStep(stepPayload);
+          if (created?.name) keptIds.add(created.name);
         }
       }
 
       // Delete removed steps
-      for (const oldId of existingIds) {
+      for (const oldId of originalStepIds.value) {
         if (!keptIds.has(oldId)) {
           try {
-            await campaignStepService.delete(oldId);
+            await campaignStepStore.deleteCampaignStep(oldId);
           } catch (e) {
             console.warn("Delete step failed", oldId, e);
           }
@@ -2889,7 +2552,7 @@ const finalizeCampaign = async () => {
       }
 
       // 2) Update campaign fields
-      await campaignService.save(updatePayload, props.editCampaign.name);
+      await campaignStore.updateCampaignData(props.editCampaign.name, updatePayload);
 
       emit("success", {
         action: "updated",
@@ -2949,16 +2612,16 @@ const finalizeCampaign = async () => {
           console.log(`📋 Step ${i + 1} payload:`, payload);
 
           try {
-            console.log(`🔍 Calling campaignStepService.save with payload:`, payload);
-            const result = await campaignStepService.save(payload);
+            console.log(`🔍 Calling campaignStepStore.createCampaignStep with payload:`, payload);
+            const result = await campaignStepStore.createCampaignStep(payload);
 
-            if (result?.success) {
+            if (result) {
               stepCount++;
-              console.log(`✅ Step ${i + 1} created successfully:`, result.data);
-              console.log(`🔗 Step ${i + 1} campaign field:`, result.data?.campaign);
+              console.log(`✅ Step ${i + 1} created successfully:`, result);
+              console.log(`🔗 Step ${i + 1} campaign field:`, result?.campaign);
               console.log(
                 `📝 Step ${i + 1} campaign_step_name:`,
-                result.data?.campaign_step_name
+                result?.campaign_step_name
               );
             } else {
               console.error(`❌ Step ${i + 1} creation failed:`, result);
@@ -3051,30 +2714,46 @@ const finalizeCampaign = async () => {
         configData.value.socialConfig?.image ||
         draftCampaign.value.social_media_images ||
         "",
-mira_talent_campaign: JSON.stringify(
-  Array.isArray(miraTalentCampaign.value)
-    ? miraTalentCampaign.value
-    : miraTalentCampaign.value
-      ? [miraTalentCampaign.value]
-      : []
-),
+      mira_talent_campaign: JSON.stringify(
+        Array.isArray(miraTalentCampaign.value)
+          ? miraTalentCampaign.value
+          : miraTalentCampaign.value
+            ? [miraTalentCampaign.value]
+            : []
+      ),
     };
+    
+    // Add file data if source is file
+    if (selectedSource.value === "file" && configData.value.sourceTarget) {
+      campaignUpdatePayload.source_target = configData.value.sourceTarget;
+    }
 
     console.log(" Campaign update payload:", campaignUpdatePayload);
 
-    const campaignResult = await campaignService.save(
-      campaignUpdatePayload,
-      draftCampaign.value.data.name
+    const campaignResult = await campaignStore.updateCampaignData(
+      draftCampaign.value.data.name,
+      campaignUpdatePayload
     );
 
     console.log("📋 Campaign update result:", campaignResult);
 
-    if (!campaignResult.success) {
-      throw new Error(campaignResult.message || "Failed to finalize campaign");
+    if (!campaignResult) {
+      throw new Error("Failed to finalize campaign");
     }
 
-    // 3) Done
-    emit("success", { action: "create", data: campaignResult.data });
+    // 3) Create campaign records for selected talents/contacts
+    if (selectedSource.value === 'search' && miraTalentCampaign.value.records?.length > 0) {
+      try {
+        await createCampaignRecords(draftCampaign.value.data.name);
+        console.log('✅ Campaign records created successfully');
+      } catch (recordError) {
+        console.error('❌ Error creating campaign records:', recordError);
+        // Don't fail the entire process, just log the error
+      }
+    }
+
+    // 4) Done
+    emit("success", { action: "create", data: campaignResult });
     closeWizard();
   } catch (error) {
     console.error("Error finalizing campaign:", error);
@@ -3143,19 +2822,7 @@ const closeWizard = () => {
   stepCreationMode.value = "";
   showStepForm.value = false;
   editingStep.value = null;
-  stepFormData.value = {
-    campaign: "",
-    campaign_step_name: "",
-    action_type: "",
-    step_order: 1,
-    delay_in_days: 0,
-    template_content: "",
-    action_config_string: "",
-    image: "", // Reset image field
-    scheduled_at: "",
-  };
-  stepFormErrors.value = {};
-  stepFormLoading.value = false;
+  // Step form state is now handled by the dialog component
   draftCampaign.value = null;
 
   // Reset job step states
@@ -3163,8 +2830,17 @@ const closeWizard = () => {
   loadingJobOpenings.value = false;
   selectedJobOpeningDetails.value = null;
 
-  // Reset candidates
-  // Removed: deprecated mockCandidates state
+  // Reset search states
+  searchSource.value = null;
+  searchKeyword.value = "";
+  selectedSegment.value = "";
+  records.value = [];
+  selectedCandidates.value = [];
+  miraTalentCampaign.value = { type: null, records: [] };
+  currentPage.value = 1;
+  pageSize.value = 20;
+  totalRecords.value = 0;
+  searchLoading.value = false;
 };
 
 // Load data sources on component mount
@@ -3217,22 +2893,33 @@ const createDraftCampaign = async () => {
       post_schedule_time: configData.value.socialConfig?.scheduled_at || "",
       template_content: configData.value.socialConfig?.template_content || "",
       social_media_images: configData.value.socialConfig?.image || "",
+      // Add search data for manual selection
+      ...(selectedSource.value === "search" && miraTalentCampaign.value.records.length > 0
+        ? {
+            mira_talent_campaign: JSON.stringify(miraTalentCampaign.value),
+            source_config: JSON.stringify({
+              source_target: miraTalentCampaign.value.type || 'mira_contact',
+              segment_id: miraTalentCampaign.value.segment_id || '',
+              selected_records: miraTalentCampaign.value.records || []
+            })
+          }
+        : {}),
     };
     console.log("🔍 draftPayload>>>>>>>>>>>>>>>>>>>>>>>>>>:", draftPayload);
-    const result = await campaignService.save(draftPayload);
+    const result = await campaignStore.submitNewCampaign(draftPayload);
     console.log("🔍 result>>>>>>>>>>>>>>>>>>>>>>>>>>:", result);
-    if (result.success) {
-      draftCampaign.value = result.data;
+    if (result) {
+      draftCampaign.value = { data: result };
       console.log("✅ Draft campaign created:", draftCampaign.value.data.name);
 
       // Sync start/end back to UI (convert ISO -> datetime-local string)
       try {
-        if (draftCampaign.value.start_date) {
-          const d = new Date(draftCampaign.value.start_date);
+        if (draftCampaign.value.data.start_date) {
+          const d = new Date(draftCampaign.value.data.start_date);
           campaignData.value.start_date = toLocalDatetimeInput(d);
         }
-        if (draftCampaign.value.end_date) {
-          const d2 = new Date(draftCampaign.value.end_date);
+        if (draftCampaign.value.data.end_date) {
+          const d2 = new Date(draftCampaign.value.data.end_date);
           campaignData.value.end_date = toLocalDatetimeInput(d2);
         }
       } catch (e) {
@@ -3242,7 +2929,7 @@ const createDraftCampaign = async () => {
       // Emit event to refresh the campaign list
       emit("draft-created", draftCampaign.value);
     } else {
-      throw new Error(result.message || "Failed to create draft campaign");
+      throw new Error("Failed to create draft campaign");
     }
   } catch (error) {
     console.error("❌ Error creating draft campaign:", error);
@@ -3270,9 +2957,14 @@ watch(
     }));
 
     campaignData.value.source_file = cfg?.selectedFile?.name || ""; // để BE biết file
+    
+    // Determine doctype based on sourceTarget
+    const metaDoctype = cfg?.sourceTarget === 'talent' ? 'Mira Talent' : 'Mira Contact';
+    
     campaignData.value.source_config = JSON.stringify({
       file_name: cfg?.selectedFile?.name || "",
-      meta_doctype: "Mira Contact", // đổi nếu khác
+      meta_doctype: metaDoctype,
+      source_target: cfg?.sourceTarget || 'contact', // Add source_target field
       field_mapping,
     });
   },
@@ -3294,19 +2986,8 @@ watch(showStepForm, async (val) => {
     // Auto-fill from socialConfig
     if (configData.value.socialConfig) {
       stepFormSelectedPageId.value = configData.value.socialConfig.page_id || "";
-      stepFormData.value.scheduled_at = configData.value.socialConfig.scheduled_at || "";
       stepFormSelectedJobId.value = configData.value.socialConfig.job_opening || "";
-      if (configData.value.socialConfig.image) {
-        stepFormData.value.image = configData.value.socialConfig.image;
-      }
-      // Template content
-      if (
-        !stepFormData.value.template_content &&
-        configData.value.socialConfig.template_content
-      ) {
-        stepFormData.value.template_content =
-          configData.value.socialConfig.template_content;
-      }
+      // Other social config data is now handled by the dialog components
     }
   }
 });
@@ -3314,21 +2995,10 @@ watch(showStepForm, async (val) => {
 // Load existing steps for edit mode
 const loadExistingSteps = async (campaignName) => {
   try {
-    const result = await campaignStepService.getList({
-      filters: { campaign: campaignName },
-      fields: [
-        "name",
-        "campaign",
-        "campaign_step_name",
-        "action_type",
-        "step_order",
-        "delay_in_days",
-        "template",
-        "image",
-        "scheduled_at",
-      ],
+    const result = await campaignStepStore.getFilteredCampaignSteps({
+      campaign: campaignName,
       order_by: "step_order asc",
-      page_length: 1000,
+      limit: 1000
     });
     const rows = result?.data || result?.data?.data || [];
     campaignSteps.value = (rows || []).map((r) => ({
@@ -3376,7 +3046,7 @@ watch(show, async (newVal) => {
         // Fetch full campaign doc to get select_pages/source_config
         let full = null;
         try {
-          full = await campaignService.getFormData(ec.name);
+          full = await campaignStore.getCampaignDetails(ec.name);
         } catch (e) {
           full = null;
         }
@@ -3538,11 +3208,6 @@ const toIsoIfSet = (localStr) => {
   }
 };
 
-// Add step form dialog options
-const stepFormDialogOptions = computed(() => ({
-  title: editingStep.value ? __("Edit Step") : __("Add New Step"),
-  size: "lg",
-}));
 
 const openScheduledAtPicker = (e) => {
   try {
@@ -3608,6 +3273,7 @@ const openSocialConfigEditor = async () => {
     showSocialConfigModal.value = true;
   }
 };
+
 </script>
 
 <style scoped>

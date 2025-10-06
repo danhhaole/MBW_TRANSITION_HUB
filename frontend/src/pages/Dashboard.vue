@@ -407,16 +407,19 @@ import TaskUpdateModal from '@/components/shared/TaskUpdateModal.vue'
 import { ToastContainer } from '@/components/shared'
 import Loading from '@/components/Loading.vue'
 import {
-	campaignService,
 	candidateCampaignService,
 	actionService,
 	candidateService,
 } from '../services/universalService'
+import { useCampaignStore } from '@/stores/campaign'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import { Breadcrumbs } from 'frappe-ui'
 
 // Translation helper function
 
+
+// Campaign store
+const campaignStore = useCampaignStore()
 
 // Reactive data
 const tasks = ref([])
@@ -486,8 +489,8 @@ const loadTasks = async () => {
 							const candidateResult = await candidateService.getFormData(
 								ccResult.data.talent_id,
 							)
-							const campaignResult = await campaignService.getFormData(
-								ccResult.data.campaign_id,
+							const campaignResult = await campaignStore.getCampaignDetails(
+								ccResult.data.campaign_id
 							)
 
 							return {
@@ -498,12 +501,12 @@ const loadTasks = async () => {
 									? candidateResult.data.candidate_name ||
 										candidateResult.data.full_name
 									: 'Unknown',
-								campaign: campaignResult.success
-									? campaignResult.data.campaign_name
+								campaign: campaignResult
+									? campaignResult.campaign_name
 									: 'Unknown',
 								dueDate: formatDueDate(action.scheduled_at),
 								status: action.status,
-								description: `${getActionTitle(action.status)} cho chiến dịch ${campaignResult.success ? campaignResult.data.campaign_name : 'Unknown'}`,
+								description: `${getActionTitle(action.status)} cho chiến dịch ${campaignResult ? campaignResult.campaign_name : 'Unknown'}`,
 								candidateCampaignId: action.talent_campaign_id,
 							}
 						}
@@ -526,14 +529,13 @@ const loadTasks = async () => {
 const loadActiveCampaigns = async () => {
 	try {
 		campaignsLoading.value = true
-		const result = await campaignService.getList({
-			filters: { status: 'ACTIVE' },
-			fields: ['name', 'campaign_name', 'description', 'status', 'creation'],
-			order_by: 'creation desc',
-			page_length: 6,
+		const result = await campaignStore.getFilteredCampaigns({
+			status: 'ACTIVE',
+			limit: 6,
+			page: 1
 		})
 
-		if (result.success) {
+		if (result && result.data) {
 			// Get stats for each campaign
 			const campaignsWithStats = await Promise.all(
 				result.data.map(async (campaign) => {
@@ -609,11 +611,11 @@ const loadCompletedCampaigns = async () => {
 				if (ccResult.success) {
 					const campaignId = ccResult.data.campaign_id
 					if (!campaignMap.has(campaignId)) {
-						const campaignResult = await campaignService.getFormData(campaignId)
-						if (campaignResult.success) {
+						const campaignResult = await campaignStore.getCampaignDetails(campaignId)
+						if (campaignResult) {
 							campaignMap.set(campaignId, {
 								id: campaignId,
-								name: campaignResult.data.campaign_name,
+								name: campaignResult.campaign_name,
 								completedTasks: 1,
 								lastCompleted: action.executed_at,
 							})

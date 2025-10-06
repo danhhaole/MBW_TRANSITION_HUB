@@ -116,7 +116,24 @@
         </FileUploader>
       </div>
 
-      <!-- 2. Hướng dẫn -->
+      <!-- 2. Source Target Selection -->
+      <div v-if="uploadedFileUrl">
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          {{ __('Import Target') }} <span class="text-red-500">*</span>
+        </label>
+        <div class="flex space-x-6 mb-4">
+          <label class="flex items-center space-x-2">
+            <input type="radio" value="contact" v-model="sourceTarget" class="rounded" />
+            <span class="text-sm">{{ __('Contact') }}</span>
+          </label>
+          <label class="flex items-center space-x-2">
+            <input type="radio" value="talent" v-model="sourceTarget" class="rounded" />
+            <span class="text-sm">{{ __('Talent') }}</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- 3. Hướng dẫn -->
       <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <h4 class="text-sm font-medium text-blue-900 mb-2">{{ __('File Format Requirements') }}</h4>
         <ul class="text-xs text-blue-800 space-y-1">
@@ -211,6 +228,7 @@ const filePreview = ref([])
 const fileHeaders = ref([])
 const parsedFileMeta = ref(null)
 const columnMapping = ref({})
+const sourceTarget = ref('contact') // Default to contact
 
 // i18n helper
 const __ = (text, params = []) =>
@@ -235,7 +253,8 @@ const updateModelValue = () => {
     filePreview: filePreview.value,
     fileHeaders: fileHeaders.value,
     mapping: columnMapping.value,
-    parsedFileMeta: parsedFileMeta.value
+    parsedFileMeta: parsedFileMeta.value,
+    sourceTarget: sourceTarget.value
   })
 }
 
@@ -292,6 +311,7 @@ const removeFile = () => {
   fileHeaders.value = []
   parsedFileMeta.value = null
   columnMapping.value = {}
+  sourceTarget.value = 'contact' // Reset to default
   updateModelValue()
 }
 
@@ -342,6 +362,7 @@ watch(() => props.modelValue, (nv) => {
 
 watch(columnMapping, updateModelValue, { deep: true })
 watch(parsedFileMeta, updateModelValue, { deep: true })
+watch(sourceTarget, updateModelValue)
 </script>
 
 <style scoped>

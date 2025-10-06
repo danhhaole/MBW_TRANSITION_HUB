@@ -10,7 +10,8 @@ import {
   removeCandidateFromSegment,
   getTalentWithPool
 } from '@/repositories/talentSegmentRepository'
-import { getUsers } from '@/repositories/campaignRepository'
+// Removed campaignRepository import - using direct API calls now
+import { call } from 'frappe-ui'
 
 // Lấy danh sách phân khúc với filter
 export const getFilteredTalentSegments = async (filterOptions = {}) => {
@@ -146,8 +147,13 @@ export const removeTalentFromSegment = async (segmentId, talentId) => {
 // Lấy danh sách users
 export const getUserOptions = async () => {
   try {
-    const response = await getUsers()
-    return response.success ? (response.data || []) : []
+    const response = await call('frappe.client.get_list', {
+      doctype: 'User',
+      fields: ['name', 'full_name', 'email'],
+      filters: { enabled: 1 },
+      limit_page_length: 1000
+    })
+    return Array.isArray(response) ? response : []
   } catch (error) {
     console.error('Failed to get users:', error)
     return []
