@@ -5,13 +5,12 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "prospect",
-  "segment_id",
+  "contact_id",
   "full_name",
   "gender",
   "date_of_birth",
-  "contact_email",
-  "contact_phone",
+  "email",
+  "phone",
   "linkedin_profile",
   "facebook_profile",
   "zalo_profile",
@@ -31,13 +30,6 @@
  ],
  "fields": [
   {
-   "fieldname": "prospect",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Prospect",
-   "options": "Mira Contact"
-  },
-  {
    "fieldname": "full_name",
    "fieldtype": "Data",
    "in_list_view": 1,
@@ -54,17 +46,6 @@
    "fieldname": "date_of_birth",
    "fieldtype": "Date",
    "label": "Date of Birth"
-  },
-  {
-   "fieldname": "contact_email",
-   "fieldtype": "Data",
-   "label": "Contact Email",
-   "options": "Email"
-  },
-  {
-   "fieldname": "contact_phone",
-   "fieldtype": "Data",
-   "label": "Contact Phone"
   },
   {
    "fieldname": "linkedin_profile",
@@ -159,15 +140,27 @@
    "label": "Source"
   },
   {
-   "fieldname": "segment_id",
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "label": "Contact Email",
+   "options": "Email"
+  },
+  {
+   "fieldname": "phone",
+   "fieldtype": "Data",
+   "label": "Contact Phone"
+  },
+  {
+   "fieldname": "contact_id",
    "fieldtype": "Link",
-   "label": "Segment",
-   "options": "Mira Segment"
+   "in_list_view": 1,
+   "label": "Contact",
+   "options": "Mira Contact"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-06 11:27:15.436199",
+ "modified": "2025-10-06 14:12:17.661688",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Talent",

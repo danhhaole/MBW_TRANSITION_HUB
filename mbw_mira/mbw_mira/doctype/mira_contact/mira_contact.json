@@ -10,173 +10,156 @@
   "last_name",
   "gender",
   "date_of_birth",
-  "is_confidential",
   "email",
-  "phone",
-  "city",
-  "country",
-  "address",
-  "linkedin_url",
-  "facebook_url",
-  "zalo_id",
-  "telegram_id",
-  "whatsapp_id",
-  "other_social",
-  "current_job_title",
   "current_company",
-  "industry",
-  "years_of_experience",
-  "education_raw",
-  "experience_raw",
   "skills",
-  "cv_attachment",
   "email_opt_out",
-  "sms_opt_out",
-  "preferred_contact_channel",
-  "last_campaign_id",
-  "last_campaign_status",
   "source",
-  "profile_url",
-  "crawl_batch_id",
-  "status",
-  "quality_score",
-  "is_duplicate",
-  "owner",
-  "created_at",
-  "updated_at",
-  "converted_to_talent",
-  "talent_id"
+  "phone",
+  "alternate_phone",
+  "facebook_profile",
+  "zalo_profile",
+  "current_location",
+  "preferred_location",
+  "experience_years",
+  "current_designation",
+  "expected_salary",
+  "current_salary",
+  "resume",
+  "linkedin_profile",
+  "notes"
  ],
  "fields": [
   {
    "fieldname": "first_name",
-   "label": "First Name",
    "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "First Name",
    "reqd": 1
   },
   {
    "fieldname": "last_name",
-   "label": "Last Name",
-   "fieldtype": "Data"
+   "fieldtype": "Data",
+   "label": "Last Name"
   },
   {
    "fieldname": "full_name",
-   "label": "Full Name",
    "fieldtype": "Data",
+   "label": "Full Name",
    "read_only": 1
   },
   {
    "fieldname": "gender",
-   "label": "Gender",
    "fieldtype": "Select",
+   "label": "Gender",
    "options": "Male\nFemale\nOther"
   },
   {
    "fieldname": "date_of_birth",
-   "label": "Date of Birth",
-   "fieldtype": "Date"
+   "fieldtype": "Date",
+   "label": "Date of Birth"
   },
   {
    "fieldname": "email",
-   "label": "Email",
    "fieldtype": "Data",
+   "label": "Email",
    "options": "Email"
   },
   {
-   "fieldname": "phone_number",
-   "label": "Phone Number",
-   "fieldtype": "Data"
-  },
-  {
    "fieldname": "alternate_phone",
-   "label": "Alternate Phone",
-   "fieldtype": "Data"
+   "fieldtype": "Data",
+   "label": "Alternate Phone"
   },
   {
    "fieldname": "facebook_profile",
-   "label": "Facebook Profile",
    "fieldtype": "Data",
+   "label": "Facebook Profile",
    "options": "URL"
   },
   {
    "fieldname": "zalo_profile",
-   "label": "Zalo Profile",
    "fieldtype": "Data",
+   "label": "Zalo Profile",
    "options": "URL"
   },
   {
    "fieldname": "current_location",
-   "label": "Current Location",
-   "fieldtype": "Data"
+   "fieldtype": "Data",
+   "label": "Current Location"
   },
   {
    "fieldname": "preferred_location",
-   "label": "Preferred Location",
-   "fieldtype": "Data"
+   "fieldtype": "Data",
+   "label": "Preferred Location"
   },
   {
    "fieldname": "skills",
-   "label": "Skills",
-   "fieldtype": "Small Text"
+   "fieldtype": "Small Text",
+   "label": "Skills"
   },
   {
    "fieldname": "experience_years",
-   "label": "Years of Experience",
-   "fieldtype": "Int"
+   "fieldtype": "Int",
+   "label": "Years of Experience"
   },
   {
    "fieldname": "current_company",
-   "label": "Current Company",
-   "fieldtype": "Data"
+   "fieldtype": "Data",
+   "label": "Current Company"
   },
   {
    "fieldname": "current_designation",
-   "label": "Current Designation",
-   "fieldtype": "Data"
+   "fieldtype": "Data",
+   "label": "Current Designation"
   },
   {
    "fieldname": "expected_salary",
-   "label": "Expected Salary",
-   "fieldtype": "Currency"
+   "fieldtype": "Currency",
+   "label": "Expected Salary"
   },
   {
    "fieldname": "current_salary",
-   "label": "Current Salary",
-   "fieldtype": "Currency"
+   "fieldtype": "Currency",
+   "label": "Current Salary"
   },
   {
    "fieldname": "source",
-   "label": "Source",
    "fieldtype": "Select",
+   "label": "Source",
    "options": "Job Portal\nReferral\nSocial Media\nDirect\nOther"
   },
   {
    "fieldname": "resume",
-   "label": "Resume",
-   "fieldtype": "Attach"
+   "fieldtype": "Attach",
+   "label": "Resume"
   },
   {
    "fieldname": "linkedin_profile",
-   "label": "LinkedIn Profile",
    "fieldtype": "Data",
+   "label": "LinkedIn Profile",
    "options": "URL"
   },
   {
+   "default": "0",
    "fieldname": "email_opt_out",
-   "label": "Email Opt-Out",
    "fieldtype": "Check",
-   "default": "0"
+   "label": "Email Opt-Out"
   },
   {
    "fieldname": "notes",
-   "label": "Notes",
-   "fieldtype": "Text"
+   "fieldtype": "Text",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "phone",
+   "fieldtype": "Data",
+   "label": "Phone Number"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-28 08:31:36.471714",
+ "modified": "2025-10-06 14:10:34.263269",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Contact",

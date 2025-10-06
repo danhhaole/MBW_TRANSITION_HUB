@@ -17,8 +17,8 @@ class MiraTalent(Document):
                 "full_name": self.full_name,
                 "gender": self.gender,
                 "date_of_birth": self.date_of_birth,
-                "email": self.contact_email,
-                "phone_number": self.contact_phone,
+                "email": self.cemail,
+                "phone_number": self.phone,
                 "linkedin_profile": self.linkedin_profile,
                 "facebook_profile": self.facebook_profile,
                 "zalo_profile": self.zalo_profile,
@@ -32,11 +32,11 @@ class MiraTalent(Document):
             }
 
             # Gọi hàm create_mira_prospect đã có sẵn
-            prospect = frappe.new_doc("Mira Prospect")
-            prospect_name = prospect.create_mira_prospect(prospect_data)
+            contact = frappe.new_doc("Mira Contact")
+            contact_name = contact.create_mira_contact(prospect_data)
 
             # Gán lại vào Talent
-            self.prospect = prospect_name
+            self.contact_id = contact_name
 
 
 

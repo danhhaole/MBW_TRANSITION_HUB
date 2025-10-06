@@ -1,5 +1,5 @@
 import frappe
-from datetime import date
+from datetime import datetime
 
 def run():
     """
@@ -9,7 +9,7 @@ def run():
     - Pause campaigns if manually deactivated
     - Enqueue actions for ACTIVE campaigns
     """
-    today = date.today()
+    today = datetime.now()
     frappe.logger().info(f"[Coordinate Campaigns] Running at {today}")
 
     campaigns = frappe.get_all(

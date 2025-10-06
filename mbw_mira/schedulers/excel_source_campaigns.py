@@ -1,5 +1,5 @@
 import frappe
-from datetime import date
+from datetime import datetime
 
 from mbw_mira.workers.import_excel_for_source import import_contact_from_file
 
@@ -7,7 +7,7 @@ def run():
     """
     Scan ACTIVE campaigns with source = File and enqueue data fetching.
     """
-    today = date.today()
+    today = datetime.now()
     campaigns = frappe.get_all(
         "Campaign",
         filters={
@@ -28,13 +28,13 @@ def run():
                 source_target='contact',
                 queue="short"
             )
-        else:#if c.source_target == 'talent':
-            import_contact_from_file(c.name)
-            # frappe.enqueue(
-            #     "mbw_mira.workers.import_excel_for_source.import_contact_from_file",
-            #     campaign_name=c.name,
-            #     job_name=c.name,
-            #     source_target='talent',
-            #     queue="short"
-            # )
+        elif c.source_target == 'talent':            
+            # import_contact_from_file(c.name)
+            frappe.enqueue(
+                "mbw_mira.workers.import_excel_for_source.import_talent_from_file",
+                campaign_name=c.name,
+                job_name=c.name,
+                source_target='talent',
+                queue="short"
+            )
     return True

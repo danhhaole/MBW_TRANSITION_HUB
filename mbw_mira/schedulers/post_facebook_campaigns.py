@@ -1,12 +1,12 @@
 import frappe
-from datetime import date
+from datetime import datetime
 from frappe.utils import now_datetime, add_to_date
 def run():
     """
     Scan ACTIVE campaigns with ATS source = MBW ATS and enqueue data fetching.
     e780ec0fa468879
     """
-    today = date.today()
+    today = datetime.now()
     now = now_datetime()
     before_60s = add_to_date(now, seconds=-60)
     after_60s = add_to_date(now, seconds=60)

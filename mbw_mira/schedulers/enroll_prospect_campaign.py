@@ -1,12 +1,12 @@
 import frappe
-from datetime import date
+from datetime import datetime
 
 
 def run():
     """
     Scan ACTIVE campaigns and enqueue enrollment tasks.
     """
-    today = date.today()
+    today = datetime.now()
     campaigns = frappe.get_all(
         "Campaign",
         filters={

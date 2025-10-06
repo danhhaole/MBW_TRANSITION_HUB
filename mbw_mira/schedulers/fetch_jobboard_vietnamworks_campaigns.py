@@ -1,11 +1,11 @@
 import frappe
-from datetime import date
+from datetime import datetime
 
 def run():
     """
     Scan ACTIVE campaigns with JobBoard source = VietnamWorks and enqueue data fetching.
     """
-    today = date.today()
+    today = datetime.now()
     campaigns = frappe.get_all(
         "Campaign",
         filters={
