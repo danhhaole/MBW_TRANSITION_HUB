@@ -105,6 +105,31 @@ export const useTalentPoolStore = defineStore('talentPool', {
       })
     },
 
+    async updateTalentPoolsSegment({ names, segment_id }) {
+      try {
+        const response = await call('mbw_mira.mbw_mira.doctype.mira_talent_pool.mira_talent_pool.update_talent_pools_segment', {
+          names: names,
+          segment_id: segment_id
+        })
+        
+        // Refresh the talent pools to reflect the changes
+        await this.refreshTalentPools()
+        
+        return {
+          success: true,
+          message: 'Cập nhật segment thành công',
+          data: response
+        }
+      } catch (error) {
+        console.error('Error updating talent pools segment:', error)
+        throw {
+          success: false,
+          message: error.message || 'Có lỗi xảy ra khi cập nhật segment',
+          error: error
+        }
+      }
+    },
+
     getTalentPools(segmentTitle = '') {
       if (!this.talentPoolsResource) {
         this.initResources()

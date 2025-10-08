@@ -81,6 +81,12 @@
             </template>
             {{ __('Refresh') }}
           </Button>
+          <Button v-if="viewMode == 'list' && selectedNames.length > 0" variant="outline" theme="gray" @click="showEditManyTalentPool = true" :loading="loading" class="flex items-center">
+            <template #prefix>
+              <FeatherIcon name="edit" class="w-4 h-4" />
+            </template>
+            {{ __('Quick edit') }}
+          </Button>
         </div>
       </div>
 
@@ -439,6 +445,36 @@
       </template>
     </Dialog>
 
+    <!-- Edit many talent pool -->
+    <Dialog v-model="showEditManyTalentPool" :options="{
+      size: '2xl',
+      title: __('Edit many talent pool')
+    }">
+      <template #body-content>
+          <Autocomplete
+            v-model="selectedSegmentTypeEdit"
+            :options="uniqueSegmentTypes"
+            :placeholder="__('Select a segment')"
+            required
+          />
+      </template>
+      <template #actions>
+        <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <Button variant="outline" theme="gray" @click="showEditManyTalentPool = false" :disabled="loading">
+            {{ __('Cancel') }}
+          </Button>
+          <Button 
+            variant="solid" 
+            theme="gray" 
+            @click="updateManyTalentPool"
+            :loading="loading"
+          >
+            {{ __('Save Changes') }}
+          </Button>
+        </div>
+      </template>
+    </Dialog>
+
     <!-- Create/Edit Dialog -->
     <Dialog v-model="showCreateForm" :options="createDialogOptions">
       <template #body-title>
@@ -539,6 +575,7 @@ import Loading from '@/components/Loading.vue'
 import { ToastContainer } from '@/components/shared'
 import { useToast } from '@/composables/useToast'
 
+const toastMessage = useToast()
 
 const { showToast, showSuccess, showError } = useToast()
 import { useTalentPoolStore } from '@/stores/talentPool'
@@ -547,6 +584,7 @@ let title = __('Talent Pools')
 const breadcrumbs = [{ label: title, route: { name: 'TalentSegments' } }]
 
 const showDialogTalentPool = ref(false)
+const showEditManyTalentPool = ref(false)
 // Use filtered talent pools from store
 const talentPools = computed(() => talentPoolStore.filteredTalentPools)
 const uniqueSegmentTypes = computed(() => talentPoolStore.uniqueSegmentTypes)
@@ -555,27 +593,27 @@ const selectedSegmentTypeEdit = ref('')
 //Checkbox many
 const items = ref([])
 const selectedAll = ref([])
+const selectedNames = computed(() => selectedAll.value.map(i => i.name))
 
+// Toggle chọn tất cả
 const toggleSelectAll = (event) => {
   if (event.target.checked) {
-    console.log("1>>>>>>");
-    items.value = talentPools.value
-    console.log("items.value>>>>>>>>>>>>>>>>>: ", items.value);
-    selectedAll.value = [...items.value]
+    selectedAll.value = [...talentPools.value] // clone danh sách
   } else {
-    console.log("2>>>>>>");
     selectedAll.value = []
   }
+  console.log("Selected names (after toggle all):", selectedNames.value)
 }
 
+// Toggle từng item
 const toggleSelect = (item) => {
-  console.log(">>>>>>>>>>>>>>>item: ", item);
   const index = selectedAll.value.findIndex(s => s.name === item.name)
   if (index > -1) {
     selectedAll.value.splice(index, 1)
   } else {
     selectedAll.value.push(item)
   }
+  console.log("Selected names:", selectedNames.value)
 }
 onMounted(async () => {
   await talentPoolStore.getTalentPools()
@@ -643,11 +681,6 @@ const updateTalentAndPool = async () => {
       }
     })
 
-    console.log('data selectedSegmentId.value update>>>>>>>:', selectedSegmentTypeEdit.value?.name)
-    console.log('data currentTalentPool.value.segment_id update>>>>>>>:', currentTalentPool.value.segment_id)
-    console.log("data currentTalentPool.value.name update>>>>>>>:", currentTalentPool.value.name);
-    
-    
     // Update talent pool segment assignment if changed
     if (selectedSegmentTypeEdit.value?.name !== currentTalentPool.value.segment_id) {
       await talentPoolStore.updateTalentPool(currentTalentPool.value.name, {
@@ -665,7 +698,32 @@ const updateTalentAndPool = async () => {
   }
 }
 
+const updateManyTalentPool = async () => {
+  if (!selectedSegmentTypeEdit.value?.name) {
+    toastMessage.error('Vui lòng chọn segment')
+    return
+  }
 
+  try {
+    const result = await talentPoolStore.updateTalentPoolsSegment({
+      names: selectedNames.value,
+      segment_id: selectedSegmentTypeEdit.value.name
+    })
+
+    if (result.success) {
+      // Close the dialog and show success message
+      showEditManyTalentPool.value = false
+      selectedSegmentTypeEdit.value = ''
+      toastMessage.success(result.message || __('Update successfully'))
+      
+      // Clear selection after successful update
+      selectedAll.value = []
+    }
+  } catch (error) {
+    console.error('Error updating talent pools segment:', error)
+    toastMessage.error(error.message || __('Update failed'))
+  }
+}
 // Composables
 const router = useRouter()
 const {
@@ -1152,6 +1210,7 @@ const handleFormClose = () => {
 }
 
 const handleRefresh = async () => {
+  selectedAll.value = []
   const currentFilter = selectedSegmentType.value
   await loadSegmentsWithPagination()
   await talentPoolStore.getTalentPools(currentFilter)

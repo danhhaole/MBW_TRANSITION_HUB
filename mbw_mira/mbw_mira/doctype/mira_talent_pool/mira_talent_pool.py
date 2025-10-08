@@ -184,3 +184,24 @@ def get_talent_pool_detail(name):
         frappe.throw(f"Talent Pool {name} not found", frappe.DoesNotExistError)
     
     return result[0]
+
+@frappe.whitelist()
+def update_talent_pools_segment(names, segment_id):
+    try:
+        # Convert string to list if it's a string (handles JSON string from frontend)
+        if isinstance(names, str):
+            import json
+            names = json.loads(names)
+        
+        # Update each talent pool
+        for name in names:
+            frappe.db.set_value('Mira Talent Pool', name, {
+                'segment_id': segment_id
+            })
+        
+        frappe.db.commit()
+        return {"status": "success", "message": f"Updated {len(names)} talent pool(s)"}
+    
+    except Exception as e:
+        frappe.log_error(f"Error in update_talent_pools_segment: {str(e)}")
+        frappe.throw(f"Failed to update talent pools: {str(e)}")
