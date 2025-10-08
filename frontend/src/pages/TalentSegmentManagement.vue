@@ -1,4 +1,3 @@
-
 <template>
   <div class="min-h-screen bg-gray-50">
     <LayoutHeader>
@@ -24,35 +23,17 @@
     <div class="container mx-auto px-6 py-6">
       <!-- Actions Bar -->
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          <!-- Search -->
+        <!-- Search -->
         <div class="flex items-center space-x-2">
-          <div class="flex-1 w-80">
-            <FormControl
-              v-model="searchQuery"
-              type="text"
-              :placeholder="__('Search talent pools...')"
-              :prefix-icon="'search'"
-              :suffix-icon="searchQuery ? 'x' : undefined"
-              @input="handleSearch"
-              @click-suffix="clearSearch"
-              :class="{ 'animate-pulse': isSearching }"
-              variant="outline"
-            />
+          <div v-if="viewMode == 'card'" class="flex-1 w-80">
+            <FormControl v-model="searchQuery" type="text" :placeholder="__('Search talent pools...')"
+              :prefix-icon="'search'" :suffix-icon="searchQuery ? 'x' : undefined" @input="handleSearch"
+              @click-suffix="clearSearch" :class="{ 'animate-pulse': isSearching }" variant="outline" />
           </div>
 
-          <div class="w-64">
-            <Autocomplete
-              :options="[
-                ...uniqueSegmentTypes.map(segment => ({
-                  label: segment.title,
-                  value: segment.title,
-                }))
-              ]"
-              v-model="selectedSegmentType"
-              @input="handleSegmentTypeFilter"
-              :placeholder="__('Select type')"
-              class=""
-            >
+          <div v-if="viewMode == 'list'" class="w-64">
+            <Autocomplete :options="uniqueSegmentTypes" v-model="selectedSegmentType"
+              @update:modelValue="handleSegmentTypeFilter" :placeholder="__('Select type')" class="">
             </Autocomplete>
           </div>
         </div>
@@ -61,24 +42,11 @@
         <div class="flex items-center space-x-4">
           <!-- View mode toggle -->
           <div class="flex rounded-md">
-            <button @click="viewMode = 'list'" :class="[
-              viewMode === 'list'
-                ? 'bg-black text-white'
-                : 'bg-white text-gray-700 hover:text-gray-500',
-              'relative inline-flex items-center px-4 py-1.5 rounded-l-md border border-gray-300 text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-black focus:border-black'
-            ]">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-              </svg>
-              {{ __('List') }}
-            </button>
             <button @click="viewMode = 'card'" :class="[
               viewMode === 'card'
                 ? 'bg-black text-white'
                 : 'bg-white text-gray-700 hover:text-gray-500',
-              'relative inline-flex items-center px-4 py-1.5 rounded-r-md border border-gray-300 border-l-0 text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-black focus:border-black'
+              'relative inline-flex items-center px-4 py-1.5 rounded-l-md border border-gray-300 border-l-0 text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-black focus:border-black'
             ]">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
                 stroke="currentColor">
@@ -87,31 +55,28 @@
               </svg>
               {{ __('Card') }}
             </button>
+            <button @click="viewMode = 'list'" :class="[
+              viewMode === 'list'
+                ? 'bg-black text-white'
+                : 'bg-white text-gray-700 hover:text-gray-500',
+              'relative inline-flex items-center px-4 py-1.5 rounded-r-md border border-gray-300 text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-black focus:border-black'
+            ]">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+              </svg>
+              {{ __('List') }}
+            </button>
           </div>
 
           <!-- Refresh Button -->
-          <Button
-            variant="outline"
-            theme="gray"
-            @click="handleRefresh"
-            :loading="loading"
-            class="flex items-center"
-          >
+          <Button variant="outline" theme="gray" @click="handleRefresh" :loading="loading" class="flex items-center">
             <template #prefix>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-4 w-4"
-                :class="{ 'animate-spin': loading }"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" :class="{ 'animate-spin': loading }" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
             </template>
             {{ __('Refresh') }}
@@ -147,15 +112,8 @@
       </template>
       <template v-else>
         <!-- Segments View based on mode -->
-        <TalentSegmentCardView 
-          v-if="viewMode === 'card'"
-          :segments="segmentsForCurrentPage"
-          :loading="loading"
-          @view-details="handleViewDetails"
-          @edit="handleEdit"
-          @delete="handleDelete"
-          @create="showCreateForm = true"
-        />
+        <TalentSegmentCardView v-if="viewMode === 'card'" :segments="segmentsForCurrentPage" :loading="loading"
+          @view-details="handleViewDetails" @edit="handleEdit" @delete="handleDelete" @create="showCreateForm = true" />
 
         <!-- Pagination -->
         <div v-if="totalPages > 1 && viewMode === 'card'" class="mt-8">
@@ -172,11 +130,11 @@
               <div>
                 <p class="text-sm text-gray-700">
                   {{ __('Showing') }}
-                    <span class="font-medium">{{ paginationStart }}</span>
+                  <span class="font-medium">{{ paginationStart }}</span>
                   {{ __('to') }}
-                    <span class="font-medium">{{ paginationEnd }}</span>
+                  <span class="font-medium">{{ paginationEnd }}</span>
                   {{ __('of') }}
-                    <span class="font-medium">{{ totalSegments }}</span>
+                  <span class="font-medium">{{ totalSegments }}</span>
                   {{ __('results') }}
                 </p>
               </div>
@@ -194,13 +152,13 @@
 
                   <!-- Page Numbers -->
                   <button v-for="page in visiblePages" :key="page" @click="goToPage(page)" :class="[
-                        'relative inline-flex items-center px-4 py-2 border text-sm font-medium',
+                    'relative inline-flex items-center px-4 py-2 border text-sm font-medium',
                     page === pagination.currentPage
-                          ? 'z-10 bg-indigo-50 border-indigo-500 text-indigo-600' 
-                          : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                      ? 'z-10 bg-indigo-50 border-indigo-500 text-indigo-600'
+                      : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
                   ]">
-                      {{ page }}
-                    </button>
+                    {{ page }}
+                  </button>
 
                   <!-- Next Button -->
                   <button @click="nextPage" :disabled="pagination.currentPage >= totalPages"
@@ -217,7 +175,7 @@
           </div>
         </div>
 
-        <div v-else class="overflow-hidden">
+        <div v-else-if="viewMode === 'list'" class="overflow-hidden">
           <!-- Loading State -->
           <div v-if="loading" class="flex justify-center items-center py-12">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
@@ -225,8 +183,10 @@
 
           <!-- Empty State -->
           <div v-else-if="!talentPools.length" class="text-center py-16">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 text-gray-300 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 text-gray-300 mx-auto mb-4" fill="none"
+              viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+                d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <h3 class="text-lg font-medium text-gray-900 mb-1">No talent pools found</h3>
             <p class="text-gray-500">Get started by creating a new talent pool.</p>
@@ -237,40 +197,64 @@
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gray-50">
                 <tr>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Full Name') }}</th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Pool Type') }}</th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Email') }}</th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Phone') }}</th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Readiness Score') }}</th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Created On') }}</th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Actions') }}</th>
+                  <th class="w-12 p-3">
+                    <input
+                      type="checkbox"
+                      class="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                      :checked="selectedAll.length === items.length && items.length > 0"
+                      :indeterminate="selectedAll.length > 0 && selectedAll.length < items.length"
+                      @change="toggleSelectAll"
+                    />
+                  </th>
+                  <th scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('FullName') }}</th>
+                  <th scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('PoolType') }}</th>
+                  <th scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{__('Email') }}</th>
+                  <th scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{__('Phone') }}</th>
+                  <th scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{__('Readiness Score') }}</th>
+                  <th scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{__('Created On') }}</th>
+                  <th scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{__('Actions') }}</th>
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
                 <tr v-for="pool in paginatedTalentPools" :key="pool.name" class="hover:bg-gray-50">
+                  <!-- check all -->
+                  <td class="p-3 text-center">
+                    <input
+                      type="checkbox"
+                      class="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                      :checked="selectedAll.includes(pool)"
+                      @change="toggleSelect(pool)"
+                    />
+                  </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center">
                       <div class="text-xs font-medium text-gray-800 uppercase tracking-wider">{{ pool.full_name }}</div>
                     </div>
                   </td>
                   <td class="px-6 py-4">
-                    <div 
-                      @click="pool.title ? viewSegmentDetail(pool.segment_id) : null"
-                      :class="[
-                        'text-xs font-medium uppercase tracking-wider cursor-pointer',
-                        pool.title 
-                          ? 'text-blue-600 hover:text-blue-800 hover:underline' 
-                          : 'text-gray-500 cursor-default'
-                      ]"
-                    >
+                    <div @click="pool.title ? viewSegmentDetail(pool.segment_id) : null" :class="[
+                      'text-xs font-medium uppercase tracking-wider cursor-pointer',
+                      pool.title
+                        ? 'text-blue-600 hover:text-blue-800 hover:underline'
+                        : 'text-gray-500 cursor-default'
+                    ]">
                       {{ pool.title || 'Not classified' }}
                     </div>
                   </td>
                   <td class="px-6 py-4">
-                    <div class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ pool.contact_email }}</div>
+                    <div class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ pool.contact_email }}
+                    </div>
                   </td>
                   <td class="px-6 py-4">
-                    <div class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ pool.contact_phone }}</div>
+                    <div class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ pool.contact_phone }}
+                    </div>
                   </td>
                   <td class="px-6 py-4">
                     <div class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ pool.match_score }}</div>
@@ -279,22 +263,15 @@
                     <div class="text-sm text-gray-500">{{ formatDate(pool.creation) }}</div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-left text-sm font-medium">
-                    <button
-                      class="p-1 text-slate-400 hover:text-blue-600 transition-colors"
-                      :title="__('View Details')"
-                    >
+                    <button @click="view(pool)" class="p-1 text-slate-400 hover:text-blue-600 transition-colors"
+                      :title="__('View Details')">
                       <FeatherIcon name="eye" class="w-4 h-4" />
                     </button>
-                    <button
-                      class="p-1 text-slate-400 hover:text-blue-600 transition-colors"
-                      :title="__('Edit')"
-                    >
+                    <button @click="handleEditTalentPool(pool)"
+                      class="p-1 text-slate-400 hover:text-blue-600 transition-colors" :title="__('Edit')">
                       <FeatherIcon name="edit" class="w-4 h-4" />
                     </button>
-                    <button
-                      class="p-1 text-slate-400 hover:text-red-600 transition-colors"
-                      :title="__('Delete')"
-                    >
+                    <button class="p-1 text-slate-400 hover:text-red-600 transition-colors" :title="__('Delete')">
                       <FeatherIcon name="trash-2" class="w-4 h-4" />
                     </button>
                   </td>
@@ -305,85 +282,68 @@
             <!-- Pagination -->
             <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
               <div class="flex-1 flex justify-between sm:hidden">
-                <button 
-                  @click="previousListPage" 
-                  :disabled="listPagination.currentPage === 1"
-                  :class="[
-                    'relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md',
-                    listPagination.currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'
-                  ]"
-                >
-                  Previous
+                <button @click="previousListPage" :disabled="listPagination.currentPage === 1" :class="[
+                  'relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md',
+                  listPagination.currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'
+                ]">
+                  {{ __('Previous') }}
                 </button>
-                <button 
-                  @click="nextListPage"
-                  :disabled="listPagination.currentPage >= listTotalPages"
-                  :class="[
-                    'ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md',
-                    listPagination.currentPage >= listTotalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'
-                  ]"
-                >
-                  Next
+                <button @click="nextListPage" :disabled="listPagination.currentPage >= listTotalPages" :class="[
+                  'ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md',
+                  listPagination.currentPage >= listTotalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'
+                ]">
+                  {{ __('Next') }}
                 </button>
               </div>
               <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                 <div>
                   <p class="text-sm text-gray-700">
-                    Showing <span class="font-medium">{{ (listPagination.currentPage - 1) * listPagination.itemsPerPage + 1 }}</span>
-                    to <span class="font-medium">{{ Math.min(listPagination.currentPage * listPagination.itemsPerPage, talentPools.length) }}</span>
+                    Showing <span class="font-medium">{{ (listPagination.currentPage - 1) * listPagination.itemsPerPage+ 1 }}</span>
+                    to <span class="font-medium">{{ Math.min(listPagination.currentPage * listPagination.itemsPerPage,talentPools.length) }}</span>
                     of <span class="font-medium">{{ talentPools.length }}</span> results
                   </p>
                 </div>
                 <div>
                   <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                    <button 
-                      @click="previousListPage" 
-                      :disabled="listPagination.currentPage === 1"
-                      :class="[
-                        'relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium',
-                        listPagination.currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:bg-gray-50'
-                      ]"
-                    >
+                    <button @click="previousListPage" :disabled="listPagination.currentPage === 1" :class="[
+                      'relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium',
+                      listPagination.currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:bg-gray-50'
+                    ]">
                       <span class="sr-only">Previous</span>
-                      <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                      <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                        aria-hidden="true">
+                        <path fill-rule="evenodd"
+                          d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                          clip-rule="evenodd" />
                       </svg>
                     </button>
-                    
+
                     <!-- Page numbers -->
                     <template v-for="page in listVisiblePages" :key="page">
-                      <button
-                        v-if="page === '...'"
-                        disabled
-                        class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700"
-                      >
+                      <button v-if="page === '...'" disabled
+                        class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
                         {{ page }}
                       </button>
-                      <button
-                        v-else
-                        @click="goToListPage(page)"
-                        :class="[
-                          'relative inline-flex items-center px-4 py-2 border text-sm font-medium',
-                          page === listPagination.currentPage 
-                            ? 'z-10 bg-indigo-50 border-indigo-500 text-indigo-600' 
-                            : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                        ]"
-                      >
+                      <button v-else @click="goToListPage(page)" :class="[
+                        'relative inline-flex items-center px-4 py-2 border text-sm font-medium',
+                        page === listPagination.currentPage
+                          ? 'z-10 bg-indigo-50 border-indigo-500 text-indigo-600'
+                          : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                      ]">
                         {{ page }}
                       </button>
                     </template>
-                    
-                    <button 
-                      @click="nextListPage"
-                      :disabled="listPagination.currentPage >= listTotalPages"
-                      :class="[
-                        'relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium',
-                        listPagination.currentPage >= listTotalPages ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:bg-gray-50'
-                      ]"
-                    >
+
+                    <button @click="nextListPage" :disabled="listPagination.currentPage >= listTotalPages" :class="[
+                      'relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium',
+                      listPagination.currentPage >= listTotalPages ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:bg-gray-50'
+                    ]">
                       <span class="sr-only">Next</span>
-                      <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                      <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                        aria-hidden="true">
+                        <path fill-rule="evenodd"
+                          d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                          clip-rule="evenodd" />
                       </svg>
                     </button>
                   </nav>
@@ -412,6 +372,73 @@
       </div>
     </div>
 
+    <!-- Edit Talent Pool Dialog -->
+    <Dialog v-model="showDialogTalentPool" :options="{
+      size: '2xl',
+      title: __('Edit Talent Pool')
+    }">
+      <template #body-content>
+        <div class="space-y-4">
+          <!-- Talent Information -->
+          <div class="space-y-2">
+            <h3 class="text-lg font-medium text-gray-900">{{ __('Talent Information') }}</h3>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <FormControl
+                v-model="talentDetails.full_name"
+                :label="__('Full Name')"
+                type="text"
+                required
+              />
+              <FormControl
+                v-model="talentDetails.contact_email"
+                :label="__('Email')"
+                type="email"
+                required
+              />
+              <FormControl
+                v-model="talentDetails.contact_phone"
+                :label="__('Phone')"
+                type="tel"
+              />
+              <FormControl
+                v-model="matchScore"
+                :label="__('Match Score')"
+                type="number"
+                min="0"
+                max="100"
+              />
+            </div>
+          </div>
+
+          <!-- Segment Assignment -->
+          <div class="space-y-2">
+            <h3 class="text-lg font-medium text-gray-900">{{ __('Segment Assignment') }}</h3>
+            <Autocomplete
+              v-model="selectedSegmentTypeEdit"
+              :options="uniqueSegmentTypes"
+              :placeholder="__('Select a segment')"
+              required
+            />
+          </div>
+        </div>
+      </template>
+      <template #actions>
+        <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <Button variant="outline" theme="gray" @click="showDialogTalentPool = false" :disabled="loading">
+            {{ __('Cancel') }}
+          </Button>
+          <Button 
+            variant="solid" 
+            theme="gray" 
+            @click="updateTalentAndPool" 
+            :loading="loading"
+          >
+            {{ __('Save Changes') }}
+          </Button>
+        </div>
+      </template>
+    </Dialog>
+
     <!-- Create/Edit Dialog -->
     <Dialog v-model="showCreateForm" :options="createDialogOptions">
       <template #body-title>
@@ -428,7 +455,8 @@
       <template #body-content>
         <div class="bg-white">
           <div class="max-h-[60vh] overflow-y-auto">
-            <TalentSegmentForm ref="formRef" :segment="editingSegment" @success="handleFormSuccess" @cancel="handleFormClose" />
+            <TalentSegmentForm ref="formRef" :segment="editingSegment" @success="handleFormSuccess"
+              @cancel="handleFormClose" />
           </div>
         </div>
       </template>
@@ -462,16 +490,19 @@
           </div>
           <div>
             <div class="sm:flex sm:items-start">
-              <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              <div
+                class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
               </div>
               <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                 <h3 class="text-lg leading-6 font-medium text-gray-900">{{ __('Delete Talent Pool') }}</h3>
                 <div class="mt-2">
                   <p class="text-sm text-gray-500">
-                    {{ __('Are you sure you want to delete') }} "{{ deletingSegment?.title }}"? {{ __('This action cannot be undone.') }}
+                    {{ __('Are you sure you want to delete') }} "{{ deletingSegment?.title }}"? {{ __('This actioncannotbe undone.') }}
                   </p>
                 </div>
               </div>
@@ -498,10 +529,10 @@
 import { ref, computed, onMounted, watch, onUnmounted, h, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTalentSegment } from '@/composables/useTalentSegment'
-import { Button, Dialog, Dropdown, FeatherIcon, FormControl } from 'frappe-ui'
+import { Button, Dialog, Dropdown, FeatherIcon, FormControl, Breadcrumbs, Autocomplete, call } from 'frappe-ui'
 import TalentSegmentForm from '@/components/talent-segment/TalentSegmentForm.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
-import { Breadcrumbs } from 'frappe-ui'
+// import Autocomplete from '@/components/frappe-ui/Autocomplete.vue'
 import TalentSegmentCardView from '@/components/talent-segment/TalentSegmentCardView.vue'
 import TalentSegmentListView from '@/components/talent-segment/TalentSegmentListView.vue'
 import Loading from '@/components/Loading.vue'
@@ -515,14 +546,126 @@ const talentPoolStore = useTalentPoolStore()
 let title = __('Talent Pools')
 const breadcrumbs = [{ label: title, route: { name: 'TalentSegments' } }]
 
+const showDialogTalentPool = ref(false)
 // Use filtered talent pools from store
 const talentPools = computed(() => talentPoolStore.filteredTalentPools)
 const uniqueSegmentTypes = computed(() => talentPoolStore.uniqueSegmentTypes)
 const selectedSegmentType = ref('')
+const selectedSegmentTypeEdit = ref('')
+//Checkbox many
+const items = ref([])
+const selectedAll = ref([])
 
+const toggleSelectAll = (event) => {
+  if (event.target.checked) {
+    console.log("1>>>>>>");
+    items.value = talentPools.value
+    console.log("items.value>>>>>>>>>>>>>>>>>: ", items.value);
+    selectedAll.value = [...items.value]
+  } else {
+    console.log("2>>>>>>");
+    selectedAll.value = []
+  }
+}
+
+const toggleSelect = (item) => {
+  console.log(">>>>>>>>>>>>>>>item: ", item);
+  const index = selectedAll.value.findIndex(s => s.name === item.name)
+  if (index > -1) {
+    selectedAll.value.splice(index, 1)
+  } else {
+    selectedAll.value.push(item)
+  }
+}
 onMounted(async () => {
   await talentPoolStore.getTalentPools()
+  await talentPoolStore.fetchSegments()
 })
+
+const handleSegmentTypeFilter = (option) => {
+  const value = typeof option === 'object' ? option?.value || '' : option
+  console.log('Selected segment type value:', value)
+
+  selectedSegmentType.value = value
+  listPagination.value.currentPage = 1
+  talentPoolStore.getTalentPools(value)
+}
+
+const matchScore = computed({
+  get: () => currentTalentPool.value?.match_score || 0,
+  set: (value) => {
+    if (currentTalentPool.value) {
+      currentTalentPool.value.match_score = parseInt(value) || 0
+    }
+  }
+})
+
+const currentTalentPool = ref(null)
+const talentDetails = ref({
+  full_name: '',
+  contact_email: '',
+  contact_phone: ''
+})
+const view = (item) => router.push(`/talent-pool/${item.name}`)
+
+const handleEditTalentPool = async (pool) => {
+  try {
+    console.log('data pool>>>>>>>:', pool)
+    currentTalentPool.value = { ...pool }
+    talentDetails.value = {
+      full_name: pool.full_name,
+      contact_email: pool.contact_email,
+      contact_phone: pool.contact_phone
+    }
+    selectedSegmentTypeEdit.value = pool.title
+    showDialogTalentPool.value = true
+  } catch (error) {
+    console.error('Error preparing talent pool edit:', error)
+    showError('Failed to load talent pool details')
+  }
+}
+
+const updateTalentAndPool = async () => {
+
+  console.log('data pool update>>>>>>>:', currentTalentPool.value)
+
+  if (!currentTalentPool.value) return
+  
+  try {
+    // Update talent information
+    await call('frappe.client.set_value', {
+      doctype: 'Mira Talent',
+      name: currentTalentPool.value.talent_id,
+      fieldname: {
+        full_name: talentDetails.value.full_name,
+        email: talentDetails.value.contact_email,
+        phone: talentDetails.value.contact_phone
+      }
+    })
+
+    console.log('data selectedSegmentId.value update>>>>>>>:', selectedSegmentTypeEdit.value?.name)
+    console.log('data currentTalentPool.value.segment_id update>>>>>>>:', currentTalentPool.value.segment_id)
+    console.log("data currentTalentPool.value.name update>>>>>>>:", currentTalentPool.value.name);
+    
+    
+    // Update talent pool segment assignment if changed
+    if (selectedSegmentTypeEdit.value?.name !== currentTalentPool.value.segment_id) {
+      await talentPoolStore.updateTalentPool(currentTalentPool.value.name, {
+        segment_id: selectedSegmentTypeEdit.value?.name,
+        match_score: currentTalentPool.value.match_score
+      })
+    }
+    
+    showSuccess('Talent information updated successfully')
+    showDialogTalentPool.value = false
+    await talentPoolStore.refreshTalentPools()
+  } catch (error) {
+    console.error('Error updating talent and pool:', error)
+    showError('Failed to update talent information')
+  }
+}
+
+
 // Composables
 const router = useRouter()
 const {
@@ -541,8 +684,6 @@ const {
   getSegmentDetails,
   deleteSegment
 } = useTalentSegment()
-
-console.log(segments)
 
 // Local state
 const currentTab = ref('pools')
@@ -617,13 +758,13 @@ const loadSegmentsWithPagination = async () => {
       page: pagination.value.currentPage,
       limit: pagination.value.itemsPerPage
     })
-    
+
     if (result) {
       // loadSegments trong composable trả về { data, total }
       segments.value = result.data
       totalSegments.value = result.total
       pagination.value.total = result.total
-      
+
       // Enrich data if needed
       if (segments.value.length > 0) {
         const enrichedSegments = await Promise.all(
@@ -632,7 +773,7 @@ const loadSegmentsWithPagination = async () => {
         segments.value = enrichedSegments
       }
     }
-    
+
     console.log(`Loaded ${segments.value.length} segments, total: ${totalSegments.value}`)
   } catch (err) {
     console.error('Error loading segments:', err)
@@ -646,10 +787,10 @@ const enrichSegmentData = async (segment) => {
     let topSkills = []
     if (segment.criteria) {
       try {
-        const criteria = typeof segment.criteria === 'string' 
-          ? JSON.parse(segment.criteria) 
+        const criteria = typeof segment.criteria === 'string'
+          ? JSON.parse(segment.criteria)
           : segment.criteria
-        
+
         if (criteria.skills && Array.isArray(criteria.skills)) {
           topSkills = criteria.skills
         }
@@ -657,11 +798,11 @@ const enrichSegmentData = async (segment) => {
         console.error('Error parsing criteria JSON for segment:', segment.name, e)
       }
     }
-    
+
     // For now, just add the skills
     segment.topSkills = topSkills
     segment.teamMembers = [] // Empty for now
-    
+
     return segment
   } catch (error) {
     console.error('Error enriching segment data for:', segment.name, error)
@@ -672,9 +813,9 @@ const enrichSegmentData = async (segment) => {
 }
 
 // const paginatedSegments = computed(() => {
-//   const start = (pagination.value.currentPage - 1) * pagination.value.itemsPerPage
-//   const end = start + pagination.value.itemsPerPage
-//   return segments.value.slice(start, end)
+//      const start = (pagination.value.currentPage - 1) * pagination.value.itemsPerPage
+//      const end = start + pagination.value.itemsPerPage
+//      return segments.value.slice(start, end)
 // })
 
 const paginationStart = computed(() => {
@@ -768,7 +909,7 @@ const formatLastUpdated = (dateStr) => {
 }
 
 const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString()
+  return new Date(dateString).toLocaleString()
 }
 
 // Card View Pagination
@@ -811,42 +952,34 @@ const listVisiblePages = computed(() => {
 const getVisiblePages = (currentPage, total) => {
   const pages = []
   const maxVisiblePages = 5
-  
   if (total <= maxVisiblePages) {
     for (let i = 1; i <= total; i++) {
       pages.push(i)
     }
   } else {
     pages.push(1)
-    
     let start = Math.max(2, currentPage - 1)
     let end = Math.min(total - 1, currentPage + 1)
-    
     if (currentPage <= 3) {
       end = 4
     } else if (currentPage >= total - 2) {
       start = total - 3
     }
-    
     if (start > 2) {
       pages.push('...')
     }
-    
     for (let i = start; i <= end; i++) {
       if (i > 1 && i < total) {
         pages.push(i)
       }
     }
-    
     if (end < total - 1) {
       pages.push('...')
     }
-    
     if (total > 1) {
       pages.push(total)
     }
   }
-  
   return pages
 }
 
@@ -994,12 +1127,12 @@ const confirmDelete = async () => {
   if (result) {
     showDeleteDialog.value = false
     deletingSegment.value = null
-    
+
     // Kiểm tra nếu trang hiện tại không còn items
     if (segments.value.length === 1 && pagination.value.currentPage > 1) {
       pagination.value.currentPage--
     }
-    
+
     await loadSegmentsWithPagination() // Reload với pagination
     showSuccess(__('Talent pool has been deleted successfully'))
   }
@@ -1019,7 +1152,9 @@ const handleFormClose = () => {
 }
 
 const handleRefresh = async () => {
+  const currentFilter = selectedSegmentType.value
   await loadSegmentsWithPagination()
+  await talentPoolStore.getTalentPools(currentFilter)
   showSuccess(__('Data refreshed'))
 }
 
@@ -1124,7 +1259,7 @@ const segmentsForCurrentPage = computed(() => {
 }
 
 .animate-pulse {
-  height: 36px!important;
+  height: 36px !important;
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 

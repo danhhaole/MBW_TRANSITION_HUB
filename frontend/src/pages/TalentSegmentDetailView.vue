@@ -349,9 +349,9 @@
 											</span>
 										</div>
 									</td>
-									<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+									<!-- <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
 										{{ formatDateTime(candidate.last_interaction) }}
-									</td>
+									</td> -->
 									<td class="px-6 py-4 whitespace-nowrap">
 										<span :class="getStatusBadgeClass(candidate.status)"
 											class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
@@ -906,9 +906,9 @@ const loadCandidates = async () => {
 			const candidateResult = await candidateService.getList({
 				filters: { name: ['in', candidateIds] },
 				page_length: 1000,
-				fields: ['name', 'full_name', 'email', 'phone', 'status', 'skills', 'headline', 'last_interaction']
+				fields: ['name', 'full_name', 'email', 'phone', 'skills']
 			})
-			console.log('Mira Contact API result:', candidateResult)
+			console.log('Mira Contact API result:>>>>>>>>>>>>>>>>>:  ', candidateResult)
 
 			if (candidateResult && candidateResult.success && candidateResult.data) {
 				// Merge the data - add segment relationship info to candidate data

@@ -79,13 +79,13 @@
             <tbody class="bg-white divide-y divide-gray-200">
               <tr v-for="item in items" :key="item.name" class="hover:bg-gray-50">
                 <td class="px-6 py-4">
-                  <button class="text-left text-gray-900 text-base hover:underline" @click="view(item)">{{ item.job_title }}</button>
+                  <button class="text-left text-gray-800 text-base hover:underline" @click="view(item)">{{ item.job_title }}</button>
                 </td>
                 <td class="px-6 py-4">
                   <span :class="badgeClass(item.approval_status)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-base font-medium">{{ item.approval_status }}</span>
                 </td>
-                <td class="px-6 py-4 text-base">{{ formatDate(item.creation) }}</td>
-                <td class="px-6 py-4 text-base">{{ item.owner_id }}</td>
+                <td class="px-6 py-4 text-gray-700 text-base">{{ formatDate(item.creation) }}</td>
+                <td class="px-6 py-4 text-gray-700 text-base">{{ item.owner_id }}</td>
                 <td class="px-6 py-4 space-x-2">
                   <button @click="view(item)" class="text-gray-600 hover:text-black" title="View">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
@@ -144,7 +144,7 @@
           <!-- Job cards -->
           <div v-for="item in items" :key="item.name" class="border rounded-lg p-4 hover:shadow cursor-pointer" @click="view(item)">
             <div class="flex items-start justify-between">
-              <h3 class="text-base font-semibold text-gray-900 truncate">{{ item.job_title }}</h3>
+              <h3 class="text-base font-semibold text-gray-800 truncate">{{ item.job_title }}</h3>
               <span :class="badgeClass(item.approval_status)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">{{ item.approval_status }}</span>
             </div>
             <p class="text-sm text-gray-500 mt-1">{{ item.department_name }} • {{ item.location_name }}</p>
@@ -943,11 +943,11 @@ const view = (item) => router.push(`/job-openings/${item.name}`)
 const remove = async (item) => { if (confirm('Delete this record?')) { await removeJobOpening(item.name, item.job_title); await reload() } }
 
 const badgeClass = (status) => ({
-  'Draft': 'bg-gray-100 text-gray-800',
-  'Pending Approval': 'bg-yellow-100 text-yellow-800',
-  'Approved': 'bg-green-100 text-green-800',
-  'Rejected': 'bg-red-100 text-red-800'
-}[status] || 'bg-gray-100 text-gray-800')
+  'Draft': 'bg-gray-100 text-xs text-gray-800',
+  'Pending Approval': 'bg-yellow-100 text-xs text-yellow-800',
+  'Approved': 'bg-green-100 text-xs text-green-800',
+  'Rejected': 'bg-red-100 text-xs text-red-800'
+}[status] || 'bg-gray-100 text-xs text-gray-800')
 
 const formatDate = (date) => date ? new Date(date).toLocaleDateString('vi-VN', { year: 'numeric', month: '2-digit', day: '2-digit' }) : ''
 

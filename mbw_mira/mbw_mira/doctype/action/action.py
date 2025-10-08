@@ -154,7 +154,8 @@ def get_my_actions(page=1, limit=20, search="", assigned_to="@me", include_unass
     Trả về dữ liệu danh sách "Công việc của tôi" giống UI trong ảnh:
     - pending: các Action có status = PENDING_MANUAL, người được giao = @me
     - completed: các Action có status = EXECUTED, người được giao = @me
-    Có phân trang độc lập cho mỗi tab; ở đây ta dùng cùng page/limit cho cả hai danh sách.
+    - all: tất cả action của người dùng
+    Có phân trang độc lập cho mỗi tab.
     """
     try:
         start = (cint(page) - 1) * cint(limit)
@@ -163,9 +164,6 @@ def get_my_actions(page=1, limit=20, search="", assigned_to="@me", include_unass
         current_user = frappe.session.user
         is_admin = current_user == "Administrator" or "Administrator" in frappe.get_roles(current_user)
         
-        # Debug log
-        frappe.log_error(f"API Debug - Current user: {current_user}, Is Admin: {is_admin}")
-
         base_fields = [
             "name",
             "campaign_step",
@@ -188,62 +186,66 @@ def get_my_actions(page=1, limit=20, search="", assigned_to="@me", include_unass
         if not is_admin:
             common_filters["assignee_id"] = current_user
 
-        # Pending: chỉ lấy PENDING_MANUAL (và SCHEDULED nếu include_scheduled_as_pending)
-        pending_filters = common_filters.copy()
-        statuses_pending = ["PENDING_MANUAL"]
-        # if cint(include_scheduled_as_pending):
-        #     statuses_pending.append("SCHEDULED")
-        pending_filters["status"] = ["in", statuses_pending]
-        
-        # Xử lý search cho pending
-        pending_or = []
+        # Xử lý search
+        search_condition = []
         if search:
-            pending_or = [
+            search_condition = [
                 {"name": ["like", f"%{search}%"]},
                 {"talent_campaign_id": ["like", f"%{search}%"]},
             ]
+
+        # Pending: chỉ lấy PENDING_MANUAL
+        pending_filters = common_filters.copy()
+        pending_filters["status"] = "PENDING_MANUAL"
         
         pending_rows = frappe.get_list(
             "Action",
             fields=base_fields,
             filters=pending_filters,
-            or_filters=pending_or if pending_or else None,
+            or_filters=search_condition if search else None,
             order_by="creation desc",
             start=start,
             page_length=cint(limit),
         ) or []
         pending_total = len(
-            frappe.get_list("Action", filters=pending_filters, or_filters=pending_or if pending_or else None)
+            frappe.get_list("Action", filters=pending_filters, or_filters=search_condition if search else None)
         )
 
         # Completed: chỉ lấy EXECUTED
         completed_filters = common_filters.copy()
         completed_filters["status"] = "EXECUTED"
         
-        # Xử lý search cho completed
-        completed_or = []
-        if search:
-            completed_or = [
-                {"name": ["like", f"%{search}%"]},
-                {"talent_campaign_id": ["like", f"%{search}%"]},
-            ]
-        
         completed_rows = frappe.get_list(
             "Action",
             fields=base_fields,
             filters=completed_filters,
-            or_filters=completed_or if completed_or else None,
+            or_filters=search_condition if search else None,
             order_by="executed_at desc, creation desc",
             start=start,
             page_length=cint(limit),
         ) or []
         completed_total = len(
-            frappe.get_list("Action", filters=completed_filters, or_filters=completed_or if completed_or else None)
+            frappe.get_list("Action", filters=completed_filters, or_filters=search_condition if search else None)
+        )
+
+        # All: lấy cả PENDING_MANUAL và EXECUTED
+        all_rows = frappe.get_list(
+            "Action",
+            fields=base_fields,
+            filters=common_filters,
+            or_filters=search_condition if search else None,
+            order_by="status asc, creation desc",  # Sắp xếp để pending lên trước
+            start=start,
+            page_length=cint(limit),
+        ) or []
+        all_total = len(
+            frappe.get_list("Action", filters=common_filters, or_filters=search_condition if search else None)
         )
 
         # Enrich with step/campaign/user info
         pending = _get_enriched_actions(pending_rows)
         completed = _get_enriched_actions(completed_rows)
+        all_actions = _get_enriched_actions(all_rows)
 
         def paginate(total):
             pages = (total + cint(limit) - 1) // cint(limit) if cint(limit) > 0 else 1
@@ -261,9 +263,11 @@ def get_my_actions(page=1, limit=20, search="", assigned_to="@me", include_unass
 
         return {
             "success": True,
+            "all": all_actions,
             "pending": pending,
             "completed": completed,
             "pagination": {
+                "all": paginate(all_total),
                 "pending": paginate(pending_total),
                 "completed": paginate(completed_total),
             },
@@ -272,8 +276,6 @@ def get_my_actions(page=1, limit=20, search="", assigned_to="@me", include_unass
     except Exception as e:
         frappe.log_error(f"Error in get_my_actions: {str(e)}")
         return {"success": False, "error": str(e)}
-
-
 @frappe.whitelist()
 def update_action(name, data=None, **kwargs):
     """

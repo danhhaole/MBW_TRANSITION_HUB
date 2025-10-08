@@ -115,9 +115,72 @@ def bulk_insert_segments():
         frappe.log_error(frappe.get_traceback(), "Bulk Insert API Error")
         frappe.throw(_("Failed to process bulk insert."))
 
-import frappe
+@frappe.whitelist(allow_guest=True)
+def get_talent_pool(segment_title=None):
+    conditions = ""
+    values = {}
+
+    if segment_title:
+        conditions += " AND seg.title LIKE %(segment_title)s"
+        values["segment_title"] = f"%{segment_title}%"
+
+    query = """
+        SELECT 
+            tp.name,
+            tp.creation,
+            tp.owner,
+            tp.match_score,
+            tp.talent_id,
+            t.full_name AS full_name,
+            t.email AS contact_email,
+            t.phone AS contact_phone,
+            t.skills,
+            t.source,
+            t.linkedin_profile,
+            t.facebook_profile,
+            t.zalo_profile,
+            tp.segment_id,
+            seg.title AS title
+        FROM `tabMira Talent Pool` tp
+        LEFT JOIN `tabMira Segment` seg ON seg.name = tp.segment_id
+        LEFT JOIN `tabMira Talent` t ON t.name = tp.talent_id
+        WHERE tp.name IS NOT NULL
+        {conditions}
+        ORDER BY tp.creation DESC
+    """.format(conditions=conditions)
+
+    return frappe.db.sql(query, values, as_dict=True)
 
 @frappe.whitelist(allow_guest=True)
-def get_talent_pool():
-     talent_pool = frappe.db.get_all("Mira Talent Pool", fields=["name","creation","owner","match_score","talent_id","talent_id.full_name","talent_id.contact_email","talent_id.contact_phone","segment_id","segment_id.title"])
-     return talent_pool
+def get_talent_pool_detail(name):
+    if not name:
+        frappe.throw("Talent Pool name is required")
+
+    query = """
+        SELECT 
+            tp.name,
+            tp.creation,
+            tp.owner,
+            tp.match_score,
+            tp.talent_id,
+            t.full_name AS full_name,
+            t.email AS contact_email,
+            t.phone AS contact_phone,
+            t.skills,
+            t.source,
+            t.linkedin_profile,
+            t.facebook_profile,
+            t.zalo_profile,
+            tp.segment_id,
+            seg.title AS title
+        FROM `tabMira Talent Pool` tp
+        LEFT JOIN `tabMira Segment` seg ON seg.name = tp.segment_id
+        LEFT JOIN `tabMira Talent` t ON t.name = tp.talent_id
+        WHERE tp.name = %(name)s
+    """
+
+    result = frappe.db.sql(query, {"name": name}, as_dict=True)
+    if not result:
+        frappe.throw(f"Talent Pool {name} not found", frappe.DoesNotExistError)
+    
+    return result[0]

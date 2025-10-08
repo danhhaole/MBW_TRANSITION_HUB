@@ -7,7 +7,8 @@ export const useTalentPoolStore = defineStore('talentPool', {
     segments: [],
     current: null,
     filters: {
-      segmentType: null
+      segmentType: null,
+      title: null
     }
   }),
 
@@ -17,7 +18,13 @@ export const useTalentPoolStore = defineStore('talentPool', {
       
       if (state.filters.segmentType) {
         filtered = filtered.filter(
-          pool => pool.segment_id === state.filters.segmentType
+          pool => pool.segment_title === state.filters.segmentType
+        )
+      }
+      
+      if (state.filters.title) {
+        filtered = filtered.filter(
+          pool => pool.title.toLowerCase().includes(state.filters.title.toLowerCase())
         )
       }
       
@@ -26,13 +33,41 @@ export const useTalentPoolStore = defineStore('talentPool', {
     
     uniqueSegmentTypes: (state) => {
       return state.segments.map(segment => ({
-        id: segment.name,
-        title: segment.title
+        label: segment.title,
+        value: segment.title,
+        name: segment.name
       }))
     }
   },
   
   actions: {
+    async getTalentPool(name) {
+      try {
+        const talentPool = await call('frappe.client.get', {
+          doctype: 'Mira Talent Pool',
+          name: name
+        })
+        return talentPool
+      } catch (error) {
+        console.error('Error fetching talent pool:', error)
+        throw error
+      }
+    },
+    
+    async updateTalentPool(name, data) {
+      try {
+        await call('frappe.client.set_value', {
+          doctype: 'Mira Talent Pool',
+          name: name,
+          fieldname: data
+        })
+        await this.refreshTalentPools()
+      } catch (error) {
+        console.error('Error updating talent pool:', error)
+        throw error
+      }
+    },
+    
     async fetchSegments() {
       try {
         const response = await call('frappe.client.get_list', {
@@ -47,8 +82,19 @@ export const useTalentPoolStore = defineStore('talentPool', {
         throw error
       }
     },
-  
-    // Call this in your component's onMounted or setup
+
+    async TalentPoolDetail(name) {
+      try {
+        const response = await call('mbw_mira.mbw_mira.doctype.mira_talent_pool.mira_talent_pool.get_talent_pool_detail', {
+          name: name
+        })
+        return response
+      } catch (error) {
+        console.error('Error fetching talent pool detail:', error)
+        throw error
+      }
+    },
+
     async initResources() {
       this.talentPoolsResource = createResource({
         url: 'mbw_mira.mbw_mira.doctype.mira_talent_pool.mira_talent_pool.get_talent_pool',
@@ -57,24 +103,30 @@ export const useTalentPoolStore = defineStore('talentPool', {
           this.talentPools = data
         }
       })
-      
-      // Fetch segments when initializing
-      await this.fetchSegments()
     },
 
-    getTalentPools() {
+    getTalentPools(segmentTitle = '') {
       if (!this.talentPoolsResource) {
         this.initResources()
       }
-      return this.talentPoolsResource.fetch()
+      const params = {}
+      if (segmentTitle) {
+        params.segment_title = segmentTitle
+      }
+      return this.talentPoolsResource.fetch(params)
     },
 
     setSegmentTypeFilter(segmentId) {
       this.filters.segmentType = segmentId || null
     },
     
+    setTitleFilter(title) {
+      this.filters.title = title || null
+    },
+    
     clearFilters() {
       this.filters.segmentType = null
+      this.filters.title = null
     },
 
     refreshTalentPools() {

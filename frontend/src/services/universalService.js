@@ -22,7 +22,7 @@ class UniversalService {
 		try {
 			const result = await this.repository.getList(options)
 
-			console.log('result', result)
+			console.log('>>>>>>>>result: ', result)
 
 			// Backend trả về direct response với success flag
 			if (result && result.data && result.data.length > 0) {

@@ -11,7 +11,7 @@ export const getCandidates = async (options = {}) => {
   const {
     filters = {},
     or_filters = undefined,
-    fields = ['name', 'full_name', 'email', 'phone_number', 'skills', 'source', 'creation', 'modified'],
+    fields = ['name', 'full_name', 'email', 'phone', 'skills', 'source', 'creation', 'modified'],
     order_by = 'modified desc',
     page_length = 12,
     start = 0

@@ -18,11 +18,11 @@
 
       <!-- Email -->
       <div class="form-group">
-        <label for="contact_email" class="block text-sm font-medium text-gray-700 mb-1">{{ ('Email') }} <span class="text-red-500">*</span></label>
+        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">{{ ('Email') }} <span class="text-red-500">*</span></label>
         <input
-          type="contact_email"
-          id="contact_email"
-          v-model="formData.contact_email"
+          type="email"
+          id="email"
+          v-model="formData.email"
           class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
         >
@@ -30,11 +30,11 @@
 
       <!-- Phone -->
       <div class="form-group">
-        <label for="contact_phone" class="block text-sm font-medium text-gray-700 mb-1">{{ ('Phone Number') }} <span class="text-red-500">*</span></label>
+        <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">{{ ('Phone Number') }} <span class="text-red-500">*</span></label>
         <input
           type="tel"
-          id="contact_phone"
-          v-model="formData.contact_phone"
+          id="phone"
+          v-model="formData.phone"
           class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
         >
@@ -149,8 +149,8 @@ const resumeInput = ref(null);
 
 const formData = reactive({
   full_name: '',
-  contact_email: '',
-  contact_phone: '',
+  email: '',
+  phone: '',
   current_designation: '',
   current_company: '',
   experience_years: null,
@@ -182,8 +182,8 @@ const handleFileUpload = (event) => {
 const resetForm = () => {
   Object.assign(formData, {
     full_name: '',
-    contact_email: '',
-    contact_phone: '',
+    email: '',
+    phone: '',
     current_designation: '',
     current_company: '',
     experience_years: null,
@@ -202,21 +202,21 @@ const submitForm = async () => {
     isSubmitting.value = true;
     
     // Basic validation
-    if (!formData.full_name || !formData.contact_email || !formData.contact_phone) {
+    if (!formData.full_name || !formData.email || !formData.phone) {
       toast.error('Vui lòng điền đầy đủ các trường bắt buộc');
       return;
     }
     
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.contact_email)) {
+    if (!emailRegex.test(formData.email)) {
       toast.error('Vui lòng nhập địa chỉ email hợp lệ');
       return;
     }
     
     // Phone number validation (basic)
     const phoneRegex = /^[0-9\-\+]{9,15}$/;
-    if (!phoneRegex.test(formData.contact_phone)) {
+    if (!phoneRegex.test(formData.phone)) {
       toast.error('Vui lòng nhập số điện thoại hợp lệ');
       return;
     }

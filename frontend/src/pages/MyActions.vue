@@ -13,12 +13,17 @@
             class="px-3 py-1.5 rounded-md text-sm"
             :class="activeTab==='pending' ? 'bg-black text-white' : 'bg-white text-gray-700 border hover:text-gray-900'"
             @click="setTab('pending')"
-          >{{ __('Pedding') }}</button>
+          >{{ __('Pending') }}</button>
           <button
             class="px-3 py-1.5 rounded-md text-sm"
             :class="activeTab==='completed' ? 'bg-black text-white' : 'bg-white text-gray-700 border hover:text-gray-900'"
             @click="setTab('completed')"
           >{{ __('Done') }}</button>
+          <button
+            class="px-3 py-1.5 rounded-md text-sm"
+            :class="activeTab==='all' ? 'bg-black text-white' : 'bg-white text-gray-700 border hover:text-gray-900'"
+            @click="setTab('all')"
+          >{{ __('All') }}</button>
         </div>
   
         <div class="bg-white rounded-lg border border-gray-200">
@@ -50,14 +55,22 @@
                   <td class="px-6 py-4">
                     <span :class="badgeClass(labelStatus(item.status))" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-base font-medium">{{ labelStatus(item.status) }}</span>
                   </td>
-                  <td class="text-base px-6 py-4">{{ formatDate(item.creation) }}</td>
+                  <td class="text-base px-6 py-4 text-gray-600">{{ formatDate(item.creation) }}</td>
                   <td class="px-6 py-4">
                     <div class="flex items-center gap-2">
                       <button
-                        class="inline-flex items-center px-3 py-1.5 rounded-md text-base font-medium text-white bg-blue-600 hover:bg-blue-700"
-                        @click="activeTab === 'completed' ? openView(item) : openEdit(item)"
+                        v-if="item.status === 'PENDING_MANUAL' || item.status === 'SCHEDULED'"
+                        class="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium text-white bg-gray-900"
+                        @click="openEdit(item)"
                       >
-                        {{ activeTab === 'completed' ? __('Xem chi tiết') : __('Cập nhật') }}
+                        {{ __('Cập nhật') }}
+                      </button>
+                      <button
+                        v-else
+                        class="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium text-white bg-gray-900"
+                        @click="openView(item)"
+                      >
+                        {{ __('Xem chi tiết') }}
                       </button>
                     </div>
                   </td>
@@ -275,7 +288,8 @@
   const loading = ref(false)
   const pending = ref([])
   const completed = ref([])
-  const paginationState = ref({ pending: {}, completed: {} })
+  const all = ref([])
+  const paginationState = ref({ pending: {}, completed: {}, all: {} })
   const toast = useToast()
 
   const resource = createResource({
@@ -291,16 +305,28 @@
     try {
       const res = await resource.submit({ page: page.value, limit: limit.value, include_scheduled_as_pending: 1, include_unassigned: 1 })
       if (res?.success) {
+        all.value = res.all || []
         pending.value = res.pending || []
         completed.value = res.completed || []
-        paginationState.value = res.pagination || { pending: {}, completed: {} }
+        paginationState.value = res.pagination || { pending: {}, completed: {}, all: {} }
       }
     } finally {
       loading.value = false
     }
   }
   
-  const currentItems = computed(() => activeTab.value === 'pending' ? pending.value : completed.value)
+  const currentItems = computed(() => {
+  // Return combined and sorted items for 'all' tab
+  if (activeTab.value === 'all') {
+    // Combine and sort by status (PENDING_MANUAL first) and then by creation date
+    return [...all.value].sort((a, b) => {
+      if (a.status === 'PENDING_MANUAL' && b.status !== 'PENDING_MANUAL') return -1
+      if (a.status !== 'PENDING_MANUAL' && b.status === 'PENDING_MANUAL') return 1
+      return new Date(b.creation) - new Date(a.creation)
+    })
+  }
+  return activeTab.value === 'pending' ? pending.value : completed.value
+})
   const pagination = computed(() => paginationState.value[activeTab.value] || { page: 1, limit: limit.value, total: 0 })
   const showingFrom = computed(() => pagination.value.total === 0 ? 0 : ((pagination.value.page - 1) * pagination.value.limit) + 1)
   const showingTo = computed(() => Math.min(pagination.value.page * pagination.value.limit, pagination.value.total || 0))
@@ -351,9 +377,9 @@
   }
   
   const badgeClass = (label) => ({
-    'Đang chờ': 'bg-yellow-100 text-yellow-800',
-    'Hoàn thành': 'bg-green-100 text-green-800'
-  }[label] || 'bg-gray-100 text-gray-800')
+    'Đang chờ': 'bg-yellow-100 text-yellow-800 text-xs',
+    'Hoàn thành': 'bg-green-100 text-green-800 text-xs'
+  }[label] || 'bg-gray-100 text-gray-800 text-xs')
   
   const formatDate = (v) => v ? new Date(v).toLocaleString() : ''
   
