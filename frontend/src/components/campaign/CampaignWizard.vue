@@ -561,7 +561,27 @@
       <!-- Hiển thị thông tin tổng kết -->
       <div class="flex justify-between items-center mb-3 text-sm text-gray-600">
         <span>{{ __('Showing') }} {{ records.length }} {{ __('of') }} {{ totalRecords }} {{ __('records') }}</span>
-        <span v-if="selectedCandidates.length">{{ selectedCandidates.length }} {{ __('selected') }}</span>
+        <div class="flex items-center space-x-3">
+          <span v-if="selectedCandidates.length">{{ selectedCandidates.length }} {{ __('selected') }}</span>
+          <div class="flex space-x-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              @click="selectAllCurrentPage"
+              :disabled="records.length === 0"
+            >
+              {{ __('Select All') }}
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              @click="clearSelection"
+              :disabled="selectedCandidates.length === 0"
+            >
+              {{ __('Clear All') }}
+            </Button>
+          </div>
+        </div>
       </div>
       
       <!-- Danh sách -->
@@ -1435,6 +1455,18 @@ function toggleCandidate(name) {
   } else {
     selectedCandidates.value = [...selectedCandidates.value, name];
   }
+}
+
+// Select all candidates on current page
+function selectAllCurrentPage() {
+  const currentPageIds = records.value.map(r => r.name);
+  const newSelected = [...new Set([...selectedCandidates.value, ...currentPageIds])];
+  selectedCandidates.value = newSelected;
+}
+
+// Clear all selected candidates
+function clearSelection() {
+  selectedCandidates.value = [];
 }
 
 // Reset khi đổi nguồn
@@ -2440,30 +2472,56 @@ const createCampaignRecords = async (campaignName) => {
   console.log(`Creating ${doctype} records for campaign:`, campaignName);
   
   try {
-    const promises = miraTalentCampaign.value.records.map(async (recordId) => {
-      const payload = {
-        campaign_id: campaignName,
-        [recordField]: recordId,
-        status: 'ACTIVE',
-        ...(recordType === 'mira_talent' && miraTalentCampaign.value.segment_id 
-          ? { segment: miraTalentCampaign.value.segment_id } 
-          : {})
-      };
-      
-      return await call('frappe.client.insert', {
-        doc: {
-          doctype: doctype,
-          ...payload
-        }
-      });
+    // Use bulk insert API for better performance
+    const bulkData = miraTalentCampaign.value.records.map(recordId => ({
+      doctype: doctype,
+      campaign_id: campaignName,
+      [recordField]: recordId,
+      status: 'ACTIVE',
+      ...(recordType === 'mira_talent' && miraTalentCampaign.value.segment_id 
+        ? { segment: miraTalentCampaign.value.segment_id } 
+        : {})
+    }));
+    
+    // Call custom bulk insert API
+    const result = await call('mbw_mira.api.campaign.bulk_create_campaign_records', {
+      records: bulkData,
+      doctype: doctype
     });
     
-    const results = await Promise.all(promises);
-    console.log(`Successfully created ${results.length} ${doctype} records`);
-    return results;
+    console.log(`Successfully created ${result.length || bulkData.length} ${doctype} records`);
+    return result;
   } catch (error) {
     console.error(`Error creating ${doctype} records:`, error);
-    throw error;
+    
+    // Fallback to individual inserts if bulk fails
+    console.log('Falling back to individual inserts...');
+    try {
+      const promises = miraTalentCampaign.value.records.map(async (recordId) => {
+        const payload = {
+          campaign_id: campaignName,
+          [recordField]: recordId,
+          status: 'ACTIVE',
+          ...(recordType === 'mira_talent' && miraTalentCampaign.value.segment_id 
+            ? { segment: miraTalentCampaign.value.segment_id } 
+            : {})
+        };
+        
+        return await call('frappe.client.insert', {
+          doc: {
+            doctype: doctype,
+            ...payload
+          }
+        });
+      });
+      
+      const results = await Promise.all(promises);
+      console.log(`Successfully created ${results.length} ${doctype} records via fallback`);
+      return results;
+    } catch (fallbackError) {
+      console.error(`Fallback also failed:`, fallbackError);
+      throw fallbackError;
+    }
   }
 };
 

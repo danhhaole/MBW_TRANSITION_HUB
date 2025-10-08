@@ -971,7 +971,27 @@
             <!-- Summary -->
             <div class="flex justify-between items-center mb-3 text-sm text-gray-600">
               <span>{{ __('Showing') }} {{ records.length }} {{ __('of') }} {{ totalRecords }} {{ __('records') }}</span>
-              <span v-if="selectedCandidates.length">{{ selectedCandidates.length }} {{ __('selected') }}</span>
+              <div class="flex items-center space-x-3">
+                <span v-if="selectedCandidates.length">{{ selectedCandidates.length }} {{ __('selected') }}</span>
+                <div class="flex space-x-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    @click="selectAllCurrentPage"
+                    :disabled="records.length === 0"
+                  >
+                    {{ __('Select All') }}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    @click="clearSelection"
+                    :disabled="selectedCandidates.length === 0"
+                  >
+                    {{ __('Clear All') }}
+                  </Button>
+                </div>
+              </div>
             </div>
             
             <!-- List -->
@@ -1765,6 +1785,18 @@ const toggleCandidate = (name) => {
   }
 }
 
+// Select all candidates on current page
+const selectAllCurrentPage = () => {
+  const currentPageIds = records.value.map(r => r.name)
+  const newSelected = [...new Set([...selectedCandidates.value, ...currentPageIds])]
+  selectedCandidates.value = newSelected
+}
+
+// Clear all selected candidates
+const clearSelection = () => {
+  selectedCandidates.value = []
+}
+
 // Add selected candidates to campaign
 const addToCampaign = async () => {
   if (!selectedCandidates.value.length) {
@@ -1786,25 +1818,47 @@ const addToCampaign = async () => {
       recordField = 'contact_id'
     }
     
-    const promises = selectedCandidates.value.map(async (recordId) => {
-      const payload = {
+    try {
+      // Use bulk insert API for better performance
+      const bulkData = selectedCandidates.value.map(recordId => ({
+        doctype: doctype,
         campaign_id: route.params.id,
         [recordField]: recordId,
         status: 'ACTIVE',
         ...(recordType === 'mira_talent' && selectedSegment.value 
           ? { segment: selectedSegment.value } 
           : {})
-      }
+      }))
       
-      return await call('frappe.client.insert', {
-        doc: {
-          doctype: doctype,
-          ...payload
-        }
+      // Call custom bulk insert API
+      await call('mbw_mira.api.campaign.bulk_create_campaign_records', {
+        records: bulkData,
+        doctype: doctype
       })
-    })
-    
-    await Promise.all(promises)
+    } catch (bulkError) {
+      console.log('Bulk insert failed, falling back to individual inserts...')
+      
+      // Fallback to individual inserts
+      const promises = selectedCandidates.value.map(async (recordId) => {
+        const payload = {
+          campaign_id: route.params.id,
+          [recordField]: recordId,
+          status: 'ACTIVE',
+          ...(recordType === 'mira_talent' && selectedSegment.value 
+            ? { segment: selectedSegment.value } 
+            : {})
+        }
+        
+        return await call('frappe.client.insert', {
+          doc: {
+            doctype: doctype,
+            ...payload
+          }
+        })
+      })
+      
+      await Promise.all(promises)
+    }
     
     // Reload data and close modal
     await loadTalentCampaign()

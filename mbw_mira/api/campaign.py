@@ -448,3 +448,75 @@ def dev_seed_autopost_test(**kwargs):
             "message": f"Created test data: JobOpening {job_doc.name}, Campaign {campaign_doc.name}, CampaignStep {step_doc.name} scheduled at {scheduled_time}"
         }
     }
+
+@frappe.whitelist(allow_guest=True)
+def bulk_create_campaign_records(**kwargs):
+    """
+    Bulk create campaign records for better performance.
+    Args:
+        records: List of record objects to create
+        doctype: Target doctype (Mira Talent Campaign or Mira Contact Campaign)
+    """
+    records = kwargs.get('records', [])
+    doctype = kwargs.get('doctype')
+    
+    if not records:
+        return {"status": "error", "message": "No records provided"}
+    
+    if not doctype:
+        return {"status": "error", "message": "Doctype is required"}
+    
+    if doctype not in ['Mira Talent Campaign', 'Mira Contact Campaign']:
+        return {"status": "error", "message": "Invalid doctype"}
+    
+    try:
+        created_records = []
+        
+        # Process records in batches to avoid memory issues
+        batch_size = 100
+        total_records = len(records)
+        
+        for i in range(0, total_records, batch_size):
+            batch = records[i:i + batch_size]
+            
+            for record_data in batch:
+                try:
+                    # Remove doctype from record_data if it exists
+                    if 'doctype' in record_data:
+                        del record_data['doctype']
+                    
+                    # Create new document
+                    doc = frappe.new_doc(doctype)
+                    
+                    # Set fields from record_data
+                    for field, value in record_data.items():
+                        if hasattr(doc, field):
+                            setattr(doc, field, value)
+                    
+                    # Insert the document
+                    doc.insert(ignore_permissions=True)
+                    created_records.append(doc.name)
+                    
+                except Exception as record_error:
+                    print(f"Error creating record: {record_error}")
+                    # Continue with next record instead of failing entire batch
+                    continue
+            
+            # Commit after each batch
+            frappe.db.commit()
+        
+        return {
+            "status": "success", 
+            "message": f"Successfully created {len(created_records)} records",
+            "created_count": len(created_records),
+            "total_requested": total_records,
+            "created_records": created_records
+        }
+        
+    except Exception as e:
+        frappe.db.rollback()
+        print(f"Bulk insert error: {e}")
+        return {
+            "status": "error", 
+            "message": f"Bulk insert failed: {str(e)}"
+        }
