@@ -1383,7 +1383,7 @@ FEATURES_MIRA = {
                             "import": 0,
                         },
                         {
-                            "doctype": "External Connection",
+                            "doctype": "Mira External Connection",
                             "create": 1,
                             "read": 1,
                             "write": 1,
@@ -1396,7 +1396,7 @@ FEATURES_MIRA = {
                             "import": 0,
                         },
                         {
-                            "doctype": "External Connection Account",
+                            "doctype": "Mira External Connection Account",
                             "create": 1,
                             "read": 1,
                             "write": 1,
@@ -1503,7 +1503,7 @@ FEATURES_MIRA = {
                     "is_active": 1,
                     "permissions": [
                         {
-                            "doctype": "External Connection",
+                            "doctype": "Mira External Connection",
                             "create": 1,
                             "read": 1,
                             "write": 1,
@@ -1516,7 +1516,7 @@ FEATURES_MIRA = {
                             "import": 0,
                         },
                         {
-                            "doctype": "External Connection Account",
+                            "doctype": "Mira External Connection Account",
                             "create": 1,
                             "read": 1,
                             "write": 1,
@@ -1605,7 +1605,7 @@ FEATURES_MIRA = {
                             "import": 0,
                         },
                         {
-                            "doctype": "External Connection",
+                            "doctype": "Mira External Connection",
                             "create": 0,
                             "read": 1,
                             "write": 0,

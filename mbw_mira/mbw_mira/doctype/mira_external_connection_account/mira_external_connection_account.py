@@ -5,5 +5,5 @@
 from frappe.model.document import Document
 
 
-class ExternalConnectionAccount(Document):
+class MiraExternalConnectionAccount(Document):
 	pass

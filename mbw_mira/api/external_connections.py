@@ -38,7 +38,7 @@ def get_connection_info(
 
         # Get connections
         connections = frappe.get_all(
-            "External Connection",
+            "Mira External Connection",
             filters=filters,
             fields=[
                 "name",
@@ -66,7 +66,7 @@ def get_connection_info(
         for conn in connections:
             # Get connected accounts
             accounts = frappe.get_all(
-                "External Connection Account",
+                "Mira External Connection Account",
                 filters={"parent": conn.name, "is_active": 1},
                 fields=[
                     "external_account_id",
@@ -120,7 +120,7 @@ def get_account_details(connection_id: str, account_id: str = None) -> Dict[str,
     Lấy chi tiết tài khoản được kết nối
 
     Args:
-        connection_id: ID của External Connection
+        connection_id: ID của Mira External Connection
         account_id: ID của account cụ thể (optional)
 
     Returns:
@@ -128,7 +128,7 @@ def get_account_details(connection_id: str, account_id: str = None) -> Dict[str,
     """
     try:
         # Verify connection exists
-        connection_doc = frappe.get_doc("External Connection", connection_id)
+        connection_doc = frappe.get_doc("Mira External Connection", connection_id)
         if not connection_doc:
             return {"status": "error", "message": "Connection not found"}
 
@@ -226,7 +226,7 @@ def create_connection(
     try:
         # Check if connection already exists
         existing = frappe.db.exists(
-            "External Connection",
+            "Mira External Connection",
             {
                 "platform_type": platform_type,
                 "tenant_name": tenant_name,
@@ -249,10 +249,10 @@ def create_connection(
         # hook_url = f"http://localhost:8008/api/method/mbw_mira.api.external_connections.handle_webhook"
         print("hook_url>>>>>>>>>>>>>>>>>>:", hook_url)
         redirect_url = f"{get_url_without_port()}/mbw_mira/connectors"
-        # Create External Connection document
+        # Create Mira External Connection document
         connection_doc = frappe.get_doc(
             {
-                "doctype": "External Connection",
+                "doctype": "Mira External Connection",
                 "platform_type": platform_type,
                 "tenant_name": tenant_name,
                 "user_email": user_email,
@@ -331,7 +331,7 @@ def update_connection(connection_id: str, **kwargs) -> Dict[str, Any]:
     Cập nhật thông tin kết nối
 
     Args:
-        connection_id: ID của External Connection
+        connection_id: ID của Mira External Connection
         **kwargs: Các fields cần update
 
     Returns:
@@ -339,7 +339,7 @@ def update_connection(connection_id: str, **kwargs) -> Dict[str, Any]:
     """
     try:
         # Get connection document
-        connection_doc = frappe.get_doc("External Connection", connection_id)
+        connection_doc = frappe.get_doc("Mira External Connection", connection_id)
 
         # Track changes
         changes = {}
@@ -406,14 +406,14 @@ def disconnect_connection(connection_id: str, reason: str = "") -> Dict[str, Any
     Ngắt kết nối với platform
 
     Args:
-        connection_id: ID của External Connection
+        connection_id: ID của Mira External Connection
         reason: Lý do ngắt kết nối
 
     Returns:
         Dict chứa kết quả disconnect
     """
     try:
-        connection_doc = frappe.get_doc("External Connection", connection_id)
+        connection_doc = frappe.get_doc("Mira External Connection", connection_id)
 
         # Update connection status
         connection_doc.connection_status = "Disconnected"
@@ -468,14 +468,14 @@ def sync_accounts(connection_id: str, force_sync: bool = False) -> Dict[str, Any
     Đồng bộ danh sách accounts từ platform
 
     Args:
-        connection_id: ID của External Connection
+        connection_id: ID của Mira External Connection
         force_sync: Có force sync không
 
     Returns:
         Dict chứa kết quả sync
     """
     try:
-        connection_doc = frappe.get_doc("External Connection", connection_id)
+        connection_doc = frappe.get_doc("Mira External Connection", connection_id)
 
         if connection_doc.connection_status != "Connected" and not force_sync:
             return {"status": "error", "message": "Connection is not active"}
@@ -624,7 +624,7 @@ def sync_accounts(connection_id: str, force_sync: bool = False) -> Dict[str, Any
 def retry_connection(connection_id):
     """Retry a pending or failed connection"""
     try:
-        connection_doc = frappe.get_doc("External Connection", connection_id)
+        connection_doc = frappe.get_doc("Mira External Connection", connection_id)
         if connection_doc.connection_status not in ["Pending", "Failed"]:
             return {
                 "status": "error",
@@ -684,7 +684,7 @@ def share_job_posting(
     """
     try:
         # Validate connection
-        connection = frappe.get_doc("External Connection", connection_id)
+        connection = frappe.get_doc("Mira External Connection", connection_id)
         if connection.connection_status != "Connected":
             return {"status": "error", "message": "Connection is not active"}
 
@@ -1156,7 +1156,7 @@ def _process_job_share(share_doc):
     Internal function to process job sharing
     """
     try:
-        connection = frappe.get_doc("External Connection", share_doc.connection)
+        connection = frappe.get_doc("Mira External Connection", share_doc.connection)
         job = frappe.get_doc("JobOpening", share_doc.job)
 
         # Parse share_data safely
@@ -1225,7 +1225,7 @@ def _share_to_facebook(connection, job, share_doc, share_data):
         if not page_id:
             # Get first active Facebook page from child table
             facebook_account = None
-            connection_obj = frappe.get_doc("External Connection", connection.name)
+            connection_obj = frappe.get_doc("Mira External Connection", connection.name)
             for account in connection_obj.connected_accounts:
                 if account.is_active and account.account_type == "Page":
                     facebook_account = account.external_account_id
@@ -1315,7 +1315,7 @@ def _share_to_zalo(connection, job, share_doc, share_data):
             url_image = f"{get_url_without_port()}{url_image}"
         if not page_id:
             # Get OA ID from connection child table
-            connection_obj = frappe.get_doc("External Connection", connection.name)
+            connection_obj = frappe.get_doc("Mira External Connection", connection.name)
             for account in connection_obj.connected_accounts:
                 if account.is_active and account.account_type == "OA":
                     page_id = account.external_account_id
@@ -1459,7 +1459,7 @@ def handle_webhook():
 
         # Find connection
         connection = frappe.db.get_value(
-            "External Connection",
+            "Mira External Connection",
             {
                 "user_email": user_email,
                 "platform_type": platform_name,
@@ -1482,11 +1482,11 @@ def handle_webhook():
 
         # Update webhook statistics
         frappe.db.set_value(
-            "External Connection",
+            "Mira External Connection",
             connection,
             {
                 "total_webhooks": frappe.db.get_value(
-                    "External Connection", connection, "total_webhooks"
+                    "Mira External Connection", connection, "total_webhooks"
                 )
                 + 1,
                 "last_webhook_received": now(),
@@ -1534,7 +1534,7 @@ def _handle_login_success(connection_id: str, data: Dict):
         if data.get("token_expiry"):
             update_data["token_expiry"] = data.get("token_expiry")
 
-        frappe.db.set_value("External Connection", connection_id, update_data)
+        frappe.db.set_value("Mira External Connection", connection_id, update_data)
 
         # Trigger account sync
         frappe.enqueue(
@@ -1552,7 +1552,7 @@ def _handle_login_success(connection_id: str, data: Dict):
 def _handle_login_failed(connection_id: str, data: Dict):
     """Handle failed login webhook"""
     try:
-        connection_doc = frappe.get_doc("External Connection", connection_id)
+        connection_doc = frappe.get_doc("Mira External Connection", connection_id)
 
         connection_doc.connection_status = "Failed"
         connection_doc.retry_count = (connection_doc.retry_count or 0) + 1
@@ -1586,7 +1586,7 @@ def _handle_token_refresh(connection_id: str, data: Dict):
         if data.get("token_expiry"):
             update_data["token_expiry"] = data.get("token_expiry")
 
-        frappe.db.set_value("External Connection", connection_id, update_data)
+        frappe.db.set_value("Mira External Connection", connection_id, update_data)
 
     except Exception as e:
         frappe.log_error(f"Error handling token refresh: {str(e)}")
@@ -1604,7 +1604,7 @@ def get_platform_statistics(platform_type: str = None) -> Dict[str, Any]:
             filters["platform_type"] = platform_type
 
         connections = frappe.get_all(
-            "External Connection",
+            "Mira External Connection",
             filters=filters,
             fields=["platform_type", "connection_status", "active_status"],
         )
@@ -1644,7 +1644,7 @@ def get_platform_statistics(platform_type: str = None) -> Dict[str, Any]:
 def test_connection(connection_id: str) -> Dict[str, Any]:
     """Test a connection by making a simple API call"""
     try:
-        connection_doc = frappe.get_doc("External Connection", connection_id)
+        connection_doc = frappe.get_doc("Mira External Connection", connection_id)
 
         if connection_doc.platform_type == "Facebook":
             result = _test_facebook_connection(connection_doc)
@@ -2023,7 +2023,7 @@ def _disconnect_topcv(connection_doc):
 def get_topcv_metadata(connection_id: str, metadata_type: str) -> Dict[str, Any]:
     """Get TopCV metadata (categories, skills, cities, etc.)"""
     try:
-        connection_doc = frappe.get_doc("External Connection", connection_id)
+        connection_doc = frappe.get_doc("Mira External Connection", connection_id)
 
         response = requests.get(
             f"{host}/api/method/mbw_socialhub.api.topcv.get_metadata",
@@ -2086,9 +2086,9 @@ def connect_topcv(
             data = response.json()
 
             if data.get("status") == "Success":
-                # Tìm hoặc tạo External Connection
+                # Tìm hoặc tạo Mira External Connection
                 connection = frappe.db.exists(
-                    "External Connection",
+                    "Mira External Connection",
                     {
                         "platform_type": "TopCV",
                         "tenant_name": tenant_name,
@@ -2097,11 +2097,11 @@ def connect_topcv(
                 )
 
                 if connection:
-                    connection_doc = frappe.get_doc("External Connection", connection)
+                    connection_doc = frappe.get_doc("Mira External Connection", connection)
                 else:
                     connection_doc = frappe.get_doc(
                         {
-                            "doctype": "External Connection",
+                            "doctype": "Mira External Connection",
                             "platform_type": "TopCV",
                             "tenant_name": tenant_name,
                             "user_email": user_email or "",
@@ -2158,7 +2158,7 @@ def manage_topcv_job(
 ) -> Dict[str, Any]:
     """Manage TopCV jobs (create, edit, publish, stop, detail)"""
     try:
-        connection_doc = frappe.get_doc("External Connection", connection_id)
+        connection_doc = frappe.get_doc("Mira External Connection", connection_id)
 
         # Determine API endpoint
         endpoint_map = {
@@ -2262,24 +2262,24 @@ def fix_connection_tenant_names(dry_run: int = 1) -> Dict[str, Any]:
     bad_prefixes = ["https://socialhub.mbwcloud.com"]
     updated = []
     to_fix = frappe.get_all(
-        "External Connection",
+        "Mira External Connection",
         filters={"active_status": 1},
         fields=["name", "tenant_name"],
     )
     for row in to_fix:
         if any(str(row.tenant_name or "").startswith(p) for p in bad_prefixes):
             if not dry_run:
-                frappe.db.set_value("External Connection", row.name, "tenant_name", new_base)
+                frappe.db.set_value("Mira External Connection", row.name, "tenant_name", new_base)
             updated.append({"name": row.name, "old": row.tenant_name, "new": new_base})
     return {"status": "success", "dry_run": int(dry_run), "updated": updated}
 
 
 @frappe.whitelist()
 def get_connected_data_sources(platform_type: str = None):
-    """Return connected External Connection records as data sources for wizard.
+    """Return connected Mira External Connection records as data sources for wizard.
     Optional: filter by platform_type (e.g., 'Facebook', 'Zalo', 'TopCV').
     Output fields:
-      - name: External Connection name
+      - name: Mira External Connection name
       - source_name: human name for display
       - source_title: optional subtitle
       - description: optional
@@ -2292,7 +2292,7 @@ def get_connected_data_sources(platform_type: str = None):
             filters["platform_type"] = platform_type
 
         connections = frappe.get_all(
-            "External Connection",
+            "Mira External Connection",
             filters=filters,
             fields=[
                 "name",

@@ -10,7 +10,7 @@ def test_different_tenant_names():
         
         # Lấy connection hiện tại
         connections = frappe.get_all(
-            "External Connection",
+            "Mira External Connection",
             filters={"active_status": 1, "platform_type": "Facebook"},
             fields=["name", "tenant_name", "user_email"]
         )
@@ -85,7 +85,7 @@ def test_different_tenant_names():
             best_tenant = working_tenants[0]
             print(f"\nUpdating connection to use: {best_tenant['tenant_name']}")
             
-            frappe.db.set_value("External Connection", conn.name, "tenant_name", best_tenant['tenant_name'])
+            frappe.db.set_value("Mira External Connection", conn.name, "tenant_name", best_tenant['tenant_name'])
             frappe.db.commit()
             
             # Test sync lại

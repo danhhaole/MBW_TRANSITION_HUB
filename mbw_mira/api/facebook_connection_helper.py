@@ -10,7 +10,7 @@ def check_facebook_connection_status():
         
         # Lấy connection hiện tại
         connections = frappe.get_all(
-            "External Connection",
+            "Mira External Connection",
             filters={"active_status": 1, "platform_type": "Facebook"},
             fields=["name", "tenant_name", "user_email", "connection_status", "login_url"]
         )
@@ -98,9 +98,9 @@ def check_facebook_connection_status():
             print("\n4. No login URL found. Creating new one...")
             try:
                 new_login_url = frappe.call("mbw_mira.api.external_connections._get_facebook_login_url", 
-                                          frappe.get_doc("External Connection", conn.name))
+                                          frappe.get_doc("Mira External Connection", conn.name))
                 if new_login_url:
-                    frappe.db.set_value("External Connection", conn.name, "login_url", new_login_url)
+                    frappe.db.set_value("Mira External Connection", conn.name, "login_url", new_login_url)
                     frappe.db.commit()
                     print(f"   New login URL: {new_login_url}")
                 else:
@@ -120,7 +120,7 @@ def force_sync_facebook_accounts():
     """Force sync Facebook accounts"""
     try:
         connections = frappe.get_all(
-            "External Connection",
+            "Mira External Connection",
             filters={"active_status": 1, "platform_type": "Facebook"},
             fields=["name"]
         )

@@ -2,7 +2,7 @@
 # See license.txt
 
 # import frappe
-from frappe.tests import IntegrationTestCase, UnitTestCase
+# from frappe.tests import IntegrationTestCase, UnitTestCase
 
 
 # On IntegrationTestCase, the doctype test records and all
@@ -12,18 +12,17 @@ EXTRA_TEST_RECORD_DEPENDENCIES = []  # eg. ["User"]
 IGNORE_TEST_RECORD_DEPENDENCIES = []  # eg. ["User"]
 
 
-class UnitTestExternalConnection(UnitTestCase):
+class UnitTestMiraExternalConnection():
 	"""
-	Unit tests for ExternalConnection.
+	Unit tests for MiraExternalConnection.
 	Use this class for testing individual functions and methods.
 	"""
 
 	pass
 
-
-class IntegrationTestExternalConnection(IntegrationTestCase):
+class IntegrationTestMiraExternalConnection():
 	"""
-	Integration tests for ExternalConnection.
+	Integration tests for MiraExternalConnection.
 	Use this class for testing interactions between multiple components.
 	"""
 

@@ -69,8 +69,8 @@
    "fieldname": "connection",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "External Connection",
-   "options": "External Connection",
+   "label": "Mira External Connection",
+   "options": "Mira External Connection",
    "reqd": 1
   },
   {

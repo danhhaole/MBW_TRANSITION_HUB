@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "field:template_id",
+ "autoname": "format:EMAIL-TMP-{YY}{MM}{DD}-{#####}",
  "creation": "2025-03-17 14:35:54.110810",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -21,7 +21,7 @@
   "auto_send",
   "is_active",
   "created_by",
-  "creation",
+  "created_time",
   "sync_id"
  ],
  "fields": [
@@ -29,16 +29,9 @@
    "fieldname": "created_by",
    "fieldtype": "Link",
    "label": "Created By",
+   "no_copy": 1,
    "options": "User",
-   "read_only": 1,
-   "no_copy": 1
-  },
-  {
-   "fieldname": "creation",
-   "fieldtype": "Datetime",
-   "label": "Created On",
-   "read_only": 1,
-   "no_copy": 1
+   "read_only": 1
   },
   {
    "fieldname": "template_name",
@@ -120,15 +113,22 @@
    "fieldname": "project_data",
    "fieldtype": "Code",
    "label": "JSON Project Data"
+  },
+  {
+   "fieldname": "created_time",
+   "fieldtype": "Datetime",
+   "label": "Created time",
+   "no_copy": 1,
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-08-08 10:37:42.404601",
+ "modified": "2025-10-08 16:27:41.720426",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "MIRA_Email_Template",
- "naming_rule": "By fieldname",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {
