@@ -175,6 +175,17 @@ function initEditor() {
     attributes: { title: "Chèn Merge Tag" },
   });
 
+  // Kích hoạt nút Preview khi vào edit mode lần đầu
+  if (isEditMode.value) {
+    setTimeout(() => {
+      const previewButton = editor.value.Panels.getButton("options", "preview");
+      if (previewButton) {
+        previewButton.set("active", true);
+        editor.value.runCommand("preview");
+      }
+    });
+  }
+
   editor.value.Commands.add("open-merge-tag-popup", {
     run(editor) {
       const modal = editor.Modal;

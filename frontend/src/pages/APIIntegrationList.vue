@@ -47,7 +47,7 @@
                 { label: __('All Types'), value: '' },
                 { label: __('Social Media'), value: 'social_media' },
                 { label: __('Messaging'), value: 'messaging' },
-                { label: __('Job Board'), value: 'job_board' }
+                { label: __('Job Board'), value: 'job_board' },
               ]"
               class="w-40"
             />
@@ -62,11 +62,11 @@
                 { label: __('Connected'), value: 'connected' },
                 { label: __('Not Connected'), value: 'not_connected' },
                 { label: __('Pending'), value: 'pending' },
-                { label: __('Failed'), value: 'failed' }
+                { label: __('Failed'), value: 'failed' },
               ]"
               class="w-32"
             />
-      </div>
+          </div>
 
           <!-- Action Buttons -->
           <div class="flex items-center space-x-3">
@@ -78,14 +78,14 @@
               theme="gray"
               size="sm"
             >
-        <template #prefix>
-          <FeatherIcon name="refresh-cw" class="w-4 h-4" />
-        </template>
-              {{ __('Refresh') }}
-      </Button>
+              <template #prefix>
+                <FeatherIcon name="refresh-cw" class="w-4 h-4" />
+              </template>
+              {{ __("Refresh") }}
+            </Button>
           </div>
         </div>
-    </div>
+      </div>
 
       <!-- Data Table -->
       <div class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
@@ -95,95 +95,158 @@
         <!-- Error State -->
         <div v-else-if="error" class="p-8">
           <div class="text-center">
-            <svg class="mx-auto h-12 w-12 text-red-400" xmlns="http://www.w3.org/2000/svg" fill="none"
-              viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              class="mx-auto h-12 w-12 text-red-400"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
-            <h3 class="mt-2 text-sm font-medium text-gray-900">{{ __('Error loading data') }}</h3>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">
+              {{ __("Error loading data") }}
+            </h3>
             <p class="mt-1 text-sm text-gray-500">{{ error }}</p>
             <div class="mt-6">
               <Button @click="handleRefresh" variant="solid" theme="blue">
-                {{ __('Try Again') }}
+                {{ __("Try Again") }}
               </Button>
             </div>
-            </div>
+          </div>
         </div>
 
         <!-- Data Table Content -->
         <div v-else>
           <!-- Table Header -->
           <div class="bg-gray-50 px-6 py-3 border-b border-gray-200">
-            <div class="grid grid-cols-12 gap-4 text-xs font-medium text-gray-500 uppercase tracking-wider">
-              <div class="col-span-3">{{ __('Data Source') }}</div>
-              <div class="col-span-2">{{ __('Type') }}</div>
-              <div class="col-span-2">{{ __('Status') }}</div>
-              <div class="col-span-2">{{ __('Last Sync') }}</div>
-              <div class="col-span-2">{{ __('Created') }}</div>
-              <div class="col-span-1">{{ __('Actions') }}</div>
+            <div
+              class="grid grid-cols-12 gap-4 text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              <div class="col-span-3">{{ __("Data Source") }}</div>
+              <div class="col-span-2">{{ __("Type") }}</div>
+              <div class="col-span-2">{{ __("Status") }}</div>
+              <div class="col-span-2">{{ __("Last Sync") }}</div>
+              <div class="col-span-2">{{ __("Created") }}</div>
+              <div class="col-span-1">{{ __("Actions") }}</div>
+            </div>
           </div>
-        </div>
 
           <!-- Table Body -->
           <div class="divide-y divide-gray-200">
-            <div v-for="platform in filteredPlatforms" :key="platform.id"
-              class="px-6 py-4 hover:bg-gray-50 transition-colors duration-150">
+            <div
+              v-for="platform in filteredPlatforms"
+              :key="platform.id"
+              class="px-6 py-4 hover:bg-gray-50 transition-colors duration-150"
+            >
               <div class="grid grid-cols-12 gap-4 items-center">
                 <!-- Source Info -->
                 <div class="col-span-3">
                   <div class="flex items-center space-x-3">
                     <div
-                      class="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                <span class="text-lg">{{ platform.icon }}</span>
+                      class="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center"
+                    >
+                      <span class="text-lg">{{ platform.icon }}</span>
                     </div>
                     <div class="min-w-0 flex-1">
-                      <p class="text-sm font-medium text-gray-900 truncate">{{ platform.name }}</p>
-                      <p class="text-xs text-gray-500 truncate">{{ __(platform.description) }}</p>
+                      <p class="text-sm font-medium text-gray-900 truncate">
+                        {{ platform.name }}
+                      </p>
+                      <p class="text-xs text-gray-500 truncate">
+                        {{ __(platform.description) }}
+                      </p>
                     </div>
+                  </div>
                 </div>
-              </div>
 
                 <!-- Type -->
                 <div class="col-span-2">
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                    :class="getTypeColor(platform.type)">
+                  <span
+                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                    :class="getTypeColor(platform.type)"
+                  >
                     {{ __(platform.type_display) }}
                   </span>
-            </div>
+                </div>
 
                 <!-- Status -->
                 <div class="col-span-2">
                   <div class="flex items-center space-x-2">
-                    <div class="w-2 h-2 rounded-full" :class="getStatusColor(platform.id)"></div>
-                    <span class="text-sm text-gray-900">{{ getConnectionStatusText(platform.id) }}</span>
-              </div>
-                  <div v-if="getConnectionByPlatformId(platform.id)?.last_error" class="text-xs text-red-600 mt-1 truncate" 
-                    :title="getConnectionByPlatformId(platform.id)?.last_error">
+                    <div
+                      class="w-2 h-2 rounded-full"
+                      :class="getStatusColor(platform.id)"
+                    ></div>
+                    <span class="text-sm text-gray-900">{{
+                      getConnectionStatusText(platform.id)
+                    }}</span>
+                  </div>
+                  <div
+                    v-if="getConnectionByPlatformId(platform.id)?.last_error"
+                    class="text-xs text-red-600 mt-1 truncate"
+                    :title="getConnectionByPlatformId(platform.id)?.last_error"
+                  >
                     {{ getConnectionByPlatformId(platform.id)?.last_error }}
                   </div>
                 </div>
 
                 <!-- Last Sync -->
                 <div class="col-span-2">
-                  <p class="text-sm text-gray-900">{{ formatPagesCount(platform.id) }}</p>
-                  <p v-if="getConnectedAccountsForPlatform(platform.id).length > 0" class="hidden">
-                    {{ formatLastSync(platform.id) }}
-                  </p>
-            </div>
+                  <!-- Auto-sync indicator -->
+                  <div
+                    v-if="syncingPlatforms.includes(platform.id)"
+                    class="flex items-center gap-1"
+                  >
+                    <svg
+                      class="animate-spin h-3 w-3 text-blue-600"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        class="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        stroke-width="4"
+                      ></circle>
+                      <path
+                        class="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    <span class="text-xs text-blue-600">{{ __("Syncing...") }}</span>
+                  </div>
+                  <!-- Last sync time -->
+                  <div v-else>
+                    <p class="text-sm text-gray-900">{{ formatLastSync(platform.id) }}</p>
+                    <p class="text-xs text-gray-500">
+                      {{ formatPagesCount(platform.id) }}
+                    </p>
+                  </div>
+                </div>
 
                 <!-- Created -->
                 <div class="col-span-2">
                   <p class="text-sm text-gray-900">{{ formatCreated(platform.id) }}</p>
-                  <p class="text-xs text-gray-500">{{ getConnectionByPlatformId(platform.id)?.owner || 'Administrator' }}</p>
-            </div>
+                  <p class="text-xs text-gray-500">
+                    {{ getConnectionByPlatformId(platform.id)?.owner || "Administrator" }}
+                  </p>
+                </div>
 
                 <!-- Actions -->
                 <div class="col-span-1">
                   <div class="flex items-center gap-1">
-              <!-- Connect Button - Chỉ khi chưa có kết nối -->
+                    <!-- Connect Button - Chỉ khi chưa có kết nối -->
                     <button
-                v-if="!hasConnection(platform.id)"
-                @click="initiatePlatformConnection(platform)"
+                      v-if="!hasConnection(platform.id)"
+                      @click="initiatePlatformConnection(platform)"
                       class="p-1 text-slate-400 hover:text-green-600 transition-colors"
                       :title="__('Connect')"
                       :disabled="connectingPlatforms.includes(platform.id)"
@@ -200,13 +263,16 @@
                       <FeatherIcon name="eye" class="w-4 h-4" />
                     </button>
 
-              <!-- Edit Button - Cho Connected và Pending -->
+                    <!-- Edit Button - Cho Connected và Pending -->
                     <button
-                v-if="canManageConnection(platform.id)"
-                @click="editConnectionForPlatform(platform.id)"
+                      v-if="canManageConnection(platform.id)"
+                      @click="editConnectionForPlatform(platform.id)"
                       class="p-1 text-slate-400 hover:text-blue-600 transition-colors"
                       :title="__('Edit')"
-                      :disabled="connectingPlatforms.includes(platform.id) || disconnectingPlatforms.includes(platform.id)"
+                      :disabled="
+                        connectingPlatforms.includes(platform.id) ||
+                        disconnectingPlatforms.includes(platform.id)
+                      "
                     >
                       <FeatherIcon name="edit" class="w-4 h-4" />
                     </button>
@@ -301,68 +367,99 @@
     </Dialog>
 
     <!-- View Modal -->
-    <Dialog v-model="showViewModal" :options="{
-      title: __('Platform Details'),
-      size: 'lg'
-    }">
+    <Dialog
+      v-model="showViewModal"
+      :options="{
+        title: __('Platform Details'),
+        size: 'lg',
+      }"
+    >
       <template #body>
         <div v-if="selectedPlatform" class="p-6">
           <div class="space-y-6">
             <!-- Basic Info -->
-              <div>
-              <h3 class="text-lg font-medium text-gray-900 mb-4">{{ __('Basic Information') }}</h3>
+            <div>
+              <h3 class="text-lg font-medium text-gray-900 mb-4">
+                {{ __("Basic Information") }}
+              </h3>
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="text-sm font-medium text-gray-500">{{ __('Platform Name') }}</label>
+                  <label class="text-sm font-medium text-gray-500">{{
+                    __("Platform Name")
+                  }}</label>
                   <p class="mt-1 text-sm text-gray-900">{{ selectedPlatform.name }}</p>
-              </div>
-              <div>
-                  <label class="text-sm font-medium text-gray-500">{{ __('Type') }}</label>
-                  <p class="mt-1 text-sm text-gray-900">{{ __(selectedPlatform.type_display) }}</p>
                 </div>
                 <div>
-                  <label class="text-sm font-medium text-gray-500">{{ __('Description') }}</label>
-                  <p class="mt-1 text-sm text-gray-900">{{ __(selectedPlatform.description) }}</p>
+                  <label class="text-sm font-medium text-gray-500">{{
+                    __("Type")
+                  }}</label>
+                  <p class="mt-1 text-sm text-gray-900">
+                    {{ __(selectedPlatform.type_display) }}
+                  </p>
                 </div>
                 <div>
-                  <label class="text-sm font-medium text-gray-500">{{ __('Features') }}</label>
+                  <label class="text-sm font-medium text-gray-500">{{
+                    __("Description")
+                  }}</label>
+                  <p class="mt-1 text-sm text-gray-900">
+                    {{ __(selectedPlatform.description) }}
+                  </p>
+                </div>
+                <div>
+                  <label class="text-sm font-medium text-gray-500">{{
+                    __("Features")
+                  }}</label>
                   <div class="mt-1 flex flex-wrap gap-1">
-                <Badge
+                    <Badge
                       v-for="feature in selectedPlatform.features"
                       :key="feature"
                       variant="outline"
                       size="xs"
                     >
                       {{ __(feature) }}
-                </Badge>
-              </div>
+                    </Badge>
+                  </div>
                 </div>
               </div>
             </div>
 
             <!-- Status Info -->
-              <div>
-              <h3 class="text-lg font-medium text-gray-900 mb-4">{{ __('Connection Status') }}</h3>
+            <div>
+              <h3 class="text-lg font-medium text-gray-900 mb-4">
+                {{ __("Connection Status") }}
+              </h3>
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="text-sm font-medium text-gray-500">{{ __('Current Status') }}</label>
+                  <label class="text-sm font-medium text-gray-500">{{
+                    __("Current Status")
+                  }}</label>
                   <div class="mt-1 flex items-center space-x-2">
-                    <div class="w-2 h-2 rounded-full" :class="getStatusColor(selectedPlatform.id)">
-                    </div>
-                    <span class="text-sm text-gray-900">{{ getConnectionStatusText(selectedPlatform.id) }}</span>
+                    <div
+                      class="w-2 h-2 rounded-full"
+                      :class="getStatusColor(selectedPlatform.id)"
+                    ></div>
+                    <span class="text-sm text-gray-900">{{
+                      getConnectionStatusText(selectedPlatform.id)
+                    }}</span>
                   </div>
-              </div>
-              <div>
-                  <label class="text-sm font-medium text-gray-500">{{ __('Last Sync') }}</label>
-                  <p class="mt-1 text-sm text-gray-900">{{ formatLastSync(selectedPlatform.id) }}</p>
+                </div>
+                <div>
+                  <label class="text-sm font-medium text-gray-500">{{
+                    __("Last Sync")
+                  }}</label>
+                  <p class="mt-1 text-sm text-gray-900">
+                    {{ formatLastSync(selectedPlatform.id) }}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
 
             <!-- Connected Pages/Accounts Section -->
             <div>
               <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-medium text-gray-900">{{ __('Connected Pages/Accounts') }}</h3>
+                <h3 class="text-lg font-medium text-gray-900">
+                  {{ __("Connected Pages/Accounts") }}
+                </h3>
                 <!-- Sync Button - Chỉ hiển thị khi đã kết nối -->
                 <Button
                   v-if="isConnectionConnected(selectedPlatform.id)"
@@ -375,21 +472,34 @@
                   <template #prefix>
                     <FeatherIcon name="refresh-cw" class="w-4 h-4" />
                   </template>
-                  {{ __('Sync Pages') }}
+                  {{ __("Sync Pages") }}
                 </Button>
               </div>
 
               <!-- Loading State for Accounts -->
               <div v-if="loadingAccounts" class="flex items-center justify-center py-8">
                 <div class="flex items-center space-x-2">
-                  <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
-                    viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                    </path>
+                  <svg
+                    class="animate-spin h-5 w-5 text-blue-600"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      class="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                    ></circle>
+                    <path
+                      class="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
-                  <span class="text-sm text-gray-600">{{ __('Loading pages...') }}</span>
+                  <span class="text-sm text-gray-600">{{ __("Loading pages...") }}</span>
                 </div>
               </div>
 
@@ -397,46 +507,59 @@
               <div v-else-if="viewModalAccounts.length > 0" class="space-y-3">
                 <div
                   v-for="account in viewModalAccounts"
-                :key="account.external_account_id"
+                  :key="account.external_account_id"
                   class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border hover:bg-gray-100 transition-colors"
-              >
-                <div class="flex items-center gap-3">
-                  <div
+                >
+                  <div class="flex items-center gap-3">
+                    <div
                       class="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center"
-                  >
+                    >
                       <FeatherIcon name="user" class="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                      <div class="font-medium text-gray-900">{{ account.account_name }}</div>
-                    <div class="text-xs text-gray-500">
-                      {{ account.account_type }} • {{ account.external_account_id }}
                     </div>
+                    <div>
+                      <div class="font-medium text-gray-900">
+                        {{ account.account_name }}
+                      </div>
+                      <div class="text-xs text-gray-500">
+                        {{ account.account_type }} • {{ account.external_account_id }}
+                      </div>
                       <div v-if="account.page_id" class="text-xs text-blue-600">
                         Page ID: {{ account.page_id }}
                       </div>
+                    </div>
                   </div>
-                </div>
-                <div class="flex items-center gap-2">
-                  <Badge v-if="account.is_primary" variant="success" size="sm">{{
-                    __("Primary")
-                  }}</Badge>
-                  <Badge :variant="account.is_active ? 'success' : 'gray'" size="sm">
-                    {{ account.is_active ? __("Active") : __("Inactive") }}
-                  </Badge>
+                  <div class="flex items-center gap-2">
+                    <Badge v-if="account.is_primary" variant="success" size="sm">{{
+                      __("Primary")
+                    }}</Badge>
+                    <Badge :variant="account.is_active ? 'success' : 'gray'" size="sm">
+                      {{ account.is_active ? __("Active") : __("Inactive") }}
+                    </Badge>
                     <Badge v-if="account.is_verified" variant="blue" size="sm">
                       {{ __("Verified") }}
                     </Badge>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
 
-          <!-- No Accounts Message -->
-              <div v-else-if="!isConnectionConnected(selectedPlatform.id)" class="text-center py-8">
-                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <!-- No Accounts Message -->
+              <div
+                v-else-if="!isConnectionConnected(selectedPlatform.id)"
+                class="text-center py-8"
+              >
+                <div
+                  class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4"
+                >
                   <FeatherIcon name="link" class="w-8 h-8 text-gray-400" />
                 </div>
-                <h4 class="text-sm font-medium text-gray-900 mb-2">{{ __('Not Connected') }}</h4>
-                <p class="text-sm text-gray-500 mb-4">{{ __('Connect to this platform to see available pages and accounts.') }}</p>
+                <h4 class="text-sm font-medium text-gray-900 mb-2">
+                  {{ __("Not Connected") }}
+                </h4>
+                <p class="text-sm text-gray-500 mb-4">
+                  {{
+                    __("Connect to this platform to see available pages and accounts.")
+                  }}
+                </p>
                 <Button
                   @click="initiatePlatformConnection(selectedPlatform)"
                   variant="solid"
@@ -446,17 +569,27 @@
                   <template #prefix>
                     <FeatherIcon name="link" class="w-4 h-4" />
                   </template>
-                  {{ __('Connect Now') }}
+                  {{ __("Connect Now") }}
                 </Button>
-          </div>
+              </div>
 
               <!-- No Pages Found -->
               <div v-else class="text-center py-8">
-                <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div
+                  class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4"
+                >
                   <FeatherIcon name="alert-circle" class="w-8 h-8 text-yellow-600" />
                 </div>
-                <h4 class="text-sm font-medium text-gray-900 mb-2">{{ __('No Pages Found') }}</h4>
-                <p class="text-sm text-gray-500 mb-4">{{ __('No pages or accounts were found for this platform. Try syncing to refresh the list.') }}</p>
+                <h4 class="text-sm font-medium text-gray-900 mb-2">
+                  {{ __("No Pages Found") }}
+                </h4>
+                <p class="text-sm text-gray-500 mb-4">
+                  {{
+                    __(
+                      "No pages or accounts were found for this platform. Try syncing to refresh the list."
+                    )
+                  }}
+                </p>
                 <Button
                   @click="syncAccountsForView(selectedPlatform.id)"
                   variant="outline"
@@ -466,45 +599,44 @@
                   <template #prefix>
                     <FeatherIcon name="refresh-cw" class="w-4 h-4" />
                   </template>
-                  {{ __('Sync Pages') }}
+                  {{ __("Sync Pages") }}
                 </Button>
               </div>
             </div>
 
             <!-- Connection Statistics -->
             <div v-if="isConnectionConnected(selectedPlatform.id) && connectionStats">
-              <h3 class="text-lg font-medium text-gray-900 mb-4">{{ __('Connection Statistics') }}</h3>
-            <div class="grid grid-cols-3 gap-4">
-              <div class="text-center p-3 bg-blue-50 rounded-lg">
-                <div class="text-2xl font-bold text-blue-600">
+              <h3 class="text-lg font-medium text-gray-900 mb-4">
+                {{ __("Connection Statistics") }}
+              </h3>
+              <div class="grid grid-cols-3 gap-4">
+                <div class="text-center p-3 bg-blue-50 rounded-lg">
+                  <div class="text-2xl font-bold text-blue-600">
                     {{ connectionStats.total_api_calls || 0 }}
+                  </div>
+                  <div class="text-xs text-blue-600">{{ __("Total API Calls") }}</div>
                 </div>
-                <div class="text-xs text-blue-600">{{ __("Total API Calls") }}</div>
-              </div>
-              <div class="text-center p-3 bg-green-50 rounded-lg">
-                <div class="text-2xl font-bold text-green-600">
+                <div class="text-center p-3 bg-green-50 rounded-lg">
+                  <div class="text-2xl font-bold text-green-600">
                     {{ connectionStats.successful_calls || 0 }}
+                  </div>
+                  <div class="text-xs text-green-600">{{ __("Successful Calls") }}</div>
                 </div>
-                <div class="text-xs text-green-600">{{ __("Successful Calls") }}</div>
-              </div>
-              <div class="text-center p-3 bg-red-50 rounded-lg">
-                <div class="text-2xl font-bold text-red-600">
+                <div class="text-center p-3 bg-red-50 rounded-lg">
+                  <div class="text-2xl font-bold text-red-600">
                     {{ connectionStats.failed_calls || 0 }}
+                  </div>
+                  <div class="text-xs text-red-600">{{ __("Failed Calls") }}</div>
                 </div>
-                <div class="text-xs text-red-600">{{ __("Failed Calls") }}</div>
               </div>
-            </div>
 
-            <!-- Success Rate -->
-            <div class="mt-3 p-3 bg-gray-50 rounded-lg">
-              <div class="flex items-center justify-between text-sm">
-                <span class="text-gray-600">{{ __("Success Rate:") }}</span>
-                <span
-                  class="font-medium"
-                    :class="getSuccessRateColor(connectionStats)"
-                >
+              <!-- Success Rate -->
+              <div class="mt-3 p-3 bg-gray-50 rounded-lg">
+                <div class="flex items-center justify-between text-sm">
+                  <span class="text-gray-600">{{ __("Success Rate:") }}</span>
+                  <span class="font-medium" :class="getSuccessRateColor(connectionStats)">
                     {{ calculateSuccessRate(connectionStats) }}%
-                </span>
+                  </span>
                 </div>
               </div>
             </div>
@@ -520,12 +652,15 @@
             @click="editConnectionForPlatform(selectedPlatform.id)"
             variant="outline"
             size="sm"
-            :disabled="connectingPlatforms.includes(selectedPlatform?.id) || disconnectingPlatforms.includes(selectedPlatform?.id)"
+            :disabled="
+              connectingPlatforms.includes(selectedPlatform?.id) ||
+              disconnectingPlatforms.includes(selectedPlatform?.id)
+            "
           >
             <template #prefix>
               <FeatherIcon name="edit" class="w-4 h-4" />
             </template>
-            {{ __('Edit') }}
+            {{ __("Edit") }}
           </Button>
 
           <!-- Disconnect Button -->
@@ -540,26 +675,42 @@
             <template #prefix>
               <FeatherIcon name="x" class="w-4 h-4" />
             </template>
-            {{ __('Disconnect') }}
+            {{ __("Disconnect") }}
           </Button>
 
           <Button @click="closeViewModal" variant="ghost">
-            {{ __('Close') }}
+            {{ __("Close") }}
           </Button>
         </div>
       </template>
     </Dialog>
 
     <!-- Loading Overlay -->
-    <div v-if="processing" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+    <div
+      v-if="processing"
+      class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50"
+    >
       <div class="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
         <div class="flex items-center space-x-3">
-          <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
-            viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-            </path>
+          <svg
+            class="animate-spin h-5 w-5 text-blue-600"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            ></circle>
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
           </svg>
           <span class="text-sm text-gray-700">{{ processingMessage }}</span>
         </div>
@@ -578,16 +729,25 @@
 
 <script setup>
 import { ref, reactive, onMounted, computed, shallowRef, nextTick, watch } from "vue";
-import { Button, Dialog, FormControl, Badge, FeatherIcon, call, TextInput, Breadcrumbs } from "frappe-ui";
+import {
+  Button,
+  Dialog,
+  FormControl,
+  Badge,
+  FeatherIcon,
+  call,
+  TextInput,
+  Breadcrumbs,
+} from "frappe-ui";
 import { showToast } from "@/utils";
 import { ToastContainer } from "@/components/shared";
 import FacebookConnectionForm from "@/components/Connectors/FacebookConnectionForm.vue";
 import ZaloConnectionForm from "@/components/Connectors/ZaloConnectionForm.vue";
 import TopcvConnectionForm from "@/components/Connectors/TopcvConnectionForm.vue";
-import LayoutHeader from '@/components/LayoutHeader.vue';
-import Loading from '@/components/Loading.vue';
+import LayoutHeader from "@/components/LayoutHeader.vue";
+import Loading from "@/components/Loading.vue";
 import useToast from "@/composables/useToast";
-import CandidateDataSourceFormDirect from '@/components/candidateDataSource/CandidateDataSourceFormDirect.vue'
+import CandidateDataSourceFormDirect from "@/components/candidateDataSource/CandidateDataSourceFormDirect.vue";
 
 // Simple notifier to standardize icon usage
 const {
@@ -700,7 +860,7 @@ const platformFormComponents = shallowRef({
 const connections = ref([]);
 const loading = ref(false);
 const processing = ref(false);
-const processingMessage = ref('');
+const processingMessage = ref("");
 const error = ref(null);
 const isRefreshing = ref(false);
 const showConnectModal = ref(false);
@@ -722,14 +882,17 @@ const isConnecting = ref(false);
 const isUpdating = ref(false);
 const isRefreshingSingle = ref(false);
 
-const showDataSourceModal = ref(false)
-const editingDataSource = ref(null)
-const dataSourceFormData = ref(null)
+// Real-time clock for updating "time ago" display
+const currentTime = ref(new Date());
+
+const showDataSourceModal = ref(false);
+const editingDataSource = ref(null);
+const dataSourceFormData = ref(null);
 
 // Filters and search
-const searchText = ref('');
-const typeFilter = ref('');
-const statusFilter = ref('');
+const searchText = ref("");
+const typeFilter = ref("");
+const statusFilter = ref("");
 
 // Form data
 const connectForm = reactive({
@@ -746,7 +909,7 @@ const editFormData = reactive({
 
 // Breadcrumbs
 const breadcrumbs = [
-  { label: __('External Connections'), route: { name: 'Connectors' } }
+  { label: __("External Connections"), route: { name: "Connectors" } },
 ];
 
 const emit = defineEmits(["connection-updated", "job-shared"]);
@@ -754,11 +917,11 @@ const emit = defineEmits(["connection-updated", "job-shared"]);
 // Computed property to get all platforms (connected and unconnected)
 const allPlatforms = computed(() => {
   return Object.values(CONNECTION_TYPES)
-    .flatMap(type => type.platforms)
-    .map(platform => ({
+    .flatMap((type) => type.platforms)
+    .map((platform) => ({
       ...platform,
       // Add connection info if exists
-      connection: getConnectionByPlatformId(platform.id)
+      connection: getConnectionByPlatformId(platform.id),
     }));
 });
 
@@ -769,30 +932,31 @@ const filteredPlatforms = computed(() => {
   // Search filter
   if (searchText.value) {
     const search = searchText.value.toLowerCase();
-    platforms = platforms.filter(platform => 
-      platform.name.toLowerCase().includes(search) ||
-      platform.description.toLowerCase().includes(search)
+    platforms = platforms.filter(
+      (platform) =>
+        platform.name.toLowerCase().includes(search) ||
+        platform.description.toLowerCase().includes(search)
     );
   }
 
   // Type filter
   if (typeFilter.value) {
-    platforms = platforms.filter(platform => platform.type === typeFilter.value);
+    platforms = platforms.filter((platform) => platform.type === typeFilter.value);
   }
 
   // Status filter
   if (statusFilter.value) {
-    platforms = platforms.filter(platform => {
+    platforms = platforms.filter((platform) => {
       const status = getConnectionStatus(platform.id);
       switch (statusFilter.value) {
-        case 'connected':
-          return status === 'Connected';
-        case 'not_connected':
+        case "connected":
+          return status === "Connected";
+        case "not_connected":
           return !status;
-        case 'pending':
-          return status === 'Pending';
-        case 'failed':
-          return status === 'Failed' || status === 'Disconnected';
+        case "pending":
+          return status === "Pending";
+        case "failed":
+          return status === "Failed" || status === "Disconnected";
         default:
           return true;
       }
@@ -927,7 +1091,9 @@ const getModalTitle = (type) => {
       status ? ` (${__(status)})` : ""
     }`;
   } else if (type === "datasource") {
-    return `${__("Edit")} ${editingDataSource.value?.name || 'MobiWork ATS'} ${__("Data Source")}`;
+    return `${__("Edit")} ${editingDataSource.value?.name || "MobiWork ATS"} ${__(
+      "Data Source"
+    )}`;
   }
 
   return __("Platform Connection");
@@ -936,22 +1102,22 @@ const getModalTitle = (type) => {
 // Helper functions
 const getTypeColor = (type) => {
   const colors = {
-    'social_media': 'bg-blue-100 text-blue-800',
-    'messaging': 'bg-green-100 text-green-800',
-    'job_board': 'bg-purple-100 text-purple-800',
-  }
-  return colors[type] || 'bg-gray-100 text-gray-800'
+    social_media: "bg-blue-100 text-blue-800",
+    messaging: "bg-green-100 text-green-800",
+    job_board: "bg-purple-100 text-purple-800",
+  };
+  return colors[type] || "bg-gray-100 text-gray-800";
 };
 
 const getStatusColor = (platformId) => {
   const status = getConnectionStatus(platformId);
   const colors = {
-    'Connected': 'bg-green-500',
-    'Pending': 'bg-yellow-500',
-    'Failed': 'bg-red-500',
-    'Disconnected': 'bg-gray-500'
-  }
-  return colors[status] || 'bg-gray-500'
+    Connected: "bg-green-500",
+    Pending: "bg-yellow-500",
+    Failed: "bg-red-500",
+    Disconnected: "bg-gray-500",
+  };
+  return colors[status] || "bg-gray-500";
 };
 
 const formatDate = (dateString) => {
@@ -972,15 +1138,35 @@ const formatDate = (dateString) => {
 const formatPagesCount = (platformId) => {
   const accounts = getConnectedAccountsForPlatform(platformId);
   if (accounts.length > 0) {
-    return `${accounts.length} ${__('pages')}`;
+    return `${accounts.length} ${__("pages")}`;
   }
   return __("N/A"); // Hiển thị N/A khi số pages <= 0
 };
 
 const formatLastSync = (platformId) => {
   const connection = getConnectionByPlatformId(platformId);
-  if (!connection) return __("N/A");
-  return formatDate(connection.last_sync_time);
+  if (!connection) return "";
+
+  const lastSync = connection.last_sync_time;
+  if (!lastSync) return "";
+
+  try {
+    const syncDate = new Date(lastSync);
+    const now = currentTime.value; // Use reactive currentTime
+    const diffMs = now - syncDate;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 1) return __("Just now");
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+
+    return formatDate(lastSync);
+  } catch (error) {
+    return formatDate(lastSync);
+  }
 };
 
 const formatCreated = (platformId) => {
@@ -991,7 +1177,7 @@ const formatCreated = (platformId) => {
 
 // Event handlers
 const handleRefresh = () => {
-  refreshConnections();
+  refreshConnections(true); // Show notification when manually refreshing
 };
 
 const handleSearchChange = () => {
@@ -1004,13 +1190,17 @@ const handleFilterChange = () => {
 
 const handleCreate = () => {
   // For now, we'll just show a message
-  notify('info', __('Info'), __('Please select a platform from the list to create a connection'));
+  notify(
+    "info",
+    __("Info"),
+    __("Please select a platform from the list to create a connection")
+  );
 };
 
 const handleView = async (platform) => {
   selectedPlatform.value = platform;
   showViewModal.value = true;
-  
+
   // Load accounts if platform is connected
   if (isConnectionConnected(platform.id)) {
     await loadAccountsForView(platform.id);
@@ -1108,12 +1298,9 @@ const loadAccountsForView = async (platformId) => {
   viewModalAccounts.value = [];
 
   try {
-    const response = await call(
-      "mbw_mira.api.external_connections.get_account_details",
-      {
-        connection_id: connection.connection_id || connection.name,
-      }
-    );
+    const response = await call("mbw_mira.api.external_connections.get_account_details", {
+      connection_id: connection.connection_id || connection.name,
+    });
 
     let accountsData = [];
 
@@ -1129,6 +1316,11 @@ const loadAccountsForView = async (platformId) => {
 
     viewModalAccounts.value = accountsData;
     connectionStats.value = connection;
+
+    // Show completion notification only if there are accounts
+    if (accountsData.length > 0) {
+      notify("success", __("Loaded"), __(`${accountsData.length} pages/accounts loaded`));
+    }
   } catch (error) {
     console.error("Error loading accounts for view:", error);
     notify("error", __("Error"), __("Failed to load account details"));
@@ -1165,11 +1357,17 @@ const syncAccountsForView = async (platformId) => {
 
     const result = handleApiResponse(response, __("Pages synced successfully"));
 
+    // Update last sync time in local connection data
+    const connectionToUpdate = getConnectionByPlatformId(platformId);
+    if (connectionToUpdate) {
+      connectionToUpdate.last_sync_time = new Date().toISOString();
+    }
+
     notify("success", __("Success"), result.message);
 
     // Reload accounts for view modal
     await loadAccountsForView(platformId);
-    
+
     // Also refresh the main connections list
     await refreshConnections();
   } catch (error) {
@@ -1180,15 +1378,70 @@ const syncAccountsForView = async (platformId) => {
   }
 };
 
+// Auto-sync function called when connection status changes from Pending to Connected
+const autoSyncAfterConnection = async (platformId, connection) => {
+  try {
+    // Add a small delay to ensure connection is fully established
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    // Check if connection is still connected before syncing
+    const currentConnection = getConnectionByPlatformId(platformId);
+    if (!currentConnection || currentConnection.connection_status !== "Connected") {
+      console.log(`Connection status changed for ${platformId}, skipping auto-sync`);
+      return;
+    }
+
+    console.log(`Starting auto-sync for ${platformId}...`);
+
+    // Add to syncing list to show loading state
+    if (!syncingPlatforms.value.includes(platformId)) {
+      syncingPlatforms.value.push(platformId);
+    }
+
+    const response = await call("mbw_mira.api.external_connections.sync_accounts", {
+      connection_id: connection.connection_id || connection.name,
+      force_sync: true,
+    });
+
+    const result = handleApiResponse(response, __("Pages auto-synced successfully"));
+
+    // Update last sync time in local connection data
+    const connectionToUpdate = getConnectionByPlatformId(platformId);
+    if (connectionToUpdate) {
+      connectionToUpdate.last_sync_time = new Date().toISOString();
+    }
+
+    // Show success notification
+    notify("success", __("Auto Sync"), __("Pages synced automatically"));
+
+    // Refresh connections to get updated account data
+    await refreshConnections();
+
+    // If view modal is open for this platform, refresh the accounts
+    if (selectedPlatform.value?.id === platformId && showViewModal.value) {
+      await loadAccountsForView(platformId);
+    }
+  } catch (error) {
+    console.error(`Error auto-syncing accounts for ${platformId}:`, error);
+    // Don't show error notification for auto-sync failures to avoid spam
+    console.warn(
+      `Auto-sync failed for ${platformId}:`,
+      error.message || __("Failed to auto-sync pages")
+    );
+  } finally {
+    clearLoadingState(platformId, syncingPlatforms.value);
+  }
+};
+
 // Platform action methods
 const initiatePlatformConnection = (platform) => {
   // Nếu là mobiwork_ats => mở modal datasource
-  if (platform.id === 'mobiwork_ats') {
-    editingDataSource.value = null
+  if (platform.id === "mobiwork_ats") {
+    editingDataSource.value = null;
     // Tạo mới: không truyền dataSource để form ở chế độ create (tránh update thiếu name)
-    dataSourceFormData.value = null
-    showDataSourceModal.value = true
-    return
+    dataSourceFormData.value = null;
+    showDataSourceModal.value = true;
+    return;
   }
   selectedPlatform.value = { ...platform };
   resetForm(connectForm);
@@ -1197,13 +1450,13 @@ const initiatePlatformConnection = (platform) => {
 
 const editConnectionForPlatform = async (platformId) => {
   // Nếu là mobiwork_ats => mở modal datasource edit
-  if (platformId === 'mobiwork_ats') {
-    const ds = await findDataSourceByPlatform('mobiwork_ats')
-    editingDataSource.value = ds || null
+  if (platformId === "mobiwork_ats") {
+    const ds = await findDataSourceByPlatform("mobiwork_ats");
+    editingDataSource.value = ds || null;
     // Chỉ set dataSource khi có name để form vào chế độ edit; nếu không có, mở create
-    dataSourceFormData.value = (ds && ds.name) ? ds : null
-    showDataSourceModal.value = true
-    return
+    dataSourceFormData.value = ds && ds.name ? ds : null;
+    showDataSourceModal.value = true;
+    return;
   }
   const connection = getConnectionByPlatformId(platformId);
 
@@ -1357,10 +1610,12 @@ const confirmAndDisconnect = async (platformId) => {
 };
 
 // Main methods
-const refreshConnections = async () => {
+const refreshConnections = async (showNotification = false) => {
   isRefreshing.value = true;
   loading.value = true;
   error.value = null;
+
+  // No loading notification - only completion notification
 
   try {
     const requestParams = {
@@ -1387,15 +1642,32 @@ const refreshConnections = async () => {
 
     await nextTick();
     connections.value = connectionsData;
+
+    // Show refresh completion notification if requested
+    if (showNotification) {
+      const totalConnections = connectionsData.length;
+      const connectedCount = connectionsData.filter(
+        (conn) => conn.connection_status === "Connected"
+      ).length;
+      const pendingCount = connectionsData.filter(
+        (conn) => conn.connection_status === "Pending"
+      ).length;
+
+      notify(
+        "success",
+        __("Refreshed"),
+        __(`${totalConnections} connections updated (${connectedCount} active)`)
+      );
+    }
   } catch (err) {
     console.error("Error refreshing connections:", err);
     connections.value = [];
     error.value = err.message || __("Failed to load connections");
-    notify(
-      "error",
-      __("Error"),
-      `${__("Failed to refresh connections:")} ${err.message || err}`
-    );
+
+    // Only show error notification for manual refresh
+    if (showNotification) {
+      notify("error", __("Refresh Error"), __("Failed to refresh connections"));
+    }
   } finally {
     isRefreshing.value = false;
     loading.value = false;
@@ -1454,7 +1726,7 @@ const disconnectPlatform = async (platformId) => {
 
   disconnectingPlatforms.value.push(platformId);
   processing.value = true;
-  processingMessage.value = __('Disconnecting platform...');
+  processingMessage.value = __("Disconnecting platform...");
 
   try {
     const response = await call(
@@ -1486,19 +1758,49 @@ const disconnectPlatform = async (platformId) => {
 
 // Lifecycle
 onMounted(async () => {
-  await refreshConnections();
+  try {
+    await refreshConnections();
 
-  // Auto-refresh every 30 seconds for pending connections
-  setInterval(async () => {
-    const hasPendingConnections = connections.value.some(
-      (conn) => conn.connection_status === "Pending"
+    // Initialize previous connection statuses for auto-sync detection
+    connections.value.forEach((connection) => {
+      previousConnectionStatuses.value.set(
+        connection.connection_id || connection.name,
+        connection.connection_status
+      );
+    });
+
+    // Show completion notification only
+    const totalConnections = connections.value.length;
+    const connectedCount = connections.value.filter(
+      (conn) => conn.connection_status === "Connected"
+    ).length;
+
+    notify(
+      "success",
+      __("Page Ready"),
+      __(`${totalConnections} connections loaded (${connectedCount} active)`)
     );
 
-    if (hasPendingConnections && !isRefreshing.value) {
-      console.log(__("Auto-refreshing due to pending connections"));
-      await refreshConnections();
-    }
-  }, 30000);
+    // Auto-refresh every 30 seconds for pending connections
+    setInterval(async () => {
+      const hasPendingConnections = connections.value.some(
+        (conn) => conn.connection_status === "Pending"
+      );
+
+      if (hasPendingConnections && !isRefreshing.value) {
+        console.log(__("Auto-refreshing due to pending connections"));
+        await refreshConnections(false);
+      }
+    }, 30000);
+
+    // Update current time every minute for "time ago" display
+    setInterval(() => {
+      currentTime.value = new Date();
+    }, 60000);
+  } catch (error) {
+    console.error("Error loading page:", error);
+    notify("error", __("Load Error"), __("Failed to load connections data"));
+  }
 });
 
 // Watch for search text changes with debounce
@@ -1509,6 +1811,37 @@ watch(searchText, () => {
     // Search is reactive via computed property, no action needed
   }, 500);
 });
+
+// Watch for connection status changes to auto-sync when connection succeeds
+const previousConnectionStatuses = ref(new Map());
+watch(
+  connections,
+  (newConnections, oldConnections) => {
+    if (!oldConnections || !Array.isArray(newConnections)) return;
+
+    // Check each connection for status changes
+    newConnections.forEach((connection) => {
+      const platformId = connection.platform_type?.toLowerCase();
+      const currentStatus = connection.connection_status;
+      const previousStatus = previousConnectionStatuses.value.get(
+        connection.connection_id || connection.name
+      );
+
+      // If status changed from Pending to Connected, auto-sync
+      if (previousStatus === "Pending" && currentStatus === "Connected") {
+        console.log(`Auto-syncing pages for ${platformId} after successful connection`);
+        autoSyncAfterConnection(platformId, connection);
+      }
+
+      // Update the previous status
+      previousConnectionStatuses.value.set(
+        connection.connection_id || connection.name,
+        currentStatus
+      );
+    });
+  },
+  { deep: true }
+);
 
 // Helper functions for statistics
 const calculateSuccessRate = (connection) => {
@@ -1530,22 +1863,21 @@ const getSuccessRateColor = (connection) => {
 const findDataSourceByPlatform = async (platformId) => {
   try {
     // TODO: gọi API lấy datasource theo platform nếu có mapping; tạm thời trả null
-    return null
+    return null;
   } catch (e) {
-    return null
+    return null;
   }
-}
+};
 
 const handleDataSourceSuccess = async () => {
-  showDataSourceModal.value = false
-  await refreshConnections()
-  notify('success', __('Success'), __('Data source saved successfully'))
-}
+  showDataSourceModal.value = false;
+  await refreshConnections();
+  notify("success", __("Success"), __("Data source saved successfully"));
+};
 
 const handleDataSourceCancel = () => {
-  showDataSourceModal.value = false
-}
-
+  showDataSourceModal.value = false;
+};
 </script>
 
 <style scoped>
