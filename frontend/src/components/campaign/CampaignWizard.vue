@@ -1220,6 +1220,7 @@ import {
 } from "@/services/universalService";
 import { useCampaignStore } from "@/stores/campaign";
 import { useCampaignStepStore } from "@/stores/campaignStep";
+import { useCampaignSocialStore } from "@/stores/campaignSocial";
 import { campaignTemplateDirectService } from "@/services/campaignTemplateDirectService.js";
 import {
   getFilteredJobOpenings,
@@ -1253,9 +1254,10 @@ const currentStep = ref(1);
 const loading = ref(false);
 const activating = ref(false);
 
-// Campaign store
+// Campaign stores
 const campaignStore = useCampaignStore();
 const campaignStepStore = useCampaignStepStore();
+const campaignSocialStore = useCampaignSocialStore();
 
 //chọn nguồn
 const searchSource = ref(null);
@@ -2355,24 +2357,28 @@ const onStepJobChange = async () => {
 
 // Job step methods
 const loadJobOpenings = async () => {
+  console.log('🔄 CampaignWizard: Starting loadJobOpenings...');
   loadingJobOpenings.value = true;
   try {
     const result = await getFilteredJobOpenings({
       limit: 50,
     });
 
-    console.log("result>>>", result);
+    console.log('📊 CampaignWizard: Job openings result>>>', result);
 
     if (result) {
       jobOpeningsList.value = result.data || [];
+      console.log('✅ CampaignWizard: jobOpeningsList updated:', jobOpeningsList.value.length, 'items');
     } else {
       jobOpeningsList.value = [];
+      console.log('⚠️ CampaignWizard: No job openings result');
     }
   } catch (error) {
-    console.error("Error loading job openings:", error);
+    console.error('❌ CampaignWizard: Error loading job openings:', error);
     jobOpeningsList.value = [];
   } finally {
     loadingJobOpenings.value = false;
+    console.log('🏁 CampaignWizard: loadJobOpenings finished. Loading state:', loadingJobOpenings.value);
   }
 };
 
@@ -2984,6 +2990,8 @@ const createDraftCampaign = async () => {
         console.warn("Failed to map campaign dates to inputs", e);
       }
 
+      // CampaignSocial will be created later when social config is confirmed
+
       // Emit event to refresh the campaign list
       emit("draft-created", draftCampaign.value);
     } else {
@@ -3302,6 +3310,28 @@ const confirmSocialConfig = async () => {
       } catch (e) {
         console.warn("Failed to build template from job opening at step 2", e);
         configData.value.socialConfig.template_content = "";
+      }
+    }
+    
+    // Create CampaignSocial when social config is confirmed
+    if (draftCampaign.value?.data?.name && configData.value.socialConfig) {
+      try {
+        console.log('🔧 Creating CampaignSocial from social config...');
+        await campaignSocialStore.createDefaultCampaignSocial(
+          draftCampaign.value.data.name,
+          {
+            page_id: configData.value.socialConfig.page_id || '',
+            page_name: socialPages.value.find(
+              (p) => p.external_account_id === configData.value.socialConfig.page_id
+            )?.account_name || '',
+            scheduled_at: configData.value.socialConfig.scheduled_at || null,
+            template_content: configData.value.socialConfig.template_content || '',
+            image: configData.value.socialConfig.image || ''
+          }
+        );
+        console.log('✅ CampaignSocial created from social config');
+      } catch (socialError) {
+        console.warn('⚠️ Failed to create CampaignSocial from social config:', socialError);
       }
     }
   } finally {

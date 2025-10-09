@@ -208,11 +208,17 @@
                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5l2 2h5a2 2 0 012 2v14a2 2 0 01-2 2z"/>
             </svg>
 
+            <!-- Social Icon for Social -->
+            <svg v-else-if="tab.key === 'social'" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+            </svg>
             <!-- Chart Icon for Analytics -->
             <svg v-else class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
             </svg>
+
 
             <span>{{ tab.label }}</span>
 
@@ -572,6 +578,22 @@
               </tbody>
             </table>
           </div>
+        </div>
+        
+        <div v-if="activeTab === 'social'">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-medium text-gray-900">{{ __('Social Media Posts') }}</h3>
+          </div>
+          
+          <!-- Campaign Social Media Posts -->
+          <CampaignSocialList
+            :campaign-id="route.params.id"
+            :social-pages="socialPages"
+            :jobOpenings="jobOpeningsList"
+            :loading-pages="loadingSocialPages"
+            :loadingJobOpenings="loadingJobOpenings"
+            @refresh="loadTalentCampaign"
+          />
         </div>
         
         <div v-if="activeTab === 'analytics'">
@@ -1093,6 +1115,7 @@ import { useCampaignStepStore } from '@/stores/campaignStep'
 import { Dialog, Breadcrumbs, Button, FormControl, call } from 'frappe-ui'
 import { debounce } from 'lodash-es'
 import CampaignForm from '@/components/campaign/CampaignForm.vue'
+import CampaignSocialList from '@/components/campaign/CampaignSocialList.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import moment from 'moment'
 import Link from "@/components/Controls/Link.vue";
@@ -1134,6 +1157,12 @@ const miraCandidates = ref([])
 const loadingMiraCandidates = ref(false)
 
 const talentCampaignRecords = ref([])  // dữ liệu resolved từ mira_talent_campaign
+
+// Social media states
+const socialPages = ref([])
+const jobOpeningsList = ref([])
+const loadingSocialPages = ref(false)
+const loadingJobOpenings = ref(false)
 
 const breadcrumbs = computed(() => [
     { label: __('Campaigns'), route: { name: 'CampaignManagement' } },
@@ -1269,6 +1298,44 @@ const loadTalentCampaign = async () => {
   }
 }
 
+// Load social pages for social media configuration
+const loadSocialPages = async () => {
+  loadingSocialPages.value = true
+  try {
+    const response = await call('frappe.client.get_list', {
+      doctype: 'Mira External Connection Account',
+      fields: ['name', 'account_name', 'account_type', 'external_account_id'],
+      limit_page_length: 100
+    })
+    socialPages.value = response || []
+    console.log('✅ Loaded social pages:', socialPages.value.length)
+  } catch (error) {
+    console.error('❌ Error loading social pages:', error)
+    socialPages.value = []
+  } finally {
+    loadingSocialPages.value = false
+  }
+}
+
+// Load job openings for social media posts
+const loadJobOpenings = async () => {
+  loadingJobOpenings.value = true
+  try {
+    const response = await call('frappe.client.get_list', {
+      doctype: 'JobOpening',
+      fields: ['name', 'job_title', 'job_code'],
+      order_by: 'creation desc',
+      limit_page_length: 100
+    })
+    jobOpeningsList.value = response || []
+    console.log('✅ Loaded job openings:', jobOpeningsList.value.length)
+  } catch (error) {
+    console.error('❌ Error loading job openings:', error)
+    jobOpeningsList.value = []
+  } finally {
+    loadingJobOpenings.value = false
+  }
+}
 
 // Loading states for actions
 const savingAction = ref(false)
@@ -1317,6 +1384,11 @@ const tabs = computed(() => [
     key: 'actions',
     label: __('Actions'),
     count: actions.value.length
+  },
+  {
+    key: 'social',
+    label: __('Social Media'),
+    count: 0 // Will be updated when we have social posts count
   },
   {
     key: 'analytics',
@@ -1961,6 +2033,19 @@ const loadMiraCandidates = async () => {
 }
 
 // Load initial data
+// Watch activeTab to load data when needed
+watch(activeTab, (newTab) => {
+  if (newTab === 'social') {
+    console.log('🔄 Switching to social tab, ensuring data is loaded...');
+    if (socialPages.value.length === 0) {
+      loadSocialPages();
+    }
+    if (jobOpeningsList.value.length === 0) {
+      loadJobOpenings();
+    }
+  }
+});
+
 onMounted(() => {
   loadCampaign()
   loadCampaignSteps()
@@ -1968,6 +2053,8 @@ onMounted(() => {
   loadCandidateCampaigns()
   loadActions()
   loadAvailableCandidates()
+  loadSocialPages()
+  loadJobOpenings()
 })
 
 // Watchers
