@@ -258,12 +258,15 @@ export const useCampaignStore = defineStore('campaign', {
 
     // Update campaign
     async updateCampaignData(name, formData) {
-      console.log(formData)
+      console.log('📋 updateCampaignData received formData:', formData)
+      console.log('🔍 source_type in formData:', formData.source_type)
+      console.log('📁 source_file in formData:', formData.source_file)
+      console.log('⚙️ source_config in formData:', formData.source_config)
+      
       try {
         this.loading = true
         this.error = null
         this.success = false
-
 
         // Validation
         if (!formData.campaign_name || !formData.campaign_name.trim()) {
@@ -278,7 +281,7 @@ export const useCampaignStore = defineStore('campaign', {
         }
 
         const updateData = {
-          campaign_name: formData.campaign_name.trim(),
+          campaign_name: formData.campaign_name?.trim(),
           description: formData.description || '',
           is_active: formData.is_active || 0,
           owner_id: formData.owner_id || null,
@@ -287,23 +290,47 @@ export const useCampaignStore = defineStore('campaign', {
           type: formData.type || 'NURTURING',
           status: formData.status || 'DRAFT',
           target_segment: formData.target_segment || null,
-          job_opening: formData.job_opening || null
+          job_opening: formData.job_opening || null,
+          // Add missing source fields
+          source_type: formData.source_type || null,
+          source_file: formData.source_file || null,
+          source_config: formData.source_config || null,
+          data_source_id: formData.data_source_id || null,
+          // Add template and steps fields
+          template_used: formData.template_used || null,
+          steps_count: formData.steps_count || null,
+          select_pages: formData.select_pages || null,
+          // Add social media fields
+          social_page_id: formData.social_page_id || null,
+          social_page_name: formData.social_page_name || null,
+          post_schedule_time: formData.post_schedule_time || null,
+          template_content: formData.template_content || null,
+          social_media_images: formData.social_media_images || null,
+          mira_talent_campaign: formData.mira_talent_campaign || null,
+          // Add source target for file imports
+          source_target: formData.source_target || null
         }
+
+        console.log('🚀 Sending updateData to API:', updateData)
+        console.log('🎯 source_type being sent:', updateData.source_type)
+        console.log('📁 source_file being sent:', updateData.source_file)
 
         const response = await call('frappe.client.set_value', {
           doctype: 'Campaign',
           name: name,
           fieldname: updateData
         })
+        
         if (response) {
           this.success = true
           return response
         } else {
           throw new Error('Không thể cập nhật campaign')
         }
+        
       } catch (error) {
         this.error = error.message
-        console.error('Failed to update campaign:', error)
+        console.error('❌ Failed to update campaign:', error)
         throw error
       } finally {
         this.loading = false

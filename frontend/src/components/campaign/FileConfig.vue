@@ -134,22 +134,13 @@
       </div>
 
       <!-- 3. Hướng dẫn -->
-      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h4 class="text-sm font-medium text-blue-900 mb-2">{{ __('File Format Requirements') }}</h4>
-        <ul class="text-xs text-blue-800 space-y-1">
-          <li>• {{ __('First row should contain column headers') }}</li>
-          <li>• {{ __('Required columns: full_name, email') }}</li>
-          <li>• {{ __('Optional columns: phone, current_position, location, skills') }}</li>
-          <li>• {{ __('Skills should be comma-separated') }}</li>
-        </ul>
-      </div>
 
       <!-- 3. Preview file -->
       <div v-if="selectedFile && filePreview.length > 0">
         <h4 class="text-sm font-medium text-gray-900 mb-2">{{ __('File Preview') }}</h4>
         <div class="border border-gray-200 rounded-lg overflow-hidden">
           <div class="bg-gray-50 px-4 py-2 border-b">
-            <p class="text-xs text-gray-600">{{ __('First 3 rows') }}</p>
+            <p class="text-xs text-gray-600">{{ __('First 1 rows') }}</p>
           </div>
           <div class="overflow-x-auto">
             <table class="min-w-full text-xs">
@@ -162,7 +153,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(row, index) in filePreview.slice(0, 3)" :key="index" class="border-t">
+                <tr v-for="(row, index) in filePreview.slice(0, 1)" :key="index" class="border-t">
                   <td v-for="(cell, cellIndex) in row" :key="cellIndex" class="px-3 py-2 text-gray-700 border-r">
                     {{ cell }}
                   </td>

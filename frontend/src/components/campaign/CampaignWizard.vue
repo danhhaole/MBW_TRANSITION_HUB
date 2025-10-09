@@ -3120,6 +3120,12 @@ watch(
 
     campaignData.value.source_file = cfg?.selectedFile?.name || ""; // để BE biết file
     
+    // Ensure source_type is set correctly for file
+    campaignData.value.source_type = "File";
+    
+    console.log('📁 Updated source_file:', campaignData.value.source_file);
+    console.log('🎯 Updated source_type:', campaignData.value.source_type);
+    
     // Determine doctype based on sourceTarget
     const metaDoctype = cfg?.sourceTarget === 'talent' ? 'Mira Talent' : 'Mira Contact';
     

@@ -13,7 +13,7 @@
               <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">{{ __('Status') }}</th>
               <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">{{ __('Progress') }}</th>
               <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">{{ __('Created Date') }}</th>
-              <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">{{ __('Owner') }}</th>
+              <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">{{ __('Source Type') }}</th>
               <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">{{ __('Actions') }}</th>
             </tr>
           </thead>
@@ -59,21 +59,21 @@
                 {{ formatDate(campaign.start_date || campaign.creation) }}
               </td>
 
-              <!-- Assignees -->
+              <!-- Source type  -->
               <td class="py-4 px-4">
                 <div class="flex -space-x-2">
                   <div 
-                    v-if="campaign.owner_id" 
-                    class="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center border-2 border-white"
+                    v-if="campaign.source_type" 
+                    class=" rounded-full bg-blue-100 flex items-center justify-center border-2 border-white"
                   >
-                    <span class="text-xs font-medium text-blue-700">{{ getInitials(campaign.owner_id) }}</span>
+                    <span class="text-xs font-medium text-blue-700">{{ campaign.source_type }}</span>
                   </div>
-                  <div 
+                  <!-- <div 
                     v-if="campaign.target_segment" 
                     class="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center border-2 border-white"
                   >
                     <span class="text-xs font-medium text-purple-700">{{ getInitials(campaign.target_segment) }}</span>
-                  </div>
+                  </div> -->
                 </div>
               </td>
 
@@ -341,10 +341,10 @@ const formatDate = (dateString) => {
   }
 }
 
-const getInitials = (name) => {
-  if (!name) return '?'
-  return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
-}
+// const getInitials = (name) => {
+//   if (!name) return '?'
+//   return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
+// }
 
 const getPaginationRange = () => {
   const totalPages = props.pagination?.pages || 1

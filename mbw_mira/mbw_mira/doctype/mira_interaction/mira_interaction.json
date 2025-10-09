@@ -7,6 +7,8 @@
  "engine": "InnoDB",
  "field_order": [
   "talent_id",
+  "contact_id",
+  "campaign_id",
   "interaction_type",
   "action",
   "url",
@@ -44,12 +46,24 @@
    "fieldtype": "Link",
    "label": "Talent Profile",
    "options": "Mira Contact"
+  },
+  {
+   "fieldname": "contact_id",
+   "fieldtype": "Link",
+   "label": "Contact Profile",
+   "options": "Mira Contact"
+  },
+  {
+   "fieldname": "campaign_id",
+   "fieldtype": "Link",
+   "label": "Campaign",
+   "options": "Campaign"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-06 11:27:14.368523",
+ "modified": "2025-10-09 16:49:06.403497",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Interaction",
