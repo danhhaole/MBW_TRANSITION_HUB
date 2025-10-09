@@ -763,7 +763,7 @@ FEATURES_MIRA = {
                             "import": 0,
                         },
                         {
-                            "doctype": "Job Share Log",
+                            "doctype": "Mira Job Share Log",
                             "create": 1,
                             "read": 1,
                             "write": 1,
@@ -810,7 +810,7 @@ FEATURES_MIRA = {
                             "import": 0,
                         },
                         {
-                            "doctype": "Job Share Log",
+                            "doctype": "Mira Job Share Log",
                             "create": 1,
                             "read": 1,
                             "write": 1,

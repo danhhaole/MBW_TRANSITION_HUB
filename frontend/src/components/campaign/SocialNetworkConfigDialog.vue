@@ -488,23 +488,23 @@ const handleConfirm = async () => {
 
     let result;
     if (props.campaignSocialId) {
-      // Update existing CampaignSocial
+      // Update existing Mira Campaign Social
       result = await campaignSocialStore.updateCampaignSocial(
         props.campaignSocialId,
         socialData
       );
-      console.log('✅ CampaignSocial updated:', props.campaignSocialId);
+      console.log('✅ Mira Campaign Social updated:', props.campaignSocialId);
     } else {
-      // Create new CampaignSocial
+      // Create new Mira Campaign Social
       result = await campaignSocialStore.createCampaignSocial(socialData);
-      console.log('✅ CampaignSocial created:', result.name);
+      console.log('✅ Mira Campaign Social created:', result.name);
     }
 
     updateSocialConfig();
     emit("confirm", { ...configData.value, campaignSocialId: result.name });
     show.value = false;
   } catch (error) {
-    console.error('❌ Error saving CampaignSocial:', error);
+    console.error('❌ Error saving Mira Campaign Social:', error);
     alert(__('Failed to save social configuration. Please try again.'));
   } finally {
     saving.value = false;

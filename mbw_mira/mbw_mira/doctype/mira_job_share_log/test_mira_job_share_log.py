@@ -1,4 +1,4 @@
-# Copyright (c) 2025, MBWCloud Co. and Contributors
+# Copyright (c) 2025, mbwcloud.com and Contributors
 # See license.txt
 
 # import frappe
@@ -12,18 +12,18 @@ EXTRA_TEST_RECORD_DEPENDENCIES = []  # eg. ["User"]
 IGNORE_TEST_RECORD_DEPENDENCIES = []  # eg. ["User"]
 
 
-class UnitTestCampaignSocial(UnitTestCase):
+class UnitTestMiraJobShareLog(UnitTestCase):
 	"""
-	Unit tests for CampaignSocial.
+	Unit tests for MiraJobShareLog.
 	Use this class for testing individual functions and methods.
 	"""
 
 	pass
 
 
-class IntegrationTestCampaignSocial(IntegrationTestCase):
+class IntegrationTestMiraJobShareLog(IntegrationTestCase):
 	"""
-	Integration tests for CampaignSocial.
+	Integration tests for MiraJobShareLog.
 	Use this class for testing interactions between multiple components.
 	"""
 

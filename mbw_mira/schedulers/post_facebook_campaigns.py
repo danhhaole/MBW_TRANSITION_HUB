@@ -11,26 +11,20 @@ def run():
     before_60s = add_to_date(now, seconds=-60)
     after_60s = add_to_date(now, seconds=60)
     campaigns = frappe.get_all(
-        "Campaign",
+        "Mira Campaign Social",
         filters={
-            "is_active": 1,
-            "source_type":"DataSource",
-            "status": "ACTIVE",
-            "start_date": ("<=", today),
-            "end_date": (">=", today),
+            "status":"Pending",
             "post_schedule_time":["between", [before_60s, after_60s]]
         },
-        fields=["name", "campaign_name", "source","post_schedule_time","social_page_name","social_page_id","template_content"]
+        fields=["name", "campaign_name", "post_schedule_time","social_page_name","social_page_id","template_content"]
     )
     #from mbw_mira.workers.ats import fetch_mbw_ats_data
     for c in campaigns:
-        if is_mbw_ats_source(c.source) and c.social_page_id and c.social_page_name and c.post_schedule_time:           
+        if c.social_page_id and c.social_page_name and c.post_schedule_time:           
             frappe.enqueue(
                 "mbw_mira.workers.social.fetch_facebook_data.post_to_facebook",
-                campaign_name=c.name,
+                share_name=c.name,
                 queue="short"
             )
     return True
 
-def is_mbw_ats_source(source):
-    return frappe.db.get_value("CandidateDataSource", source, "source_name") == "Facebook"

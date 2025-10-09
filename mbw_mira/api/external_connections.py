@@ -697,7 +697,7 @@ def share_job_posting(
         # Create sharing record
         share_doc = frappe.get_doc(
             {
-                "doctype": "Job Share Log",
+                "doctype": "Mira Job Share Log",
                 "job": job_id,
                 "job_title": job.jo_public_title,
                 "connection": connection_id,
@@ -769,7 +769,7 @@ def get_job_sharing_history(
             filters["platform_type"] = platform_type
 
         shares = frappe.get_list(
-            "Job Share Log",
+            "Mira Job Share Log",
             filters=filters,
             fields=[
                 "name",
@@ -815,7 +815,7 @@ def retry_share(share_id: str) -> Dict[str, Any]:
     Retry a failed share
     """
     try:
-        share_doc = frappe.get_doc("Job Share Log", share_id)
+        share_doc = frappe.get_doc("Mira Job Share Log", share_id)
 
         if share_doc.status not in ["Failed", "Error"]:
             return {"status": "error", "message": "Only failed shares can be retried"}
@@ -1415,7 +1415,7 @@ def _update_connection_stats(connection, success: bool):
 def _process_scheduled_share(share_id):
     """Process scheduled share (called by background job)"""
     try:
-        share_doc = frappe.get_doc("Job Share Log", share_id)
+        share_doc = frappe.get_doc("Mira Job Share Log", share_id)
 
         if share_doc.status != "Pending":
             return {"success": False, "error": "Share is not in pending status"}
@@ -2239,7 +2239,7 @@ def manage_topcv_job(
 def cancel_scheduled_share(share_id: str) -> Dict[str, Any]:
     """Cancel a scheduled share that hasn't been processed yet"""
     try:
-        share_doc = frappe.get_doc("Job Share Log", share_id)
+        share_doc = frappe.get_doc("Mira Job Share Log", share_id)
         if share_doc.status != "Pending" or not share_doc.scheduled_time:
             return {"status": "error", "message": "Only scheduled pending shares can be canceled"}
         share_doc.status = "Canceled"

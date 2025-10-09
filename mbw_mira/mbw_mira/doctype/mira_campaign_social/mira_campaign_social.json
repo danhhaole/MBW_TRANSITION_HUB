@@ -9,9 +9,16 @@
   "campaign_id",
   "social_page_id",
   "social_page_name",
+  "external_connection",
+  "platform",
   "post_schedule_time",
   "template_content",
-  "social_media_images"
+  "social_media_images",
+  "share_at",
+  "status",
+  "retry_count",
+  "error_message",
+  "response_data"
  ],
  "fields": [
   {
@@ -45,14 +52,52 @@
    "fieldname": "social_media_images",
    "fieldtype": "Attach Image",
    "label": "Post Images"
+  },
+  {
+   "fieldname": "external_connection",
+   "fieldtype": "Link",
+   "label": "External Connection",
+   "options": "Mira External Connection"
+  },
+  {
+   "fetch_from": "external_connection.platform_type",
+   "fieldname": "platform",
+   "fieldtype": "Data",
+   "label": "Platform Type"
+  },
+  {
+   "fieldname": "share_at",
+   "fieldtype": "Datetime",
+   "label": "Shared At"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Pending\nProcessing\nSuccess\nFailed\nCancelled"
+  },
+  {
+   "fieldname": "retry_count",
+   "fieldtype": "Int",
+   "label": "Retry Count"
+  },
+  {
+   "fieldname": "error_message",
+   "fieldtype": "Long Text",
+   "label": "Error Message"
+  },
+  {
+   "fieldname": "response_data",
+   "fieldtype": "JSON",
+   "label": "Platform Response Data"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-08 14:56:03.322191",
+ "modified": "2025-10-10 04:45:37.506880",
  "modified_by": "Administrator",
  "module": "MBW Mira",
- "name": "CampaignSocial",
+ "name": "Mira Campaign Social",
  "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
@@ -69,6 +114,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "creation",
  "sort_order": "DESC",
  "states": []

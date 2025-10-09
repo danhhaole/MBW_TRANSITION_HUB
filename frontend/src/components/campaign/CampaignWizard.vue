@@ -3086,7 +3086,7 @@ const createDraftCampaign = async () => {
         console.warn("Failed to map campaign dates to inputs", e);
       }
 
-      // CampaignSocial will be created later when social config is confirmed
+      // Mira Campaign Social will be created later when social config is confirmed
 
       // Emit event to refresh the campaign list
       emit("draft-created", draftCampaign.value);
@@ -3415,10 +3415,10 @@ const confirmSocialConfig = async () => {
       }
     }
     
-    // Create CampaignSocial when social config is confirmed
+    // Create Mira Campaign Social when social config is confirmed
     if (draftCampaign.value?.data?.name && configData.value.socialConfig) {
       try {
-        console.log('🔧 Creating CampaignSocial from social config...');
+        console.log('🔧 Creating Mira Campaign Social from social config...');
         await campaignSocialStore.createDefaultCampaignSocial(
           draftCampaign.value.data.name,
           {
@@ -3431,9 +3431,9 @@ const confirmSocialConfig = async () => {
             image: configData.value.socialConfig.image || ''
           }
         );
-        console.log('✅ CampaignSocial created from social config');
+        console.log('✅ Mira Campaign Social created from social config');
       } catch (socialError) {
-        console.warn('⚠️ Failed to create CampaignSocial from social config:', socialError);
+        console.warn('⚠️ Failed to create Mira Campaign Social from social config:', socialError);
       }
     }
   } finally {

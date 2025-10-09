@@ -29,7 +29,7 @@ export const useCampaignSocialStore = defineStore('campaignSocial', {
       
       try {
         const response = await call('frappe.client.get_list', {
-          doctype: 'CampaignSocial',
+          doctype: 'Mira Campaign Social',
           fields: [
             'name',
             'campaign_id',
@@ -65,7 +65,7 @@ export const useCampaignSocialStore = defineStore('campaignSocial', {
       try {
         const response = await call('frappe.client.insert', {
           doc: {
-            doctype: 'CampaignSocial',
+            doctype: 'Mira Campaign Social',
             ...data
           }
         })
@@ -92,7 +92,7 @@ export const useCampaignSocialStore = defineStore('campaignSocial', {
       
       try {
         const response = await call('frappe.client.set_value', {
-          doctype: 'CampaignSocial',
+          doctype: 'Mira Campaign Social',
           name: name,
           fieldname: data
         })
@@ -122,7 +122,7 @@ export const useCampaignSocialStore = defineStore('campaignSocial', {
       
       try {
         await call('frappe.client.delete', {
-          doctype: 'CampaignSocial',
+          doctype: 'Mira Campaign Social',
           name: name
         })
 
@@ -148,7 +148,7 @@ export const useCampaignSocialStore = defineStore('campaignSocial', {
       
       try {
         const response = await call('frappe.client.get', {
-          doctype: 'CampaignSocial',
+          doctype: 'Mira Campaign Social',
           name: name
         })
 
