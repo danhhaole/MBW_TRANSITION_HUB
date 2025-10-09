@@ -7,7 +7,7 @@ import ast
 
 def import_contact_from_file(campaign_name: str):
     logger = frappe.logger("import_candidates")
-
+    print(1222)
     # 1. Lấy thông tin campaign
     campaign = frappe.db.get_value(
         "Campaign",
@@ -25,12 +25,12 @@ def import_contact_from_file(campaign_name: str):
         return
 
     # 2. Kiểm tra trạng thái hợp lệ
-    today = datetime.today().date()
-    if not campaign.is_active or campaign.status != "ACTIVE" \
-            or not campaign.start_date or not campaign.end_date \
-            or getdate(campaign.start_date) > today or getdate(campaign.end_date) < today:
-        frappe.log_error("Import Contact", f"Campaign is not active or out of range: {campaign_name}")
-        return
+    # today = datetime.today().date()
+    # if not campaign.is_active or campaign.status != "ACTIVE" \
+    #         or not campaign.start_date or not campaign.end_date \
+    #         or getdate(campaign.start_date) > today or getdate(campaign.end_date) < today:
+    #     frappe.log_error("Import Contact", f"Campaign is not active or out of range: {campaign_name}")
+    #     return
 
     # 3. Parse source_config JSON
     try:
@@ -38,10 +38,10 @@ def import_contact_from_file(campaign_name: str):
     except Exception as e:
         frappe.log_error("Import Contact", f"Failed to parse source_config JSON: {e}")
         return
-    print(source_config)
+    
     file_name = campaign.source_file.split("/")[-1]
     field_mapping = source_config.get("field_mapping", [])
-
+    print(file_name)
     if not file_name or not field_mapping:
         frappe.log_error("Import Contact", f"Missing file name or field mapping for campaign: {campaign_name}")
         return
@@ -113,7 +113,7 @@ def import_contact_from_file(campaign_name: str):
                 "gender": raw_data.get("gender") or "",
                 "date_of_birth": raw_data.get("date_of_birth")or "",
                 "email": raw_data.get("email")or "",
-                "phone_number": raw_data.get("phone_number") or "",
+                "phone": raw_data.get("phone") or "",
                 "alternate_phone": raw_data.get("alternate_phone") or "",
                 "facebook_profile": raw_data.get("facebook_profile")or "",
                 "zalo_profile": raw_data.get("zalo_profile")or "",
@@ -181,12 +181,12 @@ def import_talent_from_file(campaign_name: str):
         return
 
     # 2. Kiểm tra trạng thái hợp lệ
-    today = datetime.today().date()
-    if not campaign.is_active or campaign.status != "ACTIVE" \
-            or not campaign.start_date or not campaign.end_date \
-            or getdate(campaign.start_date) > today or getdate(campaign.end_date) < today:
-        frappe.log_error("Import TalentProfile", f"Campaign is not active or out of range: {campaign_name}")
-        return
+    # today = datetime.today().date()
+    # if not campaign.is_active or campaign.status != "ACTIVE" \
+    #         or not campaign.start_date or not campaign.end_date \
+    #         or getdate(campaign.start_date) > today or getdate(campaign.end_date) < today:
+    #     frappe.log_error("Import TalentProfile", f"Campaign is not active or out of range: {campaign_name}")
+    #     return
 
     # 3. Parse source_config JSON
     try:

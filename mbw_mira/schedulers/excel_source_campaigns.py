@@ -19,8 +19,11 @@ def run():
         },
         fields=["name", "campaign_name", "source"]
     )
+   
     for c in campaigns:
         if c.source_target == 'contact':
+            
+            import_contact_from_file(c.name)
             frappe.enqueue(
                 "mbw_mira.workers.import_excel_for_source.import_contact_from_file",
                 campaign_name=c.name,
