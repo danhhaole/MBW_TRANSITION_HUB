@@ -255,3 +255,119 @@ def get_talent_interactions(talent_pool_id: str):
         "contact_id": contact_id,
         "interactions": interactions
     }
+
+@frappe.whitelist(allow_guest=True)
+def get_talent_detail_view(pool_id: str):
+    """
+    Lấy dữ liệu chi tiết Talent thông qua Mira Talent Pool:
+    - Thông tin ứng viên (bên trái)
+    - Tab Chiến dịch / Hành động / Thực hiện (bên phải)
+    """
+
+    # 0️⃣ Lấy thông tin từ Mira Talent Pool
+    pool = frappe.get_doc("Mira Talent Pool", pool_id)
+    talent_id = pool.talent_id
+
+    if not talent_id:
+        frappe.throw("Không tìm thấy Talent tương ứng trong Mira Talent Pool")
+
+    # 1️⃣ Thông tin Talent
+    talent = frappe.get_doc("Mira Talent", talent_id)
+    contact = None
+    if talent.contact_id:
+        contact = frappe.db.get_value(
+            "Mira Contact",
+            talent.contact_id,
+            ["full_name", "email", "phone"],
+            as_dict=True
+        )
+
+    talent_info = {
+        "id": talent.name,
+        "full_name": talent.full_name,
+        "email": talent.email,
+        "phone": talent.phone,
+        "status": talent.current_status,
+        "source": talent.source,
+        "skills": talent.skills,
+        "gender": talent.gender,
+        "date_of_birth": talent.date_of_birth,
+        "linkedin_profile": talent.linkedin_profile,
+        "facebook_profile": talent.facebook_profile,
+        "zalo_profile": talent.zalo_profile,
+    }
+
+    # 2️⃣ Tab "Chiến dịch" - các campaign mà Talent tham gia
+    campaigns = frappe.get_all(
+        "Mira Talent Campaign",
+        filters={"talent_id": talent_id},
+        fields=["name", "campaign_id", "status", "enrolled_at", "next_action_at", "current_step_order"]
+    )
+
+    campaign_data = []
+    for c in campaigns:
+        campaign_info = frappe.db.get_value(
+            "Campaign",
+            c.campaign_id,
+            ["campaign_name"],
+            as_dict=True
+        )
+
+        campaign_data.append({
+            "id": c.name,
+            "campaign_name": campaign_info.campaign_name if campaign_info else None,
+            "status": c.status,
+            "enrolled_at": c.enrolled_at,
+            "next_action_at": c.next_action_at,
+            "current_step_order": c.current_step_order
+        })
+
+    # 3️⃣ Tab "Hành động" - tất cả Action từ các campaign
+    all_actions = []
+    for c in campaigns:
+        actions = frappe.get_all(
+            "Action",
+            filters={"talent_campaign_id": c.name},
+            fields=["name", "campaign_step", "status", "scheduled_at", "executed_at", "result"]
+        )
+
+        for a in actions:
+            step = frappe.db.get_value(
+                "CampaignStep",
+                a.campaign_step,
+                ["campaign_step_name", "action_type", "step_order"],
+                as_dict=True
+            )
+            a["campaign_id"] = c.campaign_id
+            a["campaign_name"] = frappe.db.get_value("Campaign", c.campaign_id, "campaign_name")
+            a["step_name"] = step.campaign_step_name if step else None
+            a["action_type"] = step.action_type if step else None
+            a["step_order"] = step.step_order if step else None
+
+        all_actions.extend(actions)
+
+    # 4️⃣ Tab "Thực hiện" - tất cả Interaction từ các action
+    all_interactions = []
+    for a in all_actions:
+        interactions = frappe.get_all(
+            "Mira Interaction",
+            filters={"action": a.name},
+            fields=["name", "interaction_type", "url", "description", "creation"]
+        )
+        for i in interactions:
+            i["action_id"] = a.name
+            i["campaign_name"] = a.get("campaign_name")
+            i["step_name"] = a.get("step_name")
+        all_interactions.extend(interactions)
+
+    # 5️⃣ Sắp xếp gọn gàng
+    all_actions.sort(key=lambda x: x.get("scheduled_at") or "", reverse=True)
+    all_interactions.sort(key=lambda x: x.get("creation") or "", reverse=True)
+
+    # 6️⃣ Trả về dữ liệu tổng hợp
+    return {
+        "talent_info": talent_info,        # cột trái
+        "campaigns": campaign_data,        # tab Chiến dịch
+        "actions": all_actions,            # tab Hành động
+        "interactions": all_interactions   # tab Thực hiện
+    }

@@ -142,6 +142,25 @@ export const useTalentPoolStore = defineStore('talentPool', {
       }
     },
 
+    async getTalentDetailView(pool_id) {
+      try {
+        const response = await call('mbw_mira.mbw_mira.doctype.mira_talent_pool.mira_talent_pool.get_talent_detail_view', {
+          pool_id: pool_id
+        });
+        return {
+          success: true,
+          data: response
+        };
+      } catch (error) {
+        console.error('Error fetching talent details:', error);
+        return {
+          success: false,
+          message: error.message || 'Có lỗi xảy ra khi lấy thông tin chi tiết ứng viên',
+          error: error
+        };
+      }
+    },
+
     getTalentPools(segmentTitle = '') {
       if (!this.talentPoolsResource) {
         this.initResources()
@@ -160,7 +179,7 @@ export const useTalentPoolStore = defineStore('talentPool', {
     setTitleFilter(title) {
       this.filters.title = title || null
     },
-    
+
     clearFilters() {
       this.filters.segmentType = null
       this.filters.title = null
