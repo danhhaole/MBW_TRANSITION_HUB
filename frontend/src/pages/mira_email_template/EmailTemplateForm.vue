@@ -1,7 +1,17 @@
 <script setup>
-import { ref, computed, onMounted, nextTick } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { call, createResource, Textarea, TextInput } from "frappe-ui";
+import {
+  call,
+  createResource,
+  Textarea,
+  TextInput,
+  Breadcrumbs,
+  Button,
+  Select,
+  TextEditor,
+} from "frappe-ui";
+import LayoutHeader from "@/components/LayoutHeader.vue";
 import grapesjs from "grapesjs";
 import "grapesjs/dist/css/grapes.min.css";
 
@@ -16,6 +26,18 @@ const saving = ref(false);
 const showSendTest = ref(false);
 const testEmail = ref("");
 const editor = ref(null);
+const contentEditorType = ref("grapesjs"); // 'rich' | 'grapesjs'
+const richContent = ref("");
+const editorTypeOptions = [
+  { label: __("Rich Text"), value: "rich" },
+  { label: __("Custom Email Template"), value: "grapesjs" },
+];
+const templateType = [
+  { label: __("Confirm"), value: "confirm-email" },
+  { label: __("Invited"), value: "invited-email" },
+  { label: __("Reject"), value: "reject-email" },
+  { label: __("Other"), value: "other-email" },
+];
 
 const _template = ref({
   template_id: getRandom(10),
@@ -30,6 +52,16 @@ const _template = ref({
   auto_send: 0,
   is_active: 1,
 });
+
+// Move breadcrumbs after _template so we can access template_name when editing
+const breadcrumbs = computed(() => [
+  { label: __("Email Template"), route: { name: "ListEmailTemplate" } },
+  {
+    label: isEditMode.value
+      ? _template.value.template_name || __("Edit Email Template")
+      : __("Create Email Template"),
+  },
+]);
 
 const mergeFields = ref([
   {
@@ -100,6 +132,32 @@ const mergeFields = ref([
   },
 ]);
 
+// Re-init or teardown editor when switching modes
+watch(contentEditorType, async (val, oldVal) => {
+  if (val === "grapesjs") {
+    await nextTick();
+    initEditor();
+  } else if (oldVal === "grapesjs") {
+    try {
+      const html = editor.value?.getHtml?.();
+      if (html) richContent.value = html;
+      editor.value?.destroy?.();
+    } catch (e) {}
+    editor.value = null;
+    try {
+      const el = document.querySelector("#gjs");
+      if (el) el.innerHTML = "";
+    } catch (e) {}
+  }
+});
+
+onBeforeUnmount(() => {
+  try {
+    editor.value?.destroy?.();
+  } catch (e) {}
+  editor.value = null;
+});
+
 onMounted(async () => {
   if (isEditMode.value) {
     const data = await call("frappe.client.get", {
@@ -107,11 +165,15 @@ onMounted(async () => {
       name: route.params.name,
     });
     _template.value = data;
+    // initialize rich content from stored html if any
+    richContent.value = _template.value.html_content || "";
   }
 
   // await loadMergeFields()
   await nextTick();
-  initEditor();
+  if (contentEditorType.value === "grapesjs") {
+    initEditor();
+  }
 });
 const goBack = () => {
   router.push({
@@ -138,6 +200,16 @@ async function loadMergeFields() {
 }
 
 function initEditor() {
+  // Destroy previous instance if exists
+  try {
+    editor.value?.destroy?.();
+  } catch (e) {}
+
+  // Clear container to avoid stale DOM
+  try {
+    const el = document.querySelector("#gjs");
+    if (el) el.innerHTML = "";
+  } catch (e) {}
   editor.value = grapesjs.init({
     container: "#gjs",
     height: "600px",
@@ -153,7 +225,11 @@ function initEditor() {
         useCustomTheme: true,
       },
     },
-    components: _template.value.html_content || "",
+    // Prefer latest richContent if present, otherwise fallback to stored html_content
+    components:
+      (richContent.value && richContent.value.trim()) ||
+      _template.value.html_content ||
+      "",
     style: _template.value.css_content || "",
   });
 
@@ -275,13 +351,19 @@ function initEditor() {
 }
 
 async function saveTemplate() {
-  const html = editor.value.getHtml();
-  const css = editor.value.getCss();
-  const projectData = editor.value.getProjectData();
-
-  _template.value.html_content = html;
-  _template.value.css_content = css;
-  _template.value.project_data = JSON.stringify(projectData);
+  if (contentEditorType.value === "grapesjs") {
+    const html = editor.value?.getHtml?.() || "";
+    const css = editor.value?.getCss?.() || "";
+    const projectData = editor.value?.getProjectData?.() || {};
+    _template.value.html_content = html;
+    _template.value.css_content = css;
+    _template.value.project_data = JSON.stringify(projectData);
+  } else {
+    // Rich text mode: save only HTML content produced by TextEditor
+    _template.value.html_content = richContent.value || "";
+    _template.value.css_content = "";
+    _template.value.project_data = "";
+  }
 
   saving.value = true;
   try {
@@ -312,7 +394,10 @@ async function sendTestEmail() {
     await call("frappe.core.doctype.communication.email.send_email", {
       recipients: testEmail.value,
       subject: _template.value.subject,
-      content: editor.value.getHtml(),
+      content:
+        contentEditorType.value === "grapesjs"
+          ? editor.value?.getHtml?.()
+          : richContent.value,
     });
     alert("Đã gửi email test");
   } catch (e) {
@@ -323,87 +408,104 @@ async function sendTestEmail() {
 </script>
 
 <template>
-  <div class="h-screen flex flex-col overflow-hidden">
-    <!-- Header -->
-    <div
-      class="sticky top-0 bg-white z-50 border-b px-4 py-3 flex items-center justify-between"
+  <div class="min-h-screen bg-gray-50">
+    <LayoutHeader
+      :useTeleport="false"
+      :sticky="true"
+      sticky-classes="sticky top-0 z-50 bg-gray-50 border-b"
     >
-      <div class="flex items-center space-x-4">
-        <Button variant="outline" theme="gray" @click="goBack">
-          <template #prefix>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              />
-            </svg>
-          </template>
-          {{ __("Back") }}
-        </Button>
-        <h2 class="text-2xl font-bold">
-          {{ isEditMode ? __("Edit Email Template") : __("Create Email Template") }}
-        </h2>
-      </div>
-      <div class="flex space-x-2">
-        <Button variant="outline" :disabled="saving" @click="saveTemplate">
-          {{ saving ? __("Saving...") : __("💾 Save Template") }}
-        </Button>
-        <!-- <Button variant="outline" @click="showSendTest = !showSendTest">📨 Test Email</Button> -->
-      </div>
-    </div>
-    <div class="container mx-auto flex-1 overflow-y-auto px-5 space-y-4">
-      <!-- THÔNG TIN -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label class="block text-sm font-medium mb-1">{{ __("Template Name") }}</label>
-          <TextInput v-model="_template.template_name" />
+      <template #left-header>
+        <Breadcrumbs :items="breadcrumbs" />
+      </template>
+      <template #right-header>
+        <div class="flex space-x-2">
+          <Button variant="solid" theme="gray" :disabled="saving" @click="saveTemplate">
+            {{ saving ? __("Saving...") : __("Save") }}
+          </Button>
         </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">{{ __("Type") }}</label>
-          <select v-model="_template.template_type" class="form-select w-full">
-            <option value="confirm-email">Confirm</option>
-            <option value="invited-email">Invited</option>
-            <option value="reject-email">Reject</option>
-            <option value="other-email">Other</option>
-          </select>
-        </div>
-        <!-- <div>
-                    <label class="block text-sm font-medium mb-1">Đơn vị</label>
-                    <TextInput v-model="_template.unit_name"  />
-                </div> -->
-      </div>
-      <div>
-        <label class="block text-sm font-medium mb-1">{{ __("Subject") }}</label>
-        <Textarea v-model="_template.subject" row="3" />
-      </div>
-      <!-- EDITOR -->
-      <div>
-        <label class="block text-sm font-medium mb-2">{{ __("Content") }}</label>
-        <div class="flex-1 overflow-hidden">
-          <div id="gjs" class="h-full"></div>
+      </template>
+    </LayoutHeader>
+
+    <div class="container mx-auto py-6 space-y-6">
+      <!-- Basic Information Card -->
+      <div class="rounded-lg">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-lg font-medium mb-1">{{
+              __("Template Name")
+            }}</label>
+            <TextInput
+              v-model="_template.template_name"
+              :placeholder="__('Enter template name')"
+            />
+          </div>
+          <div>
+            <label class="block text-lg font-medium mb-1">{{ __("Type") }}</label>
+            <Select
+              v-model="_template.template_type"
+              :options="templateType"
+              size="sm"
+              variant="outlined"
+              class="bg-gray-100"
+              :placeholder="__('Select type')"
+            />
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium mb-1">{{ __("Subject") }}</label>
+            <Textarea
+              v-model="_template.subject"
+              row="3"
+              :placeholder="__('Enter email subject')"
+            />
+          </div>
         </div>
       </div>
 
-      <!-- GHI CHÚ -->
-      <div>
-        <label class="block text-sm font-medium mb-1">{{ __("Note") }}</label>
-        <Textarea v-model="_template.message" rows="3" />
+      <div class="bg-gray-100">
+        <Select
+          v-model="contentEditorType"
+          :options="editorTypeOptions"
+          size="sm"
+          variant="outlined"
+          class="min-w-40"
+          :placeholder="__('Choose editor')"
+        />
+      </div>
+
+      <!-- Editor Card -->
+      <div class="rounded-lg">
+        <div class="flex items-center justify-between mb-4"></div>
+
+        <!-- Rich Text Mode -->
+        <div v-if="contentEditorType === 'rich'">
+          <TextEditor
+            variant="outline"
+            editor-class="!prose-sm !max-w-full overflow-auto !w-full min-h-[220px] max-h-[500px] py-1.5 px-2 rounded border border-gray-300 bg-white hover:border-gray-400 hover:shadow-sm focus:bg-white focus:border-gray-500 focus:shadow-sm focus:ring-0 focus-visible:ring-2 focus-visible:ring-gray-400 text-gray-800 transition-colors"
+            :bubbleMenu="true"
+            :fixedMenu="true"
+            :content="richContent"
+            @change="richContent = $event"
+          />
+        </div>
+
+        <!-- GrapesJS Mode -->
+        <div v-else class="flex-1 overflow-hidden">
+          <div id="gjs" class="h-full bg-gray-100"></div>
+        </div>
+      </div>
+
+      <!-- Note Card -->
+      <div class="rounded-lg">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">{{ __("Note") }}</h2>
+        <Textarea v-model="_template.message" rows="3" :placeholder="__('Enter note')" />
       </div>
 
       <!-- TEST EMAIL -->
       <!-- <div v-if="showSendTest" class="mt-4 p-4 border rounded bg-gray-50">
-                <h3 class="text-lg font-semibold mb-2">📤 Gửi thử Email</h3>
-                <TextInput v-model="testEmail" placeholder="Email nhận thử"  />
-                <Button @click="sendTestEmail">Gửi thử</Button>
-            </div> -->
+        <h3 class="text-lg font-semibold mb-2">📤 Gửi thử Email</h3>
+        <TextInput v-model="testEmail" placeholder="Email nhận thử"  />
+        <Button @click="sendTestEmail">Gửi thử</Button>
+      </div> -->
     </div>
   </div>
 </template>
