@@ -194,6 +194,8 @@
                     </div>
                   </div>
                 </div>
+                
+                <!-- Row 2: RECRUITMENT, REFERRAL -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                   <div
                     class="border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md"
@@ -213,7 +215,7 @@
                             : 'bg-gray-100 text-gray-400'
                         "
                       >
-                        <FeatherIcon name="heart" class="h-4 w-4" />
+                        <FeatherIcon name="briefcase" class="h-4 w-4" />
                       </div>
                       <div>
                         <div
@@ -224,14 +226,95 @@
                               : 'text-gray-900'
                           "
                         >
-                          {{ __("RECRUITMENT CAMPAIGN") }}
+                          {{ __("Recruitment") }}
                         </div>
                         <div class="text-xs text-gray-500">
-                          {{ __("Recruitment Job") }}
+                          {{ __("Direct job recruitment") }}
                         </div>
                       </div>
                     </div>
                   </div>
+
+                  <div
+                    class="border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md"
+                    :class="
+                      campaignData.type === 'REFERRAL'
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    "
+                    @click="campaignData.type = 'REFERRAL'"
+                  >
+                    <div class="flex items-center">
+                      <div
+                        class="flex items-center justify-center w-8 h-8 rounded-full mr-3"
+                        :class="
+                          campaignData.type === 'REFERRAL'
+                            ? 'bg-blue-100 text-blue-600'
+                            : 'bg-gray-100 text-gray-400'
+                        "
+                      >
+                        <FeatherIcon name="users" class="h-4 w-4" />
+                      </div>
+                      <div>
+                        <div
+                          class="text-sm font-medium"
+                          :class="
+                            campaignData.type === 'REFERRAL'
+                              ? 'text-blue-900'
+                              : 'text-gray-900'
+                          "
+                        >
+                          {{ __("Referral") }}
+                        </div>
+                        <div class="text-xs text-gray-500">
+                          {{ __("Employee referral program") }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Row 3: GATHERING -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                  <div
+                    class="border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md"
+                    :class="
+                      campaignData.type === 'GATHERING'
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    "
+                    @click="campaignData.type = 'GATHERING'"
+                  >
+                    <div class="flex items-center">
+                      <div
+                        class="flex items-center justify-center w-8 h-8 rounded-full mr-3"
+                        :class="
+                          campaignData.type === 'GATHERING'
+                            ? 'bg-blue-100 text-blue-600'
+                            : 'bg-gray-100 text-gray-400'
+                        "
+                      >
+                        <FeatherIcon name="database" class="h-4 w-4" />
+                      </div>
+                      <div>
+                        <div
+                          class="text-sm font-medium"
+                          :class="
+                            campaignData.type === 'GATHERING'
+                              ? 'text-blue-900'
+                              : 'text-gray-900'
+                          "
+                        >
+                          {{ __("Gathering") }}
+                        </div>
+                        <div class="text-xs text-gray-500">
+                          {{ __("Data collection and research") }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Empty div to maintain grid layout -->
+                  <div></div>
                 </div>
               </div>
 
@@ -1750,9 +1833,10 @@ const step1Valid = computed(() => {
 const canProceed = computed(() => {
   if (currentStep.value === 1) return step1Valid.value;
   if (currentStep.value === 2) {
-    if (!selectedSource.value) return false;
+    // Không bắt buộc chọn nguồn - luôn cho phép qua bước 2
+    if (!selectedSource.value) return true;
 
-    // For datasource: need specific data source selected (level 3)
+    // Nếu đã chọn datasource: cần chọn specific data source (level 3)
     if (selectedSource.value === "datasource") {
       if (
         isEditing.value &&
@@ -1763,17 +1847,17 @@ const canProceed = computed(() => {
       return dataSourceSelectionLevel.value === 3 && !!selectedDataSourceId.value;
     }
 
-    // For file: need file uploaded (if any)
+    // Nếu đã chọn file: file config handled by component
     if (selectedSource.value === "file") {
-      return true; // File config handled by component
+      return true;
     }
 
-    // For search: can proceed immediately
+    // Nếu đã chọn search: can proceed immediately
     if (selectedSource.value === "search") {
       return true;
     }
 
-    return !!selectedSource.value;
+    return true;
   }
   // Bước 3: luôn cho phép qua, không bắt buộc chọn segment
   if (currentStep.value === 3) return true;
@@ -1910,6 +1994,7 @@ const selectSource = (sourceKey) => {
 
   if (source) {
     campaignData.value.source_type = source.source_type;
+    console.log("🔄 Updated campaignData.source_type to:", source.source_type);
 
     if (source.source_type !== "DataSource") {
       campaignData.value.data_source_id = "";
@@ -2733,6 +2818,11 @@ const finalizeCampaign = async () => {
       toIsoIfSet(campaignData.value.end_date) ||
       new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
 
+    console.log("🔍 Finalizing campaign with source_type values:");
+    console.log("  - draftCampaign.source_type:", draftCampaign.value.source_type);
+    console.log("  - campaignData.source_type:", campaignData.value.source_type);
+    console.log("  - selectedSource:", selectedSource.value);
+
     const campaignUpdatePayload = {
       campaign_name:
         campaignData.value.campaign_name || draftCampaign.value.campaign_name,
@@ -2743,7 +2833,7 @@ const finalizeCampaign = async () => {
       end_date: endISO,
       is_active: false,
       source_type:
-        campaignData.value.source_type || draftCampaign.value.source_type || "Template",
+        draftCampaign.value.source_type || campaignData.value.source_type || "Gathering",
       template_used: selectedTemplate.value?.name || null,
       steps_count: stepCount,
       source_file:
@@ -2927,8 +3017,14 @@ const createDraftCampaign = async () => {
     console.log("🔧 Creating draft campaign with user input...");
     // Map selectedSource to source_type (DataSource | File | Search)
     const sourceTypeMap = { datasource: "DataSource", file: "File", search: "Search" };
-    const mappedSourceType =
-      sourceTypeMap[selectedSource.value] || campaignData.value.source_type || "Search";
+    const mappedSourceType = selectedSource.value 
+      ? sourceTypeMap[selectedSource.value] || campaignData.value.source_type || "Search"
+      : "Gathering"; // Không chọn nguồn thì để Gathering
+    
+    console.log("🔍 Draft campaign source_type mapping:");
+    console.log("  - selectedSource:", selectedSource.value);
+    console.log("  - campaignData.source_type:", campaignData.value.source_type);
+    console.log("  - mappedSourceType:", mappedSourceType);
 
     const startISO =
       toIsoIfSet(campaignData.value.start_date) || new Date().toISOString();

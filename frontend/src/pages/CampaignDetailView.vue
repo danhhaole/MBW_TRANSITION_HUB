@@ -501,7 +501,7 @@
         <div v-if="activeTab === 'actions'">
           <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-medium text-gray-900">{{ __('Campaign Actions') }}</h3>
-            <button
+            <!-- <button
               @click="openActionModal()"
               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
@@ -509,7 +509,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
               </svg>
               {{ __('Add Action') }}
-            </button>
+            </button> -->
           </div>
           
           <!-- Actions Table -->
@@ -581,19 +581,90 @@
         </div>
         
         <div v-if="activeTab === 'social'">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-medium text-gray-900">{{ __('Social Media Posts') }}</h3>
-          </div>
           
           <!-- Campaign Social Media Posts -->
           <CampaignSocialList
             :campaign-id="route.params.id"
+            :campaign-status="campaign.status"
             :social-pages="socialPages"
             :jobOpenings="jobOpeningsList"
             :loading-pages="loadingSocialPages"
             :loadingJobOpenings="loadingJobOpenings"
             @refresh="loadTalentCampaign"
           />
+        </div>
+        
+        <div v-if="activeTab === 'interactions'">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-medium text-gray-900">{{ __('Campaign Interactions') }}</h3>
+          </div>
+          
+          <!-- Loading State -->
+          <div v-if="loadingInteractions" class="flex justify-center items-center py-8">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span class="ml-2 text-gray-600">{{ __('Loading interactions...') }}</span>
+          </div>
+          
+          <!-- Empty State -->
+          <div v-else-if="!interactions.length" class="text-center py-8">
+            <FeatherIcon name="activity" class="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 class="text-lg font-medium text-gray-900 mb-2">{{ __('No interactions yet') }}</h3>
+            <p class="text-gray-600">{{ __('Interactions will appear here when users engage with your campaign.') }}</p>
+          </div>
+          
+          <!-- Interactions Table -->
+          <div v-else class="bg-white shadow overflow-hidden sm:rounded-md">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {{ __('Type') }}
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {{ __('Contact') }}
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {{ __('Action') }}
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {{ __('Description') }}
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {{ __('Date') }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr v-for="interaction in interactions" :key="interaction.name" class="hover:bg-gray-50">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                          :class="getInteractionTypeClass(interaction.interaction_type)">
+                      {{ formatInteractionType(interaction.interaction_type) }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-gray-900">
+                      {{ interaction.talent_id || interaction.contact_id || __('Unknown') }}
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ interaction.action || '-' }}
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="text-sm text-gray-900 max-w-xs truncate" :title="interaction.description">
+                      {{ interaction.description || '-' }}
+                    </div>
+                    <div v-if="interaction.url" class="text-xs text-blue-600 truncate max-w-xs" :title="interaction.url">
+                      {{ interaction.url }}
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {{ formatDateTime(interaction.creation) }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
         
         <div v-if="activeTab === 'analytics'">
@@ -1164,6 +1235,10 @@ const jobOpeningsList = ref([])
 const loadingSocialPages = ref(false)
 const loadingJobOpenings = ref(false)
 
+// Interactions states
+const interactions = ref([])
+const loadingInteractions = ref(false)
+
 const breadcrumbs = computed(() => [
     { label: __('Campaigns'), route: { name: 'CampaignManagement' } },
     { label: campaign.value.campaign_name || __('Loading...'), route: { name: 'CampaignDetailView' } },
@@ -1364,38 +1439,51 @@ const actionStatusOptions = [
 ]
 
 // Computed properties
-const tabs = computed(() => [
-  {
-    key: 'steps',
-    label: __('Campaign Steps'),
-    count: campaignSteps.value.length
-  },
-  {
-    key: 'candidates',
-    label: __('Assigned Talent'),
-    count: candidateCampaigns.value.length
-  },
-  {
-    key: 'mira_candidates',
-    label: __('Mira Candidates'),
-    count: miraCandidates.value.length   // 👈 tab mới
-  },
-  {
-    key: 'actions',
-    label: __('Actions'),
-    count: actions.value.length
-  },
-  {
-    key: 'social',
-    label: __('Social Media'),
-    count: 0 // Will be updated when we have social posts count
-  },
-  {
-    key: 'analytics',
-    label: __('Analytics'),
-    count: 0
+const tabs = computed(() => {
+  const baseTabs = [
+    {
+      key: 'steps',
+      label: __('Campaign Steps'),
+      count: campaignSteps.value.length
+    },
+    {
+      key: 'candidates',
+      label: __('Assigned Talent'),
+      count: candidateCampaigns.value.length
+    },
+    {
+      key: 'mira_candidates',
+      label: __('Mira Candidates'),
+      count: miraCandidates.value.length
+    },
+    {
+      key: 'actions',
+      label: __('Actions'),
+      count: actions.value.length
+    },
+    {
+      key: 'interactions',
+      label: __('Interactions'),
+      count: interactions.value.length
+    },
+    {
+      key: 'analytics',
+      label: __('Analytics'),
+      count: 0
+    }
+  ]
+
+  // Chỉ hiển thị tab Social Media khi source_type là DataSource
+  if (campaign.value.source_type === 'DataSource') {
+    baseTabs.splice(4, 0, {
+      key: 'social',
+      label: __('Social Media'),
+      count: 0 // Will be updated when we have social posts count
+    })
   }
-])
+
+  return baseTabs
+})
 
 // Always sort campaignSteps by step_order ascending
 const sortedCampaignSteps = computed(() => {
@@ -1418,7 +1506,10 @@ const getStatusClasses = (status) => {
 const getTypeClasses = (type) => {
   const classes = {
     'NURTURING': 'bg-purple-100 text-purple-800',
-    'ATTRACTION': 'bg-blue-100 text-blue-800'
+    'ATTRACTION': 'bg-blue-100 text-blue-800',
+    'RECRUITMENT': 'bg-green-100 text-green-800',
+    'REFERRAL': 'bg-orange-100 text-orange-800',
+    'GATHERING': 'bg-gray-100 text-gray-800'
   }
   return classes[type] || 'bg-gray-100 text-gray-800'
 }
@@ -1442,6 +1533,67 @@ const getActionStatusClasses = (status) => {
     'PENDING_MANUAL': 'bg-orange-100 text-orange-800'
   }
   return classes[status] || 'bg-gray-100 text-gray-800'
+}
+
+// Interaction helper functions
+const getInteractionTypeClass = (type) => {
+  const classes = {
+    'EMAIL_SENT': 'bg-blue-100 text-blue-800',
+    'EMAIL_DELIVERED': 'bg-green-100 text-green-800',
+    'EMAIL_BOUNCED': 'bg-red-100 text-red-800',
+    'EMAIL_OPENED': 'bg-purple-100 text-purple-800',
+    'EMAIL_CLICKED': 'bg-indigo-100 text-indigo-800',
+    'EMAIL_UNSUBSCRIBED': 'bg-gray-100 text-gray-800',
+    'EMAIL_REPLIED': 'bg-emerald-100 text-emerald-800',
+    'PAGE_VISITED': 'bg-cyan-100 text-cyan-800',
+    'FORM_SUBMITTED': 'bg-teal-100 text-teal-800',
+    'DOWNLOAD_TRIGGERED': 'bg-orange-100 text-orange-800',
+    'CHAT_STARTED': 'bg-pink-100 text-pink-800',
+    'CHAT_MESSAGE_SENT': 'bg-rose-100 text-rose-800',
+    'CHAT_COMPLETED': 'bg-green-100 text-green-800',
+    'CALL_MISSED': 'bg-red-100 text-red-800',
+    'CALL_COMPLETED': 'bg-green-100 text-green-800',
+    'SMS_SENT': 'bg-blue-100 text-blue-800',
+    'SMS_DELIVERED': 'bg-green-100 text-green-800',
+    'SMS_REPLIED': 'bg-emerald-100 text-emerald-800',
+    'APPLICATION_SUBMITTED': 'bg-purple-100 text-purple-800',
+    'DOCUMENT_UPLOADED': 'bg-yellow-100 text-yellow-800',
+    'TEST_STARTED': 'bg-orange-100 text-orange-800',
+    'TEST_COMPLETED': 'bg-green-100 text-green-800',
+    'INTERVIEW_CONFIRMED': 'bg-blue-100 text-blue-800',
+    'INTERVIEW_RESCHEDULED': 'bg-yellow-100 text-yellow-800'
+  }
+  return classes[type] || 'bg-gray-100 text-gray-800'
+}
+
+const formatInteractionType = (type) => {
+  const labels = {
+    'EMAIL_SENT': 'Email Sent',
+    'EMAIL_DELIVERED': 'Email Delivered',
+    'EMAIL_BOUNCED': 'Email Bounced',
+    'EMAIL_OPENED': 'Email Opened',
+    'EMAIL_CLICKED': 'Email Clicked',
+    'EMAIL_UNSUBSCRIBED': 'Email Unsubscribed',
+    'EMAIL_REPLIED': 'Email Replied',
+    'PAGE_VISITED': 'Page Visited',
+    'FORM_SUBMITTED': 'Form Submitted',
+    'DOWNLOAD_TRIGGERED': 'Download Triggered',
+    'CHAT_STARTED': 'Chat Started',
+    'CHAT_MESSAGE_SENT': 'Chat Message Sent',
+    'CHAT_COMPLETED': 'Chat Completed',
+    'CALL_MISSED': 'Call Missed',
+    'CALL_COMPLETED': 'Call Completed',
+    'SMS_SENT': 'SMS Sent',
+    'SMS_DELIVERED': 'SMS Delivered',
+    'SMS_REPLIED': 'SMS Replied',
+    'APPLICATION_SUBMITTED': 'Application Submitted',
+    'DOCUMENT_UPLOADED': 'Document Uploaded',
+    'TEST_STARTED': 'Test Started',
+    'TEST_COMPLETED': 'Test Completed',
+    'INTERVIEW_CONFIRMED': 'Interview Confirmed',
+    'INTERVIEW_RESCHEDULED': 'Interview Rescheduled'
+  }
+  return labels[type] || type
 }
 
 // Methods
@@ -2032,6 +2184,46 @@ const loadMiraCandidates = async () => {
   }
 }
 
+// Load interactions for the campaign
+const loadInteractions = async () => {
+  loadingInteractions.value = true
+  try {
+    const res = await call("frappe.client.get_list", {
+      doctype: "Mira Interaction",
+      fields: [
+        "name",
+        "talent_id",
+        "contact_id",
+        "campaign_id",
+        "interaction_type",
+        "action",
+        "url",
+        "description",
+        "creation",
+        "modified"
+      ],
+      filters: { campaign_id: route.params.id },
+      order_by: "creation desc",
+      limit_page_length: 100
+    })
+    interactions.value = res || []
+  } catch (err) {
+    console.error("Error loading interactions:", err)
+    interactions.value = []
+  } finally {
+    loadingInteractions.value = false
+  }
+}
+
+// Watch tabs to ensure activeTab is always valid
+watch(tabs, (newTabs) => {
+  const tabKeys = newTabs.map(tab => tab.key)
+  if (!tabKeys.includes(activeTab.value)) {
+    // Nếu activeTab hiện tại không còn tồn tại, chuyển về tab đầu tiên
+    activeTab.value = tabKeys[0] || 'steps'
+  }
+}, { immediate: true })
+
 // Load initial data
 // Watch activeTab to load data when needed
 watch(activeTab, (newTab) => {
@@ -2042,6 +2234,11 @@ watch(activeTab, (newTab) => {
     }
     if (jobOpeningsList.value.length === 0) {
       loadJobOpenings();
+    }
+  } else if (newTab === 'interactions') {
+    console.log('🔄 Switching to interactions tab, loading data...');
+    if (interactions.value.length === 0) {
+      loadInteractions();
     }
   }
 });

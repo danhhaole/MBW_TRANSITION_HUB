@@ -23,6 +23,45 @@
 
         <!-- Step Form Content -->
         <div class="p-6">
+          <!-- Template Step Selection -->
+          <div class="mb-6 p-4 bg-gray-50 rounded-lg border">
+            <h3 class="text-sm font-medium text-gray-900 mb-3">
+              {{ __("Use Template Step (Optional)") }}
+            </h3>
+            
+            <Link
+              v-model="selectedTemplateStepName"
+              :label="__('Template Step')"
+              :placeholder="__('Select a template step...')"
+              doctype="CampaignTemplateStep"
+              :fields="['campaign_step_name', 'action_type', 'delay_in_days']"
+              @change="onTemplateStepChange"
+              @update:modelValue="onTemplateStepChange"
+            />
+            
+            <!-- Selected Template Step Info -->
+            <div v-if="selectedTemplateStep" class="mt-3 p-3 bg-blue-50 rounded border border-blue-200">
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="font-medium text-sm text-blue-900">
+                    {{ selectedTemplateStep.campaign_step_name }}
+                  </div>
+                  <div class="text-xs text-blue-600">
+                    {{ selectedTemplateStep.action_type }} • {{ __("Delay:") }} {{ selectedTemplateStep.delay_in_days }} {{ __("days") }}
+                  </div>
+                </div>
+                <Button
+                  theme="gray"
+                  variant="ghost"
+                  size="sm"
+                  @click="clearTemplateStep"
+                >
+                  {{ __("Clear") }}
+                </Button>
+              </div>
+            </div>
+          </div>
+          
           <form @submit.prevent="handleSubmit" class="space-y-4">
             <!-- Step Name -->
             <div>
@@ -125,6 +164,30 @@
               </div>
             </div>
 
+            <!-- Template Content -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                {{ __("Template Content") }}
+              </label>
+              <textarea
+                v-model="formData.template_content"
+                rows="4"
+                :placeholder="__('Enter template content...')"
+                :disabled="loading"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                :class="{ 'border-red-500': errors.template_content }"
+              />
+              <p class="mt-1 text-sm text-gray-500">
+                {{ __("Email/SMS template content or task description") }}
+              </p>
+              <div
+                v-if="errors.template_content"
+                class="mt-1 text-sm text-red-600"
+              >
+                {{ errors.template_content }}
+              </div>
+            </div>
+
             <!-- Action Config -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -180,7 +243,8 @@
 
 <script setup>
 import { ref, computed, watch } from "vue";
-import { Dialog, Button, FeatherIcon } from "frappe-ui";
+import { Dialog, Button, FeatherIcon, call } from "frappe-ui";
+import Link from "@/components/Controls/Link.vue";
 
 // Props
 const props = defineProps({
@@ -234,6 +298,10 @@ const formData = ref({
   scheduled_at: "",
 });
 
+// Template step selection state
+const selectedTemplateStep = ref(null);
+const selectedTemplateStepName = ref("");
+
 // Action type options
 const actionTypeOptions = [
   { label: __("Select action type..."), value: "", disabled: true },
@@ -263,7 +331,75 @@ const resetForm = () => {
     scheduled_at: "",
   };
   errors.value = {};
+  // Reset template step selection
+  selectedTemplateStep.value = null;
+  selectedTemplateStepName.value = "";
 };
+
+// Template step functions
+const onTemplateStepChange = async (stepName) => {
+  console.log('🔍 Template step selected:', stepName);
+  
+  if (!stepName) {
+    selectedTemplateStep.value = null;
+    return;
+  }
+  
+  try {
+    console.log('📡 Loading template step data...');
+    const response = await call('frappe.client.get_doc', {
+      doctype: 'CampaignTemplateStep',
+      name: stepName
+    });
+    
+    console.log('📋 Template step data received:', response);
+    
+    if (response) {
+      selectedTemplateStep.value = response;
+      
+      // Fill form with template step data
+      formData.value.campaign_step_name = response.campaign_step_name;
+      formData.value.action_type = response.action_type;
+      formData.value.delay_in_days = response.delay_in_days || 0;
+      formData.value.template_content = response.template_content || "";
+      
+      console.log('✅ Form data filled:', {
+        name: formData.value.campaign_step_name,
+        type: formData.value.action_type,
+        delay: formData.value.delay_in_days,
+        content: formData.value.template_content
+      });
+      
+      // Handle action_config (JSON field)
+      if (response.action_config) {
+        try {
+          formData.value.action_config_string = typeof response.action_config === 'string' 
+            ? response.action_config 
+            : JSON.stringify(response.action_config, null, 2);
+        } catch (e) {
+          formData.value.action_config_string = "";
+        }
+      }
+    }
+  } catch (error) {
+    console.error('❌ Error loading template step:', error);
+    selectedTemplateStep.value = null;
+  }
+};
+
+const clearTemplateStep = () => {
+  selectedTemplateStep.value = null;
+  selectedTemplateStepName.value = "";
+  // Don't clear form data, let user keep what they want
+};
+
+// Watch for template step name changes
+watch(selectedTemplateStepName, (newValue) => {
+  console.log('👀 Watcher: selectedTemplateStepName changed to:', newValue);
+  if (newValue && newValue !== selectedTemplateStep.value?.name) {
+    onTemplateStepChange(newValue);
+  }
+});
 
 const setFormData = (step) => {
   formData.value = {
