@@ -214,7 +214,7 @@ const {
   error,
   success,
   createCampaign,
-  updateCampaign,
+  updateCampaignBasic,
   resetState
 } = useCampaignCRUD()
 
@@ -249,7 +249,7 @@ const handleSubmit = async () => {
   
   try {
     if (isEdit.value) {
-      result = await updateCampaign(props.campaign.name, form.value)
+      result = await updateCampaignBasic(props.campaign.name, form.value)
     } else {
       result = await createCampaign(form.value)
     }

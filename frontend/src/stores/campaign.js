@@ -259,9 +259,6 @@ export const useCampaignStore = defineStore('campaign', {
     // Update campaign
     async updateCampaignData(name, formData) {
       console.log('📋 updateCampaignData received formData:', formData)
-      console.log('🔍 source_type in formData:', formData.source_type)
-      console.log('📁 source_file in formData:', formData.source_file)
-      console.log('⚙️ source_config in formData:', formData.source_config)
       
       try {
         this.loading = true
@@ -331,6 +328,64 @@ export const useCampaignStore = defineStore('campaign', {
       } catch (error) {
         this.error = error.message
         console.error('❌ Failed to update campaign:', error)
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    // Update campaign basic info (for CampaignForm modal)
+    async updateCampaignBasicInfo(name, formData) {
+      console.log('📋 updateCampaignBasicInfo received formData:', formData)
+      
+      try {
+        this.loading = true
+        this.error = null
+        this.success = false
+
+        // Validation
+        if (!formData.campaign_name || !formData.campaign_name.trim()) {
+          throw new Error('Tên chiến dịch không được để trống')
+        }
+        if (formData.start_date && formData.end_date) {
+          const startDate = new Date(formData.start_date)
+          const endDate = new Date(formData.end_date)
+          if (startDate >= endDate) {
+            throw new Error('Ngày kết thúc phải sau ngày bắt đầu')
+          }
+        }
+
+        const updateData = {
+          campaign_name: formData.campaign_name?.trim(),
+          description: formData.description || '',
+          is_active: formData.is_active || 0,
+          owner_id: formData.owner_id || null,
+          start_date: formData.start_date || null,
+          end_date: formData.end_date || null,
+          type: formData.type || 'NURTURING',
+          status: formData.status || 'DRAFT',
+          target_segment: formData.target_segment || null,
+          job_opening: formData.job_opening || null
+        }
+
+        console.log('🚀 Sending basic updateData to API:', updateData)
+
+        const response = await call('frappe.client.set_value', {
+          doctype: 'Campaign',
+          name: name,
+          fieldname: updateData
+        })
+        
+        if (response) {
+          this.success = true
+          return response
+        } else {
+          throw new Error('Không thể cập nhật campaign')
+        }
+        
+      } catch (error) {
+        this.error = error.message
+        console.error('❌ Failed to update campaign basic info:', error)
         throw error
       } finally {
         this.loading = false

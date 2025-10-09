@@ -119,10 +119,20 @@ export const useCampaignCRUD = () => {
     }
   }
 
-  // Cập nhật campaign
+  // Cập nhật campaign (giữ nguyên logic cũ)
   const updateCampaign = async (name, formData) => {
     try {
       await campaignStore.updateCampaignData(name, formData)
+      return true
+    } catch (err) {
+      return false
+    }
+  }
+
+  // Cập nhật campaign basic info (cho modal)
+  const updateCampaignBasic = async (name, formData) => {
+    try {
+      await campaignStore.updateCampaignBasicInfo(name, formData)
       return true
     } catch (err) {
       return false
@@ -150,6 +160,7 @@ export const useCampaignCRUD = () => {
     success,
     createCampaign,
     updateCampaign,
+    updateCampaignBasic,
     deleteCampaign,
     resetState
   }
