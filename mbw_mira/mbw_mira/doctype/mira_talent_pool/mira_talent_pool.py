@@ -205,3 +205,53 @@ def update_talent_pools_segment(names, segment_id):
     except Exception as e:
         frappe.log_error(f"Error in update_talent_pools_segment: {str(e)}")
         frappe.throw(f"Failed to update talent pools: {str(e)}")
+
+@frappe.whitelist(allow_guest=True)
+def get_talent_interactions(talent_pool_id: str):
+    # 1.Lấy thông tin bản ghi Talent Pool
+    pool = frappe.get_doc("Mira Talent Pool", talent_pool_id)
+
+    # 2️.Lấy thông tin Talent
+    talent = frappe.get_doc("Mira Talent", pool.talent_id)
+
+    # 3️.Lấy thông tin Contact
+    contact_id = talent.contact_id
+
+    # 4️.Lấy tất cả các Interaction thuộc Contact đó
+    interactions = frappe.get_all(
+        "Mira Interaction",
+        filters={"talent_id": contact_id},
+        fields=["name", "interaction_type", "action", "url", "description", "creation"]
+    )
+
+    # 5. Map action details nếu có
+    for itrc in interactions:
+        if itrc.get("action"):
+            action_doc = frappe.get_doc("Action", itrc["action"])
+            itrc["action_status"] = action_doc.status
+            itrc["campaign_step"] = action_doc.campaign_step
+            itrc["scheduled_at"] = action_doc.scheduled_at
+            itrc["executed_at"] = action_doc.executed_at
+        else:
+            itrc["action_status"] = None
+            itrc["campaign_step"] = None
+            itrc["scheduled_at"] = None
+            itrc["executed_at"] = None
+
+    # 6️. Trả kết quả
+    return {
+        "talent_pool": pool.name,
+        "talent": {
+            "id": talent.name,
+            "full_name": talent.full_name,
+            "email": talent.email,
+            "phone": talent.phone,
+            "skills": talent.skills,
+            "source": talent.source,
+            "linkedin_profile": talent.linkedin_profile,
+            "facebook_profile": talent.facebook_profile,
+            "zalo_profile": talent.zalo_profile     
+        },
+        "contact_id": contact_id,
+        "interactions": interactions
+    }

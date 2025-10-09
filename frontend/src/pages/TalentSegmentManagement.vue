@@ -273,10 +273,10 @@
                       :title="__('View Details')">
                       <FeatherIcon name="eye" class="w-4 h-4" />
                     </button>
-                    <button @click="handleEditTalentPool(pool)"
+                    <!-- <button @click="handleEditTalentPool(pool)"
                       class="p-1 text-slate-400 hover:text-blue-600 transition-colors" :title="__('Edit')">
                       <FeatherIcon name="edit" class="w-4 h-4" />
-                    </button>
+                    </button> -->
                     <button class="p-1 text-slate-400 hover:text-red-600 transition-colors" :title="__('Delete')">
                       <FeatherIcon name="trash-2" class="w-4 h-4" />
                     </button>

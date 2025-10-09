@@ -130,6 +130,18 @@ export const useTalentPoolStore = defineStore('talentPool', {
       }
     },
 
+    async getTalentInteractions(talentPoolId) {
+      try {
+        const response = await call('mbw_mira.mbw_mira.doctype.mira_talent_pool.mira_talent_pool.get_talent_interactions', {
+          talent_pool_id: talentPoolId
+        });
+        return response;
+      } catch (error) {
+        console.error('Error fetching talent interactions:', error);
+        throw error;
+      }
+    },
+
     getTalentPools(segmentTitle = '') {
       if (!this.talentPoolsResource) {
         this.initResources()
@@ -154,8 +166,8 @@ export const useTalentPoolStore = defineStore('talentPool', {
       this.filters.title = null
     },
 
-    refreshTalentPools() {
-      return this.getTalentPools()
-    }
+    async refreshTalentPools() {
+      this.talentPools = await this.getTalentPools()
+    },
   }
 })

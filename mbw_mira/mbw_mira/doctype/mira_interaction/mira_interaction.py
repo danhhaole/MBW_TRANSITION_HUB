@@ -10,7 +10,7 @@ class MiraInteraction(Document):
 
 	def on_update(self):
 		#Nếu có tương tác thì update trạng thái trong ứng viên
-		if self.mira_interaction_type == 'EMAIL_CLICKED':
+		if self.interaction_type == 'EMAIL_CLICKED':
 			frappe.db.set_value("Mira Prospect",self.talent_id,"status","ENGAGED")
 			frappe.db.commit()
 
@@ -21,13 +21,13 @@ class MiraInteraction(Document):
 def create_mira_interaction(args):
 	"""Tạo mira_interaction
 		talent_id: str,
-		mira_interaction_type: str,
+		interaction_type: str,
 		source_action: str = None,
 		url: str = None,
 		description: str = None,
 	"""
 	talent_id = args.get('talent_id')
-	mira_interaction_type = args.get('mira_interaction_type')
+	interaction_type = args.get('interaction_type')
 	source_action = args.get('source_action',"")
 	url = args.get('url', "")
 	description = args.get('description',"")
@@ -35,7 +35,7 @@ def create_mira_interaction(args):
 		{
 			"doctype": "Mira MiraInteraction",
 			"talent_id": talent_id,
-			"mira_interaction_type": mira_interaction_type,
+			"interaction_type": interaction_type,
 			"action": source_action,
 			"url": url,
 			"description": description,
