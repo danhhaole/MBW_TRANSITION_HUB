@@ -197,7 +197,7 @@ export const applicantPoolService = {
       start = 0
     } = options
     const data = await call('frappe.client.get_list', {
-      doctype: 'ApplicantPool',
+      doctype: 'Mira Talent Pool',
       filters,
       or_filters,
       fields,
@@ -206,7 +206,7 @@ export const applicantPoolService = {
       page_length
     })
     const total = await call('frappe.client.get_count', {
-      doctype: 'ApplicantPool',
+      doctype: 'Mira Talent Pool',
       filters
     })
     return {
@@ -216,20 +216,20 @@ export const applicantPoolService = {
   },
   async getFormData(name) {
     return await call('frappe.client.get', {
-      doctype: 'ApplicantPool',
+      doctype: 'Mira Talent Pool',
       name
     })
   },
   async update(name, data) {
     return await call('frappe.client.set_value', {
-      doctype: 'ApplicantPool',
+      doctype: 'Mira Talent Pool',
       name,
       fieldname: data
     })
   },
   async delete(name) {
     return await call('frappe.client.delete', {
-      doctype: 'ApplicantPool',
+      doctype: 'Mira Talent Pool',
       name
     })
   },
@@ -272,12 +272,11 @@ export const findTalentProfilesBySegment = async (segmentId, minScore = 50) => {
 	}
 }
 
-export const bulkInsertSegments = async (segmentData) => {
+export const bulkInsertSegments = async (segmentData) => { 
 	try {
 		// Gửi dữ liệu trực tiếp thay vì wrap trong object data
-		const result = await call('mbw_mira.mbw_mira.doctype.talentprofilessegment.talentprofilessegment.bulk_insert_segments', segmentData)
+		const result = await call('mbw_mira.mbw_mira.doctype.mira_talent_pool.mira_talent_pool.bulk_insert_segments', segmentData)
 		
-		console.log('bulkInsertSegments result:', result)
 		
 		if (result && result.status === 'completed') {
 			return {

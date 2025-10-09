@@ -102,7 +102,7 @@ export const deleteCandidate = async (name) => {
 // Get filter options (ví dụ lấy distinct các trường)
 export const getFilterOptions = async () => {
   return {
-    status: await call('frappe.client.get_list', { doctype: 'Mira Contact', fields: ['status'], distinct: true }),
+    status: await call('frappe.client.get_list', { doctype: 'Mira Contact', fields: [''], distinct: true }),
     source: await call('frappe.client.get_list', { doctype: 'Mira Contact', fields: ['source'], distinct: true }),
     skills: await call('frappe.client.get_list', { doctype: 'Mira Contact', fields: ['skills'], distinct: true })
   }

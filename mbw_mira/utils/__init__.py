@@ -214,6 +214,7 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50):
                 raw_skills = criteria_dict.get("skills", [])
                 raw_tags = criteria_dict.get("tags", [])
                 criteria_source = criteria_dict.get("source", [])
+                     
                 if isinstance(raw_skills, str):
                     criteria_skills = [unquote(s.strip().lower()) for s in raw_skills.split(",")]
                 elif isinstance(raw_skills, list):
@@ -246,6 +247,8 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50):
             talent_skills = c.get("skills")
             talent_tags = c.get("tags")
             talent_source = c.get("source")
+            candidate_skills =[]
+            candidate_tags =[]
             # if not talent_skills or not talent_tags or not talent_source:
             #     continue
 
@@ -263,21 +266,24 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50):
                 elif isinstance(talent_tags, list):
                     candidate_tags = [unquote(s.strip().lower()) for s in talent_tags]
             
-
+                
             
             # --- Tính điểm fuzzy ---
             total_score = 0
-            if criteria_skills:                
-                for crit_skill in criteria_skills:                    
-                    best_score = max(
-                        [
-                            fuzz.token_sort_ratio(crit_skill, cand_skill)
-                            for cand_skill in candidate_skills
-                        ],
-                        default=0,
-                    )
-                    total_score += best_score
-                    
+            if criteria_skills:          
+                for crit_skill in criteria_skills:
+                    try:
+                        best_score = max(
+                            [
+                                fuzz.token_sort_ratio(crit_skill, cand_skill) or 0
+                                for cand_skill in candidate_skills
+                            ],
+                            default=0,
+                        )
+                        total_score += best_score
+                    except Exception as e:
+                        print(e)
+            
             if criteria_tags:
                 
                 for criteria_tag in criteria_tags:

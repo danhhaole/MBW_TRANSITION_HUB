@@ -26,9 +26,9 @@ const routes = [
 	{ path: '/talent-segments/:id', name: 'TalentSegmentDetail', component: () =>import('@/pages/TalentSegmentDetailView.vue') },
 	{ path: '/talent-segments/:id/detail', name: 'TalentSegmentDetailView', component: () =>import('@/pages/TalentSegmentDetailView.vue') },
 
-	// Candidate
-	{ path: '/prospects', name: 'CandidateManagement', component: ()=> import('@/pages/CandidateManagement.vue') },
-	{ path: '/prospects/:id', name: 'CandidateDetailView', component: () => import('@/pages/CandidateDetailView.vue') },
+	// Contact
+	{ path: '/contacts', name: 'CandidateManagement', component: ()=> import('@/pages/CandidateManagement.vue') },
+	{ path: '/contact/:id', name: 'CandidateDetailView', component: () => import('@/pages/CandidateDetailView.vue') },
 
 	// Mira Interaction & Action
 	{ path: '/interactions', name: 'InteractionManagement', component: ()=>import('@/pages/InteractionManagement.vue') },
