@@ -1165,7 +1165,7 @@ const viewSegmentDetail = (segmentId) => {
 }
 
 const handleViewDetails = async (segment) => {
-  router.push(`/talent-segments/${segment.name}/detail`)
+  router.push(`/talent-pools/${segment.name}/detail`)
 }
 
 const handleEdit = (segment) => {

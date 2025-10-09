@@ -22,13 +22,13 @@ const routes = [
 	{ path: '/my-actions', name: 'MyActions', component: () => import('@/pages/MyActions.vue') },
 
 	// Talent Segment
-	{ path: '/talent-segments', name: 'TalentSegments', component: ()=>import('@/pages/TalentSegmentManagement.vue') },
-	{ path: '/talent-segments/:id', name: 'TalentSegmentDetail', component: () =>import('@/pages/TalentSegmentDetailView.vue') },
-	{ path: '/talent-segments/:id/detail', name: 'TalentSegmentDetailView', component: () =>import('@/pages/TalentSegmentDetailView.vue') },
+	{ path: '/talent-pools', name: 'TalentSegments', component: ()=>import('@/pages/TalentSegmentManagement.vue') },
+	{ path: '/talent-pools/:id', name: 'TalentSegmentDetail', component: () =>import('@/pages/TalentSegmentDetailView.vue') },
+	{ path: '/talent-pools/:id/detail', name: 'TalentSegmentDetailView', component: () =>import('@/pages/TalentSegmentDetailView.vue') },
 
 	// Contact
 	{ path: '/contacts', name: 'CandidateManagement', component: ()=> import('@/pages/CandidateManagement.vue') },
-	{ path: '/contact/:id', name: 'CandidateDetailView', component: () => import('@/pages/CandidateDetailView.vue') },
+	{ path: '/contacts/:id', name: 'CandidateDetailView', component: () => import('@/pages/CandidateDetailView.vue') },
 
 	// Mira Interaction & Action
 	{ path: '/interactions', name: 'InteractionManagement', component: ()=>import('@/pages/InteractionManagement.vue') },

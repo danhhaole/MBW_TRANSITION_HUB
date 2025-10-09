@@ -2182,7 +2182,7 @@ const removeCampaign = async (item) => {
 }
 
 const viewSegmentDetails = (item) => {
-	router.push(`/talent-segments/${item.name}/detail`)
+	router.push(`/talent-pools/${item.name}/detail`)
 }
 
 const removeFromSegment = async (item) => {
