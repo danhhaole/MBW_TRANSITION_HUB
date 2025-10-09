@@ -264,14 +264,14 @@ def get_talent_detail_view(pool_id: str):
     - Tab Chiến dịch / Hành động / Thực hiện (bên phải)
     """
 
-    # 0️⃣ Lấy thông tin từ Mira Talent Pool
+    # Lấy thông tin từ Mira Talent Pool
     pool = frappe.get_doc("Mira Talent Pool", pool_id)
     talent_id = pool.talent_id
 
     if not talent_id:
         frappe.throw("Không tìm thấy Talent tương ứng trong Mira Talent Pool")
 
-    # 1️⃣ Thông tin Talent
+    # 1. Thông tin Talent
     talent = frappe.get_doc("Mira Talent", talent_id)
     contact = None
     if talent.contact_id:
@@ -297,7 +297,7 @@ def get_talent_detail_view(pool_id: str):
         "zalo_profile": talent.zalo_profile,
     }
 
-    # 2️⃣ Tab "Chiến dịch" - các campaign mà Talent tham gia
+    # 2. Tab "Chiến dịch" - các campaign mà Talent tham gia
     campaigns = frappe.get_all(
         "Mira Talent Campaign",
         filters={"talent_id": talent_id},
@@ -322,7 +322,7 @@ def get_talent_detail_view(pool_id: str):
             "current_step_order": c.current_step_order
         })
 
-    # 3️⃣ Tab "Hành động" - tất cả Action từ các campaign
+    # 3. Tab "Hành động" - tất cả Action từ các campaign
     all_actions = []
     for c in campaigns:
         actions = frappe.get_all(
@@ -346,7 +346,7 @@ def get_talent_detail_view(pool_id: str):
 
         all_actions.extend(actions)
 
-    # 4️⃣ Tab "Thực hiện" - tất cả Interaction từ các action
+    # 4. Tab "Thực hiện" - tất cả Interaction từ các action
     all_interactions = []
     for a in all_actions:
         interactions = frappe.get_all(
@@ -360,11 +360,11 @@ def get_talent_detail_view(pool_id: str):
             i["step_name"] = a.get("step_name")
         all_interactions.extend(interactions)
 
-    # 5️⃣ Sắp xếp gọn gàng
+    # 5. Sắp xếp gọn gàng
     all_actions.sort(key=lambda x: x.get("scheduled_at") or "", reverse=True)
     all_interactions.sort(key=lambda x: x.get("creation") or "", reverse=True)
 
-    # 6️⃣ Trả về dữ liệu tổng hợp
+    # 6. Trả về dữ liệu tổng hợp
     return {
         "talent_info": talent_info,        # cột trái
         "campaigns": campaign_data,        # tab Chiến dịch
