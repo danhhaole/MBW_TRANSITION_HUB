@@ -798,9 +798,9 @@
               </div>
             </div>
 
-            <!-- Step 4: Create Campaign Steps -->
-            <div v-if="currentStep === 4" class="animate-fadeIn">
-              <!-- Steps Creation Mode Selection -->
+            <!-- Step 4: Create Campaign Steps - DISABLED - Logic preserved for future use -->
+            <div v-if="false && currentStep === 4" class="animate-fadeIn">
+              Steps Creation Mode Selection
               <div v-if="!showStepCreation" class="space-y-6">
                 <div class="text-center mb-6">
                   <h4 class="text-lg font-medium text-gray-900 mb-2">
@@ -1056,8 +1056,8 @@
               </div>
             </div>
 
-            <!-- Step 5: Review & Activate -->
-            <div v-if="currentStep === 5" class="animate-fadeIn space-y-6">
+            <!-- Step 4: Review & Activate (was Step 5) -->
+            <div v-if="currentStep === 4" class="animate-fadeIn space-y-6">
               <!-- Campaign Summary -->
               <div class="text-center py-4">
                 <h3 class="text-xl font-bold mb-2 text-gray-900">
@@ -1209,9 +1209,9 @@
                 }}
               </Button>
 
-              <!-- Step 4: Campaign Steps -->
+              <!-- Step 4 Campaign Steps buttons - DISABLED - Logic preserved for future use -->
               <Button
-                v-if="currentStep === 4 && !showStepCreation"
+                v-if="false && currentStep === 4 && !showStepCreation"
                 variant="solid"
                 theme="gray"
                 @click="nextStep"
@@ -1221,7 +1221,7 @@
 
               <Button
                 v-if="
-                  currentStep === 4 && showStepCreation && stepCreationMode === 'template'
+                  false && currentStep === 4 && showStepCreation && stepCreationMode === 'template'
                 "
                 variant="solid"
                 theme="gray"
@@ -1233,7 +1233,7 @@
 
               <Button
                 v-if="
-                  currentStep === 4 && showStepCreation && stepCreationMode === 'manual'
+                  false && currentStep === 4 && showStepCreation && stepCreationMode === 'manual'
                 "
                 variant="solid"
                 theme="gray"
@@ -1244,7 +1244,7 @@
               </Button>
 
               <Button
-                v-if="currentStep === 5"
+                v-if="currentStep === 4"
                 variant="solid"
                 theme="gray"
                 @click="finalizeCampaign"
@@ -1273,6 +1273,8 @@
       v-model="showSocialConfigModal"
       :social-config="configData.socialConfig"
       :social-pages="socialPages"
+      :external-connections="externalConnections"
+      :loading-connections="loadingConnections"
       :job-openings-list="jobOpeningsList"
       :loading-pages="loadingPages"
       :loading-job-openings="loadingJobOpenings"
@@ -1670,8 +1672,8 @@ const steps = [
   { number: 1, label: "Information" },
   { number: 2, label: "Select Source" },
   { number: 3, label: "Target Segment" },
-  { number: 4, label: "Campaign Steps" },
-  { number: 5, label: "Review & Activate" },
+  // { number: 4, label: "Campaign Steps" }, // Commented out - logic preserved for future use
+  { number: 4, label: "Review & Activate" }, // Renumbered from 5 to 4
   // { number: 6, label: 'Job' }
 ];
 
@@ -2047,7 +2049,7 @@ const selectDataSourceType = (sourceType) => {
   console.log("🎯 dataSourceSelectionLevel now:", dataSourceSelectionLevel.value);
 };
 
-const selectSpecificDataSource = (dataSource) => {
+const selectSpecificDataSource = async (dataSource) => {
   selectedDataSourceId.value = dataSource.name;
   campaignData.value.data_source_id = dataSource.name;
   configData.value.selectedDataSource = dataSource;
@@ -2058,16 +2060,7 @@ const selectSpecificDataSource = (dataSource) => {
     selectedSource.value === "datasource" &&
     selectedDataSourceType.value === "SocialNetwork"
   ) {
-    loadSocialPages();
-    if (jobOpeningsList.value.length === 0) {
-      loadJobOpenings();
-    }
-    if (!configData.value.socialConfig?.scheduled_at) {
-      const now = new Date();
-      const plus30m = new Date(now.getTime() + 30 * 60 * 1000);
-      configData.value.socialConfig.scheduled_at = toLocalDatetimeInput(plus30m);
-    }
-    showSocialConfigModal.value = true;
+    await openSocialConfigEditor();
   }
 };
 
@@ -2317,7 +2310,7 @@ const nextStep = async () => {
     await loadJobOpenings();
   }
 
-  if (currentStep.value < 5) {
+  if (currentStep.value < 4) {
     currentStep.value++;
   }
 };
@@ -2381,20 +2374,19 @@ const prevStep = () => {
       console.log("🔙 Level 0 → Previous step");
     }
 
-    // Smart back logic for step 4 - handle sub-navigation
-    if (currentStep.value === 4) {
-      // If in step creation mode, go back to mode selection
-      if (showStepCreation.value) {
-        console.log("🔙 Step 4: showStepCreation → false");
-        showStepCreation.value = false;
-        showStepForm.value = false;
-        editingStep.value = null;
-        return;
-      }
-
-      // Standard cleanup for step 4
-      // cleaned: removed deprecated showCandidates/selectedCandidates
-    }
+    // Smart back logic for step 4 - COMMENTED OUT - Logic preserved for future use
+    // if (currentStep.value === 4) {
+    //   // If in step creation mode, go back to mode selection
+    //   if (showStepCreation.value) {
+    //     console.log("🔙 Step 4: showStepCreation → false");
+    //     showStepCreation.value = false;
+    //     showStepForm.value = false;
+    //     editingStep.value = null;
+    //     return;
+    //   }
+    //   // Standard cleanup for step 4
+    //   // cleaned: removed deprecated showCandidates/selectedCandidates
+    // }
     currentStep.value--;
   }
 };
@@ -3276,7 +3268,7 @@ watch(show, async (newVal) => {
             }
           }
         } catch (e) {}
-        // After prefill, load existing steps and jump to Step 4 so user sees them
+        // After prefill, load existing steps and jump to Review step (Step 4) so user sees them
         loadExistingSteps(ec.name).then(() => {
           if (campaignSteps.value && campaignSteps.value.length > 0) {
             currentStep.value = 4;
@@ -3312,9 +3304,31 @@ watch(
 
 // Social pages state
 const socialPages = ref([]);
+const externalConnections = ref([]);
 const loadingPages = ref(false);
+const loadingConnections = ref(false);
 const stepFormSelectedPageId = ref("");
 const scheduledAtInput = ref(null);
+
+// Load external connections for social media configuration
+const loadExternalConnections = async () => {
+  try {
+    loadingConnections.value = true;
+    const response = await call('frappe.client.get_list', {
+      doctype: 'Mira External Connection',
+      fields: ['name', 'connection_name', 'platform_type', 'status'],
+      filters: [['status', '=', 'Active']],
+      limit_page_length: 100
+    });
+    externalConnections.value = response || [];
+    console.log('✅ Campaign Wizard: Loaded external connections:', externalConnections.value.length);
+  } catch (error) {
+    console.error('❌ Campaign Wizard: Error loading external connections:', error);
+    externalConnections.value = [];
+  } finally {
+    loadingConnections.value = false;
+  }
+};
 
 // Load pages from External Connection connected_accounts
 const loadSocialPages = async () => {
@@ -3407,7 +3421,7 @@ const confirmSocialConfig = async () => {
       try {
         const details = await getJobOpeningDetails(jobId);
         const blockBody = buildJobDetailsForTemplate(details);
-        // Lưu sẵn để dùng ở Step 4
+        // Lưu sẵn để dùng ở các step khác (Step 4 đã bị comment out)
         configData.value.socialConfig.template_content = blockBody || "";
       } catch (e) {
         console.warn("Failed to build template from job opening at step 2", e);
@@ -3422,6 +3436,10 @@ const confirmSocialConfig = async () => {
         await campaignSocialStore.createDefaultCampaignSocial(
           draftCampaign.value.data.name,
           {
+            external_connection: configData.value.socialConfig.external_connection || '',
+            platform: externalConnections.value.find(
+              (conn) => conn.name === configData.value.socialConfig.external_connection
+            )?.platform_type || '',
             page_id: configData.value.socialConfig.page_id || '',
             page_name: socialPages.value.find(
               (p) => p.external_account_id === configData.value.socialConfig.page_id

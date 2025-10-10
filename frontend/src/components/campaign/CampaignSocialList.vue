@@ -1,12 +1,11 @@
 <template>
-	<div class="bg-white rounded-lg shadow-sm border border-gray-200">
+	<div class="bg-white">
 		<!-- Header -->
-		<div class="px-6 py-4 border-b border-gray-200">
+		<div class="pb-4">
 			<div class="flex items-center justify-between">
 				<div class="flex items-center space-x-2">
-					<FeatherIcon name="share-2" class="h-5 w-5 text-blue-600" />
 					<h3 class="text-lg font-medium text-gray-900">
-						{{ __('Social Media Posts') }}
+						{{ __('Media Posts') }}
 					</h3>
 				</div>
 				<Button
@@ -65,9 +64,18 @@
 					<div class="flex-1">
 						<!-- Page Info -->
 						<div class="flex items-center space-x-2 mb-2">
-							<FeatherIcon name="facebook" class="h-4 w-4 text-blue-600" />
+							<FeatherIcon 
+								:name="getPlatformIcon(social.platform)" 
+								class="h-4 w-4 text-blue-600" 
+							/>
 							<span class="text-sm font-medium text-gray-900">
 								{{ social.social_page_name || __('Unknown Page') }}
+							</span>
+							<span 
+								class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+								:class="getStatusClass(social.status)"
+							>
+								{{ social.status || 'Pending' }}
 							</span>
 							<span class="text-xs text-gray-500">
 								{{ formatDate(social.post_schedule_time) }}
@@ -129,6 +137,8 @@
 			v-model="showSocialDialog"
 			:social-config="currentSocialConfig"
 			:social-pages="socialPages"
+			:external-connections="externalConnections"
+			:loading-connections="loadingConnections"
 			:jobOpeningsList="props.jobOpenings"
 			:loading-pages="loadingPages"
 			:loading-job-openings="loadingJobOpenings"
@@ -157,11 +167,19 @@ const props = defineProps({
 		type: Array,
 		default: () => [],
 	},
+	externalConnections: {
+		type: Array,
+		default: () => [],
+	},
 	jobOpenings: {
 		type: Array,
 		default: () => [],
 	},
 	loadingPages: {
+		type: Boolean,
+		default: false,
+	},
+	loadingConnections: {
 		type: Boolean,
 		default: false,
 	},
@@ -284,6 +302,37 @@ const formatDate = (dateString) => {
 		return date.toLocaleString()
 	} catch (error) {
 		return __('Invalid date')
+	}
+}
+
+const getPlatformIcon = (platform) => {
+	switch (platform?.toLowerCase()) {
+		case 'facebook':
+			return 'facebook'
+		case 'linkedin':
+			return 'linkedin'
+		case 'twitter':
+			return 'twitter'
+		case 'instagram':
+			return 'instagram'
+		default:
+			return 'share-2'
+	}
+}
+
+const getStatusClass = (status) => {
+	switch (status?.toLowerCase()) {
+		case 'success':
+			return 'bg-green-100 text-green-800'
+		case 'failed':
+			return 'bg-red-100 text-red-800'
+		case 'processing':
+			return 'bg-yellow-100 text-yellow-800'
+		case 'cancelled':
+			return 'bg-gray-100 text-gray-800'
+		case 'pending':
+		default:
+			return 'bg-blue-100 text-blue-800'
 	}
 }
 

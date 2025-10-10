@@ -434,7 +434,7 @@
 
 <div v-if="activeTab === 'mira_candidates'">
   <div class="flex justify-between items-center mb-4">
-    <h3 class="text-lg font-medium text-gray-900">{{ __('Mira Candidates') }}</h3>
+    <h3 class="text-lg font-medium text-gray-900">{{ __('Candidates') }}</h3>
   </div>
 
   <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
@@ -461,7 +461,7 @@
         </tr>
         <tr v-else-if="miraCandidates.length === 0" class="text-center">
           <td colspan="8" class="px-6 py-4 text-sm text-gray-500">
-            {{ __('No Mira Candidates found') }}
+            {{ __('No Candidates found') }}
           </td>
         </tr>
         <tr v-else v-for="c in miraCandidates" :key="c.name" class="hover:bg-gray-50">
@@ -587,8 +587,10 @@
             :campaign-id="route.params.id"
             :campaign-status="campaign.status"
             :social-pages="socialPages"
+            :external-connections="externalConnections"
             :jobOpenings="jobOpeningsList"
             :loading-pages="loadingSocialPages"
+            :loading-connections="loadingConnections"
             :loadingJobOpenings="loadingJobOpenings"
             @refresh="loadTalentCampaign"
           />
@@ -1231,8 +1233,10 @@ const talentCampaignRecords = ref([])  // dữ liệu resolved từ mira_talent_
 
 // Social media states
 const socialPages = ref([])
+const externalConnections = ref([])
 const jobOpeningsList = ref([])
 const loadingSocialPages = ref(false)
+const loadingConnections = ref(false)
 const loadingJobOpenings = ref(false)
 
 // Interactions states
@@ -1373,13 +1377,33 @@ const loadTalentCampaign = async () => {
   }
 }
 
+// Load external connections for social media configuration
+const loadExternalConnections = async () => {
+  loadingConnections.value = true
+  try {
+    const response = await call('frappe.client.get_list', {
+      doctype: 'Mira External Connection',
+      fields: ['name', 'connection_name', 'platform_type', 'status'],
+      filters: [['status', '=', 'Active']],
+      limit_page_length: 100
+    })
+    externalConnections.value = response || []
+    console.log('✅ Loaded external connections:', externalConnections.value.length)
+  } catch (error) {
+    console.error('❌ Error loading external connections:', error)
+    externalConnections.value = []
+  } finally {
+    loadingConnections.value = false
+  }
+}
+
 // Load social pages for social media configuration
 const loadSocialPages = async () => {
   loadingSocialPages.value = true
   try {
     const response = await call('frappe.client.get_list', {
       doctype: 'Mira External Connection Account',
-      fields: ['name', 'account_name', 'account_type', 'external_account_id'],
+      fields: ['name', 'account_name', 'account_type', 'external_account_id', 'external_connection'],
       limit_page_length: 100
     })
     socialPages.value = response || []
@@ -1453,7 +1477,7 @@ const tabs = computed(() => {
     },
     {
       key: 'mira_candidates',
-      label: __('Mira Candidates'),
+      label: __('Candidates'),
       count: miraCandidates.value.length
     },
     {
@@ -1477,7 +1501,7 @@ const tabs = computed(() => {
   if (campaign.value.source_type === 'DataSource') {
     baseTabs.splice(4, 0, {
       key: 'social',
-      label: __('Social Media'),
+      label: __('Media Posts'),
       count: 0 // Will be updated when we have social posts count
     })
   }
@@ -2228,7 +2252,10 @@ watch(tabs, (newTabs) => {
 // Watch activeTab to load data when needed
 watch(activeTab, (newTab) => {
   if (newTab === 'social') {
-    console.log('🔄 Switching to social tab, ensuring data is loaded...');
+    console.log(' Switching to social tab, ensuring data is loaded...');
+    if (externalConnections.value.length === 0) {
+      loadExternalConnections();
+    }
     if (socialPages.value.length === 0) {
       loadSocialPages();
     }
@@ -2236,22 +2263,24 @@ watch(activeTab, (newTab) => {
       loadJobOpenings();
     }
   } else if (newTab === 'interactions') {
-    console.log('🔄 Switching to interactions tab, loading data...');
+    console.log(' Switching to interactions tab, loading data...');
     if (interactions.value.length === 0) {
       loadInteractions();
     }
   }
 });
-
 onMounted(() => {
   loadCampaign()
   loadCampaignSteps()
   loadMiraCandidates()
+  loadTalentCampaign()
   loadCandidateCampaigns()
   loadActions()
   loadAvailableCandidates()
+  loadExternalConnections()
   loadSocialPages()
   loadJobOpenings()
+  loadInteractions()
 })
 
 // Watchers

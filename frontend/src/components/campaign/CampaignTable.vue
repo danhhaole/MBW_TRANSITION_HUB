@@ -94,7 +94,8 @@
                   >
                     <FeatherIcon name="edit" class="h-4 w-4" />
                   </button>
-                  <button 
+                  <button
+                    v-if="campaign.status === 'DRAFT'" 
                     @click="handleDelete(campaign)"
                     class="text-gray-600 hover:text-red-600 p-2 rounded-md hover:bg-red-50 transition-colors"
                     :title="__('Delete')"

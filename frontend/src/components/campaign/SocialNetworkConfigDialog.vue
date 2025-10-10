@@ -19,6 +19,17 @@
         <div v-show="!isDataLoading" class="space-y-4">
         <!-- Modal Header with Close Button -->
 
+        <!-- Select External Connection -->
+        <FormControl
+          type="select"
+          :label="__('External Connection')"
+          v-model="configData.external_connection"
+          :options="externalConnectionOptions"
+          :placeholder="loadingConnections ? __('Loading connections...') : __('Select connection...')"
+          :loading="loadingConnections"
+          @change="handleConnectionChange"
+        />
+
         <!-- Select Social Page -->
         <FormControl
           type="select"
@@ -28,6 +39,7 @@
           :placeholder="loadingPages ? __('Loading pages...') : __('Select a page...')"
           :loading="loadingPages"
           :key="socialPageOptions.length"
+          :disabled="!configData.external_connection"
         />
 
         <!-- Schedule -->
@@ -162,6 +174,14 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  externalConnections: {
+    type: Array,
+    default: () => [],
+  },
+  loadingConnections: {
+    type: Boolean,
+    default: false,
+  },
   jobOpeningsList: {
     type: Array,
     default: () => [],
@@ -260,6 +280,7 @@ const buttonText = computed(() => {
 
 // Local config data
 const configData = ref({
+  external_connection: "",
   page_id: "",
   scheduled_at: "",
   job_opening: "",
@@ -268,8 +289,54 @@ const configData = ref({
 });
 
 // Reactive options for FormControl selects
+const externalConnectionOptions = ref([]);
 const socialPageOptions = ref([]);
 const jobOpeningOptions = ref([]);
+
+// Update externalConnectionOptions when props.externalConnections changes
+const updateExternalConnectionOptions = () => {
+  console.log('🔍 Updating externalConnectionOptions...');
+  console.log('props.externalConnections:', props.externalConnections);
+  
+  if (!props.externalConnections || props.externalConnections.length === 0) {
+    console.log('❌ No externalConnections or empty array');
+    externalConnectionOptions.value = [];
+    return;
+  }
+  
+  const options = props.externalConnections.map(conn => ({
+    label: `${conn.connection_name} (${conn.platform_type})`,
+    value: conn.name
+  }));
+  
+  externalConnectionOptions.value = options;
+  console.log('✅ externalConnectionOptions updated:', options);
+};
+
+// Handle connection change - filter social pages by selected connection
+const handleConnectionChange = () => {
+  console.log('🔄 Connection changed:', configData.value.external_connection);
+  
+  // Reset page selection when connection changes
+  configData.value.page_id = "";
+  
+  // Filter social pages by selected connection
+  if (configData.value.external_connection && props.socialPages) {
+    const filteredPages = props.socialPages.filter(page => 
+      page.external_connection === configData.value.external_connection
+    );
+    
+    const options = filteredPages.map(page => ({
+      label: `${page.account_name} (${page.account_type})`,
+      value: page.external_account_id
+    }));
+    
+    socialPageOptions.value = options;
+    console.log('✅ Filtered socialPageOptions:', options);
+  } else {
+    socialPageOptions.value = [];
+  }
+};
 
 // Update socialPageOptions when props.socialPages changes
 const updateSocialPageOptions = () => {
@@ -475,15 +542,22 @@ const handleConfirm = async () => {
 
   saving.value = true;
   try {
+    const selectedConnection = props.externalConnections.find(
+      (conn) => conn.name === configData.value.external_connection
+    );
+    
     const socialData = {
       campaign_id: props.campaignId,
+      external_connection: configData.value.external_connection,
+      platform: selectedConnection?.platform_type || '',
       social_page_id: configData.value.page_id,
       social_page_name: props.socialPages.find(
         (p) => p.external_account_id === configData.value.page_id
       )?.account_name || '',
       post_schedule_time: configData.value.scheduled_at || null,
       template_content: configData.value.template_content || '',
-      social_media_images: configData.value.image || ''
+      social_media_images: configData.value.image || '',
+      status: 'Pending'
     };
 
     let result;
@@ -533,6 +607,17 @@ watch(
   { immediate: true, deep: true }
 );
 
+// Watch for externalConnections changes and update options
+watch(
+  () => props.externalConnections,
+  (newConnections) => {
+    console.log('🔄 externalConnections changed:', newConnections);
+    updateExternalConnectionOptions();
+    console.log('🔄 externalConnectionOptions updated:', externalConnectionOptions.value);
+  },
+  { immediate: true }
+);
+
 // Watch for socialPages changes and update options
 watch(
   () => props.socialPages,
@@ -541,7 +626,7 @@ watch(
     updateSocialPageOptions();
     console.log('🔄 socialPageOptions updated:', socialPageOptions.value);
   },
-  { immediate: true, deep: true }
+  { immediate: true }
 );
 
 // Watch for jobOpeningsList changes and update options
@@ -552,7 +637,7 @@ watch(
     updateJobOpeningOptions();
     console.log('🔄 jobOpeningOptions updated:', jobOpeningOptions.value);
   },
-  { immediate: true, deep: true }
+  { immediate: true }
 );
 
 // Watch for config changes and emit updates (with debounce to prevent recursion)

@@ -35,9 +35,16 @@ export const useCampaignSocialStore = defineStore('campaignSocial', {
             'campaign_id',
             'social_page_id', 
             'social_page_name',
+            'external_connection',
+            'platform',
             'post_schedule_time',
             'template_content',
             'social_media_images',
+            'share_at',
+            'status',
+            'retry_count',
+            'error_message',
+            'response_data',
             'creation',
             'modified'
           ],
@@ -163,21 +170,21 @@ export const useCampaignSocialStore = defineStore('campaignSocial', {
       }
     },
 
-    // Create default campaign social when campaign is created
     async createDefaultCampaignSocial(campaignId, socialConfig = {}) {
       const defaultData = {
         campaign_id: campaignId,
         social_page_id: socialConfig.page_id || '',
         social_page_name: socialConfig.page_name || '',
-        post_schedule_time: socialConfig.scheduled_at || null,
+        external_connection: socialConfig.external_connection || '',
+        platform: socialConfig.platform || '',
+        post_schedule_time: socialConfig.scheduled_at || '',
         template_content: socialConfig.template_content || '',
-        social_media_images: socialConfig.image || ''
+        social_media_images: socialConfig.image || '',
+        status: 'Pending'
       }
 
       return await this.createCampaignSocial(defaultData)
     },
-
-    // Bulk create campaign socials
     async bulkCreateCampaignSocials(campaignId, socialConfigs) {
       this.loading = true
       this.error = null
