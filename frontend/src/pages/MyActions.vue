@@ -347,7 +347,12 @@
   
   const setTab = (tab) => {
     activeTab.value = tab
-    // dùng chung page cho đơn giản
+    // Reset to first page when changing tabs
+    if (paginationState.value[tab]) {
+      paginationState.value[tab].page = 1
+    }
+    page.value = 1 // Reset the page reactive variable
+    loadData()
   }
   
   const handleNextPage = () => {
