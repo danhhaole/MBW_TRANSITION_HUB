@@ -1271,6 +1271,7 @@
     <!-- Social Network Config Modal -->
     <SocialNetworkConfigDialog
       v-model="showSocialConfigModal"
+      mode="wizard"
       :social-config="configData.socialConfig"
       :social-pages="socialPages"
       :external-connections="externalConnections"
@@ -3316,8 +3317,8 @@ const loadExternalConnections = async () => {
     loadingConnections.value = true;
     const response = await call('frappe.client.get_list', {
       doctype: 'Mira External Connection',
-      fields: ['name', 'connection_name', 'platform_type', 'status'],
-      filters: [['status', '=', 'Active']],
+      fields: ['name', 'tenant_name', 'platform_type', 'connection_status'],
+      filters: [['connection_status', '=', 'Connected']],
       limit_page_length: 100
     });
     externalConnections.value = response || [];
@@ -3433,13 +3434,18 @@ const confirmSocialConfig = async () => {
     if (draftCampaign.value?.data?.name && configData.value.socialConfig) {
       try {
         console.log('🔧 Creating Mira Campaign Social from social config...');
+        // Get external_connection from selected data source in wizard mode
+        const selectedConnection = configData.value.selectedDataSource?.name || 
+                                 configData.value.socialConfig.external_connection || '';
+        
         await campaignSocialStore.createDefaultCampaignSocial(
           draftCampaign.value.data.name,
           {
-            external_connection: configData.value.socialConfig.external_connection || '',
-            platform: externalConnections.value.find(
-              (conn) => conn.name === configData.value.socialConfig.external_connection
-            )?.platform_type || '',
+            external_connection: selectedConnection,
+            platform: configData.value.selectedDataSource?.platform_type || 
+                     externalConnections.value.find(
+                       (conn) => conn.name === selectedConnection
+                     )?.platform_type || '',
             page_id: configData.value.socialConfig.page_id || '',
             page_name: socialPages.value.find(
               (p) => p.external_account_id === configData.value.socialConfig.page_id

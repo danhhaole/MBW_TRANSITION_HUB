@@ -2,6 +2,9 @@ import json
 import frappe
 from frappe import _
 from frappe.utils import get_datetime
+import qrcode
+import io
+import base64
 
 def _parse_datetime(value):
     if not value:
@@ -519,4 +522,59 @@ def bulk_create_campaign_records(**kwargs):
         return {
             "status": "error", 
             "message": f"Bulk insert failed: {str(e)}"
+        }
+
+
+@frappe.whitelist()
+def get_job_qrcode(campaign_id, target_url=None):
+    """
+    Generate QR code for campaign job opening
+    
+    Args:
+        campaign_id: ID of the campaign
+        target_url: Optional custom URL (for now using fixed URL)
+    
+    Returns:
+        Dict with url and base64 image
+    """
+    try:
+        # Verify campaign exists
+        if not frappe.db.exists("Campaign", campaign_id):
+            return {"status": "error", "message": "Campaign not found"}
+        
+        # Use provided target_url or generate default
+        if not target_url:
+            # Get site URL and build job URL
+            site_url = frappe.utils.get_url()
+            target_url = f"{site_url}/mbw_mira/jobs/tuyen-lap-trinh-vien-python"
+        
+        # Generate QR code
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+        )
+        qr.add_data(target_url)
+        qr.make(fit=True)
+        
+        # Create QR code image
+        img = qr.make_image(fill_color="black", back_color="white")
+        
+        # Convert to base64
+        buffer = io.BytesIO()
+        img.save(buffer, format='PNG')
+        img_str = base64.b64encode(buffer.getvalue()).decode()
+        
+        return {
+            "status": "success",
+            "url": target_url,
+            "image": f"data:image/png;base64,{img_str}"
+        }
+        
+    except Exception as e:
+        frappe.log_error(f"QR Code generation error: {str(e)}")
+        return {
+            "status": "error", 
+            "message": f"Failed to generate QR code: {str(e)}"
         }

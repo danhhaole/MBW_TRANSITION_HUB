@@ -1383,8 +1383,8 @@ const loadExternalConnections = async () => {
   try {
     const response = await call('frappe.client.get_list', {
       doctype: 'Mira External Connection',
-      fields: ['name', 'connection_name', 'platform_type', 'status'],
-      filters: [['status', '=', 'Active']],
+      fields: ['name', 'tenant_name', 'platform_type', 'connection_status'],
+      filters: [['connection_status', '=', 'Connected']],
       limit_page_length: 100
     })
     externalConnections.value = response || []
@@ -1401,11 +1401,9 @@ const loadExternalConnections = async () => {
 const loadSocialPages = async () => {
   loadingSocialPages.value = true
   try {
-    const response = await call('frappe.client.get_list', {
-      doctype: 'Mira External Connection Account',
-      fields: ['name', 'account_name', 'account_type', 'external_account_id', 'external_connection'],
-      limit_page_length: 100
-    })
+    // Since Mira External Connection Account is a child table, 
+    // we need to get it through the parent Mira External Connection
+    const response = await call('mbw_mira.api.external_connections.get_all_accounts')
     socialPages.value = response || []
     console.log('✅ Loaded social pages:', socialPages.value.length)
   } catch (error) {

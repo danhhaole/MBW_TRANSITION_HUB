@@ -1,67 +1,71 @@
 <template>
-	<div class="bg-white">
-		<!-- Header -->
-		<div class="pb-4">
-			<div class="flex items-center justify-between">
-				<div class="flex items-center space-x-2">
-					<h3 class="text-lg font-medium text-gray-900">
-						{{ __('Media Posts') }}
-					</h3>
-				</div>
-				<Button
-					variant="solid"
-					theme="gray"
-					size="sm"
-					@click="openCreateDialog"
-					:disabled="loading"
-				>
-					<div class="flex items-center">
-						<FeatherIcon name="plus" class="h-4 w-4 mr-1" />
-						{{ __('Add Post') }}
-					</div>
-				</Button>
-			</div>
-		</div>
+  <div class="bg-white">
+    <!-- Header -->
+    <div class="pb-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <h3 class="text-lg font-medium text-gray-900">
+            {{ __('Media Posts') }}
+          </h3>
+        </div>
+        <Dropdown :options="dropdownActions" @click.stop>
+          <template v-slot="{ open }">
+            <Button variant="solid" theme="gray" size="sm" :disabled="loading">
+              <template #prefix>
+                <FeatherIcon name="plus" class="h-4 w-4" />
+              </template>
+              <span>{{ __("New") }}</span>
+              <template #suffix>
+                <FeatherIcon
+                  :name="open ? 'chevron-up' : 'chevron-down'"
+                  class="h-4 w-4"
+                />
+              </template>
+            </Button>
+          </template>
+        </Dropdown>
+      </div>
+    </div>
 
-		<!-- Loading State -->
-		<div v-if="loading" class="p-6">
-			<div class="animate-pulse space-y-4">
-				<div v-for="i in 3" :key="i" class="flex space-x-4">
-					<div class="w-12 h-12 bg-gray-200 rounded-lg"></div>
-					<div class="flex-1 space-y-2">
-						<div class="h-4 bg-gray-200 rounded w-3/4"></div>
-						<div class="h-3 bg-gray-200 rounded w-1/2"></div>
-					</div>
-				</div>
-			</div>
-		</div>
+    <!-- Loading State -->
+    <div v-if="loading" class="p-6">
+      <div class="animate-pulse space-y-4">
+        <div v-for="i in 3" :key="i" class="flex space-x-4">
+          <div class="w-12 h-12 bg-gray-200 rounded-lg"></div>
+          <div class="flex-1 space-y-2">
+            <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+            <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-		<!-- Empty State -->
-		<div v-else-if="!campaignSocials.length" class="p-6 text-center">
-			<FeatherIcon name="share-2" class="h-12 w-12 text-gray-400 mx-auto mb-4" />
-			<h3 class="text-sm font-medium text-gray-900 mb-2">
-				{{ __('No social media posts') }}
-			</h3>
-			<p class="text-sm text-gray-500 mb-4">
-				{{ __('Create your first social media post for this campaign.') }}
-			</p>
-			<Button variant="solid" theme="gray" size="sm" @click="openCreateDialog">
-				<div class="flex items-center">
-					<FeatherIcon name="plus" class="h-4 w-4 mr-1" />
-					{{ __('Add Post') }}
-				</div>
-			</Button>
-		</div>
+    <!-- Empty State -->
+    <div v-else-if="!campaignSocials.length" class="p-6 text-center">
+      <FeatherIcon name="share-2" class="h-12 w-12 text-gray-400 mx-auto mb-4" />
+      <h3 class="text-sm font-medium text-gray-900 mb-2">
+        {{ __('No social media posts') }}
+      </h3>
+      <p class="text-sm text-gray-500 mb-4">
+        {{ __('Create your first social media post for this campaign.') }}
+      </p>
+      <Button variant="solid" theme="gray" size="sm" @click="openCreateDialog">
+        <div class="flex items-center">
+          <FeatherIcon name="plus" class="h-4 w-4 mr-1" />
+          {{ __('Add Post') }}
+        </div>
+      </Button>
+    </div>
 
-		<!-- Social Posts List -->
-		<div v-else class="divide-y divide-gray-200">
-			<div
-				v-for="social in campaignSocials"
-				:key="social.name"
-				class="p-6 hover:bg-gray-50 transition-colors"
-			>
-				<div class="flex items-start justify-between">
-					<div class="flex-1">
+    <!-- Social Posts List -->
+    <div v-else class="divide-y divide-gray-200">
+      <div
+        v-for="social in campaignSocials"
+        :key="social.name"
+        class="p-6 hover:bg-gray-50 transition-colors"
+      >
+        <div class="flex items-start justify-between">
+          <div class="flex-1">
 						<!-- Page Info -->
 						<div class="flex items-center space-x-2 mb-2">
 							<FeatherIcon 
@@ -128,32 +132,60 @@
 							<FeatherIcon name="trash-2" class="h-3 w-3" />
 						</Button>
 					</div>
-				</div>
 			</div>
 		</div>
 
 		<!-- Social Network Config Dialog -->
 		<SocialNetworkConfigDialog
-			v-model="showSocialDialog"
+			v-model="showCreateDialog"
 			:social-config="currentSocialConfig"
 			:social-pages="socialPages"
 			:external-connections="externalConnections"
 			:loading-connections="loadingConnections"
-			:jobOpeningsList="props.jobOpenings"
+			:job-openings-list="jobOpeningsList"
 			:loading-pages="loadingPages"
 			:loading-job-openings="loadingJobOpenings"
-			:campaign-id="campaignId"
+			:min-scheduled-at="minScheduledAt"
+			:local-tz-label="localTzLabel"
 			:campaign-social-id="editingSocialId"
 			:mode="'detail'"
 			@confirm="handleSocialConfirm"
 			@cancel="handleSocialCancel"
 		/>
+
+		<!-- QR Code Dialog -->
+		<Dialog v-model="showQrDialog" :options="{ title: __('Campaign QR Code'), size: 'md' }">
+			<template #body-content>
+				<div class="p-6 text-center">
+					<div v-if="qrData.image" class="mb-4">
+						<img :src="qrData.image" alt="QR Code" class="mx-auto max-w-xs" />
+					</div>
+					<div v-else class="mb-4">
+						<div class="w-48 h-48 bg-gray-200 rounded-lg mx-auto flex items-center justify-center">
+							<FeatherIcon name="qr-code" class="h-12 w-12 text-gray-400" />
+						</div>
+					</div>
+					
+					<div class="space-y-2">
+						<p class="text-sm font-medium text-gray-900">{{ __('Scan to view job opening') }}</p>
+						<p class="text-xs text-gray-500 break-all">{{ qrData.url }}</p>
+					</div>
+					
+					<div class="mt-6 flex justify-end space-x-3">
+						<Button variant="ghost" @click="showQrDialog = false">
+							{{ __('Close') }}
+						</Button>
+					</div>
+				</div>
+			</template>
+		</Dialog>
+	</div>
 	</div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { Button, FeatherIcon } from 'frappe-ui'
+import { Button, FeatherIcon, Dropdown, Dialog, call } from 'frappe-ui'
 import { useCampaignSocialStore } from '@/stores/campaignSocial'
 import SocialNetworkConfigDialog from './SocialNetworkConfigDialog.vue'
 
@@ -202,16 +234,31 @@ const campaignSocialStore = useCampaignSocialStore()
 
 // Reactive state
 const loading = ref(false)
-const deleting = ref(null)
-const showSocialDialog = ref(false)
+const showCreateDialog = ref(false)
 const editingSocialId = ref(null)
+const showQrDialog = ref(false)
+const qrData = ref({ url: '', image: '' })
+
 const currentSocialConfig = ref({
 	page_id: '',
 	scheduled_at: '',
 	job_opening: '',
 	image: '',
-	template_content: '',
 })
+
+// Dropdown actions
+const dropdownActions = computed(() => [
+	{
+		label: __('Add Post'),
+		icon: 'plus',
+		onClick: openCreateDialog
+	},
+	{
+		label: __('Generate QR Code'),
+		icon: 'qr-code',
+		onClick: handleShowQr
+	}
+])
 
 // Computed
 const campaignSocials = computed(() =>
@@ -243,7 +290,36 @@ const openCreateDialog = () => {
 		image: '',
 		template_content: '',
 	}
-	showSocialDialog.value = true
+	showCreateDialog.value = true
+}
+
+// QR Code functions
+const handleShowQr = async () => {
+	try {
+		// Get current router base URL
+		const baseUrl = window.location.origin
+		
+		// Build job URL using current router base
+		const jobUrl = `${baseUrl}/mbw_mira/jobs/tuyen-lap-trinh-vien-python`
+		
+		const res = await call('mbw_mira.api.campaign.get_job_qrcode', {
+			campaign_id: props.campaignId,
+			target_url: jobUrl
+		})
+		
+		qrData.value = res || { url: jobUrl, image: '' }
+		showQrDialog.value = true
+	} catch (e) {
+		console.error('Error generating QR code:', e)
+		// Fallback with current router base URL
+		const baseUrl = window.location.origin
+		const fallbackUrl = `${baseUrl}/mbw_mira/jobs/tuyen-lap-trinh-vien-python`
+		qrData.value = { 
+			url: fallbackUrl, 
+			image: '' 
+		}
+		showQrDialog.value = true
+	}
 }
 
 const editSocial = async (social) => {
@@ -284,13 +360,13 @@ const deleteSocial = async (social) => {
 }
 
 const handleSocialConfirm = (config) => {
-	showSocialDialog.value = false
+	showCreateDialog.value = false
 	loadCampaignSocials() // Refresh the list
 	emit('refresh')
 }
 
 const handleSocialCancel = () => {
-	showSocialDialog.value = false
+	showCreateDialog.value = false
 	editingSocialId.value = null
 }
 

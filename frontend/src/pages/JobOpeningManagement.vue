@@ -395,7 +395,7 @@
       <!-- AI Generation Dialog -->
       <Dialog v-model="showAIModal" :options="{
         title: __('Generate Job Description AI'),
-        size: '3xl'
+        size: '6xl'
       }">
         <template #body-title>
           <div>

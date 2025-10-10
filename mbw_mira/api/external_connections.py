@@ -115,6 +115,57 @@ def get_connection_info(
 
 
 @frappe.whitelist()
+def get_all_accounts() -> List[Dict[str, Any]]:
+    """
+    Lấy tất cả accounts từ tất cả connections với thông tin parent connection
+    
+    Returns:
+        List chứa thông tin tất cả accounts với parent_connection
+    """
+    try:
+        # Get all active connections
+        connections = frappe.get_all(
+            "Mira External Connection",
+            filters={"connection_status": "Connected"},
+            fields=["name", "platform_type", "tenant_name"]
+        )
+        
+        result = []
+        for conn in connections:
+            # Get accounts for this connection
+            accounts = frappe.get_all(
+                "Mira External Connection Account",
+                filters={"parent": conn.name, "is_active": 1},
+                fields=[
+                    "name",
+                    "external_account_id",
+                    "account_name", 
+                    "account_type",
+                    "is_primary",
+                    "connection_status",
+                    "profile_picture_url",
+                    "follower_count",
+                    "following_count",
+                    "posts_count",
+                    "last_activity"
+                ]
+            )
+            
+            # Add parent connection info to each account
+            for account in accounts:
+                account["parent_connection"] = conn.name
+                account["platform_type"] = conn.platform_type
+                account["tenant_name"] = conn.tenant_name
+                result.append(account)
+        
+        return result
+        
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "Get All Accounts Error")
+        return []
+
+
+@frappe.whitelist()
 def get_account_details(connection_id: str, account_id: str = None) -> Dict[str, Any]:
     """
     Lấy chi tiết tài khoản được kết nối

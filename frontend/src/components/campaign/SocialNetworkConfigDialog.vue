@@ -19,8 +19,9 @@
         <div v-show="!isDataLoading" class="space-y-4">
         <!-- Modal Header with Close Button -->
 
-        <!-- Select External Connection -->
+        <!-- Select External Connection - Only in detail mode -->
         <FormControl
+          v-if="mode === 'detail'"
           type="select"
           :label="__('External Connection')"
           v-model="configData.external_connection"
@@ -39,7 +40,7 @@
           :placeholder="loadingPages ? __('Loading pages...') : __('Select a page...')"
           :loading="loadingPages"
           :key="socialPageOptions.length"
-          :disabled="!configData.external_connection"
+          :disabled="mode === 'detail' && !configData.external_connection"
         />
 
         <!-- Schedule -->
@@ -170,6 +171,10 @@ const props = defineProps({
       template_content: "",
     }),
   },
+  mode: {
+    type: String,
+    default: 'detail', // 'wizard' or 'detail'
+  },
   socialPages: {
     type: Array,
     default: () => [],
@@ -252,10 +257,16 @@ const isDataLoading = computed(() => {
     return false;
   }
   
-  const loading = props.loadingPages || props.loadingJobOpenings;
+  // In detail mode, also wait for connections to load
+  const connectionsLoading = props.mode === 'detail' ? props.loadingConnections : false;
+  const loading = props.loadingPages || props.loadingJobOpenings || connectionsLoading;
+  
   console.log('🔍 isDataLoading computed:', {
+    mode: props.mode,
     loadingPages: props.loadingPages,
     loadingJobOpenings: props.loadingJobOpenings,
+    loadingConnections: props.loadingConnections,
+    connectionsLoading,
     result: loading
   });
   return loading;
@@ -305,7 +316,7 @@ const updateExternalConnectionOptions = () => {
   }
   
   const options = props.externalConnections.map(conn => ({
-    label: `${conn.connection_name} (${conn.platform_type})`,
+    label: `${conn.tenant_name} (${conn.platform_type})`,
     value: conn.name
   }));
   
@@ -323,7 +334,7 @@ const handleConnectionChange = () => {
   // Filter social pages by selected connection
   if (configData.value.external_connection && props.socialPages) {
     const filteredPages = props.socialPages.filter(page => 
-      page.external_connection === configData.value.external_connection
+      page.parent_connection === configData.value.external_connection
     );
     
     const options = filteredPages.map(page => ({
@@ -343,6 +354,7 @@ const updateSocialPageOptions = () => {
   console.log('🔍 Updating socialPageOptions...');
   console.log('props.socialPages:', props.socialPages);
   console.log('props.socialPages length:', props.socialPages?.length);
+  console.log('mode:', props.mode);
   
   if (!props.socialPages || props.socialPages.length === 0) {
     console.log('❌ No socialPages or empty array');
@@ -350,16 +362,23 @@ const updateSocialPageOptions = () => {
     return;
   }
   
-  const options = props.socialPages.map(page => {
-    console.log('🔄 Processing page:', page);
-    return {
-      label: `${page.account_name} (${page.account_type})`,
-      value: page.external_account_id
-    };
-  });
+  // In wizard mode, use all available pages (already filtered by connection)
+  // In detail mode, filter by selected connection
+  let pagesToUse = props.socialPages;
   
-  console.log('✅ Final socialPageOptions:', options);
+  if (props.mode === 'detail' && configData.value.external_connection) {
+    pagesToUse = props.socialPages.filter(page => 
+      page.parent_connection === configData.value.external_connection
+    );
+  }
+  
+  const options = pagesToUse.map(page => ({
+    label: `${page.account_name} (${page.account_type})`,
+    value: page.external_account_id
+  }));
+  
   socialPageOptions.value = options;
+  console.log('✅ socialPageOptions updated:', options);
 };
 
 // Update jobOpeningOptions when props.jobOpeningsList changes
