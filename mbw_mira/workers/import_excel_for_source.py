@@ -7,7 +7,7 @@ import ast
 
 def import_contact_from_file(campaign_name: str,source_target:str):
     logger = frappe.logger("import_candidates")
-    print(1222)
+
     # 1. Lấy thông tin campaign
     campaign = frappe.db.get_value(
         "Campaign",
@@ -143,12 +143,13 @@ def import_contact_from_file(campaign_name: str,source_target:str):
                 "status": raw_data.get("status") or "NEW",
                 "quality_score": raw_data.get("quality_score")or "",
                 "is_duplicate": raw_data.get("is_duplicate") or 0,
+                "campaign_id":campaign_name
             }
 
 
             # 9. Insert nếu chưa tồn tại
             try:
-                if not check_exists(raw_data.get("email")):
+                if not check_exists("Mira Contact",raw_data.get("email")):
                     doc = frappe.get_doc(doc_data)
                     doc.insert(ignore_permissions=True)
                     frappe.db.commit()
@@ -163,7 +164,7 @@ def import_contact_from_file(campaign_name: str,source_target:str):
 
 
 def import_talent_from_file(campaign_name: str,source_target:str):
-
+    logger = frappe.logger("import_candidates")
     # 1. Lấy thông tin campaign
     campaign = frappe.db.get_value(
         "Campaign",
@@ -194,7 +195,7 @@ def import_talent_from_file(campaign_name: str,source_target:str):
     except Exception as e:
         frappe.log_error("Import TalentProfile", f"Failed to parse source_config JSON: {e}")
         return
-    print(source_config)
+    
     file_name = campaign.source_file.split("/")[-1]
     field_mapping = source_config.get("field_mapping", [])
 
@@ -262,7 +263,7 @@ def import_talent_from_file(campaign_name: str,source_target:str):
             
             # 8. Chuẩn bị dữ liệu Mira Contact
             doc_data = {
-                "doctype": "Mira Contact",
+                "doctype": "Mira Talent",
                 "first_name": raw_data.get("first_name") or "",
                 "last_name": raw_data.get("last_name") or "",
                 "full_name": raw_data.get("full_name") or f"{raw_data.get('first_name','')} {raw_data.get('last_name','')}".strip(),
@@ -299,12 +300,13 @@ def import_talent_from_file(campaign_name: str,source_target:str):
                 "status": raw_data.get("status") or "NEW",
                 "quality_score": raw_data.get("quality_score")or "",
                 "is_duplicate": raw_data.get("is_duplicate") or 0,
+                "campaign_id":campaign_name
             }
 
 
             # 9. Insert nếu chưa tồn tại
             try:
-                if not check_exists(raw_data.get("email")):
+                if not check_exists("Mira Talent",raw_data.get("email")):
                     doc = frappe.get_doc(doc_data)
                     doc.insert(ignore_permissions=True)
                     frappe.db.commit()
@@ -318,8 +320,8 @@ def import_talent_from_file(campaign_name: str,source_target:str):
         return True
 
 
-def check_exists(email):
-    talent_exists = frappe.db.exists("Mira Contact",{"contact_email":email})
+def check_exists(doctype,email):
+    talent_exists = frappe.db.exists(doctype,{"email":email})
     if talent_exists:
         return True
     else:

@@ -3,42 +3,93 @@
 
 import frappe
 from frappe.model.document import Document
-from frappe.utils import cstr, cint, flt, getdate, nowdate, get_datetime
+from frappe.utils import cstr, cint, flt, add_days, nowdate, get_datetime,now_datetime
 from mbw_mira.api.common import get_filter_options, get_form_data, get_list_data
-
+import json
 class MiraTalent(Document):
     
     def before_insert(self):
         #Trước khi tạo talent thì tạo prospect
         if not self.contact_id:
-            contact_data = {
-                "first_name": self.full_name.split(" ")[0] if self.full_name else None,
-                "last_name": " ".join(self.full_name.split(" ")[1:]) if self.full_name and len(self.full_name.split(" ")) > 1 else None,
-                "full_name": self.full_name,
-                "gender": self.gender,
-                "date_of_birth": self.date_of_birth,
-                "email": self.email,
-                "phone": self.phone,
-                "linkedin_profile": self.linkedin_profile,
-                "facebook_profile": self.facebook_profile,
-                "zalo_profile": self.zalo_profile,
-                "current_location": self.current_location,
-                "preferred_location": self.preferred_location,
-                "skills": self.skills,
-                "experience_years": self.experience_years,
-                "source": self.source,
-                "resume": self.resume,
-                "notes": self.notes
-            }
+            if not check_exists(self.email):
+                skills = json.loads(self.skills)
+                skills_string = ", ".join(skills)
+                contact_data = {
+                    "campaign_id":self.campaign_id,
+                    "first_name": self.full_name.split(" ")[0] if self.full_name else None,
+                    "last_name": " ".join(self.full_name.split(" ")[1:]) if self.full_name and len(self.full_name.split(" ")) > 1 else None,
+                    "full_name": self.full_name,
+                    "gender": self.gender,
+                    "date_of_birth": self.date_of_birth,
+                    "email": self.email,
+                    "phone": self.phone,
+                    "linkedin_profile": self.linkedin_profile,
+                    "facebook_profile": self.facebook_profile,
+                    "zalo_profile": self.zalo_profile,
+                    "current_location": self.current_location,
+                    "preferred_location": self.preferred_location,
+                    "skills": skills_string,
+                    "experience_years": self.experience_years,
+                    "source": self.source,
+                    "resume": self.resume,
+                    "notes": self.notes
+                }
 
-            # Gọi hàm create_mira_prospect đã có sẵn
-            contact = frappe.new_doc("Mira Contact")
-            contact_name = contact.create_mira_contact(contact_data)
+                # Gọi hàm create_mira_prospect đã có sẵn
+                contact = frappe.new_doc("Mira Contact")
+                contact_name = contact.create_mira_contact(contact_data)
 
-            # Gán lại vào Talent
-            self.contact_id = contact_name
+                # Gán lại vào Talent
+                self.contact_id = contact_name
+        else:
+            self.contact_id = frappe.db.get_value("Mira Contact",{"email":self.email},"name")
+
+    def after_save(self):
+        #Tạo Talent Campaign
+        if self.campaign_id: 
+            self.create_talent_campaign()
+
+    def create_talent_campaign(self):
+        try:           
+            first_step = get_first_campaign_step(self.campaign_id)
+            if first_step:
+                next_action_at = add_days(now_datetime(), first_step.get("delay_in_days") or 0)
+                doc = frappe.get_doc(
+                {
+                    "doctype": "Mira Talent Campaign",
+                    "campaign_id": self.campaign_id,
+                    "talent_id": self.talent_id,
+                    "status": "ACTIVE",
+                    "enrolled_at": now_datetime(),
+                    "current_step_order": first_step.get("step_order")  or 1,
+                    "next_action_at": next_action_at,
+                }
+                )
+                doc.insert(ignore_permissions=True)
+                frappe.db.commit()
+        except Exception as e:
+            pass
+def check_exists(email):
+    exists = frappe.db.exists("Mira Contact",{"email":email})
+    if exists:
+        return True
+    else:
+        return False
 
 
+def get_first_campaign_step(campaign_id):
+    """
+    Lấy bước đầu tiên (step_order nhỏ nhất) của CampaignStep
+    """
+    step = frappe.get_all(
+        "CampaignStep",
+        filters={"campaign": campaign_id},
+        fields=["name", "step_order","delay_in_days"],
+        order_by="step_order asc",
+        limit=1,
+    )
+    
+    return step[0] if step else None
 
 @frappe.whitelist()
 def get_candidate_pools_paginated(
