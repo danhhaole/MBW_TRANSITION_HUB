@@ -145,10 +145,10 @@
 							<table class="w-full text-sm text-left text-gray-500">
 								<thead class="text-xs text-gray-700 uppercase bg-gray-50">
 									<tr>
-										<th scope="col" class="px-6 py-3">Tên chiến dịch</th>
-										<th scope="col" class="px-6 py-3">Trạng thái</th>
-										<th scope="col" class="px-6 py-3">Thời gian tiếp theo</th>
-										<th scope="col" class="px-6 py-3">Hành động</th>
+										<th scope="col" class="px-6 py-3 text-xs font-medium text-gray-600 uppercase tracking-wider">Tên chiến dịch</th>
+										<th scope="col" class="px-6 py-3 text-xs font-medium text-gray-600 uppercase tracking-wider">Trạng thái</th>
+										<th scope="col" class="px-6 py-3 text-xs font-medium text-gray-600 uppercase tracking-wider">Thời gian tiếp theo</th>
+										<th scope="col" class="px-6 py-3 text-xs font-medium text-gray-600 uppercase tracking-wider">Hành động</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -209,10 +209,10 @@
 							<table class="w-full text-sm text-left text-gray-500">
 								<thead class="text-xs text-gray-700 uppercase bg-gray-50">
 									<tr>
-										<th scope="col" class="px-6 py-3">Tên hành động</th>
-										<th scope="col" class="px-6 py-3">Chiến dịch</th>
-										<th scope="col" class="px-6 py-3">Thời gian</th>
-										<th scope="col" class="px-6 py-3">Trạng thái</th>
+										<th scope="col" class="px-6 py-3 text-xs font-medium text-gray-600 uppercase tracking-wider">Tên hành động</th>
+										<th scope="col" class="px-6 py-3 text-xs font-medium text-gray-600 uppercase tracking-wider">Chiến dịch</th>
+										<th scope="col" class="px-6 py-3 text-xs font-medium text-gray-600 uppercase tracking-wider">Thời gian</th>
+										<th scope="col" class="px-6 py-3 text-xs font-medium text-gray-600 uppercase tracking-wider">Trạng thái</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -264,10 +264,10 @@
 							<table class="w-full text-sm text-left text-gray-500">
 								<thead class="text-xs text-gray-700 uppercase bg-gray-50">
 									<tr>
-										<th scope="col" class="px-6 py-3">Tên hành động</th>
-										<th scope="col" class="px-6 py-3">Chiến dịch</th>
-										<th scope="col" class="px-6 py-3">Thời gian</th>
-										<th scope="col" class="px-6 py-3">Trạng thái</th>
+										<th scope="col" class="px-6 py-3 text-xs font-medium text-gray-600 uppercase tracking-wider">Tên hành động</th>
+										<th scope="col" class="px-6 py-3 text-xs font-medium text-gray-600 uppercase tracking-wider">Chiến dịch</th>
+										<th scope="col" class="px-6 py-3 text-xs font-medium text-gray-600 uppercase tracking-wider">Thời gian</th>
+										<th scope="col" class="px-6 py-3 text-xs font-medium text-gray-600 uppercase tracking-wider">Trạng thái</th>
 									</tr>
 								</thead>
 								<tbody>

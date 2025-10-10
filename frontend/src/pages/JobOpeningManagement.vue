@@ -290,11 +290,11 @@
               <div class="space-y-4">
                 <FormControl v-model="form.job_title" type="text" :label="__('Job Title')" :required="true" />
                 <!-- Ẩn job_code khỏi form tạo và chỉnh sửa -->
-                <div class="grid grid-cols-2 gap-4">
+                <!-- <div class="grid grid-cols-2 gap-4">
                   <FormControl v-model="form.department_name" type="text" :label="__('Department')" />
                   <FormControl v-model="form.location_name" type="text" :label="__('Location')" />
-                </div>
-                <FormControl v-model="form.number_of_openings" type="number" :label="__('Number Of Openings')" />
+                </div> -->
+                <!-- <FormControl v-model="form.number_of_openings" type="number" :label="__('Number Of Openings')" /> -->
                 <div class="grid grid-cols-2 gap-4">
                   <FormControl v-model="form.posting_date" type="date" :label="__('Posting Date')" />
                   <FormControl v-model="form.closing_date" type="date" :label="__('Closing Date')" />
@@ -760,7 +760,8 @@ watch(searchText, () => {
 })
 
 const openCreateDialog = () => {
-  showCreateOptions.value = true // Thay đổi từ showForm.value = true
+  // showCreateOptions.value = true // Thay đổi từ showForm.value = true
+  showForm.value = true
 }
 
 const openCreateForm = () => {

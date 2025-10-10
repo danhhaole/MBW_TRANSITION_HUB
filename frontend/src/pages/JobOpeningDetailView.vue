@@ -56,12 +56,12 @@
             <p class="text-sm font-medium text-gray-900">{{ formatDate(data.posting_date) || '-' }}</p>
           </div>
 
-          <div class="info-item">
+          <!-- <div class="info-item">
             <label class="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wide">
               {{ __('Phòng ban') }}
             </label>
             <p class="text-sm font-medium text-gray-900">{{ data.department_name || '-' }}</p>
-          </div>
+          </div> -->
 
           <div class="info-item">
             <label class="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wide">
@@ -70,19 +70,19 @@
             <p class="text-sm font-medium text-gray-900">{{ formatDate(data.closing_date) || '-' }}</p>
           </div>
 
-          <div class="info-item">
+          <!-- <div class="info-item">
             <label class="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wide">
               {{ __('Vị trí') }}
             </label>
             <p class="text-sm font-medium text-gray-900">{{ data.location_name || '-' }}</p>
-          </div>
+          </div> -->
 
-          <div class="info-item">
+          <!-- <div class="info-item">
             <label class="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wide">
               {{ __('Chủ sở hữu') }}
             </label>
             <p class="text-sm font-medium text-gray-900">{{ data.owner_id || '-' }}</p>
-          </div>
+          </div> -->
 
           <div class="info-item">
             <label class="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wide">
