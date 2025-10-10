@@ -71,6 +71,7 @@
    "label": "Shared At"
   },
   {
+   "default": "Pending",
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
@@ -94,7 +95,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-10 04:45:37.506880",
+ "modified": "2025-10-10 08:02:40.381446",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Campaign Social",
