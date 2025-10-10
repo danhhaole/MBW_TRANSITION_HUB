@@ -7,7 +7,7 @@
 		</LayoutHeader>
 		<div class="flex flex-col lg:flex-row">
 			<!-- Left half - Candidate Information -->
-			<div class="w-full lg:w-1/3 bg-white p-5 border-r">
+			<div class="w-full lg:w-1/4 bg-white p-4 border-r">
 				<!-- Avatar and Name -->
 				<div class="relative">
 					<!-- Edit Button -->
@@ -134,7 +134,7 @@
 			</div>
 
 			<!-- Right half -->
-			<div class="w-full lg:w-2/3 bg-white">
+			<div class="w-full lg:w-3/4 bg-white">
 				<div class="space-y-4">
 					<!-- Tabs header -->
 					<Tabs as="div" class="" v-model="tabIndex" :tabs="tabs" />
@@ -185,9 +185,9 @@
 												'Chưa cập nhật'
 											}}
 										</td>
-										<td class="px-6 py-4">
-											<button class="text-blue-600 hover:text-blue-900">
-												Xem chi tiết
+										<td class="px-6 py-4 ">
+											<button @click="view(campaign)" class="text-blue-600 hover:text-blue-900" :title="__('View Details')">
+												<FeatherIcon name="eye" class="w-4 h-4" />
 											</button>
 										</td>
 									</tr>
@@ -366,7 +366,7 @@
             <i class="ti ti-brand-facebook text-gray-400"></i>
           </template>
         </FormControl>
-        
+
         <FormControl
           :label="__('Date of Birth')"
           :model-value="editData.date_of_birth ? editData.date_of_birth.toISOString().split('T')[0] : ''"
@@ -569,6 +569,13 @@ const saveChanges = async () => {
     isSaving.value = false
   }
 }
+
+const viewCampaign = () => {
+  toast.info('Chức năng xem chi tiết chiến dịch đang được phát triển.')
+  route.push({ name: 'CampaignDetailView' })
+}
+
+const view = (item) => route.push(`/campaigns/${item.name}`)
 
 onMounted(async () => {
 	try {

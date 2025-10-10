@@ -309,11 +309,12 @@ def get_talent_detail_view(pool_id: str):
         campaign_info = frappe.db.get_value(
             "Campaign",
             c.campaign_id,
-            ["campaign_name"],
+            ["campaign_name", "name"],
             as_dict=True
         )
 
         campaign_data.append({
+            "name": campaign_info.name if campaign_info else None,
             "id": c.name,
             "campaign_name": campaign_info.campaign_name if campaign_info else None,
             "status": c.status,
