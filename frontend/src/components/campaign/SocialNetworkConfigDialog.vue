@@ -17,87 +17,174 @@
         
         <!-- Form Content -->
         <div v-show="!isDataLoading" class="space-y-4">
-        <!-- Modal Header with Close Button -->
+        
+        <!-- Progress Indicator -->
+        <div class="mb-6">
+          <div class="flex items-center justify-between text-xs text-gray-500 mb-2">
+            <span>{{ __('Progress') }}</span>
+            <span>{{ currentStep }}/2</span>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-2">
+            <div 
+              class="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              :style="{ width: `${(currentStep / 2) * 100}%` }"
+            ></div>
+          </div>
+        </div>
 
-        <!-- Select External Connection - Only in detail mode -->
-        <FormControl
-          v-if="mode === 'detail'"
-          type="select"
-          :label="__('External Connection')"
-          v-model="configData.external_connection"
-          :options="externalConnectionOptions"
-          :placeholder="loadingConnections ? __('Loading connections...') : __('Select connection...')"
-          :loading="loadingConnections"
-          @change="handleConnectionChange"
-        />
-
-        <!-- Select Social Page -->
-        <FormControl
-          type="select"
-          :label="__('Select Social Page')"
-          v-model="configData.page_id"
-          :options="socialPageOptions"
-          :placeholder="loadingPages ? __('Loading pages...') : __('Select a page...')"
-          :loading="loadingPages"
-          :key="socialPageOptions.length"
-          :disabled="mode === 'detail' && !configData.external_connection"
-        />
-
-        <!-- Schedule -->
-        <FormControl
-          type="datetime-local"
-          :label="__('Time Post News')"
-          v-model="configData.scheduled_at"
-          :min="minScheduledAt"
-          :step="60"
-        />
-
-        <!-- Job Opening -->
-        <FormControl
-          type="select"
-          :label="__('Job Opening (optional)')"
-          v-model="configData.job_opening"
-          :options="jobOpeningOptions"
-          :placeholder="loadingJobOpenings ? __('Loading job openings...') : __('Select a job opening...')"
-          :loading="loadingJobOpenings"
-          :key="jobOpeningOptions.length"
-          @change="handleJobOpeningChange"
-        />
-
-        <!-- Template Content -->
-        <!-- <FormControl
-          type="textarea"
-          :label="__('Template Content')"
-          v-model="configData.template_content"
-          :placeholder="__('Enter template content for this step...')"
-          :rows="4"
-        >
-      </FormControl> -->
-      <TextEditor
-      ref="content"
-				variant="outline"
-				:class="'w-full'"
-        :bubbleMenu="true"
-				:fixedMenu="true"
-        :placeholder="__('Enter your template content...')"
-        :content="configData.template_content"
-        @change="configData.template_content = $event"
-        editor-class="!prose-sm !w-full overflow-auto !max-w-full min-h-[180px] max-h-80 py-1.5 px-2 rounded border border-gray-300 bg-white hover:border-gray-400 hover:shadow-sm focus:bg-white focus:border-gray-500 focus:shadow-sm focus:ring-0 focus-visible:ring-2 focus-visible:ring-gray-400 text-gray-800 transition-colors"
-/>
-
-        <!-- Image Uploader -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            {{ __("Step Image (optional)") }}
+        <!-- Step 1: Choose Where to Post -->
+        <div class="space-y-4">
+          <label class="block text-sm font-medium text-gray-700">
+            {{ __('Step 1: Choose Where to Post') }}
           </label>
-          <ImageUploader
-            :image_url="configData.image"
-            image_type="image/*"
-            @upload="handleImageUpload"
-            @remove="handleImageRemove"
+          
+          <!-- Loading State -->
+          <div v-if="loadingInternalConnections" class="flex items-center justify-center py-8">
+            <div class="flex items-center space-x-3">
+              <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              <span class="text-sm text-gray-600">{{ __('Loading connections...') }}</span>
+            </div>
+          </div>
+          
+          <!-- No Connections -->
+          <div v-else-if="!internalExternalConnections.length" class="text-center py-8">
+            <div class="text-gray-500 mb-2">{{ __('No social media connections available') }}</div>
+            <p class="text-xs text-gray-400">{{ __('Please connect your social media accounts first') }}</p>
+          </div>
+          
+          <!-- External Connections Grid -->
+          <div v-else class="grid grid-cols-1 gap-3">
+            <div
+              v-for="connection in internalExternalConnections"
+              :key="connection.name"
+              class="border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md"
+              :class="configData.external_connection === connection.name ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'"
+              @click="selectConnection(connection)"
+            >
+              <div class="flex items-center">
+                <FeatherIcon
+                  :name="getPlatformIcon(connection.platform_type)"
+                  class="h-6 w-6 mr-3"
+                  :class="configData.external_connection === connection.name ? 'text-blue-600' : 'text-gray-400'"
+                />
+                <div class="flex-1">
+                  <div class="text-sm font-medium text-gray-900">
+                    {{ connection.tenant_name || connection.name }}
+                  </div>
+                  <div class="text-xs text-gray-500">
+                    {{ connection.platform_type }} • {{ connection.connection_status }}
+                  </div>
+                </div>
+                <div v-if="configData.external_connection === connection.name" class="ml-2">
+                  <FeatherIcon name="check-circle" class="h-5 w-5 text-blue-600" />
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Social Pages (show when connection selected) -->
+          <div v-if="configData.external_connection" class="space-y-3">
+            <label class="block text-sm font-medium text-gray-700">
+              {{ __('Choose Page/Profile') }}
+            </label>
+            
+            <!-- Loading Pages -->
+            <div v-if="loadingInternalPages" class="flex items-center justify-center py-4">
+              <div class="flex items-center space-x-2">
+                <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                <span class="text-sm text-gray-600">{{ __('Loading pages...') }}</span>
+              </div>
+            </div>
+            
+            <!-- No Pages -->
+            <div v-else-if="!internalSocialPages.length" class="text-center py-4">
+              <div class="text-gray-500 text-sm">{{ __('No pages available for this connection') }}</div>
+            </div>
+            
+            <!-- Social Pages Grid -->
+            <div v-else class="grid grid-cols-1 gap-2">
+              <div
+                v-for="page in internalSocialPages"
+                :key="page.external_account_id"
+                class="border rounded-lg p-3 cursor-pointer transition-all duration-200 hover:shadow-sm"
+                :class="configData.page_id === page.external_account_id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'"
+                @click="selectPage(page)"
+              >
+                <div class="flex items-center">
+                  <div class="flex-1">
+                    <div class="text-sm font-medium text-gray-900">
+                      {{ page.account_name }}
+                    </div>
+                    <div class="text-xs text-gray-500">
+                      {{ page.account_type }}
+                    </div>
+                  </div>
+                  <div v-if="configData.page_id === page.external_account_id" class="ml-2">
+                    <FeatherIcon name="check-circle" class="h-4 w-4 text-blue-600" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Post Information (only show when page is selected) -->
+        <div v-if="configData.page_id" class="space-y-4">
+          <label class="block text-sm font-medium text-gray-700">
+            {{ __('Step 2: Post Information') }}
+          </label>
+          
+          <!-- Schedule -->
+          <FormControl
+            type="datetime-local"
+            :label="__('Schedule Time')"
+            v-model="configData.scheduled_at"
+            :min="minScheduledAt"
+            :step="60"
           />
-          <!-- Image URL input -->
-          <div class="mt-2">
+
+          <!-- Job Opening (optional) -->
+          <FormControl
+            type="select"
+            :label="__('Job Opening (Optional)')"
+            v-model="configData.job_opening"
+            :options="jobOpeningOptions"
+            :placeholder="loadingJobOpenings ? __('Loading job openings...') : __('Select a job opening...')"
+            :loading="loadingJobOpenings"
+            :key="jobOpeningOptions.length"
+            @change="handleJobOpeningChange"
+          />
+
+          <!-- Content -->
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">
+              {{ __('Post Content') }}
+            </label>
+            <TextEditor
+              ref="content"
+              variant="outline"
+              :class="'w-full'"
+              :bubbleMenu="true"
+              :fixedMenu="true"
+              :placeholder="__('Enter your post content...')"
+              :content="configData.template_content"
+              @change="configData.template_content = $event"
+              editor-class="!prose-sm !w-full overflow-auto !max-w-full min-h-[180px] max-h-80 py-1.5 px-2 rounded border border-gray-300 bg-white hover:border-gray-400 hover:shadow-sm focus:bg-white focus:border-gray-500 focus:shadow-sm focus:ring-0 focus-visible:ring-2 focus-visible:ring-gray-400 text-gray-800 transition-colors"
+            />
+          </div>
+
+          <!-- Image (optional) -->
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">
+              {{ __("Post Image (Optional)") }}
+            </label>
+            <ImageUploader
+              :image_url="configData.image"
+              image_type="image/*"
+              @upload="handleImageUpload"
+              @remove="handleImageRemove"
+            />
+            <!-- Image URL input -->
             <FormControl
               type="text"
               :label="__('Image URL')"
@@ -105,17 +192,17 @@
               :placeholder="__('https://...')"
               size="sm"
             />
-          </div>
-          <!-- Preview -->
-          <div v-if="configData.image" class="mt-3">
-            <label class="block text-xs font-medium text-gray-500 mb-1">{{
-              __("Preview")
-            }}</label>
-            <img
-              :src="configData.image"
-              alt="Preview"
-              class="max-h-40 rounded border"
-            />
+            <!-- Preview -->
+            <div v-if="configData.image" class="mt-3">
+              <label class="block text-xs font-medium text-gray-500 mb-1">{{
+                __("Preview")
+              }}</label>
+              <img
+                :src="configData.image"
+                alt="Preview"
+                class="max-h-40 rounded border"
+              />
+            </div>
           </div>
         </div>
         </div> <!-- End Form Content -->
@@ -137,7 +224,7 @@
           theme="gray" 
           @click="handleConfirm"
           :loading="saving || isDataLoading"
-          :disabled="saving || isDataLoading"
+          :disabled="saving || isDataLoading || !canSubmit"
         >
           {{ buttonText }}
         </Button>
@@ -283,10 +370,25 @@ const buttonText = computed(() => {
   if (saving.value) {
     return props.mode === 'detail' ? __("Saving...") : __("Creating...");
   }
-  if (isDataLoading.value) {
-    return __("Loading...");
-  }
-  return props.mode === 'detail' ? __("Save") : __("Continue");
+  return props.mode === 'detail' ? __("Save Changes") : __("Create Post");
+});
+
+// Check if form can be submitted
+const canSubmit = computed(() => {
+  return configData.value.external_connection && 
+         configData.value.page_id && 
+         configData.value.scheduled_at &&
+         configData.value.template_content?.trim();
+});
+
+// Calculate current step for progress indicator (simplified to 2 steps)
+const currentStep = computed(() => {
+  let step = 0;
+  // Step 1: Choose where to post (connection + page)
+  if (configData.value.external_connection && configData.value.page_id) step++;
+  // Step 2: Post information (schedule + content)
+  if (configData.value.scheduled_at && configData.value.template_content?.trim()) step++;
+  return step;
 });
 
 // Local config data
@@ -299,24 +401,50 @@ const configData = ref({
   template_content: "",
 });
 
+// Internal data management (like CampaignWizard)
+const internalExternalConnections = ref([]);
+const internalSocialPages = ref([]);
+const loadingInternalConnections = ref(false);
+const loadingInternalPages = ref(false);
+
 // Reactive options for FormControl selects
 const externalConnectionOptions = ref([]);
 const socialPageOptions = ref([]);
 const jobOpeningOptions = ref([]);
 
-// Update externalConnectionOptions when props.externalConnections changes
+// Load external connections (like CampaignWizard)
+const loadExternalConnections = async () => {
+  try {
+    loadingInternalConnections.value = true;
+    const response = await call('frappe.client.get_list', {
+      doctype: 'Mira External Connection',
+      fields: ['name', 'tenant_name', 'platform_type', 'connection_status'],
+      filters: [['connection_status', '=', 'Connected']],
+      limit_page_length: 100
+    });
+    internalExternalConnections.value = response || [];
+    updateExternalConnectionOptions();
+    console.log('✅ SocialNetworkConfigDialog: Loaded external connections:', internalExternalConnections.value.length);
+  } catch (error) {
+    console.error('❌ SocialNetworkConfigDialog: Error loading external connections:', error);
+    internalExternalConnections.value = [];
+  } finally {
+    loadingInternalConnections.value = false;
+  }
+};
+
+// Update externalConnectionOptions from internal data
 const updateExternalConnectionOptions = () => {
   console.log('🔍 Updating externalConnectionOptions...');
-  console.log('props.externalConnections:', props.externalConnections);
   
-  if (!props.externalConnections || props.externalConnections.length === 0) {
-    console.log('❌ No externalConnections or empty array');
+  if (!internalExternalConnections.value || internalExternalConnections.value.length === 0) {
+    console.log('❌ No internalExternalConnections or empty array');
     externalConnectionOptions.value = [];
     return;
   }
   
-  const options = props.externalConnections.map(conn => ({
-    label: `${conn.tenant_name} (${conn.platform_type})`,
+  const options = internalExternalConnections.value.map(conn => ({
+    label: conn.tenant_name || conn.name,
     value: conn.name
   }));
   
@@ -324,26 +452,84 @@ const updateExternalConnectionOptions = () => {
   console.log('✅ externalConnectionOptions updated:', options);
 };
 
-// Handle connection change - filter social pages by selected connection
+// Load social pages for selected connection (like CampaignWizard)
+const loadSocialPages = async () => {
+  try {
+    loadingInternalPages.value = true;
+    internalSocialPages.value = [];
+    
+    if (!configData.value.external_connection) return;
+    
+    // Fetch accounts for this connection
+    const res = await call("mbw_mira.api.external_connections.get_account_details", {
+      connection_id: configData.value.external_connection,
+    });
+    
+    if (res && res.status === "success") {
+      const accounts = Array.isArray(res.data) ? res.data : res.data ? [res.data] : [];
+      // Only active pages/users; prefer Page
+      internalSocialPages.value = accounts.filter((a) => a.connection_status !== "Revoked");
+      updateInternalSocialPageOptions();
+    }
+  } catch (e) {
+    console.warn("Failed to load social pages", e);
+    internalSocialPages.value = [];
+  } finally {
+    loadingInternalPages.value = false;
+  }
+};
+
+// Update socialPageOptions from internal data
+const updateInternalSocialPageOptions = () => {
+  if (!internalSocialPages.value || internalSocialPages.value.length === 0) {
+    socialPageOptions.value = [];
+    return;
+  }
+  
+  const options = internalSocialPages.value.map(page => ({
+    label: `${page.account_name} (${page.account_type})`,
+    value: page.external_account_id
+  }));
+  
+  socialPageOptions.value = options;
+  console.log('✅ Internal socialPageOptions updated:', options);
+};
+
+// Handle connection selection (card click)
+const selectConnection = (connection) => {
+  configData.value.external_connection = connection.name;
+  configData.value.page_id = ""; // Reset page selection
+  loadSocialPages(); // Load pages for selected connection
+};
+
+// Handle page selection (card click)
+const selectPage = (page) => {
+  configData.value.page_id = page.external_account_id;
+};
+
+// Get platform icon (like CampaignWizard)
+const getPlatformIcon = (platformType) => {
+  const iconMap = {
+    Facebook: "facebook",
+    LinkedIn: "linkedin", 
+    Twitter: "twitter",
+    Instagram: "instagram",
+    Zalo: "message-circle",
+    TopCV: "briefcase"
+  };
+  return iconMap[platformType] || "share-2";
+};
+
+// Handle connection change - load social pages for selected connection
 const handleConnectionChange = () => {
   console.log('🔄 Connection changed:', configData.value.external_connection);
   
   // Reset page selection when connection changes
   configData.value.page_id = "";
   
-  // Filter social pages by selected connection
-  if (configData.value.external_connection && props.socialPages) {
-    const filteredPages = props.socialPages.filter(page => 
-      page.parent_connection === configData.value.external_connection
-    );
-    
-    const options = filteredPages.map(page => ({
-      label: `${page.account_name} (${page.account_type})`,
-      value: page.external_account_id
-    }));
-    
-    socialPageOptions.value = options;
-    console.log('✅ Filtered socialPageOptions:', options);
+  // Load social pages for the selected connection
+  if (configData.value.external_connection) {
+    loadSocialPages();
   } else {
     socialPageOptions.value = [];
   }
@@ -680,6 +866,9 @@ watch(show, (newShow) => {
   if (newShow) {
     // Reset force show form
     forceShowForm.value = false;
+    
+    // Load external connections when dialog opens
+    loadExternalConnections();
     
     // Set default scheduled time
     if (!configData.value.scheduled_at) {
