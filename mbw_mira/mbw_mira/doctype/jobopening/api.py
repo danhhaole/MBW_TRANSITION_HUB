@@ -128,3 +128,6 @@ def get_public_detail(name):
             doc.owner_details = owner
 
     return doc
+
+def track_utm_visit():
+    pass
