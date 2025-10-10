@@ -91,16 +91,17 @@ def tracking_pixel():
 
 @frappe.whitelist(allow_guest=True)
 def unsubscribe():
-    candidate_id = frappe.form_dict.get("candidate_id")
+    contact_id = frappe.form_dict.get("contact_id")
+    talent_id = frappe.form_dict.get("talent_id")
     action = frappe.form_dict.get("action")
     sig = frappe.form_dict.get("sig")
     url =  frappe.form_dict.get("url")
 
-    if not candidate_id or not sig:
+    if not contact_id or not sig or not talent_id:
         frappe.throw("Missing parameters")
 
     params = {
-        "candidate_id": candidate_id,
+        "contact_id": contact_id,
         "action": action,
         "url":url
     }
@@ -110,17 +111,17 @@ def unsubscribe():
     # 1. Log Mira Interaction
     frappe.get_doc({
         "doctype": "Mira Interaction",
-        "candidate_id": candidate_id,
+        "contact_id": contact_id,
         "action": action,
         "interaction_type": "EMAIL_UNSUBSCRIBED",
         "description": f"IP: {frappe.local.request_ip}, User-Agent: {frappe.local.request.headers.get('User-Agent')}"
     }).insert(ignore_permissions=True)
 
     # 2. Flag Candidate as Unsubscribed
-    if frappe.db.exists("Candidate", candidate_id):
+    if contact_id and frappe.db.exists("Mira Contact", contact_id):
         frappe.db.set_value(
-            "Candidate",
-            candidate_id,
+            "Mira Contact",
+            contact_id,
             {
                 "email_opt_out": 1,
                 "last_interaction": now_datetime()
@@ -131,7 +132,7 @@ def unsubscribe():
     frappe.publish_realtime(
         event="interaction_created",
         message={
-            "candidate_id": candidate_id,
+            "candidate_id": contact_id,
             "interaction_type": "EMAIL_UNSUBSCRIBED",
             "action": action
         },

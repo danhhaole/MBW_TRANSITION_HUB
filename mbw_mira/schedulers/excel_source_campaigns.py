@@ -17,9 +17,9 @@ def run():
             "start_date": ("<=", today),
             "end_date": (">=", today)
         },
-        fields=["name", "campaign_name", "source"]
+        fields=["name", "campaign_name", "source","source_target"]
     )
-   
+    
     for c in campaigns:
         if c.source_target == 'contact':
             

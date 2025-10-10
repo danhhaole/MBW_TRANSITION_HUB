@@ -5,7 +5,7 @@ from datetime import datetime
 from frappe.utils import getdate
 import ast
 
-def import_contact_from_file(campaign_name: str):
+def import_contact_from_file(campaign_name: str,source_target:str):
     logger = frappe.logger("import_candidates")
     print(1222)
     # 1. Lấy thông tin campaign
@@ -41,7 +41,7 @@ def import_contact_from_file(campaign_name: str):
     
     file_name = campaign.source_file.split("/")[-1]
     field_mapping = source_config.get("field_mapping", [])
-    print(file_name)
+    
     if not file_name or not field_mapping:
         frappe.log_error("Import Contact", f"Missing file name or field mapping for campaign: {campaign_name}")
         return
@@ -132,8 +132,8 @@ def import_contact_from_file(campaign_name: str):
                 "skills": json.dumps(skills_list) or "",
                 "resume": raw_data.get("resume")or "",
                 "notes": raw_data.get("notes") or "",
-                "email_opt_out": 1,
-                "sms_opt_out": 1,
+                "email_opt_out": 0,
+                "sms_opt_out": 0,
                 "preferred_contact_channel": raw_data.get("preferred_contact_channel")or "",
                 "last_campaign_id": raw_data.get("last_campaign_id")or "",
                 "last_campaign_status": raw_data.get("last_campaign_status")or "",
@@ -162,7 +162,7 @@ def import_contact_from_file(campaign_name: str):
         return True
 
 
-def import_talent_from_file(campaign_name: str):
+def import_talent_from_file(campaign_name: str,source_target:str):
 
     # 1. Lấy thông tin campaign
     campaign = frappe.db.get_value(
@@ -288,8 +288,8 @@ def import_talent_from_file(campaign_name: str):
                 "skills": json.dumps(skills_list) or "",
                 "resume": raw_data.get("resume")or "",
                 "notes": raw_data.get("notes") or "",
-                "email_opt_out": 1,
-                "sms_opt_out": 1,
+                "email_opt_out": 0,
+                "sms_opt_out": 0,
                 "preferred_contact_channel": raw_data.get("preferred_contact_channel")or "",
                 "last_campaign_id": raw_data.get("last_campaign_id")or "",
                 "last_campaign_status": raw_data.get("last_campaign_status")or "",

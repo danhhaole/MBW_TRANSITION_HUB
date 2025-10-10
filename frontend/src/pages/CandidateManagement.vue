@@ -51,7 +51,7 @@
 						<div class="flex flex-col sm:flex-row gap-4 flex-1 min-w-0">
 							<!-- Search -->
 							<div class="flex-1 min-w-0 sm:max-w-xs">
-								<FormControl v-model="filters.search" type="text" :placeholder="__('Search pools...')"
+								<FormControl v-model="filters.search" type="text" :placeholder="__('Search contact...')"
 									:prefix-icon="'search'" @input="debouncedSearch" />
 							</div>
 
@@ -89,7 +89,7 @@
 									variant="outline"
 									theme="green"
 									@click="handleExport"
-									:title="__('Export Candidates')"
+									:title="__('Export Contact')"
 								>
 									<template #prefix>
 										<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -491,7 +491,7 @@ import {
 	processSkills
 } from '@/services/candidateService'
 
-const breadcrumbs = [{ label: __('Talent Profiles'), route: { name: 'CandidateManagement' } }]
+const breadcrumbs = [{ label: __('Contact'), route: { name: 'CandidateManagement' } }]
 
 // Router
 const router = useRouter()
