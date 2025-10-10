@@ -58,33 +58,33 @@ const routes = [
 	{ path: '/applicant-pool', name: 'ApplicantPoolManagement', component: ()=>import('@/pages/ApplicantPoolManagement.vue') },
 
 	// LadiPage Management
-	{ 
-		path: '/ladi-pages', 
-		name: 'ladi-pages',
-		component: () => import('@/pages/Ladi/LadiPageManagement.vue'),
-		meta: {
-			requiresAuth: true,
-			title: 'Ladi Page Management'
-		}
-	},
-	{ 
-		path: '/ladi-pages/:id/edit', 
-		name: 'ladi-page-editor',
-		component: ()=>import('@/pages/LadiPageEditor.vue'),
-		meta: {
-			requiresAuth: true,
-			title: 'Ladi Page Editor'
-		}
-	},
-	{ 
-		path: '/ladi-pages/:id/view', 
-		name: 'ladi-page-view',
-		component: ()=>import('@/pages/LadiPageView.vue'),
-		meta: {
-			requiresAuth: true,
-			title: 'Ladi Page View' 
-		}
-	},
+	// { 
+	// 	path: '/ladi-pages', 
+	// 	name: 'ladi-pages',
+	// 	component: () => import('@/pages/Ladi/LadiPageManagement.vue'),
+	// 	meta: {
+	// 		requiresAuth: true,
+	// 		title: 'Ladi Page Management'
+	// 	}
+	// },
+	// { 
+	// 	path: '/ladi-pages/:id/edit', 
+	// 	name: 'ladi-page-editor',
+	// 	component: ()=>import('@/pages/LadiPageEditor.vue'),
+	// 	meta: {
+	// 		requiresAuth: true,
+	// 		title: 'Ladi Page Editor'
+	// 	}
+	// },
+	// { 
+	// 	path: '/ladi-pages/:id/view', 
+	// 	name: 'ladi-page-view',
+	// 	component: ()=>import('@/pages/LadiPageView.vue'),
+	// 	meta: {
+	// 		requiresAuth: true,
+	// 		title: 'Ladi Page View' 
+	// 	}
+	// },
 	// Email Template
 	{
 		path: "/email-template",
