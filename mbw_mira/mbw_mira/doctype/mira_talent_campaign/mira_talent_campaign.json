@@ -21,7 +21,7 @@
    "options": "ACTIVE\nPAUSED\nCOMPLETED\nCANCELLED"
   },
   {
-   "description": "Tham chi\u1ebfu \u0111\u1ebfn order trong CampaignStep \u0111\u1ec3 x\u00e1c \u0111\u1ecbnh b\u01b0\u1edbc hi\u1ec7n t\u1ea1i",
+   "description": "Tham chi\u1ebfu \u0111\u1ebfn order trong CampaignStep \u0111\u1ec3 x\u00e1c \u0111\u1ecbnh b\u01b0\u1edbc hi\u1ec7n t\u1ea1i.",
    "fieldname": "current_step_order",
    "fieldtype": "Int",
    "label": "Current Step Order"
