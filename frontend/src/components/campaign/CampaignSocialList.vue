@@ -135,6 +135,8 @@
 			</div>
 		</div>
 
+	
+	</div>
 		<!-- Social Network Config Dialog -->
 		<SocialNetworkConfigDialog
 			v-model="showCreateDialog"
@@ -179,7 +181,6 @@
 				</div>
 			</template>
 		</Dialog>
-	</div>
 	</div>
 </template>
 
@@ -291,6 +292,8 @@ const openCreateDialog = () => {
 		template_content: '',
 	}
 	showCreateDialog.value = true
+
+	console.log('openCreateDialog', showCreateDialog.value)
 }
 
 // QR Code functions
