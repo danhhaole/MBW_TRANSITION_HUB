@@ -4,7 +4,6 @@
 import frappe
 from frappe.tests.utils import FrappeTestCase
 
-
 class TestMiraTalentCampaign(FrappeTestCase):
 	pass
 

@@ -5,10 +5,8 @@ import frappe
 from frappe.model.document import Document
 from frappe.utils import now_datetime
 
-
 class MiraTalentCampaign(Document):
     pass
-
     def validate(self):
         # Check trùng talent_id + campaign_id
         validate_unique_candidate_campaign(self)
