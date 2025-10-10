@@ -167,6 +167,48 @@ class MiraImportsession(Document):
 				
 		except Exception as e:
 			frappe.log_error(f"Failed to add log: {str(e)}", "ImportSession Log Error")
+	
+	def add_simple_log_talent(self, status, message, row_number=None, full_name=None,
+								  document_name=None, processing_time=None):
+		"""Add a simple log entry without child table"""
+		try:
+			# Initialize temp logs if not exists
+			if not hasattr(self, '_temp_logs_talent'):
+				self._temp_logs_talent = []
+			
+			log_entry = {
+				"timestamp": now(),
+				"status": status,
+				"message": message,
+				"row_number": row_number,
+				"full_name": full_name,
+				"document_name": document_name,
+				"processing_time": processing_time
+			}
+			
+			self._temp_logs_talent.append(log_entry)
+			
+			# Store in error_summary as JSON (keep last 100 entries)
+			if len(self._temp_logs_talent) > 100:
+				self._temp_logs_talent = self._temp_logs_talent[-100:]
+			
+			# Update error_summary field with logs
+			try:
+				existing_logs = []
+				if self.error_summary:
+					existing_logs = json.loads(self.error_summary)
+				
+				existing_logs.append(log_entry)
+				if len(existing_logs) > 100:
+					existing_logs = existing_logs[-100:]
+				
+				self.error_summary = json.dumps(existing_logs)
+			except Exception as e:
+				# If JSON parsing fails, start fresh
+				self.error_summary = json.dumps([log_entry])
+				
+		except Exception as e:
+			frappe.log_error(f"Failed to add log: {str(e)}", "ImportSession Log Error")
 
 	def update_status(self, status, save=True):
 		"""Update session status"""
@@ -226,6 +268,19 @@ class MiraImportsession(Document):
 			document_name=document_name,
 			processing_time=processing_time
 		)
+	
+	def mark_success_talent(self, row_number=None, full_name=None, document_name=None, 
+					processing_time=None):
+		"""Mark a row as successfully processed"""
+		self.success_count = (self.success_count or 0) + 1
+		self.add_simple_log_talent(
+			status="success",
+			message=f"Successfully created talent: {document_name}",
+			row_number=row_number,
+			full_name=full_name,
+			document_name=document_name,
+			processing_time=processing_time
+		)
 		
 	def mark_failure(self, row_number=None, job_title=None, error_message=None, 
 					processing_time=None):
@@ -244,6 +299,18 @@ class MiraImportsession(Document):
 		"""Mark a row as failed"""
 		self.failed_count = (self.failed_count or 0) + 1
 		self.add_simple_log_candidate(
+			status="error",
+			message=error_message or "Processing failed",
+			row_number=row_number,
+			full_name=full_name,
+			processing_time=processing_time
+		)
+	
+	def mark_failure_talent(self, row_number=None, full_name=None, error_message=None, 
+					processing_time=None):
+		"""Mark a row as failed"""
+		self.failed_count = (self.failed_count or 0) + 1
+		self.add_simple_log_talent(
 			status="error",
 			message=error_message or "Processing failed",
 			row_number=row_number,
@@ -534,7 +601,6 @@ def import_with_mapping_candidate():
 		batch_size = int(frappe.form_dict.get('batch_size', 100))
 		validate_only = frappe.form_dict.get('validate_only', '0') == '1'
 		skip_duplicates = frappe.form_dict.get('skip_duplicates', '1') == '1'
-		print(">>>>>>>>>>>>>>>>>>> 1. Bắt đầu import_with_mapping_candidate")
 
 		if not uploaded:
 			frappe.throw(_("No file uploaded"))
@@ -547,27 +613,20 @@ def import_with_mapping_candidate():
 			dn=uploaded.filename,
 			is_private=0
 		)
-		print(">>>>>>>>>>>>>>>>>>> 2. File đã được lưu:", file_doc.file_url)
-
 		try:
 			# 3️⃣ Đọc file vào dataframe
-			print(">>>>>>>>>>>>>>>>>>> 3. Đọc file bằng pandas...")
 			df = read_file_to_dataframe(file_doc.get_full_path(), uploaded.filename)
-			print(f">>>>>>>>>>>>>>>>>>> 3.1 File có {len(df)} dòng, {len(df.columns)} cột")
 
 			# 4️⃣ Parse mapping
 			mapping = json.loads(mapping_raw)
 			if not mapping:
 				frappe.throw(_("Field mapping is required"))
-			print(">>>>>>>>>>>>>>>>>>> 4. Mapping gốc từ frontend:", mapping)
 
 			# 5️⃣ Chuẩn hoá mapping (Excel header → field hệ thống)
 			normalized_mapping = {}
 			for source_col, target_field in mapping.items():
 				if target_field:
 					normalized_mapping[str(source_col).strip().lower()] = str(target_field).strip()
-
-			print(">>>>>>>>>>>>>>>>>>> 5. Mapping sau chuẩn hoá (Excel header -> field hệ thống):", normalized_mapping)
 
 			# 6️⃣ Tạo import session
 			session = create_import_session_candidate(
@@ -584,17 +643,11 @@ def import_with_mapping_candidate():
 			session.add_simple_log_candidate("info", f"Import session started for {len(df)} rows")
 			session.update_status("Processing")
 
-			print(">>>>>>>>>>>>>>>>>>> 6. Session tạo thành công:", session.name)
-
 			# 7️⃣ Chạy chế độ validate hoặc insert
 			if validate_only:
-				print(">>>>>>>>>>>>>>>>>>> 7. Chế độ kiểm tra dữ liệu (validate only)")
 				results = validate_import_data_with_session_candidate(df, normalized_mapping, session)
 			else:
-				print(">>>>>>>>>>>>>>>>>>> 8. Chế độ nhập dữ liệu thực tế (insert)")
 				results = process_import_data_with_session_candidate(df, normalized_mapping, selected_job_opening, session, batch_size)
-
-			print(">>>>>>>>>>>>>>>>>>> 8. Kết quả xử lý:", results)
 
 			# 9️⃣ Cập nhật trạng thái session
 			if results.get("failed", 0) == 0:
@@ -602,8 +655,6 @@ def import_with_mapping_candidate():
 			else:
 				session.update_status("Completed")
 				session.error_summary = f"{results['failed']} rows failed during import"
-
-			print(">>>>>>>>>>>>>>>>>>> 9. Import hoàn tất")
 
 			return {
 				**results,
@@ -614,12 +665,11 @@ def import_with_mapping_candidate():
 			# 🔟 Xoá file tạm
 			try:
 				frappe.delete_doc("File", file_doc.name, ignore_permissions=True)
-				print(">>>>>>>>>>>>>>>>>>> 10. File tạm đã xoá")
 			except Exception as cleanup_err:
-				print(">>>>>>>>>>>>>>>>>>> 10. Lỗi khi xoá file tạm:", cleanup_err)
+				print(f"Failed to delete temp file: {str(cleanup_err)}")
 
 	except Exception as e:
-		frappe.log_error(frappe.get_traceback(), "Candidate Import Error")
+		frappe.log_error(frappe.get_traceback(), "Talent Import Error")
 		frappe.throw(_("Import failed: {0}").format(str(e)))
 
 
@@ -907,6 +957,294 @@ def import_with_mapping():
 		frappe.log_error(frappe.get_traceback(), "Job Opening Import Error")
 		frappe.throw(_("Import failed: {0}").format(str(e)))
 
+# Talent
+@frappe.whitelist()
+def download_talent_template():
+	"""Generate and download import template Excel file for Talent"""
+	try:
+		# Get MiraTalent fields
+		meta = frappe.get_meta("Mira Talent")
+		
+		# Define important fields in order
+		important_fields = [
+			'full_name', 'email', 'phone', 'skills', 'source'
+		]
+		
+		template_fields = []
+		# Add important fields
+		for fieldname in important_fields:
+			field = meta.get_field(fieldname)
+			if field:
+				template_fields.append({
+					'fieldname': field.fieldname,
+					'label': field.label,
+					'fieldtype': field.fieldtype,
+					'required': field.reqd or fieldname in ['full_name', 'email', 'phone', 'skills'],
+					'options': field.options
+				})
+		
+		# Create template DataFrame with headers and sample data
+		headers = []
+		sample_data = {}
+		
+		for field in template_fields:
+			header = f"{field['label']}"
+			if field['required']:
+				header += " *"
+			headers.append(header)
+			
+			# Add sample data
+			if field['fieldname'] == 'full_name':
+				sample_data[header] = 'Nguyen Van A'
+			elif field['fieldname'] == 'email':
+				sample_data[header] = 'nguyenvana@example.com'
+			elif field['fieldname'] == 'phone':
+				sample_data[header] = '091234567823'
+			elif field['fieldname'] == 'skills':
+				sample_data[header] = 'Python, JavaScript, SQL'
+			elif field['fieldname'] == 'source':
+				sample_data[header] = 'Other'
+			else:
+				sample_data[header] = ''
+		
+		# Create DataFrame with sample data
+		df = pd.DataFrame([sample_data])
+		
+		# Save to temporary file and return
+		import tempfile
+		import os
+		
+		with tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False) as tmp:
+			with pd.ExcelWriter(tmp.name, engine='openpyxl') as writer:
+				df.to_excel(writer, sheet_name='Talent Import Template', index=False)
+				
+				# Get workbook and worksheet for styling
+				workbook = writer.book
+				worksheet = writer.sheets['Talent Import Template']
+				
+				# Style headers
+				from openpyxl.styles import Font, PatternFill, Alignment
+				
+				header_font = Font(bold=True, color="FFFFFF")
+				header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+				center_alignment = Alignment(horizontal="center", vertical="center")
+				
+				# Apply styling to header row
+				for col_num, header in enumerate(headers, 1):
+					cell = worksheet.cell(row=1, column=col_num)
+					cell.font = header_font
+					cell.fill = header_fill
+					cell.alignment = center_alignment
+				
+				# Set column widths
+				for col_num, header in enumerate(headers, 1):
+					column_letter = worksheet.cell(row=1, column=col_num).column_letter
+					worksheet.column_dimensions[column_letter].width = max(len(str(header)) + 5, 15)
+			
+			# Read file content
+			with open(tmp.name, 'rb') as f:
+				content = f.read()
+			
+			# Clean up
+			os.unlink(tmp.name)
+		
+		# Create file document
+		file_doc = frappe.get_doc({
+			"doctype": "File",
+			"file_name": f"talent_import_template_{frappe.utils.now_datetime().strftime('%Y%m%d_%H%M%S')}.xlsx",
+			"content": content,
+			"is_private": 0
+		})
+		file_doc.save(ignore_permissions=True)
+		
+		return {
+			"file_url": file_doc.file_url,
+			"file_name": file_doc.file_name
+		}
+		
+	except Exception as e:
+		frappe.log_error(frappe.get_traceback(), "Talent Template Generation Error")
+		frappe.throw(_("Failed to generate template: {0}").format(str(e)))
+
+@frappe.whitelist()
+def upload_and_preview_talent():
+	"""Enhanced preview endpoint with better error handling and encoding support for Candidate"""
+	try:
+		uploaded = frappe.request.files.get('file')
+		if not uploaded:
+			frappe.throw(_("No file uploaded"))
+
+		filename = uploaded.filename or ""
+		ext = filename.split(".")[-1].lower()
+
+		# Validate file type
+		if ext not in ['csv', 'xls', 'xlsx']:
+			frappe.throw(_("Unsupported file type. Only CSV, XLS, XLSX files are allowed."))
+
+		try:
+			file_bytes = uploaded.read()
+			bio = io.BytesIO(file_bytes)
+			
+			df = None
+			if ext == "csv":
+				# Try multiple encodings for CSV
+				encodings = ['utf-8', 'latin-1', 'cp1252', 'iso-8859-1']
+				for encoding in encodings:
+					try:
+						bio.seek(0)
+						# 👉 Force all columns to string
+						df = pd.read_csv(bio, encoding=encoding, dtype=str, keep_default_na=False)
+						break
+					except (UnicodeDecodeError, UnicodeError):
+						continue
+				
+				if df is None:
+					frappe.throw(_("Unable to read CSV file. Please check file encoding."))
+					
+			elif ext in ("xls", "xlsx"):
+				try:
+					# 👉 Force all cells to be read as strings to keep leading zeros (e.g. phone numbers)
+					df = pd.read_excel(bio, dtype=str, engine='openpyxl' if ext == 'xlsx' else None)
+				except Exception as e:
+					frappe.throw(_("Error reading Excel file: {0}").format(str(e)))
+
+			# Validate DataFrame
+			if df is None or df.empty:
+				frappe.throw(_("File is empty or cannot be read"))
+
+			# Clean column names and remove empty rows
+			df.columns = [str(col).strip() for col in df.columns]
+			df = df.dropna(how='all')
+			
+			if df.empty:
+				frappe.throw(_("No valid data found in file"))
+
+			# ✅ Convert all values to string (avoid float/int converting again)
+			df = df.applymap(lambda x: str(x).strip() if pd.notna(x) else "")
+
+		except Exception as e:
+			frappe.log_error(frappe.get_traceback(), "Talent Import Preview Read Error")
+			frappe.throw(_("Failed to read file: {0}").format(str(e)))
+
+		# Prepare response data
+		columns = [str(c) for c in df.columns.tolist()]
+		sample = df.head(10).fillna("").to_dict(orient="records")
+
+		# Get available fields from Mira Candidate for mapping suggestions
+		meta = frappe.get_meta("Mira Talent")
+		available_fields = []
+		for field in meta.fields:
+			if field.fieldtype not in ['Section Break', 'Column Break', 'Tab Break', 'HTML']:
+				available_fields.append({
+					'fieldname': field.fieldname,
+					'label': field.label,
+					'fieldtype': field.fieldtype,
+					'reqd': field.reqd
+				})
+
+		return {
+			"filename": filename,
+			"columns": columns,
+			"sample": sample,
+			"total_rows": len(df),
+			"available_fields": available_fields
+		}
+		
+	except Exception as e:
+		frappe.log_error(frappe.get_traceback(), "Talent Upload Preview Error")
+		frappe.throw(_("Preview failed: {0}").format(str(e)))
+
+@frappe.whitelist()
+def import_with_mapping_talent():
+	"""Enhanced import with mapping using Mira Importsession for tracking (Candidate)"""
+	try:
+		print(">>>>>>>>>>>>>>>>>>> 1.")
+		# 1️⃣ Nhận dữ liệu từ form
+		uploaded = frappe.request.files.get('file')
+		mapping_raw = frappe.form_dict.get('mapping', '{}')
+		batch_size = int(frappe.form_dict.get('batch_size', 100))
+		validate_only = frappe.form_dict.get('validate_only', '0') == '1'
+		skip_duplicates = frappe.form_dict.get('skip_duplicates', '1') == '1'
+
+		if not uploaded:
+			frappe.throw(_("No file uploaded"))
+
+		print(">>>>>>>>>>>>>>>>>>> 2.")
+		# 2️⃣ Lưu file tạm vào Frappe File
+		file_doc = save_file(
+			fname=uploaded.filename,
+			content=uploaded.read(),
+			dt="Mira Importsession",
+			dn=uploaded.filename,
+			is_private=0
+		)
+
+		try:
+			print(">>>>>>>>>>>>>>>>>>> 3.")
+			# 3️⃣ Đọc file vào dataframe
+			df = read_file_to_dataframe(file_doc.get_full_path(), uploaded.filename)
+
+			print(">>>>>>>>>>>>>>>>>>> 4.")
+			# 4️⃣ Parse mapping
+			mapping = json.loads(mapping_raw)
+			if not mapping:
+				frappe.throw(_("Field mapping is required"))
+
+			print(">>>>>>>>>>>>>>>>>>> 5.")
+			# 5️⃣ Chuẩn hoá mapping (Excel header → field hệ thống)
+			normalized_mapping = {}
+			for source_col, target_field in mapping.items():
+				if target_field:
+					normalized_mapping[str(source_col).strip().lower()] = str(target_field).strip()
+
+			print(">>>>>>>>>>>>>>>>>>> 6.")
+			# 6️⃣ Tạo import session
+			session = create_import_session_talennt(
+				file_name=uploaded.filename,
+				file_url=file_doc.file_url,
+				total_rows=len(df),
+				import_type="Other",
+				field_mapping=normalized_mapping,  # mapping chiều đúng
+				batch_size=batch_size,
+				validate_only=validate_only,
+				skip_duplicates=skip_duplicates
+			)
+			session.add_simple_log_talent("info", f"Import session started for {len(df)} rows")
+			print(">>>>>>>>>>>>>>>>>>> 6.1.")
+			session.update_status("Processing")
+
+			print(">>>>>>>>>>>>>>>>>>> 7.")
+			# 7️⃣ Chạy chế độ validate hoặc insert
+			if validate_only:
+				print(">>>>>>>>>>>>>>>>>>> 8.")
+				results = validate_import_data_with_session_talent(df, normalized_mapping, session)
+			else:
+				print(">>>>>>>>>>>>>>>>>>> 9.")
+				results = process_import_data_with_session_talent(df, normalized_mapping, session, batch_size)
+
+			print(">>>>>>>>>>>>>>>>>>> 10.")
+			# 9️⃣ Cập nhật trạng thái session
+			if results.get("failed", 0) == 0:
+				session.update_status("Completed")
+			else:
+				session.update_status("Completed")
+				session.error_summary = f"{results['failed']} rows failed during import"
+
+			return {
+				**results,
+				"session_id": session.name
+			}
+
+		finally:
+			# 🔟 Xoá file tạm
+			try:
+				frappe.delete_doc("File", file_doc.name, ignore_permissions=True)
+			except Exception as cleanup_err:
+				print(">>>>>>>>>>>>>>>>>>> 10. Lỗi khi xoá file tạm:", cleanup_err)
+
+	except Exception as e:
+		frappe.log_error(frappe.get_traceback(), "Candidate Import Error")
+		frappe.throw(_("Import failed: {0}").format(str(e)))
 
 # Hàm chung
 @frappe.whitelist()
@@ -1162,6 +1500,32 @@ def create_import_session_candidate(file_name, file_url, total_rows, import_type
 	frappe.db.commit()
 	return session
 
+#talent 1
+def create_import_session_talennt(file_name, file_url, total_rows, import_type="Other", field_mapping=None, batch_size=100,
+                         validate_only=False, skip_duplicates=True, **kwargs):
+    """Create a new import session (Mira Importsession)"""
+    session = frappe.new_doc("Mira Importsession")
+    session.file_name = file_name
+    session.file_url = file_url
+    session.total_rows = total_rows
+    session.import_type = import_type  # This will be "Other" by default
+    session.field_mapping = json.dumps(field_mapping) if field_mapping else None
+    session.status = "Pending"
+    session.batch_size = batch_size
+    session.validate_only = 1 if validate_only else 0
+    session.skip_duplicates = 1 if skip_duplicates else 0
+    session.created_by = frappe.session.user
+    session.started_at = frappe.utils.now()
+    
+    # Set any additional kwargs
+    for key, value in kwargs.items():
+        if hasattr(session, key):
+            setattr(session, key, value)
+    
+    session.insert(ignore_permissions=True)
+    frappe.db.commit()
+    return session
+
 def read_file_to_dataframe(file_path: str, filename: str) -> pd.DataFrame:
 	"""Read file into DataFrame with proper error handling"""
 	ext = filename.split('.')[-1].lower()
@@ -1204,22 +1568,15 @@ def map_row_data(row: pd.Series, mapping: Dict) -> Dict:
 	return job_opening_data
 
 def map_row_data_candidate(row: pd.Series, mapping) -> Dict:
-	print(">>>>>>>>>>>>>>>>>>> 7.3.1")
 	candidate_data: Dict[str, Any] = {}
-	print(">>>>>>>>>>>>>>>>>>> 7.3.2")
 
 	try:
 		if hasattr(mapping, "field_mapping"):
-			print(">>>>>>>>>>>>>>>>>>> 7.3.2.1 mapping là MiraImportsession object")
 			try:
 				mapping_raw = getattr(mapping, "field_mapping") or "{}"
 				mapping = json.loads(mapping_raw)
 			except Exception as e:
-				print(">>>>>>>>>>>>>>>>>>> 7.3.2.2 lỗi parse JSON mapping:", e)
 				mapping = {}
-
-		print(">>>>>>>>>>>>>>>>>>> 7.3.2 mapping sau khi xử lý:", mapping)
-		print(">>>>>>>>>>>>>>>>>>> 7.3.2 row:", row.to_dict())
 
 	except Exception as e:
 		print(">>>>>>>>>>>>>>>>>>>>>>>>>7.3.3", e)
@@ -1233,14 +1590,42 @@ def map_row_data_candidate(row: pd.Series, mapping) -> Dict:
 			if col_lower in row_lower_map:
 				actual_col = row_lower_map[col_lower]
 				value = row[actual_col]
-				print(f">>>>>>>>>>>>>>>>>>> 7.3.4 matched '{field_name}' -> '{actual_col}' = {value}")
 				if pd.notna(value) and str(value).strip():
 					candidate_data[field_name] = str(value).strip()
 	except Exception as e:
 		print(">>>>>>>>>>>>>>>>>>> 7.3.7", e)
 
-	print(">>>>>>>>>>>>>>>>>>> 7.3.8 candidate_data:", candidate_data)
 	return candidate_data
+
+def map_row_data_talent(row: pd.Series, mapping) -> Dict:
+	talent_data: Dict[str, Any] = {}
+
+	try:
+		if hasattr(mapping, "field_mapping"):
+			try:
+				mapping_raw = getattr(mapping, "field_mapping") or "{}"
+				mapping = json.loads(mapping_raw)
+			except Exception as e:
+				mapping = {}
+
+	except Exception as e:
+		print(">>>>>>>>>>>>>>>>>>>>>>>>>7.3.3", e)
+
+	try:
+		# lowercase map for column matching
+		row_lower_map = {col.lower(): col for col in row.index}
+
+		for field_name, column_name in mapping.items():
+			col_lower = column_name.lower()
+			if col_lower in row_lower_map:
+				actual_col = row_lower_map[col_lower]
+				value = row[actual_col]
+				if pd.notna(value) and str(value).strip():
+					talent_data[field_name] = str(value).strip()
+	except Exception as e:
+		print(">>>>>>>>>>>>>>>>>>> 7.3.7", e)
+
+	return talent_data
 
 # check trùng của job
 def get_existing_job_titles() -> Set[str]:
@@ -1327,6 +1712,144 @@ def validate_and_process_candidate(candidate_data: Dict, existing_emails: Set = 
 	
 	return processed
 
+# của talent 1
+def validate_and_process_talent(talent_data: Dict, existing_emails: Set = None) -> Dict:
+	"""Enhanced validation with better error messages and field processing"""
+	
+	processed = {}
+	errors = []
+	# Required field validation
+	required_fields = {
+		"full_name": _("Full Name"),
+		"email": _("Email")
+	}
+	
+	for field, label in required_fields.items():
+		value = talent_data.get(field, "")
+		if not value or not str(value).strip():
+			err_msg = f"Missing required field: {label}"
+			errors.append(err_msg)
+		else:
+			processed_value = str(value).strip()
+			processed[field] = processed_value
+	# Email validation and duplicate check
+	email = str(talent_data.get("email", "")).strip().lower()
+	
+	if email:
+		if not validate_email(email):
+			err_msg = f"Invalid email format: {email}"
+			errors.append(err_msg)
+		elif existing_emails and email in existing_emails:
+			err_msg = f"Email already exists: {email}"
+			errors.append(err_msg)
+		else:
+			processed["email"] = email
+			if existing_emails is not None:
+				existing_emails.add(email)
+	else:
+		print("- Email is empty or missing")
+	
+	# Process other fields
+	field_processors = {
+		"full_name": lambda x: process_text_field(x, 140),
+		"phone": process_phone_number,
+		"source": lambda x: process_text_field(x, 140),
+		"skills": lambda x: process_text_field(x, 1000),
+	}
+	
+	for field, processor in field_processors.items():
+		if field in talent_data and talent_data[field]:
+			try:
+				result = processor(talent_data[field])
+				if result is not None:
+					processed[field] = result
+			except Exception as e:
+				errors.append(_("Error processing {0}: {1}").format(field, str(e)))
+	
+	# Set default status if not provided
+	if "status" not in processed:
+		processed["status"] = "NEW"
+	
+	if errors:
+		raise frappe.ValidationError("; ".join(errors))
+	
+	return processed
+
+#của talent 2
+def validate_import_data_with_session_talent(df: pd.DataFrame, mapping: Dict, session=None) -> Dict:
+	"""Validate candidate import data with session tracking
+	"""   
+	results = {
+		"success": 0,
+		"failed": 0,
+		"total": len(df),
+		"logs": []
+	}
+	# Get existing emails using the helper function
+	existing_emails = get_existing_emails()
+	seen_emails = set()  # Track emails in current import to catch duplicates
+	for idx, row in df.iterrows():
+		start_time = time.time()
+		row_number = idx + 1
+
+		try:
+			talent_data = map_row_data_talent(row, mapping)
+
+			processed_data = validate_and_process_talent(talent_data, existing_emails)
+			
+			email = processed_data.get("email", "").lower()
+			if email and email in seen_emails:
+				raise frappe.ValidationError(_("Duplicate email in import file: {0}").format(email))
+			if email:
+				seen_emails.add(email)
+			
+			processing_time = time.time() - start_time
+
+			if session:
+				session.mark_success_talent(
+					row_number=row_number,
+					full_name=processed_data.get("full_name", "Unknown"),
+					processing_time=processing_time
+				)
+			results["success"] += 1
+			results["logs"].append({
+				"row_number": row_number,
+				"full_name": processed_data.get("full_name", "Unknown"),
+				"status": "success",
+				"message": _("Validation passed")
+			})
+				
+		except Exception as e:
+			processing_time = time.time() - start_time
+			error_msg = str(e)
+
+			if session:
+				session.mark_failure_talent(
+					row_number=row_number,
+					full_name=talent_data.get("full_name", "Unknown") if 'talent_data' in locals() else "Unknown",
+					error_message=error_msg,
+					processing_time=processing_time
+				)
+
+			results["failed"] += 1
+			results["logs"].append({
+				"row_number": row_number,
+				"candidate_name": talent_data.get("full_name", "Unknown") if 'candidate_data' in locals() else "Unknown",
+				"status": "error",
+				"message": error_msg
+			})
+		
+		# Update session progress periodically
+		if session and idx % 10 == 0:
+			session.save(ignore_permissions=True)
+			frappe.db.commit()
+	
+	if session:
+		session.save(ignore_permissions=True)
+		frappe.db.commit()
+	
+	return results
+
 #của candidate 2
 def validate_import_data_with_session_candidate(df: pd.DataFrame,job_opening, mapping: Dict, session=None) -> Dict:
 	"""Validate candidate import data with session tracking
@@ -1337,27 +1860,17 @@ def validate_import_data_with_session_candidate(df: pd.DataFrame,job_opening, ma
 		"total": len(df),
 		"logs": []
 	}
-	print(">>>>>>>>>>>>>>>>>>> 7.1")
 	# Get existing emails using the helper function
 	existing_emails = get_existing_emails()
 	seen_emails = set()  # Track emails in current import to catch duplicates
-	print(">>>>>>>>>>>>>>>>>>> 7.2")
 	for idx, row in df.iterrows():
 		start_time = time.time()
 		row_number = idx + 1
 
-		print(">>>>>>>>>>>>>>>>>>> 7.2row", row)
-		print(">>>>>>>>>>>>>>>>>>> 7.2map", mapping)
-		
 		try:
-			print(">>>>>>>>>>>>>>>>>>> 7.3")
 			candidate_data = map_row_data_candidate(row, mapping)
-			print(">>>>>>>>>>>>>>>>>>> 7.4")
-			print(">>>>>>>>>>>>>>>>>>> 7.4", candidate_data)
 
 			processed_data = validate_and_process_candidate(candidate_data, existing_emails)
-			print(">>>>>>>>>>>>>>>>>>> 7.5")
-			print(">>>>>>>>>>>>>>>>>>> 7.5", processed_data)
 			
 			email = processed_data.get("email", "").lower()
 			if email and email in seen_emails:
@@ -1601,6 +2114,40 @@ def process_batch_with_session(df: pd.DataFrame, mapping: Dict, selected_job_ope
 			})
 	return batch_results
 
+#talent 3
+def process_import_data_with_session_talent(df: pd.DataFrame, mapping: Dict, session, batch_size: int = 100) -> Dict:
+	"""Process and insert talent import data with session tracking"""
+	results = {"success": 0, "failed": 0, "total": len(df), "logs": []}
+	existing_emails = get_existing_emails()
+	for start_idx in range(0, len(df), batch_size):
+		end_idx = min(start_idx + batch_size, len(df))
+		batch_df = df.iloc[start_idx:end_idx]
+		batch_results = process_batch_with_session_talent(
+			batch_df, mapping, existing_emails, start_idx, session
+		)
+		
+		results["success"] += batch_results["success"]
+		results["failed"] += batch_results["failed"]
+		results["logs"].extend(batch_results["logs"])
+		
+		# Commit and publish progress
+		session.save(ignore_permissions=True)
+		frappe.db.commit()
+		
+		frappe.publish_realtime(
+			'import_progress',
+			{
+				'session_id': session.name,
+				'processed': end_idx,
+				'total': len(df),
+				'success': results["success"],
+				'failed': results["failed"],
+				'progress_percentage': (end_idx / len(df)) * 100
+			}
+		)
+		time.sleep(0.1)
+	return results
+
 #can 3
 def process_import_data_with_session_candidate(df: pd.DataFrame, mapping: Dict, selected_job_opening: str, session, batch_size: int = 100) -> Dict:
 	"""Process and insert candidate import data with session tracking"""
@@ -1634,6 +2181,81 @@ def process_import_data_with_session_candidate(df: pd.DataFrame, mapping: Dict, 
 		)
 		time.sleep(0.1)
 	return results
+
+#talent 4
+def process_batch_with_session_talent(df: pd.DataFrame, mapping: Dict, 
+							  existing_emails: Set, start_offset: int = 0, session=None) -> Dict:
+	"""Process a single batch with session tracking for Mira Talent"""
+	batch_results = {
+		"success": 0,
+		"failed": 0,
+		"logs": [],
+		"new_emails": []
+	}
+	
+	for idx, row in df.iterrows():
+		actual_row_num = start_offset + idx + 1
+		start_time = time.time()
+		
+		try:
+			# Map fields
+			talent_data = map_row_data(row, mapping)
+			
+			# Validate and process
+			processed_data = validate_and_process_talent(talent_data, existing_emails)
+			
+			# Create candidate document
+			doc = frappe.get_doc({
+				"doctype": "Mira Talent",
+				**processed_data
+			})
+			doc.insert(ignore_permissions=True)
+			
+			processing_time = time.time() - start_time
+			
+			# Track new email
+			email = processed_data.get("email")
+			if email:
+				batch_results["new_emails"].append(email.lower())
+			
+			if session:
+				session.mark_success_talent(
+					row_number=actual_row_num,
+					full_name=processed_data.get("full_name", "Unknown"),
+					document_name=doc.name,
+					processing_time=processing_time
+				)
+			
+			batch_results["success"] += 1
+			batch_results["logs"].append({
+				"row_number": actual_row_num,
+				"candidate_name": processed_data.get("full_name", "Unknown"),
+				"status": "success",
+				"message": _("Successfully created: {0}").format(doc.name),
+				"document_name": doc.name
+			})
+			
+		except Exception as e:
+			processing_time = time.time() - start_time
+			error_msg = str(e)
+			
+			if session:
+				session.mark_failure_talent(
+					row_number=actual_row_num,
+					full_name=talent_data.get("full_name", "Unknown") if 'talent_data' in locals() else "Unknown",
+					error_message=error_msg,
+					processing_time=processing_time
+				)
+			
+			batch_results["failed"] += 1
+			batch_results["logs"].append({
+				"row_number": actual_row_num,
+				"talent_name": talent_data.get("full_name", "Unknown") if 'talent_data' in locals() else "Unknown",
+				"status": "error",
+				"message": error_msg
+			})
+	
+	return batch_results
 
 #can 4
 def process_batch_with_session_candidate(df: pd.DataFrame, mapping: Dict, job_opening: str, 
@@ -1684,7 +2306,7 @@ def process_batch_with_session_candidate(df: pd.DataFrame, mapping: Dict, job_op
 			batch_results["success"] += 1
 			batch_results["logs"].append({
 				"row_number": actual_row_num,
-				"candidate_name": processed_data.get("full_name", "Unknown"),
+				"talent_name": processed_data.get("full_name", "Unknown"),
 				"status": "success",
 				"message": _("Successfully created: {0}").format(doc.name),
 				"document_name": doc.name
@@ -1977,29 +2599,29 @@ def get_import_progress(session_id: str):
 #     return None
 
 def process_phone_number(phone: Any) -> Optional[str]:
-    """Enhanced phone number processing"""
-    if not phone:
-        return None
+	"""Enhanced phone number processing"""
+	if not phone:
+		return None
 	
-    phone_str = str(phone).strip()
-    if not phone_str:
-        return None
+	phone_str = str(phone).strip()
+	if not phone_str:
+		return None
 	
-    # Remove formatting but keep + for international numbers
-    cleaned = re.sub(r'[^\d+]', '', phone_str)
+	# Remove formatting but keep + for international numbers
+	cleaned = re.sub(r'[^\d+]', '', phone_str)
 	
-    # Handle international format
-    if cleaned.startswith('+'):
-        cleaned = '+' + re.sub(r'[^\d]', '', cleaned[1:])
-    else:
-        cleaned = re.sub(r'[^\d]', '', cleaned)
+	# Handle international format
+	if cleaned.startswith('+'):
+		cleaned = '+' + re.sub(r'[^\d]', '', cleaned[1:])
+	else:
+		cleaned = re.sub(r'[^\d]', '', cleaned)
 	
-    # Validate length
-    digit_only = re.sub(r'[^\d]', '', cleaned)
-    if len(digit_only) <= 10 or len(digit_only) > 15:
-        return None
+	# Validate length
+	digit_only = re.sub(r'[^\d]', '', cleaned)
+	if len(digit_only) <= 10 or len(digit_only) > 15:
+		return None
 	
-    return cleaned[:20]  # Limit total length
+	return cleaned[:20]  # Limit total length
 
 
 def validate_email(email: str) -> bool:

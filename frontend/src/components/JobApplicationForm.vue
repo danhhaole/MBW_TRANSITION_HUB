@@ -129,8 +129,8 @@
           class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           :disabled="isSubmitting"
         >
-          <span v-if="!isSubmitting">Gửi đơn ứng tuyển</span>
-          <span v-else>Đang gửi...</span>
+          <span v-if="!isSubmitting">{{__('Submit')}}</span>
+          <span v-else>{{__('Submitting')}}</span>
         </button>
       </div>
     </form>

@@ -35,6 +35,21 @@
 
 						<!-- Actions -->
 						<div class="flex items-center justify-end space-x-3">
+							<!-- Import Button -->
+							<Button
+								variant="outline"
+								theme="blue"
+								@click="handleImport"
+								:title="__('Import Tâlent')"
+								>
+									<template #prefix>
+										<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+										</svg>
+									</template>
+								{{ __('Import') }}
+							</Button>
+
 							<!-- Refresh Button -->
 							<Button
 								variant="outline"
@@ -115,10 +130,10 @@
 			{{ talent.full_name }}
 		</td>
 		<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-			{{ talent.contact_email }}
+			{{ talent.email }}
 		</td>
 		<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-			{{ talent.contact_phone }}
+			{{ talent.phone }}
 		</td>
 		<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
 			{{ talent.skills }}
@@ -211,6 +226,12 @@
 			<!-- View Modal -->
 			<CandidatePoolViewModal v-model="viewModal.show" :candidatePool="viewModal.candidatePool" 
 				:loading="viewModal.loading" :error="viewModal.error" />
+
+			<UploadExcelTalentModal
+			v-model="showUploadModal"
+			@created="handleJobOpeningsCreated"
+			@close="closeUploadModal"
+			/>
 		</div>
 	</div>
 </template>
@@ -224,6 +245,7 @@ import { FormControl, Breadcrumbs, Avatar, Button } from 'frappe-ui'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import Loading from '@/components/Loading.vue'
 import CandidatePoolViewModal from '@/components/candidate-pool/CandidatePoolViewModal.vue'
+import UploadExcelTalentModal from '@/components/UploadExcelTalentModal.vue'
 
 const breadcrumbs = [{ label: __('Talent'), route: { name: 'Talent' } }]
 
@@ -264,6 +286,21 @@ const viewModal = ref({
 	loading: false,
 	error: null,
 })
+
+const showUploadModal = ref(false)
+
+const handleImport = () => {
+	showUploadModal.value = true
+}
+
+const handleJobOpeningsCreated = async (result) => {
+  toast.success(__('Successfully created {{count}} job openings', { count: result.success }))
+  await reload()
+}
+
+const closeUploadModal = () => {
+  showUploadModal.value = false
+}
 
 // Computed
 const statusFilterOptions = computed(() => [

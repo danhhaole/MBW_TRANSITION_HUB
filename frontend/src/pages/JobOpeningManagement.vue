@@ -762,6 +762,37 @@ watch(searchText, () => {
 const openCreateDialog = () => {
   // showCreateOptions.value = true // Thay đổi từ showForm.value = true
   showForm.value = true
+  
+  Object.keys(form).forEach(k => delete form[k])
+  
+  // Set default status to Draft
+  form.approval_status = 'Draft'
+  
+  // Set default dates
+  const now = new Date()
+  
+  // Posting Date: First day of current month at 00:00:00
+  const postingDate = new Date(now.getFullYear(), now.getMonth(), 1)
+  
+  // Closing Date: Last day of current month at 23:59:59.999
+  const closingDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999)
+  
+  // Format to YYYY-MM-DD (time is handled separately)
+  const formatDate = (date) => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+  
+  form.posting_date = formatDate(postingDate)
+  form.closing_date = formatDate(closingDate)
+  
+  console.log('Setting default values:', {
+    status: form.approval_status,
+    posting: form.posting_date,
+    closing: form.closing_date
+  })
 }
 
 const openCreateForm = () => {
@@ -773,14 +804,13 @@ const openCreateForm = () => {
   // Set default dates
   const now = new Date()
   
-  // Posting Date: đầu tháng hiện tại (ngày 1)
+  // Posting Date: First day of current month at 00:00:00
   const postingDate = new Date(now.getFullYear(), now.getMonth(), 1)
   
-  // Closing Date: cuối tháng hiện tại
-  // Cách này sẽ tự động tính đúng ngày cuối tháng
-  const closingDate = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+  // Closing Date: Last day of current month at 23:59:59.999
+  const closingDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999)
   
-  // Format thành YYYY-MM-DD và đảm bảo là local time
+  // Format to YYYY-MM-DD (time is handled separately)
   const formatDate = (date) => {
     const year = date.getFullYear()
     const month = String(date.getMonth() + 1).padStart(2, '0')
