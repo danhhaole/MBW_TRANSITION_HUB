@@ -12,10 +12,11 @@ class MiraTalent(Document):
         #Trước khi tạo talent thì tạo prospect
         if not self.contact_id:
             if not check_exists(self.email):
-                skills = json.loads(self.skills)
-                skills_string = ", ".join(skills)
+                skills_string = ''
+                if self.skills:
+                    skills = json.loads(self.skills)
+                    skills_string = ", ".join(skills)
                 contact_data = {
-                    "campaign_id":self.campaign_id,
                     "first_name": self.full_name.split(" ")[0] if self.full_name else None,
                     "last_name": " ".join(self.full_name.split(" ")[1:]) if self.full_name and len(self.full_name.split(" ")) > 1 else None,
                     "full_name": self.full_name,
@@ -34,6 +35,8 @@ class MiraTalent(Document):
                     "resume": self.resume,
                     "notes": self.notes
                 }
+                if hasattr(self,"campaign_id"):
+                    contact_data.update({"campaign_id":self.campaign_id})
 
                 # Gọi hàm create_mira_prospect đã có sẵn
                 contact = frappe.new_doc("Mira Contact")
