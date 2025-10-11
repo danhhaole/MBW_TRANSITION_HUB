@@ -173,7 +173,7 @@
 <script setup>
 import { computed, watch } from 'vue'
 import { Dialog, Button, Avatar } from 'frappe-ui'
-import { processSkills } from '../../services/candidateService'
+import { useCandidateStore } from '@/stores/candidate'
 
 // Props
 const props = defineProps({

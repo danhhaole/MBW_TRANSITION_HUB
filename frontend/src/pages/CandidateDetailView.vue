@@ -1378,16 +1378,11 @@
 import { ref, reactive, onMounted, computed, h } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Dialog, Button, FormControl, Avatar, Breadcrumbs, Badge } from 'frappe-ui'
-import {
-	candidateService,
-	candidateCampaignService,
-	candidateSegmentService,
-	talentSegmentService,
-	interactionService,
-	emailLogService,
-} from '../services/universalService'
+import { useCandidateStore } from '@/stores/candidate'
+import { useMiraTalentPoolStore } from '@/stores/miraTalentPool'
+import { useTalentSegmentStore } from '@/stores/talentSegment'
 import { useCampaignStore } from '@/stores/campaign'
-import { processSkills, skillsToString } from '../services/candidateService'
+import { call } from 'frappe-ui'
 import LayoutHeader from '../components/LayoutHeader.vue'
 import CandidateEditModal from '../components/candidate/CandidateEditModal.vue'
 

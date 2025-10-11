@@ -252,7 +252,7 @@ import {
   getStatusChipColor,
   getEngagementColor,
   processSkills
-} from '../../services/candidateService'
+} from '@/stores/candidate'
 
 // Translation helper function
 

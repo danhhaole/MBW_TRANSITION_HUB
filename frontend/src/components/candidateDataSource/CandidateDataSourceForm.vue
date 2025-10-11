@@ -195,7 +195,7 @@
 import { ref, computed, watch, onMounted, reactive } from 'vue'
 import { Dialog } from 'frappe-ui'
 import FieldLayout from '@/components/FieldLayout/FieldLayout.vue'
-import { candidateDataSourceService } from '@/services/candidateDataSourceService.js'
+import { useCandidateDataSourceStore } from '@/stores/candidateDataSource.js'
 
 
 
@@ -214,7 +214,10 @@ const props = defineProps({
 // Emits
 const emit = defineEmits(['update:modelValue', 'success', 'cancel'])
 
-// Refs
+// Store
+const candidateDataSourceStore = useCandidateDataSourceStore()
+
+// Reactive state
 const loading = ref(false)
 const loadingFields = ref(false)
 const error = ref(null)
@@ -292,7 +295,7 @@ const setFormData = (dataSource) => {
 const loadFieldLayout = async () => {
   loadingFields.value = true
   try {
-    const response = await candidateDataSourceService.getFormData(props.dataSource?.name || null)
+    const response = await candidateDataSourceStore.fetchFormData(props.dataSource?.name || null)
     
     if (response.success && response.data && response.data.fieldLayout) {
       fieldTabs.value = response.data.fieldLayout
@@ -417,9 +420,9 @@ const handleSubmit = async () => {
   try {
     let result
     if (isEdit.value) {
-      result = await candidateDataSourceService.update(props.dataSource.name, formData)
+      result = await candidateDataSourceStore.updateDataSource(props.dataSource.name, formData)
     } else {
-      result = await candidateDataSourceService.create(formData)
+      result = await candidateDataSourceStore.createDataSource(formData)
     }
 
     if (result.success) {

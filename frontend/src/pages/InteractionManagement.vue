@@ -483,7 +483,7 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button, Dialog, FormControl, Avatar, Badge, Breadcrumbs } from 'frappe-ui'
-import { interactionService, candidateService, actionService } from '../services/universalService'
+import { interactionService, candidateService, actionService } from 'frappe-ui'
 import { debounce } from 'lodash'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import Loading from '@/components/Loading.vue'

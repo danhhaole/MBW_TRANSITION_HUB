@@ -65,7 +65,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { FormControl, Autocomplete } from 'frappe-ui'
-import { talentSegmentService } from '@/services/universalService'
+import { useTalentSegmentStore } from '@/stores/talentSegment'
 
 // Props & Emits
 const props = defineProps({

@@ -1,50 +1,47 @@
-import { ref, computed, reactive } from 'vue'
-import {
-	getFilteredTalentSegments,
-	getTalentSegmentDetails,
-	createNewTalentSegment,
-	updateTalentSegmentDetails,
-	deleteTalentSegmentById,
-	getSegmentTalent,
-	addTalentToSegment,
-	removeTalentFromSegment,
-	getUserOptions,
-	calculateEngagementRate,
-	formatDate,
-	getSegmentTypeColor,
-	validateTalentSegmentForm,
-} from '@/services/talentSegmentService'
+import { ref, computed, reactive, watch } from 'vue'
+import { useTalentSegmentStore } from '@/stores/talentSegment.js'
+import { debounce } from 'lodash'
+import { call } from 'frappe-ui'
 
 // Composable chính cho Mira Segment
 export const useTalentSegment = () => {
-	const segments = ref([])
-	const selectedSegment = ref(null)
-	const loading = ref(false)
-	const error = ref(null)
-	const success = ref(false)
+	const talentSegmentStore = useTalentSegmentStore()
+	
+	// Computed properties from store
+	const segments = computed(() => talentSegmentStore.talentSegments)
+	const selectedSegment = computed(() => talentSegmentStore.currentTalentSegment)
+	const loading = computed(() => talentSegmentStore.loading)
+	const error = computed(() => talentSegmentStore.error)
+	const success = computed(() => talentSegmentStore.success)
+	const stats = computed(() => talentSegmentStore.statistics)
+	const filterOptions = computed(() => talentSegmentStore.filterOptions)
+	const pagination = computed(() => talentSegmentStore.pagination)
 
 	// Filter state
 	const filters = reactive({
-		type: 'all',
-		searchText: '',
+		type: talentSegmentStore.typeFilter || 'all',
+		searchText: talentSegmentStore.searchText || '',
 	})
 
 	// Search state
 	const isSearching = ref(false)
-	const searchDebounceTimeout = ref(null)
 
 	// Computed
-	const filteredSegments = computed(() => {
-		let result = segments.value || []
-
-		if (filters.type && filters.type !== 'all') {
-			result = result.filter((segment) => segment.type === filters.type)
-		}
-
-		return result
+	const filteredSegments = computed(() => talentSegmentStore.filteredTalentSegments)
+	const segmentCount = computed(() => segments.value?.length || 0)
+	const hasData = computed(() => segments.value.length > 0)
+	const isEmpty = computed(() => !loading.value && segments.value.length === 0)
+	const hasFilters = computed(() => {
+		return filters.searchText || (filters.type && filters.type !== 'all')
 	})
 
-	const segmentCount = computed(() => segments.value?.length || 0)
+	// Debounced search
+	const debouncedSearch = debounce(() => {
+		talentSegmentStore.setPagination(1)
+		fetchTalentSegments()
+	}, 500)
+	
+	watch(() => filters.searchText, debouncedSearch)
 
 	// Methods
 	const enrichSegmentData = async (segment) => {
@@ -94,168 +91,127 @@ export const useTalentSegment = () => {
 		return segment
 	}
 
-	const loadSegments = async (params = {}) => {
-		loading.value = true
-		error.value = null
-		try {
-			const filterParams = {
-				type: filters.type !== 'all' ? filters.type : undefined,
-				searchText: filters.searchText || undefined,
-				page: params.page || 1,
-				limit: params.limit || 20,
-			}
-
-			console.log('Loading segments with params:', filterParams)
-			const result = await getFilteredTalentSegments(filterParams)
-			console.log('result', result)
-			// Trả về data và total cho component sử dụng
-			const data = result.data || []
-			const total = result.pagination.total
-
-			// KHÔNG set segments.value ở đây nếu có params
-			// Để component tự xử lý
-			if (!params.page) {
-				// Chỉ set nếu không có pagination params
-				segments.value = data
-			}
-
-			return {
-				data: data,
-				total: total,
-			}
-		} catch (err) {
-			console.error('Error loading segments:', err)
-			error.value = err.message
-			return { data: [], total: 0 }
-		} finally {
-			loading.value = false
+	const fetchTalentSegments = async (params = {}) => {
+		const options = {
+			page: params.page || pagination.value.page,
+			limit: params.limit || pagination.value.limit,
+			searchText: filters.searchText,
+			type: filters.type !== 'all' ? filters.type : undefined,
+			orderBy: params.orderBy || talentSegmentStore.orderBy
 		}
+		
+		return await talentSegmentStore.fetchTalentSegments(options)
+	}
+
+	const loadSegments = async (params = {}) => {
+		return await fetchTalentSegments(params)
 	}
 
 	const searchSegments = async (searchText) => {
-		if (searchDebounceTimeout.value) {
-			clearTimeout(searchDebounceTimeout.value)
+		isSearching.value = true
+		filters.searchText = searchText
+		talentSegmentStore.setSearchText(searchText)
+		
+		try {
+			return await talentSegmentStore.searchTalentSegments(searchText)
+		} catch (err) {
+			console.error('Search error:', err)
+			return []
+		} finally {
+			isSearching.value = false
 		}
-
-		searchDebounceTimeout.value = setTimeout(async () => {
-			isSearching.value = true
-			filters.searchText = searchText
-
-			try {
-				await loadSegments()
-			} catch (err) {
-				console.error('Search error:', err)
-				error.value = err.message
-			} finally {
-				isSearching.value = false
-			}
-		}, 500) // 500ms debounce
 	}
 
 	const clearSearch = () => {
 		filters.searchText = ''
-		loadSegments()
+		talentSegmentStore.setSearchText('')
+		fetchTalentSegments()
 	}
 
 	const setTypeFilter = (type) => {
 		filters.type = type
-		loadSegments()
+		talentSegmentStore.setTypeFilter(type !== 'all' ? type : '')
+		fetchTalentSegments()
 	}
 
 	const getSegmentDetails = async (name) => {
-		loading.value = true
-		error.value = null
-		try {
-			const data = await getTalentSegmentDetails(name)
-			selectedSegment.value = data
-			return data
-		} catch (err) {
-			error.value = err.message
-			throw err
-		} finally {
-			loading.value = false
-		}
+		return await talentSegmentStore.fetchTalentSegmentById(name)
 	}
 
 	const createSegment = async (segmentData) => {
-		loading.value = true
-		error.value = null
-		success.value = false
-
-		try {
-			const validation = validateTalentSegmentForm(segmentData)
-			if (!validation.isValid) {
-				error.value = Object.values(validation.errors)[0]
-				return false
-			}
-
-			const newSegment = await createNewTalentSegment(segmentData)
-			success.value = true
-			await loadSegments() // Refresh list
-			return newSegment
-		} catch (err) {
-			error.value = err.message
-			return false
-		} finally {
-			loading.value = false
-		}
+		return await talentSegmentStore.createTalentSegment(segmentData)
 	}
 
 	const updateSegment = async (name, updateData) => {
-		loading.value = true
-		error.value = null
-		success.value = false
-
-		try {
-			const validation = validateTalentSegmentForm(updateData)
-			if (!validation.isValid) {
-				error.value = Object.values(validation.errors)[0]
-				return false
-			}
-
-			const updatedSegment = await updateTalentSegmentDetails(name, updateData)
-			success.value = true
-			await loadSegments() // Refresh list
-			if (selectedSegment.value && selectedSegment.value.name === name) {
-				selectedSegment.value = { ...selectedSegment.value, ...updateData }
-			}
-			return updatedSegment
-		} catch (err) {
-			error.value = err.message
-			return false
-		} finally {
-			loading.value = false
-		}
+		return await talentSegmentStore.updateTalentSegment(name, updateData)
 	}
 
 	const deleteSegment = async (name) => {
-		loading.value = true
-		error.value = null
-		success.value = false
-
-		try {
-			await deleteTalentSegmentById(name)
-			success.value = true
-			await loadSegments() // Refresh list
-			if (selectedSegment.value && selectedSegment.value.name === name) {
-				selectedSegment.value = null
-			}
-			return true
-		} catch (err) {
-			error.value = err.message
-			return false
-		} finally {
-			loading.value = false
-		}
+		return await talentSegmentStore.deleteTalentSegment(name)
 	}
 
 	const resetState = () => {
-		segments.value = []
-		selectedSegment.value = null
-		error.value = null
-		success.value = false
+		talentSegmentStore.resetFilters()
 		filters.type = 'all'
 		filters.searchText = ''
+	}
+
+	// Pagination methods
+	const goToPage = (page) => {
+		talentSegmentStore.setPagination(page)
+		fetchTalentSegments()
+	}
+
+	const nextPage = () => {
+		if (pagination.value.has_next) {
+			goToPage(pagination.value.page + 1)
+		}
+	}
+
+	const previousPage = () => {
+		if (pagination.value.has_prev) {
+			goToPage(pagination.value.page - 1)
+		}
+	}
+
+	const changeItemsPerPage = (newLimit) => {
+		talentSegmentStore.setPagination(1, newLimit)
+		fetchTalentSegments()
+	}
+
+	// Filter methods
+	const updateSearch = debounce((searchText) => {
+		filters.searchText = searchText
+		talentSegmentStore.setSearchText(searchText)
+		talentSegmentStore.setPagination(1)
+		fetchTalentSegments()
+	}, 400)
+
+	const updateType = (type) => {
+		filters.type = type
+		talentSegmentStore.setTypeFilter(type !== 'all' ? type : '')
+		talentSegmentStore.setPagination(1)
+		fetchTalentSegments()
+	}
+
+	const clearFilters = () => {
+		filters.searchText = ''
+		filters.type = 'all'
+		talentSegmentStore.resetFilters()
+		fetchTalentSegments()
+	}
+
+	// Statistics
+	const fetchStats = async () => {
+		return await talentSegmentStore.fetchStatistics()
+	}
+
+	// Initialize
+	const initialize = async () => {
+		await Promise.all([
+			fetchTalentSegments(),
+			fetchStats()
+		])
 	}
 
 	return {
@@ -265,90 +221,78 @@ export const useTalentSegment = () => {
 		loading,
 		error,
 		success,
+		stats,
+		filterOptions,
+		pagination,
 		filters,
 		isSearching,
 
 		// Computed
 		filteredSegments,
 		segmentCount,
+		hasData,
+		isEmpty,
+		hasFilters,
 
-		// Methods
-		loadSegments,
-		searchSegments,
-		clearSearch,
-		setTypeFilter,
+		// API Methods
+		fetchTalentSegments,
+		searchSegments: searchSegments,
 		getSegmentDetails,
 		createSegment,
 		updateSegment,
 		deleteSegment,
+		fetchStats,
+
+		// Pagination
+		goToPage,
+		nextPage,
+		previousPage,
+		changeItemsPerPage,
+
+		// Filters
+		updateSearch,
+		updateType,
+		clearFilters,
+
+		// Legacy methods (for backward compatibility)
+		loadSegments,
+		clearSearch,
+		setTypeFilter,
 		resetState,
 
 		// Utils
-		calculateEngagementRate,
-		formatDate,
-		getSegmentTypeColor,
+		calculateEngagementRate: talentSegmentStore.calculateEngagementRate,
+		formatDate: talentSegmentStore.formatDate,
+		getSegmentTypeColor: talentSegmentStore.getSegmentTypeColor,
+		
+		// Initialize
+		initialize
 	}
 }
 
 // Composable cho quản lý ứng viên trong segment
 export const useTalentSegmentCandidates = (segmentId) => {
-	const candidates = ref([])
-	const loading = ref(false)
-	const error = ref(null)
-	const success = ref(false)
+	const talentSegmentStore = useTalentSegmentStore()
+	
+	const candidates = computed(() => talentSegmentStore.getSegmentTalents(segmentId))
+	const loading = computed(() => talentSegmentStore.loading)
+	const error = computed(() => talentSegmentStore.error)
+	const success = computed(() => talentSegmentStore.success)
+	const pagination = computed(() => talentSegmentStore.talentPoolPagination)
 
 	const candidateCount = computed(() => candidates.value?.length || 0)
 
-	const loadCandidates = async () => {
+	const loadCandidates = async (options = {}) => {
 		if (!segmentId) return
-
-		loading.value = true
-		error.value = null
-		try {
-			const data = await getSegmentTalent(segmentId)
-			candidates.value = data
-		} catch (err) {
-			error.value = err.message
-			candidates.value = []
-		} finally {
-			loading.value = false
-		}
+		return await talentSegmentStore.fetchSegmentTalents(segmentId, options)
 	}
 
 	const addCandidate = async (candidateId) => {
-		loading.value = true
-		error.value = null
-		success.value = false
-
-		try {
-			await addTalentToSegment(segmentId, candidateId)
-			success.value = true
-			await loadCandidates() // Refresh list
-			return true
-		} catch (err) {
-			error.value = err.message
-			return false
-		} finally {
-			loading.value = false
-		}
+		return await talentSegmentStore.addTalentToSegment(segmentId, candidateId)
 	}
 
 	const removeCandidate = async (candidateId) => {
-		loading.value = true
-		error.value = null
-		success.value = false
-
-		try {
-			await removeTalentFromSegment(segmentId, candidateId)
-			success.value = true
-			await loadCandidates() // Refresh list
-			return true
-		} catch (err) {
-			error.value = err.message
-			return false
-		} finally {
-			loading.value = false
-		}
+		return await talentSegmentStore.removeTalentFromSegment(segmentId, candidateId)
 	}
 
 	return {
@@ -356,6 +300,7 @@ export const useTalentSegmentCandidates = (segmentId) => {
 		loading,
 		error,
 		success,
+		pagination,
 		candidateCount,
 		loadCandidates,
 		addCandidate,
@@ -414,9 +359,14 @@ export const useTalentSegmentForm = (initialData = null) => {
 	const loadOptions = async () => {
 		loadingOptions.value = true
 		try {
-			const usersData = await getUserOptions()
+			const usersData = await call('frappe.client.get_list', {
+				doctype: 'User',
+				fields: ['name', 'full_name', 'email'],
+				filters: { enabled: 1 },
+				limit_page_length: 1000
+			})
 
-			users.value = usersData.map((user) => ({
+			users.value = (usersData || []).map((user) => ({
 				title: user.full_name || user.name,
 				value: user.name,
 				subtitle: user.email,
@@ -430,7 +380,8 @@ export const useTalentSegmentForm = (initialData = null) => {
 
 	// Validate form
 	const validateForm = () => {
-		const validation = validateTalentSegmentForm(form.value)
+		const talentSegmentStore = useTalentSegmentStore()
+		const validation = talentSegmentStore.validateTalentSegment(form.value)
 		formErrors.value = validation.errors
 		isValid.value = validation.isValid
 		return validation.isValid

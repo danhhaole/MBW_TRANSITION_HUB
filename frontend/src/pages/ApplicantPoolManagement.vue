@@ -531,7 +531,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from "vue";
+import { ref, reactive, onMounted, watch, computed } from "vue";
 import {
   Dialog,
   Button,
@@ -543,27 +543,36 @@ import {
 import LayoutHeader from "@/components/LayoutHeader.vue";
 import Loading from "@/components/Loading.vue";
 import Link from "@/components/Controls/Link.vue";
-import {
-  applicantPoolService,
-  getCampaignOptions,
-  getSegmentOptions,
-} from "@/services/universalService";
+import { useMiraTalentPool } from "@/composables/useMiraTalentPool";
 
 const breadcrumbs = [
   { label: __("Applicant Pool"), route: { name: "ApplicantPoolManagement" } },
 ];
 
-const items = ref([]);
-const loading = ref(false);
-const pagination = reactive({
-  page: 1,
-  limit: 20,
-  total: 0,
-  pages: 1,
-  showing_from: 0,
-  showing_to: 0,
-});
-const searchText = ref("");
+// Use Mira Talent Pool composable
+const {
+  talentPools,
+  loading,
+  error,
+  pagination,
+  filters,
+  filterOptions,
+  fetchTalentPools,
+  updateTalentPoolAPI,
+  deleteTalentPoolAPI,
+  fetchFilterOptions,
+  updateSearch,
+  updateCampaign,
+  updateSegment,
+  clearSearch,
+  goToPage,
+  getPaginationRange,
+  initialize
+} = useMiraTalentPool()
+
+// Local reactive data
+const items = computed(() => talentPools.value)
+const searchText = ref(filters.search)
 
 const showEditDialog = ref(false);
 const showViewDialog = ref(false);
@@ -583,10 +592,10 @@ const editFields = [
   { fieldname: "notes", label: "Notes", readonly: false },
 ];
 
-const campaignFilter = ref("");
-const segmentFilter = ref("");
-const campaignOptions = ref([]);
-const segmentOptions = ref([]);
+const campaignFilter = ref(filters.campaign);
+const segmentFilter = ref(filters.segment);
+const campaignOptions = computed(() => filterOptions.value.campaigns || []);
+const segmentOptions = computed(() => filterOptions.value.segments || []);
 
 function formatDate(dateString) {
   if (!dateString) return "-";
@@ -597,96 +606,29 @@ function formatDate(dateString) {
   }
 }
 
-function getPaginationRange() {
-  const totalPages = pagination.pages || 1;
-  const currentPage = pagination.page || 1;
-  const range = [];
-  if (totalPages <= 5) {
-    for (let i = 1; i <= totalPages; i++) range.push(i);
-  } else {
-    if (currentPage <= 3) {
-      range.push(1, 2, 3, 4, "...", totalPages);
-    } else if (currentPage >= totalPages - 2) {
-      range.push(1, "...", totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
-    } else {
-      range.push(
-        1,
-        "...",
-        currentPage - 1,
-        currentPage,
-        currentPage + 1,
-        "...",
-        totalPages
-      );
-    }
-  }
-  return range;
-}
+// Use getPaginationRange from composable
 
 async function refreshData() {
-  await Promise.all([loadCampaignOptions(), loadSegmentOptions(), loadData()]);
-}
-
-async function loadCampaignOptions() {
-  campaignOptions.value = await getCampaignOptions();
-}
-async function loadSegmentOptions() {
-  segmentOptions.value = await getSegmentOptions();
+  await initialize()
 }
 
 async function loadData() {
-  loading.value = true;
-  try {
-    const filters = {};
-    if (searchText.value) filters.talent_id = ["like", `%${searchText.value}%`];
-    if (campaignFilter.value) filters.campaign_id = campaignFilter.value;
-    if (segmentFilter.value) filters.segment_id = segmentFilter.value;
-    const params = {
-      fields: [
-        "name",
-        "talent_id",
-        "campaign_id",
-        "segment_id",
-        "application_status",
-        "result",
-        "score",
-        "application_date",
-        "notes",
-      ],
-      order_by: "modified desc",
-      page_length: pagination.limit,
-      start: (pagination.page - 1) * pagination.limit,
-      filters,
-    };
-    const res = await applicantPoolService.getList(params);
-    items.value = res.data || [];
-    pagination.total = res.total || 0;
-    pagination.pages = Math.ceil((res.total || 0) / pagination.limit);
-    pagination.showing_from = (pagination.page - 1) * pagination.limit + 1;
-    pagination.showing_to = Math.min(
-      pagination.page * pagination.limit,
-      pagination.total
-    );
-  } finally {
-    loading.value = false;
-  }
+  await fetchTalentPools()
 }
 
-function goToPage(page) {
-  if (page < 1 || page > pagination.pages) return;
-  pagination.page = page;
-  loadData();
-}
-
+// Use methods from composable
 function handleSearch() {
-  pagination.page = 1;
-  loadData();
+  updateSearch(searchText.value)
 }
 
-function clearSearch() {
-  searchText.value = "";
-  handleSearch();
-}
+// Watch for filter changes
+watch(campaignFilter, (newValue) => {
+  updateCampaign(newValue)
+})
+
+watch(segmentFilter, (newValue) => {
+  updateSegment(newValue)
+})
 
 function handleEdit(item) {
   editItem.value = { ...item };
@@ -694,14 +636,12 @@ function handleEdit(item) {
 }
 
 async function saveEdit() {
-  loading.value = true;
   try {
     const { name, ...data } = editItem.value;
-    await applicantPoolService.update(name, data);
+    await updateTalentPoolAPI(name, data);
     showEditDialog.value = false;
-    loadData();
-  } finally {
-    loading.value = false;
+  } catch (error) {
+    console.error('Error updating talent pool:', error);
   }
 }
 
@@ -716,23 +656,21 @@ function handleDelete(item) {
 }
 
 async function confirmDelete() {
-  loading.value = true;
   try {
-    await applicantPoolService.delete(deleteItem.value.name);
+    await deleteTalentPoolAPI(deleteItem.value.name);
     showDeleteDialog.value = false;
-    loadData();
-  } finally {
-    loading.value = false;
+  } catch (error) {
+    console.error('Error deleting talent pool:', error);
   }
 }
 
 function getInputType(field) {
   if (field.fieldname === "score") return "number";
-  if (field.fieldname === "application_date") return "datetime-local";
+  if (field.fieldname === "application_date") return "date";
   return "text";
 }
 
 onMounted(async () => {
-  await Promise.all([loadCampaignOptions(), loadSegmentOptions(), loadData()]);
+  await initialize();
 });
 </script>

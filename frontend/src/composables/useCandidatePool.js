@@ -1,5 +1,5 @@
 import { ref, reactive, computed, watch } from 'vue'
-import candidatePoolService from '@/services/candidatePoolService'
+import { useCandidatePoolStore } from '@/stores/candidatePool.js'
 
 /**
  * Composable for Mira Talent - READ ONLY
@@ -20,30 +20,24 @@ function debounce(func, wait) {
 }
 
 export function useCandidatePool() {
-  // State
-  const candidatePools = ref([])
-  const loading = ref(false)
-  const error = ref(null)
-  const stats = ref({})
-  const filterOptions = ref({})
+  // Store
+  const candidatePoolStore = useCandidatePoolStore()
+  
+  // State (using store state)
+  const candidatePools = computed(() => candidatePoolStore.candidatePools)
+  const loading = computed(() => candidatePoolStore.loading)
+  const error = computed(() => candidatePoolStore.error)
+  const stats = computed(() => candidatePoolStore.statistics)
+  const filterOptions = computed(() => candidatePoolStore.filterOptions)
 
-  // Filters
+  // Filters (using store state)
   const filters = reactive({
-    search: '',
-    status: '',
+    search: candidatePoolStore.searchText,
+    status: candidatePoolStore.statusFilter,
   })
 
-  // Pagination
-  const pagination = reactive({
-    page: 1,
-    limit: 12,
-    total: 0,
-    pages: 0,
-    has_next: false,
-    has_prev: false,
-    showing_from: 0,
-    showing_to: 0
-  })
+  // Pagination (using store state)
+  const pagination = computed(() => candidatePoolStore.pagination)
 
   // Computed
   const hasData = computed(() => candidatePools.value.length > 0)
@@ -54,69 +48,48 @@ export function useCandidatePool() {
 
   // Methods
   const fetchCandidatePools = async (params = {}) => {
-    loading.value = true
-    error.value = null
-
     try {
       const queryParams = {
-        page: pagination.page,
-        limit: pagination.limit,
+        page: pagination.value.page,
+        limit: pagination.value.limit,
         search: filters.search,
         status: filters.status,
         order_by: "modified desc",
         ...params
       }
 
-      const response = await candidatePoolService.getCandidatePoolsWithDetails(queryParams)
+      const response = await candidatePoolStore.fetchCandidatePools(queryParams)
 
-      if (response.success) {
-        candidatePools.value = response.candidate_pools || []
-        
-        if (response.pagination) {
-          Object.assign(pagination, response.pagination)
-        }
-      } else {
-        error.value = response.error || 'Có lỗi xảy ra khi tải dữ liệu'
-        candidatePools.value = []
+      // Store handles all state updates internally
+      if (!response.success) {
+        console.error('Failed to fetch candidate pools:', response.error)
       }
     } catch (err) {
-      error.value = err.message || 'Có lỗi xảy ra khi tải dữ liệu'
-      candidatePools.value = []
       console.error('Error fetching candidate pools:', err)
-    } finally {
-      loading.value = false
     }
   }
 
   const getCandidatePool = async (name) => {
-    loading.value = true
-    error.value = null
-
     try {
-      const response = await candidatePoolService.getCandidatePoolDetail(name)
+      const response = await candidatePoolStore.fetchCandidatePoolById(name)
       
       if (response.success) {
         return response.candidate_pool
       } else {
-        error.value = response.error || 'Không tìm thấy candidate pool'
+        console.error('Error fetching candidate pool:', response.error)
         return null
       }
     } catch (err) {
-      error.value = err.message || 'Có lỗi xảy ra khi tải chi tiết'
       console.error('Error fetching candidate pool:', err)
       return null
-    } finally {
-      loading.value = false
     }
   }
 
   const fetchStats = async () => {
     try {
-      const response = await candidatePoolService.getCandidatePoolStatistics()
+      const response = await candidatePoolStore.fetchStatistics()
       
-      if (response.success) {
-        stats.value = response.stats || {}
-      } else {
+      if (!response.success) {
         console.error('Error fetching stats:', response.error)
       }
     } catch (err) {
@@ -126,11 +99,9 @@ export function useCandidatePool() {
 
   const fetchFilterOptions = async () => {
     try {
-      const response = await candidatePoolService.getCandidatePoolFilterOptions()
+      const response = await candidatePoolStore.fetchFilterOptions()
       
-      if (response.success) {
-        filterOptions.value = response.filter_options || {}
-      } else {
+      if (!response.success) {
         console.error('Error fetching filter options:', response.error)
       }
     } catch (err) {
@@ -140,7 +111,7 @@ export function useCandidatePool() {
 
   const searchCandidatePools = async (query = '', limit = 10) => {
     try {
-      const response = await candidatePoolService.searchCandidatePoolsWithDetails(query, limit)
+      const response = await candidatePoolStore.searchCandidatePools(query, limit)
       
       if (response.success) {
         return response.candidate_pools || []
@@ -156,35 +127,37 @@ export function useCandidatePool() {
 
   // Pagination methods
   const goToPage = (page) => {
-    if (page >= 1 && page <= pagination.pages) {
-      pagination.page = page
+    if (page >= 1 && page <= pagination.value.pages) {
+      candidatePoolStore.setPagination(page)
       fetchCandidatePools()
     }
   }
 
   const changeItemsPerPage = (newLimit) => {
-    pagination.limit = newLimit
-    pagination.page = 1
+    candidatePoolStore.setPagination(1, newLimit)
     fetchCandidatePools()
   }
 
   // Filter methods
   const updateSearch = debounce((searchText) => {
     filters.search = searchText
-    pagination.page = 1
+    candidatePoolStore.setSearchText(searchText)
+    candidatePoolStore.setPagination(1)
     fetchCandidatePools()
   }, 500)
 
   const updateStatus = (status) => {
     filters.status = status
-    pagination.page = 1
+    candidatePoolStore.setStatusFilter(status)
+    candidatePoolStore.setPagination(1)
     fetchCandidatePools()
   }
 
   const clearFilters = () => {
     filters.search = ''
     filters.status = ''
-    pagination.page = 1
+    candidatePoolStore.resetFilters()
+    candidatePoolStore.setPagination(1)
     fetchCandidatePools()
   }
 

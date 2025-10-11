@@ -407,7 +407,7 @@ import { useRoute } from 'vue-router'
 import ShareDialog from '@/components/ShareDialog.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import { Breadcrumbs, Button, FormControl, TextEditor, Dialog, call } from 'frappe-ui'
-import { getJobOpeningDetails, updateJobOpeningData } from '@/services/jobOpeningService'
+import { useJobOpeningStore } from '@/stores/jobOpening'
 import { useToast } from '@/composables/useToast'
 
 const toast = useToast()

@@ -180,7 +180,7 @@
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue'
 import { Dialog, Button, FormControl } from 'frappe-ui'
-import { validateCandidateForm } from '../../services/candidateService'
+import { useCandidateStore } from '@/stores/candidate'
 import { processSkills } from '../../utils/skills'
 // Translation helper function
 

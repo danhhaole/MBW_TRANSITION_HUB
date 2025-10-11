@@ -243,7 +243,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { Button } from 'frappe-ui'
-import { talentSegmentService, userService } from '@/services/universalService'
+import { talentSegmentService, userService } from '@/composables/useTalentSegment'
 
 // Translation helper function
 

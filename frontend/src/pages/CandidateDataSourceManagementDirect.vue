@@ -401,11 +401,14 @@
 import { ref, reactive, onMounted, watch } from 'vue'
 import { Dialog, Button, Breadcrumbs, TextInput, FormControl, FeatherIcon } from 'frappe-ui'
 import CandidateDataSourceFormDirect from '@/components/candidateDataSource/CandidateDataSourceFormDirect.vue'
-import { candidateDataSourceDirectService } from '@/services/candidateDataSourceDirectService.js'
+import { useCandidateDataSourceStore } from '@/stores/candidateDataSource.js'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import Loading from '@/components/Loading.vue'
 
-// Reactive data
+// Store
+const candidateDataSourceStore = useCandidateDataSourceStore()
+
+// Reactive state
 const loading = ref(false)
 const processing = ref(false)
 const processingMessage = ref('')
@@ -447,7 +450,7 @@ const loadDataSources = async () => {
       filters: buildFilters()
     }
 
-    const result = await candidateDataSourceDirectService.getList(options)
+    const result = await candidateDataSourceStore.fetchDataSources(options)
 
     if (result.success) {
       dataSources.value = result.data.data || []
@@ -478,7 +481,7 @@ const loadDataSources = async () => {
 
 const loadStatistics = async () => {
   try {
-    const result = await candidateDataSourceDirectService.getStatistics()
+    const result = await candidateDataSourceStore.fetchStatistics()
     if (result.success) {
       statistics.value = result.data
     }
@@ -560,7 +563,7 @@ const handleDelete = async (dataSource) => {
   processingMessage.value = __('Deleting data source...')
 
   try {
-    const result = await candidateDataSourceDirectService.delete(dataSource.name)
+    const result = await candidateDataSourceStore.deleteDataSource(dataSource.name)
 
     if (result.success) {
       await loadDataSources()

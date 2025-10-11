@@ -376,7 +376,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import { getSegmentCandidates, calculateEngagementRate, formatDate } from '@/services/talentSegmentService'
+import { useTalentSegmentStore } from '@/stores/talentSegment'
 
 // Translation helper function
 

@@ -215,7 +215,7 @@ import {
   formatDate,
   getAvatarText,
   processSkills
-} from '../../services/candidateService'
+} from '@/stores/candidate'
 
 // Translation helper function
 

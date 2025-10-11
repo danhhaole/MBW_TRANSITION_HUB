@@ -1,14 +1,5 @@
 import { ref, reactive, computed, watch } from 'vue'
-import {
-  getCandidates,
-  getCandidateStats,
-  searchCandidates,
-  getCandidate,
-  createCandidate,
-  updateCandidate,
-  deleteCandidate,
-  getFilterOptions
-} from '@/repositories/candidateRepository'
+import { useCandidateStore } from '@/stores/candidate.js'
 import { debounce } from 'lodash'
 
 /**
@@ -16,36 +7,26 @@ import { debounce } from 'lodash'
  * Quản lý state và logic cho TalentPool management
  */
 export function useCandidate() {
-  // State
-  const candidates = ref([])
-  const selectedCandidate = ref(null)
-  const loading = ref(false)
-  const error = ref(null)
-  const stats = ref({})
-  const filterOptions = ref({ 
-    status: [], 
-    source: [], 
-    skills: [] 
-  })
+  // Store
+  const candidateStore = useCandidateStore()
   
-  // Pagination state
-  const pagination = reactive({
-    page: 1,
-    limit: 12,
-    total: 0,
-    pages: 0,
-    has_next: false,
-    has_prev: false,
-    showing_from: 0,
-    showing_to: 0
-  })
+  // State (using store state)
+  const candidates = computed(() => candidateStore.candidates)
+  const selectedCandidate = computed(() => candidateStore.currentCandidate)
+  const loading = computed(() => candidateStore.loading)
+  const error = computed(() => candidateStore.error)
+  const stats = computed(() => candidateStore.statistics)
+  const filterOptions = computed(() => candidateStore.filterOptions)
   
-  // Filter state
+  // Pagination state (using store state)
+  const pagination = computed(() => candidateStore.pagination)
+  
+  // Filter state (using store state)
   const filters = reactive({
-    search: '',
-    status: '',
-    source: '',
-    skills: []
+    search: candidateStore.searchText,
+    status: candidateStore.statusFilter,
+    source: candidateStore.sourceFilter,
+    skills: candidateStore.skillsFilter
   })
   
   // Computed
@@ -54,7 +35,7 @@ export function useCandidate() {
   
   // Debounced search
   const debouncedSearch = debounce(() => {
-    pagination.page = 1
+    candidateStore.setPagination(1)
     fetchCandidates()
   }, 500)
   watch(() => filters.search, debouncedSearch)
@@ -62,8 +43,6 @@ export function useCandidate() {
   // Methods
   const fetchCandidates = async () => {
     try {
-      loading.value = true
-      error.value = null
       const options = {
         filters: {
           status: filters.status || undefined,
@@ -73,31 +52,23 @@ export function useCandidate() {
           ['full_name', 'like', `%${filters.search}%`],
           ['email', 'like', `%${filters.search}%`]
         ] : [],
-        page_length: pagination.limit,
-        start: (pagination.page - 1) * pagination.limit,
+        page_length: pagination.value.limit,
+        start: (pagination.value.page - 1) * pagination.value.limit,
         order_by: 'modified desc'
       }
-      const result = await getCandidates(options)
+      const result = await candidateStore.fetchCandidates(options)
 
       console.log('result', result)
-      candidates.value = result.data || []
-      if (result.pagination) {
-        Object.assign(pagination, result.pagination)
-      }
+      // Store handles all state updates internally
     } catch (err) {
-      error.value = err.message || 'Failed to fetch talent pools'
-      console.error('Error fetching talent pools:', err)
-    } finally {
-      loading.value = false
+      console.error('Error fetching candidates:', err)
     }
   }
   
   const fetchStats = async () => {
     try {
-      const statsResult = await getCandidateStats()
-      if (statsResult) {
-        stats.value = statsResult
-      }
+      const result = await candidateStore.fetchStatistics()
+      // Store handles all state updates internally
     } catch (err) {
       console.error('Error fetching stats:', err)
     }
@@ -105,173 +76,130 @@ export function useCandidate() {
   
   const fetchFilterOptions = async () => {
     try {
-      const data = await getFilterOptions()
-      filterOptions.value = {
-        status: Array.isArray(data.status) ? data.status : [],
-        source: Array.isArray(data.source) ? data.source : [],
-        skills: Array.isArray(data.skills) ? data.skills : []
-      }
+      const result = await candidateStore.fetchFilterOptions()
+      // Store handles all state updates internally
     } catch (err) {
       console.error('Error fetching filter options:', err)
-      filterOptions.value = { 
-        status: [], 
-        source: [], 
-        skills: [] 
-      }
     }
   }
   
-  const searchCandidates = async (query, limit = 10) => {
+  const searchCandidatesAPI = async (query, limit = 10) => {
     try {
-      await searchCandidates.fetch({ query, limit })
-      return searchCandidates.data || []
+      const result = await candidateStore.searchCandidates(query, limit)
+      return result.data || []
     } catch (err) {
       console.error('Error searching candidates:', err)
       return []
     }
   }
   
-  const getCandidate = async (name) => {
+  const getCandidateAPI = async (name) => {
     try {
-      loading.value = true
-      error.value = null
-      
-      await getCandidate.fetch({ name })
-      
-      if (getCandidate.data) {
-        selectedCandidate.value = getCandidate.data
-        return getCandidate.data
-      }
-      return null
+      const result = await candidateStore.fetchCandidateById(name)
+      return result.data || null
     } catch (err) {
-      error.value = err.message || 'Failed to fetch talent pool'
-      console.error('Error fetching talent pool:', err)
+      console.error('Error fetching candidate:', err)
       return null
-    } finally {
-      loading.value = false
     }
   }
   
   const createCandidateAPI = async (candidateData) => {
     try {
-      loading.value = true
-      error.value = null
-      const result = await createCandidate(candidateData)
-      if (result) {
-        candidates.value.unshift(result)
-        pagination.total += 1
+      const result = await candidateStore.createCandidate(candidateData)
+      if (result.success) {
         await fetchStats()
-        return result
+        return result.data
       }
-      return null
+      throw new Error(result.error)
     } catch (err) {
-      error.value = err.message || 'Failed to create talent pool'
-      console.error('Error creating talent pool:', err)
+      console.error('Error creating candidate:', err)
       throw err
-    } finally {
-      loading.value = false
     }
   }
   
   const updateCandidateAPI = async (name, candidateData) => {
     try {
-      loading.value = true
-      error.value = null
-      const result = await updateCandidate(name, candidateData)
-      if (result) {
-        const index = candidates.value.findIndex(c => c.name === name)
-        if (index !== -1) {
-          candidates.value[index] = result
-        }
-        if (selectedCandidate.value?.name === name) {
-          selectedCandidate.value = result
-        }
+      const result = await candidateStore.updateCandidate(name, candidateData)
+      if (result.success) {
         await fetchStats()
-        return result
+        return result.data
       }
-      return null
+      throw new Error(result.error)
     } catch (err) {
-      error.value = err.message || 'Failed to update talent pool'
-      console.error('Error updating talent pool:', err)
+      console.error('Error updating candidate:', err)
       throw err
-    } finally {
-      loading.value = false
     }
   }
   
-  const deleteCandidate = async (name) => {
+  const deleteCandidateAPI = async (name) => {
     try {
-      loading.value = true
-      error.value = null
-      await deleteCandidate(name)
-      candidates.value = candidates.value.filter(c => c.name !== name)
-      if (selectedCandidate.value?.name === name) {
-        selectedCandidate.value = null
+      const result = await candidateStore.deleteCandidate(name)
+      if (result.success) {
+        await fetchStats()
+        return true
       }
-      pagination.total -= 1
-      await fetchStats()
-      return true
+      throw new Error(result.error)
     } catch (err) {
-      error.value = err.message || 'Failed to delete talent pool'
-      console.error('Error deleting talent pool:', err)
+      console.error('Error deleting candidate:', err)
       throw err
-    } finally {
-      loading.value = false
     }
   }
   
   // Pagination methods
   const goToPage = (page) => {
-    if (page >= 1 && page <= pagination.pages) {
-      pagination.page = page
+    if (page >= 1 && page <= pagination.value.pages) {
+      candidateStore.setPagination(page)
       fetchCandidates()
     }
   }
   
   const nextPage = () => {
-    if (pagination.has_next) {
-      pagination.page++
+    if (pagination.value.has_next) {
+      candidateStore.setPagination(pagination.value.page + 1)
       fetchCandidates()
     }
   }
   
   const previousPage = () => {
-    if (pagination.has_prev) {
-      pagination.page--
+    if (pagination.value.has_prev) {
+      candidateStore.setPagination(pagination.value.page - 1)
       fetchCandidates()
     }
   }
   
   const changeItemsPerPage = (newLimit) => {
-    pagination.limit = newLimit
-    pagination.page = 1
+    candidateStore.setPagination(1, newLimit)
     fetchCandidates()
   }
   
   // Filter methods
   const updateSearch = debounce((searchText) => {
     filters.search = searchText
-    pagination.page = 1
+    candidateStore.setSearchText(searchText)
+    candidateStore.setPagination(1)
     fetchCandidates()
   }, 400)
 
   const updateStatus = (status) => {
     if (status && status.target) status = status.target.value
     filters.status = status
-    pagination.page = 1
+    candidateStore.setStatusFilter(status)
+    candidateStore.setPagination(1)
     fetchCandidates()
   }
 
   const updateSource = (source) => {
     if (source && source.target) source = source.target.value
     filters.source = source
-    pagination.page = 1
+    candidateStore.setSourceFilter(source)
+    candidateStore.setPagination(1)
     fetchCandidates()
   }
   
   const updateSkills = (skills) => {
     filters.skills = skills
-    pagination.page = 1
+    candidateStore.setSkillsFilter(skills)
+    candidateStore.setPagination(1)
     fetchCandidates()
   }
   
@@ -280,7 +208,8 @@ export function useCandidate() {
     filters.status = ''
     filters.source = ''
     filters.skills = []
-    pagination.page = 1
+    candidateStore.resetFilters()
+    candidateStore.setPagination(1)
     fetchCandidates()
   }
   
@@ -312,11 +241,11 @@ export function useCandidate() {
     fetchCandidates,
     fetchStats,
     fetchFilterOptions,
-    searchCandidates,
-    getCandidate,
+    searchCandidatesAPI,
+    getCandidateAPI,
     createCandidateAPI,
     updateCandidateAPI,
-    deleteCandidate,
+    deleteCandidateAPI,
     
     // Pagination
     goToPage,

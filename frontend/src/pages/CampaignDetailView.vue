@@ -1176,13 +1176,9 @@
 <script setup>
 import { ref, reactive, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { 
-  candidateCampaignService,
-  candidateService,
-  candidateSegmentService,
-  talentSegmentService,
-  actionService,
-} from '../services/universalService'
+import { useMiraTalentPoolStore } from '@/stores/miraTalentPool'
+import { useCandidateStore } from '@/stores/candidate'
+import { useTalentSegmentStore } from '@/stores/talentSegment'
 import { useCampaignStore } from '@/stores/campaign'
 import { useCampaignStepStore } from '@/stores/campaignStep'
 import { Dialog, Breadcrumbs, Button, FormControl, call } from 'frappe-ui'
@@ -1484,6 +1480,11 @@ const tabs = computed(() => {
       count: actions.value.length
     },
     {
+      key: 'social',
+      label: __('Media Posts'),
+      count: 0
+    },
+    {
       key: 'interactions',
       label: __('Interactions'),
       count: interactions.value.length
@@ -1496,13 +1497,13 @@ const tabs = computed(() => {
   ]
 
   // Chỉ hiển thị tab Social Media khi source_type là DataSource
-  if (campaign.value.source_type === 'DataSource') {
-    baseTabs.splice(4, 0, {
-      key: 'social',
-      label: __('Media Posts'),
-      count: 0 // Will be updated when we have social posts count
-    })
-  }
+  // if (campaign.value.source_type === 'DataSource') {
+  //   baseTabs.splice(4, 0, {
+  //     key: 'social',
+  //     label: __('Media Posts'),
+  //     count: 0 // Will be updated when we have social posts count
+  //   })
+  // }
 
   return baseTabs
 })

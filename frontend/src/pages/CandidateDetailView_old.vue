@@ -597,7 +597,7 @@ import {
   talentSegmentService,
   interactionService,
   emailLogService
-} from '../services/universalService'
+} from 'frappe-ui'
 import { useCampaignStore } from '@/stores/campaign'
 
 const route = useRoute()

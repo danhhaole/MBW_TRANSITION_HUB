@@ -487,19 +487,6 @@
                       </div>
                       <div class="flex items-center gap-2">
                         <Button
-                          v-if="
-                            selectedSource === 'datasource' &&
-                            selectedDataSourceType === 'SocialNetwork'
-                          "
-                          variant="ghost"
-                          theme="gray"
-                          size="sm"
-                          class="text-gray-500 hover:text-gray-700"
-                          @click="openSocialConfigEditor"
-                        >
-                          {{ __("Edit") }}
-                        </Button>
-                        <Button
                           variant="ghost"
                           theme="gray"
                           size="sm"
@@ -1302,19 +1289,14 @@ import Link from "@/components/Controls/Link.vue";
 import StepFormDialog from "./StepFormDialog.vue";
 import SocialNetworkConfigDialog from "./SocialNetworkConfigDialog.vue";
 
-import {
-  candidateService,
-  candidateSegmentService,
-} from "@/services/universalService";
+import { useCandidateStore } from "@/stores/candidate";
+import { useMiraTalentPoolStore } from "@/stores/miraTalentPool";
 import { useCampaignStore } from "@/stores/campaign";
 import { useCampaignStepStore } from "@/stores/campaignStep";
 import { useCampaignSocialStore } from "@/stores/campaignSocial";
 import { useCampaignTemplateStore } from "@/stores/campaignTemplate.js";
-import {
-  getFilteredJobOpenings,
-  getJobOpeningDetails,
-} from "@/services/jobOpeningService";
-import candidateDataSourceRepository from "@/repositories/candidateDataSourceRepository";
+import { useJobOpeningStore } from "@/stores/jobOpening";
+import { useCandidateDataSourceStore } from "@/stores/candidateDataSource.js";
 import { debounce } from "@/utils/debounce";
 
 // Props & Emits
@@ -1347,6 +1329,7 @@ const campaignStore = useCampaignStore();
 const campaignStepStore = useCampaignStepStore();
 const campaignSocialStore = useCampaignSocialStore();
 const campaignTemplateStore = useCampaignTemplateStore();
+const candidateDataSourceStore = useCandidateDataSourceStore();
 
 //chọn nguồn
 const searchSource = ref(null);
@@ -1709,7 +1692,7 @@ const sources = computed(() => [
   },
 ]);
 
-// Data source type options
+// Data source type options - Only ATS now
 const dataSourceTypes = computed(() => [
   {
     key: "ATS",
@@ -1717,33 +1700,12 @@ const dataSourceTypes = computed(() => [
     description: "Applicant Tracking System",
     icon: "briefcase",
   },
-  {
-    key: "JobBoard",
-    title: "Job Board",
-    description: "Job posting platforms",
-    icon: "clipboard",
-  },
-  {
-    key: "SocialNetwork",
-    title: "Social Network",
-    description: "LinkedIn, Facebook, etc.",
-    icon: "users",
-  },
-  {
-    key: "TalentPool",
-    title: "Talent Pool",
-    description: "External talent pools",
-    icon: "user-check",
-  },
 ]);
 
 // Helper function for data source icons
 const getDataSourceIcon = (sourceType) => {
   const iconMap = {
     ATS: "database",
-    JobBoard: "briefcase",
-    SocialNetwork: "users",
-    TalentPool: "user-check",
   };
   return iconMap[sourceType] || "server";
 };
@@ -1758,7 +1720,7 @@ const sourceConfigs = computed(() => ({
   },
   datasource: {
     description: __(
-      "Import candidates from external data sources (ATS, Job Board, Social Network, etc.)."
+      "Import candidates from external ATS data sources."
     ),
   },
 }));
@@ -1911,11 +1873,23 @@ const loadDataSources = async () => {
   loadingDataSources.value = true;
   try {
     console.log("🔍 Loading data sources from API...");
-    const response = await candidateDataSourceRepository.getDataSources();
+    const response = await candidateDataSourceStore.fetchDataSources({
+      filters: { is_active: 1 },
+      fields: [
+        'name',
+        'source_name', 
+        'source_title',
+        'notes',
+        'source_type',
+        'is_active'
+      ],
+      order_by: 'modified desc',
+      page_length: 200
+    });
     console.log("📊 Data sources response:", response);
 
     if (response && response.success) {
-      dataSources.value = response.data_sources || [];
+      dataSources.value = response.data || [];
       console.log(
         `✅ Loaded ${dataSources.value.length} data sources:`,
         dataSources.value
@@ -1923,7 +1897,7 @@ const loadDataSources = async () => {
     } else {
       console.error(
         "❌ Failed to load data sources:",
-        response?.error || "No success flag"
+        response?.error || "Unknown error"
       );
       dataSources.value = [];
     }
@@ -2016,7 +1990,9 @@ const selectSource = (sourceKey) => {
     // Load data sources if datasource is selected
     if (source.key === "datasource") {
       console.log("🔄 Loading data sources for datasource selection...");
-      dataSourceSelectionLevel.value = 1; // Move to type selection level
+      // ✅ Since only ATS is available, auto-select it and skip type selection
+      selectedDataSourceType.value = "ATS";
+      dataSourceSelectionLevel.value = 2; // Skip type selection, go directly to source list
       loadDataSources();
     } else {
       dataSourceSelectionLevel.value = 0; // Reset to source level for other types
@@ -2034,20 +2010,15 @@ const selectDataSourceType = (sourceType) => {
   selectedDataSourceId.value = "";
   dataSourceSelectionLevel.value = 2; // ✅ Move to specific source selection to show the list
 
-  // Khi chọn SocialNetwork: chỉ hiển thị danh sách nền tảng đã kết nối từ External Connection
-  if (sourceType === "SocialNetwork") {
-    filteredDataSources.value = connectedDataSources.value.filter(
-      (ds) => ds.source_type === "SocialNetwork"
+  // Only ATS type is supported now
+  if (sourceType === "ATS") {
+    filteredDataSources.value = dataSources.value.filter(
+      (ds) => ds.source_type === "ATS"
     );
   } else {
-    // Mặc định: gộp internal và external theo loại
-    const internal = dataSources.value.filter((ds) => ds.source_type === sourceType);
-    const external = connectedDataSources.value.filter(
-      (ds) => ds.source_type === sourceType
-    );
-    filteredDataSources.value = [...external, ...internal];
+    console.warn("Unsupported source type:", sourceType);
+    filteredDataSources.value = [];
   }
-
   console.log("✅ Filtered data sources:", filteredDataSources.value);
   console.log(" selectedDataSourceType now:", selectedDataSourceType.value);
   console.log("🎯 dataSourceSelectionLevel now:", dataSourceSelectionLevel.value);
@@ -2059,13 +2030,8 @@ const selectSpecificDataSource = async (dataSource) => {
   configData.value.selectedDataSource = dataSource;
   dataSourceSelectionLevel.value = 3; // ✅ Specific data source selected - confirmed level
 
-  // Nếu là SocialNetwork thì mở modal cấu hình
-  if (
-    selectedSource.value === "datasource" &&
-    selectedDataSourceType.value === "SocialNetwork"
-  ) {
-    await openSocialConfigEditor();
-  }
+  // ATS data sources don't need additional configuration
+  console.log("✅ ATS data source selected:", dataSource.name);
 };
 
 const clearDataSourceSelection = () => {
@@ -2334,19 +2300,12 @@ const prevStep = () => {
         return;
       }
 
-      // Level 2: Data source list shown → Go back to type selection
+      // Level 2: Data source list shown → Go back to source selection (skip type selection)
       if (selectedSource.value === "datasource" && dataSourceSelectionLevel.value === 2) {
-        console.log("🔙 Level 2 → Level 1: Going back to data source type selection");
+        console.log("🔙 Level 2 → Level 0: Going back to source selection (skipping type selection)");
         selectedDataSourceType.value = "";
+        selectedSource.value = ""; // ✅ Clear selectedSource to show 3 source options
         filteredDataSources.value = [];
-        dataSourceSelectionLevel.value = 1; // Move back to type selection
-        return;
-      }
-
-      // Level 1: Data source type selection → Go back to source selection
-      if (selectedSource.value === "datasource" && dataSourceSelectionLevel.value === 1) {
-        console.log("🔙 Level 1 → Level 0: Going back to source selection");
-        selectedDataSourceType.value = "";
         dataSourceSelectionLevel.value = 0; // Move back to source selection
         return;
       }

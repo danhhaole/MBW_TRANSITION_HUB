@@ -272,7 +272,7 @@
   <script setup>
   import { ref, reactive, computed, onMounted } from 'vue'
   import { createResource, Breadcrumbs, FeatherIcon, Dialog, FormControl, Button } from 'frappe-ui'
-  import { candidateCampaignService, userService } from '../services/universalService'
+  import { candidateCampaignService, userService } from 'frappe-ui'
   import { useCampaignStepStore } from '@/stores/campaignStep'
   import { ToastContainer } from '@/components/shared'
   import { useToast } from '@/composables/useToast'

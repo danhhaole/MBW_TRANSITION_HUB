@@ -167,7 +167,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { calculateEngagementRate, formatDate } from '@/services/talentSegmentService'
+import { useTalentSegmentStore } from '@/stores/talentSegment'
 
 // Translation helper function
 

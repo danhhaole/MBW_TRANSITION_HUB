@@ -512,7 +512,7 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button, FormControl, Dialog, Badge, Breadcrumbs } from 'frappe-ui'
-import { emailLogService } from '../services/universalService'
+import { emailLogService } from 'frappe-ui'
 import { debounce } from 'lodash'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import Loading from '@/components/Loading.vue'

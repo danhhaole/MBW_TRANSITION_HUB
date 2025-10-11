@@ -106,8 +106,8 @@
 <script setup>
 import { computed, ref, h } from 'vue'
 import { Button, Dropdown, FeatherIcon, Tooltip } from 'frappe-ui'
-import { calculateEngagementRate, formatDate, getSegmentTypeColor } from '@/services/talentSegmentService'
-import { processSkills } from '@/services/candidateService'
+import { useTalentSegmentStore } from '@/stores/talentSegment'
+import { useCandidateStore } from '@/stores/candidate'
 
 // Translation helper function
 

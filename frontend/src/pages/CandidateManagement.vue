@@ -489,7 +489,7 @@ import {
 	formatCandidateStatus,
 	getAvatarText,
 	processSkills
-} from '@/services/candidateService'
+} from '@/composables/useCandidate'
 
 const breadcrumbs = [{ label: __('Contact'), route: { name: 'CandidateManagement' } }]
 

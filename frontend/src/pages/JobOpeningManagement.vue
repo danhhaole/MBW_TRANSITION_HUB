@@ -642,22 +642,54 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref, reactive, onMounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import Loading from '@/components/Loading.vue'
 import { useToast } from '@/composables/useToast'
 const toast = useToast()
 import {Breadcrumbs, Button, Select, FormControl, createResource, TextEditor, Dialog } from 'frappe-ui'
-import { getFilteredJobOpenings, submitNewJobOpening, updateJobOpeningData, removeJobOpening, getJobOpeningDetails } from '@/services/jobOpeningService'
+import { useJobOpening } from '@/composables/useJobOpening'
 import UploadExcelJobOpeningModal from '@/components/UploadExcelJobOpeningModal.vue'
 
 const router = useRouter()
 const breadcrumbs = [{ label: __('Job Openings'), route: { name: 'JobOpeningManagement' } }]
 
-const loading = ref(false)
-const items = ref([])
-const pagination = ref({ page: 1, limit: 10, total: 0, pages: 0, has_next: false, has_prev: false })
+// Use Job Opening composable
+const {
+  jobOpenings,
+  selectedJobOpening,
+  loading,
+  error,
+  stats,
+  filterOptions,
+  pagination,
+  filters,
+  hasData,
+  isEmpty,
+  hasFilters,
+  fetchJobOpenings,
+  fetchStats,
+  fetchFilterOptions,
+  searchJobOpeningsAPI,
+  getJobOpeningAPI,
+  createJobOpeningAPI,
+  updateJobOpeningAPI,
+  deleteJobOpeningAPI,
+  goToPage,
+  nextPage,
+  previousPage,
+  changeItemsPerPage,
+  updateSearch,
+  updateStatus,
+  updateDepartment,
+  updateLocation,
+  clearFilters,
+  initialize
+} = useJobOpening()
+
+// Local state
+const items = computed(() => jobOpenings.value)
 const searchText = ref('')
 const statusFilter = ref('all')
 const viewMode = ref('list')
@@ -728,25 +760,13 @@ const loadOwners = async () => {
 }
 
 const reload = async () => {
-  loading.value = true
-  try {
-    const res = await getFilteredJobOpenings({ status: statusFilter.value, searchText: searchText.value, page: pagination.value.page || 1, limit: pagination.value.limit || 10 })
-    items.value = res.data
-    pagination.value = res.pagination || pagination.value
-  } finally {
-    loading.value = false
-  }
+  await fetchJobOpenings()
 }
 
 // Debounce timer used by input and watcher
 let searchTimer = null
 const triggerDebouncedReload = () => {
-  if (searchTimer) clearTimeout(searchTimer)
-  searchTimer = setTimeout(() => {
-    // Reset to first page when search text changes
-    pagination.value.page = 1
-    reload()
-  }, 300)
+  updateSearch(searchText.value)
 }
 
 // Input handler (fires immediately on input, debounced)
@@ -1169,17 +1189,9 @@ const updateMainFormJobTitle = () => {
   form.job_title = aiForm.job_title
 }
 
-const goToPage = async (page) => {
-  if (!pagination.value.pages) return
-  if (page < 1 || page > pagination.value.pages) return
-  if (page === pagination.value.page) return
-  pagination.value.page = page
-  await reload()
-}
-
 onMounted(async () => {
   await loadOwners()
-  await reload()
+  await initialize()
 })
 
 // Xóa các event listener không cần thiết

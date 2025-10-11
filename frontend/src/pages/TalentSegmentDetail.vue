@@ -427,7 +427,7 @@ import { ref, computed, onMounted, h } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Button, Dropdown, Breadcrumbs, FeatherIcon } from 'frappe-ui'
 import LayoutHeader from '@/components/LayoutHeader.vue'
-import { getTalentSegmentDetails, getSegmentCandidates } from '@/services/talentSegmentService'
+import { useTalentSegmentStore } from '@/stores/talentSegment'
 
 // Route params
 const route = useRoute()

@@ -636,9 +636,9 @@ import {
 	candidateService,
 	findTalentProfilesBySegment,
 	bulkInsertSegments,
-} from '../services/universalService'
+} from 'frappe-ui'
 import { useCampaignStore } from '@/stores/campaign'
-import { processSkills } from '../services/candidateService'
+import { useCandidateStore } from '@/stores/candidate'
 import { usersStore } from '@/stores/users'
 import { Button, Dialog, Breadcrumbs, FeatherIcon } from 'frappe-ui'
 import LayoutHeader from '@/components/LayoutHeader.vue'

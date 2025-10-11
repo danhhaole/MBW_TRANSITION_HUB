@@ -410,7 +410,7 @@ import {
 	candidateCampaignService,
 	actionService,
 	candidateService,
-} from '../services/universalService'
+} from 'frappe-ui'
 import { useCampaignStore } from '@/stores/campaign'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import { Breadcrumbs } from 'frappe-ui'
