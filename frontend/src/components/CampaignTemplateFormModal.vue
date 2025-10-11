@@ -463,8 +463,8 @@
 <script setup>
 import { ref, reactive, computed, watch, nextTick } from 'vue'
 import { Button, TextInput, FormControl, FeatherIcon, Tabs } from 'frappe-ui'
-import { campaignTemplateDirectService } from '@/services/campaignTemplateDirectService.js'
-import { campaignTemplateStepDirectService } from '@/services/campaignTemplateStepDirectService.js'
+import { useCampaignTemplateStore } from '@/stores/campaignTemplate.js'
+import { useCampaignTemplateStepStore } from '@/stores/campaignTemplateStep.js'
 import { useToast } from '@/composables/useToast.js'
 
 // Props
@@ -484,6 +484,10 @@ const emit = defineEmits(['update:modelValue', 'saved', 'step-changed'])
 
 // Toast
 const { showSuccess, showError } = useToast()
+
+// Store
+const campaignTemplateStore = useCampaignTemplateStore()
+const campaignTemplateStepStore = useCampaignTemplateStepStore()
 
 // i18n fallback
 const __ = (text) => text
@@ -619,7 +623,7 @@ const loadTemplateSteps = async (templateName) => {
 
   stepsLoading.value = true
   try {
-    const result = await campaignTemplateStepDirectService.getStepsByTemplate(templateName)
+    const result = await campaignTemplateStepStore.fetchStepsByTemplate(templateName)
     if (result.success) {
       templateSteps.value = result.data || []
     } else {
@@ -694,7 +698,7 @@ const handleDeleteStep = async (step) => {
   if (!confirm(__('Are you sure you want to delete this step?'))) return
 
   try {
-    const result = await campaignTemplateStepDirectService.delete(step.name)
+    const result = await campaignTemplateStepStore.deleteStep(step.name)
     if (result.success) {
       showSuccess(__('Step deleted successfully'))
       // Reload steps
@@ -712,7 +716,7 @@ const handleDeleteStep = async (step) => {
 
 const handleMoveStep = async (step, direction) => {
   try {
-    const result = await campaignTemplateStepDirectService.moveStep(step.name, direction)
+    const result = await campaignTemplateStepStore.moveStep(step.name, direction)
     if (result.success) {
       showSuccess(result.message || __('Step moved successfully'))
       // Reload steps to reflect new order
@@ -743,7 +747,7 @@ const handleCopyStep = async (step) => {
       action_config: step.action_config || null
     }
 
-    const result = await campaignTemplateStepDirectService.create(copyData)
+    const result = await campaignTemplateStepStore.createStep(copyData)
     if (result.success) {
       showSuccess(__('Step copied successfully'))
       // Reload steps to reflect new step
@@ -802,7 +806,7 @@ const getNextStepOrder = async () => {
   if (!templateName) return 1
 
   try {
-    const result = await campaignTemplateStepDirectService.getNextStepOrder(templateName)
+    const result = await campaignTemplateStepStore.getNextStepOrderForTemplate(templateName)
     return result || templateSteps.value.length + 1
   } catch (error) {
     return templateSteps.value.length + 1
@@ -882,10 +886,10 @@ const handleStepSubmit = async () => {
 
     if (editingStep.value) {
       // Update existing step
-      result = await campaignTemplateStepDirectService.update(editingStep.value.name, data)
+      result = await campaignTemplateStepStore.updateStep(editingStep.value.name, data)
     } else {
       // Create new step
-      result = await campaignTemplateStepDirectService.create(data)
+      result = await campaignTemplateStepStore.createStep(data)
     }
 
     if (result.success) {
@@ -974,10 +978,10 @@ const handleSubmit = async () => {
     let result
     if (currentTemplateName.value) {
       // Update
-      result = await campaignTemplateDirectService.update(currentTemplateName.value, data)
+      result = await campaignTemplateStore.updateTemplate(currentTemplateName.value, data)
     } else {
       // Create
-      result = await campaignTemplateDirectService.create(data)
+      result = await campaignTemplateStore.createTemplate(data)
     }
 
     if (result.success) {

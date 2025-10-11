@@ -224,7 +224,7 @@
 <script setup>
 import { ref, reactive, computed, watch, nextTick } from 'vue'
 import { Button, TextInput, FormControl, FeatherIcon } from 'frappe-ui'
-import { campaignTemplateStepDirectService } from '@/services/campaignTemplateStepDirectService.js'
+import { useCampaignTemplateStepStore } from '@/stores/campaignTemplateStep.js'
 import { useToast } from '@/composables/useToast.js'
 
 // Props
@@ -248,6 +248,9 @@ const emit = defineEmits(['update:modelValue', 'saved'])
 
 // Toast
 const { showSuccess, showError } = useToast()
+
+// Store
+const campaignTemplateStepStore = useCampaignTemplateStepStore()
 
 // Computed
 const show = computed({
@@ -401,10 +404,10 @@ const handleSubmit = async () => {
 
     if (isEdit.value) {
       // Update existing step
-      result = await campaignTemplateStepDirectService.update(props.step.name, data)
+      result = await campaignTemplateStepStore.updateStep(props.step.name, data)
     } else {
       // Create new step
-      result = await campaignTemplateStepDirectService.create(data)
+      result = await campaignTemplateStepStore.createStep(data)
     }
 
     if (result.success) {
@@ -443,7 +446,7 @@ const handleClose = () => {
 const getNextStepOrder = async () => {
   if (!isEdit.value && props.templateName) {
     try {
-      const nextOrder = await campaignTemplateStepDirectService.getNextStepOrder(props.templateName)
+      const nextOrder = await campaignTemplateStepStore.getNextStepOrderForTemplate(props.templateName)
       formData.step_order = nextOrder
     } catch (error) {
       console.error('Error getting next step order:', error)

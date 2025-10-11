@@ -208,10 +208,13 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { Button, FeatherIcon } from 'frappe-ui'
-import { campaignTemplateDirectService } from '@/services/campaignTemplateDirectService.js'
+import { useCampaignTemplateStore } from '@/stores/campaignTemplate.js'
 
 // i18n fallback
 const __ = (text) => text
+
+// Store
+const campaignTemplateStore = useCampaignTemplateStore()
 
 // Props
 const props = defineProps({
@@ -260,7 +263,7 @@ const loadTemplate = async () => {
 
   try {
     console.log('Preview Modal - Calling service...')
-    const result = await campaignTemplateDirectService.getById(props.templateId)
+    const result = await campaignTemplateStore.fetchTemplateById(props.templateId)
     console.log('Preview Modal - Service result:', result)
     
     if (result.success) {

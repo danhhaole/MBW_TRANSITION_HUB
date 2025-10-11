@@ -391,8 +391,8 @@ import { useRouter, useRoute } from 'vue-router'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import CampaignTemplateFormModal from '@/components/CampaignTemplateFormModal.vue'
 import CampaignTemplateStepFormModal from '@/components/CampaignTemplateStepFormModal.vue'
-import { campaignTemplateDirectService } from '@/services/campaignTemplateDirectService.js'
-import { campaignTemplateStepDirectService } from '@/services/campaignTemplateStepDirectService.js'
+import { useCampaignTemplateStore } from '@/stores/campaignTemplate.js'
+import { useCampaignTemplateStepStore } from '@/stores/campaignTemplateStep.js'
 import { useToast } from '@/composables/useToast.js'
 import { ToastContainer } from '@/components/shared'
 
@@ -402,6 +402,10 @@ const route = useRoute()
 
 // Toast
 const { showSuccess, showError } = useToast()
+
+// Store
+const campaignTemplateStore = useCampaignTemplateStore()
+const campaignTemplateStepStore = useCampaignTemplateStepStore()
 
 // Page setup
 const templateId = ref(route.params.id)
@@ -432,7 +436,7 @@ const loadTemplate = async () => {
   error.value = null
 
   try {
-    const result = await campaignTemplateDirectService.getById(templateId.value)
+    const result = await campaignTemplateStore.fetchTemplateById(templateId.value)
     
     if (result.success) {
       template.value = result.data
@@ -453,7 +457,7 @@ const loadSteps = async () => {
   
   stepsLoading.value = true
   try {
-    const result = await campaignTemplateStepDirectService.getStepsByTemplate(template.value.name)
+    const result = await campaignTemplateStepStore.fetchStepsByTemplate(template.value.name)
     
     if (result.success) {
       steps.value = result.data || []
@@ -491,7 +495,18 @@ const handleDeleteStep = (step) => {
 
 const handleDuplicateStep = async (step) => {
   try {
-    const result = await campaignTemplateStepDirectService.duplicateStep(step.name)
+    // Create a copy of the step with modified name and order
+    const copyData = {
+      template: template.value.name,
+      campaign_step_name: `${step.campaign_step_name} (Copy)`,
+      action_type: step.action_type,
+      step_order: steps.value.length + 1,
+      delay_in_days: step.delay_in_days || 0,
+      template_content: step.template_content || '',
+      action_config: step.action_config || null
+    }
+    
+    const result = await campaignTemplateStepStore.createStep(copyData)
     
     if (result.success) {
       showSuccess(__('Step duplicated successfully'))
@@ -508,7 +523,7 @@ const handleDuplicateStep = async (step) => {
 
 const handleMoveStep = async (step, direction) => {
   try {
-    const result = await campaignTemplateStepDirectService.moveStep(step.name, direction)
+    const result = await campaignTemplateStepStore.moveStep(step.name, direction)
 
     if (result.success) {
       showSuccess(result.message)
@@ -528,7 +543,7 @@ const confirmDeleteStep = async () => {
 
   deleteStepLoading.value = true
   try {
-    const result = await campaignTemplateStepDirectService.delete(stepToDelete.value.name)
+    const result = await campaignTemplateStepStore.deleteStep(stepToDelete.value.name)
     
     if (result.success) {
       showSuccess(result.message || __('Step deleted successfully'))

@@ -463,7 +463,7 @@ import { FormControl, Breadcrumbs, Button } from 'frappe-ui'
 import CampaignTemplateFormModal from '@/components/CampaignTemplateFormModal.vue'
 import CampaignTemplatePreviewModal from '@/components/CampaignTemplatePreviewModal.vue'
 
-import { campaignTemplateDirectService } from '@/services/campaignTemplateDirectService.js'
+import { useCampaignTemplateStore } from '@/stores/campaignTemplate.js'
 import { useToast } from '@/composables/useToast.js'
 import { ToastContainer } from '@/components/shared'
 
@@ -482,22 +482,33 @@ const router = useRouter()
 // Toast
 const { showSuccess, showError } = useToast()
 
+// Store
+const campaignTemplateStore = useCampaignTemplateStore()
+
 // Page setup
 const title = 'Campaign Templates'
 const breadcrumbs = [{ label: __('Campaign Templates'), route: { name: 'CampaignTemplateManagement' } }]
 
-// Reactive data
-const loading = ref(false)
-const error = ref(null)
-const templates = ref([])
-const statistics = ref({})
-const pagination = ref({})
+// Reactive data - using store
+const loading = computed(() => campaignTemplateStore.loading)
+const error = computed(() => campaignTemplateStore.error)
+const templates = computed(() => campaignTemplateStore.templates)
+const statistics = computed(() => campaignTemplateStore.statistics)
+const pagination = computed(() => campaignTemplateStore.pagination)
 
-// Search & Filters
-const searchText = ref('')
-const typeFilter = ref('')
-const statusFilter = ref('')
-const currentPage = ref(1)
+// Search & Filters - using store
+const searchText = computed({
+  get: () => campaignTemplateStore.searchText,
+  set: (value) => campaignTemplateStore.setSearchText(value)
+})
+const typeFilter = computed({
+  get: () => campaignTemplateStore.typeFilter,
+  set: (value) => campaignTemplateStore.setTypeFilter(value)
+})
+const statusFilter = computed({
+  get: () => campaignTemplateStore.activeFilter,
+  set: (value) => campaignTemplateStore.setActiveFilter(value)
+})
 
 // Modals & Forms
 const showFormModal = ref(false)
@@ -524,92 +535,41 @@ const getMostUsedType = () => {
 
 // Methods
 const loadTemplates = async () => {
-  loading.value = true
-  error.value = null
+  const options = {
+    page_length: 20,
+    start: (pagination.value.page - 1) * 20
+  }
 
-  try {
-    const options = {
-      page_length: 20,
-      start: (currentPage.value - 1) * 20,
-      search_text: searchText.value,
-      filters: buildFilters()
-    }
-
-    const result = await campaignTemplateDirectService.getList(options)
-
-    if (result.success) {
-      templates.value = result.data.data || []
-      pagination.value = {
-        total: result.data.total || 0,
-        page: currentPage.value,
-        limit: 20,
-        pages: Math.ceil((result.data.total || 0) / 20),
-        has_next: result.data.has_next || false,
-        has_prev: result.data.has_prev || false,
-        showing_from: result.data.showing_from || 0,
-        showing_to: result.data.showing_to || 0
-      }
-    } else {
-      error.value = result.error || __('Unable to load templates')
-      templates.value = []
-      pagination.value = {}
-    }
-  } catch (err) {
-    console.error('Error loading templates:', err)
-    error.value = __('An error occurred while loading templates')
-    templates.value = []
-    pagination.value = {}
-  } finally {
-    loading.value = false
+  const result = await campaignTemplateStore.fetchTemplates(options)
+  
+  if (!result.success && result.error) {
+    showError(result.error)
   }
 }
 
 const loadStatistics = async () => {
-  try {
-    const result = await campaignTemplateDirectService.getStatistics()
-    if (result.success) {
-      statistics.value = result.data
-    }
-  } catch (err) {
-    console.error('Error loading statistics:', err)
+  const result = await campaignTemplateStore.fetchStatistics()
+  
+  if (!result.success && result.error) {
+    console.error('Error loading statistics:', result.error)
   }
 }
 
-const buildFilters = () => {
-  const filters = {}
-
-  if (typeFilter.value) {
-    filters.campaign_type = typeFilter.value
-  }
-
-  if (statusFilter.value) {
-    switch (statusFilter.value) {
-      case 'active':
-        filters.is_active = 1
-        break
-      case 'inactive':
-        filters.is_active = 0
-        break
-    }
-  }
-
-  return filters
-}
 
 // Event handlers
 const handleRefresh = () => {
-  currentPage.value = 1
+  campaignTemplateStore.setPagination(1)
   loadTemplates()
   loadStatistics()
 }
 
 const handleSearchChange = debounce(() => {
-  currentPage.value = 1
+  campaignTemplateStore.setPagination(1)
   loadTemplates()
 }, 300)
 
 const handleFilterChange = () => {
-  currentPage.value = 1
+  campaignTemplateStore.setPagination(1)
   loadTemplates()
 }
 
@@ -627,10 +587,9 @@ const handlePreview = (template) => {
 }
 
 const handleEdit = async (template) => {
-  loading.value = true
   try {
     // Load complete template data
-    const result = await campaignTemplateDirectService.getById(template.name)
+    const result = await campaignTemplateStore.fetchTemplateById(template.name)
     if (result.success) {
       selectedTemplate.value = result.data
       showFormModal.value = true
@@ -640,8 +599,6 @@ const handleEdit = async (template) => {
   } catch (err) {
     console.error('Error loading template for edit:', err)
     showError(__('An error occurred while loading template'))
-  } finally {
-    loading.value = false
   }
 }
 
@@ -655,14 +612,14 @@ const confirmDelete = async () => {
 
   deleteLoading.value = true
   try {
-    const result = await campaignTemplateDirectService.delete(templateToDelete.value.name)
+    const result = await campaignTemplateStore.deleteTemplate(templateToDelete.value.name)
     
     if (result.success) {
-      showSuccess(result.message || __('Template deleted successfully'))
+      showSuccess(__('Template deleted successfully'))
       
       showDeleteModal.value = false
       templateToDelete.value = null
-      handleRefresh()
+      loadStatistics() // Refresh statistics
     } else {
       showError(result.error || __('Failed to delete template'))
     }
@@ -697,14 +654,14 @@ const handleStepChanged = () => {
 
 const handleNextPage = () => {
   if (pagination.value.has_next) {
-    currentPage.value++
+    campaignTemplateStore.setPagination(pagination.value.page + 1)
     loadTemplates()
   }
 }
 
 const handlePreviousPage = () => {
-  if (pagination.value.has_prev && currentPage.value > 1) {
-    currentPage.value--
+  if (pagination.value.has_prev && pagination.value.page > 1) {
+    campaignTemplateStore.setPagination(pagination.value.page - 1)
     loadTemplates()
   }
 }
