@@ -18,8 +18,8 @@
         <!-- Form Content -->
         <div v-show="!isDataLoading" class="space-y-4">
         
-        <!-- Progress Indicator -->
-        <div class="mb-6">
+        <!-- Progress Indicator (only in detail mode) -->
+        <div v-if="props.mode === 'detail'" class="mb-6">
           <div class="flex items-center justify-between text-xs text-gray-500 mb-2">
             <span>{{ __('Progress') }}</span>
             <span>{{ currentStep }}/2</span>
@@ -32,8 +32,8 @@
           </div>
         </div>
 
-        <!-- Step 1: Choose Where to Post -->
-        <div class="space-y-4">
+        <!-- Step 1: Choose Where to Post (only in detail mode) -->
+        <div v-if="props.mode === 'detail'" class="space-y-4">
           <label class="block text-sm font-medium text-gray-700">
             {{ __('Step 1: Choose Where to Post') }}
           </label>
@@ -128,10 +128,55 @@
           </div>
         </div>
 
-        <!-- Step 2: Post Information (only show when page is selected) -->
-        <div v-if="configData.page_id" class="space-y-4">
+        <!-- Choose Page (wizard mode only) -->
+        <div v-if="props.mode === 'wizard'" class="space-y-4">
           <label class="block text-sm font-medium text-gray-700">
-            {{ __('Step 2: Post Information') }}
+            {{ __('Choose Page/Profile') }}
+          </label>
+          
+          <!-- Loading Pages -->
+          <div v-if="loadingInternalPages" class="flex items-center justify-center py-4">
+            <div class="flex items-center space-x-2">
+              <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+              <span class="text-sm text-gray-600">{{ __('Loading pages...') }}</span>
+            </div>
+          </div>
+          
+          <!-- No Pages -->
+          <div v-else-if="!internalSocialPages.length" class="text-center py-4">
+            <div class="text-gray-500 text-sm">{{ __('No pages available for this connection') }}</div>
+          </div>
+          
+          <!-- Social Pages Grid -->
+          <div v-else class="grid grid-cols-1 gap-2">
+            <div
+              v-for="page in internalSocialPages"
+              :key="page.external_account_id"
+              class="border rounded-lg p-3 cursor-pointer transition-all duration-200 hover:shadow-sm"
+              :class="configData.page_id === page.external_account_id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'"
+              @click="selectPage(page)"
+            >
+              <div class="flex items-center">
+                <div class="flex-1">
+                  <div class="text-sm font-medium text-gray-900">
+                    {{ page.account_name }}
+                  </div>
+                  <div class="text-xs text-gray-500">
+                    {{ page.account_type }}
+                  </div>
+                </div>
+                <div v-if="configData.page_id === page.external_account_id" class="ml-2">
+                  <FeatherIcon name="check-circle" class="h-4 w-4 text-blue-600" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Post Information -->
+        <div v-if="props.mode === 'wizard' ? configData.page_id : (props.mode === 'wizard' || configData.page_id)" class="space-y-4">
+          <label class="block text-sm font-medium text-gray-700">
+            {{ props.mode === 'wizard' ? __('Post Information') : __('Step 2: Post Information') }}
           </label>
           
           <!-- Schedule -->
@@ -241,6 +286,7 @@ import { useCampaignSocialStore } from "@/stores/campaignSocial";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
+const campaignSocialStore = useCampaignSocialStore();
 
 // Props
 const props = defineProps({
@@ -251,6 +297,7 @@ const props = defineProps({
   socialConfig: {
     type: Object,
     default: () => ({
+      external_connection: "",
       page_id: "",
       scheduled_at: "",
       job_opening: "",
@@ -322,8 +369,7 @@ const emit = defineEmits([
 // Translation helper
 const __ = (text) => text;
 
-// Store
-const campaignSocialStore = useCampaignSocialStore();
+// Store (already declared above)
 
 // Reactive state
 const show = computed({
@@ -365,20 +411,48 @@ const isDataReady = computed(() => {
          (socialPageOptions.value.length > 0 || jobOpeningOptions.value.length > 0);
 });
 
-// Computed button text based on mode
+// Computed button text based on mode and whether editing existing record
 const buttonText = computed(() => {
   if (saving.value) {
-    return props.mode === 'detail' ? __("Saving...") : __("Creating...");
+    if (props.campaignSocialId) {
+      return __("Saving...");
+    } else {
+      return __("Creating...");
+    }
   }
-  return props.mode === 'detail' ? __("Save Changes") : __("Create Post");
+
+  console.log('🔴 buttonText computed:', {
+    mode: props.mode,
+    saving: saving.value,
+    campaignSocialId: props.campaignSocialId,
+    result: buttonText.value
+  });
+  
+  // Not saving
+  if (props.mode === 'wizard' ) {
+    return props.campaignSocialId ? __("Update Post") : __("Create Post");
+  } else {
+    // Detail mode: check if editing existing or creating new
+    if (props.campaignSocialId) {
+      return __("Save Changes");
+    } else {
+      return __("Create Post");
+    }
+  }
 });
 
 // Check if form can be submitted
 const canSubmit = computed(() => {
-  return configData.value.external_connection && 
-         configData.value.page_id && 
-         configData.value.scheduled_at &&
-         configData.value.template_content?.trim();
+  if (props.mode === 'wizard') {
+    // Wizard mode: chỉ cần schedule và content
+    return configData.value.scheduled_at && configData.value.template_content?.trim();
+  } else {
+    // Detail mode: cần đầy đủ thông tin
+    return configData.value.external_connection && 
+           configData.value.page_id && 
+           configData.value.scheduled_at &&
+           configData.value.template_content?.trim();
+  }
 });
 
 // Calculate current step for progress indicator (simplified to 2 steps)
@@ -737,8 +811,8 @@ const updateSocialConfig = () => {
 };
 
 const handleConfirm = async () => {
-  if (!props.campaignId) {
-    // If no campaign ID, just emit the config (for wizard mode)
+  // Wizard mode: không có campaignId, chỉ emit config
+  if (props.mode === 'wizard' || !props.campaignId) {
     updateSocialConfig();
     emit("confirm", { ...configData.value });
     show.value = false;
@@ -747,8 +821,14 @@ const handleConfirm = async () => {
 
   saving.value = true;
   try {
-    const selectedConnection = props.externalConnections.find(
+    // Find selected connection from internal data
+    const selectedConnection = internalExternalConnections.value.find(
       (conn) => conn.name === configData.value.external_connection
+    );
+    
+    // Find selected page from internal data
+    const selectedPage = internalSocialPages.value.find(
+      (p) => p.external_account_id === configData.value.page_id
     );
     
     const socialData = {
@@ -756,12 +836,11 @@ const handleConfirm = async () => {
       external_connection: configData.value.external_connection,
       platform: selectedConnection?.platform_type || '',
       social_page_id: configData.value.page_id,
-      social_page_name: props.socialPages.find(
-        (p) => p.external_account_id === configData.value.page_id
-      )?.account_name || '',
+      social_page_name: selectedPage?.account_name || '',
       post_schedule_time: configData.value.scheduled_at || null,
       template_content: configData.value.template_content || '',
       social_media_images: configData.value.image || '',
+      job_opening: configData.value.job_opening || '',
       status: 'Pending'
     };
 
@@ -801,8 +880,17 @@ watch(
   () => props.socialConfig,
   (newConfig) => {
     if (newConfig && !isUpdatingFromProps) {
+      console.log('🔄 SocialConfig changed:', newConfig);
       isUpdatingFromProps = true;
       configData.value = { ...newConfig };
+      console.log('✅ ConfigData updated:', configData.value);
+      
+      // If editing existing record with external_connection, load social pages
+      if (newConfig.external_connection && props.mode === 'detail') {
+        console.log('🔄 Loading social pages for connection:', newConfig.external_connection);
+        loadSocialPages();
+      }
+      
       // Use nextTick to reset flag after update
       nextTick(() => {
         isUpdatingFromProps = false;
@@ -850,6 +938,11 @@ let updateTimeout = null;
 watch(
   configData,
   (newConfig) => {
+    // Don't emit if we're updating from props to prevent recursion
+    if (isUpdatingFromProps) {
+      return;
+    }
+    
     // Debounce to prevent recursive updates
     if (updateTimeout) {
       clearTimeout(updateTimeout);
@@ -867,8 +960,24 @@ watch(show, (newShow) => {
     // Reset force show form
     forceShowForm.value = false;
     
-    // Load external connections when dialog opens
-    loadExternalConnections();
+    // Load external connections when dialog opens (detail mode only)
+    if (props.mode === 'detail') {
+      loadExternalConnections();
+      
+      // If editing with existing external_connection, also load social pages
+      if (configData.value.external_connection) {
+        // Wait a bit for connections to load first
+        setTimeout(() => {
+          loadSocialPages();
+        }, 500);
+      }
+    } else if (props.mode === 'wizard') {
+      // Wizard mode: external_connection should come from selectedDataSource
+      // Load social pages directly
+      if (configData.value.external_connection) {
+        loadSocialPages();
+      }
+    }
     
     // Set default scheduled time
     if (!configData.value.scheduled_at) {

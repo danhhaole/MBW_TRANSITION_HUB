@@ -1281,6 +1281,8 @@
       :loading-job-openings="loadingJobOpenings"
       :min-scheduled-at="minScheduledAt"
       :local-tz-label="localTzLabel"
+      :campaign-id="draftCampaign?.data?.name"
+      :campaign-social-id="editingSocialId"
       @update:social-config="updateSocialConfig"
       @confirm="confirmSocialConfig"
       @cancel="() => showSocialConfigModal = false"
@@ -1307,7 +1309,7 @@ import {
 import { useCampaignStore } from "@/stores/campaign";
 import { useCampaignStepStore } from "@/stores/campaignStep";
 import { useCampaignSocialStore } from "@/stores/campaignSocial";
-import { campaignTemplateDirectService } from "@/services/campaignTemplateDirectService.js";
+import { useCampaignTemplateStore } from "@/stores/campaignTemplate.js";
 import {
   getFilteredJobOpenings,
   getJobOpeningDetails,
@@ -1344,6 +1346,7 @@ const activating = ref(false);
 const campaignStore = useCampaignStore();
 const campaignStepStore = useCampaignStepStore();
 const campaignSocialStore = useCampaignSocialStore();
+const campaignTemplateStore = useCampaignTemplateStore();
 
 //chọn nguồn
 const searchSource = ref(null);
@@ -2087,9 +2090,9 @@ const selectStepCreationMode = async (mode) => {
 const loadCampaignTemplates = async () => {
   loading.value = true;
   try {
-    const result = await campaignTemplateDirectService.getList({
+    const result = await campaignTemplateStore.fetchTemplates({
       filters: { is_active: 1 },
-      limit: 50,
+      page_length: 50,
     });
 
     console.log("🔍 Campaign templates result:", result);
@@ -2097,14 +2100,8 @@ const loadCampaignTemplates = async () => {
     // Extract data array from response
     let templates = [];
 
-    if (
-      result &&
-      result.success &&
-      result.data &&
-      result.data.data &&
-      Array.isArray(result.data.data)
-    ) {
-      templates = result.data.data; // ✅ Lấy array từ result.data.data
+    if (result && result.success && result.data && Array.isArray(result.data)) {
+      templates = result.data; // ✅ Lấy array từ result.data.data
       console.log("✅ Found templates in result.data.data");
     } else if (result && result.data && Array.isArray(result.data)) {
       templates = result.data; // Fallback: direct array
@@ -2134,7 +2131,7 @@ const selectTemplate = async (template) => {
   try {
     loading.value = true;
     console.log("🔍 Loading template steps for:", template.name);
-    const templateData = await campaignTemplateDirectService.getById(template.name);
+    const templateData = await campaignTemplateStore.fetchTemplateById(template.name);
 
     console.log("📋 Template data loaded:", templateData);
 
@@ -3413,6 +3410,7 @@ const openScheduledAtPicker = (e) => {
 
 // State for Social Network configuration modal
 const showSocialConfigModal = ref(false);
+const editingSocialId = ref(null);
 
 const confirmSocialConfig = async () => {
   try {
@@ -3438,7 +3436,25 @@ const confirmSocialConfig = async () => {
         const selectedConnection = configData.value.selectedDataSource?.name || 
                                  configData.value.socialConfig.external_connection || '';
         
-        await campaignSocialStore.createDefaultCampaignSocial(
+        // Ensure social pages are loaded
+        if (socialPages.value.length === 0 && configData.value.selectedDataSource) {
+          console.log('🔄 Social pages not loaded, loading now...');
+          await loadSocialPages();
+        }
+        
+        // Find selected page info
+        const selectedPage = socialPages.value.find(
+          (p) => p.external_account_id === configData.value.socialConfig.page_id
+        );
+        
+        console.log('🔍 Creating social post with data:', {
+          page_id: configData.value.socialConfig.page_id,
+          socialPages: socialPages.value,
+          selectedPage: selectedPage,
+          page_name: selectedPage?.account_name || 'Unknown Page'
+        });
+
+        const result = await campaignSocialStore.createDefaultCampaignSocial(
           draftCampaign.value.data.name,
           {
             external_connection: selectedConnection,
@@ -3447,15 +3463,22 @@ const confirmSocialConfig = async () => {
                        (conn) => conn.name === selectedConnection
                      )?.platform_type || '',
             page_id: configData.value.socialConfig.page_id || '',
-            page_name: socialPages.value.find(
-              (p) => p.external_account_id === configData.value.socialConfig.page_id
-            )?.account_name || '',
+            page_name: selectedPage?.account_name || 'Unknown Page',
             scheduled_at: configData.value.socialConfig.scheduled_at || null,
             template_content: configData.value.socialConfig.template_content || '',
             image: configData.value.socialConfig.image || ''
           }
         );
-        console.log('✅ Mira Campaign Social created from social config');
+
+        console.log('✅ Mira Campaign Social created from social config:', result);
+        
+        // Store the social post ID for editing
+        if (result && result.name) {
+          editingSocialId.value = result.name;
+          console.log('✅ Mira Campaign Social created, ID:', result.name);
+        } else {
+          console.log('✅ Mira Campaign Social created from social config');
+        }
       } catch (socialError) {
         console.warn('⚠️ Failed to create Mira Campaign Social from social config:', socialError);
       }
@@ -3479,11 +3502,24 @@ const openSocialConfigEditor = async () => {
     if (jobOpeningsList.value.length === 0) {
       await loadJobOpenings();
     }
+    
+    // Set external_connection from selectedDataSource
+    if (!configData.value.socialConfig) {
+      configData.value.socialConfig = {};
+    }
+    configData.value.socialConfig.external_connection = configData.value.selectedDataSource?.name || '';
+    
     if (!configData.value.socialConfig?.scheduled_at) {
       const now = new Date();
       const plus30m = new Date(now.getTime() + 30 * 60 * 1000);
       configData.value.socialConfig.scheduled_at = toLocalDatetimeInput(plus30m);
     }
+    
+    // Clear editing ID when opening for new creation
+    if (!editingSocialId.value) {
+      editingSocialId.value = null;
+    }
+    
     showSocialConfigModal.value = true;
   }
 };

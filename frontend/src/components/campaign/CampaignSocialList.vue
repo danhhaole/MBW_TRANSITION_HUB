@@ -144,11 +144,12 @@
 			:social-pages="socialPages"
 			:external-connections="externalConnections"
 			:loading-connections="loadingConnections"
-			:job-openings-list="jobOpeningsList"
 			:loading-pages="loadingPages"
+			:job-openings-list="jobOpenings"
 			:loading-job-openings="loadingJobOpenings"
 			:min-scheduled-at="minScheduledAt"
 			:local-tz-label="localTzLabel"
+			:campaign-id="campaignId"
 			:campaign-social-id="editingSocialId"
 			:mode="'detail'"
 			@confirm="handleSocialConfirm"
@@ -239,6 +240,8 @@ const showCreateDialog = ref(false)
 const editingSocialId = ref(null)
 const showQrDialog = ref(false)
 const qrData = ref({ url: '', image: '' })
+const deleting = ref(null)
+const showSocialDialog = ref(false)
 
 const currentSocialConfig = ref({
 	page_id: '',
@@ -332,13 +335,14 @@ const editSocial = async (social) => {
 
 		editingSocialId.value = social.name
 		currentSocialConfig.value = {
+			external_connection: fullSocial.external_connection || '',
 			page_id: fullSocial.social_page_id || '',
 			scheduled_at: fullSocial.post_schedule_time || '',
-			job_opening: '', // This might need to be loaded from campaign
+			job_opening: fullSocial.job_opening || '',
 			image: fullSocial.social_media_images || '',
 			template_content: fullSocial.template_content || '',
 		}
-		showSocialDialog.value = true
+		showCreateDialog.value = true
 	} catch (error) {
 		console.error('Error loading social for edit:', error)
 		alert(__('Failed to load social post data'))
