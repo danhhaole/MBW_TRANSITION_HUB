@@ -49,7 +49,7 @@ class MiraTalent(Document):
 
     def after_save(self):
         #Tạo Talent Campaign
-        if self.campaign_id: 
+        if hasattr(self,"campaign_id"): 
             self.create_talent_campaign()
 
     def create_talent_campaign(self):
