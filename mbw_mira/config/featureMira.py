@@ -1409,7 +1409,7 @@ FEATURES_MIRA = {
                             "import": 0,
                         },
                         {
-                            "doctype": "LadiPage",
+                            "doctype": "Mira Ladi Page",
                             "create": 1,
                             "read": 1,
                             "write": 1,
@@ -1550,7 +1550,7 @@ FEATURES_MIRA = {
                     "is_active": 1,
                     "permissions": [
                         {
-                            "doctype": "LadiPage",
+                            "doctype": "Mira Ladi Page",
                             "create": 1,
                             "read": 1,
                             "write": 1,
@@ -1618,7 +1618,7 @@ FEATURES_MIRA = {
                             "import": 0,
                         },
                         {
-                            "doctype": "LadiPage",
+                            "doctype": "Mira Ladi Page",
                             "create": 0,
                             "read": 1,
                             "write": 0,

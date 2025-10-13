@@ -57,7 +57,7 @@ const routes = [
 	{ path: '/ladi-view', name: 'LadiPageView', component: ()=>import('@/pages/LadiPageView.vue') },
 	{ path: '/applicant-pool', name: 'ApplicantPoolManagement', component: ()=>import('@/pages/ApplicantPoolManagement.vue') },
 
-	// LadiPage Management
+	// Mira Ladi Page Management
 	// { 
 	// 	path: '/ladi-pages', 
 	// 	name: 'ladi-pages',
@@ -116,7 +116,7 @@ const routes = [
 	},
 
 	// Public Route
-	{ path: '/ladi/:slug', name: 'LadiPage', component: ()=>import('@/pages/Public/LadiPage.vue'), meta: { public: true } },
+	{ path: '/ladi/:slug', name: 'Mira Ladi Page', component: ()=>import('@/pages/Public/Mira Ladi Page.vue'), meta: { public: true } },
 	{ path: '/register', name: 'RegisterPage', component: ()=>import('@/pages/Public/RegisterPage.vue'), meta: { public: true } },
 	{ path: '/unsubscribe', name: 'UnSubscribePage', component: ()=>import('@/pages/Public/UnSubscribePage.vue'), meta: { public: true } },
 	{ path: '/application', name: 'ApplicationPage', component: ()=>import('@/pages/Public/ApplicationPage.vue'), meta: { public: true } },

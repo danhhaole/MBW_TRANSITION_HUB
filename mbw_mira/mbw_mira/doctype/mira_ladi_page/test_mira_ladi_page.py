@@ -5,5 +5,5 @@
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestLadiPage(FrappeTestCase):
+class TestMiraLadiPage(FrappeTestCase):
 	pass

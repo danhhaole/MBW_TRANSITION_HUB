@@ -10,7 +10,7 @@ def run():
     """
     now = datetime.now()
     actions = frappe.get_all(
-        Mira Action,
+        "Mira Action",
         filters={
             "status": "SCHEDULED",
             "scheduled_at": ["<=", now],

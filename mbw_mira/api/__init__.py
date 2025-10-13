@@ -549,7 +549,7 @@ def get_landing_page_html():
     slug = data.get('slug')
     if not slug:
         frappe.throw(_("Missing slug"))
-    doc = frappe.db.get_value("LadiPage", {"route": slug, "published": 1},["content","css","title"],as_dict=1)
+    doc = frappe.db.get_value("Mira Ladi Page", {"route": slug, "published": 1},["content","css","title"],as_dict=1)
     
     if doc:
         return {

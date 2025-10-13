@@ -5,5 +5,5 @@
 from frappe.model.document import Document
 
 
-class LadiPage(Document):
+class MiraLadiPage(Document):
 	pass

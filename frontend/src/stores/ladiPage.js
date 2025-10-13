@@ -51,7 +51,7 @@ export const useLadiPageStore = defineStore('ladiPage', {
 
         // Get data with pagination
         const data = await call('frappe.client.get_list', {
-          doctype: 'LadiPage',
+          doctype: 'Mira Ladi Page',
           fields: ['*'],
           filters: queryFilters,
           or_filters: orFilters,
@@ -62,7 +62,7 @@ export const useLadiPageStore = defineStore('ladiPage', {
 
         // Get total count
         const total = await call('frappe.client.get_count', {
-          doctype: 'LadiPage',
+          doctype: 'Mira Ladi Page',
           filters: queryFilters
         })
 
@@ -88,7 +88,7 @@ export const useLadiPageStore = defineStore('ladiPage', {
       try {
         this.loading = true
         const response = await call('frappe.client.get', {
-          doctype: 'LadiPage',
+          doctype: 'Mira Ladi Page',
           name: name
         })
         this.currentPage = response
@@ -107,7 +107,7 @@ export const useLadiPageStore = defineStore('ladiPage', {
         this.loading = true
         const response = await call('frappe.client.insert', {
           doc: {
-            doctype: 'LadiPage',
+            doctype: 'Mira Ladi Page',
             ...data
           }
         })
@@ -126,7 +126,7 @@ export const useLadiPageStore = defineStore('ladiPage', {
       try {
         this.loading = true
         const response = await call('frappe.client.set_value', {
-          doctype: 'LadiPage',
+          doctype: 'Mira Ladi Page',
           name: name,
           fieldname: data
         })
@@ -145,7 +145,7 @@ export const useLadiPageStore = defineStore('ladiPage', {
       try {
         this.loading = true
         const response = await call('frappe.client.set_value', {
-          doctype: 'LadiPage',
+          doctype: 'Mira Ladi Page',
           name: name,
           fieldname: {
             content: content,
@@ -166,7 +166,7 @@ export const useLadiPageStore = defineStore('ladiPage', {
       try {
         this.loading = true
         await call('frappe.client.delete', {
-          doctype: 'LadiPage',
+          doctype: 'Mira Ladi Page',
           name: name
         })
         await this.fetchLadiPages()

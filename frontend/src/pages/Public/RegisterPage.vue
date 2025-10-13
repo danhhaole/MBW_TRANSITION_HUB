@@ -213,7 +213,7 @@ const resource = createResource({
     // Show confirmation dialog
     setTimeout(() => {
       if (confirm(__('Registration successful! Continue to homepage?'))) {
-        router.push({ name: 'LadiPage', params: { slug: 'info' } })
+        router.push({ name: 'Mira Ladi Page', params: { slug: 'info' } })
       }
     }, 1000)
   } else {

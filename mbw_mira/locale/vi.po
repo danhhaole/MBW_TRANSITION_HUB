@@ -1094,7 +1094,7 @@ msgstr "Chat_started"
 msgid "COMPLETED"
 msgstr "HOÀN THÀNH"
 
-#. Label of a Code field in DocType 'LadiPage'
+#. Label of a Code field in DocType 'Mira Ladi Page'
 #: mbw_mira/mbw_mira/doctype/ladipage/ladipage.json
 msgid "CSS Content"
 msgstr "Nội dung CSS"
@@ -1122,7 +1122,7 @@ msgstr "Camera"
 #. Label of a Link field in DocType 'ApplicantPool'
 #. Name of a DocType
 #. Label of a Link field in DocType "Mira Campaign Step"
-#. Label of a Link field in DocType 'LadiPage'
+#. Label of a Link field in DocType 'Mira Ladi Page'
 #. Label of a Link field in DocType 'Mira Talent Campaign'
 #: frontend/src/components/shared/TaskUpdateModal.vue:23
 #: frontend/src/pages/Ladi/LadiPageFormModal.vue:31
@@ -1860,7 +1860,7 @@ msgstr "Được tạo lúc"
 
 #. Label of a Link field in DocType 'Mira Data Source'
 #. Label of a Link field in DocType 'EmailTemplateEditor'
-#. Label of a Link field in DocType 'LadiPage'
+#. Label of a Link field in DocType 'Mira Ladi Page'
 #. Label of a Link field in DocType 'Mira Short URL'
 #: frontend/src/pages/CampaignDetailView.vue:139
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
@@ -1870,7 +1870,7 @@ msgstr "Được tạo lúc"
 msgid "Created By"
 msgstr "Được tạo bởi"
 
-#. Label of a Datetime field in DocType 'LadiPage'
+#. Label of a Datetime field in DocType 'Mira Ladi Page'
 #: frontend/src/components/campaign/CampaignTable.vue:15
 #: mbw_mira/mbw_mira/doctype/ladipage/ladipage.json
 msgid "Created Date"
@@ -3284,7 +3284,7 @@ msgid "HIRED"
 msgstr "Thuê"
 
 #. Label of a Code field in DocType 'EmailTemplateEditor'
-#. Label of a Code field in DocType 'LadiPage'
+#. Label of a Code field in DocType 'Mira Ladi Page'
 #: mbw_mira/mbw_mira/doctype/emailtemplateeditor/emailtemplateeditor.json
 #: mbw_mira/mbw_mira/doctype/ladipage/ladipage.json
 msgid "HTML Content"
@@ -3571,7 +3571,7 @@ msgstr ""
 msgid "Items per page"
 msgstr "Các mục trên mỗi trang"
 
-#. Label of a Code field in DocType 'LadiPage'
+#. Label of a Code field in DocType 'Mira Ladi Page'
 #: mbw_mira/mbw_mira/doctype/ladipage/ladipage.json
 msgid "JSON Project Data"
 msgstr "Dữ liệu dự án JSON"
@@ -3687,7 +3687,7 @@ msgstr "Trang ladi đã lưu thành công"
 
 #. Name of a DocType
 #: mbw_mira/mbw_mira/doctype/ladipage/ladipage.json
-msgid "LadiPage"
+msgid "Mira Ladi Page"
 msgstr "Ladipage"
 
 #: frontend/src/components/Filter.vue:620
@@ -3834,7 +3834,7 @@ msgid "Loading candidate pool details..."
 msgstr "Đang tải chi tiết nhóm ứng cử viên ..."
 
 #: frontend/src/pages/LadiPageView.vue:35
-#: frontend/src/pages/Public/LadiPage.vue:3
+#: frontend/src/pages/Public/Mira Ladi Page.vue:3
 msgid "Loading content..."
 msgstr "Đang tải nội dung ..."
 
@@ -4636,7 +4636,7 @@ msgstr "Ghi chú"
 #. Label of a Text field in DocType 'ApplicantPool'
 #. Label of a Small Text field in DocType 'Mira Data Source'
 #. Label of a Text field in DocType 'CandidatePool'
-#. Label of a Small Text field in DocType 'LadiPage'
+#. Label of a Small Text field in DocType 'Mira Ladi Page'
 #: frontend/src/components/candidate-pool/CandidatePoolViewModal.vue:174
 #: frontend/src/components/candidate/CandidateForm.vue:167
 #: frontend/src/components/candidateDataSource/CandidateDataSourceFormDirect.vue:233
@@ -4817,7 +4817,7 @@ msgstr "Đang chờ xử lý_manual"
 msgid "Page"
 msgstr "Trang"
 
-#. Label of a Data field in DocType 'LadiPage'
+#. Label of a Data field in DocType 'Mira Ladi Page'
 #: frontend/src/pages/Ladi/LadiPageFormModal.vue:13
 #: frontend/src/pages/LadiPageEditor.vue:51
 #: mbw_mira/mbw_mira/doctype/ladipage/ladipage.json
@@ -4832,7 +4832,7 @@ msgstr "Tiêu đề trang được yêu cầu"
 msgid "Page info updated successfully"
 msgstr "Thông tin trang được cập nhật thành công"
 
-#: frontend/src/pages/Public/LadiPage.vue:13
+#: frontend/src/pages/Public/Mira Ladi Page.vue:13
 msgid "Page not found"
 msgstr "Không tìm thấy trang"
 
@@ -5041,7 +5041,7 @@ msgstr "Công cộng"
 msgid "Public Views"
 msgstr "Quan điểm công khai"
 
-#. Label of a Check field in DocType 'LadiPage'
+#. Label of a Check field in DocType 'Mira Ladi Page'
 #: frontend/src/pages/Ladi/LadiPageFormModal.vue:40
 #: frontend/src/pages/Ladi/LadiPageManagement.vue:73
 #: frontend/src/pages/Ladi/LadiPageManagement.vue:105
@@ -5287,7 +5287,7 @@ msgstr ""
 "Xem lại chi tiết chiến dịch và quy trình làm việc của bạn trước khi hoàn "
 "thiện"
 
-#. Label of a Data field in DocType 'LadiPage'
+#. Label of a Data field in DocType 'Mira Ladi Page'
 #: mbw_mira/mbw_mira/doctype/ladipage/ladipage.json
 msgid "Route"
 msgstr "Tuyến đường"
@@ -6470,7 +6470,7 @@ msgid "The add candidate feature will be developed in the next phase."
 msgstr ""
 "Tính năng ứng cử viên thêm sẽ được phát triển trong giai đoạn tiếp theo."
 
-#: frontend/src/pages/Public/LadiPage.vue:14
+#: frontend/src/pages/Public/Mira Ladi Page.vue:14
 msgid "The requested page could not be found."
 msgstr "Không thể tìm thấy trang được yêu cầu."
 
@@ -6552,7 +6552,7 @@ msgstr "ThiếU 'File_Name' yêu cầu trong."
 msgid "Thiếu 'meta_doctype' trong request."
 msgstr "Thiếu 'Meta_Doctype' Trong yêu cầu."
 
-#. Label of a Attach Image field in DocType 'LadiPage'
+#. Label of a Attach Image field in DocType 'Mira Ladi Page'
 #: mbw_mira/mbw_mira/doctype/ladipage/ladipage.json
 msgid "Thumbnail"
 msgstr "Hình thu nhỏ"
@@ -6731,7 +6731,7 @@ msgstr "Hãy thử thay đổi bộ lọc để tìm một hồ sơ tài năng p
 msgid "Try changing the filter to find suitable candidate pools."
 msgstr "Hãy thử thay đổi bộ lọc để tìm nhóm ứng cử viên phù hợp."
 
-#. Description of the 'Published' (Check) field in DocType 'LadiPage'
+#. Description of the 'Published' (Check) field in DocType 'Mira Ladi Page'
 #: mbw_mira/mbw_mira/doctype/ladipage/ladipage.json
 msgid "Trạng thái công khai"
 msgstr "Trạng tháia sang Khai"
