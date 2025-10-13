@@ -52,7 +52,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Job",
-   "options": "Mira Job Opening"ening",
+   "options": "Mira Job Opening",
    "reqd": 1
   },
   {

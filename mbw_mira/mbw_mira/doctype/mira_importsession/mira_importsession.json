@@ -76,7 +76,7 @@
    "reqd": 1
   },
   {
-   "fieldname": ""Mira Job Opening",
+   "fieldname": "job_opening",
    "fieldtype": "Link",
    "label": "Job Opening",
    "options": "Mira Job Opening"
