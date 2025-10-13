@@ -411,6 +411,7 @@ import { useJobOpeningStore } from '@/stores/jobOpening'
 import { useToast } from '@/composables/useToast'
 
 const toast = useToast()
+const jobOpeningStore = useJobOpeningStore()
 
 const route = useRoute()
 const data = reactive({})
@@ -567,8 +568,8 @@ const formatBenefits = (text) => {
 const load = async () => {
   try {
     if (route.params.id) {
-      const res = await getJobOpeningDetails(route.params.id)
-      Object.assign(data, res)
+      const res = await jobOpeningStore.fetchJobOpeningById(route.params.id)
+      Object.assign(data, res.data || res)
       console.log('Loaded job data:', data) // Debug log
     }
   } catch (error) {
@@ -656,7 +657,7 @@ const saveChanges = async () => {
     })
 
     // Save the data
-    const result = await updateJobOpeningData(route.params.id, dataToSave)
+    const result = await jobOpeningStore.updateJobOpening(route.params.id, dataToSave)
 
     if (result) {
       // Update local data

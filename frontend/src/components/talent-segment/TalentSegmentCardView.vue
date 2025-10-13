@@ -133,7 +133,7 @@ const emit = defineEmits(['view-details', 'edit', 'delete', 'create'])
 
 // Helper functions
 const getEngagementRate = (segment) => {
-  return calculateEngagementRate(segment.candidate_count || 0)
+  return  0
 }
 
 const getProgressBarClass = (rate) => {

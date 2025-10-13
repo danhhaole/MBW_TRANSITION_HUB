@@ -511,8 +511,7 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { Button, FormControl, Dialog, Badge, Breadcrumbs } from 'frappe-ui'
-import { emailLogService } from 'frappe-ui'
+import { Button, FormControl, Dialog, Badge, Breadcrumbs, call } from 'frappe-ui'
 import { debounce } from 'lodash'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import Loading from '@/components/Loading.vue'
@@ -672,24 +671,26 @@ const loadData = async () => {
     const params = {
       filters: apiFilters,
       or_filters,
-      page_length: pagination.limit,
-      start: (pagination.page - 1) * pagination.limit,
+      limit_page_length: pagination.limit,
+      limit_start: (pagination.page - 1) * pagination.limit,
       order_by: 'modified desc',
       fields: ['name', 'subject', 'recipients', 'cc', 'bcc', 'sender', 'content', 'attachments', 'status', 'error', 'modified']
     }
 
-    const result = await emailLogService.getList(params)
+    const result = await call('frappe.client.get_list', {
+      doctype: 'EmailLog',
+      ...params
+    })
     
-    if (result.success) {
-      items.value = result.data || []
-      Object.assign(pagination, result.pagination)
+    if (result && result.length) {
+      items.value = result
       
       // Update stats
-      stats.total = result.pagination.total || 0
-      stats.success = result.data?.filter(item => item.status === 'Success').length || 0
-      stats.failed = result.data?.filter(item => item.status === 'Failed').length || 0
+      stats.total = result.length
+      stats.success = result.filter(item => item.status === 'Success').length || 0
+      stats.failed = result.filter(item => item.status === 'Failed').length || 0
     } else {
-      console.error('Error loading data:', result.error)
+      console.error('Error loading data:', result?.error)
       items.value = []
     }
   } catch (error) {
@@ -751,7 +752,7 @@ const saveForm = async () => {
 
   saving.value = true
   try {
-    const result = await emailLogService.save(formData, formData.name)
+    const result = await call(save(formData, formData.name))
     
     if (result.success) {
       closeFormModal()
@@ -779,13 +780,15 @@ const deleteItem = async () => {
 
   deleting.value = true
   try {
-    const result = await emailLogService.delete(itemToDelete.value.name)
+    const result = await call('frappe.client.delete', {
+      doctype: 'Mira Email Log',
+      name: itemToDelete.value.name
+    })
     
-    if (result.success) {
-      showDeleteDialog.value = false
-      itemToDelete.value = null
-      loadData()
-    }
+    // Frappe delete API returns success if no error thrown
+    showDeleteDialog.value = false
+    itemToDelete.value = null
+    loadData()
   } catch (error) {
     console.error('Error deleting:', error)
   } finally {
@@ -801,7 +804,10 @@ const bulkDelete = async () => {
 
   try {
     await Promise.all(
-      selected.value.map(name => emailLogService.delete(name))
+      selected.value.map(name => call('frappe.client.delete', {
+        doctype: 'Mira Email Log',
+        name: name
+      }))
     )
     selected.value = []
     loadData()

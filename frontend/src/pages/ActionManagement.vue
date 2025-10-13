@@ -467,6 +467,7 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button, Dialog, FormControl, Badge } from 'frappe-ui'
 import { call } from 'frappe-ui'
+import { useActionStore } from '@/stores/action'
 import { useMiraTalentPoolStore } from '@/stores/miraTalentPool'
 import { useCampaignStepStore } from '@/stores/campaignStep'
 import { debounce } from 'lodash'
@@ -477,8 +478,10 @@ import Loading from '@/components/Loading.vue'
 
 const router = useRouter()
 
-// Campaign step store
+// Stores
+const actionStore = useActionStore()
 const campaignStepStore = useCampaignStepStore()
+const miraTalentPoolStore = useMiraTalentPoolStore()
 
 // Translation helper
 
@@ -603,12 +606,12 @@ const loadData = async () => {
       fields: ['name', 'talent_campaign_id', 'campaign_step', 'status', 'scheduled_at', 'executed_at', 'result', 'assignee_id', 'modified']
     }
 
-    const result = await actionService.getList(params)
+    const result = await actionStore.fetchActions(params)
     if (result && Array.isArray(result.data)) {
       items.value = result.data
       Object.assign(pagination, result.pagination)
       // Update stats
-      stats.total = result.pagination.total || 0
+      stats.total = result.pagination?.total || 0
       stats.executed = result.data?.filter(item => item.status === 'EXECUTED').length || 0
       stats.scheduled = result.data?.filter(item => item.status === 'SCHEDULED').length || 0
       stats.failed = result.data?.filter(item => item.status === 'FAILED').length || 0
@@ -626,35 +629,39 @@ const loadData = async () => {
 const loadFilterOptions = async () => {
   try {
     // Load candidate campaigns
-    const candidateCampaignResult = await candidateCampaignService.getList({
-      fields: ['name', 'talent_id', 'campaign_id'],
-      page_length: 1000
+    const candidateCampaignResult = await call('frappe.client.get_list', {
+      doctype: 'Mira Talent Pool',
+      fields: ['name', 'talent_id'],
+      limit_page_length: 1000
     })
-    if (candidateCampaignResult.success) {
-      filterOptions.candidateCampaigns = candidateCampaignResult.data.map(item => ({
+    if (candidateCampaignResult && candidateCampaignResult.length) {
+      filterOptions.candidateCampaigns = candidateCampaignResult.map(item => ({
         label: `${item.name} (${item.talent_id} - ${item.campaign_id})`,
         value: item.name
       }))
     }
     
     // Load campaign steps
-    const campaignStepResult = await campaignStepStore.getFilteredCampaignSteps({
-      limit: 1000
+    const campaignStepResult = await call('frappe.client.get_list', {
+      doctype: 'Mira Campaign Step',
+      fields: ['name', 'campaign_step_name', 'campaign'],
+      limit_page_length: 1000
     })
-    if (campaignStepResult && campaignStepResult.data) {
-      filterOptions.campaignSteps = campaignStepResult.data.map(item => ({
+    if (campaignStepResult && campaignStepResult.length) {
+      filterOptions.campaignSteps = campaignStepResult.map(item => ({
         label: `${item.campaign_step_name} (${item.campaign})`,
         value: item.name
       }))
     }
     
     // Load assignees (users)
-    const userResult = await userService.getList({
+    const userResult = await call('frappe.client.get_list', {
+      doctype: 'User',
       fields: ['name', 'full_name', 'email'],
-      page_length: 1000
+      limit_page_length: 1000
     })
-    if (userResult.success) {
-      filterOptions.assignees = userResult.data.map(item => ({
+    if (userResult && userResult.length) {
+      filterOptions.assignees = userResult.map(item => ({
         label: `${item.full_name} (${item.email})`,
         value: item.name
       }))
@@ -770,7 +777,7 @@ const saveData = async () => {
       }
     }
 
-    const result = await actionService.save(dataToSave)
+    const result = await call(save(dataToSave))
     if (result.success) {
       closeFormModal()
       loadData()
@@ -796,7 +803,7 @@ const deleteData = async () => {
 
   deleting.value = true
   try {
-    const result = await actionService.delete(itemToDelete.value.name)
+    const result = await call(delete(itemToDelete.value.name))
     if (result.success) {
       showDeleteDialog.value = false
       itemToDelete.value = null
@@ -859,7 +866,7 @@ const bulkExecute = async () => {
 const bulkDelete = async () => {
   try {
     for (const item of selected.value) {
-      await actionService.delete(item.name)
+      await actionStore.deleteAction(item.name)
     }
     selected.value = []
     loadData()
@@ -870,7 +877,7 @@ const bulkDelete = async () => {
 
 const exportData = async () => {
   try {
-    const result = await actionService.export({
+    const result = await actionStore.exportActions({
       filters: filters,
       fields: ['name', 'talent_campaign_id', 'campaign_step', 'status', 'scheduled_at', 'executed_at', 'result', 'assignee_id']
     })

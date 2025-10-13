@@ -406,20 +406,20 @@ import CampaignCard from '@/components/campaign/CampaignCard.vue'
 import TaskUpdateModal from '@/components/shared/TaskUpdateModal.vue'
 import { ToastContainer } from '@/components/shared'
 import Loading from '@/components/Loading.vue'
-import {
-	candidateCampaignService,
-	actionService,
-	candidateService,
-} from 'frappe-ui'
 import { useCampaignStore } from '@/stores/campaign'
+import { useCandidateStore } from '@/stores/candidate'
+import { useMiraTalentPoolStore } from '@/stores/miraTalentPool'
+import { call } from 'frappe-ui'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import { Breadcrumbs } from 'frappe-ui'
 
 // Translation helper function
 
 
-// Campaign store
+// Stores
 const campaignStore = useCampaignStore()
+const candidateStore = useCandidateStore()
+const miraTalentPoolStore = useMiraTalentPoolStore()
 
 // Reactive data
 const tasks = ref([])
@@ -458,7 +458,7 @@ const breadcrumbs = [
 const loadTasks = async () => {
 	try {
 		tasksLoading.value = true
-		const result = await actionService.getList({
+		const result = await call(getList({
 			filters: {
 				status: ['in', ['PENDING_MANUAL']],
 			},
@@ -473,7 +473,7 @@ const loadTasks = async () => {
 			],
 			order_by: 'scheduled_at asc',
 			page_length: 10,
-		})
+		}))
 
 		if (result.success) {
 			// Transform actions to tasks format
@@ -482,11 +482,11 @@ const loadTasks = async () => {
 					// Get candidate campaign details
 					console.log("action", action)		
 					if(action.talent_campaign_id){
-						const ccResult = await candidateCampaignService.getFormData(
+						const ccResult = await miraTalentPoolStore.getFormData(
 							action.talent_campaign_id,
 						)
 						if (ccResult.success) {
-							const candidateResult = await candidateService.getFormData(
+							const candidateResult = await candidateStore.getFormData(
 								ccResult.data.talent_id,
 							)
 							const campaignResult = await campaignStore.getCampaignDetails(
@@ -539,7 +539,7 @@ const loadActiveCampaigns = async () => {
 			// Get stats for each campaign
 			const campaignsWithStats = await Promise.all(
 				result.data.map(async (campaign) => {
-					const ccResult = await candidateCampaignService.getList({
+					const ccResult = await miraTalentPoolStore.getList({
 						filters: { campaign_id: campaign.name },
 						fields: ['status', 'creation'],
 						page_length: 1000,
@@ -592,12 +592,12 @@ const loadCompletedCampaigns = async () => {
 	try {
 		completedLoading.value = true
 		// Get recently executed actions to show completed campaigns
-		const actionsResult = await actionService.getList({
+		const actionsResult = await call(getList({
 			filters: { status: 'EXECUTED' },
 			fields: ['name', 'executed_at', 'talent_campaign_id'],
 			order_by: 'executed_at desc',
 			page_length: 20,
-		})
+		}))
 
 		if (actionsResult.success) {
 			// Group by campaign and get campaign details
@@ -605,7 +605,7 @@ const loadCompletedCampaigns = async () => {
 
 			for (const action of actionsResult.data) {
 				if(action.talent_campaign_id){
-				const ccResult = await candidateCampaignService.getFormData(
+				const ccResult = await miraTalentPoolStore.getFormData(
 					action.talent_campaign_id,
 				)
 				if (ccResult.success) {

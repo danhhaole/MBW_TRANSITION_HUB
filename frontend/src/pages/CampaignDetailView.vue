@@ -1643,7 +1643,7 @@ const loadTargetSegment = async () => {
   if (!campaign.value.target_segment) return
   
   try {
-    const result = await talentSegmentService.getFormData(campaign.value.target_segment)
+    const result = await talentSegmentStore.getFormData(campaign.value.target_segment)
     if (result.success) {
       targetSegment.value = result.data
     }
@@ -1672,7 +1672,7 @@ const loadCampaignSteps = async () => {
 const loadCandidateCampaigns = async () => {
   loadingCandidates.value = true
   try {
-    const result = await candidateCampaignService.getList({
+    const result = await miraTalentPoolStore.getList({
       filters: { campaign_id: route.params.id },
       fields: ['name', 'talent_id', 'status', 'current_step_order', 'enrolled_at']
     })
@@ -1689,16 +1689,16 @@ const loadCandidateCampaigns = async () => {
 const loadActions = async () => {
   loadingActions.value = true
   try {
-    const candidateCampaignsResult = await candidateCampaignService.getList({
+    const candidateCampaignsResult = await miraTalentPoolStore.getList({
       filters: { campaign_id: route.params.id },
       fields: ['name']
     })
     if (candidateCampaignsResult.success && candidateCampaignsResult.data.length > 0) {
       const candidateCampaignIds = candidateCampaignsResult.data.map(cc => cc.name)
-      const result = await actionService.getList({
+      const result = await call(getList({
         filters: { candidate_campaign_id: ['in', candidateCampaignIds] },
         fields: ['name', 'campaign_step', 'status', 'scheduled_at', 'executed_at']
-      })
+      }))
       if (result.success) {
         actions.value = result.data
       }
@@ -1717,7 +1717,7 @@ const loadAvailableCandidates = async () => {
   try {
     if (!campaign.value.target_segment) {
       // If no target segment, show all candidates
-      const result = await candidateService.getList({
+      const result = await candidateStore.getList({
         fields: ['name', 'full_name'],
         page_length: 1000
       })
@@ -1729,14 +1729,14 @@ const loadAvailableCandidates = async () => {
       }
     } else {
       // Get candidates from target segment through Mira Talent Pool
-      const candidateSegmentResult = await candidateSegmentService.getList({
+      const candidateSegmentResult = await miraTalentPoolStore.getList({
         filters: { segment_id: campaign.value.target_segment },
         fields: ['talent_id']
       })
       if (candidateSegmentResult.success && candidateSegmentResult.data.length > 0) {
         const candidateIds = candidateSegmentResult.data.map(cs => cs.talent_id)
         // Get candidates already in this campaign
-        const existingCandidateCampaigns = await candidateCampaignService.getList({
+        const existingCandidateCampaigns = await miraTalentPoolStore.getList({
           filters: { campaign_id: route.params.id },
           fields: ['talent_id']
         })
@@ -1748,7 +1748,7 @@ const loadAvailableCandidates = async () => {
           id => !existingCandidateIds.includes(id)
         )
         if (availableCandidateIds.length > 0) {
-          const candidateResult = await candidateService.getList({
+          const candidateResult = await candidateStore.getList({
             filters: { name: ['in', availableCandidateIds] },
             fields: ['name', 'full_name']
           })

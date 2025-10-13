@@ -682,7 +682,7 @@ const emailHeaders = [
 const loadCandidate = async () => {
   loading.value = true
   try {
-    const result = await candidateService.getFormData(route.params.id)
+    const result = await candidateStore.getFormData(route.params.id)
     if (result.success) {
       Object.assign(candidate, result.data)
     }
@@ -696,7 +696,7 @@ const loadCandidate = async () => {
 const loadCandidateCampaigns = async () => {
   loadingCampaigns.value = true
   try {
-    const result = await candidateCampaignService.getList({
+    const result = await miraTalentPoolStore.getList({
       filters: { candidate_id: route.params.id },
       fields: ['name', 'campaign_id', 'campaign_name', 'status', 'current_step_order', 'next_action_at']
     })
@@ -714,7 +714,7 @@ const loadCandidateSegments = async () => {
   loadingSegments.value = true
   try {
     // First, get all CandidateSegment records for this candidate
-    const candidateSegmentResult = await candidateSegmentService.getList({
+    const candidateSegmentResult = await miraTalentPoolStore.getList({
       filters: { candidate_id: route.params.id },
       fields: ['name', 'segment_id', 'added_at', 'added_by']
     })
@@ -724,7 +724,7 @@ const loadCandidateSegments = async () => {
       const segmentIds = candidateSegmentResult.data.map(cs => cs.segment_id)
       
       // Then get the actual segment data
-      const segmentResult = await talentSegmentService.getList({
+      const segmentResult = await talentSegmentStore.getList({
         filters: { name: ['in', segmentIds] },
         fields: ['name', 'title', 'description', 'type', 'candidate_count']
       })
@@ -755,7 +755,7 @@ const loadCandidateSegments = async () => {
 const loadInteractions = async () => {
   loadingInteractions.value = true
   try {
-    const result = await interactionService.getList({
+    const result = await call(getList({
       filters: { candidate_id: route.params.id },
       fields: ['name', 'interaction_type', 'description', 'url', 'creation'],
       order_by: 'creation desc'
@@ -788,7 +788,7 @@ const loadEmailLogs = async () => {
       return
     }
     
-    const result = await emailLogService.getList({
+    const result = await call(getList({
       filters: filters,
       fields: ['name', 'subject', 'content', 'status', 'creation'],
       order_by: 'creation desc'
@@ -825,7 +825,7 @@ const loadAvailableCampaigns = async () => {
 
 const loadAvailableSegments = async () => {
   try {
-    const result = await talentSegmentService.getList({
+    const result = await talentSegmentStore.getList({
       fields: ['name', 'segment_name'],
       page_length: 1000
     })
@@ -861,7 +861,7 @@ const assignToCampaign = async () => {
 
   savingCampaign.value = true
   try {
-    const result = await candidateCampaignService.save(campaignFormData)
+    const result = await miraTalentPoolStore.save(campaignFormData)
     if (result.success) {
       closeCampaignModal()
       loadCandidateCampaigns()
@@ -888,7 +888,7 @@ const addToSegment = async () => {
 
   savingSegment.value = true
   try {
-    const result = await candidateSegmentService.save(segmentFormData)
+    const result = await miraTalentPoolStore.save(segmentFormData)
     if (result.success) {
       closeSegmentModal()
       loadCandidateSegments()
@@ -1069,7 +1069,7 @@ const formatFileSize = (size) => {
 // Action methods
 const startCampaign = async (item) => {
   try {
-    const result = await candidateCampaignService.save(
+    const result = await miraTalentPoolStore.save(
       { ...item, status: 'ACTIVE' },
       item.name
     )
@@ -1083,7 +1083,7 @@ const startCampaign = async (item) => {
 
 const pauseCampaign = async (item) => {
   try {
-    const result = await candidateCampaignService.save(
+    const result = await miraTalentPoolStore.save(
       { ...item, status: 'PAUSED' },
       item.name
     )
@@ -1102,7 +1102,7 @@ const viewCampaignDetails = (item) => {
 const removeCampaign = async (item) => {
   if (confirm('Are you sure you want to remove this candidate from the campaign?')) {
     try {
-      const result = await candidateCampaignService.delete(item.name)
+      const result = await miraTalentPoolStore.delete(item.name)
       if (result.success) {
         loadCandidateCampaigns()
       }
@@ -1120,7 +1120,7 @@ const removeFromSegment = async (item) => {
   if (confirm('Are you sure you want to remove this candidate from the segment?')) {
     try {
       // Delete the CandidateSegment relationship
-      const result = await candidateSegmentService.delete(item.candidate_segment_id)
+      const result = await miraTalentPoolStore.delete(item.candidate_segment_id)
       if (result.success) {
         loadCandidateSegments()
       }
@@ -1137,7 +1137,7 @@ const editCandidate = () => {
 const deleteCandidate = async () => {
   if (confirm('Are you sure you want to delete this candidate?')) {
     try {
-      const result = await candidateService.delete(route.params.id)
+      const result = await candidateStore.delete(route.params.id)
       if (result.success) {
         router.push('/candidates')
       }
@@ -1155,7 +1155,7 @@ const openInteractionModal = () => {
 const deleteInteraction = async (interaction) => {
   if (confirm('Are you sure you want to delete this interaction?')) {
     try {
-      const result = await interactionService.delete(interaction.name)
+      const result = await call(delete(interaction.name)
       if (result.success) {
         loadInteractions()
       }

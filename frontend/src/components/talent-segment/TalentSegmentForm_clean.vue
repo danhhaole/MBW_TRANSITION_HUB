@@ -275,7 +275,11 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { Button } from 'frappe-ui'
-import { talentSegmentService, userService } from '@/composables/useTalentSegment'
+import { useTalentSegmentStore } from '@/stores/talentSegment'
+import { call } from 'frappe-ui'
+
+// Store initialization
+const talentSegmentStore = useTalentSegmentStore()
 
 // Translation helper function
 
@@ -487,9 +491,13 @@ const resetForm = () => {
 const loadUserOptions = async () => {
   loadingUsers.value = true
   try {
-    const result = await userService.getList({ fields: ['name', 'full_name', 'email'] })
-    if (result.success) {
-      userOptions.value = result.data
+    const result = await call('frappe.client.get_list', {
+      doctype: 'User',
+      fields: ['name', 'full_name', 'email'],
+      limit_page_length: 100
+    })
+    if (result && result.length) {
+      userOptions.value = result
     }
   } catch (error) {
     console.error('Error loading users:', error)
@@ -512,9 +520,9 @@ const handleSubmit = async () => {
     
     let result
     if (isEditing.value) {
-      result = await talentSegmentService.update(props.segment.name, formData.value)
+      result = await talentSegmentStore.update(props.segment.name, formData.value)
     } else {
-      result = await talentSegmentService.create(formData.value)
+      result = await talentSegmentStore.create(formData.value)
     }
     
     if (result.success) {

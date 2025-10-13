@@ -272,7 +272,8 @@
   <script setup>
   import { ref, reactive, computed, onMounted } from 'vue'
   import { createResource, Breadcrumbs, FeatherIcon, Dialog, FormControl, Button } from 'frappe-ui'
-  import { candidateCampaignService, userService } from 'frappe-ui'
+  import { call } from 'frappe-ui'
+import { useMiraTalentPoolStore } from '@/stores/miraTalentPool'
   import { useCampaignStepStore } from '@/stores/campaignStep'
   import { ToastContainer } from '@/components/shared'
   import { useToast } from '@/composables/useToast'
@@ -281,8 +282,9 @@
     { label: __('My Tasks'), route: { name: 'MyActions' } }
   ]
   
-  // Campaign step store
-  const campaignStepStore = useCampaignStepStore()
+  // Stores
+const campaignStepStore = useCampaignStepStore()
+const miraTalentPoolStore = useMiraTalentPoolStore()
   
   const activeTab = ref('pending')
   const loading = ref(false)
@@ -472,9 +474,9 @@
   
   const loadEditOptions = async () => {
     try {
-      const candidateCampaignResult = await candidateCampaignService.getList({
+      const candidateCampaignResult = await miraTalentPoolStore.fetchTalentPools({
         fields: ['name', 'talent_id', 'campaign_id'],
-        page_length: 1000
+        limit: 1000
       })
       if (candidateCampaignResult.success) {
         editOptions.candidateCampaigns = candidateCampaignResult.data.map(i => ({
@@ -494,7 +496,11 @@
         }))
       }
   
-      const userResult = await userService.getList({ fields: ['name', 'full_name', 'email'], page_length: 1000 })
+      const userResult = await call('frappe.client.get_list', {
+        doctype: 'User',
+        fields: ['name', 'full_name', 'email'],
+        limit_page_length: 1000
+      })
       if (userResult.success) {
         editOptions.assignees = userResult.data.map(u => ({ label: `${u.full_name} (${u.email})`, value: u.name }))
       }

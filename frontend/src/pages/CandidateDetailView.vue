@@ -1392,8 +1392,11 @@ import CandidateEditModal from '../components/candidate/CandidateEditModal.vue'
 const route = useRoute()
 const router = useRouter()
 
-// Campaign store
+// Stores
 const campaignStore = useCampaignStore()
+const candidateStore = useCandidateStore()
+const talentSegmentStore = useTalentSegmentStore()
+const miraTalentPoolStore = useMiraTalentPoolStore()
 
 // Breadcrumbs
 const breadcrumbs = computed(() => [
@@ -1915,16 +1918,13 @@ const formatInteractionType = (type) => {
 const loadCandidate = async () => {
 	loading.value = true
 	try {
-		const result = await candidateService.getFormData(route.params.id)
+		const result = await candidateStore.fetchCandidateById(route.params.id)
 		console.log('result', result)
 		if (result.success && result.data) {
 			Object.assign(candidate, result.data)
-		} else {
-			Object.assign(candidate, {})
 		}
 	} catch (error) {
 		console.error('Error loading candidate:', error)
-		Object.assign(candidate, {})
 	} finally {
 		loading.value = false
 	}
@@ -1933,7 +1933,7 @@ const loadCandidate = async () => {
 const loadCandidateCampaigns = async () => {
 	loadingCampaigns.value = true
 	try {
-		const result = await candidateCampaignService.getList({
+		const result = await miraTalentPoolStore.fetchTalentPools({
 			filters: { talent_id: route.params.id },
 			fields: [
 				'name',
@@ -1956,7 +1956,7 @@ const loadCandidateCampaigns = async () => {
 const loadCandidateSegments = async () => {
 	loadingSegments.value = true
 	try {
-		const candidateSegmentResult = await candidateSegmentService.getList({
+		const candidateSegmentResult = await miraTalentPoolStore.getList({
 			filters: { talent_id: route.params.id },
 			fields: ['name', 'segment_id', 'added_at', 'added_by'],
 		})
@@ -1964,7 +1964,7 @@ const loadCandidateSegments = async () => {
 		if (candidateSegmentResult.success && candidateSegmentResult.data.length > 0) {
 			const segmentIds = candidateSegmentResult.data.map((cs) => cs.segment_id)
 
-			const segmentResult = await talentSegmentService.getList({
+			const segmentResult = await talentSegmentStore.getList({
 				filters: { name: ['in', segmentIds] },
 				fields: ['name', 'title', 'description', 'type', 'candidate_count'],
 			})
@@ -1996,11 +1996,11 @@ const loadCandidateSegments = async () => {
 const loadInteractions = async () => {
 	loadingInteractions.value = true
 	try {
-		const result = await interactionService.getList({
+		const result = await call(getList({
 			filters: { talent_id: route.params.id },
 			fields: ['name', 'interaction_type', 'description', 'url', 'creation'],
 			order_by: 'creation desc',
-		})
+		}))
 		if (result.success) {
 			interactions.value = result.data
 		}
@@ -2025,11 +2025,11 @@ const loadEmailLogs = async () => {
 			return
 		}
 
-		const result = await emailLogService.getList({
+		const result = await call(getList({
 			filters: filters,
 			fields: ['name', 'subject', 'content', 'status', 'creation'],
 			order_by: 'creation desc',
-		})
+		}))
 		if (result.success) {
 			emailLogs.value = result.data
 		}
@@ -2059,7 +2059,7 @@ const loadAvailableCampaigns = async () => {
 
 const loadAvailableSegments = async () => {
 	try {
-		const result = await talentSegmentService.getList({
+		const result = await talentSegmentStore.getList({
 			fields: ['name', 'title'],
 			page_length: 1000,
 		})
@@ -2093,7 +2093,7 @@ const closeCampaignModal = () => {
 const assignToCampaign = async () => {
 	savingCampaign.value = true
 	try {
-		const result = await candidateCampaignService.save(campaignFormData)
+		const result = await miraTalentPoolStore.save(campaignFormData)
 		if (result.success) {
 			closeCampaignModal()
 			loadCandidateCampaigns()
@@ -2118,7 +2118,7 @@ const closeSegmentModal = () => {
 const addToSegment = async () => {
 	savingSegment.value = true
 	try {
-		const result = await candidateSegmentService.save(segmentFormData)
+		const result = await miraTalentPoolStore.save(segmentFormData)
 		if (result.success) {
 			closeSegmentModal()
 			loadCandidateSegments()
@@ -2133,7 +2133,7 @@ const addToSegment = async () => {
 // Action methods
 const startCampaign = async (item) => {
 	try {
-		const result = await candidateCampaignService.save(
+		const result = await miraTalentPoolStore.save(
 			{ ...item, status: 'ACTIVE' },
 			item.name,
 		)
@@ -2147,7 +2147,7 @@ const startCampaign = async (item) => {
 
 const pauseCampaign = async (item) => {
 	try {
-		const result = await candidateCampaignService.save(
+		const result = await miraTalentPoolStore.save(
 			{ ...item, status: 'PAUSED' },
 			item.name,
 		)
@@ -2166,7 +2166,7 @@ const viewCampaignDetails = (item) => {
 const removeCampaign = async (item) => {
 	if (confirm('Are you sure you want to remove this candidate from the campaign?')) {
 		try {
-			const result = await candidateCampaignService.delete(item.name)
+			const result = await miraTalentPoolStore.delete(item.name)
 			if (result.success) {
 				loadCandidateCampaigns()
 			}
@@ -2183,7 +2183,7 @@ const viewSegmentDetails = (item) => {
 const removeFromSegment = async (item) => {
 	if (confirm('Are you sure you want to remove this candidate from the segment?')) {
 		try {
-			const result = await candidateSegmentService.delete(item.candidate_segment_id)
+			const result = await miraTalentPoolStore.delete(item.candidate_segment_id)
 			if (result.success) {
 				loadCandidateSegments()
 			}
@@ -2220,7 +2220,7 @@ const saveCandidate = async (candidateData) => {
 		// Use the data passed from the modal
 		const saveData = candidateData || editFormData
 
-		const result = await candidateService.save(saveData, route.params.id)
+		const result = await candidateStore.save(saveData, route.params.id)
 		if (result.success) {
 			// Update local candidate data
 			Object.assign(candidate, result.data)
@@ -2239,7 +2239,7 @@ const saveCandidate = async (candidateData) => {
 const deleteCandidate = async () => {
 	if (confirm('Are you sure you want to delete this candidate?')) {
 		try {
-			const result = await candidateService.delete(route.params.id)
+			const result = await candidateStore.delete(route.params.id)
 			if (result.success) {
 				router.push('/candidates')
 			}
@@ -2266,7 +2266,7 @@ const closeInteractionModal = () => {
 const saveInteraction = async () => {
 	savingInteraction.value = true
 	try {
-		const result = await interactionService.save(interactionFormData)
+		const result = await call(save(interactionFormData))
 		if (result.success) {
 			closeInteractionModal()
 			loadInteractions()

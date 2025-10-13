@@ -805,3 +805,19 @@ export const useCandidateStore = defineStore('candidate', {
     }
   }
 })
+
+// Export utility functions for backward compatibility
+export const processSkills = (skillsStr) => {
+  const store = useCandidateStore()
+  return store.parseSkills(skillsStr)
+}
+
+export const skillsToString = (skillsArray) => {
+  const store = useCandidateStore()
+  return store.skillsToString(skillsArray)
+}
+
+export const validateCandidateForm = (data) => {
+  const store = useCandidateStore()
+  return store.validateCandidateForm(data)
+}

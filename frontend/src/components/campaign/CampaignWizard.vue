@@ -1330,6 +1330,7 @@ const campaignStepStore = useCampaignStepStore();
 const campaignSocialStore = useCampaignSocialStore();
 const campaignTemplateStore = useCampaignTemplateStore();
 const candidateDataSourceStore = useCandidateDataSourceStore();
+const jobOpeningStore = useJobOpeningStore();
 
 //chọn nguồn
 const searchSource = ref(null);
@@ -1729,7 +1730,7 @@ const sourceConfigs = computed(() => ({
 const loadCandidatesFromSegment = async (segmentId) => {
   try {
     // Get candidates from target segment through Mira Talent Pool
-    const candidateSegmentResult = await candidateSegmentService.getList({
+    const candidateSegmentResult = await miraTalentPoolStore.getList({
       filters: { segment_id: segmentId },
       fields: ["talent_id"],
     });
@@ -1738,7 +1739,7 @@ const loadCandidatesFromSegment = async (segmentId) => {
       const candidateIds = candidateSegmentResult.data.map((cs) => cs.talent_id);
 
       // Get the actual candidate data
-      const candidateResult = await candidateService.getList({
+      const candidateResult = await candidateStore.getList({
         filters: { name: ["in", candidateIds] },
         fields: ["name", "full_name", "email", "skills", "status"],
       });
@@ -2394,7 +2395,7 @@ const loadJobOpenings = async () => {
   console.log('🔄 CampaignWizard: Starting loadJobOpenings...');
   loadingJobOpenings.value = true;
   try {
-    const result = await getFilteredJobOpenings({
+    const result = await jobOpeningStore.fetchJobOpenings({
       limit: 50,
     });
 

@@ -67,6 +67,8 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { FormControl, Autocomplete } from 'frappe-ui'
 import { useTalentSegmentStore } from '@/stores/talentSegment'
 
+const talentSegmentStore = useTalentSegmentStore()
+
 // Props & Emits
 const props = defineProps({
   modelValue: {
@@ -117,12 +119,13 @@ const levelOptions = computed(() => {
 const loadTalentSegments = async () => {
   loadingSegments.value = true
   try {
-    const result = await talentSegmentService.getList({
+    const result = await call('frappe.client.get_list', {
+      doctype: 'Mira Talent Segment',
       fields: ['name', 'title', 'description', 'candidate_count'],
-      page_length: 100
+      limit_page_length: 100
     })
-    if (result.success) {
-      segments.value = result.data
+    if (result && result.length) {
+      segments.value = result
     }
   } catch (error) {
     console.error('Error loading talent segments:', error)

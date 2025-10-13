@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 import { debounce } from 'lodash'
-import { getFilteredLadiPages, createLadiPage, updateLadiPage, deleteLadiPage } from '@/services/ladiPageService'
+import { call } from 'frappe-ui'
 
 // Composable for list management
 export const useLadiPageList = () => {
@@ -37,7 +37,7 @@ export const useLadiPageList = () => {
         campaign: campaignFilter.value,
         ...options
       }
-      const response = await getFilteredLadiPages(requestOptions)
+      const response = await call('mbw_mira.api.ladi_page.get_filtered_ladi_pages', requestOptions)
       if (response && Array.isArray(response.data)) {
         ladiPages.value = response.data
         pagination.value = {
@@ -124,7 +124,7 @@ export const useLadiPageCRUD = () => {
     success.value = false
 
     try {
-      await createLadiPage(formData)
+      await call('mbw_mira.api.ladi_page.create_ladi_page', { data: formData })
       success.value = true
       return true
     } catch (err) {
@@ -142,7 +142,7 @@ export const useLadiPageCRUD = () => {
     success.value = false
 
     try {
-      await updateLadiPage(name, formData)
+      await call('mbw_mira.api.ladi_page.update_ladi_page', { name, data: formData })
       success.value = true
       return true
     } catch (err) {
@@ -159,7 +159,7 @@ export const useLadiPageCRUD = () => {
     error.value = null
 
     try {
-      await deleteLadiPage(name, title)
+      await call('mbw_mira.api.ladi_page.delete_ladi_page', { name, title })
       return true
     } catch (err) {
       error.value = err.message

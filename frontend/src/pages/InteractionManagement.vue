@@ -483,7 +483,9 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button, Dialog, FormControl, Avatar, Badge, Breadcrumbs } from 'frappe-ui'
-import { interactionService, candidateService, actionService } from 'frappe-ui'
+import { useInteractionStore } from '@/stores/interaction'
+import { useCandidateStore } from '@/stores/candidate'
+import { call } from 'frappe-ui'
 import { debounce } from 'lodash'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import Loading from '@/components/Loading.vue'
@@ -496,6 +498,10 @@ const breadcrumbs = [
 ]
 
 const router = useRouter()
+
+// Stores
+const interactionStore = useInteractionStore()
+const candidateStore = useCandidateStore()
 
 // State
 const loading = ref(false)
@@ -620,25 +626,27 @@ const loadData = async () => {
     
     const params = {
       filters: apiFilters,
-      page_length: pagination.limit,
-      start: (pagination.page - 1) * pagination.limit,
+      limit_page_length: pagination.limit,
+      limit_start: (pagination.page - 1) * pagination.limit,
       order_by: 'modified desc',
       fields: ['name', 'talent_id', 'interaction_type', 'action', 'url', 'description', 'modified']
     }
     
     // Add search conditions if any
     if (searchConditions.length > 0) {
-      params.filters.search_text = searchConditions
+      params.or_filters = searchConditions
     }
 
-    const result = await interactionService.getList(params)
+    const result = await interactionStore.fetchInteractions(params)
     
     if (result.success) {
       items.value = result.data || []
-      Object.assign(pagination, result.pagination)
+      if (result.pagination) {
+        Object.assign(pagination, result.pagination)
+      }
       
       // Update stats
-      stats.total = result.pagination.total || 0
+      stats.total = result.pagination?.total || 0
       stats.emails = result.data?.filter(item => item.interaction_type.includes('EMAIL')).length || 0
       stats.calls = result.data?.filter(item => item.interaction_type.includes('CALL')).length || 0
       
@@ -662,11 +670,11 @@ const loadData = async () => {
 const loadFilterOptions = async () => {
   try {
     // Load candidates
-    const candidateResult = await candidateService.getList({
+    const candidateResult = await candidateStore.fetchCandidates({
       fields: ['name', 'full_name', 'email'],
-      page_length: 1000
+      limit: 1000
     })
-    if (candidateResult.success) {
+    if (candidateResult && candidateResult.data && candidateResult.data.length) {
       filterOptions.candidates = candidateResult.data.map(item => ({
         label: `${item.full_name} (${item.email})`,
         value: item.name
@@ -674,12 +682,13 @@ const loadFilterOptions = async () => {
     }
     
     // Load actions
-    const actionResult = await actionService.getList({
+    const actionResult = await call('frappe.client.get_list', {
+      doctype: 'Action',
       fields: ['name', 'talent_campaign_id', 'campaign_step'],
-      page_length: 1000
+      limit_page_length: 1000
     })
-    if (actionResult.success) {
-      filterOptions.actions = actionResult.data.map(item => ({
+    if (actionResult && actionResult.length) {
+      filterOptions.actions = actionResult.map(item => ({
         label: `${item.talent_campaign_id} - ${item.campaign_step}`,
         value: item.name
       }))
@@ -737,7 +746,7 @@ const toggleSelect = (item) => {
 
 const exportData = async () => {
   try {
-    const result = await interactionService.export({
+    const result = await interactionStore.exportInteractions({
       filters: filters,
       fields: ['name', 'talent_id', 'interaction_type', 'action', 'url', 'description', 'modified']
     })
@@ -788,7 +797,7 @@ const saveData = async () => {
 
   saving.value = true
   try {
-    const result = await interactionService.save(formData)
+    const result = await interactionStore.saveInteraction(formData)
     if (result.success) {
       closeFormModal()
       loadData()
@@ -814,7 +823,7 @@ const deleteData = async () => {
 
   deleting.value = true
   try {
-    const result = await interactionService.delete(itemToDelete.value.name)
+    const result = await interactionStore.deleteInteraction(itemToDelete.value.name)
     if (result.success) {
       showDeleteDialog.value = false
       itemToDelete.value = null
@@ -834,7 +843,7 @@ const deleteData = async () => {
 const bulkDelete = async () => {
   try {
     for (const item of selected.value) {
-      await interactionService.delete(item.name)
+      await interactionStore.deleteInteraction(item.name)
     }
     selected.value = []
     loadData()

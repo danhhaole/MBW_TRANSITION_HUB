@@ -963,10 +963,10 @@ const save = async () => {
   saving.value = true
   try {
     if (form.name) {
-      await updateJobOpeningData(form.name, form)
+      await updateJobOpeningAPI(form.name, form)
       toast.success(__('Job opening has been updated successfully'))
     } else {
-      const res = await submitNewJobOpening(form)
+      const res = await createJobOpeningAPI(form)
       Object.assign(form, res)
       toast.success(__('Job opening has been created successfully'))
     }
@@ -982,7 +982,7 @@ const save = async () => {
 const edit = async (item) => {
   loading.value = true
   try {
-    const detail = await getJobOpeningDetails(item.name)
+    const detail = await getJobOpeningAPI(item.name)
     Object.assign(form, detail)
     showForm.value = true
   } finally {
@@ -991,7 +991,7 @@ const edit = async (item) => {
 }
 
 const view = (item) => router.push(`/job-openings/${item.name}`)
-const remove = async (item) => { if (confirm('Delete this record?')) { await removeJobOpening(item.name, item.job_title); await reload() } }
+const remove = async (item) => { if (confirm('Delete this record?')) { await deleteJobOpeningAPI(item.name, item.job_title); await fetchJobOpenings() } }
 
 const badgeClass = (status) => ({
   'Draft': 'bg-gray-100 text-xs text-gray-800',

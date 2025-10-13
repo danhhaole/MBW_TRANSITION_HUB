@@ -629,16 +629,11 @@
 <script setup>
 import { ref, reactive, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import {
-	talentSegmentService,
-	candidateSegmentService,
-	candidateCampaignService,
-	candidateService,
-	findTalentProfilesBySegment,
-	bulkInsertSegments,
-} from 'frappe-ui'
+import { call } from 'frappe-ui'
 import { useCampaignStore } from '@/stores/campaign'
 import { useCandidateStore } from '@/stores/candidate'
+import { useTalentSegmentStore } from '@/stores/talentSegment'
+import { useMiraTalentPoolStore } from '@/stores/miraTalentPool'
 import { usersStore } from '@/stores/users'
 import { Button, Dialog, Breadcrumbs, FeatherIcon } from 'frappe-ui'
 import LayoutHeader from '@/components/LayoutHeader.vue'
@@ -648,12 +643,14 @@ import moment from 'moment'
 
 
 
+// Store initialization
+const campaignStore = useCampaignStore()
+const candidateStore = useCandidateStore()
+const talentSegmentStore = useTalentSegmentStore()
+const miraTalentPoolStore = useMiraTalentPoolStore()
 const { getUser } = usersStore()
 const route = useRoute()
 const router = useRouter()
-
-// Campaign store
-const campaignStore = useCampaignStore()
 
 // Breadcrumbs
 const breadcrumbs = computed(() => {
@@ -761,13 +758,16 @@ const loadSuggestedCandidates = async () => {
 	loadingSuggestedCandidates.value = true
 	try {
 		console.log('Loading suggested candidates with min score:', minScore.value)
-		const result = await findTalentProfilesBySegment(route.params.id, minScore.value)
+		const result = await call('mbw_mira.api.talent_segment.find_talent_profiles_by_segment', {
+			segment_id: route.params.id,
+			min_score: minScore.value
+		})
 
-		if (result.success) {
-			suggestedCandidates.value = result.data
-			console.log('Loaded suggested candidates:', result.data.length)
+		if (result && result.length) {
+			suggestedCandidates.value = result
+			console.log('Loaded suggested candidates:', result.length)
 		} else {
-			console.error('Failed to load suggested candidates:', result.error)
+			console.error('Failed to load suggested candidates:', result?.error)
 			suggestedCandidates.value = []
 		}
 	} catch (error) {
@@ -817,7 +817,7 @@ const addSelectedCandidatesToSegment = async () => {
 
 		console.log('Bulk insert data:', segmentData)
 
-		const result = await bulkInsertSegments(segmentData)
+		const result = await miraTalentPoolStore.bulkInsertTalents(segmentData)
 
 		if (result.success) {
 			console.log('Bulk insert successful:', result)
@@ -869,13 +869,13 @@ const loadTalentSegment = async () => {
 	loading.value = true
 	console.log('loadTalentSegment called with ID:', route.params.id)
 	try {
-		const result = await talentSegmentService.getFormData(route.params.id)
+		const result = await talentSegmentStore.fetchTalentSegmentById(route.params.id)
 		console.log('Talent segment API result:', result)
-		if (result.success) {
-			Object.assign(talentSegment, result.data)
+		if (result && result.name) {
+			Object.assign(talentSegment, result)
 			console.log('Talent segment data assigned:', talentSegment)
 		} else {
-			console.error('Failed to load talent segment:', result.error)
+			console.error('Failed to load talent segment:', result?.error)
 		}
 	} catch (error) {
 		console.error('Error loading talent segment:', error)
@@ -890,30 +890,31 @@ const loadCandidates = async () => {
 	try {
 		// First, get all Mira Talent Pool records for this segment
 		console.log('Fetching candidate segments...')
-		const candidateSegmentResult = await candidateSegmentService.getList({
+		const candidateSegmentResult = await call('frappe.client.get_list', {
+			doctype: 'Mira Talent Pool',
 			filters: { segment_id: route.params.id },
 			fields: ['name', 'talent_id', 'added_at', 'added_by', 'match_score'],
 		})
 		console.log('Mira Talent Pool API result:', candidateSegmentResult)
 
-		if (candidateSegmentResult.success && candidateSegmentResult.data.length > 0) {
+		if (candidateSegmentResult && candidateSegmentResult.length > 0) {
 			// Get candidate IDs from the relationship
-			const candidateIds = candidateSegmentResult.data.map((cs) => cs.talent_id)
-			console.log('Mira Talent Pool records found:', candidateSegmentResult.data)
+			const candidateIds = candidateSegmentResult.map((cs) => cs.talent_id)
+			console.log('Mira Talent Pool records found:', candidateSegmentResult)
 			console.log('Extracted talent_ids:', candidateIds)
 
 			// Then get the actual candidate data using universal service
-			const candidateResult = await candidateService.getList({
+			const candidateResult = await candidateStore.fetchCandidates({
 				filters: { name: ['in', candidateIds] },
-				page_length: 1000,
+				limit: 1000,
 				fields: ['name', 'full_name', 'email', 'phone', 'skills']
 			})
 			console.log('Mira Contact API result:>>>>>>>>>>>>>>>>>:  ', candidateResult)
 
-			if (candidateResult && candidateResult.success && candidateResult.data) {
+			if (candidateResult && candidateResult.data && candidateResult.data.length) {
 				// Merge the data - add segment relationship info to candidate data
 				candidates.value = candidateResult.data.map((candidate) => {
-					const segmentRelation = candidateSegmentResult.data.find(
+					const segmentRelation = candidateSegmentResult.find(
 						(cs) => cs.talent_id === candidate.name,
 					)
 					return {
@@ -942,27 +943,29 @@ const loadRelatedCampaigns = async () => {
 	loadingCampaigns.value = true
 	try {
 		// First get candidates in this segment
-		const candidateSegmentResult = await candidateSegmentService.getList({
+		const candidateSegmentResult = await call('frappe.client.get_list', {
+			doctype: 'Mira Talent Pool',
 			filters: { segment_id: route.params.id },
 			fields: ['talent_id'],
 		})
 
-		if (candidateSegmentResult.success && candidateSegmentResult.data.length > 0) {
-			const candidateIds = candidateSegmentResult.data.map((cs) => cs.talent_id)
+		if (candidateSegmentResult && candidateSegmentResult.length > 0) {
+			const candidateIds = candidateSegmentResult.map((cs) => cs.talent_id)
 
 			// Then get campaigns that have these candidates through Mira Talent Campaign
-			const candidateCampaignResult = await candidateCampaignService.getList({
+			const candidateCampaignResult = await call('frappe.client.get_list', {
+				doctype: 'Mira Talent Campaign',
 				filters: { talent_id: ['in', candidateIds] },
 				fields: ['campaign_id'],
 			})
 
-			if (candidateCampaignResult.success && candidateCampaignResult.data.length > 0) {
+			if (candidateCampaignResult && candidateCampaignResult.length > 0) {
 				const campaignIds = [
-					...new Set(candidateCampaignResult.data.map((cc) => cc.campaign_id)),
+					...new Set(candidateCampaignResult.map((cc) => cc.campaign_id)),
 				]
 
 				// Get the actual campaign data
-				const campaignResult = await campaignStore.getFilteredCampaigns({
+				const campaignResult = await campaignStore.fetchCampaigns({
 					limit: 1000,
 					page: 1
 				})
@@ -1012,7 +1015,7 @@ const removeFromSegment = async (candidate) => {
 		try {
 			// Delete the Mira Talent Pool relationship
 			if (candidate.candidate_segment_id) {
-				const result = await candidateSegmentService.delete(candidate.candidate_segment_id)
+				const result = await miraTalentPoolStore.delete(candidate.candidate_segment_id)
 				if (result.success) {
 					await loadCandidates()
 					// Update the segment's candidate count

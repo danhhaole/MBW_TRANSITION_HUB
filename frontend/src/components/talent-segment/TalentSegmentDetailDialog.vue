@@ -478,7 +478,7 @@ const getTypeLabel = (type) => {
 }
 
 const getEngagementRate = (segment) => {
-  return calculateEngagementRate(segment.candidate_count || 0)
+  return 0
 }
 
 const getEngagementColor = (rate) => {

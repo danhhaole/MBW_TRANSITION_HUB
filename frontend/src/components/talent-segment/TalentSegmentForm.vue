@@ -243,7 +243,11 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { Button } from 'frappe-ui'
-import { talentSegmentService, userService } from '@/composables/useTalentSegment'
+import { useTalentSegmentStore } from '@/stores/talentSegment'
+import { call } from 'frappe-ui'
+
+// Store initialization
+const talentSegmentStore = useTalentSegmentStore()
 
 // Translation helper function
 
@@ -545,9 +549,13 @@ const resetForm = () => {
 const loadUserOptions = async () => {
 	loadingUsers.value = true
 	try {
-		const result = await userService.getList({ fields: ['name', 'full_name', 'email'] })
-		if (result.success) {
-			userOptions.value = result.data
+		const result = await call('frappe.client.get_list', {
+			doctype: 'User',
+			fields: ['name', 'full_name', 'email'],
+			limit_page_length: 100
+		})
+		if (result && result.length) {
+			userOptions.value = result
 		}
 	} catch (error) {
 		console.error('Error loading users:', error)
@@ -570,16 +578,25 @@ const handleSubmit = async () => {
 
 		let result
 		if (isEditing.value) {
-			result = await talentSegmentService.save(formData.value, props.segment.name)
+			result = await call('frappe.client.set_value', {
+				doctype: 'Mira Segment',
+				name: props.segment.name,
+				fieldname: formData.value
+			})
 		} else {
-			result = await talentSegmentService.save(formData.value)
+			result = await call('frappe.client.insert', {
+				doc: {
+					doctype: 'Mira Segment',
+					...formData.value
+				}
+			})
 		}
 
-		if (result.success) {
-			emit('success', result.data)
+		if (result && (result.name || result.message === 'success')) {
+			emit('success', result)
 			resetForm()
 		} else {
-			throw new Error(result.message || 'Operation failed')
+			throw new Error(result?.message || 'Operation failed')
 		}
 	} catch (error) {
 		console.error('Error saving segment:', error)
