@@ -106,7 +106,7 @@ LINKEDIN_API = "https://api.linkedin.com/v2"
 @frappe.whitelist()
 def share_job_post_on_social_media(job_post_id, platform):
     try:
-        job_post = frappe.get_doc("JobOpening", job_post_id)
+        job_post = frappe.get_doc("Mira Job Opening", job_post_id)
         job_title = job_post.jo_public_title
         job_description = job_post.jo_job_description
         job_url = f"{frappe.request.host_url}/job/{job_post_id}"

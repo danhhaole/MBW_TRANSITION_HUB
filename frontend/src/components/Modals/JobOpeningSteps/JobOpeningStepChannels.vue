@@ -208,7 +208,7 @@ watch(formData, (newData) => {
 
 // Provide data for Field components
 provide('data', providedData)
-provide('doctype', 'JobOpening')
+provide('doctype', "Mira Job Opening")
 provide('preview', false)
 
 // Computed properties

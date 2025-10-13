@@ -44,11 +44,11 @@ def get_public_detail_by_cms():
 @frappe.whitelist(allow_guest=True)
 def get_public_detail(name):
     """Get job opening details for public view (guest access allowed)"""
-    if not frappe.db.exists("JobOpening", name):
+    if not frappe.db.exists("Mira Job Opening", name):
         frappe.throw(_("Job opening not found"), frappe.DoesNotExistError)
 
     # Get public fields only
-    doc = frappe.db.get_value('JobOpening', name, [
+    doc = frappe.db.get_value("Mira Job Opening", name, [
         'name', 'job_title', 'job_code', 'description', 'requirements',
         'benefits', 'department_name', 'location_name', 'number_of_openings',
         'posting_date', 'closing_date', 'approval_status', 'total_applicants',
@@ -69,12 +69,12 @@ def get_public_detail_by_cms():
             frappe.throw(_("Missing required parameter: job_url_cms"), frappe.ValidationError)
 
         # Find job opening by job_url_cms
-        job_id = frappe.db.get_value('JobOpening', {'job_url_cms': job_url_cms}, 'name')
+        job_id = frappe.db.get_value("Mira Job Opening", {'job_url_cms': job_url_cms}, 'name')
         if not job_id:
             frappe.throw(_("Job opening not found"), frappe.DoesNotExistError)
 
         # Return public fields
-        doc = frappe.db.get_value('JobOpening', job_id, [
+        doc = frappe.db.get_value("Mira Job Opening", job_id, [
             'name', 'job_title', 'job_code', 'description', 'requirements',
             'benefits', 'department_name', 'location_name', 'number_of_openings',
             'posting_date', 'closing_date', 'approval_status', 'total_applicants',
@@ -104,11 +104,11 @@ def get_public_detail_by_cms():
 @frappe.whitelist(allow_guest=True)
 def get_public_detail(name):
     """Get job opening details for public view (guest access allowed)"""
-    if not frappe.db.exists("JobOpening", name):
+    if not frappe.db.exists("Mira Job Opening", name):
         frappe.throw(_("Job opening not found"), frappe.DoesNotExistError)
 
     # Get public fields only
-    doc = frappe.db.get_value('JobOpening', name, [
+    doc = frappe.db.get_value("Mira Job Opening", name, [
         'name', 'job_title', 'job_code', 'description', 'requirements',
         'benefits', 'department_name', 'location_name', 'number_of_openings',
         'posting_date', 'closing_date', 'approval_status', 'total_applicants',

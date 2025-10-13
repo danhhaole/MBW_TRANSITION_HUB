@@ -740,10 +740,10 @@ def share_job_posting(
             return {"status": "error", "message": "Connection is not active"}
 
         # Get job details
-        if not frappe.db.exists("JobOpening", job_id):
+        if not frappe.db.exists("Mira Job Opening", job_id):
             return {"status": "error", "message": "Job not found"}
 
-        job = frappe.get_doc("JobOpening", job_id)
+        job = frappe.get_doc("Mira Job Opening", job_id)
         share_data = json.dumps(kwargs)
         # Create sharing record
         share_doc = frappe.get_doc(
@@ -1208,7 +1208,7 @@ def _process_job_share(share_doc):
     """
     try:
         connection = frappe.get_doc("Mira External Connection", share_doc.connection)
-        job = frappe.get_doc("JobOpening", share_doc.job)
+        job = frappe.get_doc("Mira Job Opening", share_doc.job)
 
         # Parse share_data safely
         share_data = {}

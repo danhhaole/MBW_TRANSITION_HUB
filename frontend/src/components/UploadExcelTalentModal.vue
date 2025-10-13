@@ -94,7 +94,7 @@
                             </div>
                         </div>
                         <div class="card-body">
-                            <Link :doctype="'JobOpening'" v-model="selectedJob"
+                            <Link :doctype=""Mira Job Opening"" v-model="selectedJob"
                                 :placeholder="__('Select job opening')" />
                         </div>
                     </div> -->

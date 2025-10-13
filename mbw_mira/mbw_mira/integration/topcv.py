@@ -190,7 +190,7 @@ def handle_new_application(payload):
         )
 
         # Lấy ra job_opening
-        job = frappe.get_doc(doctype="JobOpening",filters={"top_cv_id":payload.get("job_id")})
+        job = frappe.get_doc(doctype="Mira Job Opening",filters={"top_cv_id":payload.get("job_id")})
 
         if not candidate:
             # Tạo mới ứng viên
@@ -246,14 +246,14 @@ def handle_job_approved(payload):
     try:
         # Cập nhật trạng thái tin tuyển dụng
         job_opening = frappe.get_all(
-            "JobOpening",
+            "Mira Job Opening",
             filters={"topcv_job_id": payload.get("job_id")},
             fields=["name"],
             limit=1
         )
 
         if job_opening:
-            job_doc = frappe.get_doc("JobOpening", job_opening[0].name)
+            job_doc = frappe.get_doc("Mira Job Opening", job_opening[0].name)
             job_doc.status = "Approved"
             job_doc.recruitment_campaign_id = payload.get("recruitment_campaign_id")
             job_doc.save(ignore_permissions=True)
@@ -270,14 +270,14 @@ def handle_job_rejected(payload):
     try:
         # Cập nhật trạng thái tin tuyển dụng
         job_opening = frappe.get_all(
-            "JobOpening",
+            "Mira Job Opening",
             filters={"topcv_job_id": payload.get("job_id")},
             fields=["name"],
             limit=1
         )
 
         if job_opening:
-            job_doc = frappe.get_doc("JobOpening", job_opening[0].name)
+            job_doc = frappe.get_doc("Mira Job Opening", job_opening[0].name)
             job_doc.status = "Rejected"
             job_doc.recruitment_campaign_id = payload.get("recruitment_campaign_id")
             job_doc.reject_reason = payload.get("reject_reason")

@@ -481,7 +481,7 @@ export const useCampaignStore = defineStore('campaign', {
     async getJobOpeningOptions() {
       try {
         const response = await call('frappe.client.get_list', {
-          doctype: 'JobOpening',
+          doctype: "Mira Job Opening",
           fields: ['name', 'job_title'],
           limit_page_length: 1000
         })

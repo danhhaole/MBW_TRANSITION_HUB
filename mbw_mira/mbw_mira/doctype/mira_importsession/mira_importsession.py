@@ -680,7 +680,7 @@ def download_import_template():
 	"""Generate and download import template Excel file for Job Opening"""
 	try:
 		# Get JobOpening fields
-		meta = frappe.get_meta("JobOpening")
+		meta = frappe.get_meta("Mira Job Opening")
 		
 		# Define important fields in order (excluding job_code as it's auto-generated)
 		important_fields = [
@@ -857,7 +857,7 @@ def upload_and_preview():
 		sample = df.head(10).fillna("").to_dict(orient="records")
 
 		# Get available fields from JobOpening for mapping suggestions
-		meta = frappe.get_meta("JobOpening")
+		meta = frappe.get_meta("Mira Job Opening")
 		available_fields = []
 		for field in meta.fields:
 			if field.fieldtype not in ['Section Break', 'Column Break', 'Tab Break', 'HTML']:
@@ -2074,7 +2074,7 @@ def process_batch_with_session(df: pd.DataFrame, mapping: Dict, selected_job_ope
 		try:
 			job_opening_data = map_row_data(row, mapping)
 			processed_data = validate_and_process_job_opening(job_opening_data, existing_titles)
-			doc = frappe.get_doc({"doctype": "JobOpening", **processed_data})
+			doc = frappe.get_doc({"doctype": "Mira Job Opening", **processed_data})
 			doc.insert(ignore_permissions=True)
 			processing_time = time.time() - start_time
 			title = processed_data.get("job_title")

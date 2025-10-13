@@ -85,7 +85,7 @@
    "fieldname": "job",
    "fieldtype": "Link",
    "label": "Job",
-   "options": "JobOpening"
+   "options": "Mira Job Opening"
   }
  ],
  "grid_page_length": 50,

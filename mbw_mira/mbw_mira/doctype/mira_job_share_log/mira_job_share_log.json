@@ -52,7 +52,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Job",
-   "options": "JobOpening",
+   "options": "Mira Job Opening"ening",
    "reqd": 1
   },
   {
@@ -232,7 +232,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-08-29 16:41:39.764490",
+ "modified": "2025-10-13 11:57:23.025769",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Job Share Log",

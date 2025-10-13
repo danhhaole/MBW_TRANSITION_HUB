@@ -407,7 +407,7 @@ def dev_seed_autopost_test(**kwargs):
     scheduled_time = now + timedelta(minutes=minutes_from_now)
 
     # 1) Tạo JobOpening
-    job_doc = frappe.new_doc("JobOpening")
+    job_doc = frappe.new_doc("Mira Job Opening")
     job_doc.job_title = job_title
     job_doc.job_code = f"TEST-{datetime.now().strftime('%Y%m%d%H%M%S')}"
     job_doc.description = f"Mô tả công việc {job_title}"

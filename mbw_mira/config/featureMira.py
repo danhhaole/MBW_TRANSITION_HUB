@@ -240,7 +240,7 @@ FEATURES_MIRA = {
                             "import": 0,
                         },
                         {
-                            "doctype": "JobOpening",
+                            "doctype": "Mira Job Opening",
                             "create": 0,
                             "read": 1,
                             "write": 0,
@@ -261,7 +261,7 @@ FEATURES_MIRA = {
                     "is_active": 1,
                     "permissions": [
                         {
-                            "doctype": "JobOpening",
+                            "doctype": "Mira Job Opening",
                             "create": 1,
                             "read": 1,
                             "write": 1,
@@ -342,7 +342,7 @@ FEATURES_MIRA = {
                             "import": 0,
                         },
                         {
-                            "doctype": "JobOpening",
+                            "doctype": "Mira Job Opening",
                             "create": 0,
                             "read": 1,
                             "write": 0,
@@ -389,7 +389,7 @@ FEATURES_MIRA = {
                             "import": 0,
                         },
                         {
-                            "doctype": "JobOpening",
+                            "doctype": "Mira Job Opening",
                             "create": 0,
                             "read": 1,
                             "write": 0,
@@ -516,7 +516,7 @@ FEATURES_MIRA = {
                             "import": 0,
                         },
                         {
-                            "doctype": "JobOpening",
+                            "doctype": "Mira Job Opening",
                             "create": 0,
                             "read": 1,
                             "write": 0,
@@ -750,7 +750,7 @@ FEATURES_MIRA = {
                     "is_active": 1,
                     "permissions": [
                         {
-                            "doctype": "JobOpening",
+                            "doctype": "Mira Job Opening",
                             "create": 1,
                             "read": 1,
                             "write": 1,
@@ -797,7 +797,7 @@ FEATURES_MIRA = {
                     "is_active": 1,
                     "permissions": [
                         {
-                            "doctype": "JobOpening",
+                            "doctype": "Mira Job Opening",
                             "create": 1,
                             "read": 1,
                             "write": 1,
@@ -831,7 +831,7 @@ FEATURES_MIRA = {
                     "is_active": 1,
                     "permissions": [
                         {
-                            "doctype": "JobOpening",
+                            "doctype": "Mira Job Opening",
                             "create": 0,
                             "read": 1,
                             "write": 0,

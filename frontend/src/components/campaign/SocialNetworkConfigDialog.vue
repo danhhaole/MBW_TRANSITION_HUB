@@ -698,7 +698,7 @@ const handleJobOpeningChange = async () => {
     try {
       // Call API to get job opening details
       const jobDetails = await call('frappe.client.get', {
-        doctype: 'JobOpening',
+        doctype: "Mira Job Opening",
         name: jobName,
         fields: ['name', 'job_title', 'job_code', 'description', 'requirements', 'benefits', 'job_url_cms']
       });

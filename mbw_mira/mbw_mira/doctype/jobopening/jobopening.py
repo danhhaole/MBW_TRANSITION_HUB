@@ -28,7 +28,7 @@ class JobOpening(Document):
 		count = 1
 		
 		# Kiểm tra xem slug đã tồn tại chưa
-		while frappe.db.exists("JobOpening", {"job_url_cms": slug, "name": ["!=", self.name or ""]}):
+		while frappe.db.exists("Mira Job Opening", {"job_url_cms": slug, "name": ["!=", self.name or ""]}):
 			slug = f"{base_slug}-{count}"
 			count += 1
 		

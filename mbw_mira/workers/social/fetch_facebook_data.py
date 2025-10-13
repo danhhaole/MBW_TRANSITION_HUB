@@ -51,7 +51,7 @@ def _process_job_share(share_doc):
     """
     try:
         connection = frappe.get_doc("Mira External Connection", share_doc.external_connection)
-        job = frappe.get_doc("JobOpening", share_doc.job)
+        job = frappe.get_doc("Mira Job Opening", share_doc.job)
 
         # Parse share_data safely
         share_data = {}

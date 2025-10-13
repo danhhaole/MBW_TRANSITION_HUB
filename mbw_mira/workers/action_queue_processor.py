@@ -137,7 +137,7 @@ def handle_send_email(action_doc, action_data):
     """Handle send email action"""
     try:
         candidate = frappe.get_doc("Mira Candidate", action_doc.candidate_id)
-        job_opening = frappe.get_doc("JobOpening", action_doc.job_opening_id)
+        job_opening = frappe.get_doc("Mira Job Opening", action_doc.job_opening_id)
        
         template_name = action_data.get('template', '')
         if not template_name:
@@ -182,7 +182,7 @@ def handle_send_email(action_doc, action_data):
 #     """Handle create task action"""
 #     try:
 #         candidate = frappe.get_doc("Mira Candidate", action_doc.candidate_id)
-#         job_opening = frappe.get_doc("JobOpening", action_doc.job_opening_id)
+#         job_opening = frappe.get_doc("Mira Job Opening", action_doc.job_opening_id)
         
 #         assignee = action_data.get('assignee', '')
 #         if not assignee:
@@ -392,7 +392,7 @@ def handle_notify_departments(action_doc, action_data):
 def handle_notify_hiring_manager(action_doc, action_data):
     """Handle notify hiring manager action"""
     try:
-        job_opening = frappe.get_doc("JobOpening", action_doc.job_opening_id)
+        job_opening = frappe.get_doc("Mira Job Opening", action_doc.job_opening_id)
         hiring_manager = job_opening.hiring_manager
         
         if hiring_manager:

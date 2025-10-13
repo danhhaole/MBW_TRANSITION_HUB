@@ -198,7 +198,7 @@ export const useJobOpeningStore = defineStore('jobOpening', {
 
         // Fetch job openings
         const response = await call('frappe.client.get_list', {
-          doctype: 'JobOpening',
+          doctype: "Mira Job Opening",
           filters: enhancedFilters,
           or_filters: or_filters,
           fields: fields,
@@ -209,7 +209,7 @@ export const useJobOpeningStore = defineStore('jobOpening', {
 
         // Get total count for pagination
         const totalCount = await call('frappe.client.get_count', {
-          doctype: 'JobOpening',
+          doctype: "Mira Job Opening",
           filters: enhancedFilters,
           or_filters: or_filters
         })
@@ -261,7 +261,7 @@ export const useJobOpeningStore = defineStore('jobOpening', {
 
       try {
         const response = await call('frappe.client.get', {
-          doctype: 'JobOpening',
+          doctype: "Mira Job Opening",
           name: name
         })
 
@@ -311,7 +311,7 @@ export const useJobOpeningStore = defineStore('jobOpening', {
         const preparedData = this.prepareJobOpeningForSave(data, 'create')
 
         const docData = {
-          doctype: 'JobOpening',
+          doctype: "Mira Job Opening",
           ...preparedData
         }
 
@@ -368,7 +368,7 @@ export const useJobOpeningStore = defineStore('jobOpening', {
         const preparedData = this.prepareJobOpeningForSave(data, 'update')
 
         const response = await call('frappe.client.set_value', {
-          doctype: 'JobOpening',
+          doctype: "Mira Job Opening",
           name: name,
           fieldname: preparedData
         })
@@ -423,7 +423,7 @@ export const useJobOpeningStore = defineStore('jobOpening', {
 
       try {
         await call('frappe.client.delete', {
-          doctype: 'JobOpening',
+          doctype: "Mira Job Opening",
           name: name
         })
 
@@ -457,7 +457,7 @@ export const useJobOpeningStore = defineStore('jobOpening', {
         ]
 
         const response = await call('frappe.client.get_list', {
-          doctype: 'JobOpening',
+          doctype: "Mira Job Opening",
           filters: filters,
           fields: ['name', 'job_title', 'job_code', 'department_name', 'location_name', 'approval_status'],
           limit_page_length: limit
@@ -486,28 +486,28 @@ export const useJobOpeningStore = defineStore('jobOpening', {
       try {
         // Get statistics by status
         const statusStats = await call('frappe.client.get_list', {
-          doctype: 'JobOpening',
+          doctype: "Mira Job Opening",
           fields: ['approval_status', 'count(*) as count'],
           group_by: 'approval_status'
         })
 
         // Get statistics by department
         const departmentStats = await call('frappe.client.get_list', {
-          doctype: 'JobOpening',
+          doctype: "Mira Job Opening",
           fields: ['department_name', 'count(*) as count'],
           group_by: 'department_name'
         })
 
         // Get total count
         const totalCount = await call('frappe.client.get_count', {
-          doctype: 'JobOpening'
+          doctype: "Mira Job Opening"
         })
 
         // Get recent count (last 7 days)
         const sevenDaysAgo = new Date()
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
         const recentCount = await call('frappe.client.get_count', {
-          doctype: 'JobOpening',
+          doctype: "Mira Job Opening",
           filters: [['creation', '>=', sevenDaysAgo.toISOString().split('T')[0]]]
         })
 
@@ -552,19 +552,19 @@ export const useJobOpeningStore = defineStore('jobOpening', {
       try {
         const [statusOptions, departmentOptions, locationOptions] = await Promise.all([
           call('frappe.client.get_list', {
-            doctype: 'JobOpening',
+            doctype: "Mira Job Opening",
             fields: ['approval_status'],
             distinct: true,
             order_by: 'approval_status'
           }),
           call('frappe.client.get_list', {
-            doctype: 'JobOpening',
+            doctype: "Mira Job Opening",
             fields: ['department_name'],
             distinct: true,
             order_by: 'department_name'
           }),
           call('frappe.client.get_list', {
-            doctype: 'JobOpening',
+            doctype: "Mira Job Opening",
             fields: ['location_name'],
             distinct: true,
             order_by: 'location_name'

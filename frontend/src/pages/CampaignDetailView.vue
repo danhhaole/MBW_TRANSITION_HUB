@@ -1415,7 +1415,7 @@ const loadJobOpenings = async () => {
   loadingJobOpenings.value = true
   try {
     const response = await call('frappe.client.get_list', {
-      doctype: 'JobOpening',
+      doctype: "Mira Job Opening",
       fields: ['name', 'job_title', 'job_code'],
       order_by: 'creation desc',
       limit_page_length: 100

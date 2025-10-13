@@ -872,7 +872,7 @@ def evaluation_criteria_generate_func(**kwargs):
         skill_doc = frappe.db.get_all("ATS_Skill")
         skills = [skill["name"] for skill in skill_doc]
         jo_job = frappe.db.get_value(
-            "JobOpening",
+            "Mira Job Opening",
             job_id,
             ["jo_job_description", "jo_job_requirement", "jo_job_benefits"],
             as_dict=1,
