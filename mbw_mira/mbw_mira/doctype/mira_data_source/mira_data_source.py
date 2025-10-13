@@ -5,7 +5,7 @@ import frappe
 from frappe.model.document import Document
 
 
-class CandidateDataSource(Document):
+class MiraDataSource(Document):
 	pass
 
 
@@ -17,7 +17,7 @@ def test_connection(name):
     Test connection cho data source
     """
     try:
-        doc = frappe.get_doc('CandidateDataSource', name)
+        doc = frappe.get_doc('MiraDataSource', name)
         
         # Basic validation
         if not doc:
@@ -62,7 +62,7 @@ def sync_data(name):
     Sync data từ source
     """
     try:
-        doc = frappe.get_doc('CandidateDataSource', name)
+        doc = frappe.get_doc('MiraDataSource', name)
         
         if not doc:
             return {
@@ -111,7 +111,7 @@ def get_data_sources():
     """
     try:
         data_sources = frappe.get_list(
-            'CandidateDataSource',
+            'MiraDataSource',
             fields=['name', 'source_name', 'source_type', 'source_title', 'description', 'is_active'],
             filters={'is_active': 1},
             order_by='source_name asc'

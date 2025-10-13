@@ -823,8 +823,8 @@ def delete_bulk_docs(doctype, items, delete_linked=False):
 
 @frappe.whitelist(allow_guest=True)
 def redirect_short_url(short_code):
-    long_url = frappe.db.get_value("Short URL", {"short_code": short_code}, "long_url")
+    long_url = frappe.db.get_value("Mira Short URL", {"short_code": short_code}, "long_url")
     if not long_url:
-        frappe.throw("Short URL not found", frappe.DoesNotExistError)
+        frappe.throw("Mira Short URL not found", frappe.DoesNotExistError)
     frappe.local.response["type"] = "redirect"
     frappe.local.response["location"] = long_url

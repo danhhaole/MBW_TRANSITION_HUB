@@ -193,7 +193,7 @@
  "modified": "2025-07-22 14:24:57.945760",
  "modified_by": "Administrator",
  "module": "MBW Mira",
- "name": "CandidateDataSource",
+ "name": "Mira Data Source",
  "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [

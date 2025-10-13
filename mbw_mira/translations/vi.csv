@@ -243,8 +243,8 @@ Campaign type is required,Loại chiến dịch là bắt buộc
 Campaign will be created in DRAFT status with,Chiến dịch sẽ được tạo trong trạng thái dự thảo với
 Campaign:,Chiến dịch:
 CampaignStep,Chiến dịch
-CampaignTemplate,Chiến dịch
-CampaignTemplateStep,Chiến dịchTemplatestep
+Mira Campaign Template,Chiến dịch
+Mira Step Template,Chiến dịchTemplatestep
 Campaigns,Chiến dịch
 Cancel,Hủy bỏ
 Cancelled,Bị hủy bỏ
@@ -258,7 +258,7 @@ Candidate Management,Quản lý ứng cử viên
 Candidate Pool Details,Ứng cử viên chi tiết hồ bơi
 Candidate Pools,Nhóm ứng cử viên
 Candidate Status,Tình trạng ứng cử viên
-CandidateDataSource,Ứng cử viên
+Mira Data Source,Ứng cử viên
 CandidatePool,Ứng cử viên
 Candidates,Ứng cử viên
 Cannot delete standard items {0},Không thể xóa các mục tiêu chuẩn {0}
@@ -494,7 +494,7 @@ Email Settings,Cài đặt email
 Email Steps:,Các bước email:
 Email and campaign_id are required.,Email và Chiến dịch_id được yêu cầu.
 Email will be sent immediately,Email sẽ được gửi ngay lập tức
-EmailLog,Emaillog
+Mira Email Log,Emaillog
 EmailTemplateEditor,EmailTemplateDitor
 Empty - Choose a field to filter by,Trống - chọn một trường để lọc theo
 Empty - Choose a field to sort by,Trống - chọn một trường để sắp xếp theo
@@ -1117,7 +1117,7 @@ Set all as public,Đặt tất cả như công khai
 Set as default,Đặt làm mặc định
 Settings,Cài đặt
 Short Code,Mã ngắn
-Short URL,Url ngắn
+Mira Short URL,Url ngắn
 Shortlist Date,Ngày rút gọn ngày
 Shortlisted,Lọt vào danh sách
 Show Help,Hiển thị trợ giúp

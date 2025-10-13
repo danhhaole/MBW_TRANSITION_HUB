@@ -102,7 +102,7 @@ const activeField = ref("message");
 // Fetch danh sách mẫu email và Merge Fields
 onMounted(async () => {
 	const response = await call("frappe.client.get_list", {
-		doctype: "MIRA_Email_Template",
+		doctype: "Mira Email Template",
 		fields: ["name", "subject", "message", "template_name"],
 	});
 	emailTemplates.value = response.map((item) => ({

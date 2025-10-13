@@ -7,13 +7,13 @@ import frappe
 
 class VietnamWorksProvider:
     """
-    Provider kết nối VietnamWorks API, dựa trên CandidateDataSource.
+    Provider kết nối VietnamWorks API, dựa trên Mira Data Source.
     """
 
     BASE_URL = "https://api.vietnamworks.com/v1/"
 
     def __init__(self, source_name, timeout=10, max_retries=3):
-        self.source_doc = frappe.get_doc("CandidateDataSource", source_name)
+        self.source_doc = frappe.get_doc("Mira Data Source", source_name)
         self.timeout = timeout
         self.max_retries = max_retries
 

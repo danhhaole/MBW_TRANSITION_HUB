@@ -19,34 +19,38 @@
   {
    "fieldname": "template",
    "fieldtype": "Link",
-   "label": "Template",
-   "options": "CampaignTemplate",
+   "in_list_view": 1,
+   "label": "Mira Campaign Template",
+   "options": "Mira Campaign Template",
    "reqd": 1
   },
   {
    "fieldname": "step_order",
    "fieldtype": "Int",
+   "in_list_view": 1,
    "label": "Step Order",
    "reqd": 1
   },
   {
    "fieldname": "campaign_step_name",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Campaign Step Name",
    "reqd": 1
   },
   {
    "fieldname": "action_type",
    "fieldtype": "Select",
+   "in_list_view": 1,
    "label": "Action Type",
    "options": "SEND_EMAIL\nSEND_SMS\nMANUAL_CALL\nMANUAL_TASK",
    "reqd": 1
   },
   {
+   "default": "0",
    "fieldname": "delay_in_days",
    "fieldtype": "Int",
-   "label": "Delay In Days",
-   "default": 0
+   "label": "Delay In Days"
   },
   {
    "fieldname": "template_content",
@@ -62,10 +66,10 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-21 16:31:58.551169",
+ "modified": "2025-10-13 13:48:01.289782",
  "modified_by": "Administrator",
  "module": "MBW Mira",
- "name": "CampaignTemplateStep",
+ "name": "Mira Step Template",
  "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [

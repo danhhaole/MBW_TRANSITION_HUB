@@ -435,7 +435,7 @@ const loadTemplateData = async () => {
   try {
     if (isEditMode.value) {
       const data = await call("frappe.client.get", {
-        doctype: "MIRA_Email_Template",
+        doctype: "Mira Email Template",
         name: templateId.value,
       });
       _template.value = data;
@@ -631,7 +631,7 @@ const saveContent = async () => {
 
     if (isEditMode.value) {
       await call("frappe.client.set_value", {
-        doctype: "MIRA_Email_Template",
+        doctype: "Mira Email Template",
         name: templateId.value,
         fieldname: {
           ..._template.value,
@@ -683,7 +683,7 @@ const exportHtml = async () => {
     if (isEditMode.value) {
       // Update existing template
       await call("frappe.client.set_value", {
-        doctype: "MIRA_Email_Template",
+        doctype: "Mira Email Template",
         name: templateId.value,
         fieldname: {
           ..._template.value,
@@ -701,7 +701,7 @@ const exportHtml = async () => {
       // Create new template
       const doc = await call("frappe.client.insert", {
         doc: {
-          doctype: "MIRA_Email_Template",
+          doctype: "Mira Email Template",
           ..._template.value,
           subject: convertPlaceholderToJinja(_template.value.subject),
         },

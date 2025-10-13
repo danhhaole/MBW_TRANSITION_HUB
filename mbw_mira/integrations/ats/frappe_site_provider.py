@@ -9,7 +9,7 @@ from urllib3.util.retry import Retry
 class FrappeSiteProvider:
     """
     Provider kết nối đến Frappe site khác hoặc ngay trong cùng site
-    dựa trên Doctype CandidateDataSource.
+    dựa trên Doctype Mira Data Source.
 
     + same_site + ATS → dùng trực tiếp ORM của site hiện tại
     + API Key hoặc OAuth2 nếu khác site
@@ -20,7 +20,7 @@ class FrappeSiteProvider:
     """
 
     def __init__(self, source_name, timeout=120, max_retries=3):
-        self.source_doc = frappe.get_doc("CandidateDataSource", source_name)
+        self.source_doc = frappe.get_doc("Mira Data Source", source_name)
         self.timeout = timeout
         self.max_retries = max_retries
 

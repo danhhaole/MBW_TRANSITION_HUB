@@ -161,7 +161,7 @@ msgstr "KÍCH HOẠT"
 msgid "AI Summary"
 msgstr "Tóm tắt AI"
 
-#. Label of a Small Text field in DocType 'CandidateDataSource'
+#. Label of a Small Text field in DocType 'Mira Data Source'
 #: frontend/src/components/candidateDataSource/CandidateDataSourceFormDirect.vue:123
 #: frontend/src/pages/CandidateDataSourceManagementDirect.vue:343
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
@@ -169,15 +169,15 @@ msgid "API Base URL"
 msgstr "URL cơ sở API"
 
 #. Option for the 'Auth Method' (Select) field in DocType
-#. 'CandidateDataSource'
-#. Label of a Data field in DocType 'CandidateDataSource'
+#. 'Mira Data Source'
+#. Label of a Data field in DocType 'Mira Data Source'
 #: frontend/src/components/candidateDataSource/CandidateDataSourceFormDirect.vue:149
 #: frontend/src/components/candidateDataSource/CandidateDataSourceFormDirect.vue:183
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "API Key"
 msgstr "Khóa API"
 
-#. Description of the 'API Key' (Data) field in DocType 'CandidateDataSource'
+#. Description of the 'API Key' (Data) field in DocType 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "API Key do nhà cung cấp cấp khi đăng ký ứng dụng (ví dụ: TopCV)"
 msgstr "API KEY Do NHÀ CUNG CấP CấP KHI ĐÓ"
@@ -186,14 +186,14 @@ msgstr "API KEY Do NHÀ CUNG CấP CấP KHI ĐÓ"
 msgid "API Key is required for API Key method"
 msgstr "Khóa API được yêu cầu cho phương thức khóa API"
 
-#. Label of a Password field in DocType 'CandidateDataSource'
+#. Label of a Password field in DocType 'Mira Data Source'
 #: frontend/src/components/candidateDataSource/CandidateDataSourceFormDirect.vue:192
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "API Secret"
 msgstr "Bí mật API"
 
 #. Description of the 'API Secret' (Password) field in DocType
-#. 'CandidateDataSource'
+#. 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "API Secret đi kèm với API Key (nếu có)"
 msgstr "API SELX"
@@ -213,7 +213,7 @@ msgid "ARCHIVED"
 msgstr "Lưu trữ"
 
 #. Option for the 'Source Type' (Select) field in DocType
-#. 'CandidateDataSource'
+#. 'Mira Data Source'
 #: frontend/src/components/candidateDataSource/CandidateDataSourceFormDirect.vue:113
 #: frontend/src/components/candidateDataSource/CandidateDataSourceTable.vue:48
 #: frontend/src/components/candidateDataSource/CandidateDataSourceTable.vue:350
@@ -231,13 +231,13 @@ msgstr "Nhập khẩu ATS"
 msgid "ATTRACTION"
 msgstr "SỰ THU HÚT"
 
-#. Label of a Small Text field in DocType 'CandidateDataSource'
+#. Label of a Small Text field in DocType 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Access Token"
 msgstr "Mã thông báo truy cập"
 
 #. Description of the 'Access Token' (Small Text) field in DocType
-#. 'CandidateDataSource'
+#. 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Access Token hiện tại (OAuth2)"
 msgstr "Truy cập Mã thông báo Hiện Tại (OAuth2)"
@@ -247,7 +247,7 @@ msgstr "Truy cập Mã thông báo Hiện Tại (OAuth2)"
 msgid Mira Action
 msgstr "Hoạt động"
 
-#. Label of a JSON field in DocType 'CampaignTemplateStep'
+#. Label of a JSON field in DocType 'Mira Step Template'
 #: mbw_mira/mbw_mira/doctype/campaigntemplatestep/campaigntemplatestep.json
 msgid "Action Config"
 msgstr "Cấu hình hành động"
@@ -261,7 +261,7 @@ msgid "Action Configuration"
 msgstr "Cấu hình hành động"
 
 #. Label of a Select field in DocType "Mira Campaign Step"
-#. Label of a Select field in DocType 'CampaignTemplateStep'
+#. Label of a Select field in DocType 'Mira Step Template'
 #: frontend/src/components/CampaignTemplateFormModal.vue:220
 #: frontend/src/components/CampaignTemplateFormModal.vue:339
 #: frontend/src/components/CampaignTemplateStepFormModal.vue:53
@@ -312,8 +312,8 @@ msgid "Activate data source"
 msgstr "Kích hoạt nguồn dữ liệu"
 
 #. Label of a Check field in DocType "Mira Campaign"
-#. Option for the 'Status' (Select) field in DocType 'CandidateDataSource'
-#. Label of a Check field in DocType 'CandidateDataSource'
+#. Option for the 'Status' (Select) field in DocType 'Mira Data Source'
+#. Label of a Check field in DocType 'Mira Data Source'
 #. Option for the 'Status' (Select) field in DocType 'EmailTemplateEditor'
 #: frontend/src/components/CampaignTemplateFormModal.vue:78
 #: frontend/src/components/campaign/CampaignView.vue:41
@@ -543,7 +543,7 @@ msgstr "Thêm ..."
 msgid "Additional Information"
 msgstr "Thông tin bổ sung"
 
-#. Option for the 'Campaign Type' (Select) field in DocType 'CampaignTemplate'
+#. Option for the 'Campaign Type' (Select) field in DocType 'Mira Campaign Template'
 #: frontend/src/pages/CampaignTemplateManagement.vue:51
 #: mbw_mira/mbw_mira/doctype/campaigntemplate/campaigntemplate.json
 #: mbw_mira/public/frontend/assets/CampaignTemplateManagement-2fbd627d.js:1
@@ -917,7 +917,7 @@ msgstr "Ít nhất một trường là bắt buộc"
 msgid "Attach"
 msgstr "Gắn"
 
-#. Label of a Long Text field in DocType 'EmailLog'
+#. Label of a Long Text field in DocType 'Mira Email Log'
 #: frontend/src/pages/EmailLogManagement.vue:384
 #: frontend/src/pages/EmailLogManagement.vue:480
 #: mbw_mira/mbw_mira/doctype/emaillog/emaillog.json
@@ -929,7 +929,7 @@ msgstr "Đính kèm"
 msgid "Attraction"
 msgstr "Sự thu hút"
 
-#. Label of a Select field in DocType 'CandidateDataSource'
+#. Label of a Select field in DocType 'Mira Data Source'
 #: frontend/src/components/candidateDataSource/CandidateDataSourceTable.vue:103
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Auth Method"
@@ -971,7 +971,7 @@ msgstr "Điểm AVG"
 msgid "Avg. Response Time"
 msgstr "AVG. Thời gian phản hồi"
 
-#. Label of a Small Text field in DocType 'EmailLog'
+#. Label of a Small Text field in DocType 'Mira Email Log'
 #: mbw_mira/mbw_mira/doctype/emaillog/emaillog.json
 msgid "BCC"
 msgstr "BCC"
@@ -1001,7 +1001,7 @@ msgid "Back to file upload"
 msgstr "Quay lại tải lên tệp"
 
 #. Option for the 'Auth Method' (Select) field in DocType
-#. 'CandidateDataSource'
+#. 'Mira Data Source'
 #: frontend/src/components/candidateDataSource/CandidateDataSourceFormDirect.vue:151
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Basic"
@@ -1019,7 +1019,7 @@ msgid "Between"
 msgstr "Giữa"
 
 #. Option for the 'Sync Direction' (Select) field in DocType
-#. 'CandidateDataSource'
+#. 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Both"
 msgstr "Cả hai"
@@ -1069,7 +1069,7 @@ msgstr "Bị hủy bỏ"
 msgid "CATEGORIZED"
 msgstr "Phân loại"
 
-#. Label of a Small Text field in DocType 'EmailLog'
+#. Label of a Small Text field in DocType 'Mira Email Log'
 #: mbw_mira/mbw_mira/doctype/emaillog/emaillog.json
 msgid "CC"
 msgstr "Cc"
@@ -1179,7 +1179,7 @@ msgid "Campaign Step"
 msgstr "Bước chiến dịch"
 
 #. Label of a Data field in DocType "Mira Campaign Step"
-#. Label of a Data field in DocType 'CampaignTemplateStep'
+#. Label of a Data field in DocType 'Mira Step Template'
 #: mbw_mira/mbw_mira/doctype/campaignstep/campaignstep.json
 #: mbw_mira/mbw_mira/doctype/campaigntemplatestep/campaigntemplatestep.json
 msgid "Campaign Step Name"
@@ -1200,7 +1200,7 @@ msgstr "Tóm tắt chiến dịch"
 msgid "Campaign Templates"
 msgstr "Mẫu chiến dịch"
 
-#. Label of a Select field in DocType 'CampaignTemplate'
+#. Label of a Select field in DocType 'Mira Campaign Template'
 #: frontend/src/components/CampaignTemplateFormModal.vue:50
 #: frontend/src/components/campaign/CampaignForm.vue:63
 #: frontend/src/components/campaign/CampaignWizard.vue:63
@@ -1270,12 +1270,12 @@ msgstr "Chiến dịch"
 
 #. Name of a DocType
 #: mbw_mira/mbw_mira/doctype/campaigntemplate/campaigntemplate.json
-msgid "CampaignTemplate"
+msgid "Mira Campaign Template"
 msgstr "Chiến dịch"
 
 #. Name of a DocType
 #: mbw_mira/mbw_mira/doctype/campaigntemplatestep/campaigntemplatestep.json
-msgid "CampaignTemplateStep"
+msgid "Mira Step Template"
 msgstr "Chiến dịchTemplatestep"
 
 #: frontend/src/pages/CampaignDetailView.vue:825
@@ -1383,7 +1383,7 @@ msgstr "Tình trạng ứng cử viên"
 
 #. Name of a DocType
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
-msgid "CandidateDataSource"
+msgid "Mira Data Source"
 msgstr "Ứng cử viên"
 
 #. Name of a DocType
@@ -1417,7 +1417,7 @@ msgid "Change Password"
 msgstr "Thay đổi mật khẩu"
 
 #. Description of the 'Sync Direction' (Select) field in DocType
-#. 'CandidateDataSource'
+#. 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Chiều đồng bộ dữ liệu: Pull (lấy về), Push (gửi đi), Both (cả hai)"
 msgstr "Chiều Đồng bộ dữ liệu: pull (lấy về), push"
@@ -1436,7 +1436,7 @@ msgid "Choose the talent segment you want to target with this campaign"
 msgstr "Chọn phân khúc tài năng bạn muốn nhắm mục tiêu với chiến dịch này"
 
 #. Description of the 'Source Type' (Select) field in DocType
-#. 'CandidateDataSource'
+#. 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Chọn loại nguồn: ATS, JobBoard, SocialNetwork, Manual hoặc Other"
 msgstr ""
@@ -1499,14 +1499,14 @@ msgstr "Bấm để tải xuống"
 msgid "Click to upload or drag and drop"
 msgstr "Bấm để tải lên hoặc kéo và thả"
 
-#. Label of a Data field in DocType 'CandidateDataSource'
+#. Label of a Data field in DocType 'Mira Data Source'
 #: frontend/src/components/candidateDataSource/CandidateDataSourceFormDirect.vue:159
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Client ID"
 msgstr "ID máy khách"
 
 #. Description of the 'Client ID' (Data) field in DocType
-#. 'CandidateDataSource'
+#. 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Client ID (OAuth2), lấy từ Developer Portal của nhà cung cấp"
 msgstr ""
@@ -1517,14 +1517,14 @@ msgstr ""
 msgid "Client ID is required for OAuth2"
 msgstr "ID máy khách được yêu cầu cho OAuth2"
 
-#. Label of a Password field in DocType 'CandidateDataSource'
+#. Label of a Password field in DocType 'Mira Data Source'
 #: frontend/src/components/candidateDataSource/CandidateDataSourceFormDirect.vue:169
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Client Secret"
 msgstr "Bí mật của khách hàng"
 
 #. Description of the 'Client Secret' (Password) field in DocType
-#. 'CandidateDataSource'
+#. 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Client Secret (OAuth2), lấy từ Developer Portal của nhà cung cấp"
 msgstr ""
@@ -1666,7 +1666,7 @@ msgstr "Thông tin liên hệ"
 msgid "Contact Us"
 msgstr "Liên hệ với chúng tôi"
 
-#. Label of a Long Text field in DocType 'EmailLog'
+#. Label of a Long Text field in DocType 'Mira Email Log'
 #: frontend/src/pages/EmailLogManagement.vue:393
 #: frontend/src/pages/EmailLogManagement.vue:491
 #: mbw_mira/mbw_mira/doctype/emaillog/emaillog.json
@@ -1853,15 +1853,15 @@ msgstr "Tạo nhóm tài năng đầu tiên của bạn để bắt đầu quả
 msgid "Created"
 msgstr "Tạo"
 
-#. Label of a Datetime field in DocType 'Short URL'
+#. Label of a Datetime field in DocType 'Mira Short URL'
 #: mbw_mira/mbw_mira/doctype/short_url/short_url.json
 msgid "Created At"
 msgstr "Được tạo lúc"
 
-#. Label of a Link field in DocType 'CandidateDataSource'
+#. Label of a Link field in DocType 'Mira Data Source'
 #. Label of a Link field in DocType 'EmailTemplateEditor'
 #. Label of a Link field in DocType 'LadiPage'
-#. Label of a Link field in DocType 'Short URL'
+#. Label of a Link field in DocType 'Mira Short URL'
 #: frontend/src/pages/CampaignDetailView.vue:139
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 #: mbw_mira/mbw_mira/doctype/emailtemplateeditor/emailtemplateeditor.json
@@ -2028,7 +2028,7 @@ msgstr "Độ trễ (ngày)"
 msgid "Delay In Day"
 msgstr "Chậm trễ trong ngày"
 
-#. Label of a Int field in DocType 'CampaignTemplateStep'
+#. Label of a Int field in DocType 'Mira Step Template'
 #: mbw_mira/mbw_mira/doctype/campaigntemplatestep/campaigntemplatestep.json
 msgid "Delay In Days"
 msgstr "Chậm trễ trong những ngày"
@@ -2141,7 +2141,7 @@ msgid "Deleting..."
 msgstr "Xóa ..."
 
 #. Label of a Small Text field in DocType "Mira Campaign"
-#. Label of a Text field in DocType 'CampaignTemplate'
+#. Label of a Text field in DocType 'Mira Campaign Template'
 #. Label of a Small Text field in DocType 'EmailTemplateEditor'
 #. Label of a Text field in DocType 'Interaction'
 #. Label of a Small Text field in DocType 'TalentSegment'
@@ -2214,7 +2214,7 @@ msgstr "Thiết bị"
 msgid "Diploma"
 msgstr "Bằng cấp"
 
-#. Option for the 'Campaign Type' (Select) field in DocType 'CampaignTemplate'
+#. Option for the 'Campaign Type' (Select) field in DocType 'Mira Campaign Template'
 #: frontend/src/pages/CampaignTemplateManagement.vue:53
 #: mbw_mira/mbw_mira/doctype/campaigntemplate/campaigntemplate.json
 #: mbw_mira/public/frontend/assets/CampaignTemplateManagement-2fbd627d.js:1
@@ -2245,7 +2245,7 @@ msgstr "Trưng bày"
 msgid "DocType"
 msgstr "Doctype"
 
-#. Label of a Data field in DocType 'CandidateDataSource'
+#. Label of a Data field in DocType 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Doctype To Sync"
 msgstr "Doctype để đồng bộ hóa"
@@ -2521,7 +2521,7 @@ msgstr "Chỉnh sửa hàng {0}"
 msgid "Education Level"
 msgstr "Trình độ học vấn"
 
-#. Option for the 'Campaign Type' (Select) field in DocType 'CampaignTemplate'
+#. Option for the 'Campaign Type' (Select) field in DocType 'Mira Campaign Template'
 #. Label of a Data field in DocType 'Candidate'
 #. Label of a Data field in DocType 'TalentProfiles'
 #: frontend/src/components/candidate-pool/CandidatePoolViewModal.vue:67
@@ -2606,7 +2606,7 @@ msgstr "Email sẽ được gửi ngay lập tức"
 
 #. Name of a DocType
 #: mbw_mira/mbw_mira/doctype/emaillog/emaillog.json
-msgid "EmailLog"
+msgid "Mira Email Log"
 msgstr "Emaillog"
 
 #. Name of a DocType
@@ -2842,7 +2842,7 @@ msgstr ""
 msgid "Equals"
 msgstr "Bằng nhau"
 
-#. Label of a Long Text field in DocType 'EmailLog'
+#. Label of a Long Text field in DocType 'Mira Email Log'
 #: frontend/src/components/candidateDataSource/CandidateDataSourceTable.vue:180
 #: frontend/src/pages/CandidateDataSourceManagementDirect.vue:68
 #: mbw_mira/mbw_mira/doctype/emaillog/emaillog.json
@@ -2999,7 +2999,7 @@ msgid "FORM_SUBMITTED"
 msgstr "Form_submited"
 
 #. Option for the 'Source Name' (Select) field in DocType
-#. 'CandidateDataSource'
+#. 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Facebook"
 msgstr "Facebook"
@@ -3009,7 +3009,7 @@ msgstr "Facebook"
 msgid "Fail"
 msgstr "Thất bại"
 
-#. Option for the 'Status' (Select) field in DocType 'EmailLog'
+#. Option for the 'Status' (Select) field in DocType 'Mira Email Log'
 #: frontend/src/components/shared/TaskUpdateModal.vue:151
 #: frontend/src/components/shared/TaskUpdateModal.vue:207
 #: frontend/src/pages/ActionManagement.vue:75
@@ -3125,7 +3125,7 @@ msgstr "Không cập nhật mật khẩu"
 msgid "Failed to update task: {0}"
 msgstr "Không cập nhật tác vụ: {0}"
 
-#. Option for the 'Status' (Select) field in DocType 'EmailLog'
+#. Option for the 'Status' (Select) field in DocType 'Mira Email Log'
 #: frontend/src/pages/EmailLogManagement.vue:547
 #: mbw_mira/mbw_mira/doctype/emaillog/emaillog.json
 msgid "Fallback"
@@ -3257,7 +3257,7 @@ msgid "Get started by creating your first talent pool"
 msgstr "Bắt đầu bằng cách tạo nhóm tài năng đầu tiên của bạn"
 
 #. Description of the 'Notes' (Small Text) field in DocType
-#. 'CandidateDataSource'
+#. 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Ghi chú, mô tả bổ sung"
 msgstr "Ghi Chú, mô tả bổ sung"
@@ -3456,7 +3456,7 @@ msgstr ""
 "Trong bước tiếp theo, bạn sẽ chọn các phân khúc tài năng để tìm kiếm thủ "
 "công."
 
-#. Option for the 'Status' (Select) field in DocType 'CandidateDataSource'
+#. Option for the 'Status' (Select) field in DocType 'Mira Data Source'
 #: frontend/src/components/campaign/CampaignView.vue:41
 #: frontend/src/components/candidateDataSource/CandidateDataSourceFormDirect.vue:215
 #: frontend/src/components/candidateDataSource/CandidateDataSourceTable.vue:33
@@ -3539,7 +3539,7 @@ msgstr "Định dạng JSON không hợp lệ"
 msgid "Is"
 msgstr "Là"
 
-#. Label of a Check field in DocType 'CampaignTemplate'
+#. Label of a Check field in DocType 'Mira Campaign Template'
 #: mbw_mira/mbw_mira/doctype/campaigntemplate/campaigntemplate.json
 msgid "Is Active"
 msgstr "Đang hoạt động"
@@ -3612,7 +3612,7 @@ msgid "Job posted successfully on LinkedIn: {0}"
 msgstr "Công việc được đăng thành công trên LinkedIn: {0}"
 
 #. Option for the 'Source Type' (Select) field in DocType
-#. 'CandidateDataSource'
+#. 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "JobBoard"
 msgstr "Bảng làm việc"
@@ -3641,7 +3641,7 @@ msgid "Kanban Fields"
 msgstr "Cánh đồng Kanban"
 
 #. Description of the 'Sync Frequency Minutes' (Int) field in DocType
-#. 'CandidateDataSource'
+#. 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Khoảng thời gian giữa các lần đồng bộ (phút)"
 msgstr "Khoảng thời Gian Giữa Các lần Đồng Bộ (Phút)"
@@ -3654,7 +3654,7 @@ msgstr "Không tìm thấy doctype '{0}'"
 msgid "Không tìm thấy file với tên: {0}"
 msgstr "Không tìm thấy file với Tênn: {0}"
 
-#. Description of the 'Active' (Check) field in DocType 'CandidateDataSource'
+#. Description of the 'Active' (Check) field in DocType 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Kích hoạt hoặc tắt nguồn dữ liệu này"
 msgstr "Kích hoạt hoặc tắt ngger dữ liệu nào"
@@ -3699,7 +3699,7 @@ msgstr "6 tháng qua"
 msgid "Last Contact"
 msgstr "Liên hệ cuối cùng"
 
-#. Label of a Small Text field in DocType 'CandidateDataSource'
+#. Label of a Small Text field in DocType 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Last Error"
 msgstr "Lỗi cuối cùng"
@@ -3731,7 +3731,7 @@ msgstr "Quý trước"
 msgid "Last Sync"
 msgstr "Đồng bộ hóa cuối cùng"
 
-#. Label of a Datetime field in DocType 'CandidateDataSource'
+#. Label of a Datetime field in DocType 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Last Sync At"
 msgstr "Đồng bộ hóa cuối cùng tại"
@@ -3788,7 +3788,7 @@ msgid "Link CV"
 msgstr "Liên kết CV"
 
 #. Option for the 'Source Name' (Select) field in DocType
-#. 'CandidateDataSource'
+#. 'Mira Data Source'
 #: frontend/src/pages/CandidateManagement.vue:582
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "LinkedIn"
@@ -3905,7 +3905,7 @@ msgstr "Đăng nhập vào Frappe Cloud?"
 msgid "Logo"
 msgstr "Logo"
 
-#. Label of a Small Text field in DocType 'Short URL'
+#. Label of a Small Text field in DocType 'Mira Short URL'
 #: mbw_mira/mbw_mira/doctype/short_url/short_url.json
 msgid "Long URL"
 msgstr "URL dài"
@@ -3936,7 +3936,7 @@ msgstr "THỦ CÔNG"
 
 #. Option for the 'Action Type' (Select) field in DocType "Mira Campaign Step"
 #. Option for the 'Action Type' (Select) field in DocType
-#. 'CampaignTemplateStep'
+#. 'Mira Step Template'
 #: mbw_mira/mbw_mira/doctype/campaignstep/campaignstep.json
 #: mbw_mira/mbw_mira/doctype/campaigntemplatestep/campaigntemplatestep.json
 msgid "MANUAL_CALL"
@@ -3944,14 +3944,14 @@ msgstr "CANUAL_CALL"
 
 #. Option for the 'Action Type' (Select) field in DocType "Mira Campaign Step"
 #. Option for the 'Action Type' (Select) field in DocType
-#. 'CampaignTemplateStep'
+#. 'Mira Step Template'
 #: mbw_mira/mbw_mira/doctype/campaignstep/campaignstep.json
 #: mbw_mira/mbw_mira/doctype/campaigntemplatestep/campaigntemplatestep.json
 msgid "MANUAL_TASK"
 msgstr "CANUAL_TASK"
 
 #. Option for the 'Source Name' (Select) field in DocType
-#. 'CandidateDataSource'
+#. 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "MBW ATS"
 msgstr "MBW ATS"
@@ -4319,7 +4319,7 @@ msgid "Ngày và giờ của lần tương tác cuối cùng (gửi email, mở 
 msgstr "Ngày và giờ của lần tương tac Cuối cùnm (email gửi, email mở, v.v.)."
 
 #. Description of the 'Created By' (Link) field in DocType
-#. 'CandidateDataSource'
+#. 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Người tạo nguồn dữ liệu này"
 msgstr "Người tạo nguồn dữ liệu nào"
@@ -4634,7 +4634,7 @@ msgid "Note"
 msgstr "Ghi chú"
 
 #. Label of a Text field in DocType 'ApplicantPool'
-#. Label of a Small Text field in DocType 'CandidateDataSource'
+#. Label of a Small Text field in DocType 'Mira Data Source'
 #. Label of a Text field in DocType 'CandidatePool'
 #. Label of a Small Text field in DocType 'LadiPage'
 #: frontend/src/components/candidate-pool/CandidatePoolViewModal.vue:174
@@ -4705,7 +4705,7 @@ msgid "Nội dung HTML đã render"
 msgstr "Nội phân html / render"
 
 #. Option for the 'Auth Method' (Select) field in DocType
-#. 'CandidateDataSource'
+#. 'Mira Data Source'
 #: frontend/src/components/candidateDataSource/CandidateDataSourceFormDirect.vue:150
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "OAuth2"
@@ -4896,7 +4896,7 @@ msgid "Phone Number"
 msgstr "Số điện thoại"
 
 #. Description of the 'Auth Method' (Select) field in DocType
-#. 'CandidateDataSource'
+#. 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid ""
 "Phương thức xác thực API: API Key (TopCV), OAuth2 (Facebook, LinkedIn), "
@@ -5051,13 +5051,13 @@ msgid "Published"
 msgstr "Xuất bản"
 
 #. Option for the 'Sync Direction' (Select) field in DocType
-#. 'CandidateDataSource'
+#. 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Pull"
 msgstr "Sự lôi kéo"
 
 #. Option for the 'Sync Direction' (Select) field in DocType
-#. 'CandidateDataSource'
+#. 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Push"
 msgstr "Xô"
@@ -5101,7 +5101,7 @@ msgstr "Sẵn sàng để thêm vào phân khúc"
 msgid "Recently Completed"
 msgstr "Gần đây đã hoàn thành"
 
-#. Label of a Small Text field in DocType 'EmailLog'
+#. Label of a Small Text field in DocType 'Mira Email Log'
 #: frontend/src/pages/EmailLogManagement.vue:182
 #: frontend/src/pages/EmailLogManagement.vue:335
 #: frontend/src/pages/EmailLogManagement.vue:452
@@ -5163,13 +5163,13 @@ msgstr "Làm mới"
 msgid "Refresh Data"
 msgstr "Làm mới dữ liệu"
 
-#. Label of a Small Text field in DocType 'CandidateDataSource'
+#. Label of a Small Text field in DocType 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Refresh Token"
 msgstr "Làm mới mã thông báo"
 
 #. Description of the 'Refresh Token' (Small Text) field in DocType
-#. 'CandidateDataSource'
+#. 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Refresh Token (OAuth2), để làm mới Access Token"
 msgstr "Làm mới mã thông báo (oauth2), để lÀm mới truy cập mã thông báo"
@@ -5319,7 +5319,7 @@ msgstr "Dự kiến"
 
 #. Option for the 'Action Type' (Select) field in DocType "Mira Campaign Step"
 #. Option for the 'Action Type' (Select) field in DocType
-#. 'CampaignTemplateStep'
+#. 'Mira Step Template'
 #: mbw_mira/mbw_mira/doctype/campaignstep/campaignstep.json
 #: mbw_mira/mbw_mira/doctype/campaigntemplatestep/campaigntemplatestep.json
 msgid "SEND_EMAIL"
@@ -5327,7 +5327,7 @@ msgstr "Send_email"
 
 #. Option for the 'Action Type' (Select) field in DocType "Mira Campaign Step"
 #. Option for the 'Action Type' (Select) field in DocType
-#. 'CampaignTemplateStep'
+#. 'Mira Step Template'
 #: mbw_mira/mbw_mira/doctype/campaignstep/campaignstep.json
 #: mbw_mira/mbw_mira/doctype/campaigntemplatestep/campaigntemplatestep.json
 msgid "SEND_SMS"
@@ -5338,7 +5338,7 @@ msgstr "Send_sms"
 msgid "SKIPPED"
 msgstr "Bỏ qua"
 
-#. Option for the 'Campaign Type' (Select) field in DocType 'CampaignTemplate'
+#. Option for the 'Campaign Type' (Select) field in DocType 'Mira Campaign Template'
 #: frontend/src/pages/CampaignTemplateManagement.vue:50
 #: mbw_mira/mbw_mira/doctype/campaigntemplate/campaigntemplate.json
 #: mbw_mira/public/frontend/assets/CampaignTemplateManagement-2fbd627d.js:1
@@ -5385,7 +5385,7 @@ msgstr "Giám đốc bán hàng"
 msgid "Sales User"
 msgstr "Người dùng bán hàng"
 
-#. Label of a Check field in DocType 'CandidateDataSource'
+#. Label of a Check field in DocType 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Same Site?"
 msgstr "Cùng một trang web?"
@@ -5738,7 +5738,7 @@ msgstr "Gửi SMS"
 msgid "Send an email to the profile"
 msgstr "Gửi email đến hồ sơ"
 
-#. Label of a Data field in DocType 'EmailLog'
+#. Label of a Data field in DocType 'Mira Email Log'
 #: frontend/src/pages/EmailLogManagement.vue:96
 #: frontend/src/pages/EmailLogManagement.vue:183
 #: frontend/src/pages/EmailLogManagement.vue:346
@@ -5774,14 +5774,14 @@ msgstr "Đặt làm mặc định"
 msgid "Settings"
 msgstr "Cài đặt"
 
-#. Label of a Data field in DocType 'Short URL'
+#. Label of a Data field in DocType 'Mira Short URL'
 #: mbw_mira/mbw_mira/doctype/short_url/short_url.json
 msgid "Short Code"
 msgstr "Mã ngắn"
 
 #. Name of a DocType
 #: mbw_mira/mbw_mira/doctype/short_url/short_url.json
-msgid "Short URL"
+msgid "Mira Short URL"
 msgstr "Url ngắn"
 
 #. Label of a Date field in DocType 'CandidatePool'
@@ -5888,7 +5888,7 @@ msgstr "Bỏ qua"
 msgid "Slug"
 msgstr "Sên"
 
-#. Option for the 'Campaign Type' (Select) field in DocType 'CampaignTemplate'
+#. Option for the 'Campaign Type' (Select) field in DocType 'Mira Campaign Template'
 #: frontend/src/pages/CampaignTemplateManagement.vue:52
 #: mbw_mira/mbw_mira/doctype/campaigntemplate/campaigntemplate.json
 #: mbw_mira/public/frontend/assets/CampaignTemplateManagement-2fbd627d.js:1
@@ -5907,7 +5907,7 @@ msgid "Social Network"
 msgstr "Mạng xã hội"
 
 #. Option for the 'Source Type' (Select) field in DocType
-#. 'CandidateDataSource'
+#. 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "SocialNetwork"
 msgstr "SocialNetwork"
@@ -5943,7 +5943,7 @@ msgstr "Nguồn hành động"
 msgid "Source File"
 msgstr "Tệp nguồn"
 
-#. Label of a Select field in DocType 'CandidateDataSource'
+#. Label of a Select field in DocType 'Mira Data Source'
 #: frontend/src/components/candidateDataSource/CandidateDataSourceFormDirect.vue:91
 #: frontend/src/components/candidateDataSource/CandidateDataSourceTable.vue:101
 #: frontend/src/pages/CandidateDataSourceManagementDirect.vue:335
@@ -5952,7 +5952,7 @@ msgid "Source Name"
 msgstr "Tên nguồn"
 
 #. Label of a Select field in DocType "Mira Campaign"
-#. Label of a Select field in DocType 'CandidateDataSource'
+#. Label of a Select field in DocType 'Mira Data Source'
 #: frontend/src/components/candidateDataSource/CandidateDataSourceFormDirect.vue:105
 #: mbw_mira/mbw_mira/doctype/campaign/campaign.json
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
@@ -6024,9 +6024,9 @@ msgstr "Bước bắt đầu"
 #. Label of a Select field in DocType 'ApplicantPool'
 #. Label of a Select field in DocType "Mira Campaign"
 #. Label of a Select field in DocType 'Candidate'
-#. Label of a Select field in DocType 'CandidateDataSource'
+#. Label of a Select field in DocType 'Mira Data Source'
 #. Label of a Select field in DocType 'CandidatePool'
-#. Label of a Select field in DocType 'EmailLog'
+#. Label of a Select field in DocType 'Mira Email Log'
 #. Label of a Select field in DocType 'EmailTemplateEditor'
 #. Label of a Select field in DocType 'TalentProfiles'
 #. Label of a Select field in DocType 'Mira Talent Campaign'
@@ -6091,7 +6091,7 @@ msgid "Step Name"
 msgstr "Tên bước"
 
 #. Label of a Int field in DocType "Mira Campaign Step"
-#. Label of a Int field in DocType 'CampaignTemplateStep'
+#. Label of a Int field in DocType 'Mira Step Template'
 #: frontend/src/components/CampaignTemplateFormModal.vue:285
 #: frontend/src/components/CampaignTemplateFormModal.vue:404
 #: frontend/src/components/CampaignTemplateStepFormModal.vue:71
@@ -6161,7 +6161,7 @@ msgstr "Bước cập nhật thành công"
 msgid "Steps"
 msgstr "Các bước"
 
-#. Label of a Data field in DocType 'EmailLog'
+#. Label of a Data field in DocType 'Mira Email Log'
 #: frontend/src/pages/CandidateDetailView.vue:1314
 #: frontend/src/pages/EmailLogManagement.vue:181
 #: frontend/src/pages/EmailLogManagement.vue:326
@@ -6174,7 +6174,7 @@ msgstr "Chủ thể"
 msgid "Submit"
 msgstr "Nộp"
 
-#. Option for the 'Status' (Select) field in DocType 'EmailLog'
+#. Option for the 'Status' (Select) field in DocType 'Mira Email Log'
 #: frontend/src/pages/EmailLogManagement.vue:50
 #: frontend/src/pages/EmailLogManagement.vue:545
 #: mbw_mira/mbw_mira/doctype/emaillog/emaillog.json
@@ -6193,7 +6193,7 @@ msgstr "Chuyển đổi camera"
 msgid "Sync Data"
 msgstr "Đồng bộ hóa dữ liệu"
 
-#. Label of a Select field in DocType 'CandidateDataSource'
+#. Label of a Select field in DocType 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Sync Direction"
 msgstr "Đồng bộ hướng"
@@ -6203,7 +6203,7 @@ msgstr "Đồng bộ hướng"
 msgid "Sync Frequency (minutes)"
 msgstr "Tần số đồng bộ hóa (phút)"
 
-#. Label of a Int field in DocType 'CandidateDataSource'
+#. Label of a Int field in DocType 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Sync Frequency Minutes"
 msgstr "Số phút tần số đồng bộ hóa"
@@ -6299,7 +6299,7 @@ msgid "Talent pool has been saved successfully"
 msgstr "Bể bơi tài năng đã được cứu thành công"
 
 #. Option for the 'Source Type' (Select) field in DocType
-#. 'CandidateDataSource'
+#. 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "TalentPool"
 msgstr "Talentpool"
@@ -6370,14 +6370,14 @@ msgid "Task updated successfully"
 msgstr "Nhiệm vụ được cập nhật thành công"
 
 #. Label of a Long Text field in DocType "Mira Campaign Step"
-#. Label of a Link field in DocType 'CampaignTemplateStep'
+#. Label of a Link field in DocType 'Mira Step Template'
 #: frontend/src/pages/CampaignDetailView.vue:602
 #: mbw_mira/mbw_mira/doctype/campaignstep/campaignstep.json
 #: mbw_mira/mbw_mira/doctype/campaigntemplatestep/campaigntemplatestep.json
 msgid "Template"
 msgstr "Bản mẫu"
 
-#. Label of a Long Text field in DocType 'CampaignTemplateStep'
+#. Label of a Long Text field in DocType 'Mira Step Template'
 #: frontend/src/components/CampaignTemplateFormModal.vue:249
 #: frontend/src/components/CampaignTemplateFormModal.vue:368
 #: frontend/src/components/CampaignTemplateStepFormModal.vue:114
@@ -6391,7 +6391,7 @@ msgstr "Nội dung mẫu"
 msgid "Template Info"
 msgstr "Thông tin mẫu"
 
-#. Label of a Data field in DocType 'CampaignTemplate'
+#. Label of a Data field in DocType 'Mira Campaign Template'
 #. Label of a Data field in DocType 'EmailTemplateEditor'
 #: frontend/src/components/CampaignTemplateFormModal.vue:37
 #: frontend/src/pages/CampaignTemplateManagement.vue:228
@@ -6563,7 +6563,7 @@ msgid "Thông tin bổ sung hoặc nội dung liên quan"
 msgstr "Thôn tin"
 
 #. Description of the 'Last Error' (Small Text) field in DocType
-#. 'CandidateDataSource'
+#. 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Thông tin lỗi gần nhất khi đồng bộ"
 msgstr "Thông tin lỗi gần NHất Khi"
@@ -6573,7 +6573,7 @@ msgid "Thông tin ứng viên"
 msgstr "Thông tin ứng Vin"
 
 #. Description of the 'Token Expires At' (Datetime) field in DocType
-#. 'CandidateDataSource'
+#. 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Thời điểm Access Token hết hạn"
 msgstr "Thời điểm mã thông báo truy cập hết hạn"
@@ -6585,7 +6585,7 @@ msgid "Thời điểm dự kiến cho hành động tiếp theo."
 msgstr "Thời Điểm dự Kiến Cho Hành Động tiếp Theo."
 
 #. Description of the 'Last Sync At' (Datetime) field in DocType
-#. 'CandidateDataSource'
+#. 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Thời điểm đồng bộ gần nhất"
 msgstr "Thời Điểm đồng bộ gần NHất"
@@ -6611,7 +6611,7 @@ msgstr ""
 "Mẹo: Bạn có thể nhập nhiều kỹ năng cùng một lúc bằng cách tách chúng bằng "
 "dấu phẩy"
 
-#. Label of a Data field in DocType 'CandidateDataSource'
+#. Label of a Data field in DocType 'Mira Data Source'
 #. Label of a Data field in DocType 'TalentSegment'
 #: frontend/src/pages/Ladi/LadiPageManagement.vue:64
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
@@ -6624,7 +6624,7 @@ msgstr "Tiêu đề"
 msgid "Title Field"
 msgstr "Lĩnh vực tiêu đề"
 
-#. Description of the 'Subject' (Data) field in DocType 'EmailLog'
+#. Description of the 'Subject' (Data) field in DocType 'Mira Email Log'
 #: mbw_mira/mbw_mira/doctype/emaillog/emaillog.json
 msgid "Tiêu đề email"
 msgstr "TIÊU Đề Email"
@@ -6645,7 +6645,7 @@ msgstr "Cho người dùng"
 msgid "Today"
 msgstr "Hôm nay"
 
-#. Label of a Datetime field in DocType 'CandidateDataSource'
+#. Label of a Datetime field in DocType 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Token Expires At"
 msgstr "Mã thông báo hết hạn tại"
@@ -6660,7 +6660,7 @@ msgid "Top Skills"
 msgstr "Kỹ năng hàng đầu"
 
 #. Option for the 'Source Name' (Select) field in DocType
-#. 'CandidateDataSource'
+#. 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "TopCV"
 msgstr "TOPCV"
@@ -6762,7 +6762,7 @@ msgid "Type an email address to invite"
 msgstr "Nhập địa chỉ email để mời"
 
 #. Description of the 'Doctype To Sync' (Data) field in DocType
-#. 'CandidateDataSource'
+#. 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Tên Doctype trong hệ thống sẽ đồng bộ với ATS"
 msgstr "Tênn doctype trong hệ thống sẽ đồng bộ với ats"
@@ -6777,7 +6777,7 @@ msgstr ""
 "\"Nhà thiết kế sản phẩm (từ xa)\""
 
 #. Description of the 'Source Name' (Select) field in DocType
-#. 'CandidateDataSource'
+#. 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid ""
 "Tên nguồn dữ liệu, ví dụ: TopCV, VietnamWorks, Facebook… (tùy thuộc Source "
@@ -6791,7 +6791,7 @@ msgstr "Tênn Nguồn dữ liệu, ví dụ: topcv, Việt Nam, Facebook"
 msgid "Tên đầy đủ của ứng viên. VD: \"Nguyễn Văn An\""
 msgstr "Tênn Đầy Đủ Của ứng Vin. Vd: \"Nguyễn Văn an\""
 
-#. Description of the 'Status' (Select) field in DocType 'CandidateDataSource'
+#. Description of the 'Status' (Select) field in DocType 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Tình trạng của nguồn dữ liệu: Active (đang sử dụng), Inactive"
 msgstr "TÌnh trạng của ngg"
@@ -6964,7 +6964,7 @@ msgid "Value"
 msgstr "Giá trị"
 
 #. Option for the 'Source Name' (Select) field in DocType
-#. 'CandidateDataSource'
+#. 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "VietnamWorks"
 msgstr "Việt Nam"
@@ -7406,7 +7406,7 @@ msgid "Đoạn văn bản tóm tắt điểm mạnh, yếu, tiềm năng do GenA
 msgstr "Đoạn Văn bản Tóm tắt Điểm MạNH, yếu, tiềm năn do Genai tạo ra."
 
 #. Description of the 'Same Site?' (Check) field in DocType
-#. 'CandidateDataSource'
+#. 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid ""
 "Đánh dấu nếu ATS này chạy cùng site với hệ thống hiện tại (không cần nhập "
@@ -7428,7 +7428,7 @@ msgid "Đường dẫn đến ảnh đại diện (nếu có). VD: \"https://...
 msgstr "Đường dẫn Đến ảNH Đại diện (nếu đó). VD: \"https: //.../avatar.jpg\""
 
 #. Description of the 'API Base URL' (Small Text) field in DocType
-#. 'CandidateDataSource'
+#. 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
 msgid "Địa chỉ API endpoint của nhà cung cấp (bỏ trống nếu Same Site)"
 msgstr "ĐịA Chỉ api endpoint của nhà cung cấp (bỏ trống nếu cùng trang web)"

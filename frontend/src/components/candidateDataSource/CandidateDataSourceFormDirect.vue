@@ -72,7 +72,7 @@
           <FieldLayout
             :tabs="fieldTabs"
             :data="formData"
-            doctype="CandidateDataSource"
+            doctype="Mira Data Source"
             :preview="false"
           />
 
@@ -411,7 +411,7 @@ const formData = reactive({
   auth_method_display: "",
 });
 
-const { document: data, triggerOnBeforeCreate } = useDocument("CandidateDataSource");
+const { document: data, triggerOnBeforeCreate } = useDocument("Mira Data Source");
 
 // Computed
 const dialog = computed({

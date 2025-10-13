@@ -7,7 +7,7 @@ import string
 from frappe.model.document import Document
 
 
-class ShortURL(Document):
+class MiraShortURL(Document):
 	pass
 
 	def validate(self):

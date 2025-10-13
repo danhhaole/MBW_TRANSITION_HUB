@@ -5,5 +5,5 @@
 from frappe.model.document import Document
 
 
-class CampaignTemplateStep(Document):
+class MiraCampaignTemplate(Document):
 	pass

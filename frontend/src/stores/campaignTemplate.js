@@ -157,7 +157,7 @@ export const useCampaignTemplateStore = defineStore('campaignTemplate', {
 
         // Fetch templates
         const response = await call('frappe.client.get_list', {
-          doctype: 'CampaignTemplate',
+          doctype: 'Mira Campaign Template',
           fields: fields,
           filters: enhancedFilters,
           order_by: order_by,
@@ -167,7 +167,7 @@ export const useCampaignTemplateStore = defineStore('campaignTemplate', {
 
         // Get total count for pagination
         const totalCount = await call('frappe.client.get_count', {
-          doctype: 'CampaignTemplate',
+          doctype: 'Mira Campaign Template',
           filters: enhancedFilters
         })
 
@@ -214,7 +214,7 @@ export const useCampaignTemplateStore = defineStore('campaignTemplate', {
       
       try {
         const response = await call('frappe.client.get', {
-          doctype: 'CampaignTemplate',
+          doctype: 'Mira Campaign Template',
           name: name
         })
 
@@ -260,7 +260,7 @@ export const useCampaignTemplateStore = defineStore('campaignTemplate', {
         const preparedData = this.prepareTemplateForSave(data, 'create')
         
         const docData = {
-          doctype: 'CampaignTemplate',
+          doctype: 'Mira Campaign Template',
           ...preparedData
         }
 
@@ -312,7 +312,7 @@ export const useCampaignTemplateStore = defineStore('campaignTemplate', {
         const preparedData = this.prepareTemplateForSave(data, 'update')
 
         const response = await call('frappe.client.set_value', {
-          doctype: 'CampaignTemplate',
+          doctype: 'Mira Campaign Template',
           name: name,
           fieldname: preparedData
         })
@@ -362,7 +362,7 @@ export const useCampaignTemplateStore = defineStore('campaignTemplate', {
       
       try {
         await call('frappe.client.delete', {
-          doctype: 'CampaignTemplate',
+          doctype: 'Mira Campaign Template',
           name: name
         })
 
@@ -394,7 +394,7 @@ export const useCampaignTemplateStore = defineStore('campaignTemplate', {
       try {
         // Get metadata
         const metaResponse = await call('frappe.desk.form.load.getdoctype', {
-          doctype: 'CampaignTemplate'
+          doctype: 'Mira Campaign Template'
         })
 
         let docData = null
@@ -441,10 +441,10 @@ export const useCampaignTemplateStore = defineStore('campaignTemplate', {
       try {
         const [totalCount, activeCount] = await Promise.all([
           call('frappe.client.get_count', {
-            doctype: 'CampaignTemplate'
+            doctype: 'Mira Campaign Template'
           }),
           call('frappe.client.get_count', {
-            doctype: 'CampaignTemplate',
+            doctype: 'Mira Campaign Template',
             filters: { is_active: 1 }
           })
         ])
@@ -476,7 +476,7 @@ export const useCampaignTemplateStore = defineStore('campaignTemplate', {
     async fetchTypeStatistics() {
       try {
         const templates = await call('frappe.client.get_list', {
-          doctype: 'CampaignTemplate',
+          doctype: 'Mira Campaign Template',
           fields: ['campaign_type', 'is_active'],
           limit_page_length: 999
         })
@@ -512,7 +512,7 @@ export const useCampaignTemplateStore = defineStore('campaignTemplate', {
     async fetchFilterOptions(fieldname) {
       try {
         const response = await call('frappe.client.get_list', {
-          doctype: 'CampaignTemplate',
+          doctype: 'Mira Campaign Template',
           fields: [fieldname],
           distinct: true,
           order_by: fieldname

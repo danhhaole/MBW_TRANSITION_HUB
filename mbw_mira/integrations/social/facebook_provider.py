@@ -8,11 +8,11 @@ from frappe import _
 class FacebookProvider:
     """
     Provider kết nối tới Facebook Graph API
-    dựa trên CandidateDataSource (auth_method = OAuth2)
+    dựa trên Mira Data Source (auth_method = OAuth2)
     """
 
     def __init__(self, source_name, timeout=20, max_retries=3, api_version="v23.0"):
-        self.source_doc = frappe.get_doc("CandidateDataSource", source_name)
+        self.source_doc = frappe.get_doc("Mira Data Source", source_name)
         self.timeout = timeout
         self.max_retries = max_retries
         self.BASE_URL = f"https://graph.facebook.com/{api_version}/"

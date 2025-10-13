@@ -72,7 +72,7 @@
    "fieldname": "source",
    "fieldtype": "Link",
    "label": "Source",
-   "options": "CandidateDataSource"
+   "options": "Mira Data Source"
   },
   {
    "depends_on": "eval:doc.source_type == 'File'",
@@ -197,7 +197,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-13 12:04:24.275055",
+ "modified": "2025-10-13 13:49:10.050127",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Campaign",

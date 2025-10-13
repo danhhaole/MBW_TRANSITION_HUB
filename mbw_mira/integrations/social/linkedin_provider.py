@@ -9,11 +9,11 @@ from frappe import _
 class LinkedInProvider:
     """
     Provider kết nối tới LinkedIn API,
-    dựa trên CandidateDataSource (auth_method = OAuth2)
+    dựa trên Mira Data Source (auth_method = OAuth2)
     """
 
     def __init__(self, source_name, timeout=10, max_retries=3, api_version="v2"):
-        self.source_doc = frappe.get_doc("CandidateDataSource", source_name)
+        self.source_doc = frappe.get_doc("Mira Data Source", source_name)
         self.timeout = timeout
         self.max_retries = max_retries
         self.BASE_URL = f"https://api.linkedin.com/{api_version}/"

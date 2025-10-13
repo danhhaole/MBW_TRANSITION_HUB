@@ -12,7 +12,7 @@ def after_install():
 
 def seed_mira_email_templates_from_json():
     """
-    Seed 3 default MIRA_Email_Template records (idempotent by template_id).
+    Seed 3 default Mira Email Template records (idempotent by template_id).
     Maps body_html to html_content and body_plain_text to message.
     Stores extra metadata in project_data.
     """
@@ -185,7 +185,7 @@ def seed_mira_email_templates_from_json():
     for t in templates:
         # Idempotent check by template_id
         exists = frappe.get_all(
-            "MIRA_Email_Template",
+            "Mira Email Template",
             filters={"template_id": t["template_id"]},
             pluck="name",
             limit=1,
@@ -195,7 +195,7 @@ def seed_mira_email_templates_from_json():
 
         # Build document fields mapped to your DocType
         doc_data = {
-            "doctype": "MIRA_Email_Template",
+            "doctype": "Mira Email Template",
             "template_id": t["template_id"],
             "template_name": t["name"],
             "subject": t.get("subject", ""),

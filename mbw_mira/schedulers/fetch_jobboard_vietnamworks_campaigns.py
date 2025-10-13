@@ -30,4 +30,4 @@ def run():
     return True
 
 def is_vietnamworks_source(source):
-    return frappe.db.get_value("CandidateDataSource", source, "source_name") == "VietnamWorks"
+    return frappe.db.get_value("Mira Data Source", source, "source_name") == "VietnamWorks"

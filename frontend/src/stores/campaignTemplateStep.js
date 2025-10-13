@@ -160,7 +160,7 @@ export const useCampaignTemplateStepStore = defineStore('campaignTemplateStep', 
 
         // Fetch steps
         const response = await call('frappe.client.get_list', {
-          doctype: 'CampaignTemplateStep',
+          doctype: 'Mira Step Template',
           fields: fields,
           filters: enhancedFilters,
           order_by: order_by,
@@ -170,7 +170,7 @@ export const useCampaignTemplateStepStore = defineStore('campaignTemplateStep', 
 
         // Get total count for pagination
         const totalCount = await call('frappe.client.get_count', {
-          doctype: 'CampaignTemplateStep',
+          doctype: 'Mira Step Template',
           filters: enhancedFilters
         })
 
@@ -222,7 +222,7 @@ export const useCampaignTemplateStepStore = defineStore('campaignTemplateStep', 
         }
         
         const response = await call('frappe.client.get_list', {
-          doctype: 'CampaignTemplateStep',
+          doctype: 'Mira Step Template',
           fields: ['*'],
           filters: filters,
           order_by: 'step_order asc'
@@ -259,7 +259,7 @@ export const useCampaignTemplateStepStore = defineStore('campaignTemplateStep', 
       
       try {
         const response = await call('frappe.client.get', {
-          doctype: 'CampaignTemplateStep',
+          doctype: 'Mira Step Template',
           name: name
         })
 
@@ -305,7 +305,7 @@ export const useCampaignTemplateStepStore = defineStore('campaignTemplateStep', 
         const preparedData = this.prepareStepForSave(data, 'create')
         
         const docData = {
-          doctype: 'CampaignTemplateStep',
+          doctype: 'Mira Step Template',
           ...preparedData
         }
 
@@ -368,7 +368,7 @@ export const useCampaignTemplateStepStore = defineStore('campaignTemplateStep', 
         const preparedData = this.prepareStepForSave(data, 'update')
 
         const response = await call('frappe.client.set_value', {
-          doctype: 'CampaignTemplateStep',
+          doctype: 'Mira Step Template',
           name: name,
           fieldname: preparedData
         })
@@ -433,7 +433,7 @@ export const useCampaignTemplateStepStore = defineStore('campaignTemplateStep', 
       
       try {
         await call('frappe.client.delete', {
-          doctype: 'CampaignTemplateStep',
+          doctype: 'Mira Step Template',
           name: name
         })
 
@@ -477,7 +477,7 @@ export const useCampaignTemplateStepStore = defineStore('campaignTemplateStep', 
           // Delete each step
           const deletePromises = templateSteps.map(step => 
             call('frappe.client.delete', {
-              doctype: 'CampaignTemplateStep',
+              doctype: 'Mira Step Template',
               name: step.name
             })
           )
@@ -571,7 +571,7 @@ export const useCampaignTemplateStepStore = defineStore('campaignTemplateStep', 
     async getCountByTemplate(templateName) {
       try {
         const count = await call('frappe.client.get_count', {
-          doctype: 'CampaignTemplateStep',
+          doctype: 'Mira Step Template',
           filters: { template: templateName }
         })
         return count || 0
@@ -592,7 +592,7 @@ export const useCampaignTemplateStepStore = defineStore('campaignTemplateStep', 
         
         // If not cached, fetch from API
         const steps = await call('frappe.client.get_list', {
-          doctype: 'CampaignTemplateStep',
+          doctype: 'Mira Step Template',
           fields: ['step_order'],
           filters: { template: templateName },
           order_by: 'step_order desc',
@@ -617,7 +617,7 @@ export const useCampaignTemplateStepStore = defineStore('campaignTemplateStep', 
       try {
         // Get metadata
         const metaResponse = await call('frappe.desk.form.load.getdoctype', {
-          doctype: 'CampaignTemplateStep'
+          doctype: 'Mira Step Template'
         })
 
         let docData = null
@@ -669,7 +669,7 @@ export const useCampaignTemplateStepStore = defineStore('campaignTemplateStep', 
     async fetchFilterOptions(fieldname) {
       try {
         const response = await call('frappe.client.get_list', {
-          doctype: 'CampaignTemplateStep',
+          doctype: 'Mira Step Template',
           fields: [fieldname],
           distinct: true,
           order_by: fieldname

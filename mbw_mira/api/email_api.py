@@ -34,7 +34,7 @@ def get_email_templates(unit_name=None, template_type=None, is_active=1):
             filters["template_type"] = template_type
         
         templates = frappe.get_all(
-            "MIRA_Email_Template",
+            "Mira Email Template",
             filters=filters,
             fields=[
                 "name",
@@ -78,7 +78,7 @@ def get_email_template(template_id):
         dict: Thông tin chi tiết template
     """
     try:
-        template = frappe.get_doc("MIRA_Email_Template", template_id)
+        template = frappe.get_doc("Mira Email Template", template_id)
         
         return {
             "success": True,
@@ -189,7 +189,7 @@ def send_candidate_email(**kwargs):
         # Get template attachment if exists
         if template_id:
             try:
-                template = frappe.get_doc("MIRA_Email_Template", template_id)
+                template = frappe.get_doc("Mira Email Template", template_id)
                 if template.attachment:
                     file_attachments.append(template.attachment)
             except:

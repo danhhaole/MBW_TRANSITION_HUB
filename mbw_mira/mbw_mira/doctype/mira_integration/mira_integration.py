@@ -5,5 +5,5 @@
 from frappe.model.document import Document
 
 
-class MIRA_Integration(Document):
+class MiraIntegration(Document):
 	pass

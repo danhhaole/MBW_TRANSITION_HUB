@@ -5,7 +5,7 @@ import frappe
 from frappe.model.document import Document
 
 
-class MIRA_Email_Template(Document):
+class MiraEmailTemplate(Document):
     def before_save(self):
         # Set created_by and creation if this is a new document
         if self.is_new():

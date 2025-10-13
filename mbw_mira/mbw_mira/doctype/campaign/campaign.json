@@ -127,7 +127,7 @@
    "fieldname": "source",
    "fieldtype": "Link",
    "label": "Source",
-   "options": "CandidateDataSource"
+   "options": "Mira Data Source"
   },
   {
    "fieldname": "criteria",

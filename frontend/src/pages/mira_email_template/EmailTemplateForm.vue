@@ -161,7 +161,7 @@ onBeforeUnmount(() => {
 onMounted(async () => {
   if (isEditMode.value) {
     const data = await call("frappe.client.get", {
-      doctype: "MIRA_Email_Template",
+      doctype: "Mira Email Template",
       name: route.params.name,
     });
     _template.value = data;
@@ -369,14 +369,14 @@ async function saveTemplate() {
   try {
     if (isEditMode.value) {
       await call("frappe.client.set_value", {
-        doctype: "MIRA_Email_Template",
+        doctype: "Mira Email Template",
         name: route.params.name,
         fieldname: _template.value,
       });
     } else {
       await call("frappe.client.insert", {
         doc: {
-          doctype: "MIRA_Email_Template",
+          doctype: "Mira Email Template",
           ..._template.value,
         },
       });

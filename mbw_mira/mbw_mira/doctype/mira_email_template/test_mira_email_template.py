@@ -12,18 +12,18 @@ EXTRA_TEST_RECORD_DEPENDENCIES = []  # eg. ["User"]
 IGNORE_TEST_RECORD_DEPENDENCIES = []  # eg. ["User"]
 
 
-class UnitTestMIRA_Email_Template(UnitTestCase):
+class UnitTestMiraEmailTemplate(UnitTestCase):
 	"""
-	Unit tests for MIRA_Email_Template.
+	Unit tests for Mira Email Template
 	Use this class for testing individual functions and methods.
 	"""
 
 	pass
 
 
-class IntegrationTestMIRA_Email_Template(IntegrationTestCase):
+class IntegrationTestMiraEmailTemplate(IntegrationTestCase):
 	"""
-	Integration tests for MIRA_Email_Template.
+	Integration tests for Mira Email Template
 	Use this class for testing interactions between multiple components.
 	"""
 

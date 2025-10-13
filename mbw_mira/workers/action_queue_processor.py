@@ -145,9 +145,9 @@ def handle_send_email(action_doc, action_data):
         
         # Get email template
         try:
-            email_template = frappe.get_doc("MIRA_Email_Template", template_name)
+            email_template = frappe.get_doc("Mira Email Template", template_name)
         except:
-            return {"success": False, "error": f"MIRA_Email_Template '{template_name}' not found"}
+            return {"success": False, "error": f"Mira Email Template '{template_name}' not found"}
         
         # Prepare template context
         context = {

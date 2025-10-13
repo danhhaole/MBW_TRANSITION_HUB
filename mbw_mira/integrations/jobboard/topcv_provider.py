@@ -7,7 +7,7 @@ import frappe
 
 class TopCVProvider:
     """
-    Provider kết nối TopCV API, dựa trên CandidateDataSource.
+    Provider kết nối TopCV API, dựa trên Mira Data Source.
     Đã hỗ trợ:
     + BASE_URL = https://partner.topcv.vn
     + API Key + Secret
@@ -21,11 +21,11 @@ class TopCVProvider:
 
     def __init__(self, source_name, timeout=10, max_retries=3):
         """
-        :param source_name: name của bản ghi CandidateDataSource
+        :param source_name: name của bản ghi Mira Data Source
         :param timeout: timeout cho mỗi request (giây)
         :param max_retries: số lần retry nếu lỗi tạm thời
         """
-        self.source_doc = frappe.get_doc("CandidateDataSource", source_name)
+        self.source_doc = frappe.get_doc("Mira Data Source", source_name)
         self.timeout = timeout
         self.max_retries = max_retries
 

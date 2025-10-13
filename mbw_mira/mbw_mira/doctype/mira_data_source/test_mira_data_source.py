@@ -5,5 +5,5 @@
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestShortURL(FrappeTestCase):
+class TestMiraDataSource(FrappeTestCase):
 	pass

@@ -74,7 +74,7 @@ def linkedin_oauth_callback(code=None):
     user = frappe.session.user
 
     doc = frappe.get_doc({
-        "doctype":"MIRA_SocialMediaToken",
+        "doctype":"Mira Social Media Token",
         "user":user,
         "provider":"LinkedIn",
         "access_token":access_token,
@@ -111,7 +111,7 @@ def share_job_post_on_social_media(job_post_id, platform):
         job_description = job_post.jo_job_description
         job_url = f"{frappe.request.host_url}/job/{job_post_id}"
         token_doc = frappe.get_value(
-            "MIRA_SocialMediaToken",
+            "Mira Social Media Token",
             {"user": frappe.session.user, "provider": "linkedin"},
             ["access_token"],
             as_dict=True,
@@ -193,7 +193,7 @@ def share_job_post_on_social_media(job_post_id, platform):
 def check_social_media_connection():
     try:
         # Kiểm tra xem người dùng đã kết nối với mạng xã hội chưa
-        user_social_media = frappe.get_all("MIRA_SocialMediaToken",fields=["provider"], filters={"user": frappe.session.user})
+        user_social_media = frappe.get_all("Mira Social Media Token",fields=["provider"], filters={"user": frappe.session.user})
 
         if user_social_media:
             # Nếu tìm thấy thông tin kết nối, trả về thông tin nền tảng đã kết nối
@@ -230,7 +230,7 @@ def disconnect_platform():
             frappe.throw(frappe._("No data received"))
         user = frappe.session.user
         
-        frappe.delete_doc(doctype="MIRA_SocialMediaToken", filters={"provider":provider, "user":user})
+        frappe.delete_doc(doctype="Mira Social Media Token", filters={"provider":provider, "user":user})
             
             
     except Exception as e:
@@ -302,7 +302,7 @@ def facebook_callback():
     user = frappe.session.user
 
     doc = frappe.get_doc({
-        "doctype":"MIRA_SocialMediaToken",
+        "doctype":"Mira Social Media Token",
         "user":user,
         "provider":"Facebook",
         "access_token":access_token,

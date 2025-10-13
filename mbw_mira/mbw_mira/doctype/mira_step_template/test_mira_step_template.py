@@ -12,18 +12,18 @@ EXTRA_TEST_RECORD_DEPENDENCIES = []  # eg. ["User"]
 IGNORE_TEST_RECORD_DEPENDENCIES = []  # eg. ["User"]
 
 
-class UnitTestCampaignTemplateStep(UnitTestCase):
+class UnitTestMiraStepTemplate(UnitTestCase):
 	"""
-	Unit tests for CampaignTemplateStep.
+	Unit tests for MiraStepTemplate.
 	Use this class for testing individual functions and methods.
 	"""
 
 	pass
 
 
-class IntegrationTestCampaignTemplateStep(IntegrationTestCase):
+class IntegrationTestMiraStepTemplate(IntegrationTestCase):
 	"""
-	Integration tests for CampaignTemplateStep.
+	Integration tests for MiraStepTemplate.
 	Use this class for testing interactions between multiple components.
 	"""
 

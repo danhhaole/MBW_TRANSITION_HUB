@@ -5,5 +5,5 @@
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestMIRA_SocialMediaToken(FrappeTestCase):
+class TestMiraSocialMediaToken(FrappeTestCase):
 	pass

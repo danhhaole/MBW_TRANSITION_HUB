@@ -70,7 +70,7 @@
  "modified": "2025-07-03 15:26:16.182747",
  "modified_by": "Administrator",
  "module": "MBW Mira",
- "name": "EmailLog",
+ "name": "Mira Email Log",
  "owner": "Administrator",
  "permissions": [
   {

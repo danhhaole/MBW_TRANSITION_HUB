@@ -1,6 +1,6 @@
 import { call } from 'frappe-ui'
 
-const DOCTYPE = 'CandidateDataSource'
+const DOCTYPE = 'Mira Data Source'
 
 // Tận dụng get_list_data từ common.py
 export const getDataSourceList = async (filters = {}, page = 1, limit = 20, orderBy = 'modified desc') => {
@@ -88,7 +88,7 @@ export const getDataSourceFilterOptions = async (field) => {
   }
 }
 
-// Các function đặc biệt cho CandidateDataSource
+// Các function đặc biệt cho Mira Data Source
 export const testDataSourceConnection = async (id) => {
   try {
     const response = await call('mbw_mira.mbw_mira.candidatedatasource.candidatedatasource.test_connection', {

@@ -100,7 +100,7 @@ const search = ref('')
 
 const templates = createListResource({
   type: 'list',
-  doctype: 'MIRA_Email_Template',
+  doctype: 'Mira Email Template',
   cache: ['emailTemplates', props.doctype],
   fields: [
     'name',

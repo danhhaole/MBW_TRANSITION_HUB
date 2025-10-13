@@ -169,7 +169,7 @@ export const useCandidateDataSourceStore = defineStore('candidateDataSource', {
 
         // Fetch data sources
         const response = await call('frappe.client.get_list', {
-          doctype: 'CandidateDataSource',
+          doctype: 'Mira Data Source',
           fields: fields,
           filters: enhancedFilters,
           order_by: order_by,
@@ -179,7 +179,7 @@ export const useCandidateDataSourceStore = defineStore('candidateDataSource', {
 
         // Get total count for pagination
         const totalCount = await call('frappe.client.get_count', {
-          doctype: 'CandidateDataSource',
+          doctype: 'Mira Data Source',
           filters: enhancedFilters
         })
 
@@ -227,7 +227,7 @@ export const useCandidateDataSourceStore = defineStore('candidateDataSource', {
 
       try {
         const response = await call('frappe.client.get', {
-          doctype: 'CandidateDataSource',
+          doctype: 'Mira Data Source',
           name: name
         })
 
@@ -274,7 +274,7 @@ export const useCandidateDataSourceStore = defineStore('candidateDataSource', {
         const preparedData = this.prepareDataSourceForSave(data, 'create')
 
         const docData = {
-          doctype: 'CandidateDataSource',
+          doctype: 'Mira Data Source',
           ...preparedData
         }
 
@@ -328,7 +328,7 @@ export const useCandidateDataSourceStore = defineStore('candidateDataSource', {
         const preparedData = this.prepareDataSourceForSave(data, 'update')
 
         const response = await call('frappe.client.set_value', {
-          doctype: 'CandidateDataSource',
+          doctype: 'Mira Data Source',
           name: name,
           fieldname: preparedData
         })
@@ -381,7 +381,7 @@ export const useCandidateDataSourceStore = defineStore('candidateDataSource', {
 
       try {
         await call('frappe.client.delete', {
-          doctype: 'CandidateDataSource',
+          doctype: 'Mira Data Source',
           name: name
         })
 
@@ -414,7 +414,7 @@ export const useCandidateDataSourceStore = defineStore('candidateDataSource', {
       try {
         // Get metadata
         const metaResponse = await call('frappe.desk.form.load.getdoctype', {
-          doctype: 'CandidateDataSource',
+          doctype: 'Mira Data Source',
           with_parent: 1
         })
 
@@ -431,7 +431,7 @@ export const useCandidateDataSourceStore = defineStore('candidateDataSource', {
         // Create field layout from metadata
         let fieldLayout = []
         if (metaResponse?.docs?.length > 0) {
-          const meta = metaResponse.docs.find(doc => doc.name === 'CandidateDataSource')
+          const meta = metaResponse.docs.find(doc => doc.name === 'Mira Data Source')
           if (meta) {
             fieldLayout = this.createFieldLayout(meta.fields)
           }
@@ -439,7 +439,7 @@ export const useCandidateDataSourceStore = defineStore('candidateDataSource', {
 
         this.formData = docData
         this.fieldLayout = fieldLayout
-        this.meta = metaResponse?.docs?.find(doc => doc.name === 'CandidateDataSource') || null
+        this.meta = metaResponse?.docs?.find(doc => doc.name === 'Mira Data Source') || null
 
         this.setSuccess('Form data loaded successfully')
         return {
@@ -470,7 +470,7 @@ export const useCandidateDataSourceStore = defineStore('candidateDataSource', {
     async fetchFilterOptions(fieldname) {
       try {
         const response = await call('frappe.client.get_list', {
-          doctype: 'CandidateDataSource',
+          doctype: 'Mira Data Source',
           fields: [fieldname],
           distinct: true,
           order_by: fieldname
@@ -502,19 +502,19 @@ export const useCandidateDataSourceStore = defineStore('candidateDataSource', {
       try {
         // Get total count
         const totalCount = await call('frappe.client.get_count', {
-          doctype: 'CandidateDataSource'
+          doctype: 'Mira Data Source'
         })
 
         // Get count by type
         const typeStats = await call('frappe.client.get_list', {
-          doctype: 'CandidateDataSource',
+          doctype: 'Mira Data Source',
           fields: ['source_type', 'count(*) as count'],
           group_by: 'source_type'
         })
 
         // Get count by status
         const statusStats = await call('frappe.client.get_list', {
-          doctype: 'CandidateDataSource',
+          doctype: 'Mira Data Source',
           fields: ['status', 'count(*) as count'],
           group_by: 'status'
         })

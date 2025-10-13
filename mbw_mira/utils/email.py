@@ -211,7 +211,7 @@ def log_email_transaction(
 ):
     try:
         frappe.get_doc({
-            "doctype": "EmailLog",
+            "doctype": "Mira Email Log",
             "subject": subject,
             "sender": sender,
             "recipients": ", ".join(recipients) if recipients else "",

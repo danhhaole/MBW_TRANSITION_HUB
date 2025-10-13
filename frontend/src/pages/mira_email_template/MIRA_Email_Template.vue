@@ -151,7 +151,7 @@
         v-model:resizeColumn="triggerResize"
         v-model:updatedPageCount="updatedPageCount"
         :filters="{}"
-        doctype="MIRA_Email_Template"
+        doctype="Mira Email Template"
         :enableGroupSearch="true"
       /> -->
 
@@ -502,7 +502,7 @@
       </div>
     </div>
 
-    <!-- <QuickEntryModal v-model="showQuickEntryModal" doctype="MIRA_Email_Template" /> -->
+    <!-- <QuickEntryModal v-model="showQuickEntryModal" doctype="Mira Email Template" /> -->
     <!-- Trigger buttons -->
     <!-- <Button @click="showCreateModal = true">Create Template</Button>
 		  <Button @click="editTemplate(template.name)">Edit Template</Button> -->
@@ -613,7 +613,7 @@ const formatTemplateType = (value) => {
 // Create list resource as fallback
 const templatesResource = createListResource({
   type: "list",
-  doctype: "MIRA_Email_Template",
+  doctype: "Mira Email Template",
   fields: ["name", "template_name", "template_type", "is_active", "creation", "owner"],
   filters: [],
   orderBy: "creation desc",
@@ -642,12 +642,12 @@ const loadData = async () => {
     let total = 0;
     try {
       total = await call("frappe.client.get_count", {
-        doctype: "MIRA_Email_Template",
+        doctype: "Mira Email Template",
         filters,
       });
     } catch (e) {
       const countResponse = await call("frappe.client.get_list", {
-        doctype: "MIRA_Email_Template",
+        doctype: "Mira Email Template",
         fields: ["name"],
         filters,
         limit_page_length: 0,
@@ -665,7 +665,7 @@ const loadData = async () => {
 
     // 2) Fetch current page rows
     const response = await call("frappe.client.get_list", {
-      doctype: "MIRA_Email_Template",
+      doctype: "Mira Email Template",
       fields: [
         "name",
         "template_name",
@@ -740,7 +740,7 @@ const remove = async (item) => {
   if (confirm(__("Are you sure you want to delete this template?"))) {
     try {
       await call("frappe.client.delete", {
-        doctype: "MIRA_Email_Template",
+        doctype: "Mira Email Template",
         name: item.name,
       });
 
@@ -783,7 +783,7 @@ const debugData = async () => {
   // Test direct API call
   try {
     const testResponse = await call("frappe.client.get_list", {
-      doctype: "MIRA_Email_Template",
+      doctype: "Mira Email Template",
       fields: ["name", "template_name"],
       filters: [],
       limit_page_length: 5,

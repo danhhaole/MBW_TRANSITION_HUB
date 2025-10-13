@@ -33,7 +33,7 @@
               v-model="selectedTemplateStepName"
               :label="__('Template Step')"
               :placeholder="__('Select a template step...')"
-              doctype="CampaignTemplateStep"
+              doctype="Mira Step Template"
               :fields="['campaign_step_name', 'action_type', 'delay_in_days']"
               @change="onTemplateStepChange"
               @update:modelValue="onTemplateStepChange"
@@ -348,7 +348,7 @@ const onTemplateStepChange = async (stepName) => {
   try {
     console.log('📡 Loading template step data...');
     const response = await call('frappe.client.get_doc', {
-      doctype: 'CampaignTemplateStep',
+      doctype: 'Mira Step Template',
       name: stepName
     });
     

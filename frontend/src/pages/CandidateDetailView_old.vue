@@ -773,7 +773,7 @@ const loadInteractions = async () => {
 const loadEmailLogs = async () => {
   loadingEmails.value = true
   try {
-    // Since EmailLog doctype doesn't have candidate_id field,
+    // Since Mira Email Log doctype doesn't have candidate_id field,
     // we might need to filter by recipients containing the candidate's email
     const candidateEmail = candidate.email || candidate.candidate_email
     let filters = {}

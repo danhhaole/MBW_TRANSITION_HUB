@@ -89,22 +89,22 @@ const routes = [
 	{
 		path: "/email-template",
 		name: "ListEmailTemplate",
-		component: () => import("@/pages/mira_email_template/MIRA_Email_Template.vue"),
+		component: () => import("@/pages/mira_email_template/Mira Email Template.vue"),
 		props: true,
-		meta: { doctype: "MIRA_Email_Template" },
+		meta: { doctype: "Mira Email Template" },
 	},
 	{
 		path: '/email-template/new',
 		name: 'NewEmailTemplate',
 		component: () => import("@/pages/mira_email_template/EmailTemplateForm.vue"),
 		props: true,
-		meta: { doctype: "MIRA_Email_Template" },
+		meta: { doctype: "Mira Email Template" },
 	},
 	{
 		path: '/email-template/:name',
 		name: 'EditEmailTemplate',
 		props: true,
-		meta: { doctype: "MIRA_Email_Template" },
+		meta: { doctype: "Mira Email Template" },
 		component: () => import("@/pages/mira_email_template/EmailTemplateForm.vue"),
 	},
 	{
@@ -112,7 +112,7 @@ const routes = [
 		name: "mira_email_template_edit",
 		component: () => import("@/pages/mira_email_template/EmailTemplateForm.vue"),
 		props: true,
-		meta: { doctype: "MIRA_Email_Template" },
+		meta: { doctype: "Mira Email Template" },
 	},
 
 	// Public Route

@@ -546,7 +546,7 @@ const statusOptions = [
   { label: __('Fallback'), value: 'Fallback' }
 ]
 
-// Form data - matching EmailLog doctype fields
+// Form data - matching Mira Email Log doctype fields
 const formData = reactive({
   name: '',
   subject: '',
@@ -678,7 +678,7 @@ const loadData = async () => {
     }
 
     const result = await call('frappe.client.get_list', {
-      doctype: 'EmailLog',
+      doctype: 'Mira Email Log',
       ...params
     })
     

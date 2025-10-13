@@ -41,7 +41,7 @@
           <FieldLayout
             :tabs="fieldTabs"
             :data="formData"
-            doctype="CandidateDataSource"
+            doctype="Mira Data Source"
             :preview="false"
           />
         </div>

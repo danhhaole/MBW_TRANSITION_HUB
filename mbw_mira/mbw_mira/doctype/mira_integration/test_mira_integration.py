@@ -5,5 +5,5 @@
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestMIRA_Integration(FrappeTestCase):
+class TestMiraIntegration(FrappeTestCase):
 	pass
