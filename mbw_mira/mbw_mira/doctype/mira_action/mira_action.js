@@ -1,7 +1,7 @@
 // Copyright (c) 2025, MBWCloud Co. and contributors
 // For license information, please see license.txt
 
-frappe.ui.form.on('Action', {
+frappe.ui.form.on('Mira Action', {
     refresh(frm) {
         if (frm.doc.status === "PENDING_MANUAL") {
             frm.add_custom_button("Đánh dấu đã xử lý", () => {

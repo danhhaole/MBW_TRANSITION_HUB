@@ -6,11 +6,11 @@ from frappe.model.document import Document
 from frappe.utils import now_datetime,add_days,cint, get_datetime
 import json
 
-class Action(Document):
+class MiraAction(Document):
 	pass
 
 	def validate(self):
-		check_duplicate_action(self)
+		check_duplicate_mira_action(self)
 		
 	def on_update(self):
 		"""Khi có event update xử lý các luồng
@@ -20,12 +20,12 @@ class Action(Document):
 
 
 def update_step_result_talent_campaign(doc):
-	"""Update trạng thái Mira Talent Campaign khi action đã thực hiện
+	"""Update trạng thái Mira Talent Campaign khi mira_action đã thực hiện
 
 	Args:
 		doc (dict): _description_
 	""" 
-	#Action có 2 trạng thái này thì update Mira Talent Campaign
+	#MiraAction có 2 trạng thái này thì update Mira Talent Campaign
 	talent_campaign = frappe.get_doc("Mira Talent Campaign", doc.talent_campaign_id)
 	if talent_campaign.status != "ACTIVE":
 		return
@@ -40,11 +40,11 @@ def update_step_result_talent_campaign(doc):
 
 	if not next_step:
 		talent_campaign.status = "COMPLETED"
-		talent_campaign.next_action_at = None
+		talent_campaign.next_mira_action_at = None
 	else:
 		step_info = next_step[0]
 		talent_campaign.current_step_order = step_info.step_order
-		talent_campaign.next_action_at = add_days(now_datetime(), step_info.delay_in_days or 0)
+		talent_campaign.next_mira_action_at = add_days(now_datetime(), step_info.delay_in_days or 0)
 
 	talent_campaign.save()
 	return True
@@ -62,40 +62,40 @@ def update_current_campaign(self):
 	frappe.db.commit()
 
 
-#Hàm lấy ra action theo action_type trong step campaign
-def get_action_worker(step):
-	"""Lấy danh sách action có status là SCHEDULED và step tương ứng
+#Hàm lấy ra mira_action theo mira_action_type trong step campaign
+def get_mira_action_worker(step):
+	"""Lấy danh sách mira_action có status là SCHEDULED và step tương ứng
 
 	Args:
 		step (SEND_EMAIL/SEND_SMS): _description_
 	"""
-	actions = frappe.get_list("Action",filters={"status":"SCHEDULED", "scheduled_at":["<=", now_datetime()]})
-	#Duyệt danh sách actions, tìm step nào có action_type là gửi email
-	actions_name =[]
-	for action in actions:
-		step_exists = frappe.db.exists("CampaignStep",{"name":action.campaign_step, "action_type":step})
+	mira_actions = frappe.get_list("MiraAction",filters={"status":"SCHEDULED", "scheduled_at":["<=", now_datetime()]})
+	#Duyệt danh sách mira_actions, tìm step nào có mira_action_type là gửi email
+	mira_actions_name =[]
+	for mira_action in mira_actions:
+		step_exists = frappe.db.exists("CampaignStep",{"name":mira_action.campaign_step, "mira_action_type":step})
 		if step_exists:
-			actions_name.append(action)
-	return actions_name
+			mira_actions_name.append(mira_action)
+	return mira_actions_name
 
-def check_duplicate_action(doc):
+def check_duplicate_mira_action(doc):
     filters = {
         "talent_campaign_id": doc.talent_campaign_id,
         "campaign_step": doc.campaign_step,
     }
 
-    existing = frappe.db.exists("Action", filters)
+    existing = frappe.db.exists("MiraAction", filters)
 
     if existing and existing != doc.name:  # ← tránh trùng với chính mình khi update
         frappe.throw(
             frappe._(
-                "An Action with Candidate Campaign <b>{0}</b> and Campaign Step <b>{1}</b> already exists: <a href='/app/action/{2}'>{2}</a>"
+                "An MiraAction with Candidate Campaign <b>{0}</b> and Campaign Step <b>{1}</b> already exists: <a href='/app/mira_action/{2}'>{2}</a>"
             ).format(
                 doc.talent_campaign_id,
                 doc.campaign_step,
                 existing
             ),
-            title=frappe._("Duplicate Action")
+            title=frappe._("Duplicate MiraAction")
         )
 
 def _map_by(items, key):
@@ -105,14 +105,14 @@ def _map_by(items, key):
     return mapped
 
 
-def _get_enriched_actions(action_rows):
-    step_names = [row.get("campaign_step") for row in action_rows if row.get("campaign_step")]
-    user_ids = list({row.get("assignee_id") for row in action_rows if row.get("assignee_id")})
+def _get_enriched_mira_actions(mira_action_rows):
+    step_names = [row.get("campaign_step") for row in mira_action_rows if row.get("campaign_step")]
+    user_ids = list({row.get("assignee_id") for row in mira_action_rows if row.get("assignee_id")})
 
     steps = frappe.get_all(
         "CampaignStep",
         filters={"name": ["in", step_names]} if step_names else {},
-        fields=["name", "campaign_step_name", "campaign", "action_type"],
+        fields=["name", "campaign_step_name", "campaign", "mira_action_type"],
     ) if step_names else []
     steps_by_name = _map_by(steps, "name")
 
@@ -132,14 +132,14 @@ def _get_enriched_actions(action_rows):
     users_by_id = _map_by(users, "name")
 
     enriched = []
-    for row in action_rows:
+    for row in mira_action_rows:
         step = steps_by_name.get(row.get("campaign_step"), {})
         camp = campaigns_by_id.get(step.get("campaign"), {})
         user = users_by_id.get(row.get("assignee_id"), {})
         enriched.append({
             **row,
             "campaign_step_name": step.get("campaign_step_name"),
-            "action_type": step.get("action_type"),
+            "mira_action_type": step.get("mira_action_type"),
             "campaign_id": step.get("campaign"),
             "campaign_name": camp.get("campaign_name"),
             "assignee_full_name": user.get("full_name"),
@@ -149,12 +149,12 @@ def _get_enriched_actions(action_rows):
 
 
 @frappe.whitelist()
-def get_my_actions(page=1, limit=20, search="", assigned_to="@me", include_unassigned=1, include_scheduled_as_pending=1):
+def get_my_mira_actions(page=1, limit=20, search="", assigned_to="@me", include_unassigned=1, include_scheduled_as_pending=1):
     """
     Trả về dữ liệu danh sách "Công việc của tôi" giống UI trong ảnh:
-    - pending: các Action có status = PENDING_MANUAL, người được giao = @me
-    - completed: các Action có status = EXECUTED, người được giao = @me
-    - all: tất cả action của người dùng
+    - pending: các MiraAction có status = PENDING_MANUAL, người được giao = @me
+    - completed: các MiraAction có status = EXECUTED, người được giao = @me
+    - all: tất cả mira_action của người dùng
     Có phân trang độc lập cho mỗi tab.
     """
     try:
@@ -199,7 +199,7 @@ def get_my_actions(page=1, limit=20, search="", assigned_to="@me", include_unass
         pending_filters["status"] = "PENDING_MANUAL"
         
         pending_rows = frappe.get_list(
-            "Action",
+            "MiraAction",
             fields=base_fields,
             filters=pending_filters,
             or_filters=search_condition if search else None,
@@ -208,7 +208,7 @@ def get_my_actions(page=1, limit=20, search="", assigned_to="@me", include_unass
             page_length=cint(limit),
         ) or []
         pending_total = len(
-            frappe.get_list("Action", filters=pending_filters, or_filters=search_condition if search else None)
+            frappe.get_list("MiraAction", filters=pending_filters, or_filters=search_condition if search else None)
         )
 
         # Completed: chỉ lấy EXECUTED
@@ -216,7 +216,7 @@ def get_my_actions(page=1, limit=20, search="", assigned_to="@me", include_unass
         completed_filters["status"] = "EXECUTED"
         
         completed_rows = frappe.get_list(
-            "Action",
+            "MiraAction",
             fields=base_fields,
             filters=completed_filters,
             or_filters=search_condition if search else None,
@@ -225,12 +225,12 @@ def get_my_actions(page=1, limit=20, search="", assigned_to="@me", include_unass
             page_length=cint(limit),
         ) or []
         completed_total = len(
-            frappe.get_list("Action", filters=completed_filters, or_filters=search_condition if search else None)
+            frappe.get_list("MiraAction", filters=completed_filters, or_filters=search_condition if search else None)
         )
 
         # All: lấy cả PENDING_MANUAL và EXECUTED
         all_rows = frappe.get_list(
-            "Action",
+            "MiraAction",
             fields=base_fields,
             filters=common_filters,
             or_filters=search_condition if search else None,
@@ -239,13 +239,13 @@ def get_my_actions(page=1, limit=20, search="", assigned_to="@me", include_unass
             page_length=cint(limit),
         ) or []
         all_total = len(
-            frappe.get_list("Action", filters=common_filters, or_filters=search_condition if search else None)
+            frappe.get_list("MiraAction", filters=common_filters, or_filters=search_condition if search else None)
         )
 
         # Enrich with step/campaign/user info
-        pending = _get_enriched_actions(pending_rows)
-        completed = _get_enriched_actions(completed_rows)
-        all_actions = _get_enriched_actions(all_rows)
+        pending = _get_enriched_mira_actions(pending_rows)
+        completed = _get_enriched_mira_actions(completed_rows)
+        all_mira_actions = _get_enriched_mira_actions(all_rows)
 
         def paginate(total):
             pages = (total + cint(limit) - 1) // cint(limit) if cint(limit) > 0 else 1
@@ -263,7 +263,7 @@ def get_my_actions(page=1, limit=20, search="", assigned_to="@me", include_unass
 
         return {
             "success": True,
-            "all": all_actions,
+            "all": all_mira_actions,
             "pending": pending,
             "completed": completed,
             "pagination": {
@@ -274,18 +274,18 @@ def get_my_actions(page=1, limit=20, search="", assigned_to="@me", include_unass
         }
 
     except Exception as e:
-        frappe.log_error(f"Error in get_my_actions: {str(e)}")
+        frappe.log_error(f"Error in get_my_mira_actions: {str(e)}")
         return {"success": False, "error": str(e)}
 @frappe.whitelist()
-def update_action(name, data=None, **kwargs):
+def update_mira_action(name, data=None, **kwargs):
     """
-    Cập nhật Action từ modal "Chỉnh sửa hành động" như ảnh.
+    Cập nhật MiraAction từ modal "Chỉnh sửa hành động" như ảnh.
     Hỗ trợ truyền vào data (JSON string/object) hoặc từng tham số kwargs.
     Các trường hỗ trợ: status, scheduled_at, executed_at, result, assignee_id, campaign_step, talent_campaign_id
     """
     try:
         if not name:
-            return {"success": False, "error": "Action name is required"}
+            return {"success": False, "error": "MiraAction name is required"}
 
         payload = {}
         if data:
@@ -322,13 +322,13 @@ def update_action(name, data=None, **kwargs):
                 # giữ nguyên chuỗi nếu không phải JSON hợp lệ
                 pass
 
-        doc = frappe.get_doc("Action", name)
+        doc = frappe.get_doc("MiraAction", name)
         doc.update(payload)
         doc.save()
 
         return {"success": True, "data": doc.as_dict()}
     except Exception as e:
-        frappe.log_error(f"Error in update_action: {str(e)}")
+        frappe.log_error(f"Error in update_mira_action: {str(e)}")
         return {"success": False, "error": str(e)}
 
 

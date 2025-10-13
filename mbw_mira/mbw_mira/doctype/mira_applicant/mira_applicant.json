@@ -9,6 +9,7 @@
   "talent_id",
   "campaign_id",
   "segment_id",
+  "job",
   "interaction_id",
   "application_date",
   "position",
@@ -23,7 +24,7 @@
    "fieldname": "talent_id",
    "fieldtype": "Link",
    "label": "Talent Profile",
-   "options": "Mira Contact"
+   "options": "Mira Talent"
   },
   {
    "fieldname": "campaign_id",
@@ -79,15 +80,21 @@
    "fieldtype": "Select",
    "label": "Result",
    "options": "Pass\nFail"
+  },
+  {
+   "fieldname": "job",
+   "fieldtype": "Link",
+   "label": "Job",
+   "options": "JobOpening"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-06 11:27:13.563405",
+ "modified": "2025-10-13 11:14:54.684302",
  "modified_by": "Administrator",
  "module": "MBW Mira",
- "name": "ApplicantPool",
+ "name": "Mira Applicant",
  "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [

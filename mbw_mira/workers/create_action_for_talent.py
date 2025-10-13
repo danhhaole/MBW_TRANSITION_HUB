@@ -23,7 +23,7 @@ def create_action_for_talent_campaign(talent_campaign_id):
         # tạo Action
         if not check_exists(tc.name,step.name):
             action = frappe.get_doc({
-                "doctype": "Action",
+                "doctype": Mira Action,
                 "talent_campaign_id": tc.name,
                 "campaign_step": step.name,
                 "status": status_action,
@@ -45,7 +45,7 @@ def create_action_for_talent_campaign(talent_campaign_id):
         return None
 
 def check_exists(talent_campaign_id,campaign_step):
-    action_exists = frappe.db.exists("Action",{"talent_campaign_id":talent_campaign_id,"campaign_step":campaign_step})
+    action_exists = frappe.db.exists(Mira Action,{"talent_campaign_id":talent_campaign_id,"campaign_step":campaign_step})
     if action_exists:
         return True
     else:

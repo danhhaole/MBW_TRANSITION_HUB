@@ -434,7 +434,7 @@ def submit_application():
         frappe.db.commit()
     # 3. Check duplicate ApplicantPool
     existing_app = frappe.db.exists(
-        "ApplicantPool",
+        "Mira Applicant",
         {
             "talent_id": profile.name,
             "campaign_id": campaign_id,
@@ -449,7 +449,7 @@ def submit_application():
 
     # 4. Tạo ApplicantPool record
     applicant = frappe.get_doc({
-        "doctype": "ApplicantPool",
+        "doctype": "Mira Applicant",
         "talent_id": profile.name,
         "campaign_id": campaign_id,
         "segment_id": segment_id,
@@ -465,7 +465,7 @@ def submit_application():
     recent = frappe.db.exists("Mira Interaction", {
         "talent_id": profile.name,
         "interaction_type": "APPLICATION_SUBMITTED",
-        "reference_doctype": "ApplicantPool",
+        "reference_doctype": "Mira Applicant",
         "reference_name": applicant.name
     })
 
@@ -475,7 +475,7 @@ def submit_application():
             "talent_id": profile.name,
             "interaction_type": "APPLICATION_SUBMITTED",
             "description": f"{profile.full_name} applied to campaign {campaign_id} for position {position}",
-            "reference_doctype": "ApplicantPool",
+            "reference_doctype": "Mira Applicant",
             "reference_name": applicant.name
         })
         interaction.insert(ignore_permissions=True)

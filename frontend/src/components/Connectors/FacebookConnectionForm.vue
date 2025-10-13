@@ -1,17 +1,7 @@
 <template>
   <div class="facebook-connection-form">
     <!-- Platform Info Banner -->
-    <div class="flex items-center gap-4 p-4 bg-blue-50 rounded-lg mb-6">
-      <div class="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
-        <FeatherIcon name="facebook" class="w-6 h-6 text-white" />
-      </div>
-      <div>
-        <h3 class="font-semibold text-gray-900">{{__('Facebook Integration')}}</h3>
-        <p class="text-sm text-gray-600">
-          {{ isEdit ? __('Update your Facebook connection settings') : __('Connect your Facebook account to manage pages and posts') }}
-        </p>
-      </div>
-    </div>
+    
 
     <!-- Connection Form -->
     <div class="space-y-6">

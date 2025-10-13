@@ -149,7 +149,7 @@
               "import": 0
             },
             {
-              "doctype": "ApplicantPool",
+              "doctype": Mira Applicant,
               "create": 0,
               "read": 1,
               "write": 0,
@@ -251,7 +251,7 @@
           "is_active": 1,
           "permissions": [
             {
-              "doctype": "ApplicantPool",
+              "doctype": Mira Applicant,
               "create": 1,
               "read": 1,
               "write": 1,

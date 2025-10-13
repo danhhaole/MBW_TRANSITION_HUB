@@ -1,16 +1,7 @@
 <template>
   <div class="zalo-connection-form p-4">
     <div v-if="!isEdit" class="space-y-6">
-      <!-- Connection Info -->
-      <div class="flex items-center p-4 bg-blue-50 rounded-lg">
-        <FeatherIcon name="message-circle" class="w-8 h-8 text-blue-600 mr-3" />
-        <div>
-          <h4 class="font-medium text-blue-900">{{ __("Connect Zalo OA") }}</h4>
-          <p class="text-sm text-blue-700">
-            {{ __("Kết nối Zalo Official Account để chia sẻ tin tuyển dụng") }}
-          </p>
-        </div>
-      </div>
+      
 
       <!-- Basic Information -->
       <div class="space-y-4">

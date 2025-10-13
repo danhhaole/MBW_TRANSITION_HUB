@@ -7,7 +7,7 @@ def process_email_action(action_name):
     Worker: thực hiện SEND_EMAIL action
     """
     now = now_datetime()
-    action = frappe.db.get_value("Action", action_name,["name","talent_campaign_id","campaign_step"],as_dict=1)
+    action = frappe.db.get_value(Mira Action, action_name,["name","talent_campaign_id","campaign_step"],as_dict=1)
     try:
 
         # TODO: Thực hiện gửi email ở đây
@@ -28,7 +28,7 @@ def process_sms_action(action_name):
     Worker: thực hiện SEND_SMS action
     """
     now = now_datetime()
-    action = frappe.db.get_value("Action", action_name,["name","talent_campaign_id","campaign_step"],as_dict=1)
+    action = frappe.db.get_value(Mira Action, action_name,["name","talent_campaign_id","campaign_step"],as_dict=1)
     try:
 
         # TODO: Thực hiện gửi SMS ở đây
@@ -46,7 +46,7 @@ def check_pending_action(action_name):
     """
     Worker: cảnh báo Action pending quá lâu
     """
-    action = frappe.get_doc("Action", action_name)
+    action = frappe.get_doc(Mira Action, action_name)
     step_type = frappe.get_value("CampaignStep", action.campaign_step, "action_type")
     try:
         return step_type

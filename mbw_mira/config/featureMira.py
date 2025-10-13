@@ -214,7 +214,7 @@ FEATURES_MIRA = {
                     "is_active": 1,
                     "permissions": [
                         {
-                            "doctype": "ApplicantPool",
+                            "doctype": Mira Applicant,
                             "create": 1,
                             "read": 1,
                             "write": 1,
@@ -274,7 +274,7 @@ FEATURES_MIRA = {
                             "import": 0,
                         },
                         {
-                            "doctype": "ApplicantPool",
+                            "doctype": Mira Applicant,
                             "create": 0,
                             "read": 1,
                             "write": 0,
@@ -329,7 +329,7 @@ FEATURES_MIRA = {
                             "import": 0,
                         },
                         {
-                            "doctype": "ApplicantPool",
+                            "doctype": Mira Applicant,
                             "create": 0,
                             "read": 1,
                             "write": 0,
@@ -376,7 +376,7 @@ FEATURES_MIRA = {
                             "import": 0,
                         },
                         {
-                            "doctype": "ApplicantPool",
+                            "doctype": Mira Applicant,
                             "create": 0,
                             "read": 1,
                             "write": 0,
@@ -503,7 +503,7 @@ FEATURES_MIRA = {
                             "import": 0,
                         },
                         {
-                            "doctype": "ApplicantPool",
+                            "doctype": Mira Applicant,
                             "create": 0,
                             "read": 1,
                             "write": 0,
@@ -576,7 +576,7 @@ FEATURES_MIRA = {
                             "import": 0,
                         },
                         {
-                            "doctype": "ApplicantPool",
+                            "doctype": Mira Applicant,
                             "create": 0,
                             "read": 1,
                             "write": 0,
@@ -776,7 +776,7 @@ FEATURES_MIRA = {
                             "import": 0,
                         },
                         {
-                            "doctype": "ApplicantPool",
+                            "doctype": Mira Applicant,
                             "create": 0,
                             "read": 1,
                             "write": 0,
@@ -884,7 +884,7 @@ FEATURES_MIRA = {
                             "import": 0,
                         },
                         {
-                            "doctype": "ApplicantPool",
+                            "doctype": Mira Applicant,
                             "create": 0,
                             "read": 1,
                             "write": 0,
@@ -992,7 +992,7 @@ FEATURES_MIRA = {
                     "is_active": 1,
                     "permissions": [
                         {
-                            "doctype": "Action",
+                            "doctype": Mira Action,
                             "create": 1,
                             "read": 1,
                             "write": 1,
@@ -1039,7 +1039,7 @@ FEATURES_MIRA = {
                     "is_active": 1,
                     "permissions": [
                         {
-                            "doctype": "Action",
+                            "doctype": Mira Action,
                             "create": 1,
                             "read": 1,
                             "write": 1,
@@ -1060,7 +1060,7 @@ FEATURES_MIRA = {
                     "is_active": 1,
                     "permissions": [
                         {
-                            "doctype": "Action",
+                            "doctype": Mira Action,
                             "create": 0,
                             "read": 1,
                             "write": 0,
@@ -1100,7 +1100,7 @@ FEATURES_MIRA = {
                             "import": 0,
                         },
                         {
-                            "doctype": "ApplicantPool",
+                            "doctype": Mira Applicant,
                             "create": 0,
                             "read": 1,
                             "write": 0,
@@ -1126,7 +1126,7 @@ FEATURES_MIRA = {
                             "import": 0,
                         },
                         {
-                            "doctype": "Action",
+                            "doctype": Mira Action,
                             "create": 0,
                             "read": 1,
                             "write": 0,
@@ -1186,7 +1186,7 @@ FEATURES_MIRA = {
                             "import": 0,
                         },
                         {
-                            "doctype": "ApplicantPool",
+                            "doctype": Mira Applicant,
                             "create": 0,
                             "read": 1,
                             "write": 0,
@@ -1212,7 +1212,7 @@ FEATURES_MIRA = {
                             "import": 0,
                         },
                         {
-                            "doctype": "Action",
+                            "doctype": Mira Action,
                             "create": 0,
                             "read": 1,
                             "write": 0,
@@ -1267,7 +1267,7 @@ FEATURES_MIRA = {
                     "is_active": 1,
                     "permissions": [
                         {
-                            "doctype": "ApplicantPool",
+                            "doctype": Mira Applicant,
                             "create": 0,
                             "read": 1,
                             "write": 0,
@@ -1309,7 +1309,7 @@ FEATURES_MIRA = {
                     "is_active": 1,
                     "permissions": [
                         {
-                            "doctype": "Action",
+                            "doctype": Mira Action,
                             "create": 0,
                             "read": 1,
                             "write": 0,

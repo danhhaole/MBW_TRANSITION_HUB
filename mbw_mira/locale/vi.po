@@ -54,7 +54,7 @@ msgstr "(Mới)"
 msgid "(Foreign Key -> Campaign)"
 msgstr "(Khóa ngoại -> Chiến dịch)"
 
-#. Description of the 'Campaign Step' (Link) field in DocType 'Action'
+#. Description of the 'Campaign Step' (Link) field in DocType Mira Action
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "(Foreign Key -> CampaignStep) Bước đã tạo ra hành động này."
 msgstr "(Khóa ngoại -> Chiến dịch)"
@@ -66,7 +66,7 @@ msgid "(Foreign Key -> Candidate)"
 msgstr "(Khóa ngoại -> Ứng viên)"
 
 #. Description of the 'TalentProfile Campaign' (Link) field in DocType
-#. 'Action'
+#. Mira Action
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "(Foreign Key -> CandidateCampaign)"
 msgstr "(Khóa ngoại -> CandidateCampaign)"
@@ -244,7 +244,7 @@ msgstr "Truy cập Mã thông báo Hiện Tại (OAuth2)"
 
 #. Name of a DocType
 #: mbw_mira/mbw_mira/doctype/action/action.json
-msgid "Action"
+msgid Mira Action
 msgstr "Hoạt động"
 
 #. Label of a JSON field in DocType 'CampaignTemplateStep'
@@ -725,7 +725,7 @@ msgstr "Nhóm ứng viên"
 
 #. Name of a DocType
 #: mbw_mira/mbw_mira/doctype/applicantpool/applicantpool.json
-msgid "ApplicantPool"
+msgid Mira Applicant
 msgstr "Ứng dụng"
 
 #. Label of a Datetime field in DocType 'ApplicantPool'
@@ -887,7 +887,7 @@ msgstr "Gán cho chiến dịch"
 msgid "Assigned Profiles"
 msgstr "Hồ sơ được chỉ định"
 
-#. Label of a Link field in DocType 'Action'
+#. Label of a Link field in DocType Mira Action
 #: frontend/src/pages/ActionManagement.vue:183
 #: frontend/src/pages/ActionManagement.vue:212
 #: frontend/src/pages/ActionManagement.vue:399
@@ -1168,7 +1168,7 @@ msgstr "Tên chiến dịch"
 msgid "Campaign Progress"
 msgstr "Tiến trình chiến dịch"
 
-#. Label of a Link field in DocType 'Action'
+#. Label of a Link field in DocType Mira Action
 #: frontend/src/pages/ActionManagement.vue:169
 #: frontend/src/pages/ActionManagement.vue:208
 #: frontend/src/pages/ActionManagement.vue:382
@@ -2391,7 +2391,7 @@ msgstr "Làm giàu"
 msgid "EVENT"
 msgstr "SỰ KIỆN"
 
-#. Option for the 'Status' (Select) field in DocType 'Action'
+#. Option for the 'Status' (Select) field in DocType Mira Action
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "EXECUTED"
 msgstr "Thực hiện"
@@ -2941,7 +2941,7 @@ msgstr "Excel"
 msgid "Executed"
 msgstr "Thực hiện"
 
-#. Label of a Datetime field in DocType 'Action'
+#. Label of a Datetime field in DocType Mira Action
 #: frontend/src/pages/ActionManagement.vue:211
 #: frontend/src/pages/ActionManagement.vue:413
 #: frontend/src/pages/CampaignDetailView.vue:446
@@ -2988,7 +2988,7 @@ msgstr "Loại xuất khẩu"
 msgid "External data source"
 msgstr "Nguồn dữ liệu bên ngoài"
 
-#. Option for the 'Status' (Select) field in DocType 'Action'
+#. Option for the 'Status' (Select) field in DocType Mira Action
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "FAILED"
 msgstr "THẤT BẠI"
@@ -4806,7 +4806,7 @@ msgstr "Trang_visited"
 msgid "PAUSED"
 msgstr "Tạm dừng"
 
-#. Option for the 'Status' (Select) field in DocType 'Action'
+#. Option for the 'Status' (Select) field in DocType Mira Action
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "PENDING_MANUAL"
 msgstr "Đang chờ xử lý_manual"
@@ -5253,7 +5253,7 @@ msgstr "Khôi phục"
 msgid "Restore Defaults"
 msgstr "Khôi phục mặc định"
 
-#. Label of a JSON field in DocType 'Action'
+#. Label of a JSON field in DocType Mira Action
 #. Label of a Select field in DocType 'ApplicantPool'
 #: mbw_mira/mbw_mira/doctype/action/action.json
 #: mbw_mira/mbw_mira/doctype/applicantpool/applicantpool.json
@@ -5312,7 +5312,7 @@ msgstr "Hàng"
 msgid "Running"
 msgstr "Đang chạy"
 
-#. Option for the 'Status' (Select) field in DocType 'Action'
+#. Option for the 'Status' (Select) field in DocType Mira Action
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "SCHEDULED"
 msgstr "Dự kiến"
@@ -5333,7 +5333,7 @@ msgstr "Send_email"
 msgid "SEND_SMS"
 msgstr "Send_sms"
 
-#. Option for the 'Status' (Select) field in DocType 'Action'
+#. Option for the 'Status' (Select) field in DocType Mira Action
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "SKIPPED"
 msgstr "Bỏ qua"
@@ -5453,7 +5453,7 @@ msgstr "Lịch trình nuôi dưỡng"
 msgid "Scheduled"
 msgstr "Dự kiến"
 
-#. Label of a Datetime field in DocType 'Action'
+#. Label of a Datetime field in DocType Mira Action
 #: frontend/src/pages/ActionManagement.vue:210
 #: frontend/src/pages/ActionManagement.vue:408
 #: frontend/src/pages/CampaignDetailView.vue:445
@@ -6020,7 +6020,7 @@ msgstr "Ngày bắt đầu không thể sau ngày kết thúc"
 msgid "Starting Step"
 msgstr "Bước bắt đầu"
 
-#. Label of a Select field in DocType 'Action'
+#. Label of a Select field in DocType Mira Action
 #. Label of a Select field in DocType 'ApplicantPool'
 #. Label of a Select field in DocType 'Campaign'
 #. Label of a Select field in DocType 'Candidate'
@@ -6304,7 +6304,7 @@ msgstr "Bể bơi tài năng đã được cứu thành công"
 msgid "TalentPool"
 msgstr "Talentpool"
 
-#. Label of a Link field in DocType 'Action'
+#. Label of a Link field in DocType Mira Action
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "TalentProfile Campaign"
 msgstr "Chiến dịch TalentProfile"

@@ -44,7 +44,7 @@ msgstr ""
 msgid "(Foreign Key -> Campaign)"
 msgstr ""
 
-#. Description of the 'Campaign Step' (Link) field in DocType 'Action'
+#. Description of the 'Campaign Step' (Link) field in DocType Mira Action
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "(Foreign Key -> CampaignStep) Bước đã tạo ra hành động này."
 msgstr ""
@@ -55,7 +55,7 @@ msgstr ""
 msgid "(Foreign Key -> Candidate)"
 msgstr ""
 
-#. Description of the 'TalentProfile Campaign' (Link) field in DocType 'Action'
+#. Description of the 'TalentProfile Campaign' (Link) field in DocType Mira Action
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "(Foreign Key -> CandidateCampaign)"
 msgstr ""
@@ -219,7 +219,7 @@ msgstr ""
 
 #. Name of a DocType
 #: mbw_mira/mbw_mira/doctype/action/action.json
-msgid "Action"
+msgid Mira Action
 msgstr ""
 
 #. Label of a JSON field in DocType 'CampaignTemplateStep'
@@ -692,7 +692,7 @@ msgstr ""
 
 #. Name of a DocType
 #: mbw_mira/mbw_mira/doctype/applicantpool/applicantpool.json
-msgid "ApplicantPool"
+msgid Mira Applicant
 msgstr ""
 
 #. Label of a Datetime field in DocType 'ApplicantPool'
@@ -832,7 +832,7 @@ msgstr ""
 msgid "Assigned Profiles"
 msgstr ""
 
-#. Label of a Link field in DocType 'Action'
+#. Label of a Link field in DocType Mira Action
 #: frontend/src/pages/ActionManagement.vue:183
 #: frontend/src/pages/ActionManagement.vue:212
 #: frontend/src/pages/ActionManagement.vue:399
@@ -1108,7 +1108,7 @@ msgstr ""
 msgid "Campaign Progress"
 msgstr ""
 
-#. Label of a Link field in DocType 'Action'
+#. Label of a Link field in DocType Mira Action
 #: frontend/src/pages/ActionManagement.vue:169
 #: frontend/src/pages/ActionManagement.vue:208
 #: frontend/src/pages/ActionManagement.vue:382
@@ -2303,7 +2303,7 @@ msgstr ""
 msgid "EVENT"
 msgstr ""
 
-#. Option for the 'Status' (Select) field in DocType 'Action'
+#. Option for the 'Status' (Select) field in DocType Mira Action
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "EXECUTED"
 msgstr ""
@@ -2849,7 +2849,7 @@ msgstr ""
 msgid "Executed"
 msgstr ""
 
-#. Label of a Datetime field in DocType 'Action'
+#. Label of a Datetime field in DocType Mira Action
 #: frontend/src/pages/ActionManagement.vue:211
 #: frontend/src/pages/ActionManagement.vue:413
 #: frontend/src/pages/CampaignDetailView.vue:446
@@ -2896,7 +2896,7 @@ msgstr ""
 msgid "External data source"
 msgstr ""
 
-#. Option for the 'Status' (Select) field in DocType 'Action'
+#. Option for the 'Status' (Select) field in DocType Mira Action
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "FAILED"
 msgstr ""
@@ -4676,7 +4676,7 @@ msgstr ""
 msgid "PAUSED"
 msgstr ""
 
-#. Option for the 'Status' (Select) field in DocType 'Action'
+#. Option for the 'Status' (Select) field in DocType Mira Action
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "PENDING_MANUAL"
 msgstr ""
@@ -5117,7 +5117,7 @@ msgstr ""
 msgid "Restore Defaults"
 msgstr ""
 
-#. Label of a JSON field in DocType 'Action'
+#. Label of a JSON field in DocType Mira Action
 #. Label of a Select field in DocType 'ApplicantPool'
 #: mbw_mira/mbw_mira/doctype/action/action.json
 #: mbw_mira/mbw_mira/doctype/applicantpool/applicantpool.json
@@ -5174,7 +5174,7 @@ msgstr ""
 msgid "Running"
 msgstr ""
 
-#. Option for the 'Status' (Select) field in DocType 'Action'
+#. Option for the 'Status' (Select) field in DocType Mira Action
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "SCHEDULED"
 msgstr ""
@@ -5195,7 +5195,7 @@ msgstr ""
 msgid "SEND_SMS"
 msgstr ""
 
-#. Option for the 'Status' (Select) field in DocType 'Action'
+#. Option for the 'Status' (Select) field in DocType Mira Action
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "SKIPPED"
 msgstr ""
@@ -5315,7 +5315,7 @@ msgstr ""
 msgid "Scheduled"
 msgstr ""
 
-#. Label of a Datetime field in DocType 'Action'
+#. Label of a Datetime field in DocType Mira Action
 #: frontend/src/pages/ActionManagement.vue:210
 #: frontend/src/pages/ActionManagement.vue:408
 #: frontend/src/pages/CampaignDetailView.vue:445
@@ -5875,7 +5875,7 @@ msgstr ""
 msgid "Starting Step"
 msgstr ""
 
-#. Label of a Select field in DocType 'Action'
+#. Label of a Select field in DocType Mira Action
 #. Label of a Select field in DocType 'ApplicantPool'
 #. Label of a Select field in DocType 'Campaign'
 #. Label of a Select field in DocType 'Candidate'
@@ -6156,7 +6156,7 @@ msgstr ""
 msgid "TalentPool"
 msgstr ""
 
-#. Label of a Link field in DocType 'Action'
+#. Label of a Link field in DocType Mira Action
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "TalentProfile Campaign"
 msgstr ""

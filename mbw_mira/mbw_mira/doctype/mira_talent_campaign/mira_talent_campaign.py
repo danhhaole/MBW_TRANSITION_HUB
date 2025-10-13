@@ -59,7 +59,7 @@ def process_candidate_campaign_active():
                 else "PENDING_MANUAL"
             )
 
-            action = frappe.new_doc("Action")
+            action = frappe.new_doc(Mira Action)
             action.update(
                 {
                     "candidate_campaign_id": can_campaign.name,

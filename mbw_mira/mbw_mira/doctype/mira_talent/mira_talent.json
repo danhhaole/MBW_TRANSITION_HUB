@@ -5,7 +5,6 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "contact_id",
   "full_name",
   "gender",
   "date_of_birth",
@@ -149,18 +148,11 @@
    "fieldname": "phone",
    "fieldtype": "Data",
    "label": "Contact Phone"
-  },
-  {
-   "fieldname": "contact_id",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Contact",
-   "options": "Mira Contact"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-06 14:12:17.661688",
+ "modified": "2025-10-13 11:49:06.762932",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Talent",

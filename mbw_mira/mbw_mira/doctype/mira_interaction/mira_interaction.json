@@ -27,7 +27,7 @@
    "fieldname": "action",
    "fieldtype": "Link",
    "label": "Source Action",
-   "options": "Action"
+   "options": "Mira Action"
   },
   {
    "description": "Li\u00ean k\u1ebft m\u00e0 \u1ee9ng vi\u00ean \u0111\u00e3 nh\u1ea5p v\u00e0o (n\u1ebfu c\u00f3)",
@@ -63,7 +63,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-10 09:05:53.518066",
+ "modified": "2025-10-13 10:47:05.475513",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Interaction",
