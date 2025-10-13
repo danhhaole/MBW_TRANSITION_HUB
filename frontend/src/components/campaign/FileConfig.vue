@@ -8,7 +8,7 @@
         </label>
 
         <FileUploader :fileTypes="['.csv', '.xlsx', '.xls']" :upload-args="{
-          doctype: 'Campaign',
+          doctype: "Mira Campaign",
           docname: 'temp',
           private: false,
         }" v-model="uploadedFileUrl" @success="handleFileUploadSuccess">

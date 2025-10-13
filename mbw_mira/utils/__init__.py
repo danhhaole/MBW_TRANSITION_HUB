@@ -19,7 +19,7 @@ def send_email_job(talentprofile_id, action_id, step_id):
     # Lấy thông tin candidate
     talentprofiles = frappe.get_cached_doc("Mira Talent", talentprofile_id)
     action = frappe.get_doc(Mira Action, action_id)
-    step = frappe.get_cached_doc("CampaignStep", step_id)
+    step = frappe.get_cached_doc("Mira Campaign Step", step_id)
 
     logger = frappe.logger("campaign")
     if not talentprofiles.contact_email:
@@ -98,7 +98,7 @@ def send_sms_job(talentprofile_id, action_id, step_id):
     try:
         talentprofiles = frappe.get_cached_doc("Mira Prospect", talentprofile_id)
         action = frappe.get_doc(Mira Action, action_id)
-        step = frappe.get_cached_doc("CampaignStep", step_id)
+        step = frappe.get_cached_doc("Mira Campaign Step", step_id)
         # Gửi thật nếu có provider
         phone = talentprofiles.phone
         message = None

@@ -20,7 +20,7 @@
             <div>
               <div class="text-lg font-semibold text-gray-900">{{ task.candidate }}</div>
               <div class="text-sm text-gray-600">
-                {{ __('Campaign') }}: {{ task.campaign }}
+                {{ __("Mira Campaign") }}: {{ task.campaign }}
               </div>
               <div class="text-xs text-gray-500">
                 {{ __('Current status') }}: {{ getStatusLabel(task.status) }}

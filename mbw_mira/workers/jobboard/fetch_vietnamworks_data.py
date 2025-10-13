@@ -10,7 +10,7 @@ def fetch_vietnamworks_data(campaign_name):
     """
     logger.info(f"[VietnamWorks] Fetching data for campaign: {campaign_name}")
 
-    campaign = frappe.get_doc("Campaign", campaign_name)
+    campaign = frappe.get_doc("Mira Campaign", campaign_name)
     source_name = campaign.source
 
     with VietnamWorksProvider(source_name) as provider:

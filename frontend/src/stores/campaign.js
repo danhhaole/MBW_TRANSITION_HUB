@@ -119,7 +119,7 @@ export const useCampaignStore = defineStore('campaign', {
         }
 
         const response = await call('frappe.client.get_list', {
-          doctype: 'Campaign',
+          doctype: "Mira Campaign",
           fields: ['*'],
           filters: options.filters,
           or_filters: options.or_filters,
@@ -175,7 +175,7 @@ export const useCampaignStore = defineStore('campaign', {
         this.error = null
         
         const response = await call('frappe.client.get', {
-          doctype: 'Campaign',
+          doctype: "Mira Campaign",
           name: name
         })
         console.log(response)
@@ -226,7 +226,7 @@ export const useCampaignStore = defineStore('campaign', {
 
         const response = await call('frappe.client.insert', {
           doc: {
-            doctype: 'Campaign',
+            doctype: "Mira Campaign",
             campaign_name: formData.campaign_name.trim(),
             description: formData.description || '',
             is_active: formData.is_active || 0,
@@ -313,7 +313,7 @@ export const useCampaignStore = defineStore('campaign', {
         console.log('📁 source_file being sent:', updateData.source_file)
 
         const response = await call('frappe.client.set_value', {
-          doctype: 'Campaign',
+          doctype: "Mira Campaign",
           name: name,
           fieldname: updateData
         })
@@ -371,7 +371,7 @@ export const useCampaignStore = defineStore('campaign', {
         console.log('🚀 Sending basic updateData to API:', updateData)
 
         const response = await call('frappe.client.set_value', {
-          doctype: 'Campaign',
+          doctype: "Mira Campaign",
           name: name,
           fieldname: updateData
         })
@@ -399,7 +399,7 @@ export const useCampaignStore = defineStore('campaign', {
         this.error = null
 
         const response = await call('frappe.client.delete', {
-          doctype: 'Campaign',
+          doctype: "Mira Campaign",
           name: name
         })
         if (response) {

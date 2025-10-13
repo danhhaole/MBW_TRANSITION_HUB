@@ -657,7 +657,7 @@ const statusOptions = [
 
 // Table headers
 const campaignHeaders = [
-  { title: 'Campaign', key: 'campaign_id' },
+  { title: "Mira Campaign", key: 'campaign_id' },
   { title: 'Status', key: 'status' },
   { title: 'Progress', key: 'current_step_order' },
   { title: 'Next Action', key: 'next_action_at' },

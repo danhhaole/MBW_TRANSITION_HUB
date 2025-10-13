@@ -42,8 +42,8 @@
    "description": "(Foreign Key -> Campaign)",
    "fieldname": "campaign_id",
    "fieldtype": "Link",
-   "label": "Campaign",
-   "options": "Campaign"
+   "label": "Mira Campaign",
+   "options": "Mira Campaign"
   },
   {
    "description": "(Foreign Key -> Candidate)",

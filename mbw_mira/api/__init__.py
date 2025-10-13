@@ -246,7 +246,7 @@ def get_campaign_qrcode():
         frappe.throw("Missing campaign_id")
 
     # Lấy campaign
-    campaign = frappe.db.get_value("Campaign", campaign_id,["*"],as_dict=1)
+    campaign = frappe.db.get_value("Mira Campaign", campaign_id,["*"],as_dict=1)
 
     if not campaign.is_active or campaign.status != "ACTIVE":
         frappe.throw("Campaign is not active")
@@ -299,7 +299,7 @@ def submit_talent_profile():
     campaign_id = data["campaign"]
 
     # Tránh permission error, dùng get_value thay vì get_doc
-    campaign = frappe.db.get_value("Campaign", campaign_id, ["name", "is_active"], as_dict=True)
+    campaign = frappe.db.get_value("Mira Campaign", campaign_id, ["name", "is_active"], as_dict=True)
     if not campaign or not campaign.is_active:
         frappe.throw(_("This campaign is not active"))
 
@@ -407,7 +407,7 @@ def submit_application():
         frappe.throw(_("Email and campaign_id are required."))
 
     # 1. Kiểm tra campaign hợp lệ
-    campaign = frappe.db.get_value("Campaign", campaign_id, ["name", "is_active"], as_dict=True)
+    campaign = frappe.db.get_value("Mira Campaign", campaign_id, ["name", "is_active"], as_dict=True)
     if not campaign or not campaign.is_active:
         frappe.throw(_("This campaign is not active"))
 
@@ -496,7 +496,7 @@ def get_campaign_details_for_submit():
 
     # Lấy thông tin campaign (tránh quyền)
     campaign = frappe.db.get_value(
-        "Campaign",
+        "Mira Campaign",
         campaign_id,
         ["name", "campaign_name", "start_date", "end_date", "status", "source", "target_segment","criteria"],
         as_dict=True

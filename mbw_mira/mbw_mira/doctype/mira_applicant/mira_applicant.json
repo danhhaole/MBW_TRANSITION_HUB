@@ -29,8 +29,8 @@
   {
    "fieldname": "campaign_id",
    "fieldtype": "Link",
-   "label": "Campaign",
-   "options": "Campaign"
+   "label": "Mira Campaign",
+   "options": "Mira Campaign"
   },
   {
    "fieldname": "segment_id",

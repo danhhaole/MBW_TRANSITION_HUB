@@ -1,7 +1,7 @@
 // Copyright (c) 2025, MBWCloud Co. and contributors
 // For license information, please see license.txt
 
-// frappe.ui.form.on("CampaignStep", {
+// frappe.ui.form.on("Mira Campaign Step", {
 // 	refresh(frm) {
 
 // 	},

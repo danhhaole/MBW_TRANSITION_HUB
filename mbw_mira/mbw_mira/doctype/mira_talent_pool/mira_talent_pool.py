@@ -307,7 +307,7 @@ def get_talent_detail_view(pool_id: str):
     campaign_data = []
     for c in campaigns:
         campaign_info = frappe.db.get_value(
-            "Campaign",
+            "Mira Campaign",
             c.campaign_id,
             ["campaign_name", "name"],
             as_dict=True
@@ -334,13 +334,13 @@ def get_talent_detail_view(pool_id: str):
 
         for a in actions:
             step = frappe.db.get_value(
-                "CampaignStep",
+                "Mira Campaign Step",
                 a.campaign_step,
                 ["campaign_step_name", "action_type", "step_order"],
                 as_dict=True
             )
             a["campaign_id"] = c.campaign_id
-            a["campaign_name"] = frappe.db.get_value("Campaign", c.campaign_id, "campaign_name")
+            a["campaign_name"] = frappe.db.get_value("Mira Campaign", c.campaign_id, "campaign_name")
             a["step_name"] = step.campaign_step_name if step else None
             a["action_type"] = step.action_type if step else None
             a["step_order"] = step.step_order if step else None

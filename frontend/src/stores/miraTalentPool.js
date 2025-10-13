@@ -454,7 +454,7 @@ export const useMiraTalentPoolStore = defineStore('miraTalentPool', {
       try {
         const [campaigns, segments] = await Promise.all([
           call('frappe.client.get_list', {
-            doctype: 'Campaign',
+            doctype: "Mira Campaign",
             fields: ['name', 'campaign_name'],
             order_by: 'campaign_name asc',
             limit_page_length: 1000

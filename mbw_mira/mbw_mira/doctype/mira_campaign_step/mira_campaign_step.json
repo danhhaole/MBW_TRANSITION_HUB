@@ -43,8 +43,8 @@
   {
    "fieldname": "campaign",
    "fieldtype": "Link",
-   "label": "Campaign",
-   "options": "Campaign"
+   "label": "Mira Campaign",
+   "options": "Mira Campaign"
   },
   {
    "fieldname": "campaign_step_name",
@@ -80,10 +80,10 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-02 11:36:11.228590",
+ "modified": "2025-10-13 11:54:25.684669",
  "modified_by": "Administrator",
  "module": "MBW Mira",
- "name": "CampaignStep",
+ "name": "Mira Campaign Step",
  "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [

@@ -44,7 +44,7 @@ def process_candidate_campaign_active():
         for can_campaign in candidate_campaigns:
             # Lấy step theo Campaign
             step = frappe.db.get_value(
-                "CampaignStep",
+                "Mira Campaign Step",
                 {
                     "campaign": can_campaign.campaign_id,
                     "step_order": can_campaign.current_step_order,

@@ -344,8 +344,8 @@
             />
             <Link
               v-model="editItem.campaign_id"
-              :doctype="'Campaign'"
-              label="Campaign"
+              :doctype=""Mira Campaign""
+              label="Mira Campaign"
               :disabled="true"
             />
             <Link
@@ -424,7 +424,7 @@
             />
             <FormControl
               type="text"
-              label="Campaign"
+              label="Mira Campaign"
               :model-value="viewItem.campaign_id"
               disabled
             />
@@ -583,7 +583,7 @@ const deleteItem = ref(null);
 
 const editFields = [
   { fieldname: "talent_id", label: "Talent", readonly: true },
-  { fieldname: "campaign_id", label: "Campaign", readonly: true },
+  { fieldname: "campaign_id", label: "Mira Campaign", readonly: true },
   { fieldname: "segment_id", label: "Segment", readonly: true },
   { fieldname: "application_status", label: "Status", readonly: false },
   { fieldname: "result", label: "Result", readonly: false },

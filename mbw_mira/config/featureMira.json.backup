@@ -13,7 +13,7 @@
           "is_active": 1,
           "permissions": [
             {
-              "doctype": "Campaign",
+              "doctype": "Mira Campaign",
               "create": 1,
               "read": 1,
               "write": 1,
@@ -26,7 +26,7 @@
               "import": 0
             },
             {
-              "doctype": "CampaignStep",
+              "doctype": "Mira Campaign Step",
               "create": 1,
               "read": 1,
               "write": 1,
@@ -86,7 +86,7 @@
           "is_active": 1,
           "permissions": [
             {
-              "doctype": "Campaign",
+              "doctype": "Mira Campaign",
               "create": 1,
               "read": 1,
               "write": 1,
@@ -99,7 +99,7 @@
               "import": 0
             },
             {
-              "doctype": "CampaignStep",
+              "doctype": "Mira Campaign Step",
               "create": 1,
               "read": 1,
               "write": 1,
@@ -133,7 +133,7 @@
           "is_active": 1,
           "permissions": [
             {
-              "doctype": "Campaign",
+              "doctype": "Mira Campaign",
               "create": 0,
               "read": 1,
               "write": 1,
@@ -146,7 +146,7 @@
               "import": 0
             },
             {
-              "doctype": "CampaignStep",
+              "doctype": "Mira Campaign Step",
               "create": 0,
               "read": 1,
               "write": 1,
@@ -193,7 +193,7 @@
               "import": 0
             },
             {
-              "doctype": "Campaign",
+              "doctype": "Mira Campaign",
               "create": 0,
               "read": 1,
               "write": 0,
@@ -227,7 +227,7 @@
               "import": 0
             },
             {
-              "doctype": "Campaign",
+              "doctype": "Mira Campaign",
               "create": 0,
               "read": 1,
               "write": 0,
@@ -316,7 +316,7 @@
           "is_active": 1,
           "permissions": [
             {
-              "doctype": "Campaign",
+              "doctype": "Mira Campaign",
               "create": 0,
               "read": 1,
               "write": 0,
@@ -363,7 +363,7 @@
           "is_active": 1,
           "permissions": [
             {
-              "doctype": "Campaign",
+              "doctype": "Mira Campaign",
               "create": 0,
               "read": 1,
               "write": 0,
@@ -477,7 +477,7 @@
           "is_active": 1,
           "permissions": [
             {
-              "doctype": "Campaign",
+              "doctype": "Mira Campaign",
               "create": 0,
               "read": 1,
               "write": 0,
@@ -550,7 +550,7 @@
           "is_active": 1,
           "permissions": [
             {
-              "doctype": "Campaign",
+              "doctype": "Mira Campaign",
               "create": 0,
               "read": 1,
               "write": 0,
@@ -642,7 +642,7 @@
               "import": 0
             },
             {
-              "doctype": "Campaign",
+              "doctype": "Mira Campaign",
               "create": 0,
               "read": 1,
               "write": 0,
@@ -1005,7 +1005,7 @@
               "import": 0
             },
             {
-              "doctype": "Campaign",
+              "doctype": "Mira Campaign",
               "create": 0,
               "read": 1,
               "write": 0,
@@ -1152,7 +1152,7 @@
               "import": 0
             },
             {
-              "doctype": "Campaign",
+              "doctype": "Mira Campaign",
               "create": 0,
               "read": 1,
               "write": 0,

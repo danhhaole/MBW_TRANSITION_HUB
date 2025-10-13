@@ -32,7 +32,7 @@ def update_step_result_talent_campaign(doc):
 
 	current_order = talent_campaign.current_step_order
 	next_step = frappe.get_all(
-		"CampaignStep",
+		"Mira Campaign Step",
 		filters={"campaign": talent_campaign.campaign_id, "step_order": current_order + 1},
 		fields=["name", "step_order", "delay_in_days"],
 		limit=1,
@@ -51,7 +51,7 @@ def update_step_result_talent_campaign(doc):
 
 
 def update_current_campaign(self):
-	campaign = frappe.get_doc("Campaign",self.campaign)
+	campaign = frappe.get_doc("Mira Campaign",self.campaign)
 	current += campaign.current
 	if current > campaign.total:
 		current = campaign.total
@@ -73,7 +73,7 @@ def get_mira_action_worker(step):
 	#Duyệt danh sách mira_actions, tìm step nào có mira_action_type là gửi email
 	mira_actions_name =[]
 	for mira_action in mira_actions:
-		step_exists = frappe.db.exists("CampaignStep",{"name":mira_action.campaign_step, "mira_action_type":step})
+		step_exists = frappe.db.exists("Mira Campaign Step",{"name":mira_action.campaign_step, "mira_action_type":step})
 		if step_exists:
 			mira_actions_name.append(mira_action)
 	return mira_actions_name
@@ -110,7 +110,7 @@ def _get_enriched_mira_actions(mira_action_rows):
     user_ids = list({row.get("assignee_id") for row in mira_action_rows if row.get("assignee_id")})
 
     steps = frappe.get_all(
-        "CampaignStep",
+        "Mira Campaign Step",
         filters={"name": ["in", step_names]} if step_names else {},
         fields=["name", "campaign_step_name", "campaign", "mira_action_type"],
     ) if step_names else []
@@ -118,7 +118,7 @@ def _get_enriched_mira_actions(mira_action_rows):
 
     campaign_ids = list({s.get("campaign") for s in steps}) if steps else []
     campaigns = frappe.get_all(
-        "Campaign",
+        "Mira Campaign",
         filters={"name": ["in", campaign_ids]} if campaign_ids else {},
         fields=["name", "campaign_name"],
     ) if campaign_ids else []

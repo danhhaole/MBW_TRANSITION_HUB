@@ -32,7 +32,7 @@ def get_prospects_for_campaign(campaign_id):
     """
     Lấy Mira Prospect
     """
-    mira_prospect = frappe.db.get_value("Campaign", campaign_id, "mira_prospect")
+    mira_prospect = frappe.db.get_value("Mira Campaign", campaign_id, "mira_prospect")
     return mira_prospect
 
 
@@ -41,7 +41,7 @@ def get_first_campaign_step(campaign_id):
     Lấy bước đầu tiên (step_order nhỏ nhất) của CampaignStep
     """
     step = frappe.get_all(
-        "CampaignStep",
+        "Mira Campaign Step",
         filters={"campaign": campaign_id},
         fields=["name", "step_order","delay_in_days"],
         order_by="step_order asc",

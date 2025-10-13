@@ -46,7 +46,7 @@ def create_campaign(**kwargs):
     if status not in allowed_status:
         status = "DRAFT"
 
-    doc = frappe.new_doc("Campaign")
+    doc = frappe.new_doc("Mira Campaign")
     doc.campaign_name = campaign_name
     doc.description = kwargs.get("description") or ""
     doc.type = kwargs.get("type") or "NURTURING"
@@ -140,7 +140,7 @@ def update_campaign(**kwargs):
         raise frappe.ValidationError(_("Campaign name is required for update"))
 
     try:
-        doc = frappe.get_doc("Campaign", name)
+        doc = frappe.get_doc("Mira Campaign", name)
     except frappe.DoesNotExistError:
         raise frappe.ValidationError(_("Campaign {0} not found").format(name))
 
@@ -271,9 +271,9 @@ def save_campaign_step(**kwargs):
     is_update = bool(name)
 
     if is_update:
-        doc = frappe.get_doc("CampaignStep", name)
+        doc = frappe.get_doc("Mira Campaign Step", name)
     else:
-        doc = frappe.new_doc("CampaignStep")
+        doc = frappe.new_doc("Mira Campaign Step")
     # Xử lý campaign field đặc biệt
     campaign_value = kwargs.get("campaign")
     if campaign_value:
@@ -283,7 +283,7 @@ def save_campaign_step(**kwargs):
         
         # Lấy campaign_name từ Campaign để set vào campaign_step_name
         try:
-            campaign_doc = frappe.get_doc("Campaign", campaign_value)
+            campaign_doc = frappe.get_doc("Mira Campaign", campaign_value)
             campaign_name = campaign_doc.campaign_name
             print(f"🔍 Setting campaign_step_name = {campaign_name} (from Campaign {campaign_value})")
             doc.campaign_step_name = campaign_name
@@ -323,7 +323,7 @@ def save_campaign_step(**kwargs):
                 next_order = int(provided_step_order)
             elif campaign_value:
                 max_rows = frappe.get_all(
-                    "CampaignStep",
+                    "Mira Campaign Step",
                     filters={"campaign": campaign_value},
                     fields=["max(step_order) as max_order"],
                 )
@@ -417,7 +417,7 @@ def dev_seed_autopost_test(**kwargs):
     job_doc.insert(ignore_permissions=True)
 
     # 2) Tạo Campaign
-    campaign_doc = frappe.new_doc("Campaign")
+    campaign_doc = frappe.new_doc("Mira Campaign")
     campaign_doc.campaign_name = campaign_name
     campaign_doc.description = f"Campaign test auto post cho {job_title}"
     campaign_doc.type = "ATTRACTION"
@@ -431,7 +431,7 @@ def dev_seed_autopost_test(**kwargs):
     campaign_doc.insert(ignore_permissions=True)
 
     # 3) Tạo CampaignStep với scheduled_at
-    step_doc = frappe.new_doc("CampaignStep")
+    step_doc = frappe.new_doc("Mira Campaign Step")
     step_doc.campaign = campaign_doc.name
     step_doc.campaign_step_name = f"Post {job_title}"
     step_doc.step_order = 1
@@ -539,7 +539,7 @@ def get_job_qrcode(campaign_id, target_url=None):
     """
     try:
         # Verify campaign exists
-        if not frappe.db.exists("Campaign", campaign_id):
+        if not frappe.db.exists("Mira Campaign", campaign_id):
             return {"status": "error", "message": "Campaign not found"}
         
         # Use provided target_url or generate default

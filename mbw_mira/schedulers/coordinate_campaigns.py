@@ -13,7 +13,7 @@ def run():
     frappe.logger().info(f"[Coordinate Campaigns] Running at {today}")
 
     campaigns = frappe.get_all(
-        "Campaign",
+        "Mira Campaign",
         fields=[
             "name", "campaign_name", "start_date", "end_date", 
             "is_active", "status"
@@ -25,20 +25,20 @@ def run():
 
         # check is_active flag
         if not c.is_active and c.status != "PAUSED":
-            frappe.db.set_value("Campaign", c.name, "status", "PAUSED")
+            frappe.db.set_value("Mira Campaign", c.name, "status", "PAUSED")
             updated = True
             frappe.logger().info(f"Paused campaign: {c.campaign_name} (manually deactivated)")
 
         # check start_date
         elif c.is_active and c.start_date and c.start_date <= today:
             if c.status in ("DRAFT", "PAUSED"):
-                frappe.db.set_value("Campaign", c.name, "status", "ACTIVE")
+                frappe.db.set_value("Mira Campaign", c.name, "status", "ACTIVE")
                 updated = True
                 frappe.logger().info(f"Activated campaign: {c.campaign_name}")
 
         # check end_date
         if c.end_date and c.end_date < today and c.status != "ARCHIVED":
-            frappe.db.set_value("Campaign", c.name, "status", "ARCHIVED")
+            frappe.db.set_value("Mira Campaign", c.name, "status", "ARCHIVED")
             updated = True
             frappe.logger().info(f"Archived campaign: {c.campaign_name} (ended)")
 

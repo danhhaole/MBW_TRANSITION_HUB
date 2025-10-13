@@ -6,7 +6,7 @@ from frappe.model.document import Document
 from frappe.utils import cint
 from mbw_mira.api.common import delete_doc, get_filter_options, get_form_data, get_list_data, save_doc
 
-class CampaignStep(Document):
+class MiraCampaignStep(Document):
 	pass
 
 	def after_insert(self):
@@ -19,8 +19,8 @@ class CampaignStep(Document):
 			update_total_campaign_step(self)
 
 def update_total_campaign_step(self):
-	campaign = frappe.get_doc("Campaign",self.campaign)
-	total_step = frappe.db.count("CampaignStep",{"campaign":self.campaign})
+	campaign = frappe.get_doc("Mira Campaign",self.campaign)
+	total_step = frappe.db.count("MiraCampaignStep",{"campaign":self.campaign})
 	campaign.update({
 		"total":total_step
     })
@@ -72,7 +72,7 @@ def get_campaign_steps_paginated(
         
         # Get data using common function
         result = get_list_data(
-            doctype="CampaignStep",
+            doctype="MiraCampaignStep",
             filters=filters,
             order_by=order_by,
             page_length=limit,
@@ -128,7 +128,7 @@ def get_campaign_step_by_name(name):
     Get campaign step details by name
     """
     try:
-        return get_form_data("CampaignStep", name)
+        return get_form_data("MiraCampaignStep", name)
     except Exception as e:
         frappe.log_error(f"Error in get_campaign_step_by_name: {str(e)}")
         return {"success": False, "error": str(e)}
@@ -151,13 +151,13 @@ def create_campaign_step(data):
         # Auto-assign step order if not provided
         if not data.get("step_order"):
             max_order = frappe.db.get_value(
-                "CampaignStep", 
+                "MiraCampaignStep", 
                 {"campaign": data.get("campaign")}, 
                 "MAX(step_order)"
             ) or 0
             data["step_order"] = max_order + 1
         
-        return save_doc("CampaignStep", data)
+        return save_doc("MiraCampaignStep", data)
     except Exception as e:
         frappe.log_error(f"Error in create_campaign_step: {str(e)}")
         return {"success": False, "error": str(e)}
@@ -177,7 +177,7 @@ def update_campaign_step(name, data):
         if not data.get("action_type"):
             return {"success": False, "error": "Action type is required"}
         
-        return save_doc("CampaignStep", data, name)
+        return save_doc("MiraCampaignStep", data, name)
     except Exception as e:
         frappe.log_error(f"Error in update_campaign_step: {str(e)}")
         return {"success": False, "error": str(e)}
@@ -189,7 +189,7 @@ def delete_campaign_step(name):
     Delete campaign step
     """
     try:
-        return delete_doc("CampaignStep", name)
+        return delete_doc("MiraCampaignStep", name)
     except Exception as e:
         frappe.log_error(f"Error in delete_campaign_step: {str(e)}")
         return {"success": False, "error": str(e)}
@@ -201,19 +201,19 @@ def get_campaign_step_stats():
     Get campaign step statistics
     """
     try:
-        total_steps = frappe.db.count("CampaignStep")
+        total_steps = frappe.db.count("MiraCampaignStep")
         
         # Count by action type
         action_type_stats = frappe.db.sql("""
             SELECT action_type, COUNT(*) as count
-            FROM `tabCampaignStep`
+            FROM `tabMiraCampaignStep`
             GROUP BY action_type
         """, as_dict=True)
         
         # Count by campaign
         campaign_stats = frappe.db.sql("""
             SELECT campaign, COUNT(*) as count
-            FROM `tabCampaignStep`
+            FROM `tabMiraCampaignStep`
             GROUP BY campaign
             ORDER BY count DESC
             LIMIT 5
@@ -241,7 +241,7 @@ def search_campaign_steps(query, limit=10):
         
         results = frappe.db.sql("""
             SELECT name, campaign_step_name, campaign, action_type, step_order
-            FROM `tabCampaignStep`
+            FROM `tabMiraCampaignStep`
             WHERE campaign_step_name LIKE %(query)s
             OR template LIKE %(query)s
             ORDER BY step_order
@@ -266,12 +266,12 @@ def get_campaign_step_filter_options():
         options = {}
         
         # Action type options
-        action_type_result = get_filter_options("CampaignStep", "action_type")
+        action_type_result = get_filter_options("MiraCampaignStep", "action_type")
         if action_type_result.get("success"):
             options["action_type"] = action_type_result["options"]
         
         # Campaign options  
-        campaign_result = get_filter_options("CampaignStep", "campaign")
+        campaign_result = get_filter_options("MiraCampaignStep", "campaign")
         if campaign_result.get("success"):
             options["campaign"] = campaign_result["options"]
             
@@ -288,7 +288,7 @@ def get_steps_by_campaign(campaign):
     """
     try:
         steps = frappe.db.get_all(
-            "CampaignStep",
+            "MiraCampaignStep",
             filters={"campaign": campaign},
             fields=["name", "campaign_step_name", "step_order", "action_type", "delay_in_days", "template"],
             order_by="step_order asc"
@@ -312,7 +312,7 @@ def reorder_campaign_steps(campaign, step_orders):
     try:
         for step_order in step_orders:
             frappe.db.set_value(
-                "CampaignStep",
+                "MiraCampaignStep",
                 step_order["name"],
                 "step_order",
                 step_order["order"]

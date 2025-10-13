@@ -10,7 +10,7 @@ def import_contact_from_file(campaign_name: str,source_target:str):
 
     # 1. Lấy thông tin campaign
     campaign = frappe.db.get_value(
-        "Campaign",
+        "Mira Campaign",
         campaign_name,
         [
             "campaign_name", "is_active", "status",
@@ -167,7 +167,7 @@ def import_talent_from_file(campaign_name: str,source_target:str):
     logger = frappe.logger("import_candidates")
     # 1. Lấy thông tin campaign
     campaign = frappe.db.get_value(
-        "Campaign",
+        "Mira Campaign",
         campaign_name,
         [
             "campaign_name", "is_active", "status",

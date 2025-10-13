@@ -9,13 +9,13 @@ class TestCampaignWorkflow(FrappeTestCase):
     def setUp(self):
         # Tạo Campaign
         self.campaign = frappe.get_doc({
-            "doctype": "Campaign",
+            "doctype": "Mira Campaign",
             "campaign_name": "Test Campaign"
         }).insert(ignore_permissions=True)
 
         # Step 1: Gửi Email ngay
         self.step1 = frappe.get_doc({
-            "doctype": "CampaignStep",
+            "doctype": "Mira Campaign Step",
             "campaign": self.campaign.name,
             "step_order": 1,
             "action_type": "SEND_EMAIL",
@@ -25,7 +25,7 @@ class TestCampaignWorkflow(FrappeTestCase):
 
         # Step 2: MANUAL_TASK sau 2 ngày
         self.step2 = frappe.get_doc({
-            "doctype": "CampaignStep",
+            "doctype": "Mira Campaign Step",
             "campaign": self.campaign.name,
             "step_order": 2,
             "action_type": "MANUAL_TASK",
@@ -88,6 +88,6 @@ class TestCampaignWorkflow(FrappeTestCase):
     def tearDown(self):
         # Xóa dữ liệu để đảm bảo clean
         for doctype in [
-            Mira Action, "CandidateCampaign", "CampaignStep", "Candidate", "Campaign"
+            Mira Action, "CandidateCampaign", "Mira Campaign Step", "Candidate", "Mira Campaign"
         ]:
             frappe.db.delete(doctype)

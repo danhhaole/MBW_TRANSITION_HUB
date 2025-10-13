@@ -17,7 +17,7 @@ def run():
     )
 
     for a in actions:
-        step = frappe.db.get_value("CampaignStep", a.campaign_step, "action_type")
+        step = frappe.db.get_value("Mira Campaign Step", a.campaign_step, "action_type")
         if step == "SEND_SMS":
             frappe.enqueue(
                 "mbw_mira.workers.process_action.process_sms_action",

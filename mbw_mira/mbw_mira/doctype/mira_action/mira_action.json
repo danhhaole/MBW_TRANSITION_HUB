@@ -20,7 +20,7 @@
    "fieldname": "campaign_step",
    "fieldtype": "Link",
    "label": "Campaign Step",
-   "options": "CampaignStep"
+   "options": "Mira Campaign Step"
   },
   {
    "fieldname": "status",
@@ -60,7 +60,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-01 16:07:58.295512",
+ "modified": "2025-10-13 11:55:57.702060",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Action",

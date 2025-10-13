@@ -45,7 +45,7 @@ def insert_campaign_step(steps,campaign_name):
         for step in steps:
             if step.get("campaign_step_name"):
                 campaign_step = frappe.get_doc({
-                    "doctype": "CampaignStep",
+                    "doctype": "Mira Campaign Step",
                     "campaign_step_name": step.get("campaign_step_name"),
                     "campaign": campaign_name,
                     "step_order": int(step.get("step_order")),
@@ -149,11 +149,11 @@ def get_campaigns_paginated(page=1, limit=10, search="", status_filter="all", ty
         ]
         
         # Get total count (for pagination)
-        total_count = frappe.db.count('Campaign', filters=filters)
+        total_count = frappe.db.count("Mira Campaign", filters=filters)
         
         # Get paginated data
         campaigns = frappe.get_list(
-            'Campaign',
+            "Mira Campaign",
             fields=fields,
             filters=filters,
             order_by=order_by,
@@ -253,7 +253,7 @@ def get_campaign_stats():
         """, as_dict=True)
         
         # Tổng số campaigns
-        total_campaigns = frappe.db.count('Campaign')
+        total_campaigns = frappe.db.count("Mira Campaign")
         
         return {
             "success": True,
@@ -285,7 +285,7 @@ def search_campaigns(query="", limit=10):
         search_term = f"%{query.strip()}%"
         
         campaigns = frappe.get_list(
-            'Campaign',
+            "Mira Campaign",
             fields=['name', 'campaign_name', 'status', 'type'],
             filters=[
                 ['campaign_name', 'like', search_term]

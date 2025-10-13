@@ -14,7 +14,7 @@ def fetch_mbw_ats_data(campaign_name):
     """
 
     # Lấy thông tin Campaign
-    campaign = frappe.get_doc("Campaign", campaign_name)
+    campaign = frappe.get_doc("Mira Campaign", campaign_name)
     source_name = campaign.source
     segment_id = campaign.target_segment
 

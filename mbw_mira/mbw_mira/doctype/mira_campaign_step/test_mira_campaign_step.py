@@ -5,5 +5,5 @@
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestCampaignStep(FrappeTestCase):
+class TestMiraCampaignStep(FrappeTestCase):
 	pass

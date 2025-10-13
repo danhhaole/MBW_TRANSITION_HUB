@@ -45,7 +45,7 @@
             <FormControl
               v-model="form.campaign_id"
               type="select"
-              label="Campaign"
+              label="Mira Campaign"
               :options="campaignOptions"
               required
               class="mb-2"
@@ -125,7 +125,7 @@
     try {
       // Lấy danh sách campaign
       const campaigns = await call('frappe.client.get_list', {
-        doctype: 'Campaign',
+        doctype: "Mira Campaign",
         fields: ['name', 'campaign_name'],
         filters: {
           status: 'ACTIVE',

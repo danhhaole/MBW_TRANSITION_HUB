@@ -103,13 +103,13 @@
   {
    "fieldname": "campaign_id",
    "fieldtype": "Link",
-   "label": "Campaign",
-   "options": "Campaign"
+   "label": "Mira Campaign",
+   "options": "Mira Campaign"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-03 16:11:34.192491",
+ "modified": "2025-10-13 11:54:25.480619",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Candidate",
@@ -129,6 +129,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []

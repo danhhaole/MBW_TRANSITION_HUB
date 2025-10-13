@@ -47,7 +47,7 @@ def check_pending_action(action_name):
     Worker: cảnh báo Action pending quá lâu
     """
     action = frappe.get_doc(Mira Action, action_name)
-    step_type = frappe.get_value("CampaignStep", action.campaign_step, "action_type")
+    step_type = frappe.get_value("Mira Campaign Step", action.campaign_step, "action_type")
     try:
         return step_type
 

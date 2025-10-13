@@ -157,7 +157,7 @@
                   <div>
                     <div class="text-base font-semibold text-gray-900">{{ currentEditTask.candidate || currentEditTask.assignee_name || __('Task') }}</div>
                     <div class="text-sm text-gray-600">
-                      {{ __('Campaign') }}: {{ currentEditTask.campaign_name || '-' }}
+                      {{ __("Mira Campaign") }}: {{ currentEditTask.campaign_name || '-' }}
                     </div>
                     <div class="text-xs text-gray-500">
                       {{ __('Current status') }}: {{ getStatusLabel(currentEditTask.status) }}

@@ -8,7 +8,7 @@ def sync_campaign_status():
         
         # Lấy tất cả campaigns
         campaigns = frappe.get_all(
-            'Campaign',
+            "Mira Campaign",
             fields=['name', 'status', 'is_active'],
             filters={}
         )
@@ -20,7 +20,7 @@ def sync_campaign_status():
             new_is_active = 1 if campaign.status == "ACTIVE" else 0
             
             if old_is_active != new_is_active:
-                frappe.db.set_value('Campaign', campaign.name, 'is_active', new_is_active)
+                frappe.db.set_value("Mira Campaign", campaign.name, 'is_active', new_is_active)
                 updated_count += 1
                 print(f"✅ Updated {campaign.name}: status={campaign.status}, is_active={old_is_active} -> {new_is_active}")
         

@@ -182,7 +182,7 @@ export const useLadiPageStore = defineStore('ladiPage', {
     async fetchCampaignOptions() {
       try {
         const campaigns = await call('frappe.client.get_list', {
-          doctype: 'Campaign',
+          doctype: "Mira Campaign",
           fields: ['name', 'campaign_name'],
           filters: { status: 'Active' }
         })

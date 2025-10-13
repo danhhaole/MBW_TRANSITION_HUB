@@ -11,7 +11,7 @@ def post_to_linkedin(doc, campaign_name):
         return
 
     try:
-        campaign = frappe.get_doc("Campaign", campaign_name)
+        campaign = frappe.get_doc("Mira Campaign", campaign_name)
         source_name = campaign.source
         with LinkedInProvider(source_name) as provider:
             job_data = {
@@ -37,7 +37,7 @@ def post_to_share(doc, campaign_name):
         return
 
     try:
-        campaign = frappe.get_doc("Campaign", campaign_name)
+        campaign = frappe.get_doc("Mira Campaign", campaign_name)
         source_name = campaign.source
         with LinkedInProvider(source_name) as provider:
             message = f"New Job Opportunity: {doc.job_title}\n\n{doc.description}\nLocation: {doc.location}\nApply now: {doc.linkedin_post_link or frappe.utils.get_url('/apply-job?job={0}').format(doc.name)}"

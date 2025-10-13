@@ -19,7 +19,7 @@ def run():
     )
 
     for a in actions:
-        step = frappe.get_value("CampaignStep", a.campaign_step, "action_type")
+        step = frappe.get_value("Mira Campaign Step", a.campaign_step, "action_type")
         if step not in ("SEND_EMAIL", "SEND_SMS"):
             frappe.enqueue(
                 "mbw_mira.workers.process_action.check_pending_action",

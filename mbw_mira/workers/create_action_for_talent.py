@@ -57,7 +57,7 @@ def get_campaign_step(campaign_id, step_order):
     Lấy CampaignStep theo campaign + step_order
     """
     step = frappe.db.get_value(
-        "CampaignStep",
+        "Mira Campaign Step",
         {
             "campaign": campaign_id,
             "step_order": step_order

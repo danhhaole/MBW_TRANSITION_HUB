@@ -9,7 +9,7 @@ def run():
     """
     today = datetime.now()
     campaigns = frappe.get_all(
-        "Campaign",
+        "Mira Campaign",
         filters={
             "is_active": 1,
             "source_type":"File",

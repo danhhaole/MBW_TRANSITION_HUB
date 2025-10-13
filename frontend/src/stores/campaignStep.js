@@ -140,7 +140,7 @@ export const useCampaignStepStore = defineStore('campaignStep', {
         this.error = null
         
         const response = await call('frappe.client.get', {
-          doctype: 'CampaignStep',
+          doctype: "Mira Campaign Step",
           name: name
         })
         
@@ -179,7 +179,7 @@ export const useCampaignStepStore = defineStore('campaignStep', {
 
         const response = await call('frappe.client.insert', {
           doc: {
-            doctype: 'CampaignStep',
+            doctype: "Mira Campaign Step",
             campaign_step_name: formData.campaign_step_name.trim(),
             description: formData.description || '',
             campaign: formData.campaign,
@@ -235,7 +235,7 @@ export const useCampaignStepStore = defineStore('campaignStep', {
         }
 
         const response = await call('frappe.client.set_value', {
-          doctype: 'CampaignStep',
+          doctype: "Mira Campaign Step",
           name: name,
           fieldname: updateData
         })
@@ -259,7 +259,7 @@ export const useCampaignStepStore = defineStore('campaignStep', {
     async updateStepOrder(name, stepOrder) {
       try {
         const response = await call('frappe.client.set_value', {
-          doctype: 'CampaignStep',
+          doctype: "Mira Campaign Step",
           name: name,
           fieldname: 'step_order',
           value: stepOrder
@@ -278,7 +278,7 @@ export const useCampaignStepStore = defineStore('campaignStep', {
         this.error = null
 
         const response = await call('frappe.client.delete', {
-          doctype: 'CampaignStep',
+          doctype: "Mira Campaign Step",
           name: name
         })
         
@@ -298,7 +298,7 @@ export const useCampaignStepStore = defineStore('campaignStep', {
     async getCampaignOptions() {
       try {
         const response = await call('frappe.client.get_list', {
-          doctype: 'Campaign',
+          doctype: "Mira Campaign",
           fields: ['name', 'campaign_name'],
           limit_page_length: 1000,
           order_by: 'campaign_name asc'

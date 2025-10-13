@@ -200,7 +200,7 @@
  "modified": "2025-10-09 16:47:44.879570",
  "modified_by": "Administrator",
  "module": "MBW Mira",
- "name": "Campaign",
+ "name": "Mira Campaign",
  "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [

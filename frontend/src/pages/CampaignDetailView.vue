@@ -2378,7 +2378,7 @@ const assignCandidate = async () => {
     }
 
     await call("frappe.client.set_value", {
-      doctype: "Campaign",
+      doctype: "Mira Campaign",
       name: route.params.id,
       fieldname: "mira_talent_campaign",
       value: JSON.stringify(current)

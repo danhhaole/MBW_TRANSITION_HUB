@@ -64,7 +64,7 @@
                 <!-- Campaign -->
                 <FormControl
                     type="select"
-                    :label="__('Campaign')"
+                    :label="__("Mira Campaign")"
                     v-model="editForm.campaign"
                     :options="campaignOptions"
                 />

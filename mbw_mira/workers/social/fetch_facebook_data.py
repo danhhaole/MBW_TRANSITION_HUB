@@ -24,7 +24,7 @@ def post_to_feed(doc, campaign_name):
         return
 
     try:
-        campaign = frappe.get_doc("Campaign", campaign_name)
+        campaign = frappe.get_doc("Mira Campaign", campaign_name)
         source_name = campaign.source
         with FacebookProvider(source_name) as provider:
             message = f"New Job Opportunity: {doc.job_title}\n\n{doc.description}\nLocation: {doc.location}\nApply now: {doc.facebook_post_link or frappe.utils.get_url('/apply-job?job={0}').format(doc.name)}"

@@ -28,7 +28,7 @@
         <!-- Campaign -->
         <FormControl
           type="select"
-          :label="__('Campaign')"
+          :label="__("Mira Campaign")"
           v-model="form.campaign"
           :options="campaignOptions"
           :error="formErrors.campaign"
