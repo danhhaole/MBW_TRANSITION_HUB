@@ -1,0 +1,224 @@
+{
+ "actions": [],
+ "autoname": "format:CPG-{YY}{MM}{DD}-{#####}",
+ "creation": "2025-06-27 16:29:38.645422",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "campaign_name",
+  "type",
+  "status",
+  "target_segment",
+  "source_type",
+  "source",
+  "source_file",
+  "source_target",
+  "criteria",
+  "description",
+  "column_break_kxph",
+  "is_active",
+  "owner_id",
+  "start_date",
+  "end_date",
+  "source_config",
+  "total",
+  "current",
+  "select_pages",
+  "last_shared_at",
+  "section_break_social_media",
+  "social_page_id",
+  "social_page_name",
+  "post_schedule_time",
+  "template_content",
+  "social_media_images",
+  "mira_talent_campaign",
+  "column_break_social_media_end"
+ ],
+ "fields": [
+  {
+   "fieldname": "campaign_name",
+   "fieldtype": "Data",
+   "label": "Campaign Name"
+  },
+  {
+   "fieldname": "type",
+   "fieldtype": "Select",
+   "label": "Type",
+   "options": "NURTURING\nATTRACTION\nREFERRAL\nRECRUITMENT\nGATHERING"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "DRAFT\nACTIVE\nPAUSED\nARCHIVED"
+  },
+  {
+   "description": "(Foreign Key -> Mira Segment) Ph\u00e2n kh\u00fac m\u1ee5c ti\u00eau",
+   "fieldname": "target_segment",
+   "fieldtype": "Link",
+   "label": "Target Segment",
+   "options": "Mira Segment"
+  },
+  {
+   "fieldname": "source_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Source Type",
+   "options": "DataSource\nFile\nSearch\nGathering",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.source_type == 'DataSource'",
+   "fieldname": "source",
+   "fieldtype": "Link",
+   "label": "Source",
+   "options": "CandidateDataSource"
+  },
+  {
+   "depends_on": "eval:doc.source_type == 'File'",
+   "fieldname": "source_file",
+   "fieldtype": "Attach",
+   "label": "Source File"
+  },
+  {
+   "fieldname": "source_target",
+   "fieldtype": "Select",
+   "label": "Target Source",
+   "options": "contact\ntalent"
+  },
+  {
+   "fieldname": "criteria",
+   "fieldtype": "JSON",
+   "label": "Criteria"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "column_break_kxph",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "label": "Active"
+  },
+  {
+   "fieldname": "owner_id",
+   "fieldtype": "Link",
+   "label": "Owner ID",
+   "options": "User"
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Datetime",
+   "label": "Start Date"
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Datetime",
+   "label": "End Date"
+  },
+  {
+   "depends_on": "eval:doc.source_type == 'File'",
+   "fieldname": "source_config",
+   "fieldtype": "JSON",
+   "label": "Config"
+  },
+  {
+   "fieldname": "total",
+   "fieldtype": "Int",
+   "hidden": 1,
+   "label": "Total",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "current",
+   "fieldtype": "Int",
+   "hidden": 1,
+   "label": "Current",
+   "read_only": 1
+  },
+  {
+   "fieldname": "select_pages",
+   "fieldtype": "JSON",
+   "label": "Select Page"
+  },
+  {
+   "fieldname": "last_shared_at",
+   "fieldtype": "Datetime",
+   "label": "Last Shared At"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_social_media",
+   "fieldtype": "Section Break",
+   "label": "Social Media Settings"
+  },
+  {
+   "fieldname": "social_page_id",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Social Page ID"
+  },
+  {
+   "fieldname": "social_page_name",
+   "fieldtype": "Data",
+   "label": "Social Media Page"
+  },
+  {
+   "fieldname": "post_schedule_time",
+   "fieldtype": "Datetime",
+   "label": "Scheduled Post Time"
+  },
+  {
+   "fieldname": "template_content",
+   "fieldtype": "Long Text",
+   "label": "Post Content"
+  },
+  {
+   "fieldname": "social_media_images",
+   "fieldtype": "Attach Image",
+   "label": "Post Images"
+  },
+  {
+   "fieldname": "mira_talent_campaign",
+   "fieldtype": "JSON",
+   "label": "Mira Talent Campaign"
+  },
+  {
+   "fieldname": "column_break_social_media_end",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-10-13 12:04:24.275055",
+ "modified_by": "Administrator",
+ "module": "MBW Mira",
+ "name": "Mira Campaign",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
