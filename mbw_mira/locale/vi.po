@@ -314,7 +314,7 @@ msgstr "Kích hoạt nguồn dữ liệu"
 #. Label of a Check field in DocType "Mira Campaign"
 #. Option for the 'Status' (Select) field in DocType 'Mira Data Source'
 #. Label of a Check field in DocType 'Mira Data Source'
-#. Option for the 'Status' (Select) field in DocType 'EmailTemplateEditor'
+#. Option for the 'Status' (Select) field in DocType 'Mira Email Template Editor'
 #: frontend/src/components/CampaignTemplateFormModal.vue:78
 #: frontend/src/components/campaign/CampaignView.vue:41
 #: frontend/src/components/candidateDataSource/CandidateDataSourceFormDirect.vue:214
@@ -764,7 +764,7 @@ msgstr "Áp dụng cho chiến dịch"
 msgid "Apps"
 msgstr "Ứng dụng"
 
-#. Option for the 'Status' (Select) field in DocType 'EmailTemplateEditor'
+#. Option for the 'Status' (Select) field in DocType 'Mira Email Template Editor'
 #: frontend/src/pages/CampaignManagement.vue:224
 #: mbw_mira/mbw_mira/doctype/emailtemplateeditor/emailtemplateeditor.json
 msgid "Archived"
@@ -1859,7 +1859,7 @@ msgid "Created At"
 msgstr "Được tạo lúc"
 
 #. Label of a Link field in DocType 'Mira Data Source'
-#. Label of a Link field in DocType 'EmailTemplateEditor'
+#. Label of a Link field in DocType 'Mira Email Template Editor'
 #. Label of a Link field in DocType 'Mira Ladi Page'
 #. Label of a Link field in DocType 'Mira Short URL'
 #: frontend/src/pages/CampaignDetailView.vue:139
@@ -2142,7 +2142,7 @@ msgstr "Xóa ..."
 
 #. Label of a Small Text field in DocType "Mira Campaign"
 #. Label of a Text field in DocType 'Mira Campaign Template'
-#. Label of a Small Text field in DocType 'EmailTemplateEditor'
+#. Label of a Small Text field in DocType 'Mira Email Template Editor'
 #. Label of a Text field in DocType 'Interaction'
 #. Label of a Small Text field in DocType 'TalentSegment'
 #: frontend/src/components/CampaignTemplateFormModal.vue:63
@@ -2183,7 +2183,7 @@ msgstr "Mô tả sẽ giúp người khác hiểu mục đích của phân khúc
 msgid "Deselect All"
 msgstr "Bỏ chọn tất cả"
 
-#. Label of a Code field in DocType 'EmailTemplateEditor'
+#. Label of a Code field in DocType 'Mira Email Template Editor'
 #: mbw_mira/mbw_mira/doctype/emailtemplateeditor/emailtemplateeditor.json
 msgid "Design Json"
 msgstr "Thiết kế JSON"
@@ -2266,7 +2266,7 @@ msgstr "Tài liệu"
 msgid "Download"
 msgstr "Tải xuống"
 
-#. Option for the 'Status' (Select) field in DocType 'EmailTemplateEditor'
+#. Option for the 'Status' (Select) field in DocType 'Mira Email Template Editor'
 #: frontend/src/components/campaign/CampaignCardView.vue:201
 #: frontend/src/pages/CampaignManagement.vue:225
 #: frontend/src/pages/Ladi/LadiPageManagement.vue:105
@@ -2611,7 +2611,7 @@ msgstr "Emaillog"
 
 #. Name of a DocType
 #: mbw_mira/mbw_mira/doctype/emailtemplateeditor/emailtemplateeditor.json
-msgid "EmailTemplateEditor"
+msgid "Mira Email Template Editor"
 msgstr "EmailTemplateDitor"
 
 #: frontend/src/components/Filter.vue:124
@@ -3283,7 +3283,7 @@ msgstr "Nhóm bởi:"
 msgid "HIRED"
 msgstr "Thuê"
 
-#. Label of a Code field in DocType 'EmailTemplateEditor'
+#. Label of a Code field in DocType 'Mira Email Template Editor'
 #. Label of a Code field in DocType 'Mira Ladi Page'
 #: mbw_mira/mbw_mira/doctype/emailtemplateeditor/emailtemplateeditor.json
 #: mbw_mira/mbw_mira/doctype/ladipage/ladipage.json
@@ -3585,7 +3585,7 @@ msgid "JSON configuration for the action (optional)"
 msgstr "Cấu hình JSON cho hành động (tùy chọn)"
 
 #. Description of the 'Design Json' (Code) field in DocType
-#. 'EmailTemplateEditor'
+#. 'Mira Email Template Editor'
 #: mbw_mira/mbw_mira/doctype/emailtemplateeditor/emailtemplateeditor.json
 msgid "JSON được lấy từ editor.exportHtml hoặc editor.saveDesign"
 msgstr "JSON ĐA"
@@ -4699,7 +4699,7 @@ msgid "Nurturing"
 msgstr "Nuôi dưỡng"
 
 #. Description of the 'HTML Content' (Code) field in DocType
-#. 'EmailTemplateEditor'
+#. 'Mira Email Template Editor'
 #: mbw_mira/mbw_mira/doctype/emailtemplateeditor/emailtemplateeditor.json
 msgid "Nội dung HTML đã render"
 msgstr "Nội phân html / render"
@@ -6027,7 +6027,7 @@ msgstr "Bước bắt đầu"
 #. Label of a Select field in DocType 'Mira Data Source'
 #. Label of a Select field in DocType 'CandidatePool'
 #. Label of a Select field in DocType 'Mira Email Log'
-#. Label of a Select field in DocType 'EmailTemplateEditor'
+#. Label of a Select field in DocType 'Mira Email Template Editor'
 #. Label of a Select field in DocType 'TalentProfiles'
 #. Label of a Select field in DocType 'Mira Talent Campaign'
 #: frontend/src/components/campaign/CampaignForm.vue:57
@@ -6392,7 +6392,7 @@ msgid "Template Info"
 msgstr "Thông tin mẫu"
 
 #. Label of a Data field in DocType 'Mira Campaign Template'
-#. Label of a Data field in DocType 'EmailTemplateEditor'
+#. Label of a Data field in DocType 'Mira Email Template Editor'
 #: frontend/src/components/CampaignTemplateFormModal.vue:37
 #: frontend/src/pages/CampaignTemplateManagement.vue:228
 #: mbw_mira/mbw_mira/doctype/campaigntemplate/campaigntemplate.json

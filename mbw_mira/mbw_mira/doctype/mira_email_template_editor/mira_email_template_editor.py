@@ -5,5 +5,5 @@
 from frappe.model.document import Document
 
 
-class EmailTemplateEditor(Document):
+class MiraEmailTemplateEditor(Document):
 	pass

@@ -55,7 +55,7 @@
  "modified": "2025-07-28 16:29:04.942359",
  "modified_by": "Administrator",
  "module": "MBW Mira",
- "name": "EmailTemplateEditor",
+ "name": "Mira Email Template Editor",
  "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [

@@ -5,5 +5,5 @@
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestEmailTemplateEditor(FrappeTestCase):
+class TestMiraEmailTemplateEditor(FrappeTestCase):
 	pass

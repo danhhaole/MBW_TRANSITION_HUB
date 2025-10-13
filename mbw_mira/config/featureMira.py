@@ -1435,7 +1435,7 @@ FEATURES_MIRA = {
                             "import": 0,
                         },
                         {
-                            "doctype": "EmailTemplateEditor",
+                            "doctype": "Mira Email Template Editor",
                             "create": 1,
                             "read": 1,
                             "write": 1,
@@ -1482,7 +1482,7 @@ FEATURES_MIRA = {
                             "import": 0,
                         },
                         {
-                            "doctype": "EmailTemplateEditor",
+                            "doctype": "Mira Email Template Editor",
                             "create": 1,
                             "read": 1,
                             "write": 1,

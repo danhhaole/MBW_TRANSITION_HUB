@@ -495,7 +495,7 @@ Email Steps:,Các bước email:
 Email and campaign_id are required.,Email và Chiến dịch_id được yêu cầu.
 Email will be sent immediately,Email sẽ được gửi ngay lập tức
 Mira Email Log,Emaillog
-EmailTemplateEditor,EmailTemplateDitor
+Mira Email Template Editor,EmailTemplateDitor
 Empty - Choose a field to filter by,Trống - chọn một trường để lọc theo
 Empty - Choose a field to sort by,Trống - chọn một trường để sắp xếp theo
 Enable,Cho phép
