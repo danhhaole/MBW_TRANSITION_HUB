@@ -1,55 +1,36 @@
 <template>
-  <div>
-    <Dialog v-model="show" :options="dialogOptions" :disableOutsideClickToClose="true">
-      <template #body>
-        <div class="bg-white">
-          <!-- Header -->
-          <div class="flex justify-between items-center p-6 border-b border-gray-200">
-            <h2 class="text-xl font-bold text-gray-900">{{ __(modalTitle) }}</h2>
-            <Button theme="gray" variant="ghost" class="w-7 h-7" @click="closeWizard">
-              <FeatherIcon name="x" class="h-4 w-4" />
-            </Button>
-          </div>
+  <div v-if="show" class="fixed inset-0 bg-white z-50 flex flex-col">
+    <!-- Header -->
+    <CampaignWizardHeader
+      :campaign-name="campaignData.campaign_name"
+      :current-step="currentStep"
+      :total-steps="steps.length"
+      :loading="loading"
+      :saving="draftCampaignLoading"
+      :finalizing="activating"
+      :can-save="true"
+      :can-proceed="canProceed"
+      :can-finalize="currentStep === steps.length"
+      @exit="closeWizard"
+      @back="prevStep"
+      @save="saveDraft"
+      @save-and-continue="nextStep"
+      @finalize="finalizeCampaign"
+      @update:campaign-name="updateCampaignName"
+    />
 
-          <!-- Stepper -->
-          <div class="p-6 pb-4">
-            <div class="flex items-center">
-              <template v-for="(step, index) in steps" :key="step.number">
-                <div
-                  class="flex flex-col items-center min-w-[80px]"
-                  :class="getStepClass(step.number)"
-                >
-                  <div
-                    class="w-10 h-10 rounded-full border-2 flex items-center justify-center font-semibold transition-all duration-300"
-                    :class="getStepIconClass(step.number)"
-                  >
-                    <FeatherIcon
-                      v-if="step.number < currentStep"
-                      name="check"
-                      class="h-4 w-4"
-                    />
-                    <span v-else-if="step.number === 4">🎉</span>
-                    <span v-else>{{ step.number }}</span>
-                  </div>
-                  <span
-                    class="mt-1 text-xs font-medium text-center transition-all duration-300"
-                    :class="getStepLabelClass(step.number)"
-                    >{{ step.label }}</span
-                  >
-                </div>
-                <div
-                  v-if="index < steps.length - 1"
-                  class="flex-grow h-0.5 mx-2 transition-all duration-400"
-                  :class="step.number < currentStep ? 'bg-blue-500' : 'bg-gray-300'"
-                ></div>
-              </template>
-            </div>
-          </div>
+    <!-- Stepper -->
+    <CampaignWizardStepper
+      :steps="steps"
+      :current-step="currentStep"
+    />
 
-          <!-- Step Content -->
-          <div class="p-6">
+    <!-- Content -->
+    <CampaignWizardContent :current-step="currentStep">
+      <template #default="{ currentStep: step }">
+        <div class="space-y-6">
             <!-- Step 1: Campaign Information -->
-            <div v-if="currentStep === 1" class="space-y-4 animate-fadeIn">
+            <div v-if="step === 1" class="space-y-4 animate-fadeIn">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   {{ __("Campaign Name") }} <span class="text-red-500">*</span>
@@ -335,7 +316,7 @@
             </div>
 
             <!-- Step 2: Select Source -->
-            <div v-if="currentStep === 2" class="animate-fadeIn">
+            <div v-if="step === 2" class="animate-fadeIn">
               <!-- Source Selection -->
               <div v-if="!selectedSource" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div
@@ -765,7 +746,7 @@
             </div>
 
             <!-- Step 3: Select Target Segment -->
-            <div v-if="currentStep === 3" class="animate-fadeIn">
+            <div v-if="step === 3" class="animate-fadeIn">
               <div class="space-y-4">
                 <div class="text-center mb-6">
                   <h4 class="text-lg font-medium text-gray-900 mb-2">
@@ -1043,8 +1024,47 @@
               </div>
             </div>
 
-            <!-- Step 4: Review & Activate (was Step 5) -->
-            <div v-if="currentStep === 4" class="animate-fadeIn space-y-6">
+            <!-- Step 4: Create Triggers -->
+            <div v-if="step === 4" class="animate-fadeIn space-y-6">
+              <div class="text-center py-4">
+                <h3 class="text-xl font-bold mb-2 text-gray-900">
+                  {{ __("Create Workflow Triggers") }}
+                </h3>
+                <p class="text-sm text-gray-600">
+                  {{ __("Set up automated workflow steps for your campaign") }}
+                </p>
+              </div>
+
+              <!-- Workflow Builder -->
+              <WorkflowTemplateSelector
+                v-if="!selectedWorkflowTemplate && !showWorkflowBuilder"
+                v-model="selectedWorkflowTemplate"
+                @continue="onTemplateSelected"
+                @back="prevStep"
+              />
+              
+              <WorkflowBuilder
+                v-else-if="showWorkflowBuilder || selectedWorkflowTemplate"
+                :selected-template="selectedWorkflowTemplate"
+                :is-custom="isCustomWorkflow"
+                @back="prevStep"
+                @back-to-templates="backToTemplates"
+                @continue="onWorkflowComplete"
+                @save-draft="saveDraft"
+              />
+              
+              <!-- Fallback loading state -->
+              <div v-else class="bg-gray-50 rounded-lg p-8 text-center">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FeatherIcon name="zap" class="h-8 w-8 text-blue-600" />
+                </div>
+                <h4 class="text-lg font-medium text-gray-900 mb-2">Loading Workflow Builder...</h4>
+                <p class="text-gray-600">Setting up templates...</p>
+              </div>
+            </div>
+
+            <!-- Step 5: Review & Activate (was Step 4) -->
+            <div v-if="step === 5" class="animate-fadeIn space-y-6">
               <!-- Campaign Summary -->
               <div class="text-center py-4">
                 <h3 class="text-xl font-bold mb-2 text-gray-900">
@@ -1164,86 +1184,9 @@
             </div>
 
             <!-- Step 6: Select Job Opening -->
-          </div>
-
-          <!-- Footer Actions -->
-          <div class="flex justify-between items-center p-4 border-t border-gray-200">
-            <Button
-              v-if="currentStep > 1"
-              variant="outline"
-              theme="gray"
-              @click="prevStep"
-              :disabled="loading"
-            >
-              {{ __("Back") }}
-            </Button>
-
-            <div v-else></div>
-
-            <div class="flex space-x-3">
-              <Button
-                v-if="currentStep < 4"
-                variant="solid"
-                theme="gray"
-                @click="nextStep"
-                :disabled="!canProceed"
-                :loading="currentStep === 1 && draftCampaignLoading"
-              >
-                {{
-                  currentStep === 1 && draftCampaignLoading
-                    ? __("Creating Campaign...")
-                    : __("Continue")
-                }}
-              </Button>
-
-              <!-- Step 4 Campaign Steps buttons - DISABLED - Logic preserved for future use -->
-              <Button
-                v-if="false && currentStep === 4 && !showStepCreation"
-                variant="solid"
-                theme="gray"
-                @click="nextStep"
-              >
-                {{ __("Continue to Review") }}
-              </Button>
-
-              <Button
-                v-if="
-                  false && currentStep === 4 && showStepCreation && stepCreationMode === 'template'
-                "
-                variant="solid"
-                theme="gray"
-                @click="nextStep"
-                :disabled="!selectedTemplate || campaignSteps.length === 0"
-              >
-                {{ __("Continue with Template") }}
-              </Button>
-
-              <Button
-                v-if="
-                  false && currentStep === 4 && showStepCreation && stepCreationMode === 'manual'
-                "
-                variant="solid"
-                theme="gray"
-                @click="nextStep"
-                :disabled="campaignSteps.length === 0"
-              >
-                {{ __("Continue with Steps") }}
-              </Button>
-
-              <Button
-                v-if="currentStep === 4"
-                variant="solid"
-                theme="gray"
-                @click="finalizeCampaign"
-                :loading="activating"
-              >
-                {{ __("Finalize Campaign") }}
-              </Button>
-            </div>
-          </div>
         </div>
       </template>
-    </Dialog>
+    </CampaignWizardContent>
 
     <!-- Step Form Dialog -->
     <StepFormDialog
@@ -1280,11 +1223,16 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, reactive } from "vue";
-import { Dialog, Button, FeatherIcon } from "frappe-ui";
+import { Button, FeatherIcon } from "frappe-ui";
+import CampaignWizardHeader from "./CampaignWizardHeader.vue";
+import CampaignWizardStepper from "./CampaignWizardStepper.vue";
+import CampaignWizardContent from "./CampaignWizardContent.vue";
 import { call } from "frappe-ui";
 import PoolConfig from "./PoolConfig.vue";
 import FileConfig from "./FileConfig.vue";
 import ImageUploader from "@/components/Controls/ImageUploader.vue";
+import WorkflowTemplateSelector from "./WorkflowTemplateSelector.vue";
+import WorkflowBuilder from "./WorkflowBuilder.vue";
 import Link from "@/components/Controls/Link.vue";
 import StepFormDialog from "./StepFormDialog.vue";
 import SocialNetworkConfigDialog from "./SocialNetworkConfigDialog.vue";
@@ -1660,9 +1608,8 @@ const steps = [
   { number: 1, label: "Information" },
   { number: 2, label: "Select Source" },
   { number: 3, label: "Target Segment" },
-  // { number: 4, label: "Campaign Steps" }, // Commented out - logic preserved for future use
-  { number: 4, label: "Review & Activate" }, // Renumbered from 5 to 4
-  // { number: 6, label: 'Job' }
+  { number: 4, label: "Create Triggers" },
+  { number: 5, label: "Review & Activate" }
 ];
 
 // Source options - 3 fixed choices only
@@ -2877,6 +2824,36 @@ const finalizeCampaign = async () => {
   }
 };
 
+// Method to update campaign name from header
+const updateCampaignName = (newName) => {
+  campaignData.value.campaign_name = newName;
+};
+
+// Method to save draft
+const saveDraft = async () => {
+  if (currentStep.value === 1 && !isEditing.value && !draftCampaign.value) {
+    await createDraftCampaign();
+  } else if (draftCampaign.value) {
+    // Update existing draft
+    const updateData = {
+      campaign_name: campaignData.value.campaign_name,
+      description: campaignData.value.description,
+      type: campaignData.value.type,
+      status: campaignData.value.status,
+      start_date: campaignData.value.start_date,
+      end_date: campaignData.value.end_date,
+    };
+    
+    try {
+      await campaignStore.updateCampaignData(draftCampaign.value.data.name, updateData);
+      console.log('✅ Draft saved successfully');
+    } catch (error) {
+      console.error('❌ Error saving draft:', error);
+      alert(__('Failed to save draft. Please try again.'));
+    }
+  }
+};
+
 const closeWizard = () => {
   show.value = false;
   // Reset state
@@ -3016,11 +2993,39 @@ const createDraftCampaign = async () => {
         : {}),
     };
     console.log("🔍 draftPayload>>>>>>>>>>>>>>>>>>>>>>>>>>:", draftPayload);
-    const result = await campaignStore.submitNewCampaign(draftPayload);
-    console.log("🔍 result>>>>>>>>>>>>>>>>>>>>>>>>>>:", result);
-    if (result) {
-      draftCampaign.value = { data: result };
-      console.log("✅ Draft campaign created:", draftCampaign.value.data.name);
+    
+    // Test API connection first
+    const connectionOk = await campaignStore.testApiConnection();
+    if (!connectionOk) {
+      throw new Error('API connection failed. Please check your network connection.');
+    }
+    
+    try {
+      // Try custom API first, then fallback to standard method
+      console.log("🔄 Attempting to create campaign via custom API...")
+      let result;
+      
+      try {
+        result = await campaignStore.createCampaignViaCustomAPI(draftPayload);
+        console.log("✅ Custom API success:", result);
+      } catch (customApiError) {
+        console.log("⚠️ Custom API failed, trying standard method...", customApiError.message);
+        result = await campaignStore.submitNewCampaign(draftPayload);
+        console.log("✅ Standard API success:", result);
+      }
+      
+      console.log("🔍 Final result:", result);
+      
+      if (result && result.success && result.data) {
+        draftCampaign.value = { data: result.data };
+        console.log("✅ Draft campaign created:", result.data.name);
+      } else if (result && result.name) {
+        // Handle direct response format
+        draftCampaign.value = { data: result };
+        console.log("✅ Draft campaign created:", result.name);
+      } else {
+        throw new Error('Invalid response from server');
+      }
 
       // Sync start/end back to UI (convert ISO -> datetime-local string)
       try {
@@ -3040,8 +3045,9 @@ const createDraftCampaign = async () => {
 
       // Emit event to refresh the campaign list
       emit("draft-created", draftCampaign.value);
-    } else {
-      throw new Error("Failed to create draft campaign");
+    } catch (apiError) {
+      console.error("❌ API Error creating draft campaign:", apiError);
+      throw new Error("Failed to create draft campaign: " + (apiError.message || 'Unknown error'));
     }
   } catch (error) {
     console.error("❌ Error creating draft campaign:", error);
@@ -3371,6 +3377,33 @@ const openScheduledAtPicker = (e) => {
 // State for Social Network configuration modal
 const showSocialConfigModal = ref(false);
 const editingSocialId = ref(null);
+
+// Workflow state
+const selectedWorkflowTemplate = ref(null);
+const showWorkflowBuilder = ref(false);
+const isCustomWorkflow = ref(false);
+const workflowSteps = ref([]);
+
+// Workflow methods
+const onTemplateSelected = (data) => {
+  selectedWorkflowTemplate.value = data.template;
+  isCustomWorkflow.value = data.isCustom;
+  showWorkflowBuilder.value = true;
+  console.log('Template selected:', data);
+};
+
+const backToTemplates = () => {
+  showWorkflowBuilder.value = false;
+  selectedWorkflowTemplate.value = null;
+  isCustomWorkflow.value = false;
+};
+
+const onWorkflowComplete = (data) => {
+  workflowSteps.value = data.steps;
+  console.log('Workflow completed:', data);
+  // Auto advance to next step
+  nextStep();
+};
 
 const confirmSocialConfig = async () => {
   try {

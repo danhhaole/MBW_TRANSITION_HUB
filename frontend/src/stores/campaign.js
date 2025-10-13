@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { call } from 'frappe-ui'
+import { debugApiCall } from '@/utils/debugApi'
 
 export const useCampaignStore = defineStore('campaign', {
   state: () => ({
@@ -224,28 +225,71 @@ export const useCampaignStore = defineStore('campaign', {
           }
         }
 
-        const response = await call('frappe.client.insert', {
-          doc: {
-            doctype: "Mira Campaign",
-            campaign_name: formData.campaign_name.trim(),
-            description: formData.description || '',
-            is_active: formData.is_active || 0,
-            owner_id: formData.owner_id || null,
-            start_date: formData.start_date || null,
-            end_date: formData.end_date || null,
-            type: formData.type || 'NURTURING',
-            status: formData.status || 'DRAFT',
-            target_segment: formData.target_segment || null,
-            job_opening: formData.job_opening || null,
-            ...formData // Include any additional fields
-          }
+        console.log('🚀 Calling API with data:', {
+          doctype: "Mira Campaign",
+          campaign_name: formData.campaign_name.trim(),
+          description: formData.description || '',
+          is_active: formData.is_active || 0,
+          owner_id: formData.owner_id || null,
+          start_date: formData.start_date || null,
+          end_date: formData.end_date || null,
+          type: formData.type || 'NURTURING',
+          status: formData.status || 'DRAFT',
+          target_segment: formData.target_segment || null,
+          job_opening: formData.job_opening || null,
+          ...formData
         })
 
-        if (response) {
-          this.success = true
-          return response
-        } else {
-          throw new Error('Không thể tạo campaign')
+        try {
+          const response = await debugApiCall('frappe.client.insert', {
+            doc: {
+              doctype: "Mira Campaign",
+              campaign_name: formData.campaign_name.trim(),
+              description: formData.description || '',
+              is_active: formData.is_active || 0,
+              owner_id: formData.owner_id || null,
+              start_date: formData.start_date || null,
+              end_date: formData.end_date || null,
+              type: formData.type || 'NURTURING',
+              status: formData.status || 'DRAFT',
+              target_segment: formData.target_segment || null,
+              job_opening: formData.job_opening || null,
+              ...formData // Include any additional fields
+            }
+          })
+
+          console.log('✅ API Response received:', response)
+          console.log('Response type:', typeof response)
+          console.log('Response keys:', response ? Object.keys(response) : 'null')
+
+          if (response && response.name) {
+            this.success = true
+            return {
+              success: true,
+              data: response
+            }
+          } else {
+            throw new Error('Không thể tạo campaign - Invalid response')
+          }
+        } catch (apiError) {
+          console.error('❌ API Error details:', {
+            error: apiError,
+            message: apiError?.message,
+            stack: apiError?.stack,
+            response: apiError?.response,
+            status: apiError?.status
+          })
+          
+          // Handle different types of errors
+          if (apiError?.message?.includes('exc_type')) {
+            throw new Error('Server error occurred: ' + apiError.message)
+          } else if (apiError?.response?.data?.message) {
+            throw new Error(apiError.response.data.message)
+          } else if (apiError?.message) {
+            throw new Error(apiError.message)
+          } else {
+            throw new Error('Không thể tạo campaign - Network or server error')
+          }
         }
       } catch (error) {
         this.error = error.message
@@ -253,6 +297,65 @@ export const useCampaignStore = defineStore('campaign', {
         throw error
       } finally {
         this.loading = false
+      }
+    },
+
+    // Test method to check API connection
+    async testApiConnection() {
+      try {
+        console.log('🧪 Testing API connection...')
+        const response = await call('frappe.client.get_list', {
+          doctype: 'Mira Campaign',
+          limit_page_length: 1
+        })
+        console.log('✅ API connection test successful:', response)
+        return true
+      } catch (error) {
+        console.error('❌ API connection test failed:', error)
+        return false
+      }
+    },
+
+    // Alternative create method using custom API endpoint
+    async createCampaignViaCustomAPI(formData) {
+      this.setLoading(true)
+      
+      try {
+        console.log('🔄 Using custom API endpoint...')
+        
+        const response = await debugApiCall('mbw_mira.api.campaign.create_campaign', {
+          campaign_data: {
+            campaign_name: formData.campaign_name?.trim(),
+            description: formData.description || '',
+            type: formData.type || 'NURTURING',
+            status: formData.status || 'DRAFT',
+            is_active: formData.is_active || 0,
+            start_date: formData.start_date || null,
+            end_date: formData.end_date || null,
+            target_segment: formData.target_segment || null,
+            job_opening: formData.job_opening || null,
+            source_type: formData.source_type || 'Search',
+            ...formData
+          }
+        })
+
+        console.log('✅ Custom API response:', response)
+        
+        if (response && (response.name || response.success)) {
+          this.success = true
+          return {
+            success: true,
+            data: response.data || response
+          }
+        } else {
+          throw new Error('Invalid response from custom API')
+        }
+      } catch (error) {
+        console.error('❌ Custom API failed, falling back to direct insert...')
+        // Fallback to direct insert
+        return await this.submitNewCampaign(formData)
+      } finally {
+        this.setLoading(false)
       }
     },
 

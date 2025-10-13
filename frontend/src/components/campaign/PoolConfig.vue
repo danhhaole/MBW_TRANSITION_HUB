@@ -64,7 +64,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import { FormControl, Autocomplete } from 'frappe-ui'
+import { FormControl, Autocomplete, call } from 'frappe-ui'
 import { useTalentSegmentStore } from '@/stores/talentSegment'
 
 const talentSegmentStore = useTalentSegmentStore()
