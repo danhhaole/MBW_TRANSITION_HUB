@@ -1,5 +1,5 @@
 <template>
-  <div class="container mx-auto px-4 py-8 max-w-7xl">
+  <div class="container mx-auto px-4 py-8">
     <!-- Header Section -->
     <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
       <!-- Header with filters -->

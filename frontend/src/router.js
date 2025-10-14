@@ -89,7 +89,7 @@ const routes = [
 	{
 		path: "/email-template",
 		name: "ListEmailTemplate",
-		component: () => import("@/pages/mira_email_template/Mira Email Template.vue"),
+		component: () => import("@/pages/mira_email_template/MIRA_Email_Template.vue"),
 		props: true,
 		meta: { doctype: "Mira Email Template" },
 	},
@@ -116,7 +116,7 @@ const routes = [
 	},
 
 	// Public Route
-	{ path: '/ladi/:slug', name: 'Mira Ladi Page', component: ()=>import('@/pages/Public/Mira Ladi Page.vue'), meta: { public: true } },
+	{ path: '/ladi/:slug', name: 'Mira Ladi Page', component: ()=>import('@/pages/Public/LadiPage.vue'), meta: { public: true } },
 	{ path: '/register', name: 'RegisterPage', component: ()=>import('@/pages/Public/RegisterPage.vue'), meta: { public: true } },
 	{ path: '/unsubscribe', name: 'UnSubscribePage', component: ()=>import('@/pages/Public/UnSubscribePage.vue'), meta: { public: true } },
 	{ path: '/application', name: 'ApplicationPage', component: ()=>import('@/pages/Public/ApplicationPage.vue'), meta: { public: true } },

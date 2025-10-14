@@ -392,7 +392,7 @@ export const useCampaignStore = defineStore('campaign', {
           target_segment: formData.target_segment || null,
           job_opening: formData.job_opening || null,
           // Add missing source fields
-          source_type: formData.source_type || null,
+          source_type: formData.source_type || 'Gathering',
           source_file: formData.source_file || null,
           source_config: formData.source_config || null,
           data_source_id: formData.data_source_id || null,

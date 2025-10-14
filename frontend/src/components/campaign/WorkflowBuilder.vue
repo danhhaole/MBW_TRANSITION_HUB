@@ -184,88 +184,15 @@
 
 
         <!-- Add Step Button -->
-        <div class="mt-6 text-center relative">
-          <Button
-            variant="outline"
-            theme="blue"
-            @click="toggleAddMenu"
-          >
-            <FeatherIcon name="plus" class="h-4 w-4 mr-2" />
-            Add new
-          </Button>
-
-          <!-- Dropdown Menu -->
-          <div v-if="showAddMenu" class="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-            <!-- Actions Section -->
-            <div class="p-2">
-              <div class="text-xs font-medium text-gray-500 px-2 py-1 mb-1">Actions</div>
-              
-              <div class="relative group">
-                <div class="flex items-center p-2 rounded hover:bg-gray-50 cursor-pointer">
-                  <FeatherIcon name="mail" class="h-4 w-4 mr-2 text-gray-600" />
-                  <span class="text-sm">Email</span>
-                  <FeatherIcon name="chevron-right" class="h-4 w-4 ml-auto text-gray-400" />
-                </div>
-                
-                <!-- Email Submenu -->
-                <div class="absolute left-full top-0 ml-1 w-40 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                  <div class="p-1">
-                    <div
-                      v-for="action in emailActions"
-                      :key="action.type"
-                      class="flex items-center p-2 rounded hover:bg-gray-50 cursor-pointer text-sm"
-                      @click="addStepFromMenu(action)"
-                    >
-                      <FeatherIcon :name="action.icon" class="h-3 w-3 mr-2 text-gray-600" />
-                      {{ action.name }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div
-                class="flex items-center p-2 rounded hover:bg-gray-50 cursor-pointer"
-                @click="addStepFromMenu({ type: 'linkedin_connection', name: 'LinkedIn', icon: 'linkedin' })"
-              >
-                <FeatherIcon name="linkedin" class="h-4 w-4 mr-2 text-gray-600" />
-                <span class="text-sm">LinkedIn</span>
-              </div>
-              
-              <div
-                class="flex items-center p-2 rounded hover:bg-gray-50 cursor-pointer"
-                @click="addStepFromMenu({ type: 'phone_call', name: 'Call', icon: 'phone' })"
-              >
-                <FeatherIcon name="phone" class="h-4 w-4 mr-2 text-gray-600" />
-                <span class="text-sm">Call</span>
-              </div>
-            </div>
-
-            <div class="border-t border-gray-100"></div>
-
-            <!-- Conditions Section -->
-            <div class="p-2">
-              <div class="text-xs font-medium text-gray-500 px-2 py-1 mb-1">Conditions</div>
-              
-              <div
-                class="flex items-center p-2 rounded hover:bg-gray-50 cursor-pointer"
-                @click="addConditionFromMenu({ type: 'is_connected', name: 'Is Connected', icon: 'user-check' })"
-              >
-                <FeatherIcon name="user-check" class="h-4 w-4 mr-2 text-gray-600" />
-                <span class="text-sm">Is Connected</span>
-              </div>
-              
-              <div
-                class="flex items-center p-2 rounded hover:bg-gray-50 cursor-pointer"
-                @click="addConditionFromMenu({ type: 'custom_condition', name: 'Condition', icon: 'git-branch' })"
-              >
-                <FeatherIcon name="git-branch" class="h-4 w-4 mr-2 text-gray-600" />
-                <span class="text-sm">Condition</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Backdrop to close dropdown -->
-          <div v-if="showAddMenu" class="fixed inset-0 z-40" @click="closeAddMenu"></div>
+        <div class="mt-6 text-center">
+          <Dropdown :options="dropdownOptions" placement="top">
+            <template #default>
+              <Button variant="outline" theme="blue">
+                <FeatherIcon name="plus" class="h-4 w-4 mr-2" />
+                Add new
+              </Button>
+            </template>
+          </Dropdown>
         </div>
       </div>
     </div>
@@ -298,7 +225,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { Button, FeatherIcon } from 'frappe-ui'
+import { Button, FeatherIcon, Dropdown } from 'frappe-ui'
 import EditStepModal from './EditStepModal.vue'
 
 // Props
@@ -318,8 +245,6 @@ const emit = defineEmits(['back', 'back-to-templates', 'continue', 'save-draft']
 
 // State
 const workflowSteps = ref([])
-const showAddMenu = ref(false)
-const previewAction = ref(null)
 const showEditStepModal = ref(false)
 const editingStep = ref(null)
 const editingIndex = ref(-1)
@@ -345,6 +270,49 @@ const emailActions = [
     description: 'Send custom email with specific content'
   }
 ]
+
+// Dropdown options for Add New button
+const dropdownOptions = computed(() => [
+  {
+    group: 'Actions',
+    items: [
+      {
+        label: 'Email',
+        icon: 'mail',
+        submenu: emailActions.map(action => ({
+          label: action.name,
+          icon: action.icon,
+          onClick: () => addStepFromMenu(action)
+        }))
+      },
+      {
+        label: 'LinkedIn',
+        icon: 'linkedin',
+        onClick: () => addStepFromMenu({ type: 'linkedin_connection', name: 'LinkedIn', icon: 'linkedin' })
+      },
+      {
+        label: 'Call',
+        icon: 'phone',
+        onClick: () => addStepFromMenu({ type: 'phone_call', name: 'Call', icon: 'phone' })
+      }
+    ]
+  },
+  {
+    group: 'Conditions',
+    items: [
+      {
+        label: 'Is Connected',
+        icon: 'user-check',
+        onClick: () => addConditionFromMenu({ type: 'is_connected', name: 'Is Connected', icon: 'user-check' })
+      },
+      {
+        label: 'Condition',
+        icon: 'git-branch',
+        onClick: () => addConditionFromMenu({ type: 'custom_condition', name: 'Condition', icon: 'git-branch' })
+      }
+    ]
+  }
+])
 
 // Initialize workflow from template
 onMounted(() => {
@@ -403,16 +371,6 @@ const extractDelayUnit = (timing) => {
 }
 
 // Methods
-const toggleAddMenu = () => {
-  showAddMenu.value = !showAddMenu.value
-  console.log('🔄 Toggle add menu:', showAddMenu.value)
-}
-
-const closeAddMenu = () => {
-  showAddMenu.value = false
-  previewAction.value = null
-}
-
 const addStepFromMenu = (action) => {
   console.log('🔄 Adding step from menu:', action)
   addStep({
@@ -421,7 +379,6 @@ const addStepFromMenu = (action) => {
     type: action.type,
     icon: action.icon
   })
-  closeAddMenu()
 }
 
 const addConditionFromMenu = (condition) => {
@@ -434,7 +391,6 @@ const addConditionFromMenu = (condition) => {
     delayUnit: 'days',
     config: {}
   })
-  closeAddMenu()
 }
 
 const addStep = (stepData) => {
@@ -468,7 +424,6 @@ const addCondition = (conditionData) => {
     }
   }
   workflowSteps.value.push(newCondition)
-  showAddConditionModal.value = false
 }
 
 const editStep = (step, index) => {

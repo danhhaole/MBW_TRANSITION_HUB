@@ -1,5 +1,5 @@
 <template>
-  <div v-if="show" class="fixed inset-0 bg-white z-50 flex flex-col">
+  <div v-if="show" class="fixed inset-0 bg-white z-[9] flex flex-col">
     <!-- Header -->
     <CampaignWizardHeader
       :campaign-name="campaignData.campaign_name"
@@ -8,9 +8,12 @@
       :loading="loading"
       :saving="draftCampaignLoading"
       :finalizing="activating"
+      :auto-saving="isAutoSaving"
+      :save-success="showSaveSuccess"
       :can-save="true"
       :can-proceed="canProceed"
-      :can-finalize="currentStep === steps.length"
+      :can-finalize="isLastStep"
+      :is-edit-mode="isEditMode"
       @exit="closeWizard"
       @back="prevStep"
       @save="saveDraft"
@@ -30,7 +33,143 @@
       <template #default="{ currentStep: step }">
         <div class="space-y-6">
             <!-- Step 1: Campaign Information -->
-            <div v-if="step === 1" class="space-y-4 animate-fadeIn">
+            <div v-if="step === 1" class="space-y-6 animate-fadeIn">
+              <!-- Interaction Methods Selection -->
+              <div class="bg-gray-50 rounded-lg p-6">
+                <div class="text-center mb-6">
+                  <h4 class="text-lg font-semibold mb-2 text-gray-900">
+                    {{ __("Choose Interaction Method") }}
+                  </h4>
+                  <p class="text-sm text-gray-600">
+                    {{ __("Choose the interaction method you want to use with the candidate (only one type can be selected)") }}
+                  </p>
+                </div>
+
+                <!-- Interaction Methods -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <!-- Email Method -->
+                  <div
+                    class="border rounded-lg p-4 transition-all duration-200"
+                    :class="[
+                      campaignData.interaction_method === 'EMAIL'
+                        ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
+                        : 'border-gray-200',
+                      canEditInteractionMethod 
+                        ? 'cursor-pointer hover:border-gray-300 hover:shadow-md'
+                        : 'cursor-not-allowed opacity-60'
+                    ]"
+                    @click="canEditInteractionMethod && (campaignData.interaction_method = 'EMAIL')"
+                  >
+                    <div class="text-center">
+                      <div
+                        class="flex items-center justify-center w-10 h-10 rounded-full mx-auto mb-3"
+                        :class="
+                          campaignData.interaction_method === 'EMAIL'
+                            ? 'bg-blue-100 text-blue-600'
+                            : 'bg-gray-100 text-gray-400'
+                        "
+                      >
+                        <FeatherIcon name="mail" class="h-5 w-5" />
+                      </div>
+                      <h5
+                        class="text-sm font-semibold mb-1"
+                        :class="
+                          campaignData.interaction_method === 'EMAIL'
+                            ? 'text-blue-900'
+                            : 'text-gray-900'
+                        "
+                      >
+                        {{ __("Send Email") }}
+                      </h5>
+                      <p class="text-xs text-gray-600">
+                        {{ __("Create and send email to the candidate") }}
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Zalo ZNS Method -->
+                  <div
+                    class="border rounded-lg p-4 transition-all duration-200"
+                    :class="[
+                      campaignData.interaction_method === 'ZALO_ZNS'
+                        ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
+                        : 'border-gray-200',
+                      canEditInteractionMethod 
+                        ? 'cursor-pointer hover:border-gray-300 hover:shadow-md'
+                        : 'cursor-not-allowed opacity-60'
+                    ]"
+                    @click="canEditInteractionMethod && (campaignData.interaction_method = 'ZALO_ZNS')"
+                  >
+                    <div class="text-center">
+                      <div
+                        class="flex items-center justify-center w-10 h-10 rounded-full mx-auto mb-3"
+                        :class="
+                          campaignData.interaction_method === 'ZALO_ZNS'
+                            ? 'bg-blue-100 text-blue-600'
+                            : 'bg-gray-100 text-gray-400'
+                        "
+                      >
+                        <FeatherIcon name="message-circle" class="h-5 w-5" />
+                      </div>
+                      <h5
+                        class="text-sm font-semibold mb-1"
+                        :class="
+                          campaignData.interaction_method === 'ZALO_ZNS'
+                            ? 'text-blue-900'
+                            : 'text-gray-900'
+                        "
+                      >
+                        {{ __("Send Zalo ZNS") }}
+                      </h5>
+                      <p class="text-xs text-gray-600">
+                        {{ __("Send message to the candidate's phone number using Zalo") }}
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Zalo Care Method -->
+                  <div
+                    class="border rounded-lg p-4 transition-all duration-200"
+                    :class="[
+                      campaignData.interaction_method === 'ZALO_CARE'
+                        ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
+                        : 'border-gray-200',
+                      canEditInteractionMethod 
+                        ? 'cursor-pointer hover:border-gray-300 hover:shadow-md'
+                        : 'cursor-not-allowed opacity-60'
+                    ]"
+                    @click="canEditInteractionMethod && (campaignData.interaction_method = 'ZALO_CARE')"
+                  >
+                    <div class="text-center">
+                      <div
+                        class="flex items-center justify-center w-10 h-10 rounded-full mx-auto mb-3"
+                        :class="
+                          campaignData.interaction_method === 'ZALO_CARE'
+                            ? 'bg-blue-100 text-blue-600'
+                            : 'bg-gray-100 text-gray-400'
+                        "
+                      >
+                        <FeatherIcon name="heart" class="h-5 w-5" />
+                      </div>
+                      <h5
+                        class="text-sm font-semibold mb-1"
+                        :class="
+                          campaignData.interaction_method === 'ZALO_CARE'
+                            ? 'text-blue-900'
+                            : 'text-gray-900'
+                        "
+                      >
+                        {{ __("Send Zalo Care") }}
+                      </h5>
+                      <p class="text-xs text-gray-600">
+                        {{ __("Send message to the candidate's phone number using Zalo") }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Campaign Information (Original Content) -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   {{ __("Campaign Name") }} <span class="text-red-500">*</span>
@@ -39,9 +178,11 @@
                   v-model="campaignData.campaign_name"
                   type="text"
                   :placeholder="__('Example: React Candidate Nurturing Q4/2024')"
+                  :disabled="isEditMode && editingCampaignData?.status !== 'DRAFT'"
                   class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   :class="{
                     'border-red-500': !campaignData.campaign_name && currentStep > 1,
+                    'bg-gray-100 cursor-not-allowed': isEditMode && editingCampaignData?.status !== 'DRAFT'
                   }"
                 />
               </div>
@@ -53,7 +194,11 @@
                 </label>
                 <select
                   v-model="campaignData.status"
+                  :disabled="isDraftCreated"
                   class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  :class="{
+                    'bg-gray-100 cursor-not-allowed': isDraftCreated
+                  }"
                 >
                   <option value="DRAFT">{{ __("DRAFT") }}</option>
                   <option value="ACTIVE">{{ __("ACTIVE") }}</option>
@@ -72,7 +217,11 @@
                     v-model="campaignData.start_date"
                     type="datetime-local"
                     :min="minScheduledAt"
+                    :disabled="isDraftCreated"
                     class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    :class="{
+                      'bg-gray-100 cursor-not-allowed': isDraftCreated
+                    }"
                   />
                   <p class="mt-1 text-xs text-gray-500">
                     {{ __("Local time") }} ({{ localTzLabel }})
@@ -86,7 +235,11 @@
                     v-model="campaignData.end_date"
                     type="datetime-local"
                     :min="campaignData.start_date || minScheduledAt"
+                    :disabled="isDraftCreated"
                     class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    :class="{
+                      'bg-gray-100 cursor-not-allowed': isDraftCreated
+                    }"
                   />
                   <p class="mt-1 text-xs text-gray-500">
                     {{ __("Local time") }} ({{ localTzLabel }})
@@ -94,210 +247,6 @@
                 </div>
               </div>
 
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  {{ __("Campaign Type") }} <span class="text-red-500">*</span>
-                </label>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div
-                    class="border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md"
-                    :class="
-                      campaignData.type === 'NURTURING'
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    "
-                    @click="campaignData.type = 'NURTURING'"
-                  >
-                    <div class="flex items-center">
-                      <div
-                        class="flex items-center justify-center w-8 h-8 rounded-full mr-3"
-                        :class="
-                          campaignData.type === 'NURTURING'
-                            ? 'bg-blue-100 text-blue-600'
-                            : 'bg-gray-100 text-gray-400'
-                        "
-                      >
-                        <FeatherIcon name="heart" class="h-4 w-4" />
-                      </div>
-                      <div>
-                        <div
-                          class="text-sm font-medium"
-                          :class="
-                            campaignData.type === 'NURTURING'
-                              ? 'text-blue-900'
-                              : 'text-gray-900'
-                          "
-                        >
-                          {{ __("Nurturing") }}
-                        </div>
-                        <div class="text-xs text-gray-500">
-                          {{ __("Long-term candidate engagement") }}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div
-                    class="border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md"
-                    :class="
-                      campaignData.type === 'ATTRACTION'
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    "
-                    @click="campaignData.type = 'ATTRACTION'"
-                  >
-                    <div class="flex items-center">
-                      <div
-                        class="flex items-center justify-center w-8 h-8 rounded-full mr-3"
-                        :class="
-                          campaignData.type === 'ATTRACTION'
-                            ? 'bg-blue-100 text-blue-600'
-                            : 'bg-gray-100 text-gray-400'
-                        "
-                      >
-                        <FeatherIcon name="magnet" class="h-4 w-4" />
-                      </div>
-                      <div>
-                        <div
-                          class="text-sm font-medium"
-                          :class="
-                            campaignData.type === 'ATTRACTION'
-                              ? 'text-blue-900'
-                              : 'text-gray-900'
-                          "
-                        >
-                          {{ __("Attraction") }}
-                        </div>
-                        <div class="text-xs text-gray-500">
-                          {{ __("Active talent acquisition") }}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- Row 2: RECRUITMENT, REFERRAL -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                  <div
-                    class="border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md"
-                    :class="
-                      campaignData.type === 'RECRUITMENT'
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    "
-                    @click="campaignData.type = 'RECRUITMENT'"
-                  >
-                    <div class="flex items-center">
-                      <div
-                        class="flex items-center justify-center w-8 h-8 rounded-full mr-3"
-                        :class="
-                          campaignData.type === 'RECRUITMENT'
-                            ? 'bg-blue-100 text-blue-600'
-                            : 'bg-gray-100 text-gray-400'
-                        "
-                      >
-                        <FeatherIcon name="briefcase" class="h-4 w-4" />
-                      </div>
-                      <div>
-                        <div
-                          class="text-sm font-medium"
-                          :class="
-                            campaignData.type === 'RECRUITMENT'
-                              ? 'text-blue-900'
-                              : 'text-gray-900'
-                          "
-                        >
-                          {{ __("Recruitment") }}
-                        </div>
-                        <div class="text-xs text-gray-500">
-                          {{ __("Direct job recruitment") }}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div
-                    class="border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md"
-                    :class="
-                      campaignData.type === 'REFERRAL'
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    "
-                    @click="campaignData.type = 'REFERRAL'"
-                  >
-                    <div class="flex items-center">
-                      <div
-                        class="flex items-center justify-center w-8 h-8 rounded-full mr-3"
-                        :class="
-                          campaignData.type === 'REFERRAL'
-                            ? 'bg-blue-100 text-blue-600'
-                            : 'bg-gray-100 text-gray-400'
-                        "
-                      >
-                        <FeatherIcon name="users" class="h-4 w-4" />
-                      </div>
-                      <div>
-                        <div
-                          class="text-sm font-medium"
-                          :class="
-                            campaignData.type === 'REFERRAL'
-                              ? 'text-blue-900'
-                              : 'text-gray-900'
-                          "
-                        >
-                          {{ __("Referral") }}
-                        </div>
-                        <div class="text-xs text-gray-500">
-                          {{ __("Employee referral program") }}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- Row 3: GATHERING -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                  <div
-                    class="border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md"
-                    :class="
-                      campaignData.type === 'GATHERING'
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    "
-                    @click="campaignData.type = 'GATHERING'"
-                  >
-                    <div class="flex items-center">
-                      <div
-                        class="flex items-center justify-center w-8 h-8 rounded-full mr-3"
-                        :class="
-                          campaignData.type === 'GATHERING'
-                            ? 'bg-blue-100 text-blue-600'
-                            : 'bg-gray-100 text-gray-400'
-                        "
-                      >
-                        <FeatherIcon name="database" class="h-4 w-4" />
-                      </div>
-                      <div>
-                        <div
-                          class="text-sm font-medium"
-                          :class="
-                            campaignData.type === 'GATHERING'
-                              ? 'text-blue-900'
-                              : 'text-gray-900'
-                          "
-                        >
-                          {{ __("Gathering") }}
-                        </div>
-                        <div class="text-xs text-gray-500">
-                          {{ __("Data collection and research") }}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- Empty div to maintain grid layout -->
-                  <div></div>
-                </div>
-              </div>
 
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -307,9 +256,11 @@
                   v-model="campaignData.description"
                   rows="3"
                   :placeholder="__('Brief description of campaign purpose...')"
+                  :disabled="isDraftCreated"
                   class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   :class="{
                     'border-red-500': !campaignData.description && currentStep > 1,
+                    'bg-gray-100 cursor-not-allowed': isDraftCreated
                   }"
                 />
               </div>
@@ -1024,47 +975,33 @@
               </div>
             </div>
 
-            <!-- Step 4: Create Triggers -->
-            <div v-if="step === 4" class="animate-fadeIn space-y-6">
-              <div class="text-center py-4">
-                <h3 class="text-xl font-bold mb-2 text-gray-900">
-                  {{ __("Create Workflow Triggers") }}
-                </h3>
-                <p class="text-sm text-gray-600">
-                  {{ __("Set up automated workflow steps for your campaign") }}
+            <!-- Step 4: Content Design -->
+            <div v-if="step === 4" class="animate-fadeIn">
+              <!-- Show warning if no interaction method selected -->
+              <div v-if="!campaignData.interaction_method" class="text-center py-12">
+                <FeatherIcon name="alert-triangle" class="h-8 w-8 text-yellow-600 mx-auto mb-2" />
+                <h4 class="text-lg font-medium text-yellow-900 mb-2">
+                  {{ __("No interaction method selected") }}
+                </h4>
+                <p class="text-yellow-700">
+                  {{ __("Please go back to Step 1 to select an interaction method") }}
                 </p>
               </div>
 
-              <!-- Workflow Builder -->
-              <WorkflowTemplateSelector
-                v-if="!selectedWorkflowTemplate && !showWorkflowBuilder"
-                v-model="selectedWorkflowTemplate"
-                @continue="onTemplateSelected"
-                @back="prevStep"
+              <!-- Content Editor -->
+              <CampaignContentEditor
+                v-else
+                :interaction_type="campaignData.interaction_method"
+                :model-value="contentEditorData"
+                :readonly="!canEditContent"
+                @update:model-value="handleContentUpdate"
+                @save="handleContentSave"
+                @preview="handleContentPreview"
               />
-              
-              <WorkflowBuilder
-                v-else-if="showWorkflowBuilder || selectedWorkflowTemplate"
-                :selected-template="selectedWorkflowTemplate"
-                :is-custom="isCustomWorkflow"
-                @back="prevStep"
-                @back-to-templates="backToTemplates"
-                @continue="onWorkflowComplete"
-                @save-draft="saveDraft"
-              />
-              
-              <!-- Fallback loading state -->
-              <div v-else class="bg-gray-50 rounded-lg p-8 text-center">
-                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <FeatherIcon name="zap" class="h-8 w-8 text-blue-600" />
-                </div>
-                <h4 class="text-lg font-medium text-gray-900 mb-2">Loading Workflow Builder...</h4>
-                <p class="text-gray-600">Setting up templates...</p>
-              </div>
             </div>
 
-            <!-- Step 5: Review & Activate (was Step 4) -->
-            <div v-if="step === 5" class="animate-fadeIn space-y-6">
+            <!-- Step 5: Review & Activate (Create mode only) -->
+            <div v-if="step === 5 && !isEditMode" class="animate-fadeIn space-y-6">
               <!-- Campaign Summary -->
               <div class="text-center py-4">
                 <h3 class="text-xl font-bold mb-2 text-gray-900">
@@ -1227,6 +1164,7 @@ import { Button, FeatherIcon } from "frappe-ui";
 import CampaignWizardHeader from "./CampaignWizardHeader.vue";
 import CampaignWizardStepper from "./CampaignWizardStepper.vue";
 import CampaignWizardContent from "./CampaignWizardContent.vue";
+import CampaignContentEditor from "./CampaignContentEditor.vue";
 import { call } from "frappe-ui";
 import PoolConfig from "./PoolConfig.vue";
 import FileConfig from "./FileConfig.vue";
@@ -1262,6 +1200,11 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  // New prop for editing campaign
+  editingCampaign: {
+    type: Object,
+    default: null,
+  },
 });
 
 const emit = defineEmits(["update:modelValue", "success", "draft-created"]);
@@ -1271,6 +1214,22 @@ const show = ref(false);
 const currentStep = ref(1);
 const loading = ref(false);
 const activating = ref(false);
+
+// Edit mode
+const isEditMode = computed(() => !!(props.editCampaign || props.editingCampaign));
+const editingCampaignData = computed(() => props.editCampaign || props.editingCampaign);
+
+// Fields that can be edited in edit mode
+const canEditInteractionMethod = computed(() => !isEditMode.value || editingCampaignData.value?.status === 'DRAFT');
+const canEditSource = computed(() => !isEditMode.value || editingCampaignData.value?.status === 'DRAFT');
+const canEditSegment = computed(() => !isEditMode.value || editingCampaignData.value?.status === 'DRAFT');
+const canEditContent = computed(() => !isEditMode.value || ['DRAFT', 'PAUSED'].includes(editingCampaignData.value?.status));
+
+// Auto-save debounce timer
+const autoSaveTimer = ref(null);
+const isAutoSaving = ref(false);
+const lastSaveSuccess = ref(false);
+const showSaveSuccess = ref(false);
 
 // Campaign stores
 const campaignStore = useCampaignStore();
@@ -1310,8 +1269,9 @@ const advancedFilters = reactive({
 const campaignData = ref({
   campaign_name: "",
   description: "",
-  type: "", // Will be selected by user
+  type: "GATHERING", // Default single type
   status: "DRAFT",
+  interaction_method: "", // New field: 'EMAIL', 'ZALO_ZNS', 'ZALO_CARE'
   target_segment: props.preselectedSegment || "",
   source_type: "", // New field: 'DataSource', 'File', 'Search'
   source_file: "", // For File type
@@ -1321,6 +1281,12 @@ const campaignData = ref({
   start_date: "", // datetime-local
   end_date: "", // datetime-local
   mira_talent_campaign: "", // JSON string for MIRA Talent source
+  // Content design fields
+  email_subject: "", // For EMAIL method
+  email_content: "", // For EMAIL method
+  message_content: "", // For ZALO methods
+  success_action: "", // Action when success
+  failure_action: "", // Action when failure
 });
 
 const selectedSource = ref(props.preselectedSegment ? "search" : "");
@@ -1604,13 +1570,25 @@ const selectedJobOpeningDetails = ref(null);
 const __ = (text) => text;
 
 // Steps definition
-const steps = [
-  { number: 1, label: "Information" },
-  { number: 2, label: "Select Source" },
-  { number: 3, label: "Target Segment" },
-  { number: 4, label: "Create Triggers" },
-  { number: 5, label: "Review & Activate" }
-];
+const steps = computed(() => {
+  const baseSteps = [
+    { number: 1, label: "Campaign Information" },
+    { number: 2, label: "Select Source" },
+    { number: 3, label: "Target Segment" },
+    { number: 4, label: "Thiết kế Nội dung" }
+  ];
+  
+  // In edit mode, don't show the final review step
+  if (isEditMode.value) {
+    return baseSteps;
+  }
+  
+  // In create mode, add review step
+  return [
+    ...baseSteps,
+    { number: 5, label: "Review & Activate" }
+  ];
+});
 
 // Source options - 3 fixed choices only
 const sources = computed(() => [
@@ -1720,68 +1698,54 @@ const dialogOptions = computed(() => ({
   size: "2xl",
 }));
 
-// Computed
-const isEditing = computed(() => !!props.editCampaign);
+// Computed (legacy - use isEditMode instead)
+const isEditing = computed(() => isEditMode.value);
+
+// Check if draft campaign has been created
+const isDraftCreated = computed(() => !!draftCampaign.value);
 
 const modalTitle = computed(() => {
   if (isEditing.value) {
     return __("Edit Campaign");
   }
-  const titles = {
-    1: "Campaign Information",
-    2: "Select Data Source",
-    3: "Select Target Segment",
-    4: "Create Campaign Steps",
-    5: "Review & Activate",
-    // 6: 'Select Job Opening'
-  };
-  return titles[currentStep.value] || "Create New Campaign";
+  return steps.value.find((step) => step.id === currentStep.value)?.title || "Create New Campaign";
 });
 
 const step1Valid = computed(() => {
+  // In edit mode, be more lenient with validation - just need campaign name
+  if (isEditMode.value) {
+    return !!campaignData.value.campaign_name;
+  }
+  
+  // In create mode, require all fields
   return !!(
     campaignData.value.campaign_name &&
     campaignData.value.description &&
-    campaignData.value.type
+    campaignData.value.interaction_method
   );
 });
 
 const canProceed = computed(() => {
-  if (currentStep.value === 1) return step1Valid.value;
-  if (currentStep.value === 2) {
-    // Không bắt buộc chọn nguồn - luôn cho phép qua bước 2
-    if (!selectedSource.value) return true;
-
-    // Nếu đã chọn datasource: cần chọn specific data source (level 3)
-    if (selectedSource.value === "datasource") {
-      if (
-        isEditing.value &&
-        (selectedDataSourceId.value || campaignData.value.data_source_id)
-      ) {
-        return true;
-      }
-      return dataSourceSelectionLevel.value === 3 && !!selectedDataSourceId.value;
-    }
-
-    // Nếu đã chọn file: file config handled by component
-    if (selectedSource.value === "file") {
-      return true;
-    }
-
-    // Nếu đã chọn search: can proceed immediately
-    if (selectedSource.value === "search") {
-      return true;
-    }
-
-    return true;
-  }
-  // Bước 3: luôn cho phép qua, không bắt buộc chọn segment
-  if (currentStep.value === 3) return true;
-  if (currentStep.value === 4) return true; // Chưa bắt buộc có bước nào
-  // Bước 6: cần chọn job opening
-  // if (currentStep.value === 6) return !!selectedJobOpeningId.value
+  // Always allow clicking Continue - validation happens on click
   return true;
 });
+
+// Check if current step is the last step
+const isLastStep = computed(() => {
+  return currentStep.value === steps.value.length;
+});
+
+// Content editor data
+const contentEditorData = computed(() => ({
+  email_subject: campaignData.value.email_subject,
+  email_content: campaignData.value.email_content,
+  attachments: campaignData.value.attachments || [],
+  message_content: campaignData.value.message_content,
+  image_url: campaignData.value.image_url,
+  action_buttons: campaignData.value.action_buttons || [],
+  success_action: campaignData.value.success_action,
+  failure_action: campaignData.value.failure_action
+}));
 
 const onSocialJobOpeningChange = async () => {
   console.log("Đã thay đổi job opening");
@@ -2207,8 +2171,16 @@ const removeStep = (step) => {
 };
 
 const nextStep = async () => {
-  // Create draft campaign when moving from step 1 to step 2 (only in create mode)
-  if (currentStep.value === 1 && !isEditing.value) {
+  // Validate current step before proceeding
+  if (!validateCurrentStep()) {
+    return; // Don't proceed if validation fails
+  }
+
+  // Save data for current step
+  await saveCurrentStepData();
+
+  // Create draft campaign when moving from step 1 to step 2 (only in create mode and first time)
+  if (currentStep.value === 1 && !isEditMode.value && !draftCampaign.value) {
     try {
       await createDraftCampaign();
     } catch (error) {
@@ -2222,7 +2194,10 @@ const nextStep = async () => {
     await loadJobOpenings();
   }
 
-  if (currentStep.value < 4) {
+  // In edit mode, max step is 4. In create mode, max step is 5
+  const maxStep = isEditMode.value ? 4 : 5;
+  
+  if (currentStep.value < maxStep) {
     currentStep.value++;
   }
 };
@@ -2827,31 +2802,167 @@ const finalizeCampaign = async () => {
 // Method to update campaign name from header
 const updateCampaignName = (newName) => {
   campaignData.value.campaign_name = newName;
+  // Auto-save will be triggered by watcher
 };
 
-// Method to save draft
-const saveDraft = async () => {
-  if (currentStep.value === 1 && !isEditing.value && !draftCampaign.value) {
-    await createDraftCampaign();
-  } else if (draftCampaign.value) {
-    // Update existing draft
+// Debounced auto-save function (like Google Drive)
+const debouncedAutoSave = () => {
+  if (autoSaveTimer.value) {
+    clearTimeout(autoSaveTimer.value);
+  }
+  
+  autoSaveTimer.value = setTimeout(async () => {
+    await autoSave();
+  }, 2000); // Auto-save after 2 seconds of inactivity
+};
+
+// Auto-save function (like Google Drive)
+const autoSave = async () => {
+  try {
+    const campaignId = draftCampaign.value?.data?.name || editingCampaignData.value?.name;
+    
+    if (!campaignId || isAutoSaving.value) return;
+
+    isAutoSaving.value = true;
+
     const updateData = {
       campaign_name: campaignData.value.campaign_name,
       description: campaignData.value.description,
       type: campaignData.value.type,
       status: campaignData.value.status,
+      interaction_method: campaignData.value.interaction_method,
       start_date: campaignData.value.start_date,
       end_date: campaignData.value.end_date,
+      target_segment: campaignData.value.target_segment,
+      source_type: campaignData.value.source_type,
+      data_source_id: campaignData.value.data_source_id,
+      email_subject: campaignData.value.email_subject,
+      email_content: campaignData.value.email_content,
+      message_content: campaignData.value.message_content,
+      success_action: campaignData.value.success_action,
+      failure_action: campaignData.value.failure_action,
     };
     
-    try {
-      await campaignStore.updateCampaignData(draftCampaign.value.data.name, updateData);
-      console.log('✅ Draft saved successfully');
-    } catch (error) {
-      console.error('❌ Error saving draft:', error);
-      alert(__('Failed to save draft. Please try again.'));
-    }
+    await campaignStore.updateCampaignData(campaignId, updateData);
+    console.log('✅ Auto-saved successfully');
+    
+    // Show success indicator
+    lastSaveSuccess.value = true;
+    showSaveSuccess.value = true;
+    
+    // Hide success indicator after 3 seconds
+    setTimeout(() => {
+      showSaveSuccess.value = false;
+    }, 3000);
+    
+  } catch (error) {
+    console.error('❌ Auto-save error:', error);
+    lastSaveSuccess.value = false;
+    showSaveSuccess.value = false;
+    // Don't show alert for auto-save errors to avoid interrupting user
+  } finally {
+    isAutoSaving.value = false;
   }
+};
+
+// Validate current step before proceeding
+const validateCurrentStep = () => {
+  if (currentStep.value === 1) {
+    // Step 1: Validate campaign info
+    const errors = [];
+    
+    if (!campaignData.value.campaign_name?.trim()) {
+      errors.push(__("Campaign name is required"));
+    }
+    
+    if (!isEditMode.value && !campaignData.value.description?.trim()) {
+      errors.push(__("Description is required"));
+    }
+    
+    if (!campaignData.value.interaction_method) {
+      errors.push(__("Please select an interaction method"));
+    }
+    
+    if (errors.length > 0) {
+      alert(errors.join('\n'));
+      return false;
+    }
+    
+    return true;
+  }
+  
+  // Other steps - add validation as needed
+  return true;
+};
+
+// Save current step data
+const saveCurrentStepData = async () => {
+  try {
+    const campaignId = draftCampaign.value?.data?.name || editingCampaignData.value?.name;
+    
+    if (!campaignId) return;
+
+    const updateData = {
+      campaign_name: campaignData.value.campaign_name,
+      description: campaignData.value.description,
+      type: campaignData.value.type,
+      status: campaignData.value.status,
+      interaction_method: campaignData.value.interaction_method,
+      start_date: campaignData.value.start_date,
+      end_date: campaignData.value.end_date,
+      target_segment: campaignData.value.target_segment,
+      source_type: campaignData.value.source_type,
+      data_source_id: campaignData.value.data_source_id,
+      email_subject: campaignData.value.email_subject,
+      email_content: campaignData.value.email_content,
+      attachments: JSON.stringify(campaignData.value.attachments || []),
+      message_content: campaignData.value.message_content,
+      image_url: campaignData.value.image_url,
+      action_buttons: JSON.stringify(campaignData.value.action_buttons || []),
+      success_action: campaignData.value.success_action,
+      failure_action: campaignData.value.failure_action,
+    };
+    
+    await campaignStore.updateCampaignData(campaignId, updateData);
+    
+    // Show success indicator
+    lastSaveSuccess.value = true;
+    showSaveSuccess.value = true;
+    
+    // Hide success indicator after 3 seconds
+    setTimeout(() => {
+      showSaveSuccess.value = false;
+    }, 3000);
+    
+    console.log('✅ Step data saved successfully');
+  } catch (error) {
+    console.error('❌ Error saving step data:', error);
+    alert(__('Failed to save data. Please try again.'));
+    throw error; // Re-throw to prevent step change
+  }
+};
+
+// Content editor handlers
+const handleContentUpdate = (updatedContent) => {
+  // Update campaign data with content from editor
+  Object.assign(campaignData.value, updatedContent);
+  console.log('📝 Content updated:', updatedContent);
+};
+
+const handleContentSave = async () => {
+  console.log('💾 Saving content from editor');
+  await saveCurrentStepData();
+};
+
+const handleContentPreview = (content) => {
+  console.log('👁️ Previewing content:', content);
+  // TODO: Implement preview modal
+  alert(__('Preview feature will be implemented soon'));
+};
+
+// Method to save draft (legacy - kept for compatibility)
+const saveDraft = async () => {
+  await saveCurrentStepData();
 };
 
 const closeWizard = () => {
@@ -2863,15 +2974,22 @@ const closeWizard = () => {
     description: "",
     type: "",
     status: "DRAFT",
-    target_segment: props.preselectedSegment || "",
-    source_type: "",
-    source_file: "",
-    data_source_id: "",
-    source_config: null,
-    job_opening: "",
+    interaction_method: "",
     start_date: "",
     end_date: "",
-    last_scheduled_at: "",
+    target_segment: "",
+    source_type: "Gathering",
+    source_file: null,
+    source_config: null,
+    data_source_id: null,
+    email_subject: "",
+    email_content: "",
+    attachments: [],
+    message_content: "",
+    image_url: "",
+    action_buttons: [],
+    success_action: "",
+    failure_action: "",
   };
   selectedSource.value = props.preselectedSegment ? "search" : "";
   selectedDataSourceType.value = "";
@@ -3165,8 +3283,8 @@ watch(show, async (newVal) => {
   if (newVal) {
     try {
       // Prefill when editing
-      if (props.editCampaign) {
-        const ec = props.editCampaign;
+      if (props.editCampaign || props.editingCampaign) {
+        const ec = props.editCampaign || props.editingCampaign;
         // Fetch full campaign doc to get select_pages/source_config
         let full = null;
         try {
@@ -3176,13 +3294,34 @@ watch(show, async (newVal) => {
         }
         campaignData.value.campaign_name = ec.campaign_name || ec.name || "";
         campaignData.value.description = ec.description || "";
-        campaignData.value.type = ec.type || "";
+        campaignData.value.type = ec.type || "MARKETING";
         campaignData.value.status = ec.status || campaignData.value.status;
+        campaignData.value.interaction_method = ec.interaction_method || "EMAIL"; // Default fallback
         campaignData.value.target_segment =
           ec.target_segment || campaignData.value.target_segment || "";
         campaignData.value.start_date =
           ec.start_date || campaignData.value.start_date || "";
         campaignData.value.end_date = ec.end_date || campaignData.value.end_date || "";
+        
+        // Content design fields
+        campaignData.value.email_subject = ec.email_subject || "";
+        campaignData.value.email_content = ec.email_content || "";
+        try {
+          campaignData.value.attachments = ec.attachments ? JSON.parse(ec.attachments) : [];
+        } catch (e) {
+          console.warn('Failed to parse attachments:', e);
+          campaignData.value.attachments = [];
+        }
+        campaignData.value.message_content = ec.message_content || "";
+        campaignData.value.image_url = ec.image_url || "";
+        try {
+          campaignData.value.action_buttons = ec.action_buttons ? JSON.parse(ec.action_buttons) : [];
+        } catch (e) {
+          console.warn('Failed to parse action_buttons:', e);
+          campaignData.value.action_buttons = [];
+        }
+        campaignData.value.success_action = ec.success_action || "";
+        campaignData.value.failure_action = ec.failure_action || "";
         // Source hints
         if (ec.source_type) {
           campaignData.value.source_type = ec.source_type;
@@ -3516,6 +3655,8 @@ const openSocialConfigEditor = async () => {
     showSocialConfigModal.value = true;
   }
 };
+
+// Removed auto-save watchers - now save only on step change
 
 </script>
 

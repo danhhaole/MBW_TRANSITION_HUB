@@ -821,3 +821,35 @@ export const validateCandidateForm = (data) => {
   const store = useCandidateStore()
   return store.validateCandidateForm(data)
 }
+
+export const formatCandidateStatus = (status) => {
+  const store = useCandidateStore()
+  return store.getStatusDisplay(status)
+}
+
+export const getAvatarText = (fullName) => {
+  const store = useCandidateStore()
+  return store.getAvatarText(fullName)
+}
+
+export const getStatusChipColor = (status) => {
+  const statusColors = {
+    'ACTIVE': 'green',
+    'INACTIVE': 'gray',
+    'PENDING': 'yellow',
+    'BLACKLISTED': 'red'
+  }
+  return statusColors[status] || 'gray'
+}
+
+export const calculateEngagementScore = (candidate) => {
+  // Simple engagement score calculation
+  let score = 0
+  
+  if (candidate.email) score += 20
+  if (candidate.phone) score += 20
+  if (candidate.skills && candidate.skills.length > 0) score += 30
+  if (candidate.experience_years && candidate.experience_years > 0) score += 30
+  
+  return Math.min(score, 100)
+}

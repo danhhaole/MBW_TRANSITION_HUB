@@ -175,6 +175,17 @@
             placeholder="All Statuses"
           />
 
+          <!-- Tag Filter -->
+          <Select
+            v-model="tagFilter"
+            :options="tagOptions"
+            @change="setTagFilter"
+            class="min-w-40 text-sm"
+            size="md"
+            variant="outlined"
+            placeholder="All Tags"
+          />
+
           <!-- Refresh Button -->
           <Button
             variant="outline"
@@ -240,12 +251,12 @@
         @draft-created="handleDraftCreated"
       />
 
-      <!-- Form cho chỉnh sửa -->
-      <campaignForm
+      <!-- Wizard cho chỉnh sửa -->
+      <campaign-wizard
         v-model="showEditForm"
-        :campaign="selectedCampaign"
+        :editing-campaign="selectedCampaign"
         @success="handleEditSuccess"
-        @cancel="handleFormCancel"
+        @draft-created="handleDraftCreated"
       />
 
       <!-- Toast notifications -->
@@ -323,11 +334,36 @@ const showToast = (message, type = "info", duration = 3000) => {
 // Status filter options
 const statusOptions = [
   { label: __("All Statuses"), value: "all" },
+  { label: __("Draft"), value: "DRAFT" },
   { label: __("Active"), value: "ACTIVE" },
   { label: __("Paused"), value: "PAUSED" },
+  { label: __("Failed"), value: "FAILED" },
+  { label: __("Cancelled"), value: "CANCELLED" },
   { label: __("Archived"), value: "ARCHIVED" },
-  { label: __("Draft"), value: "DRAFT" },
 ];
+
+// Tag filter
+const tagFilter = ref("all");
+const tagOptions = ref([
+  { label: __("All Tags"), value: "all" },
+]);
+
+// Set tag filter
+const setTagFilter = (value) => {
+  tagFilter.value = value;
+  loadCampaignsWithFilters();
+};
+
+// Load campaigns with all filters
+const loadCampaignsWithFilters = async () => {
+  const filters = {
+    status: statusFilter.value !== "all" ? statusFilter.value : undefined,
+    tag: tagFilter.value !== "all" ? tagFilter.value : undefined,
+    searchText: searchText.value && searchText.value.trim() ? searchText.value.trim() : undefined,
+  };
+  
+  await loadCampaigns(filters);
+};
 
 // Debounced search function
 const debouncedSearch = (searchValue) => {
@@ -417,6 +453,15 @@ const handleCreateSuccess = async (event) => {
   showToast(__(`Campaign "${data.campaign_name}" created successfully!`), "success");
 };
 
+const handleDraftCreated = async (draftCampaign) => {
+  console.log("📄 Draft campaign created:", draftCampaign.name);
+
+  // Reload campaign list to show the new draft
+  await loadCampaigns();
+
+  console.log("📋 Campaign list refreshed after draft creation");
+};
+
 const handleEditSuccess = async (event) => {
   const { action, data } = event;
 
@@ -439,15 +484,6 @@ const handleEditSuccess = async (event) => {
 const handleFormCancel = () => {
   showEditForm.value = false;
   selectedCampaign.value = null;
-};
-
-const handleDraftCreated = async (draftCampaign) => {
-  console.log("📄 Draft campaign created:", draftCampaign.name);
-
-  // Reload campaign list to show the new draft
-  await loadCampaigns();
-
-  console.log("📋 Campaign list refreshed after draft creation");
 };
 
 const handleClearSearch = () => {

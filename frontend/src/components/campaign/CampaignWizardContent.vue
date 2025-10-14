@@ -1,6 +1,6 @@
 <template>
   <div class="flex-1 overflow-auto">
-    <div class="max-w-4xl mx-auto p-6">
+    <div class="container mx-auto p-6">
       <!-- Step Content with smooth transitions -->
       <div class="min-h-[500px]">
         <transition name="step-fade" mode="out-in">

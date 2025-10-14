@@ -344,7 +344,7 @@
             />
             <Link
               v-model="editItem.campaign_id"
-              :doctype=""Mira Campaign""
+              :doctype="'Mira Campaign'"
               label="Mira Campaign"
               :disabled="true"
             />

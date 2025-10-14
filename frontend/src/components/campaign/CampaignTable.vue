@@ -9,11 +9,14 @@
         <table class="min-w-full bg-white rounded-lg overflow-hidden">
           <thead class="bg-gray-100">
             <tr>
-              <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">{{ __('Campaign Name') }}</th>
+              <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">{{ __('Name') }}</th>
+              <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">{{ __('Sender') }}</th>
+              <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">{{ __('Send Date') }}</th>
+              <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">{{ __('Sent') }}</th>
+              <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">{{ __('Receiver') }}</th>
+              <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">{{ __('Open') }}</th>
+              <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">{{ __('Click') }}</th>
               <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">{{ __('Status') }}</th>
-              <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">{{ __('Progress') }}</th>
-              <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">{{ __('Created Date') }}</th>
-              <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">{{ __('Source Type') }}</th>
               <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">{{ __('Actions') }}</th>
             </tr>
           </thead>
@@ -23,58 +26,70 @@
               :key="campaign.name || campaign.id"
               class="hover:bg-gray-50"
             >
-              <!-- Campaign Name -->
+              <!-- Tên -->
               <td class="py-4 px-4">
                 <div class="flex items-center">
                   <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                    </svg>
+                    <FeatherIcon 
+                      :name="getInteractionIcon(campaign.interaction_method)" 
+                      class="h-4 w-4 text-blue-600" 
+                    />
                   </div>
                   <div>
                     <div class="font-medium text-base text-gray-800">{{ campaign.campaign_name || campaign.name }}</div>
-                    <div class="text-xs text-gray-500">{{ campaign.description || 'Tuyển dụng' }}</div>
+                    <div class="text-xs text-gray-500">{{ getInteractionMethodText(campaign.interaction_method) }}</div>
                   </div>
                 </div>
               </td>
 
-              <!-- Status -->
-              <td class="py-4 px-4">
-                <span :class="getStatusBadgeClass(campaign.status)" class="text-xs px-2 py-1 rounded-full">
-                  {{ getStatusText(campaign.status) }}
-                </span>
+              <!-- Người gửi -->
+              <td class="py-4 px-4 text-sm text-gray-700">
+                {{ campaign.sender || campaign.owner || 'Admin' }}
               </td>
 
-              <!-- Progress -->
-              <td class="py-4 px-4">
+              <!-- Ngày gửi -->
+              <td class="py-4 px-4 text-sm text-gray-700">
+                {{ formatDate(campaign.sent_date || campaign.start_date) }}
+              </td>
+
+              <!-- Đã gửi -->
+              <td class="py-4 px-4 text-sm text-gray-700">
                 <div class="flex items-center">
-                  <span class="text-xs font-medium text-gray-700">
-                    {{ __('Step') }} {{ campaign.current || 0 }}/{{ campaign.total || 1 }}
+                  <span class="font-medium">{{ campaign.sent_count || 0 }}</span>
+                  <span class="text-gray-500 ml-1">/ {{ campaign.total_recipients || 0 }}</span>
+                </div>
+              </td>
+
+              <!-- Người nhận -->
+              <td class="py-4 px-4 text-sm text-gray-700">
+                {{ campaign.delivered_count || 0 }}
+              </td>
+
+              <!-- Người mở -->
+              <td class="py-4 px-4 text-sm text-gray-700">
+                <div class="flex items-center">
+                  <span class="font-medium">{{ campaign.opened_count || 0 }}</span>
+                  <span class="text-xs text-gray-500 ml-1">
+                    ({{ getOpenRate(campaign) }}%)
                   </span>
                 </div>
               </td>
 
-              <!-- Date -->
+              <!-- Lượt click -->
               <td class="py-4 px-4 text-sm text-gray-700">
-                {{ formatDate(campaign.start_date || campaign.creation) }}
+                <div class="flex items-center">
+                  <span class="font-medium">{{ campaign.clicked_count || 0 }}</span>
+                  <span class="text-xs text-gray-500 ml-1">
+                    ({{ getClickRate(campaign) }}%)
+                  </span>
+                </div>
               </td>
 
-              <!-- Source type  -->
+              <!-- Trạng thái -->
               <td class="py-4 px-4">
-                <div class="flex -space-x-2">
-                  <div 
-                    v-if="campaign.source_type" 
-                    class=" rounded-full bg-blue-100 flex items-center justify-center border-2 border-white"
-                  >
-                    <span class="text-xs font-medium text-blue-700">{{ campaign.source_type }}</span>
-                  </div>
-                  <!-- <div 
-                    v-if="campaign.target_segment" 
-                    class="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center border-2 border-white"
-                  >
-                    <span class="text-xs font-medium text-purple-700">{{ getInitials(campaign.target_segment) }}</span>
-                  </div> -->
-                </div>
+                <span :class="getStatusBadgeClass(campaign.status)" class="text-xs px-2 py-1 rounded-full">
+                  {{ getStatusText(campaign.status) }}
+                </span>
               </td>
 
               <!-- Actions -->
@@ -284,7 +299,9 @@ const getStatusBadgeClass = (status) => {
     'DRAFT': 'bg-gray-100 text-gray-800',
     'ACTIVE': 'bg-blue-100 text-blue-800',
     'PAUSED': 'bg-yellow-100 text-yellow-800',
-    'ARCHIVED': 'bg-green-100 text-green-800'
+    'ARCHIVED': 'bg-green-100 text-green-800',
+    'FAILED': 'bg-red-100 text-red-800',
+    'CANCELLED': 'bg-orange-100 text-orange-800'
   }
   return classes[status] || 'bg-gray-100 text-gray-800'
 }
@@ -294,9 +311,41 @@ const getStatusText = (status) => {
     'DRAFT': 'Draft',
     'ACTIVE': 'Active', 
     'PAUSED': 'Paused',
-    'ARCHIVED': 'Archived'
+    'ARCHIVED': 'Archived',
+    'FAILED': 'Failed',
+    'CANCELLED': 'Cancelled'
   }
   return texts[status] || status
+}
+
+// New helper methods for interaction methods
+const getInteractionIcon = (method) => {
+  const icons = {
+    'EMAIL': 'mail',
+    'ZALO_ZNS': 'message-circle',
+    'ZALO_CARE': 'heart'
+  }
+  return icons[method] || 'mail'
+}
+
+const getInteractionMethodText = (method) => {
+  const texts = {
+    'EMAIL': 'Email',
+    'ZALO_ZNS': 'Zalo ZNS',
+    'ZALO_CARE': 'Zalo Quan tâm'
+  }
+  return texts[method] || method
+}
+
+// Calculate rates
+const getOpenRate = (campaign) => {
+  if (!campaign.delivered_count || campaign.delivered_count === 0) return 0
+  return Math.round((campaign.opened_count || 0) / campaign.delivered_count * 100)
+}
+
+const getClickRate = (campaign) => {
+  if (!campaign.opened_count || campaign.opened_count === 0) return 0
+  return Math.round((campaign.clicked_count || 0) / campaign.opened_count * 100)
 }
 
 const getProgressBarClass = (status) => {
