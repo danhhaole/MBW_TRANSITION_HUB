@@ -1,0 +1,96 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-10-15 16:21:39.730768",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "purpose",
+  "status",
+  "enrollment_count",
+  "owner_id",
+  "created_at",
+  "column_break_qojf",
+  "steps",
+  "enrollment_source"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title"
+  },
+  {
+   "description": "M\u00f4 t\u1ea3 m\u1ee5c \u0111\u00edch ch\u00ednh c\u1ee7a chu\u1ed7i tin nh\u1eafn (Li\u00ean k\u1ebft v\u1edbi m\u1ee5c ti\u00eau Campaign).",
+   "fieldname": "purpose",
+   "fieldtype": "Small Text",
+   "label": "Purpose"
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Active\nDraft\nPaused\nCompleted"
+  },
+  {
+   "fieldname": "enrollment_count",
+   "fieldtype": "Int",
+   "label": "Enrollment Count"
+  },
+  {
+   "fieldname": "owner_id",
+   "fieldtype": "Link",
+   "label": "Owner",
+   "options": "User"
+  },
+  {
+   "fieldname": "created_at",
+   "fieldtype": "Datetime",
+   "label": "Created At"
+  },
+  {
+   "fieldname": "column_break_qojf",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "step_order: 1,2,3\ndelay_from_previous: \"2 days\", \"4 hours\", \"0 minutes\" (g\u1eedi ngay l\u1eadp t\u1ee9c)\nchannel: Email, SMS, Zalo_ZNS\ntemplate_id: \naction_if_replied:Stop Sequence, Continue\nrelated_action:Update Talent Tag, Create Task\n\n",
+   "fieldname": "steps",
+   "fieldtype": "JSON",
+   "label": "Steps"
+  },
+  {
+   "description": "C\u00e1ch \u1ee9ng vi\u00ean \u0111\u01b0\u1ee3c th\u00eam v\u00e0o Sequence (v\u00ed d\u1ee5: Manual, Flow_Trigger, Campaign_Subscription).",
+   "fieldname": "enrollment_source",
+   "fieldtype": "Data",
+   "label": "Enrollment Source"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-10-15 16:30:10.667834",
+ "modified_by": "Administrator",
+ "module": "MBW Mira",
+ "name": "Mira Sequence",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
