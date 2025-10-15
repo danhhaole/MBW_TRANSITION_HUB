@@ -227,7 +227,7 @@ def get_talent_interactions(talent_pool_id: str):
     # 5. Map action details nếu có
     for itrc in interactions:
         if itrc.get("action"):
-            action_doc = frappe.get_doc(Mira Action, itrc["action"])
+            action_doc = frappe.get_doc("Mira Action", itrc["action"])
             itrc["action_status"] = action_doc.status
             itrc["campaign_step"] = action_doc.campaign_step
             itrc["scheduled_at"] = action_doc.scheduled_at
@@ -327,7 +327,7 @@ def get_talent_detail_view(pool_id: str):
     all_actions = []
     for c in campaigns:
         actions = frappe.get_all(
-            Mira Action,
+            "Mira Action",
             filters={"talent_campaign_id": c.name},
             fields=["name", "campaign_step", "status", "scheduled_at", "executed_at", "result"]
         )
