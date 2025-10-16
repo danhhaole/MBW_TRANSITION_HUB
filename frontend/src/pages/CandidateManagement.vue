@@ -485,11 +485,13 @@ import Loading from '@/components/Loading.vue'
 
 
 import {
-	calculateEngagementScore,
-	formatCandidateStatus,
-	getAvatarText,
-	processSkills
-} from '@/composables/useCandidate'
+  calculateEngagementScore,
+  formatCandidateStatus,
+  getAvatarText,
+  getStatusChipColor,
+  getEngagementColor,
+  processSkills
+} from '@/stores/candidate'
 
 const breadcrumbs = [{ label: __('Contact'), route: { name: 'CandidateManagement' } }]
 
