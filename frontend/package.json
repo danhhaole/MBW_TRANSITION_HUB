@@ -5,7 +5,7 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "vite",
-    "build": "vite build --base=/assets/mbw_mira/frontend/ && yarn copy-html-entry",
+    "build": "NODE_OPTIONS=--max-old-space-size=4096 vite build --base=/assets/mbw_mira/frontend/ && yarn copy-html-entry",
     "copy-html-entry": "cp ../mbw_mira/public/frontend/index.html ../mbw_mira/www/mbw_mira.html",
     "serve": "vite preview"
   },
