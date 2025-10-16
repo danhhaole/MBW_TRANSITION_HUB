@@ -341,7 +341,7 @@
 						</div>
 
 						<!-- Action Buttons -->
-						<div class="flex justify-between pt-6 border-t border-gray-200">
+						<div class="flex justify-end pt-6 border-t border-gray-200">
 							<Button variant="outline" @click="handleDeleteItem">
 								<template #prefix>
 									<FeatherIcon name="trash-2" class="h-4 w-4" />
@@ -349,12 +349,12 @@
 								Xóa
 							</Button>
 
-							<Button variant="solid" @click="handleSaveItem">
+							<!-- <Button variant="solid" @click="handleSaveItem">
 								<template #prefix>
 									<FeatherIcon name="save" class="h-4 w-4" />
 								</template>
 								Lưu
-							</Button>
+							</Button> -->
 						</div>
 					</div>
 
