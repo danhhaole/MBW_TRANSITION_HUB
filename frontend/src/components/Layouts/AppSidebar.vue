@@ -235,6 +235,11 @@ const links = [
     icon: OrganizationsIcon,
     to: 'JobOpeningManagement',
   },
+  {
+    label: "Flows",
+    icon: TaskIcon,
+    to: 'FlowManagement',
+  },
   // {
   //   label: "Candidate",
   //   icon: OrganizationsIcon,

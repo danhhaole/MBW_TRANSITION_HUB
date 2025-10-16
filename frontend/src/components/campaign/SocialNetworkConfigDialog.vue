@@ -282,11 +282,14 @@
 import { ref, computed, watch, nextTick } from "vue";
 import { Dialog, Button, FeatherIcon, FormControl, TextEditor, call } from "frappe-ui";
 import ImageUploader from "@/components/Controls/ImageUploader.vue";
-import { useCampaignSocialStore } from "@/stores/campaignSocial";
 import { useRouter } from "vue-router";
+import { useCampaignSocialStore } from '../../stores/campaignSocial'
+import { useJobOpeningStore } from '../../stores/jobOpening'
+import { useToast } from '../../composables/useToast';
 
 const router = useRouter();
 const campaignSocialStore = useCampaignSocialStore();
+const toast = useToast();
 
 // Props
 const props = defineProps({
@@ -863,7 +866,7 @@ const handleConfirm = async () => {
     show.value = false;
   } catch (error) {
     console.error('❌ Error saving Mira Campaign Social:', error);
-    alert(__('Failed to save social configuration. Please try again.'));
+    toast.error(__('Failed to save social configuration. Please try again.'));
   } finally {
     saving.value = false;
   }

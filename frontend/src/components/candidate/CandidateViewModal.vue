@@ -212,7 +212,6 @@ import { computed } from 'vue'
 import { Dialog, Button, Avatar } from 'frappe-ui'
 import {
   formatCandidateStatus,
-  formatDate,
   getAvatarText,
   processSkills
 } from '@/stores/candidate'
@@ -247,6 +246,15 @@ const emit = defineEmits([
   'delete-candidate',
   'duplicate-candidate'
 ])
+
+const formatDate = (dateString) => {
+  if (!dateString) return '-'
+  try {
+    return new Date(dateString).toLocaleDateString('vi-VN')
+  } catch {
+    return dateString
+  }
+}
 
 // Computed
 const candidateSkills = computed(() => {

@@ -4,8 +4,12 @@
       <div class="flex items-center justify-center">
         <template v-for="(step, index) in steps" :key="step.number">
           <div
-            class="flex flex-col items-center min-w-[120px]"
-            :class="getStepClass(step.number)"
+            class="flex flex-col items-center min-w-[120px] transition-all duration-300"
+            :class="[
+              getStepClass(step.number),
+              canClickStep(step.number) ? 'cursor-pointer hover:scale-105' : ''
+            ]"
+            @click="handleStepClick(step.number)"
           >
             <!-- Step Icon/Number -->
             <div
@@ -72,6 +76,9 @@ const props = defineProps({
   }
 })
 
+// Emits
+const emit = defineEmits(['step-click'])
+
 // Translation helper
 const __ = (text) => text
 
@@ -82,13 +89,13 @@ const getStepClass = (stepNumber) => {
 
 const getStepIconClass = (stepNumber) => {
   if (stepNumber < props.currentStep) {
-    // Completed step
-    return 'bg-blue-500 border-blue-500 text-white'
+    // Completed step - clickable
+    return 'bg-blue-500 border-blue-500 text-white hover:bg-blue-600'
   } else if (stepNumber === props.currentStep) {
-    // Current step
-    return 'bg-blue-100 border-blue-500 text-blue-600'
+    // Current step - clickable
+    return 'bg-blue-100 border-blue-500 text-blue-600 hover:bg-blue-200'
   } else {
-    // Future step
+    // Future step - not clickable
     return 'bg-gray-100 border-gray-300 text-gray-400'
   }
 }
@@ -116,6 +123,18 @@ const getStepDescriptionClass = (stepNumber) => {
   } else {
     // Future step
     return 'text-gray-400'
+  }
+}
+
+// Check if step can be clicked (completed steps or current step)
+const canClickStep = (stepNumber) => {
+  return stepNumber <= props.currentStep
+}
+
+// Handle step click
+const handleStepClick = (stepNumber) => {
+  if (canClickStep(stepNumber)) {
+    emit('step-click', stepNumber)
   }
 }
 </script>

@@ -1,51 +1,63 @@
 <template>
-  <div class="campaign-content-editor">
-    <!-- Email Editor -->
-    <EmailEditor 
-      v-if="interaction_type === 'EMAIL'" 
-      :content="content"
-      :readonly="readonly"
-      @update:content="handleContentUpdate"
-      @save="handleSave"
-      @preview="handlePreview"
-    />
-    
-    <!-- Zalo ZNS Editor -->
-    <ZaloZnsEditor 
-      v-else-if="interaction_type === 'ZALO_ZNS'" 
-      :content="content"
-      :readonly="readonly"
-      @update:content="handleContentUpdate"
-      @save="handleSave"
-      @preview="handlePreview"
-    />
-    
-    <!-- Zalo Care Editor -->
-    <ZaloCareEditor 
-      v-else-if="interaction_type === 'ZALO_CARE'" 
-      :content="content"
-      :readonly="readonly"
-      @update:content="handleContentUpdate"
-      @save="handleSave"
-      @preview="handlePreview"
-    />
-    
-    <!-- Fallback for unknown interaction type -->
-    <div v-else class="text-center py-8">
-      <div class="text-gray-500">
-        <FeatherIcon name="alert-circle" class="h-12 w-12 mx-auto mb-4" />
-        <h3 class="text-lg font-medium mb-2">{{ __("Unknown Interaction Type") }}</h3>
-        <p>{{ __("Please select a valid interaction method first") }}</p>
+  <div class="campaign-content-editor space-y-6">
+    <!-- Content Editors -->
+    <div>
+      <!-- Email Editor -->
+      <EmailEditor 
+        v-if="interaction_type === 'EMAIL'" 
+        :content="content"
+        :readonly="readonly"
+        @update:content="handleContentUpdate"
+        @save="handleSave"
+        @preview="handlePreview"
+      />
+      
+      <!-- Zalo ZNS Editor -->
+      <ZaloZnsEditor 
+        v-else-if="interaction_type === 'ZALO_ZNS'" 
+        :content="content"
+        :readonly="readonly"
+        @update:content="handleContentUpdate"
+        @save="handleSave"
+        @preview="handlePreview"
+      />
+      
+      <!-- Zalo Care Editor -->
+      <ZaloCareEditor 
+        v-else-if="interaction_type === 'ZALO_CARE'" 
+        :content="content"
+        :readonly="readonly"
+        @update:content="handleContentUpdate"
+        @save="handleSave"
+        @preview="handlePreview"
+      />
+      
+      <!-- Fallback for unknown interaction type -->
+      <div v-else class="text-center py-8">
+        <div class="text-gray-500">
+          <FeatherIcon name="alert-circle" class="h-12 w-12 mx-auto mb-4" />
+          <h3 class="text-lg font-medium mb-2">{{ __("Unknown Interaction Type") }}</h3>
+          <p>{{ __("Please select a valid interaction method first") }}</p>
+        </div>
       </div>
     </div>
+
+    <!-- Additional Actions -->
+    <AdditionalActions
+      v-if="interaction_type && interaction_type !== 'UNKNOWN'"
+      :interaction-type="interaction_type"
+      v-model="additionalActions"
+      @update:modelValue="handleAdditionalActionsUpdate"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, watch } from 'vue'
 import EmailEditor from './content-editors/EmailEditor.vue'
-import ZaloZnsEditor from './content-editors/ZaloZnsEditor.vue'
+import ZaloZnsEditor from './content-editors/ZaloEditor.vue'
 import ZaloCareEditor from './content-editors/ZaloCareEditor.vue'
+import AdditionalActions from './AdditionalActions.vue'
 import { FeatherIcon } from 'frappe-ui'
 
 // Props
@@ -87,6 +99,9 @@ const content = ref({
   ...props.modelValue
 })
 
+// Additional actions state
+const additionalActions = ref(props.modelValue.additional_actions || {})
+
 // Translation helper
 const __ = (text) => text
 
@@ -112,10 +127,21 @@ const handlePreview = () => {
   console.log('👁️ Previewing content:', content.value)
   emit('preview', content.value)
 }
+
+// Handle additional actions update
+const handleAdditionalActionsUpdate = (actions) => {
+  additionalActions.value = actions
+  const updatedContent = { 
+    ...content.value, 
+    additional_actions: actions 
+  }
+  content.value = updatedContent
+  emit('update:modelValue', updatedContent)
+}
 </script>
 
 <style scoped>
 .campaign-content-editor {
-  @apply w-full;
+  width: 100%;
 }
 </style>

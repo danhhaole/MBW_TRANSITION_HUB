@@ -182,13 +182,15 @@
 				</div>
 			</template>
 		</Dialog>
-	</div>
+</div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { Button, FeatherIcon, Dropdown, Dialog, call } from 'frappe-ui'
-import { useCampaignSocialStore } from '@/stores/campaignSocial'
+import { useCampaignSocialStore } from '../../stores/campaignSocial'
+import { useJobOpeningStore } from '../../stores/jobOpening'
+import { useToast } from '../../composables/useToast'
 import SocialNetworkConfigDialog from './SocialNetworkConfigDialog.vue'
 
 // Props
@@ -233,6 +235,8 @@ const __ = (text) => text
 
 // Store
 const campaignSocialStore = useCampaignSocialStore()
+const jobOpeningStore = useJobOpeningStore()
+const toast = useToast()
 
 // Reactive state
 const loading = ref(false)
@@ -345,7 +349,7 @@ const editSocial = async (social) => {
 		showCreateDialog.value = true
 	} catch (error) {
 		console.error('Error loading social for edit:', error)
-		alert(__('Failed to load social post data'))
+		toast.error(__('Failed to load social post data'))
 	}
 }
 
@@ -360,7 +364,7 @@ const deleteSocial = async (social) => {
 		emit('refresh')
 	} catch (error) {
 		console.error('Error deleting social:', error)
-		alert(__('Failed to delete social media post'))
+		toast.error(__('Failed to delete social media post'))
 	} finally {
 		deleting.value = null
 	}

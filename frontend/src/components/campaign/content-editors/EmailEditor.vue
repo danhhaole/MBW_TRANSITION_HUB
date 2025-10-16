@@ -210,6 +210,7 @@
 <script setup>
 import { ref, watch, nextTick } from 'vue'
 import { FeatherIcon, Dialog, Button, FileUploader } from 'frappe-ui'
+import { useToast } from '../../../composables/useToast'
 
 const props = defineProps({
   content: { type: Object, default: () => ({}) },
@@ -229,6 +230,7 @@ const showTemplateDialog = ref(false)
 const dialogContent = ref('')
 const aiGenerating = ref(false)
 const dialogTextarea = ref(null)
+const toast = useToast()
 
 const __ = (text) => text
 
@@ -325,7 +327,7 @@ const handleFileUploadSuccess = (file) => {
   // Validate file size (10MB = 10 * 1024 * 1024 bytes)
   const maxSize = 10 * 1024 * 1024
   if (file.file_size > maxSize) {
-    alert(__('File size must be less than 10MB'))
+    toast.error(__('File size must be less than 10MB'))
     return
   }
   
@@ -343,7 +345,7 @@ const handleFileUploadSuccess = (file) => {
 // Handle file upload error
 const handleFileUploadError = (error) => {
   console.error('File upload error:', error)
-  alert(__('Failed to upload file. Please try again.'))
+  toast.error(__('Failed to upload file. Please try again.'))
 }
 
 // Remove attachment
