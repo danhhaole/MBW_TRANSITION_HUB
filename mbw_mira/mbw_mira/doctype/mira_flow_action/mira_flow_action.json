@@ -1,0 +1,86 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-10-17 09:17:54.759319",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "flow_id",
+  "action_type",
+  "channel_type",
+  "action_parameters",
+  "next_flow",
+  "sequence",
+  "delay_minutes",
+  "condition",
+  "order"
+ ],
+ "fields": [
+  {
+   "fieldname": "flow_id",
+   "fieldtype": "Link",
+   "label": "Flow",
+   "options": "Mira Flow"
+  },
+  {
+   "fieldname": "action_type",
+   "fieldtype": "Select",
+   "label": "Action Type",
+   "options": "MESSAGE\nSMS\nEMAIL\nZALO\nZALO_CARE\nSTART_FLOW\nSUBSCRIBE_TO_SEQUENCE\nUN_SUBSCRIBE_TO_SEQUENCE\nSMART_DELAY\nAI_CALL\nADD_TAG\nREMOVE_TAG\nADD_CUSTOM_FIELD\nREMOVE_CUSTOM_FIELD\nLEAD_SCORE\nEXTERNAL_REQUEST\nEMAIL_AI\nCONTENT_AI\nSENT_NOTIFICATION"
+  },
+  {
+   "fieldname": "channel_type",
+   "fieldtype": "Select",
+   "label": "Channel Type",
+   "options": "Email\nSMS\nZalo\nMessenger"
+  },
+  {
+   "fieldname": "action_parameters",
+   "fieldtype": "JSON",
+   "label": "Action Parameters"
+  },
+  {
+   "fieldname": "next_flow",
+   "fieldtype": "Link",
+   "label": "Next Flow",
+   "options": "Mira Flow"
+  },
+  {
+   "default": "0",
+   "fieldname": "sequence",
+   "fieldtype": "Link",
+   "label": "Sequence",
+   "options": "Mira Sequence"
+  },
+  {
+   "fieldname": "delay_minutes",
+   "fieldtype": "Int",
+   "label": "Delay Minutes"
+  },
+  {
+   "fieldname": "condition",
+   "fieldtype": "Code",
+   "label": "Condition"
+  },
+  {
+   "fieldname": "order",
+   "fieldtype": "Int",
+   "label": "Order"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-10-17 14:49:18.920860",
+ "modified_by": "Administrator",
+ "module": "MBW Mira",
+ "name": "Mira Flow Action",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

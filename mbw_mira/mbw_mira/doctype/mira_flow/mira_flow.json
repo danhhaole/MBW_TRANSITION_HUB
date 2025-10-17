@@ -8,12 +8,15 @@
   "title",
   "description",
   "status",
+  "type",
+  "target_type",
   "tags",
   "owner_id",
   "created_at",
   "column_break_snme",
-  "triggers",
-  "actions"
+  "action_id",
+  "trigger_id",
+  "channel"
  ],
  "fields": [
   {
@@ -53,25 +56,43 @@
    "fieldtype": "Column Break"
   },
   {
-   "description": " {\n   \"trigger_id\": \"TGR002\",\n   \"source_platform\": \"Facebook\",\n   \"event_type\": \"Form_Submitted\",\n   \"criteria\": {\n     \"form_name\": \"Job Fair Registration 2025\"\n   }\n }\n",
-   "fieldname": "triggers",
-   "fieldtype": "JSON",
-   "label": "Triggers"
+   "fieldname": "type",
+   "fieldtype": "Select",
+   "label": "Flow Type",
+   "options": "Broadcast\nAutomation\nSequence"
   },
   {
-   "description": "{\n   \"action_order\": 1,\n   \"action_type\": \"Send_Message\",\n   \"parameters\": {\n     \"channel\": \"Email\",\n     \"template_id\": \"E_WELCOME_001\"\n   }\n },\n {\n   \"action_order\": 2,\n   \"action_type\": \"Wait\",\n   \"parameters\": {\n     \"duration\": \"1 day\"\n   }\n },\n",
-   "fieldname": "actions",
-   "fieldtype": "JSON",
-   "label": "Actions"
+   "fieldname": "action_id",
+   "fieldtype": "Table",
+   "label": "Actions",
+   "options": "Mira Flow Action"
+  },
+  {
+   "fieldname": "trigger_id",
+   "fieldtype": "Table",
+   "label": "Triggers",
+   "options": "Mira Flow Trigger"
+  },
+  {
+   "fieldname": "channel",
+   "fieldtype": "Select",
+   "label": "Channel",
+   "options": "Email\nSMS\nZalo\nMessenger"
+  },
+  {
+   "fieldname": "target_type",
+   "fieldtype": "Select",
+   "label": "Target Type",
+   "options": "Talent\nTalent Pool\nApplicant"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-15 16:21:17.655732",
+ "modified": "2025-10-17 14:48:45.826241",
  "modified_by": "Administrator",
  "module": "MBW Mira",
- "name": "Mira flow",
+ "name": "Mira Flow",
  "owner": "Administrator",
  "permissions": [
   {

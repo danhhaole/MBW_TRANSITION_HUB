@@ -5,5 +5,5 @@
 from frappe.model.document import Document
 
 
-class MiraAutomationStep(Document):
+class MiraFlowAction(Document):
 	pass

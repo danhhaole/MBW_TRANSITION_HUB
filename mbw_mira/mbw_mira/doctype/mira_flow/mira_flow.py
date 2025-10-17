@@ -5,5 +5,5 @@
 from frappe.model.document import Document
 
 
-class Miraflow(Document):
+class MiraFlow(Document):
 	pass

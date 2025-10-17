@@ -5,5 +5,5 @@
 from frappe.model.document import Document
 
 
-class MiraStep(Document):
+class MiraFlowTrigger(Document):
 	pass

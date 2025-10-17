@@ -5,37 +5,20 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "title",
-  "type",
-  "target_channel",
+  "flow_id",
+  "target_type",
+  "trigger_type",
   "status",
   "owner_id",
   "tags",
   "is_sharing",
   "updated_at",
-  "schedule_time",
   "column_break_fyti",
-  "triggers_config",
-  "steps_config"
+  "conditions",
+  "schedule_time",
+  "channel"
  ],
  "fields": [
-  {
-   "fieldname": "title",
-   "fieldtype": "Data",
-   "label": "Title"
-  },
-  {
-   "fieldname": "type",
-   "fieldtype": "Select",
-   "label": "Type",
-   "options": "BROADCAST\nFLOW\nSEQUENCE"
-  },
-  {
-   "fieldname": "target_channel",
-   "fieldtype": "Select",
-   "label": "Target Channel",
-   "options": "MESSENGER\nEMAIL\nSMS\nZALO_ZNS"
-  },
   {
    "fieldname": "status",
    "fieldtype": "Select",
@@ -65,6 +48,7 @@
    "label": "Updated At"
   },
   {
+   "description": "Th\u1eddi gian h\u1eb9n (n\u1ebfu l\u00e0 ON_SCHEDULED_TIME)",
    "fieldname": "schedule_time",
    "fieldtype": "Datetime",
    "label": "Schedule Time"
@@ -74,39 +58,45 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "triggers_config",
-   "fieldtype": "JSON",
-   "label": "Triggers"
+   "fieldname": "flow_id",
+   "fieldtype": "Link",
+   "label": "Flow",
+   "options": "Mira Flow"
   },
   {
-   "fieldname": "steps_config",
-   "fieldtype": "Table",
-   "label": "Steps",
-   "options": "Mira Automation Step"
+   "fieldname": "target_type",
+   "fieldtype": "Select",
+   "label": "Target Type",
+   "options": "Talent\nTalent Pool\nCampaign"
+  },
+  {
+   "fieldname": "trigger_type",
+   "fieldtype": "Select",
+   "label": "Trigger Type",
+   "options": "ON_CREATE\nON_UPDATE\nON_TAG_ADDED\nON_STATUS_CHANGED\nON_SEQUENCE_COMPLETED\nON_SCHEDULED_TIME\nON_SCORE_REACHED\nCUSTOM_EVENT"
+  },
+  {
+   "fieldname": "conditions",
+   "fieldtype": "Code",
+   "label": "Conditions"
+  },
+  {
+   "fieldname": "channel",
+   "fieldtype": "Select",
+   "label": "Channel",
+   "options": "Email\nSMS\nZalo\nMessenger"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
+ "istable": 1,
  "links": [],
- "modified": "2025-10-17 09:34:31.982998",
+ "modified": "2025-10-17 14:49:19.756178",
  "modified_by": "Administrator",
  "module": "MBW Mira",
- "name": "Mira Step",
+ "name": "Mira Flow Trigger",
  "owner": "Administrator",
- "permissions": [
-  {
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "System Manager",
-   "share": 1,
-   "write": 1
-  }
- ],
+ "permissions": [],
  "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",

@@ -5,5 +5,5 @@
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestMiraStep(FrappeTestCase):
+class TestMiraFlowTrigger(FrappeTestCase):
 	pass
