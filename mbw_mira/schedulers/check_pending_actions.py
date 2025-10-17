@@ -10,7 +10,7 @@ def run():
     threshold = now - timedelta(minutes=30)
 
     actions = frappe.get_all(
-        Mira Action,
+        "Mira Action",
         filters={
             "status": "SCHEDULED",
             "scheduled_at": ["<=", threshold],

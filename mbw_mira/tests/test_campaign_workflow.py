@@ -88,6 +88,6 @@ class TestCampaignWorkflow(FrappeTestCase):
     def tearDown(self):
         # Xóa dữ liệu để đảm bảo clean
         for doctype in [
-            Mira Action, "CandidateCampaign", "Mira Campaign Step", "Candidate", "Mira Campaign"
+            "Mira Action", "CandidateCampaign", "Mira Campaign Step", "Candidate", "Mira Campaign"
         ]:
             frappe.db.delete(doctype)
