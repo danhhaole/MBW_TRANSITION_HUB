@@ -212,7 +212,7 @@ def update_task(taskId, outcome, notes, completedAt):
             frappe.throw(_("Task ID is required"))
         
         # Lấy action document
-        action = frappe.get_doc(Mira Action, taskId)
+        action = frappe.get_doc("Mira Action", taskId)
         
         if not action:
             frappe.throw(_("Task not found"))

@@ -54,7 +54,7 @@ class TestCampaignWorkflow(FrappeTestCase):
     def test_campaign_email_to_manual_task_flow(self):
         # Handle step 1
 
-        action_1 = frappe.get_all(Mira Action, filters={
+        action_1 = frappe.get_all("Mira Action", filters={
             "candidate_campaign_id": self.cc.name,
             "campaign_step": self.step1.name
         }, fields=["name", "status"])
@@ -62,7 +62,7 @@ class TestCampaignWorkflow(FrappeTestCase):
         self.assertEqual(action_1[0]["status"], "SCHEDULED")
 
         # Simulate execution
-        a1 = frappe.get_doc(Mira Action, action_1[0]["name"])
+        a1 = frappe.get_doc("Mira Action", action_1[0]["name"])
         self.assertEqual(a1.status, "EXECUTED")
 
         # Process result → chuyển sang step 2
@@ -70,7 +70,7 @@ class TestCampaignWorkflow(FrappeTestCase):
         self.assertEqual(cc.current_step_order, 2)
 
         # Trigger step 2 (manual task)
-        action_2 = frappe.get_doc(Mira Action, {
+        action_2 = frappe.get_doc("Mira Action", {
             "candidate_campaign_id": self.cc.name,
             "campaign_step": self.step2.name
         })
