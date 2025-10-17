@@ -1,6 +1,7 @@
 import json
 import frappe
 from frappe import _
+import os
 
 def after_install():
     # Optional: run automatically on fresh install
@@ -216,3 +217,80 @@ def seed_mira_email_templates_from_json():
         doc.insert(ignore_permissions=True)
 
     frappe.db.commit()
+	
+def install_test():
+  # insert_component()
+  insert_all_script_data()
+  insert_all_pages()
+
+def insert_component():
+	print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>1")
+	file_name = "builder_components.json"
+	insert_component_data(file_name)
+
+def insert_all_script_data():
+	file_name = "builder_scripts.json"
+	read_script_module_path(file_name)
+
+def insert_all_pages():
+	file_name = "builder_pages.json"
+	read_page_module_path(file_name)
+
+def insert_component_data(file_name):
+	path = frappe.get_app_path("mbw_mira")
+	print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>2",path)
+	file_path = os.path.join(path,'json_data_v2',file_name)
+	print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>3",file_path)
+	if os.path.exists(file_path):
+		with open(file_path, 'r') as f:
+			out = json.load(f)
+		for i in out:
+			try:
+				# if(not frappe.db.exists({"doctype": "Component", "name": i.get('component_id')})):
+				frappe.get_doc(i).insert()
+			except frappe.NameError:
+				pass
+			except Exception as e:
+				frappe.log_error(frappe.get_traceback(), file_name)
+				
+def read_script_module_path(file_name):
+	path = frappe.get_app_path("mbw_mira")
+	file_path = os.path.join(path,'json_data_v2',file_name)
+	if os.path.exists(file_path):
+		with open(file_path, 'r') as f:
+			out = json.load(f)
+		for i in out:
+			try:
+				if(not frappe.db.exists({"doctype": i.get('doctype'), "name": i.get('__name')})):
+					script_doc = frappe.get_doc(i).insert()
+					frappe.db.sql("""UPDATE `tabBuilder Client Script` SET 
+								name=%(c_name)s WHERE name=%(s_name)s""",{"c_name":i.get('__name'),"s_name":script_doc.name})
+					frappe.db.commit()
+			except Exception as e:
+				frappe.log_error(frappe.get_traceback(), "read_script_module_path")
+
+def read_page_module_path(file_name):
+	path = frappe.get_app_path("mbw_mira")
+	file_path = os.path.join(path,'json_data_v2',file_name)
+	if os.path.exists(file_path):
+		with open(file_path, 'r') as f:
+			out = json.load(f)
+			out_json = {}
+		for index,i in enumerate(out):
+			try:
+				if i.get('client_scripts') :
+					out_json[i.get('page_title')] = i['client_scripts']
+					del i['client_scripts']
+				if(not frappe.db.exists({"doctype": i.get('doctype'), "page_title": i.get('page_title')})):
+					page_doc = frappe.get_doc(i).insert()
+					frappe.db.set_value(i.get('doctype'), page_doc.get('name'), 'route', i.get('route'))
+					# frappe.log_error(title="out_json[index]", message=out_json)
+					if(out_json[i.get('page_title')]):
+						for child_index,script in enumerate(out_json[i.get('page_title')]): 
+							# frappe.log_error(title="queryyyy", message=f"""INSERT INTO `tabBuilder Page Client Script` (name,builder_script,parent,parentfield,parenttype)
+							# VALUES ('{script.get('builder_script')}','{script.get('builder_script')}','{page_doc.name}','client_scripts','Builder Page') """)
+							frappe.db.sql(f"""INSERT INTO `tabBuilder Page Client Script` (name,builder_script,parent,parentfield,parenttype)
+							VALUES ('{script.get('builder_script') + str(index) + str(child_index)}','{script.get('builder_script')}','{page_doc.name}','client_scripts','Builder Page') """)
+			except Exception as e:
+				frappe.log_error(frappe.get_traceback(), "read_page_module_path")
+		frappe.db.set_value("Website Settings","Website Settings","home_page","f-landing")
