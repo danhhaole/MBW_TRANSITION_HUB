@@ -80,14 +80,15 @@
   },
   {
    "fieldname": "steps_config",
-   "fieldtype": "JSON",
-   "label": "Steps"
+   "fieldtype": "Table",
+   "label": "Steps",
+   "options": "Mira Automation Step"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-17 08:50:27.904247",
+ "modified": "2025-10-17 09:34:31.982998",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Step",
