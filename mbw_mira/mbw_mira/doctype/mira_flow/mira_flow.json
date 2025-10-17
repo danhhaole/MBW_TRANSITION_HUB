@@ -6,6 +6,8 @@
  "engine": "InnoDB",
  "field_order": [
   "title",
+  "campaign_id",
+  "sequence_id",
   "description",
   "status",
   "type",
@@ -84,12 +86,24 @@
    "fieldtype": "Select",
    "label": "Target Type",
    "options": "Talent\nTalent Pool\nApplicant"
+  },
+  {
+   "fieldname": "campaign_id",
+   "fieldtype": "Link",
+   "label": "Campaign",
+   "options": "Mira Campaign"
+  },
+  {
+   "fieldname": "sequence_id",
+   "fieldtype": "Link",
+   "label": "Sequence",
+   "options": "Mira Sequence"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-17 14:48:45.826241",
+ "modified": "2025-10-17 14:56:51.987282",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Flow",
