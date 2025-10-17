@@ -1,0 +1,113 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-10-17 08:27:12.150830",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "type",
+  "target_channel",
+  "status",
+  "owner_id",
+  "tags",
+  "is_sharing",
+  "updated_at",
+  "schedule_time",
+  "column_break_fyti",
+  "triggers_config",
+  "steps_config"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title"
+  },
+  {
+   "fieldname": "type",
+   "fieldtype": "Select",
+   "label": "Type",
+   "options": "BROADCAST\nFLOW\nSEQUENCE"
+  },
+  {
+   "fieldname": "target_channel",
+   "fieldtype": "Select",
+   "label": "Target Channel",
+   "options": "MESSENGER\nEMAIL\nSMS\nZALO_ZNS"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "DRAFT\nACTIVE\nPAUSED\nARCHIVED"
+  },
+  {
+   "fieldname": "owner_id",
+   "fieldtype": "Link",
+   "label": "Owner",
+   "options": "User"
+  },
+  {
+   "fieldname": "tags",
+   "fieldtype": "Small Text",
+   "label": "Tags"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_sharing",
+   "fieldtype": "Check",
+   "label": "Sharing"
+  },
+  {
+   "fieldname": "updated_at",
+   "fieldtype": "Datetime",
+   "label": "Updated At"
+  },
+  {
+   "fieldname": "schedule_time",
+   "fieldtype": "Datetime",
+   "label": "Schedule Time"
+  },
+  {
+   "fieldname": "column_break_fyti",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "triggers_config",
+   "fieldtype": "JSON",
+   "label": "Triggers"
+  },
+  {
+   "fieldname": "steps_config",
+   "fieldtype": "JSON",
+   "label": "Steps"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-10-17 08:50:27.904247",
+ "modified_by": "Administrator",
+ "module": "MBW Mira",
+ "name": "Mira Step",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
