@@ -80,7 +80,7 @@
 						</template>
 						Lưu lại
 					</Button>
-					<Button variant="solid" theme="green" size="sm"> Xuất bản </Button>
+					<Button variant="solid" theme="green" size="sm">{{ __('Publish') }} </Button>
 				</div>
 			</div>
 		</div>
@@ -92,8 +92,8 @@
 				<!-- Triggers Section -->
 				<div class="flex-1 p-4">
 					<div class="mb-6">
-						<h3 class="text-sm font-medium text-gray-900 mb-3">Trigger</h3>
-						<p class="text-xs text-gray-500 mb-4">Sự kiện kích hoạt flow này</p>
+						<h3 class="text-sm font-medium text-gray-900 mb-3">{{ __('Trigger') }}</h3>
+						<p class="text-xs text-gray-500 mb-4">{{ __('Event that triggers this flow') }}</p>
 
 						<!-- Add Trigger Button -->
 						<Button
@@ -105,7 +105,7 @@
 							<template #prefix>
 								<FeatherIcon name="plus" class="h-4 w-4" />
 							</template>
-							Thêm Trigger
+							{{ __('Add Trigger') }}
 						</Button>
 
 						<!-- Triggers List -->
@@ -150,8 +150,8 @@
 
 					<!-- Actions Section -->
 					<div>
-						<h3 class="text-sm font-medium text-gray-900 mb-3">Hành động</h3>
-						<p class="text-xs text-gray-500 mb-4">Những hành động sẽ được thực hiện</p>
+						<h3 class="text-sm font-medium text-gray-900 mb-3">{{ __('Actions') }}</h3>
+						<p class="text-xs text-gray-500 mb-4">{{ __('Actions that will be executed') }}</p>
 
 						<!-- Add Action Button -->
 						<Button
@@ -163,7 +163,7 @@
 							<template #prefix>
 								<FeatherIcon name="plus" class="h-4 w-4" />
 							</template>
-							Thêm hành động
+							{{ __('Add Action') }}
 						</Button>
 
 						<!-- Actions List -->
@@ -215,7 +215,7 @@
 					<div class="mb-6">
 						<div class="flex items-center justify-between">
 							<h2 class="text-lg font-medium text-gray-900">
-								{{ selectedItem ? getSelectedItemTitle() : 'Chọn Trigger' }}
+								{{ selectedItem ? getSelectedItemTitle() : __('Select Trigger') }}
 							</h2>
 							<Button
 								v-if="selectedItem"
@@ -230,7 +230,7 @@
 							{{
 								selectedItem
 									? getSelectedItemDescription()
-									: 'Chọn một trigger hoặc action để cấu hình'
+									: __('Select a trigger or action to configure')
 							}}
 						</p>
 					</div>
@@ -269,7 +269,7 @@
 									<FormControl
 										v-model="selectedItemData.parameters.template_id"
 										type="text"
-										placeholder="Nhập template ID..."
+										placeholder="{{ __('Enter template ID') }}"
 									/>
 								</div>
 
@@ -293,12 +293,12 @@
 									"
 								>
 									<label class="block text-sm font-medium text-gray-700 mb-2"
-										>Tên Tag</label
+										>{{ __('Tag Name') }}</label
 									>
 									<FormControl
 										v-model="selectedItemData.parameters.tag_name"
 										type="text"
-										placeholder="Nhập tên tag..."
+										placeholder="{{ __('Enter tag name') }}"
 									/>
 								</div>
 
@@ -309,22 +309,22 @@
 								>
 									<div>
 										<label class="block text-sm font-medium text-gray-700 mb-2"
-											>Tên trường</label
+											>{{ __('Field Name') }}</label
 										>
 										<FormControl
 											v-model="selectedItemData.parameters.field_name"
 											type="text"
-											placeholder="Nhập tên trường..."
+											placeholder="{{ __('Enter field name') }}"
 										/>
 									</div>
 									<div>
 										<label class="block text-sm font-medium text-gray-700 mb-2"
-											>Giá trị</label
+											>{{ __('Value') }}</label
 										>
 										<FormControl
 											v-model="selectedItemData.parameters.field_value"
 											type="text"
-											placeholder="Nhập giá trị..."
+											placeholder="{{ __('Enter value') }}"
 										/>
 									</div>
 								</div>
@@ -346,7 +346,7 @@
 								<template #prefix>
 									<FeatherIcon name="trash-2" class="h-4 w-4" />
 								</template>
-								Xóa
+								{{ __('Delete') }}
 							</Button>
 
 							<!-- <Button variant="solid" @click="handleSaveItem">
@@ -361,9 +361,9 @@
 					<!-- Empty State -->
 					<div v-else class="text-center py-12">
 						<FeatherIcon name="settings" class="mx-auto h-12 w-12 text-gray-400" />
-						<h3 class="mt-2 text-sm font-medium text-gray-900">Chưa chọn mục nào</h3>
+						<h3 class="mt-2 text-sm font-medium text-gray-900">{{ __('Select an item') }}</h3>
 						<p class="mt-1 text-sm text-gray-500">
-							Chọn một trigger hoặc action từ danh sách bên trái để bắt đầu cấu hình.
+							{{ __('Select a trigger or action from the list on the left to begin configuring.') }}
 						</p>
 					</div>
 				</div>
@@ -372,8 +372,8 @@
 			<!-- Column 3: Mobile Preview -->
 			<div class="w-96 bg-gray-100 p-6">
 				<div class="text-center mb-4">
-					<h3 class="text-sm font-medium text-gray-900">Preview</h3>
-					<p class="text-xs text-gray-500">Xem trước trên điện thoại</p>
+					<h3 class="text-sm font-medium text-gray-900">{{ __('Preview') }}</h3>
+					<p class="text-xs text-gray-500">{{ __('Preview on mobile') }}</p>
 				</div>
 
 				<!-- Mobile Frame - iPhone Style -->
@@ -494,7 +494,7 @@
 										<div class="text-sm text-gray-800 whitespace-pre-wrap">
 											{{
 												emailContent.email_content ||
-												'Chưa có nội dung email'
+												__('No email content')
 											}}
 										</div>
 									</div>
@@ -508,7 +508,7 @@
 										class="space-y-2"
 									>
 										<div class="text-xs font-medium text-gray-700">
-											Attachments:
+											{{ __('Attachments') }}
 										</div>
 										<div
 											v-for="(file, index) in emailContent.attachments"
@@ -540,10 +540,10 @@
 										</div>
 										<div>
 											<div class="text-xs font-medium text-gray-900">
-												Zalo Message
+												{{ __('Zalo message') }}
 											</div>
 											<p class="text-xs text-gray-500">
-												Hôm nay lúc 10:46 sáng
+												{{ __('Today at 10:46 AM') }}
 											</p>
 										</div>
 									</div>
@@ -677,7 +677,7 @@
 									/>
 									<h3 class="text-sm font-medium text-gray-900 mb-1">Preview</h3>
 									<p class="text-xs text-gray-500">
-										Chọn một action gửi tin nhắn để xem preview
+										{{ __('Select an action to view the preview') }}
 									</p>
 								</div>
 							</div>
@@ -693,12 +693,12 @@
 				<div class="space-y-4">
 					<div>
 						<label class="block text-sm font-medium text-gray-700 mb-2">
-							Tìm kiếm trigger
+							{{ __('Search trigger') }}
 						</label>
 						<FormControl
 							v-model="triggerSearch"
 							type="text"
-							placeholder="Tìm kiếm trigger..."
+							placeholder="{{ __('Search trigger') }}"
 						/>
 					</div>
 					<div class="max-h-60 overflow-y-auto">
@@ -726,12 +726,12 @@
 				<div class="space-y-4">
 					<div>
 						<label class="block text-sm font-medium text-gray-700 mb-2">
-							Tìm kiếm action
+							{{ __('Search action') }}
 						</label>
 						<FormControl
 							v-model="actionSearch"
 							type="text"
-							placeholder="Tìm kiếm action..."
+							placeholder="{{ __('Search action') }}"
 						/>
 					</div>
 					<div class="max-h-60 overflow-y-auto">
@@ -821,36 +821,97 @@ const actionTypeOptions = [
 
 const availableTriggers = [
 	{
-		id: 'subscribe_sequence',
-		name: 'Đăng ký Sequence',
-		description: 'Kích hoạt khi khách hàng đăng ký sequence',
-		icon: 'user-plus',
-		event_type: 'Subscribe_Sequence',
-		trigger_type: 'subscribe_sequence',
+		id: 'on_create',
+		name: 'Khi tạo mới',
+		description: 'Kích hoạt khi tạo mới record',
+		icon: 'plus-circle',
+		event_type: 'ON_CREATE',
+		trigger_type: 'on_create',
 		sequence_id: '',
 		connected_account: '',
 		channels: [],
 		conditions: [],
 	},
 	{
-		id: 'unsubscribe_sequence',
-		name: 'Hủy đăng ký Sequence',
-		description: 'Kích hoạt khi khách hàng hủy đăng ký sequence',
-		icon: 'user-minus',
-		event_type: 'Unsubscribe_Sequence',
-		trigger_type: 'unsubscribe_sequence',
+		id: 'on_update',
+		name: 'Khi cập nhật',
+		description: 'Kích hoạt khi cập nhật record',
+		icon: 'edit',
+		event_type: 'ON_UPDATE',
+		trigger_type: 'on_update',
 		sequence_id: '',
 		connected_account: '',
 		channels: [],
 		conditions: [],
 	},
 	{
-		id: 'new_subscriber_all',
-		name: 'Đăng ký mới (Tất cả kênh)',
-		description: 'Kích hoạt khi có khách hàng mới đăng ký',
-		icon: 'users',
-		event_type: 'New_Subscriber_All',
-		trigger_type: 'new_subscriber_all',
+		id: 'on_tag_added',
+		name: 'Khi thêm tag',
+		description: 'Kích hoạt khi thêm tag cho record',
+		icon: 'tag',
+		event_type: 'ON_TAG_ADDED',
+		trigger_type: 'on_tag_added',
+		sequence_id: '',
+		connected_account: '',
+		channels: [],
+		conditions: [],
+	},
+	{
+		id: 'on_status_changed',
+		name: 'Khi thay đổi trạng thái',
+		description: 'Kích hoạt khi thay đổi trạng thái record',
+		icon: 'refresh-cw',
+		event_type: 'ON_STATUS_CHANGED',
+		trigger_type: 'on_status_changed',
+		sequence_id: '',
+		connected_account: '',
+		channels: [],
+		conditions: [],
+	},
+	{
+		id: 'on_sequence_completed',
+		name: 'Khi hoàn thành sequence',
+		description: 'Kích hoạt khi hoàn thành một sequence',
+		icon: 'check-circle',
+		event_type: 'ON_SEQUENCE_COMPLETED',
+		trigger_type: 'on_sequence_completed',
+		sequence_id: '',
+		connected_account: '',
+		channels: [],
+		conditions: [],
+	},
+	{
+		id: 'on_scheduled_time',
+		name: 'Theo lịch trình',
+		description: 'Kích hoạt theo thời gian đã lên lịch',
+		icon: 'clock',
+		event_type: 'ON_SCHEDULED_TIME',
+		trigger_type: 'on_scheduled_time',
+		sequence_id: '',
+		connected_account: '',
+		channels: [],
+		conditions: [],
+	},
+	{
+		id: 'on_score_reached',
+		name: 'Khi đạt điểm số',
+		description: 'Kích hoạt khi đạt điểm số nhất định',
+		icon: 'target',
+		event_type: 'ON_SCORE_REACHED',
+		trigger_type: 'on_score_reached',
+		sequence_id: '',
+		connected_account: '',
+		channels: [],
+		conditions: [],
+	},
+	{
+		id: 'custom_event',
+		name: 'Sự kiện tùy chỉnh',
+		description: 'Kích hoạt bởi sự kiện tùy chỉnh',
+		icon: 'settings',
+		event_type: 'CUSTOM_EVENT',
+		trigger_type: 'custom_event',
+		sequence_id: '',
 		connected_account: '',
 		channels: [],
 		conditions: [],
@@ -876,9 +937,9 @@ const availableTriggers = [
 const availableActions = [
 	{
 		label: 'Gửi Email',
-		value: 'Send_Message_Email',
+		value: 'send_email',
 		description: 'Gửi email cho khách hàng',
-		action_type: 'Send_Message',
+		action_type: 'MESSAGE',
 		parameters: {
 			channel: 'Email',
 			template_id: '',
@@ -890,12 +951,25 @@ const availableActions = [
 		},
 	},
 	{
-		label: 'Gửi Zalo',
-		value: 'Send_Message_Zalo',
-		description: 'Gửi tin nhắn Zalo',
-		action_type: 'Send_Message',
+		label: 'Gửi SMS',
+		value: 'send_sms',
+		description: 'Gửi tin nhắn SMS',
+		action_type: 'SMS',
 		parameters: {
 			channel: 'SMS',
+			template_id: '',
+			sms_content: {
+				message: '',
+			},
+		},
+	},
+	{
+		label: 'Gửi Zalo',
+		value: 'send_zalo',
+		description: 'Gửi tin nhắn Zalo',
+		action_type: 'ZALO',
+		parameters: {
+			channel: 'Zalo',
 			template_id: '',
 			zalo_content: {
 				blocks: [
@@ -909,32 +983,46 @@ const availableActions = [
 		},
 	},
 	{
-		label: 'Chờ (Wait)',
-		value: 'Wait',
+		label: 'Delay thông minh',
+		value: 'smart_delay',
 		description: 'Chờ một khoảng thời gian trước action tiếp theo',
-		action_type: 'Wait',
+		action_type: 'SMART_DELAY',
 		parameters: { duration: '1 day' },
 	},
 	{
-		label: 'Gán Tag',
-		value: 'Assign_Tag',
-		description: 'Gán tag cho khách hàng',
-		action_type: 'Assign_Tag',
+		label: 'Thêm Tag',
+		value: 'add_tag',
+		description: 'Thêm tag cho khách hàng',
+		action_type: 'ADD_TAG',
 		parameters: { tag_name: '' },
 	},
 	{
-		label: 'Bỏ Tag',
-		value: 'Remove_Tag',
-		description: 'Bỏ tag khỏi khách hàng',
-		action_type: 'Remove_Tag',
+		label: 'Xóa Tag',
+		value: 'remove_tag',
+		description: 'Xóa tag khỏi khách hàng',
+		action_type: 'REMOVE_TAG',
 		parameters: { tag_name: '' },
 	},
 	{
-		label: 'Cập nhật trường',
-		value: 'Update_Field',
-		description: 'Cập nhật giá trị trường của khách hàng',
-		action_type: 'Update_Field',
+		label: 'Thêm trường tùy chỉnh',
+		value: 'add_custom_field',
+		description: 'Thêm trường dữ liệu tùy chỉnh',
+		action_type: 'ADD_CUSTOM_FIELD',
 		parameters: { field_name: '', field_value: '' },
+	},
+	{
+		label: 'Bắt đầu Flow',
+		value: 'start_flow',
+		description: 'Bắt đầu một flow khác',
+		action_type: 'START_FLOW',
+		parameters: { flow_id: '' },
+	},
+	{
+		label: 'Đăng ký Sequence',
+		value: 'subscribe_to_sequence',
+		description: 'Đăng ký khách hàng vào sequence',
+		action_type: 'SUBSCRIBE_TO_SEQUENCE',
+		parameters: { sequence_id: '' },
 	},
 ]
 
@@ -978,40 +1066,64 @@ const loadFlow = async () => {
 			const flow = result.data
 			console.log('Flow data received:', flow)
 
-			try {
-				const rawTriggers = parseJsonField(flow.triggers) || []
-				const rawActions = parseJsonField(flow.actions) || []
+			// Process child table data
+			const processedTriggers = flow.triggers ? flow.triggers.map(trigger => ({
+				// Map child table fields to UI format
+				...trigger,
+				_ui_name: getDefaultTriggerName(trigger.trigger_type),
+				_ui_description: getDefaultTriggerDescription(trigger.trigger_type),
+				_ui_type: trigger.trigger_type,
+				// Map backend fields to frontend format
+				event_type: trigger.trigger_type,
+				trigger_type: mapTriggerType(trigger.trigger_type),
+				Conditional_Split: (() => {
+					try {
+						return trigger.conditions ? JSON.parse(trigger.conditions) : []
+					} catch (error) {
+						console.warn('Error parsing trigger conditions:', error)
+						return []
+					}
+				})(),
+				connected_account: trigger.owner_id,
+				channels: trigger.channel ? [trigger.channel] : [],
+				// Override name for display
+				name: getDefaultTriggerName(trigger.trigger_type),
+				description: getDefaultTriggerDescription(trigger.trigger_type)
+			})) : []
 
-				// First migrate old format, then ensure UI fields
-				const migratedTriggers = migrateToNewFormat(rawTriggers, 'trigger')
-				const migratedActions = migrateToNewFormat(rawActions, 'action')
+			const processedActions = flow.actions ? flow.actions.map(action => ({
+				// Map child table fields to UI format
+				...action,
+				_ui_name: getDefaultActionName(action.action_type),
+				_ui_description: getDefaultActionDescription(action.action_type),
+				_ui_type: action.action_type,
+				// Map backend fields to frontend format
+				action_order: action.order,
+				parameters: (() => {
+					try {
+						return action.action_parameters ? JSON.parse(action.action_parameters) : {}
+					} catch (error) {
+						console.warn('Error parsing action parameters:', error)
+						return {}
+					}
+				})(),
+				// Override name for display
+				name: getDefaultActionName(action.action_type),
+				description: getDefaultActionDescription(action.action_type)
+			})) : []
 
-				flowData.value = {
-					name: flow.name,
-					title: flow.title || '',
-					description: flow.description || '',
-					status: flow.status || 'Draft',
-					triggers: ensureUIFields(migratedTriggers, 'trigger'),
-					actions: ensureUIFields(migratedActions, 'action'),
-				}
-
-				console.log('Flow data set:', flowData.value)
-			} catch (migrationError) {
-				console.error('Error during migration:', migrationError)
-				// Fallback to simple format without migration
-				const rawTriggers = parseJsonField(flow.triggers) || []
-				const rawActions = parseJsonField(flow.actions) || []
-
-				flowData.value = {
-					name: flow.name,
-					title: flow.title || '',
-					description: flow.description || '',
-					status: flow.status || 'Draft',
-					triggers: ensureUIFields(rawTriggers, 'trigger'),
-					actions: ensureUIFields(rawActions, 'action'),
-				}
-				console.log('Using fallback flow data:', flowData.value)
+			flowData.value = {
+				name: flow.name,
+				title: flow.title || '',
+				description: flow.description || '',
+				status: flow.status || 'Draft',
+				triggers: processedTriggers,
+				actions: processedActions,
 			}
+
+			console.log('Flow data set:', flowData.value)
+			console.log('Processed triggers:', processedTriggers)
+			console.log('Processed actions:', processedActions)
 		} else {
 			console.error('Invalid result:', result)
 			toast.error('Không thể tải thông tin flow')
@@ -1024,25 +1136,97 @@ const loadFlow = async () => {
 	}
 }
 
-const parseJsonField = (field) => {
-	console.log('Parsing field:', field, 'Type:', typeof field)
-	if (!field) {
-		console.log('Field is empty, returning []')
-		return []
+// Helper functions for mapping backend data to frontend format
+const getDefaultTriggerName = (triggerType) => {
+	const triggerMap = {
+		'ON_CREATE': 'Khi tạo mới',
+		'ON_UPDATE': 'Khi cập nhật', 
+		'ON_TAG_ADDED': 'Khi thêm tag',
+		'ON_STATUS_CHANGED': 'Khi thay đổi trạng thái',
+		'ON_SEQUENCE_COMPLETED': 'Khi hoàn thành sequence',
+		'ON_SCHEDULED_TIME': 'Theo lịch trình',
+		'ON_SCORE_REACHED': 'Khi đạt điểm số',
+		'CUSTOM_EVENT': 'Sự kiện tùy chỉnh'
 	}
-	if (typeof field === 'string') {
-		try {
-			const parsed = JSON.parse(field)
-			console.log('Parsed JSON:', parsed)
-			return parsed
-		} catch (error) {
-			console.error('JSON parse error:', error)
-			return []
-		}
+	return triggerMap[triggerType] || triggerType
+}
+
+const getDefaultTriggerDescription = (triggerType) => {
+	const descriptionMap = {
+		'ON_CREATE': 'Kích hoạt khi tạo mới record',
+		'ON_UPDATE': 'Kích hoạt khi cập nhật record',
+		'ON_TAG_ADDED': 'Kích hoạt khi thêm tag',
+		'ON_STATUS_CHANGED': 'Kích hoạt khi thay đổi trạng thái',
+		'ON_SEQUENCE_COMPLETED': 'Kích hoạt khi hoàn thành sequence',
+		'ON_SCHEDULED_TIME': 'Kích hoạt theo lịch trình',
+		'ON_SCORE_REACHED': 'Kích hoạt khi đạt điểm số',
+		'CUSTOM_EVENT': 'Kích hoạt bởi sự kiện tùy chỉnh'
 	}
-	const result = Array.isArray(field) ? field : []
-	console.log('Returning field as is:', result)
-	return result
+	return descriptionMap[triggerType] || 'Không có mô tả'
+}
+
+const mapTriggerType = (backendType) => {
+	const typeMap = {
+		'ON_CREATE': 'on_create',
+		'ON_UPDATE': 'on_update',
+		'ON_TAG_ADDED': 'on_tag_added',
+		'ON_STATUS_CHANGED': 'on_status_changed',
+		'ON_SEQUENCE_COMPLETED': 'on_sequence_completed',
+		'ON_SCHEDULED_TIME': 'on_scheduled_time',
+		'ON_SCORE_REACHED': 'on_score_reached',
+		'CUSTOM_EVENT': 'custom_event'
+	}
+	return typeMap[backendType] || backendType
+}
+
+const getDefaultActionName = (actionType) => {
+	const actionMap = {
+		'MESSAGE': 'Gửi tin nhắn',
+		'SMS': 'Gửi SMS',
+		'EMAIL': 'Gửi Email',
+		'ZALO': 'Gửi Zalo',
+		'ZALO_CARE': 'Zalo Care',
+		'START_FLOW': 'Bắt đầu Flow',
+		'SUBSCRIBE_TO_SEQUENCE': 'Đăng ký Sequence',
+		'UN_SUBSCRIBE_TO_SEQUENCE': 'Hủy đăng ký Sequence',
+		'SMART_DELAY': 'Delay thông minh',
+		'AI_CALL': 'Gọi AI',
+		'ADD_TAG': 'Thêm Tag',
+		'REMOVE_TAG': 'Xóa Tag',
+		'ADD_CUSTOM_FIELD': 'Thêm trường tùy chỉnh',
+		'REMOVE_CUSTOM_FIELD': 'Xóa trường tùy chỉnh',
+		'LEAD_SCORE': 'Tính điểm Lead',
+		'EXTERNAL_REQUEST': 'Gọi API ngoài',
+		'EMAIL_AI': 'Email AI',
+		'CONTENT_AI': 'Nội dung AI',
+		'SENT_NOTIFICATION': 'Gửi thông báo'
+	}
+	return actionMap[actionType] || actionType
+}
+
+const getDefaultActionDescription = (actionType) => {
+	const descriptionMap = {
+		'MESSAGE': 'Gửi tin nhắn cho khách hàng',
+		'SMS': 'Gửi tin nhắn SMS',
+		'EMAIL': 'Gửi email cho khách hàng',
+		'ZALO': 'Gửi tin nhắn Zalo',
+		'ZALO_CARE': 'Gửi tin nhắn Zalo Care',
+		'START_FLOW': 'Bắt đầu một flow khác',
+		'SUBSCRIBE_TO_SEQUENCE': 'Đăng ký khách hàng vào sequence',
+		'UN_SUBSCRIBE_TO_SEQUENCE': 'Hủy đăng ký khách hàng khỏi sequence',
+		'SMART_DELAY': 'Delay thông minh dựa trên điều kiện',
+		'AI_CALL': 'Gọi AI để xử lý',
+		'ADD_TAG': 'Thêm tag cho khách hàng',
+		'REMOVE_TAG': 'Xóa tag khỏi khách hàng',
+		'ADD_CUSTOM_FIELD': 'Thêm trường dữ liệu tùy chỉnh',
+		'REMOVE_CUSTOM_FIELD': 'Xóa trường dữ liệu tùy chỉnh',
+		'LEAD_SCORE': 'Tính toán điểm số lead',
+		'EXTERNAL_REQUEST': 'Gọi API bên ngoài',
+		'EMAIL_AI': 'Tạo email bằng AI',
+		'CONTENT_AI': 'Tạo nội dung bằng AI',
+		'SENT_NOTIFICATION': 'Gửi thông báo hệ thống'
+	}
+	return descriptionMap[actionType] || 'Không có mô tả'
 }
 
 // Ensure UI fields exist for display
@@ -1191,54 +1375,100 @@ const getSelectedItemDescription = () => {
 	return item?._ui_description || item?.description || 'Không có mô tả'
 }
 
-const addTrigger = (triggerOption) => {
-	// Check for existing triggers of same type for auto-numbering
-	const existingCount = flowData.value.triggers.filter(
-		(t) => t.event_type === triggerOption.event_type || t._ui_type === triggerOption.id,
-	).length
-
+const addTrigger = async (triggerOption) => {
+	// Generate unique name with auto-numbering
 	const baseName = triggerOption.name
-	const displayName = existingCount > 0 ? `${baseName} ${existingCount + 1}` : baseName
+	const existingTriggers = flowData.value.triggers.filter((t) =>
+		t._ui_name.startsWith(baseName),
+	)
+	const displayName =
+		existingTriggers.length > 0 ? `${baseName} ${existingTriggers.length + 1}` : baseName
 
 	const newTrigger = {
 		// Backend format fields
-		trigger_id: `TGR${String(Date.now()).slice(-6)}`, // Generate unique ID
-		source_platform: triggerOption.source_platform || 'Manual',
-		event_type: triggerOption.event_type || triggerOption.id,
-		criteria: triggerOption.criteria || {},
-
-		// Copy all trigger option fields
-		...triggerOption,
+		event_type: triggerOption.event_type,
+		trigger_type: triggerOption.trigger_type,
+		target_type: 'Talent',
+		status: 'ACTIVE',
+		Conditional_Split: [],
+		
+		// Explicitly set null values for optional fields
+		owner_id: null,
+		tags: null,
+		is_sharing: 0,
+		schedule_time: null,
+		channel: null,
 
 		// UI display fields (for internal use)
 		_ui_name: displayName,
 		_ui_description: triggerOption.description,
-		_ui_type: triggerOption.id,
+		_ui_type: triggerOption.trigger_type,
+
+		// For display in list
 		name: displayName,
 		description: triggerOption.description,
 	}
+	
+	// Add to local state
 	flowData.value.triggers.push(newTrigger)
+	
+	// Auto-save immediately
+	try {
+		const result = await flowStore.updateFlow(flowData.value.name, flowData.value)
+		if (result.success) {
+			toast.success(`Đã thêm và lưu trigger: ${displayName}`)
+		} else {
+			toast.error('Có lỗi khi lưu trigger')
+		}
+	} catch (error) {
+		console.error('Error saving trigger:', error)
+		toast.error('Có lỗi khi lưu trigger')
+	}
+	
 	showAddTrigger.value = false
 	triggerSearch.value = ''
-	toast.success(`Đã thêm trigger: ${displayName}`)
 }
 
-const addAction = (actionOption) => {
+const addAction = async (actionOption) => {
 	const newAction = {
 		// Backend format fields
 		action_order: flowData.value.actions.length + 1, // Auto increment order
 		action_type: actionOption.action_type || actionOption.value,
+		channel_type: actionOption.parameters?.channel || null,
 		parameters: actionOption.parameters || {},
+		
+		// Link fields - explicitly set to null
+		next_flow: null,
+		sequence: null,
+		
+		// Other fields
+		delay_minutes: 0,
+		condition: null,
 
 		// UI display fields (for internal use)
 		_ui_name: actionOption.label,
 		_ui_description: actionOption.description,
 		_ui_type: actionOption.value,
 	}
+	
+	// Add to local state
 	flowData.value.actions.push(newAction)
+	
+	// Auto-save immediately
+	try {
+		const result = await flowStore.updateFlow(flowData.value.name, flowData.value)
+		if (result.success) {
+			toast.success(`Đã thêm và lưu action: ${actionOption.label}`)
+		} else {
+			toast.error('Có lỗi khi lưu action')
+		}
+	} catch (error) {
+		console.error('Error saving action:', error)
+		toast.error('Có lỗi khi lưu action')
+	}
+	
 	showAddAction.value = false
 	actionSearch.value = ''
-	toast.success('Đã thêm action mới')
 }
 
 const handleSaveItem = () => {
@@ -1290,8 +1520,9 @@ const handleSave = async () => {
 			title: flowData.value.title,
 			description: flowData.value.description,
 			status: flowData.value.status,
-			triggers: JSON.stringify(flowData.value.triggers),
-			actions: JSON.stringify(flowData.value.actions),
+			// Pass child table data as arrays (not JSON strings)
+			triggers: flowData.value.triggers,
+			actions: flowData.value.actions,
 		}
 
 		const result = await flowStore.updateFlow(flowData.value.name, updateData)

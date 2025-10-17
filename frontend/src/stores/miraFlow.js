@@ -84,7 +84,7 @@ export const useMiraFlowStore = defineStore('miraFlow', {
       
       try {
         const params = {
-          doctype: 'Mira flow',
+          doctype: 'Mira Flow',
           fields: [
             'name', 'title', 'description', 'status', 'tags', 
             'owner_id', 'created_at', 'creation', 'modified'
@@ -118,7 +118,7 @@ export const useMiraFlowStore = defineStore('miraFlow', {
         const [listResult, countResult] = await Promise.all([
           call('frappe.client.get_list', params),
           call('frappe.client.get_count', {
-            doctype: 'Mira flow',
+            doctype: 'Mira Flow',
             filters: params.filters,
             or_filters: params.or_filters
           })
@@ -161,19 +161,23 @@ export const useMiraFlowStore = defineStore('miraFlow', {
       this.error = null
       
       try {
-        const result = await call('frappe.client.get', {
-          doctype: 'Mira flow',
+        // Fetch main flow document with child tables
+        const flowResult = await call('frappe.client.get', {
+          doctype: 'Mira Flow',
           name: id
         })
 
-        if (result && result.name) {
-          // Enhance data with display fields
+        if (flowResult && flowResult.name) {
+          // Enhance data with display fields and child tables
           const enhancedFlow = {
-            ...result,
-            display_status: this.getStatusDisplay(result.status),
-            status_color: this.getStatusColor(result.status),
-            formatted_created_at: this.formatDate(result.created_at || result.creation),
-            formatted_modified: this.formatRelativeDate(result.modified)
+            ...flowResult,
+            display_status: this.getStatusDisplay(flowResult.status),
+            status_color: this.getStatusColor(flowResult.status),
+            formatted_created_at: this.formatDate(flowResult.created_at || flowResult.creation),
+            formatted_modified: this.formatRelativeDate(flowResult.modified),
+            // Add child table data from action_id and trigger_id fields
+            actions: flowResult.action_id || [],
+            triggers: flowResult.trigger_id || []
           }
 
           this.currentFlow = enhancedFlow
@@ -204,7 +208,7 @@ export const useMiraFlowStore = defineStore('miraFlow', {
         
         const result = await call('frappe.client.insert', {
           doc: {
-            doctype: 'Mira flow',
+            doctype: 'Mira Flow',
             ...preparedData
           }
         })
@@ -235,12 +239,57 @@ export const useMiraFlowStore = defineStore('miraFlow', {
           throw new Error(validationResult.message)
         }
 
-        const preparedData = this.prepareFlowForSave(flowData)
+        // Prepare complete flow data including child tables
+        const completeFlowData = {
+          title: flowData.title?.trim(),
+          description: flowData.description?.trim() || '',
+          status: flowData.status || 'Draft',
+          tags: flowData.tags?.trim() || '',
+          owner_id: flowData.owner_id
+        }
+
+        // Add child table data if exists
+        if (flowData.actions && Array.isArray(flowData.actions)) {
+          completeFlowData.action_id = flowData.actions.map((action, index) => ({
+            action_type: action.action_type || action._ui_type,
+            channel_type: action.channel_type || '',
+            action_parameters: JSON.stringify(action.parameters || action),
+            next_flow: action.next_flow || '',
+            sequence: action.sequence || '',
+            delay_minutes: action.delay_minutes || 0,
+            condition: action.condition || '',
+            order: action.action_order || index + 1,
+            __isLocal: 1
+          }))
+        }
+
+        if (flowData.triggers && Array.isArray(flowData.triggers)) {
+          completeFlowData.trigger_id = flowData.triggers.map(trigger => ({
+            target_type: trigger.target_type || 'Talent',
+            trigger_type: trigger.event_type || trigger.trigger_type,
+            status: trigger.status || 'ACTIVE',
+            owner_id: trigger.owner_id || '',
+            tags: trigger.tags || '',
+            is_sharing: trigger.is_sharing || 0,
+            conditions: JSON.stringify(trigger.Conditional_Split || trigger.conditions || []),
+            schedule_time: trigger.schedule_time || '',
+            channel: trigger.channel || '',
+            __isLocal: 1
+          }))
+        }
         
-        const result = await call('frappe.client.set_value', {
-          doctype: 'Mira flow',
+        // Debug log the payload
+        console.log('Payload being sent:', {
+          doctype: 'Mira Flow',
           name: name,
-          fieldname: preparedData
+          fieldname: completeFlowData
+        })
+        
+        // Update with complete data in one call
+        const result = await call('frappe.client.set_value', {
+          doctype: 'Mira Flow',
+          name: name,
+          fieldname: completeFlowData
         })
 
         if (result) {
@@ -265,7 +314,7 @@ export const useMiraFlowStore = defineStore('miraFlow', {
       
       try {
         const result = await call('frappe.client.delete', {
-          doctype: 'Mira flow',
+          doctype: 'Mira Flow',
           name: flowId
         })
 
@@ -296,7 +345,7 @@ export const useMiraFlowStore = defineStore('miraFlow', {
       try {
         // First get the original flow
         const originalFlow = await call('frappe.client.get', {
-          doctype: 'Mira flow',
+          doctype: 'Mira Flow',
           name: flowId
         })
 
@@ -315,7 +364,7 @@ export const useMiraFlowStore = defineStore('miraFlow', {
         // Create the duplicate
         const result = await call('frappe.client.insert', {
           doc: {
-            doctype: 'Mira flow',
+            doctype: 'Mira Flow',
             ...duplicateData
           }
         })
@@ -344,11 +393,11 @@ export const useMiraFlowStore = defineStore('miraFlow', {
     async fetchStatistics() {
       try {
         const [totalResult, activeResult, draftResult, pausedResult, archivedResult] = await Promise.all([
-          call('frappe.client.get_count', { doctype: 'Mira flow' }),
-          call('frappe.client.get_count', { doctype: 'Mira flow', filters: { status: 'Active' } }),
-          call('frappe.client.get_count', { doctype: 'Mira flow', filters: { status: 'Draft' } }),
-          call('frappe.client.get_count', { doctype: 'Mira flow', filters: { status: 'Paused' } }),
-          call('frappe.client.get_count', { doctype: 'Mira flow', filters: { status: 'Archived' } })
+          call('frappe.client.get_count', { doctype: 'Mira Flow' }),
+          call('frappe.client.get_count', { doctype: 'Mira Flow', filters: { status: 'Active' } }),
+          call('frappe.client.get_count', { doctype: 'Mira Flow', filters: { status: 'Draft' } }),
+          call('frappe.client.get_count', { doctype: 'Mira Flow', filters: { status: 'Paused' } }),
+          call('frappe.client.get_count', { doctype: 'Mira Flow', filters: { status: 'Archived' } })
         ])
 
         this.statistics = {
@@ -380,16 +429,17 @@ export const useMiraFlowStore = defineStore('miraFlow', {
     },
 
     prepareFlowForSave(flowData) {
+      // Only include main flow fields, exclude child tables
       return {
         title: flowData.title?.trim(),
         description: flowData.description?.trim() || '',
         status: flowData.status || 'Draft',
         tags: flowData.tags?.trim() || '',
-        owner_id: flowData.owner_id,
-        triggers: flowData.triggers || JSON.stringify({}),
-        actions: flowData.actions || JSON.stringify([])
+        owner_id: flowData.owner_id
       }
     },
+
+
 
     getStatusDisplay(status) {
       const statusMap = {
