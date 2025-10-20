@@ -142,6 +142,7 @@ import CollapseSidebar from '@/components/Icons/CollapseSidebar.vue'
 import NotificationsIcon from '@/components/Icons/NotificationsIcon.vue'
 import ExternalLinkIcon from '@/components/Icons/ExternalLinkIcon.vue'
 import ReplyIcon from '@/components/Icons/ReplyIcon.vue'
+import TagIcon from '@/components/Icons/TagIcon.vue'
 import SidebarLink from '@/components/SidebarLink.vue'
 import Notifications from '@/components/Notifications.vue'
 import { viewsStore } from '@/stores/views'
@@ -333,6 +334,11 @@ const links = [
         label: "Campaign Templates",
         icon: NoteIcon,
         to: { name: 'CampaignTemplateManagement' }
+      },
+      {
+        label: "Tags",
+        icon: TagIcon,
+        to: { name: 'TagManagement' }
       },
       {
         label: "Connectors",

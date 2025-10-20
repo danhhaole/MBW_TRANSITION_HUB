@@ -47,6 +47,9 @@ const routes = [
 	{ path: '/campaign-templates', name: 'CampaignTemplateManagement', component: () => import('@/pages/CampaignTemplateManagement.vue') },
 	{ path: '/campaign-template/:id', name: 'CampaignTemplateDetail', component: () => import('@/pages/CampaignTemplateDetail.vue') },
 
+	// Tags
+	{ path: '/tags', name: 'TagManagement', component: () => import('@/pages/TagManagement.vue') },
+
 	// Candidate Pool
 	{ path: '/talents', name: 'Talent', component: ()=>import('@/pages/CandidatePoolManagement.vue') },
 	{ path: '/talent-pool/:id', name: 'TalentPoolDetail', component: ()=>import('@/pages/TalentPoolDetail.vue') },
