@@ -50,6 +50,10 @@ const routes = [
 	// Tags
 	{ path: '/tags', name: 'TagManagement', component: () => import('@/pages/TagManagement.vue') },
 
+	// Sequences
+	{ path: '/sequences', name: 'SequenceManagement', component: () => import('@/pages/SequenceManagement.vue') },
+	{ path: '/sequences/:id/edit', name: 'SequenceEditor', component: () => import('@/pages/SequenceEditor.vue') },
+
 	// Candidate Pool
 	{ path: '/talents', name: 'Talent', component: ()=>import('@/pages/CandidatePoolManagement.vue') },
 	{ path: '/talent-pool/:id', name: 'TalentPoolDetail', component: ()=>import('@/pages/TalentPoolDetail.vue') },

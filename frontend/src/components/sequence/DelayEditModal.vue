@@ -1,0 +1,159 @@
+<template>
+  <Dialog v-model="showModal" :options="{ title: 'Hẹn giờ', size: 'sm' }">
+    <template #body-content>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Tin nhắn này sẽ được gửi
+          </label>
+          
+          <div class="flex items-center space-x-2">
+            <!-- Number Input -->
+            <div class="flex-1">
+              <Select
+                v-model="delayNumber"
+                :options="numberOptions"
+                placeholder="1"
+              />
+            </div>
+            
+            <!-- Unit Select -->
+            <div class="flex-1">
+              <Select
+                v-model="delayUnit"
+                :options="unitOptions"
+                placeholder="Ngày"
+              />
+            </div>
+          </div>
+          
+          <p class="text-sm text-gray-500 mt-2">
+            sau khi người dùng nhận tin nhắn ở bước trước.
+          </p>
+        </div>
+      </div>
+    </template>
+    
+    <template #actions>
+      <div class="flex justify-end space-x-3">
+        <Button
+          variant="outline"
+          theme="gray"
+          @click="cancel"
+        >
+          Hủy
+        </Button>
+        <Button
+          variant="solid"
+          theme="blue"
+          @click="save"
+        >
+          Lưu
+        </Button>
+      </div>
+    </template>
+  </Dialog>
+</template>
+
+<script setup>
+import { ref, watch, computed } from 'vue'
+import { Dialog, Button, Select } from 'frappe-ui'
+
+// Props
+const props = defineProps({
+  show: {
+    type: Boolean,
+    default: false
+  },
+  currentDelay: {
+    type: String,
+    default: '1 day'
+  },
+  isInitial: {
+    type: Boolean,
+    default: false
+  }
+})
+
+// Emits
+const emit = defineEmits(['update:show', 'save', 'cancel'])
+
+// State
+const delayNumber = ref('1')
+const delayUnit = ref('day')
+
+// Computed for v-model
+const showModal = computed({
+  get: () => props.show,
+  set: (value) => emit('update:show', value)
+})
+
+// Options
+const numberOptions = computed(() => {
+  const options = []
+  for (let i = 1; i <= 30; i++) {
+    options.push({ label: i.toString(), value: i.toString() })
+  }
+  return options
+})
+
+const unitOptions = [
+  { label: 'Phút', value: 'minute' },
+  { label: 'Giờ', value: 'hour' },
+  { label: 'Ngày', value: 'day' },
+  { label: 'Tuần', value: 'week' },
+  { label: 'Tháng', value: 'month' }
+]
+
+// Parse current delay when modal opens
+watch(() => props.currentDelay, (newDelay) => {
+  if (newDelay) {
+    parseDelay(newDelay)
+  }
+}, { immediate: true })
+
+const parseDelay = (delayString) => {
+  // Parse strings like "1 day", "2 hours", "30 minutes", etc.
+  const match = delayString.match(/(\d+)\s*(\w+)/)
+  if (match) {
+    delayNumber.value = match[1]
+    const unit = match[2].toLowerCase()
+    
+    // Map various unit formats to our standard units
+    if (unit.includes('minute') || unit.includes('phút')) {
+      delayUnit.value = 'minute'
+    } else if (unit.includes('hour') || unit.includes('giờ') || unit.includes('gio')) {
+      delayUnit.value = 'hour'  
+    } else if (unit.includes('day') || unit.includes('ngày') || unit.includes('ngay')) {
+      delayUnit.value = 'day'
+    } else if (unit.includes('week') || unit.includes('tuần') || unit.includes('tuan')) {
+      delayUnit.value = 'week'
+    } else if (unit.includes('month') || unit.includes('tháng') || unit.includes('thang')) {
+      delayUnit.value = 'month'
+    }
+  }
+}
+
+const formatDelay = () => {
+  const unitMap = {
+    'minute': 'phút',
+    'hour': 'giờ', 
+    'day': 'ngày',
+    'week': 'tuần',
+    'month': 'tháng'
+  }
+  
+  return `${delayNumber.value} ${unitMap[delayUnit.value] || delayUnit.value}`
+}
+
+const save = () => {
+  const formattedDelay = formatDelay()
+  emit('save', formattedDelay)
+  emit('update:show', false)
+}
+
+const cancel = () => {
+  emit('cancel')
+  emit('update:show', false)
+}
+</script>

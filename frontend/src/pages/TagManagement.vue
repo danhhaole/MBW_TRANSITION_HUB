@@ -1,19 +1,21 @@
 <template>
   <div class="min-h-screen bg-gray-50">
     <!-- Header -->
-    <div class="bg-white border-b border-gray-200">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center py-6">
-          <div>
-            <Breadcrumbs
+
+
+     <LayoutHeader>
+      <template #left-header>
+         <Breadcrumbs
               :items="[
                
                 { label: __('Tags Management'), route: { name: 'TagManagement' } }
               ]"
             />
+      </template>
+      <template #right-header>
+        <!-- Create button -->
 
-          </div>
-          <div class="flex items-center space-x-3">
+                  <div class="flex items-center space-x-3">
             <Button
               variant="outline"
               theme="gray"
@@ -27,7 +29,7 @@
             </Button>
             <Button
               variant="solid"
-              theme="blue"
+              theme="gray"
               @click="showCreateModal = true"
             >
             <div class="flex items-center">
@@ -36,9 +38,8 @@
             </div>
             </Button>
           </div>
-        </div>
-      </div>
-    </div>
+      </template>
+    </LayoutHeader>
 
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -282,6 +283,7 @@ import { useToast } from '@/composables/useToast'
 import TagFormModal from '@/components/tag/TagFormModal.vue'
 import TagViewModal from '@/components/tag/TagViewModal.vue'
 import DeleteConfirmModal from '@/components/common/DeleteConfirmModal.vue'
+import LayoutHeader from "@/components/LayoutHeader.vue";
 
 // Composables
 const router = useRouter()

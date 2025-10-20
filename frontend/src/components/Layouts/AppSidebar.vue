@@ -143,6 +143,7 @@ import NotificationsIcon from '@/components/Icons/NotificationsIcon.vue'
 import ExternalLinkIcon from '@/components/Icons/ExternalLinkIcon.vue'
 import ReplyIcon from '@/components/Icons/ReplyIcon.vue'
 import TagIcon from '@/components/Icons/TagIcon.vue'
+import SequenceIcon from '@/components/Icons/SequenceIcon.vue'
 import SidebarLink from '@/components/SidebarLink.vue'
 import Notifications from '@/components/Notifications.vue'
 import { viewsStore } from '@/stores/views'
@@ -339,6 +340,11 @@ const links = [
         label: "Tags",
         icon: TagIcon,
         to: { name: 'TagManagement' }
+      },
+      {
+        label: "Sequences",
+        icon: SequenceIcon,
+        to: { name: 'SequenceManagement' }
       },
       {
         label: "Connectors",

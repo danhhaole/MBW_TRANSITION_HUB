@@ -19,7 +19,7 @@
             type="text"
             required
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            placeholder="{{ __('Enter tag name') }}..."
+            :placeholder="__('Enter tag name')"
           />
         </div>
 
@@ -38,7 +38,7 @@
               v-model="formData.color"
               type="text"
               class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              placeholder="#3B82F6"
+              :placeholder="__('Enter tag color')"
             />
           </div>
         </div>
@@ -68,21 +68,23 @@
     </template>
 
     <template #actions>
+      <div class="flex items-center space-x-3 justify-end">
+        <Button
+        variant="outline"
+        theme="gray"
+        @click="$emit('close')"
+        >
+        {{ __('Cancel') }}
+      </Button>
       <Button
         variant="solid"
-        theme="blue"
+        theme="gray"
         :loading="loading"
         @click="handleSubmit"
       >
         {{ isEditing ?  __('Update') : __('Create') }}
       </Button>
-      <Button
-        variant="outline"
-        theme="gray"
-        @click="$emit('close')"
-      >
-        {{ __('Cancel') }}
-      </Button>
+      </div>
     </template>
   </Dialog>
 </template>
