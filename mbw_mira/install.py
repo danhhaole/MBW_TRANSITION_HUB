@@ -219,12 +219,11 @@ def seed_mira_email_templates_from_json():
     frappe.db.commit()
 	
 def install_test():
-  # insert_component()
+  insert_component()
   insert_all_script_data()
   insert_all_pages()
 
 def insert_component():
-	print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>1")
 	file_name = "builder_components.json"
 	insert_component_data(file_name)
 
