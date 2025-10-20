@@ -254,6 +254,7 @@ export const useCampaignStore = defineStore('campaign', {
               status: formData.status || 'DRAFT',
               target_segment: formData.target_segment || null,
               job_opening: formData.job_opening || null,
+              criteria: formData.criteria || null, // Add criteria field
               ...formData // Include any additional fields
             }
           })
@@ -334,6 +335,7 @@ export const useCampaignStore = defineStore('campaign', {
             end_date: formData.end_date || null,
             target_segment: formData.target_segment || null,
             job_opening: formData.job_opening || null,
+            criteria: formData.criteria || null, // Add criteria field
             source_type: formData.source_type || 'Search',
             ...formData
           }
@@ -391,6 +393,7 @@ export const useCampaignStore = defineStore('campaign', {
           status: formData.status || 'DRAFT',
           target_segment: formData.target_segment || null,
           job_opening: formData.job_opening || null,
+          criteria: formData.criteria || null, // Add criteria field
           // Add missing source fields
           source_type: formData.source_type || 'Gathering',
           source_file: formData.source_file || null,

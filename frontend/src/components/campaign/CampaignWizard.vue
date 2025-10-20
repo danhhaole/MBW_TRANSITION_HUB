@@ -252,29 +252,8 @@
               </div>
             </div>
 
-            <!-- Step 2: Select Target Segment (formerly Step 3) -->
+            <!-- Step 2: Content Design -->
             <div v-if="step === 2" class="animate-fadeIn">
-              <div class="space-y-4">
-                <div class="text-center mb-6">
-                  <h4 class="text-lg font-medium text-gray-900 mb-2">
-                    {{ __("Select Target Segment") }}
-                  </h4>
-                  <p class="text-sm text-gray-600">
-                    {{
-                      __(
-                        "Choose the talent segment you want to target with this campaign"
-                      )
-                    }}
-                  </p>
-                </div>
-
-                <!-- Use existing PoolConfig component for segment selection -->
-                <component :is="PoolConfig" v-model="configData" />
-              </div>
-            </div>
-
-            <!-- Step 3: Thiết kế Nội dung (formerly Step 4) -->
-            <div v-if="step === 3" class="animate-fadeIn">
               <div class="space-y-4">
                 <div class="text-center mb-6">
                   <h4 class="text-lg font-medium text-gray-900 mb-2">
@@ -285,8 +264,20 @@
                   </p>
                 </div>
 
+                <!-- Show warning if no interaction method selected -->
+                <div v-if="!campaignData.interaction_method" class="text-center py-12">
+                  <FeatherIcon name="alert-triangle" class="h-8 w-8 text-yellow-600 mx-auto mb-2" />
+                  <h4 class="text-lg font-medium text-yellow-900 mb-2">
+                    {{ __("No interaction method selected") }}
+                  </h4>
+                  <p class="text-yellow-700">
+                    {{ __("Please go back to Step 1 to select an interaction method") }}
+                  </p>
+                </div>
+
                 <!-- Content Editor -->
                 <CampaignContentEditor
+                  v-else
                   :interaction_type="campaignData.interaction_method"
                   :model-value="contentEditorData"
                   :readonly="!canEditContent"
@@ -297,148 +288,249 @@
               </div>
             </div>
 
-            <!-- Step 4: Review & Activate (formerly Step 5) -->
-            <div v-if="step === 4" class="animate-fadeIn">
-              <!-- Show warning if no interaction method selected -->
-              <div v-if="!campaignData.interaction_method" class="text-center py-12">
-                <FeatherIcon name="alert-triangle" class="h-8 w-8 text-yellow-600 mx-auto mb-2" />
-                <h4 class="text-lg font-medium text-yellow-900 mb-2">
-                  {{ __("No interaction method selected") }}
-                </h4>
-                <p class="text-yellow-700">
-                  {{ __("Please go back to Step 1 to select an interaction method") }}
-                </p>
-              </div>
-
-              <!-- Content Editor -->
-              <CampaignContentEditor
-                v-else
-                :interaction_type="campaignData.interaction_method"
-                :model-value="contentEditorData"
-                :readonly="!canEditContent"
-                @update:model-value="handleContentUpdate"
-                @save="handleContentSave"
-                @preview="handleContentPreview"
-              />
-            </div>
-
-            <!-- This step has been moved to step 4 -->
-            <div v-if="false" class="animate-fadeIn space-y-6">
-              <!-- Campaign Summary -->
-              <div class="text-center py-4">
-                <h3 class="text-xl font-bold mb-2 text-gray-900">
-                  {{ __("Review Campaign") }}
-                </h3>
-                <p class="text-sm text-gray-600">
-                  {{ __("Review your campaign details and workflow before finalizing") }}
-                </p>
-              </div>
-
-              <!-- Campaign Info -->
-              <div class="bg-gray-50 rounded-lg p-4">
-                <h4 class="text-lg font-medium text-gray-900 mb-3">
-                  {{ __("Campaign Information") }}
-                </h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label class="text-sm font-medium text-gray-700">{{
-                      __("Campaign Name")
-                    }}</label>
-                    <p class="text-sm text-gray-900">
-                      {{ campaignData.campaign_name || __("Untitled Campaign") }}
-                    </p>
-                  </div>
-                  <div>
-                    <label class="text-sm font-medium text-gray-700">{{
-                      __("Type")
-                    }}</label>
-                    <p class="text-sm text-gray-900">{{ campaignData.type }}</p>
-                  </div>
-                  <div class="md:col-span-2">
-                    <label class="text-sm font-medium text-gray-700">{{
-                      __("Description")
-                    }}</label>
-                    <p class="text-sm text-gray-900">
-                      {{ campaignData.description || __("No description") }}
-                    </p>
-                  </div>
+            <!-- Step 3: Target Segment -->
+            <div v-if="step === 3" class="animate-fadeIn">
+              <div class="space-y-6">
+                <!-- Header -->
+                <div class="text-center mb-6">
+                  <h4 class="text-lg font-medium text-gray-900 mb-2">
+                    {{ __("Target Segment") }}
+                  </h4>
+                  <p class="text-sm text-gray-600">
+                    {{ __("Choose candidates and configure sending strategy") }}
+                  </p>
                 </div>
-              </div>
 
-              <!-- Campaign Steps -->
-              <div class="bg-blue-50 rounded-lg p-4">
-                <h4 class="text-lg font-medium text-gray-900 mb-3">
-                  {{ __("Campaign Workflow") }}
-                </h4>
-                <div v-if="campaignSteps.length > 0" class="space-y-2">
-                  <div
-                    v-for="step in campaignSteps"
-                    :key="step.id || step.name"
-                    class="flex items-center p-3 bg-white rounded border"
-                  >
-                    <!-- Step Image -->
-                    <div
-                      v-if="step.image"
-                      class="w-8 h-8 rounded overflow-hidden mr-3 flex-shrink-0"
+                <!-- Segment Selection -->
+                <div class="bg-gray-50 rounded-lg p-6">
+                  <h5 class="text-md font-medium text-gray-900 mb-4">
+                    {{ __("Select Candidates") }}
+                  </h5>
+                  <p class="text-sm text-gray-600 mb-4">
+                    {{ __("Which candidates do you want to send this campaign to?") }}
+                  </p>
+                  
+                  <!-- Segment Options -->
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <!-- Choose Candidates (Segment) -->
+                    <div 
+                      class="border rounded-lg p-4 bg-white cursor-pointer transition-colors"
+                      :class="segmentSelectionMode === 'segment' ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' : 'border-gray-200 hover:border-blue-300'"
+                      @click="segmentSelectionMode = 'segment'"
                     >
-                      <img
-                        :src="step.image"
-                        :alt="step.campaign_step_name"
-                        class="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div
-                      v-else
-                      class="w-8 h-8 bg-gray-200 rounded mr-3 flex-shrink-0 flex items-center justify-center"
-                    >
-                      <FeatherIcon name="image" class="h-4 w-4 text-gray-400" />
-                    </div>
-
-                    <span
-                      class="flex items-center justify-center w-6 h-6 bg-blue-100 text-blue-800 text-xs font-medium rounded-full mr-3"
-                    >
-                      {{ step.step_order }}
-                    </span>
-                    <div class="flex-1">
-                      <div class="text-sm font-medium text-gray-900">
-                        {{ step.campaign_step_name }}
+                      <div class="text-center">
+                        <div class="flex items-center justify-center w-12 h-12 rounded-full mx-auto mb-3"
+                             :class="segmentSelectionMode === 'segment' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'">
+                          <FeatherIcon name="users" class="h-6 w-6" />
+                        </div>
+                        <h6 class="text-sm font-semibold mb-1"
+                            :class="segmentSelectionMode === 'segment' ? 'text-blue-900' : 'text-gray-900'">
+                          {{ __("Choose Candidates (Segment)") }}
+                        </h6>
+                        <p class="text-xs text-gray-600">
+                          {{ __("Use existing candidate segments") }}
+                        </p>
                       </div>
-                      <div class="text-xs text-gray-500">
-                        {{ step.action_type
-                        }}{{
-                          step.delay_in_days > 0
-                            ? ` • ${step.delay_in_days} days delay`
-                            : ""
-                        }}
+                    </div>
+
+                    <!-- Custom Conditions -->
+                    <div 
+                      class="border rounded-lg p-4 bg-white cursor-pointer transition-colors"
+                      :class="segmentSelectionMode === 'conditions' ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' : 'border-gray-200 hover:border-blue-300'"
+                      @click="segmentSelectionMode = 'conditions'"
+                    >
+                      <div class="text-center">
+                        <div class="flex items-center justify-center w-12 h-12 rounded-full mx-auto mb-3"
+                             :class="segmentSelectionMode === 'conditions' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'">
+                          <FeatherIcon name="filter" class="h-6 w-6" />
+                        </div>
+                        <h6 class="text-sm font-semibold mb-1"
+                            :class="segmentSelectionMode === 'conditions' ? 'text-blue-900' : 'text-gray-900'">
+                          {{ __("Custom Conditions") }}
+                        </h6>
+                        <p class="text-xs text-gray-600">
+                          {{ __("Create custom filtering conditions") }}
+                        </p>
                       </div>
                     </div>
                   </div>
-                </div>
-                <div v-else class="text-center py-4 text-gray-500">
-                  {{ __("No steps configured") }}
-                </div>
-              </div>
 
-              <!-- Template Info -->
-              <div v-if="selectedTemplate" class="bg-green-50 rounded-lg p-4">
-                <h4 class="text-lg font-medium text-gray-900 mb-2">
-                  {{ __("Template Used") }}
-                </h4>
-                <p class="text-sm text-gray-600">{{ selectedTemplate.template_name }}</p>
-                <p class="text-xs text-gray-500">{{ selectedTemplate.description }}</p>
-              </div>
+                  <!-- Segment Selection Content -->
+                  <div v-if="segmentSelectionMode === 'segment'">
+                    <!-- Use existing PoolConfig component for segment selection -->
+                    <component :is="PoolConfig" v-model="configData" />
+                  </div>
 
-              <!-- Status -->
-              <div class="text-center">
-                <p class="text-sm text-gray-600 mb-2">
-                  {{ __("Campaign will be created in DRAFT status with") }}
-                  {{ campaignSteps.length }} {{ __("steps") }}
-                </p>
-                <p class="text-xs text-gray-500">
-                  {{
-                    __("You can add profiles and activate the campaign after creation")
-                  }}
-                </p>
+                  <!-- Custom Conditions Content -->
+                  <div v-else-if="segmentSelectionMode === 'conditions'" class="space-y-4">
+                    <div class="bg-white rounded-lg border p-4">
+                      <h6 class="text-sm font-medium text-gray-900 mb-2">
+                        {{ __("Custom Conditions") }}
+                      </h6>
+                      <p class="text-xs text-gray-600 mb-4">
+                        {{ __("Create conditions to filter candidates who will receive your campaign") }}
+                      </p>
+
+                      <!-- Logic Selection -->
+                      <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                          {{ __("Condition Logic") }}
+                        </label>
+                        <div class="flex space-x-4">
+                          <label class="flex items-center">
+                            <input
+                              type="radio"
+                              v-model="conditionsLogic"
+                              value="any"
+                              class="mr-2"
+                            />
+                            <span class="text-sm text-gray-700">{{ __("Any conditions (OR)") }}</span>
+                          </label>
+                          <label class="flex items-center">
+                            <input
+                              type="radio"
+                              v-model="conditionsLogic"
+                              value="all"
+                              class="mr-2"
+                            />
+                            <span class="text-sm text-gray-700">{{ __("All conditions (AND)") }}</span>
+                          </label>
+                        </div>
+                      </div>
+
+                      <!-- Conditions List -->
+                      <div v-if="customConditions.length > 0" class="space-y-3 mb-4">
+                        <div
+                          v-for="(condition, index) in customConditions"
+                          :key="index"
+                          class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                        >
+                          <div class="flex-1 cursor-pointer" @click="editCondition(condition, index)">
+                            <span class="text-sm font-medium text-gray-900">
+                              {{ getConditionLabel(condition) }}
+                            </span>
+                            <span class="text-sm text-gray-600 ml-2">
+                              {{ condition.operator }} 
+                              <span v-if="!['is_empty', 'is_not_empty'].includes(condition.operator)">
+                                {{ condition.value }}
+                              </span>
+                            </span>
+                          </div>
+                          <div class="flex items-center space-x-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              @click="editCondition(condition, index)"
+                              class="text-blue-600 hover:text-blue-700"
+                            >
+                              <FeatherIcon name="edit" class="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              @click="removeCondition(index)"
+                              class="text-red-600 hover:text-red-700"
+                            >
+                              <FeatherIcon name="trash-2" class="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Add Condition Button -->
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        @click="addCondition"
+                        class="w-full"
+                      >
+                        <template #prefix>
+                          <FeatherIcon name="plus" class="h-4 w-4" />
+                        </template>
+                        {{ __("Add Condition") }}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Candidate Count -->
+                <div class="bg-blue-50 rounded-lg p-4">
+                  <h5 class="text-md font-medium text-gray-900 mb-2">
+                    {{ __("Candidate Count") }}
+                  </h5>
+                  <p class="text-sm text-gray-600 mb-2">
+                    {{ __("This campaign will be sent to approximately") }}
+                  </p>
+                  <div class="text-2xl font-bold text-blue-600">
+                    {{ computedCandidateCount }} {{ __("candidates") }}
+                  </div>
+                </div>
+
+                <!-- Sending Strategy -->
+                <div class="bg-gray-50 rounded-lg p-6">
+                  <h5 class="text-md font-medium text-gray-900 mb-4">
+                    {{ __("Sending Strategy") }}
+                  </h5>
+                  <p class="text-sm text-gray-600 mb-4">
+                    {{ __("When do you want to send this campaign?") }}
+                  </p>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Send Now -->
+                    <div 
+                      class="border rounded-lg p-4 bg-white cursor-pointer transition-colors"
+                      :class="sendingStrategy === 'now' ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' : 'border-gray-200 hover:border-gray-300'"
+                      @click="sendingStrategy = 'now'"
+                    >
+                      <div class="text-center">
+                        <div class="flex items-center justify-center w-12 h-12 rounded-full mx-auto mb-3"
+                             :class="sendingStrategy === 'now' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'">
+                          <FeatherIcon name="send" class="h-6 w-6" />
+                        </div>
+                        <h6 class="text-sm font-semibold mb-1"
+                            :class="sendingStrategy === 'now' ? 'text-blue-900' : 'text-gray-900'">
+                          {{ __("Send Now") }}
+                        </h6>
+                        <p class="text-xs text-gray-600">
+                          {{ __("Send campaign immediately") }}
+                        </p>
+                      </div>
+                    </div>
+
+                    <!-- Schedule Send -->
+                    <div 
+                      class="border rounded-lg p-4 bg-white cursor-pointer transition-colors"
+                      :class="sendingStrategy === 'scheduled' ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' : 'border-gray-200 hover:border-gray-300'"
+                      @click="sendingStrategy = 'scheduled'"
+                    >
+                      <div class="text-center">
+                        <div class="flex items-center justify-center w-12 h-12 rounded-full mx-auto mb-3"
+                             :class="sendingStrategy === 'scheduled' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'">
+                          <FeatherIcon name="calendar" class="h-6 w-6" />
+                        </div>
+                        <h6 class="text-sm font-semibold mb-1"
+                            :class="sendingStrategy === 'scheduled' ? 'text-blue-900' : 'text-gray-900'">
+                          {{ __("Schedule Send") }}
+                        </h6>
+                        <p class="text-xs text-gray-600">
+                          {{ __("Choose specific time to send campaign") }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Schedule Date/Time Input -->
+                  <div v-if="sendingStrategy === 'scheduled'" class="mt-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                      {{ __("Schedule Date & Time") }}
+                    </label>
+                    <input
+                      type="datetime-local"
+                      v-model="campaignData.start_date"
+                      class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
         </div>
@@ -475,6 +567,123 @@
       @cancel="() => showSocialConfigModal = false"
       @job-opening-change="onSocialJobOpeningChange"
     />
+
+    <!-- Condition Editor Modal -->
+    <div v-if="showConditionModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">
+          {{ editingConditionIndex >= 0 ? __('Edit Condition') : __('Add Condition') }}
+        </h3>
+        
+        <div class="space-y-4">
+          <!-- Field Selection -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              {{ __('Field') }}
+            </label>
+            <select 
+              v-model="editingCondition.field"
+              @change="updateFieldType"
+              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            >
+              <option value="">{{ __('Select field...') }}</option>
+              <option 
+                v-for="field in conditionFields" 
+                :key="field.value" 
+                :value="field.value"
+              >
+                {{ field.label }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Operator Selection -->
+          <div v-if="editingCondition.field">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              {{ __('Operator') }}
+            </label>
+            <select 
+              v-model="editingCondition.operator"
+              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            >
+              <option 
+                v-for="operator in getOperatorsForField(editingCondition.fieldType)" 
+                :key="operator.value" 
+                :value="operator.value"
+              >
+                {{ operator.label }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Value Input -->
+          <div v-if="editingCondition.field && !['is_empty', 'is_not_empty'].includes(editingCondition.operator)">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              {{ __('Value') }}
+            </label>
+            
+            <!-- Text Input -->
+            <input
+              v-if="editingCondition.fieldType === 'text'"
+              type="text"
+              v-model="editingCondition.value"
+              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              :placeholder="__('Enter value...')"
+            />
+            
+            <!-- Number Input -->
+            <input
+              v-else-if="editingCondition.fieldType === 'number'"
+              type="number"
+              v-model="editingCondition.value"
+              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              :placeholder="__('Enter number...')"
+            />
+            
+            <!-- Date Input -->
+            <input
+              v-else-if="editingCondition.fieldType === 'date'"
+              type="date"
+              v-model="editingCondition.value"
+              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            />
+            
+            <!-- Select Input -->
+            <select
+              v-else-if="editingCondition.fieldType === 'select'"
+              v-model="editingCondition.value"
+              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            >
+              <option value="">{{ __('Select option...') }}</option>
+              <option 
+                v-for="option in getFieldOptions(editingCondition.field)" 
+                :key="option.value" 
+                :value="option.value"
+              >
+                {{ option.label }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Modal Actions -->
+        <div class="flex justify-end space-x-3 mt-6">
+          <Button
+            variant="outline"
+            @click="cancelConditionEdit"
+          >
+            {{ __('Cancel') }}
+          </Button>
+          <Button
+            variant="solid"
+            @click="saveCondition"
+            :disabled="!editingCondition.field"
+          >
+            {{ __('Save') }}
+          </Button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -499,8 +708,9 @@ import { useCandidateStore } from "@/stores/candidate";
 import { useMiraTalentPoolStore } from "@/stores/miraTalentPool";
 import { useCampaignStore } from "@/stores/campaign";
 import { useCampaignStepStore } from "@/stores/campaignStep";
+import { useCampaignTemplateStore } from "@/stores/campaignTemplate";
+import { toLocalDatetimeInput, formatDateForDatabase , toIsoIfSet , formatDateForDisplay, getCurrentDatabaseDateTime, } from "@/utils/dateUtils";
 import { useCampaignSocialStore } from "@/stores/campaignSocial";
-import { useCampaignTemplateStore } from "@/stores/campaignTemplate.js";
 import { useJobOpeningStore } from "@/stores/jobOpening";
 import { useCandidateDataSourceStore } from "@/stores/candidateDataSource.js";
 import { debounce } from "@/utils/debounce";
@@ -528,6 +738,7 @@ const props = defineProps({
     default: null,
   },
 });
+
 
 const emit = defineEmits(["update:modelValue", "success", "draft-created"]);
 
@@ -625,6 +836,7 @@ const campaignData = ref({
   message_content: "", // For ZALO methods
   success_action: "", // Action when success
   failure_action: "", // Action when failure
+  criteria: "", // JSON string for custom conditions
 });
 
 const selectedSource = ref(props.preselectedSegment ? "search" : "");
@@ -902,28 +1114,217 @@ const jobOpeningsList = ref([]);
 const loadingJobOpenings = ref(false);
 const selectedJobOpeningDetails = ref(null);
 
+// Target Segment state
+const sendingStrategy = ref('now'); // 'now' or 'scheduled'
+const candidateCount = ref(0);
+const segmentSelectionMode = ref(''); // 'segment' or 'conditions'
+const conditionsLogic = ref('any'); // 'any' or 'all'
+const customConditions = ref([]);
+const showConditionModal = ref(false);
+const editingCondition = ref(null);
+const editingConditionIndex = ref(-1);
+
+// Watch sendingStrategy to auto-set start_date
+watch(sendingStrategy, (newStrategy) => {
+  if (newStrategy === 'now') {
+    // Set start_date to current time for immediate sending
+    campaignData.value.start_date = toLocalDatetimeInput(new Date());
+  } else if (newStrategy === 'scheduled' && !campaignData.value.start_date) {
+    // Set default scheduled time to 1 hour from now
+    const oneHourLater = new Date(Date.now() + 60 * 60 * 1000);
+    campaignData.value.start_date = toLocalDatetimeInput(oneHourLater);
+  }
+});
+
+// Computed candidate count based on selected data
+const computedCandidateCount = computed(() => {
+  if (selectedSource.value === 'search' && miraTalentCampaign.value.records) {
+    return miraTalentCampaign.value.records.length || 0;
+  }
+  // For other sources, we might need to implement specific logic
+  return candidateCount.value;
+});
+
+// Watch configData changes to update candidate count
+watch(
+  () => miraTalentCampaign.value.records,
+  (newRecords) => {
+    candidateCount.value = newRecords ? newRecords.length : 0;
+  },
+  { deep: true }
+);
+
+// Condition management methods
+const addCondition = () => {
+  editingCondition.value = {
+    id: Date.now(),
+    field: '',
+    operator: 'equals',
+    value: '',
+    fieldType: 'text'
+  };
+  editingConditionIndex.value = -1;
+  showConditionModal.value = true;
+};
+
+const editCondition = (condition, index) => {
+  editingCondition.value = { ...condition };
+  editingConditionIndex.value = index;
+  showConditionModal.value = true;
+};
+
+const saveCondition = () => {
+  if (!editingCondition.value.field) return;
+  
+  if (editingConditionIndex.value >= 0) {
+    // Edit existing condition
+    customConditions.value[editingConditionIndex.value] = { ...editingCondition.value };
+  } else {
+    // Add new condition
+    customConditions.value.push({ ...editingCondition.value });
+  }
+  
+  showConditionModal.value = false;
+  editingCondition.value = null;
+  editingConditionIndex.value = -1;
+};
+
+const cancelConditionEdit = () => {
+  showConditionModal.value = false;
+  editingCondition.value = null;
+  editingConditionIndex.value = -1;
+};
+
+const removeCondition = (index) => {
+  customConditions.value.splice(index, 1);
+};
+
+const getConditionLabel = (condition) => {
+  const fieldLabels = {
+    'full_name': __('Full Name'),
+    'email': __('Email'),
+    'phone': __('Phone'),
+    'date_of_birth': __('Date of Birth'),
+    'gender': __('Gender'),
+    'address': __('Address'),
+    'experience_years': __('Years of Experience'),
+    'education_level': __('Education Level'),
+    'skills': __('Skills'),
+    'current_position': __('Current Position'),
+    'expected_salary': __('Expected Salary'),
+    'created': __('Created Date'),
+    'modified': __('Modified Date')
+  };
+  return fieldLabels[condition.field] || condition.field;
+};
+
+// Available condition fields for candidates
+const conditionFields = computed(() => [
+  { value: 'full_name', label: __('Full Name'), type: 'text' },
+  { value: 'email', label: __('Email'), type: 'text' },
+  { value: 'phone', label: __('Phone'), type: 'text' },
+  { value: 'date_of_birth', label: __('Date of Birth'), type: 'date' },
+  { value: 'gender', label: __('Gender'), type: 'select', options: [
+    { value: 'Male', label: __('Male') },
+    { value: 'Female', label: __('Female') },
+    { value: 'Other', label: __('Other') }
+  ]},
+  { value: 'address', label: __('Address'), type: 'text' },
+  { value: 'experience_years', label: __('Years of Experience'), type: 'number' },
+  { value: 'education_level', label: __('Education Level'), type: 'select', options: [
+    { value: 'High School', label: __('High School') },
+    { value: 'Bachelor', label: __('Bachelor') },
+    { value: 'Master', label: __('Master') },
+    { value: 'PhD', label: __('PhD') }
+  ]},
+  { value: 'skills', label: __('Skills'), type: 'text' },
+  { value: 'current_position', label: __('Current Position'), type: 'text' },
+  { value: 'expected_salary', label: __('Expected Salary'), type: 'number' },
+  { value: 'created', label: __('Created Date'), type: 'date' },
+  { value: 'modified', label: __('Modified Date'), type: 'date' }
+]);
+
+// Available operators based on field type
+const getOperatorsForField = (fieldType) => {
+  const operators = {
+    text: [
+      { value: 'equals', label: __('Equals') },
+      { value: 'not_equals', label: __('Not Equals') },
+      { value: 'contains', label: __('Contains') },
+      { value: 'not_contains', label: __('Does Not Contain') },
+      { value: 'starts_with', label: __('Starts With') },
+      { value: 'ends_with', label: __('Ends With') },
+      { value: 'is_empty', label: __('Is Empty') },
+      { value: 'is_not_empty', label: __('Is Not Empty') }
+    ],
+    number: [
+      { value: 'equals', label: __('Equals') },
+      { value: 'not_equals', label: __('Not Equals') },
+      { value: 'greater_than', label: __('Greater Than') },
+      { value: 'less_than', label: __('Less Than') },
+      { value: 'greater_equal', label: __('Greater Than or Equal') },
+      { value: 'less_equal', label: __('Less Than or Equal') },
+      { value: 'is_empty', label: __('Is Empty') },
+      { value: 'is_not_empty', label: __('Is Not Empty') }
+    ],
+    date: [
+      { value: 'equals', label: __('Equals') },
+      { value: 'not_equals', label: __('Not Equals') },
+      { value: 'after', label: __('After') },
+      { value: 'before', label: __('Before') },
+      { value: 'is_empty', label: __('Is Empty') },
+      { value: 'is_not_empty', label: __('Is Not Empty') }
+    ],
+    select: [
+      { value: 'equals', label: __('Equals') },
+      { value: 'not_equals', label: __('Not Equals') },
+      { value: 'is_empty', label: __('Is Empty') },
+      { value: 'is_not_empty', label: __('Is Not Empty') }
+    ]
+  };
+  return operators[fieldType] || operators.text;
+};
+
+// Helper methods for condition modal
+const updateFieldType = () => {
+  const field = conditionFields.value.find(f => f.value === editingCondition.value.field);
+  if (field) {
+    editingCondition.value.fieldType = field.type;
+    editingCondition.value.operator = 'equals'; // Reset operator
+    editingCondition.value.value = ''; // Reset value
+  }
+};
+
+const getFieldOptions = (fieldValue) => {
+  const field = conditionFields.value.find(f => f.value === fieldValue);
+  return field?.options || [];
+};
+
+// Watch conditions to save to criteria field
+watch(
+  () => ({ conditions: customConditions.value, logic: conditionsLogic.value }),
+  (newCriteria) => {
+    if (segmentSelectionMode.value === 'conditions') {
+      campaignData.value.criteria = JSON.stringify({
+        logic: newCriteria.logic,
+        conditions: newCriteria.conditions
+      });
+    }
+  },
+  { deep: true }
+);
+
 // Removed unused toast helper
 
 // Translation helper function
 const __ = (text) => text;
 
-// Steps definition
+// Steps definition - Updated to 3 steps only
 const steps = computed(() => {
-  const baseSteps = [
-    { number: 1, label: "Campaign Information" },
-    { number: 2, label: "Target Segment" },
-    { number: 3, label: "Content Design" }
-  ];
-  
-  // In edit mode, don't show the final review step
-  if (isEditMode.value) {
-    return baseSteps;
-  }
-  
-  // In create mode, add review step
   return [
-    ...baseSteps,
-    { number: 4, label: "Review & Activate" }
+    { number: 1, label: __("Campaign Information") },
+    { number: 2, label: __("Content Design") },
+    { number: 3, label: __("Target Segment") }
   ];
 });
 
@@ -1655,7 +2056,7 @@ const createStepWithDelay = async (step, index, total) => {
     delay_in_days: step.delay_in_days || 0,
     template: step.template_content || "",
     image: step.image || "",
-    scheduled_at: step.scheduled_at ? toIsoIfSet(step.scheduled_at) : null,
+    scheduled_at: step.scheduled_at ? formatDateForDatabase(step.scheduled_at) : null,
     action_config:
       step.action_config ||
       (stepFormSelectedPageId.value
@@ -1764,14 +2165,23 @@ const finalizeCampaign = async () => {
   activating.value = true;
 
   try {
+    const editingCampaign = props.editCampaign || props.editingCampaign;
+    console.log('🔍 finalizeCampaign debug:', {
+      isEditing: isEditing.value,
+      isEditMode: isEditMode.value,
+      editCampaign: props.editCampaign,
+      editingCampaign: props.editingCampaign,
+      editingCampaignName: editingCampaign?.name
+    });
+
     // EDIT MODE: update campaign fields only for now
-    if (isEditing.value && props.editCampaign?.name) {
+    if (isEditMode.value && editingCampaign?.name) {
       // Prepare payload: map inputs and normalize dates
       const startISO = campaignData.value.start_date
-        ? new Date(campaignData.value.start_date).toISOString()
+        ? formatDateForDatabase(campaignData.value.start_date)
         : null;
       const endISO = campaignData.value.end_date
-        ? new Date(campaignData.value.end_date).toISOString()
+        ? formatDateForDatabase(campaignData.value.end_date)
         : null;
 
         console.log(miraTalentCampaign.value);
@@ -1790,6 +2200,7 @@ const finalizeCampaign = async () => {
         mira_talent_campaign: stringifyIfNeeded(
          miraTalentCampaign.value || null
         ),
+        criteria: campaignData.value.criteria || null, // Add criteria field
         // Add social media fields
         social_page_id: configData.value.socialConfig?.page_id || "",
         social_page_name:
@@ -1797,7 +2208,7 @@ const finalizeCampaign = async () => {
             (p) => p.external_account_id === configData.value.socialConfig?.page_id
           )?.account_name || "",
         post_schedule_time: configData.value.socialConfig?.scheduled_at 
-          ? new Date(configData.value.socialConfig.scheduled_at).toISOString() 
+          ? formatDateForDatabase(configData.value.socialConfig.scheduled_at)
           : "",
         template_content: configData.value.socialConfig?.template_content || "",
         social_media_images: configData.value.socialConfig?.image 
@@ -1813,7 +2224,7 @@ const finalizeCampaign = async () => {
       for (let i = 0; i < campaignSteps.value.length; i++) {
         const s = campaignSteps.value[i];
         const stepPayload = {
-          campaign: props.editCampaign.name,
+          campaign: editingCampaign.name,
           campaign_step_name: s.campaign_step_name,
           action_type: s.action_type,
           step_order: s.step_order || i + 1,
@@ -1844,11 +2255,11 @@ const finalizeCampaign = async () => {
       }
 
       // 2) Update campaign fields
-      await campaignStore.updateCampaignData(props.editCampaign.name, updatePayload);
+      await campaignStore.updateCampaignData(editingCampaign.name, updatePayload);
 
       emit("success", {
         action: "updated",
-        data: { name: props.editCampaign.name, ...updatePayload },
+        data: { name: editingCampaign.name, ...updatePayload },
       });
       return;
     }
@@ -1889,7 +2300,7 @@ const finalizeCampaign = async () => {
             delay_in_days: step.delay_in_days || 0,
             template: step.template_content || "",
             image: step.image || "",
-            scheduled_at: step.scheduled_at ? toIsoIfSet(step.scheduled_at) : null,
+            scheduled_at: step.scheduled_at ? formatDateForDatabase(step.scheduled_at) : null,
             action_config: step.action_config || null,
             status: "DRAFT",
             is_active: 1,
@@ -1956,10 +2367,10 @@ const finalizeCampaign = async () => {
 
     // 2) Update campaign sau khi đã có step
     const startISO =
-      toIsoIfSet(campaignData.value.start_date) || new Date().toISOString();
+      formatDateForDatabase(campaignData.value.start_date) || getCurrentDatabaseDateTime();
     const endISO =
-      toIsoIfSet(campaignData.value.end_date) ||
-      new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+      formatDateForDatabase(campaignData.value.end_date) ||
+      addTimeToDate(new Date(), 30, 'days');
 
     console.log("🔍 Finalizing campaign with source_type values:");
     console.log("  - draftCampaign.source_type:", draftCampaign.value.source_type);
@@ -2094,6 +2505,14 @@ const debouncedAutoSave = () => {
     await autoSave();
   }, 2000); // Auto-save after 2 seconds of inactivity
 };
+
+const stringifyIfNeeded = (value) => {
+  if (Array.isArray(value)) {
+    return JSON.stringify(value);
+  }
+  return value;
+};
+
 
 // Auto-save function (like Google Drive)
 const autoSave = async () => {
@@ -2254,9 +2673,113 @@ const handleContentPreview = (content) => {
   toast.info(__('Preview feature will be implemented soon'));
 };
 
+// Method to save campaign in edit mode
+const saveEditCampaign = async () => {
+  const editingCampaign = props.editCampaign || props.editingCampaign;
+  if (!editingCampaign?.name) {
+    throw new Error('No campaign to edit');
+  }
+
+  // Prepare payload: map inputs and normalize dates
+  const startISO = campaignData.value.start_date
+    ? formatDateForDatabase(campaignData.value.start_date)
+    : null;
+  const endISO = campaignData.value.end_date
+    ? formatDateForDatabase(campaignData.value.end_date)
+    : null;
+
+  // First update the campaign with basic info
+  const updatePayload = {
+    campaign_name: campaignData.value.campaign_name,
+    description: campaignData.value.description,
+    status: campaignData.value.status || "DRAFT",
+    start_date: startISO,
+    end_date: endISO,
+    target_segment: campaignData.value.target_segment || null,
+    source_type: campaignData.value.source_type || "",
+    source_file: campaignData.value.source_file || "",
+    source_config: campaignData.value.source_config || null,
+    mira_talent_campaign: stringifyIfNeeded(
+     miraTalentCampaign.value || null
+    ),
+    criteria: campaignData.value.criteria || null, // Add criteria field
+    // Add social media fields
+    social_page_id: configData.value.socialConfig?.page_id || "",
+    social_page_name:
+      socialPages.value.find(
+        (p) => p.external_account_id === configData.value.socialConfig?.page_id
+      )?.account_name || "",
+    post_schedule_time: configData.value.socialConfig?.scheduled_at 
+      ? formatDateForDatabase(configData.value.socialConfig.scheduled_at)
+      : "",
+    template_content: configData.value.socialConfig?.template_content || "",
+    social_media_images: configData.value.socialConfig?.image 
+      ? (Array.isArray(configData.value.socialConfig.image) 
+          ? JSON.stringify(configData.value.socialConfig.image) 
+          : configData.value.socialConfig.image)
+      : "",
+  };
+
+  // Save or update campaign steps
+  const keptIds = new Set();
+  for (let i = 0; i < campaignSteps.value.length; i++) {
+    const s = campaignSteps.value[i];
+    const stepPayload = {
+      campaign: editingCampaign.name,
+      campaign_step_name: s.campaign_step_name,
+      action_type: s.action_type,
+      step_order: s.step_order || i + 1,
+      delay_in_days: s.delay_in_days || 0,
+      template: s.template_content || "",
+      image: s.image || "",
+      scheduled_at: s.scheduled_at || "",
+    };
+
+    if (s.id) {
+      keptIds.add(s.id);
+      await campaignStepStore.updateCampaignStep(s.id, stepPayload);
+    } else {
+      const created = await campaignStepStore.createCampaignStep(stepPayload);
+      if (created?.name) keptIds.add(created.name);
+    }
+  }
+
+  // Delete removed steps
+  for (const oldId of originalStepIds.value) {
+    if (!keptIds.has(oldId)) {
+      try {
+        await campaignStepStore.deleteCampaignStep(oldId);
+      } catch (e) {
+        console.warn("Delete step failed", oldId, e);
+      }
+    }
+  }
+
+  // Update campaign fields
+  await campaignStore.updateCampaignData(editingCampaign.name, updatePayload);
+
+  emit("success", {
+    action: "updated",
+    data: { name: editingCampaign.name, ...updatePayload },
+  });
+};
+
 // Method to save draft (legacy - kept for compatibility)
 const saveDraft = async () => {
-  await saveCurrentStepData();
+  try {
+    // In edit mode, save the entire campaign
+    if (isEditMode.value) {
+      await saveEditCampaign();
+      toast.success(__('Campaign saved successfully'));
+    } else {
+      // In create mode, just save current step data
+      await saveCurrentStepData();
+      toast.success(__('Draft saved successfully'));
+    }
+  } catch (error) {
+    console.error('Save failed:', error);
+    toast.error(__('Failed to save: ') + error.message);
+  }
 };
 
 const closeWizard = () => {
@@ -2362,10 +2885,10 @@ const createDraftCampaign = async () => {
     console.log("  - mappedSourceType:", mappedSourceType);
 
     const startISO =
-      toIsoIfSet(campaignData.value.start_date) || new Date().toISOString();
+      formatDateForDatabase(campaignData.value.start_date) || getCurrentDatabaseDateTime();
     const endISO =
-      toIsoIfSet(campaignData.value.end_date) ||
-      new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+      formatDateForDatabase(campaignData.value.end_date) ||
+      addTimeToDate(new Date(), 30, 'days');
 
     const draftPayload = {
       campaign_name:
@@ -2379,6 +2902,7 @@ const createDraftCampaign = async () => {
       end_date: endISO,
       is_active: false,
       source_type: mappedSourceType,
+      criteria: campaignData.value.criteria || null, // Add criteria field
       // Add social media fields
       social_page_id: configData.value.socialConfig?.page_id || "",
       social_page_name:
@@ -2589,6 +3113,26 @@ watch(show, async (newVal) => {
         campaignData.value.interaction_method = ec.interaction_method || "EMAIL"; // Default fallback
         campaignData.value.target_segment =
           ec.target_segment || campaignData.value.target_segment || "";
+        campaignData.value.criteria = ec.criteria || ""; // Load criteria from database
+        
+        // Parse and restore custom conditions if exists
+        if (ec.criteria) {
+          try {
+            const parsedCriteria = JSON.parse(ec.criteria);
+            conditionsLogic.value = parsedCriteria.logic || 'any';
+            customConditions.value = parsedCriteria.conditions || [];
+            segmentSelectionMode.value = 'conditions'; // Set to conditions mode
+          } catch (e) {
+            console.warn('Failed to parse criteria:', e);
+            customConditions.value = [];
+            conditionsLogic.value = 'any';
+          }
+        } else {
+          // Reset conditions if no criteria
+          customConditions.value = [];
+          conditionsLogic.value = 'any';
+          segmentSelectionMode.value = ''; // Reset selection mode
+        }
         campaignData.value.start_date =
           ec.start_date || campaignData.value.start_date || "";
         campaignData.value.end_date = ec.end_date || campaignData.value.end_date || "";
@@ -2750,38 +3294,11 @@ const loadSocialPages = async () => {
 
 // Timezone helpers
 const pad2 = (n) => String(n).padStart(2, "0");
-const toLocalDatetimeInput = (d = new Date()) => {
-  const year = d.getFullYear();
-  const month = pad2(d.getMonth() + 1);
-  const day = pad2(d.getDate());
-  const hours = pad2(d.getHours());
-  const minutes = pad2(d.getMinutes());
-  return `${year}-${month}-${day}T${hours}:${minutes}`;
-};
+
 const minScheduledAt = computed(() => toLocalDatetimeInput(new Date()));
 const localTzLabel = Intl.DateTimeFormat().resolvedOptions().timeZone || "Local";
 
-// Helpers for datetime-local -> ISO
-const toIsoIfSet = (localStr) => {
-  try {
-    if (!localStr) return null;
-
-    // Parse ngày giờ local mà không convert timezone
-    const [datePart, timePart] = localStr.split("T");
-    const [year, month, day] = datePart.split("-").map(Number);
-    const [hours, minutes] = timePart.split(":").map(Number);
-
-    // Format thành ISO string mà không thay đổi timezone
-    const isoString = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(
-      2,
-      "0"
-    )}T${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00`;
-
-    return isoString;
-  } catch {
-    return null;
-  }
-};
+// Note: toIsoIfSet is now imported from @/utils/dateUtils
 
 
 const openScheduledAtPicker = (e) => {

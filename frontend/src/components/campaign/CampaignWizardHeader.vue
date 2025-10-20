@@ -101,9 +101,9 @@
           {{ __("Saved") }}
         </div>
         
-        <!-- Continue button - show if not at last step, or if in edit mode and at last step -->
+        <!-- Continue button - show if not at last step -->
         <Button
-          v-if="currentStep < totalSteps && !(isEditMode && canFinalize)"
+          v-if="currentStep < totalSteps"
           variant="solid"
           theme="blue"
           size="sm"
@@ -112,6 +112,19 @@
           :disabled="!canProceed"
         >
           {{ __("Continue") }}
+        </Button>
+        
+        <!-- Save button - show in edit mode at last step -->
+        <Button
+          v-else-if="isEditMode && canFinalize"
+          variant="solid"
+          theme="blue"
+          size="sm"
+          @click="$emit('save')"
+          :loading="saving"
+          :disabled="!canSave"
+        >
+          {{ __("Save Changes") }}
         </Button>
         
         <!-- Finalize button - show only in create mode at last step -->
