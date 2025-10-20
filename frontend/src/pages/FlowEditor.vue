@@ -74,11 +74,17 @@
 						</template>
 						Biểu đồ
 					</Button>
-					<Button variant="solid" size="sm" @click="handleSave" :loading="saving">
+					<Button 
+						:variant="hasUnsavedChanges ? 'solid' : 'outline'" 
+						size="sm" 
+						@click="handleSave" 
+						:loading="saving"
+						:class="hasUnsavedChanges ? 'bg-orange-600 hover:bg-orange-700' : ''"
+					>
 						<template #prefix>
 							<FeatherIcon name="save" class="h-4 w-4" />
 						</template>
-						Lưu lại
+						{{ hasUnsavedChanges ? 'Lưu*' : 'Lưu' }}
 					</Button>
 					<Button variant="solid" theme="green" size="sm">{{ __('Publish') }} </Button>
 				</div>
@@ -90,7 +96,7 @@
 			<!-- Column 1: Triggers & Actions List -->
 			<div class="w-80 bg-white border-r border-gray-200 flex flex-col">
 				<!-- Triggers Section -->
-				<div class="flex-1 p-4">
+				<div class="flex-1 p-4 overflow-auto">
 					<div class="mb-6">
 						<h3 class="text-sm font-medium text-gray-900 mb-3">{{ __('Trigger') }}</h3>
 						<p class="text-xs text-gray-500 mb-4">{{ __('Event that triggers this flow') }}</p>
@@ -245,6 +251,15 @@
 								@update:content="updateEmailContent"
 								:readonly="false"
 							/>
+							
+							<!-- Additional Actions for Email -->
+							<div class="mt-6">
+								<AdditionalActions
+									interaction-type="EMAIL"
+									:model-value="getAdditionalActionsData()"
+									@update:model-value="updateAdditionalActionsData"
+								/>
+							</div>
 						</div>
 
 						<div v-else-if="selectedItem.type === 'action' && isZaloAction()">
@@ -254,6 +269,139 @@
 								@update:content="updateZaloContent"
 								:readonly="false"
 							/>
+							
+							<!-- Additional Actions for Zalo -->
+							<div class="mt-6">
+								<AdditionalActions
+									interaction-type="ZALO_CARE"
+									:model-value="getAdditionalActionsData()"
+									@update:model-value="updateAdditionalActionsData"
+								/>
+							</div>
+						</div>
+
+						<!-- SMS Action -->
+						<div v-else-if="selectedItem.type === 'action' && isSMSAction()">
+							<h4 class="text-md font-medium text-gray-900 mb-4">Cấu hình SMS</h4>
+							<ZaloEditor
+								:content="getSMSContent()"
+								@update:content="updateSMSContent"
+								:readonly="false"
+							/>
+							
+							<!-- Additional Actions for SMS -->
+							<div class="mt-6">
+								<AdditionalActions
+									interaction-type="EMAIL"
+									:model-value="getAdditionalActionsData()"
+									@update:model-value="updateAdditionalActionsData"
+								/>
+							</div>
+						</div>
+
+						<!-- Add Tag Action -->
+						<div v-else-if="selectedItem.type === 'action' && isAddTagAction()">
+							<h4 class="text-md font-medium text-gray-900 mb-4">Thêm Tag</h4>
+							<ActionConfig
+								action-type="add_tag"
+								:action-data="selectedItemData.parameters"
+								@update:action-data="updateActionData"
+							/>
+						</div>
+
+						<!-- Remove Tag Action -->
+						<div v-else-if="selectedItem.type === 'action' && isRemoveTagAction()">
+							<h4 class="text-md font-medium text-gray-900 mb-4">Xóa Tag</h4>
+							<ActionConfig
+								action-type="remove_tag"
+								:action-data="selectedItemData.parameters"
+								@update:action-data="updateActionData"
+							/>
+						</div>
+
+						<!-- Smart Delay Action -->
+						<div v-else-if="selectedItem.type === 'action' && isSmartDelayAction()">
+							<h4 class="text-md font-medium text-gray-900 mb-4">Delay Thông Minh</h4>
+							<div class="space-y-4">
+								<div>
+									<label class="block text-sm font-medium text-gray-700 mb-2">
+										Thời gian chờ
+									</label>
+									<FormControl
+										v-model="selectedItemData.parameters.duration"
+										type="text"
+										placeholder="VD: 1 day, 2 hours, 30 minutes..."
+										@input="hasUnsavedChanges = true"
+									/>
+								</div>
+							</div>
+						</div>
+
+						<!-- Add Custom Field Action -->
+						<div v-else-if="selectedItem.type === 'action' && isAddCustomFieldAction()">
+							<h4 class="text-md font-medium text-gray-900 mb-4">Thêm Trường Tùy Chỉnh</h4>
+							<div class="space-y-4">
+								<div>
+									<label class="block text-sm font-medium text-gray-700 mb-2">
+										Tên trường
+									</label>
+									<FormControl
+										v-model="selectedItemData.parameters.field_name"
+										type="text"
+										placeholder="Nhập tên trường..."
+										@input="hasUnsavedChanges = true"
+									/>
+								</div>
+								<div>
+									<label class="block text-sm font-medium text-gray-700 mb-2">
+										Giá trị
+									</label>
+									<FormControl
+										v-model="selectedItemData.parameters.field_value"
+										type="text"
+										placeholder="Nhập giá trị..."
+										@input="hasUnsavedChanges = true"
+									/>
+								</div>
+							</div>
+						</div>
+
+						<!-- Start Flow Action -->
+						<div v-else-if="selectedItem.type === 'action' && isStartFlowAction()">
+							<h4 class="text-md font-medium text-gray-900 mb-4">Bắt Đầu Flow</h4>
+							<div class="space-y-4">
+								<div>
+									<Link
+										doctype="Mira Flow"
+										:filters="getFlowFilters()"
+										:model-value="selectedItemData.parameters.flow_id"
+										@update:model-value="updateFlowId"
+										label="Chọn Flow"
+										placeholder="Tìm kiếm flow..."
+									/>
+									<p class="text-xs text-gray-500 mt-1">
+										Chọn flow khác để bắt đầu (không thể chọn flow hiện tại)
+									</p>
+								</div>
+							</div>
+						</div>
+
+						<!-- Subscribe to Sequence Action -->
+						<div v-else-if="selectedItem.type === 'action' && isSubscribeSequenceAction()">
+							<h4 class="text-md font-medium text-gray-900 mb-4">Đăng Ký Sequence</h4>
+							<div class="space-y-4">
+								<div>
+									<label class="block text-sm font-medium text-gray-700 mb-2">
+										Sequence ID
+									</label>
+									<FormControl
+										v-model="selectedItemData.parameters.sequence_id"
+										type="text"
+										placeholder="Nhập ID của sequence..."
+										@input="hasUnsavedChanges = true"
+									/>
+								</div>
+							</div>
 						</div>
 
 						<!-- Generic Parameters for other actions -->
@@ -261,72 +409,10 @@
 							<div>
 								<h4 class="text-md font-medium text-gray-900 mb-4">Tham số</h4>
 
-								<!-- Template ID for Send_Message -->
-								<div v-if="selectedItemData.action_type === 'Send_Message'">
-									<label class="block text-sm font-medium text-gray-700 mb-2"
-										>Template ID</label
-									>
-									<FormControl
-										v-model="selectedItemData.parameters.template_id"
-										type="text"
-										placeholder="{{ __('Enter template ID') }}"
-									/>
-								</div>
-
-								<!-- Duration for Wait -->
-								<div v-if="selectedItemData.action_type === 'Wait'">
-									<label class="block text-sm font-medium text-gray-700 mb-2"
-										>Thời gian chờ</label
-									>
-									<FormControl
-										v-model="selectedItemData.parameters.duration"
-										type="text"
-										placeholder="VD: 1 day, 2 hours, 30 minutes..."
-									/>
-								</div>
-
-								<!-- Tag Name for Tag actions -->
-								<div
-									v-if="
-										selectedItemData.action_type === 'Assign_Tag' ||
-										selectedItemData.action_type === 'Remove_Tag'
-									"
-								>
-									<label class="block text-sm font-medium text-gray-700 mb-2"
-										>{{ __('Tag Name') }}</label
-									>
-									<FormControl
-										v-model="selectedItemData.parameters.tag_name"
-										type="text"
-										placeholder="{{ __('Enter tag name') }}"
-									/>
-								</div>
-
-								<!-- Field for Update_Field -->
-								<div
-									v-if="selectedItemData.action_type === 'Update_Field'"
-									class="space-y-4"
-								>
-									<div>
-										<label class="block text-sm font-medium text-gray-700 mb-2"
-											>{{ __('Field Name') }}</label
-										>
-										<FormControl
-											v-model="selectedItemData.parameters.field_name"
-											type="text"
-											placeholder="{{ __('Enter field name') }}"
-										/>
-									</div>
-									<div>
-										<label class="block text-sm font-medium text-gray-700 mb-2"
-											>{{ __('Value') }}</label
-										>
-										<FormControl
-											v-model="selectedItemData.parameters.field_value"
-											type="text"
-											placeholder="{{ __('Enter value') }}"
-										/>
-									</div>
+								<!-- Generic parameters display -->
+								<div class="bg-gray-50 p-4 rounded-lg">
+									<p class="text-sm text-gray-600 mb-2">Action Type: {{ selectedItemData.action_type }}</p>
+									<p class="text-sm text-gray-500">Chưa có UI cấu hình cho action type này.</p>
 								</div>
 							</div>
 						</div>
@@ -766,6 +852,9 @@ import { Button, FormControl, Dialog, FeatherIcon } from 'frappe-ui'
 import EmailEditor from '../components/campaign/content-editors/EmailEditor.vue'
 import ZaloEditor from '../components/campaign/content-editors/ZaloEditor.vue'
 import TriggerEditor from '../components/campaign/content-editors/TriggerEditor.vue'
+import Link from '../components/Controls/Link.vue'
+import ActionConfig from '../components/campaign/ActionConfig.vue'
+import AdditionalActions from '../components/campaign/AdditionalActions.vue'
 
 // Router
 const route = useRoute()
@@ -792,6 +881,7 @@ const editingTitle = ref(false)
 const editTitleValue = ref('')
 const previewKey = ref(0) // Key to force preview re-render
 const titleInput = ref(null)
+const hasUnsavedChanges = ref(false)
 
 // Flow data
 const flowData = ref({
@@ -1339,9 +1429,12 @@ const migrateToNewFormat = (items, type) => {
 }
 
 const selectItem = (type, index) => {
+	console.log('selectItem called with:', type, index)
 	selectedItem.value = { type, index }
 	const item =
 		type === 'trigger' ? flowData.value.triggers[index] : flowData.value.actions[index]
+
+	console.log('Selected item:', item)
 
 	// Deep clone to avoid reference issues
 	selectedItemData.value = JSON.parse(JSON.stringify(item))
@@ -1355,6 +1448,9 @@ const selectItem = (type, index) => {
 	if (type === 'trigger' && !selectedItemData.value.criteria) {
 		selectedItemData.value.criteria = {}
 	}
+	
+	console.log('selectedItem.value:', selectedItem.value)
+	console.log('selectedItemData.value:', selectedItemData.value)
 }
 
 const getSelectedItemTitle = () => {
@@ -1430,12 +1526,63 @@ const addTrigger = async (triggerOption) => {
 }
 
 const addAction = async (actionOption) => {
+	// Prepare default parameters based on action type
+	let defaultParameters = { ...actionOption.parameters } || {}
+	
+	// Ensure proper structure for different action types
+	if (actionOption.action_type === 'SMS' || actionOption.value === 'send_sms') {
+		defaultParameters = {
+			...defaultParameters,
+			sms_content: {
+				blocks: [
+					{
+						id: 1,
+						type: 'text',
+						text_content: '',
+					},
+				],
+			},
+			template_id: ''
+		}
+	} else if (actionOption.action_type === 'ADD_TAG' || actionOption.value === 'add_tag') {
+		defaultParameters = {
+			...defaultParameters,
+			tag_name: ''
+		}
+	} else if (actionOption.action_type === 'REMOVE_TAG' || actionOption.value === 'remove_tag') {
+		defaultParameters = {
+			...defaultParameters,
+			tag_name: ''
+		}
+	} else if (actionOption.action_type === 'SMART_DELAY' || actionOption.value === 'smart_delay') {
+		defaultParameters = {
+			...defaultParameters,
+			duration: '1 day'
+		}
+	} else if (actionOption.action_type === 'ADD_CUSTOM_FIELD' || actionOption.value === 'add_custom_field') {
+		defaultParameters = {
+			...defaultParameters,
+			field_name: '',
+			field_value: ''
+		}
+	} else if (actionOption.action_type === 'START_FLOW' || actionOption.value === 'start_flow') {
+		defaultParameters = {
+			...defaultParameters,
+			flow_id: ''
+		}
+	} else if (actionOption.action_type === 'SUBSCRIBE_TO_SEQUENCE' || actionOption.value === 'subscribe_to_sequence') {
+		defaultParameters = {
+			...defaultParameters,
+			sequence_id: ''
+		}
+	}
+
 	const newAction = {
 		// Backend format fields
 		action_order: flowData.value.actions.length + 1, // Auto increment order
 		action_type: actionOption.action_type || actionOption.value,
 		channel_type: actionOption.parameters?.channel || null,
-		parameters: actionOption.parameters || {},
+		parameters: defaultParameters,
 		
 		// Link fields - explicitly set to null
 		next_flow: null,
@@ -1529,6 +1676,7 @@ const handleSave = async () => {
 
 		if (result.success) {
 			toast.success('Flow đã được lưu thành công')
+			hasUnsavedChanges.value = false
 		} else {
 			toast.error(result.error || 'Có lỗi xảy ra khi lưu flow')
 		}
@@ -1544,18 +1692,11 @@ const handleBack = () => {
 	router.push({ name: 'FlowManagement' })
 }
 
+
 // Title editing methods
 const startEditTitle = () => {
 	editTitleValue.value = flowData.value.title || ''
-	editingTitle.value = true
-
-	// Focus input after DOM update
-	nextTick(() => {
-		if (titleInput.value) {
-			titleInput.value.focus()
-			titleInput.value.select()
-		}
-	})
+	isEditingTitle.value = true
 }
 
 const saveTitle = async () => {
@@ -1596,16 +1737,90 @@ const cancelEditTitle = () => {
 
 // Content Editor Methods
 const isEmailAction = () => {
-	return (
-		selectedItemData.value.action_type === 'Send_Message' &&
-		selectedItemData.value.parameters?.channel === 'Email'
+	if (!selectedItem.value || selectedItem.value.type !== 'action') {
+		console.log('isEmailAction: no selectedItem or not action type')
+		return false
+	}
+	const action = flowData.value.actions[selectedItem.value.index]
+	console.log('isEmailAction: checking action', action)
+	const result = action && (
+		action.action_type === 'MESSAGE' || 
+		action._ui_type === 'send_email' ||
+		(action.action_type === 'Send_Message' && action.parameters?.channel === 'Email')
 	)
+	console.log('isEmailAction result:', result)
+	return result
 }
 
 const isZaloAction = () => {
-	return (
-		selectedItemData.value.action_type === 'Send_Message' &&
-		selectedItemData.value.parameters?.channel === 'SMS'
+	if (!selectedItem.value || selectedItem.value.type !== 'action') return false
+	const action = flowData.value.actions[selectedItem.value.index]
+	return action && (
+		action.action_type === 'ZALO' ||
+		(action.action_type === 'Send_Message' && action.parameters?.channel === 'Zalo')
+	)
+}
+
+const isSMSAction = () => {
+	if (!selectedItem.value || selectedItem.value.type !== 'action') return false
+	const action = flowData.value.actions[selectedItem.value.index]
+	return action && (
+		action.action_type === 'SMS' ||
+		action._ui_type === 'send_sms'
+	)
+}
+
+const isAddTagAction = () => {
+	if (!selectedItem.value || selectedItem.value.type !== 'action') return false
+	const action = flowData.value.actions[selectedItem.value.index]
+	return action && (
+		action.action_type === 'ADD_TAG' ||
+		action._ui_type === 'add_tag'
+	)
+}
+
+const isRemoveTagAction = () => {
+	if (!selectedItem.value || selectedItem.value.type !== 'action') return false
+	const action = flowData.value.actions[selectedItem.value.index]
+	return action && (
+		action.action_type === 'REMOVE_TAG' ||
+		action._ui_type === 'remove_tag'
+	)
+}
+
+const isSmartDelayAction = () => {
+	if (!selectedItem.value || selectedItem.value.type !== 'action') return false
+	const action = flowData.value.actions[selectedItem.value.index]
+	return action && (
+		action.action_type === 'SMART_DELAY' ||
+		action._ui_type === 'smart_delay'
+	)
+}
+
+const isAddCustomFieldAction = () => {
+	if (!selectedItem.value || selectedItem.value.type !== 'action') return false
+	const action = flowData.value.actions[selectedItem.value.index]
+	return action && (
+		action.action_type === 'ADD_CUSTOM_FIELD' ||
+		action._ui_type === 'add_custom_field'
+	)
+}
+
+const isStartFlowAction = () => {
+	if (!selectedItem.value || selectedItem.value.type !== 'action') return false
+	const action = flowData.value.actions[selectedItem.value.index]
+	return action && (
+		action.action_type === 'START_FLOW' ||
+		action._ui_type === 'start_flow'
+	)
+}
+
+const isSubscribeSequenceAction = () => {
+	if (!selectedItem.value || selectedItem.value.type !== 'action') return false
+	const action = flowData.value.actions[selectedItem.value.index]
+	return action && (
+		action.action_type === 'SUBSCRIBE_TO_SEQUENCE' ||
+		action._ui_type === 'subscribe_to_sequence'
 	)
 }
 
@@ -1637,20 +1852,56 @@ const zaloContent = computed(() => {
 })
 
 const getEmailContent = () => {
-	return emailContent.value
+	if (!selectedItem.value || selectedItem.value.type !== 'action') return {}
+	const action = flowData.value.actions[selectedItem.value.index]
+	return action?.parameters?.email_content || {
+		email_subject: '',
+		email_content: '',
+		attachments: []
+	}
 }
 
 const getZaloContent = () => {
 	return zaloContent.value
 }
 
+const getSMSContent = () => {
+	if (!selectedItem.value || selectedItem.value.type !== 'action') return {}
+	const action = flowData.value.actions[selectedItem.value.index]
+	return action?.parameters?.sms_content || {
+		blocks: [
+			{
+				id: 1,
+				type: 'text',
+				text_content: '',
+			},
+		],
+	}
+}
+
 const updateEmailContent = (content) => {
 	console.log('updateEmailContent called with:', content)
-	if (!selectedItemData.value.parameters) {
-		selectedItemData.value.parameters = {}
+	if (!selectedItem.value || selectedItem.value.type !== 'action') return
+	
+	const actionIndex = selectedItem.value.index
+	const action = flowData.value.actions[actionIndex]
+	
+	if (action) {
+		if (!action.parameters) action.parameters = {}
+		action.parameters.email_content = content
+		action.parameters.template_id = `EMAIL_${Date.now()}`
+		
+		// Chỉ update local state, không auto-save
+		console.log('Email content updated locally')
+		hasUnsavedChanges.value = true
+		
+		// Sync với selectedItemData để đảm bảo consistency
+		if (selectedItemData.value) {
+			if (!selectedItemData.value.parameters) selectedItemData.value.parameters = {}
+			selectedItemData.value.parameters.email_content = content
+			selectedItemData.value.parameters.template_id = action.parameters.template_id
+		}
 	}
-	selectedItemData.value.parameters.email_content = content
-	selectedItemData.value.parameters.template_id = `EMAIL_${Date.now()}`
 
 	// Update the flow data as well to ensure persistence
 	if (selectedItem.value) {
@@ -1671,6 +1922,7 @@ const updateZaloContent = (content) => {
 	}
 	selectedItemData.value.parameters.zalo_content = content
 	selectedItemData.value.parameters.template_id = `ZALO_${Date.now()}`
+	hasUnsavedChanges.value = true
 
 	// Update the flow data as well to ensure persistence
 	if (selectedItem.value) {
@@ -1682,6 +1934,112 @@ const updateZaloContent = (content) => {
 
 	// Force preview re-render
 	previewKey.value++
+}
+
+const updateSMSContent = (content) => {
+	console.log('updateSMSContent called with:', content)
+	if (!selectedItem.value || selectedItem.value.type !== 'action') return
+	
+	const actionIndex = selectedItem.value.index
+	const action = flowData.value.actions[actionIndex]
+	
+	if (action) {
+		if (!action.parameters) action.parameters = {}
+		action.parameters.sms_content = content
+		action.parameters.template_id = `SMS_${Date.now()}`
+		
+		// Chỉ update local state, không auto-save
+		console.log('SMS content updated locally')
+		hasUnsavedChanges.value = true
+		
+		// Sync với selectedItemData để đảm bảo consistency
+		if (selectedItemData.value) {
+			if (!selectedItemData.value.parameters) selectedItemData.value.parameters = {}
+			selectedItemData.value.parameters.sms_content = content
+			selectedItemData.value.parameters.template_id = action.parameters.template_id
+		}
+	}
+
+	// Update the flow data as well to ensure persistence
+	if (selectedItem.value) {
+		const { type, index } = selectedItem.value
+		if (type === 'action') {
+			flowData.value.actions[index] = { ...selectedItemData.value }
+		}
+	}
+
+	// Force preview re-render
+	previewKey.value++
+}
+
+// Flow selection functions
+const getFlowFilters = () => {
+	// Exclude current flow to prevent infinite loop
+	return [['name', '!=', flowData.value.name]]
+}
+
+const updateFlowId = (flowId) => {
+	if (selectedItemData.value.parameters) {
+		selectedItemData.value.parameters.flow_id = flowId
+		hasUnsavedChanges.value = true
+		
+		// Sync with main flow data
+		if (selectedItem.value) {
+			const { type, index } = selectedItem.value
+			if (type === 'action') {
+				flowData.value.actions[index] = { ...selectedItemData.value }
+			}
+		}
+	}
+}
+
+// Action data update function
+const updateActionData = (newData) => {
+	if (selectedItemData.value.parameters) {
+		Object.assign(selectedItemData.value.parameters, newData)
+		hasUnsavedChanges.value = true
+		
+		// Sync with main flow data
+		if (selectedItem.value) {
+			const { type, index } = selectedItem.value
+			if (type === 'action') {
+				flowData.value.actions[index] = { ...selectedItemData.value }
+			}
+		}
+	}
+}
+
+// AdditionalActions support functions
+const getAdditionalActionsData = () => {
+	if (!selectedItem.value || selectedItem.value.type !== 'action') return {}
+	
+	const action = flowData.value.actions[selectedItem.value.index]
+	if (!action || !action.parameters) return {}
+	
+	// Return the additional_actions data from parameters
+	return action.parameters.additional_actions || {}
+}
+
+const updateAdditionalActionsData = (newData) => {
+	if (!selectedItem.value || selectedItem.value.type !== 'action') return
+	
+	const actionIndex = selectedItem.value.index
+	const action = flowData.value.actions[actionIndex]
+	
+	if (action) {
+		if (!action.parameters) action.parameters = {}
+		action.parameters.additional_actions = newData
+		
+		// Sync with selectedItemData
+		if (selectedItemData.value.parameters) {
+			selectedItemData.value.parameters.additional_actions = newData
+		}
+		
+		hasUnsavedChanges.value = true
+		
+		// Sync with main flow data
+		flowData.value.actions[actionIndex] = { ...action }
+	}
 }
 
 const updateTriggerContent = (content) => {

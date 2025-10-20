@@ -4,7 +4,7 @@
       <div class="flex items-center">
         <FeatherIcon name="plus-circle" class="h-5 w-5 text-blue-600 mr-2" />
         <h3 class="text-lg font-medium text-gray-900">
-          {{ __("Hành động bổ sung") }}
+          {{ __("Additional Actions") }}
         </h3>
       </div>
       
@@ -17,7 +17,7 @@
         >
           <div class="flex items-center space-x-2">
             <FeatherIcon name="plus" class="h-4 w-4 mr-1" />
-            {{ __("Thêm hành động bổ sung") }}
+            {{ __("Add Additional Action") }}
             <FeatherIcon :name="showDropdown ? 'chevron-up' : 'chevron-down'" class="h-4 w-4 ml-1" />
           </div>
         </Button>
@@ -75,7 +75,7 @@
           >
           <div class="flex items-center space-x-2">
             <FeatherIcon name="settings" class="h-4 w-4 mr-1" />
-            {{ __("Cấu hình") }}
+            {{ __("Configure") }}
           </div>
           </Button>
           <Button
@@ -93,8 +93,8 @@
     <!-- Empty State -->
     <div v-else class="text-center py-8 text-gray-500">
       <FeatherIcon name="zap" class="h-8 w-8 mx-auto mb-2" />
-      <p class="text-sm">{{ __("Chưa có hành động bổ sung nào") }}</p>
-      <p class="text-xs">{{ __("Nhấn 'Thêm hành động bổ sung' để bắt đầu") }}</p>
+      <p class="text-sm">{{ __("No additional actions added") }}</p>
+      <p class="text-xs">{{ __("Click 'Add Additional Action' to get started") }}</p>
     </div>
 
     <!-- Configuration Modal -->
@@ -147,10 +147,10 @@ const showDropdown = ref(false)
 const allActionOptions = computed(() => {
   if (props.interactionType === 'EMAIL') {
     return [
-      { label: __("Hành động khi mở email"), value: "email_open" },
-      { label: __("Khi click vào link"), value: "link_click" },
-      { label: __("Khi hành động thành công"), value: "send_success" },
-      { label: __("Khi hành động thất bại"), value: "send_failed" }
+      { label: __("When email is opened"), value: "email_open" },
+      { label: __("When link is clicked"), value: "link_click" },
+      { label: __("When action is successful"), value: "send_success" },
+      { label: __("When action fails"), value: "send_failed" }
     ]
   }
   return []
@@ -196,20 +196,20 @@ const getActionIconClass = (trigger) => {
 
 const getActionTitle = (trigger) => {
   const titles = {
-    email_open: __("Hành động khi mở email"),
-    link_click: __("Khi click vào link"),
-    send_success: __("Khi hành động thành công"),
-    send_failed: __("Khi hành động thất bại")
+    email_open: __("When email is opened"),
+    link_click: __("When link is clicked"),
+    send_success: __("When action is successful"),
+    send_failed: __("When action fails")
   }
   return titles[trigger] || trigger
 }
 
 const getActionDescription = (trigger) => {
   const descriptions = {
-    email_open: __("Kích hoạt khi khách hàng mở email."),
-    link_click: __("Kích hoạt khi khách click vào link."),
-    send_success: __("Kích hoạt khi hành động thành công."),
-    send_failed: __("Kích hoạt khi hành động thất bại.")
+    email_open: __("Triggered when the email is opened."),
+    link_click: __("Triggered when the link is clicked."),
+    send_success: __("Triggered when the action is successful."),
+    send_failed: __("Triggered when the action fails.")
   }
   return descriptions[trigger] || ''
 }
