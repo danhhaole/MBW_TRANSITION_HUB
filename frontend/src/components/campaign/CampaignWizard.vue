@@ -834,8 +834,15 @@ const campaignData = ref({
   email_subject: "", // For EMAIL method
   email_content: "", // For EMAIL method
   message_content: "", // For ZALO methods
+  image_url: "", // For image attachments
+  attachments: [], // For email attachments
+  action_buttons: [], // For interactive buttons
   success_action: "", // Action when success
   failure_action: "", // Action when failure
+  // Additional actions fields
+  follow_up_actions: [], // Follow-up actions configuration (legacy)
+  automation_rules: [], // Automation rules configuration (legacy)
+  additional_actions: {}, // New format for additional actions
   criteria: "", // JSON string for custom conditions
 });
 
@@ -1479,7 +1486,8 @@ const contentEditorData = computed(() => ({
   image_url: campaignData.value.image_url,
   action_buttons: campaignData.value.action_buttons || [],
   success_action: campaignData.value.success_action,
-  failure_action: campaignData.value.failure_action
+  failure_action: campaignData.value.failure_action,
+  additional_actions: campaignData.value.additional_actions || {}
 }));
 
 const onSocialJobOpeningChange = async () => {
@@ -2523,6 +2531,28 @@ const autoSave = async () => {
 
     isAutoSaving.value = true;
 
+    // Prepare mira_talent_campaign config for step 2 (Content Design)
+    let miraTalentCampaignConfig = null;
+    if (currentStep.value === 2) {
+      miraTalentCampaignConfig = {
+        interaction_method: campaignData.value.interaction_method,
+        content_config: {
+          email_subject: campaignData.value.email_subject,
+          email_content: campaignData.value.email_content,
+          attachments: campaignData.value.attachments || [],
+          message_content: campaignData.value.message_content,
+          image_url: campaignData.value.image_url,
+          action_buttons: campaignData.value.action_buttons || [],
+          success_action: campaignData.value.success_action,
+          failure_action: campaignData.value.failure_action,
+        },
+        additional_actions: campaignData.value.additional_actions || existingConfig?.additional_actions || {},
+        step: currentStep.value,
+        updated_at: new Date().toISOString(),
+        auto_saved: true
+      };
+    }
+
     const updateData = {
       campaign_name: campaignData.value.campaign_name,
       description: campaignData.value.description,
@@ -2539,10 +2569,17 @@ const autoSave = async () => {
       message_content: campaignData.value.message_content,
       success_action: campaignData.value.success_action,
       failure_action: campaignData.value.failure_action,
+      // Save mira_talent_campaign config as JSON for step 2
+      ...(miraTalentCampaignConfig && {
+        mira_talent_campaign: JSON.stringify(miraTalentCampaignConfig)
+      })
     };
     
     await campaignStore.updateCampaignData(campaignId, updateData);
     console.log('✅ Auto-saved successfully');
+    if (miraTalentCampaignConfig) {
+      console.log('📝 Auto-saved mira_talent_campaign config:', miraTalentCampaignConfig);
+    }
     
     // Show success indicator
     lastSaveSuccess.value = true;
@@ -2608,24 +2645,63 @@ const validateCurrentStep = () => {
   return true;
 };
 
-// Save current step data
 const saveCurrentStepData = async () => {
   try {
     const campaignId = draftCampaign.value?.data?.name || editingCampaignData.value?.name;
     
-    if (!campaignId) return;
+    if (!campaignId) {
+      console.warn('⚠️ No campaign ID available for saving');
+      return;
+    }
 
+    console.log('💾 Saving current step data for campaign:', campaignId);
+    
+    // Prepare mira_talent_campaign config - preserve existing data and update for current step
+    let miraTalentCampaignConfig = null;
+    
+    // Try to get existing config first
+    let existingConfig = null;
+    try {
+      if (draftCampaign.value?.data?.mira_talent_campaign) {
+        existingConfig = JSON.parse(draftCampaign.value.data.mira_talent_campaign);
+      } else if (editingCampaignData.value?.mira_talent_campaign) {
+        existingConfig = JSON.parse(editingCampaignData.value.mira_talent_campaign);
+      }
+    } catch (e) {
+      console.warn('Failed to parse existing mira_talent_campaign:', e);
+    }
+    
+    if (currentStep.value === 2) {
+      // For step 2, create/update the config
+      miraTalentCampaignConfig = {
+        ...existingConfig, // Preserve existing data
+        interaction_method: campaignData.value.interaction_method,
+        content_config: {
+          email_subject: campaignData.value.email_subject,
+          email_content: campaignData.value.email_content,
+          attachments: campaignData.value.attachments || [],
+          message_content: campaignData.value.message_content,
+          image_url: campaignData.value.image_url,
+          action_buttons: campaignData.value.action_buttons || [],
+          success_action: campaignData.value.success_action,
+          failure_action: campaignData.value.failure_action,
+        },
+        additional_actions: campaignData.value.additional_actions || existingConfig?.additional_actions || {},
+        step: currentStep.value,
+        updated_at: new Date().toISOString()
+      };
+    } else if (existingConfig) {
+      // For other steps, preserve existing config but don't overwrite
+      miraTalentCampaignConfig = existingConfig;
+    }
+    
     const updateData = {
       campaign_name: campaignData.value.campaign_name,
       description: campaignData.value.description,
-      type: campaignData.value.type,
-      status: campaignData.value.status,
       interaction_method: campaignData.value.interaction_method,
-      start_date: campaignData.value.start_date,
-      end_date: campaignData.value.end_date,
-      target_segment: campaignData.value.target_segment,
-      source_type: campaignData.value.source_type,
-      data_source_id: campaignData.value.data_source_id,
+      start_date: formatDateForDatabase(campaignData.value.start_date),
+      end_date: formatDateForDatabase(campaignData.value.end_date),
+      // Content design fields
       email_subject: campaignData.value.email_subject,
       email_content: campaignData.value.email_content,
       attachments: JSON.stringify(campaignData.value.attachments || []),
@@ -2634,20 +2710,24 @@ const saveCurrentStepData = async () => {
       action_buttons: JSON.stringify(campaignData.value.action_buttons || []),
       success_action: campaignData.value.success_action,
       failure_action: campaignData.value.failure_action,
+      // Save mira_talent_campaign config as JSON
+      ...(miraTalentCampaignConfig && {
+        mira_talent_campaign: JSON.stringify(miraTalentCampaignConfig)
+      })
     };
     
     await campaignStore.updateCampaignData(campaignId, updateData);
     
     // Show success indicator
     lastSaveSuccess.value = true;
-    showSaveSuccess.value = true;
-    
-    // Hide success indicator after 3 seconds
     setTimeout(() => {
-      showSaveSuccess.value = false;
-    }, 3000);
+      lastSaveSuccess.value = false;
+    }, 2000);
     
-    console.log('✅ Step data saved successfully');
+    console.log('✅ Current step data saved successfully');
+    if (miraTalentCampaignConfig) {
+      console.log('📝 Saved mira_talent_campaign config:', miraTalentCampaignConfig);
+    }
   } catch (error) {
     console.error('❌ Error saving step data:', error);
     toast.error(__('Failed to save data. Please try again.'));
@@ -2659,7 +2739,20 @@ const saveCurrentStepData = async () => {
 const handleContentUpdate = (updatedContent) => {
   // Update campaign data with content from editor
   Object.assign(campaignData.value, updatedContent);
+  
+  // Store additional_actions as-is (don't convert to follow_up_actions/automation_rules)
+  if (updatedContent.additional_actions) {
+    campaignData.value.additional_actions = updatedContent.additional_actions;
+  }
+  
   console.log('📝 Content updated:', updatedContent);
+  console.log('📝 Additional actions:', campaignData.value.additional_actions);
+  
+  // Auto-save when content is updated in step 2
+  if (currentStep.value === 2 && draftCampaign.value?.data?.name) {
+    // Debounced auto-save to avoid too many API calls
+    debouncedAutoSave();
+  }
 };
 
 const handleContentSave = async () => {
@@ -2807,6 +2900,10 @@ const closeWizard = () => {
     action_buttons: [],
     success_action: "",
     failure_action: "",
+    // Additional actions fields
+    follow_up_actions: [],
+    automation_rules: [],
+    additional_actions: {},
   };
   selectedSource.value = props.preselectedSegment ? "search" : "";
   selectedDataSourceType.value = "";
@@ -3156,6 +3253,40 @@ watch(show, async (newVal) => {
         }
         campaignData.value.success_action = ec.success_action || "";
         campaignData.value.failure_action = ec.failure_action || "";
+        
+        // Load mira_talent_campaign config if exists
+        if (ec.mira_talent_campaign) {
+          try {
+            const miraTalentConfig = JSON.parse(ec.mira_talent_campaign);
+            console.log('📝 Loading mira_talent_campaign config:', miraTalentConfig);
+            
+            // Restore content config if available
+            if (miraTalentConfig.content_config) {
+              const contentConfig = miraTalentConfig.content_config;
+              campaignData.value.email_subject = contentConfig.email_subject || campaignData.value.email_subject;
+              campaignData.value.email_content = contentConfig.email_content || campaignData.value.email_content;
+              campaignData.value.attachments = contentConfig.attachments || campaignData.value.attachments;
+              campaignData.value.message_content = contentConfig.message_content || campaignData.value.message_content;
+              campaignData.value.image_url = contentConfig.image_url || campaignData.value.image_url;
+              campaignData.value.action_buttons = contentConfig.action_buttons || campaignData.value.action_buttons;
+              campaignData.value.success_action = contentConfig.success_action || campaignData.value.success_action;
+              campaignData.value.failure_action = contentConfig.failure_action || campaignData.value.failure_action;
+            }
+            
+            // Restore additional actions if available
+            if (miraTalentConfig.additional_actions) {
+              campaignData.value.additional_actions = miraTalentConfig.additional_actions;
+              // Also restore legacy fields for backward compatibility
+              campaignData.value.follow_up_actions = miraTalentConfig.additional_actions.follow_up_actions || [];
+              campaignData.value.automation_rules = miraTalentConfig.additional_actions.automation_rules || [];
+            }
+            
+            console.log('✅ Successfully loaded mira_talent_campaign config');
+          } catch (e) {
+            console.warn('Failed to parse mira_talent_campaign:', e);
+          }
+        }
+        
         // Source hints
         if (ec.source_type) {
           campaignData.value.source_type = ec.source_type;
