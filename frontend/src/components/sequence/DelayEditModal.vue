@@ -1,10 +1,10 @@
 <template>
-  <Dialog v-model="showModal" :options="{ title: 'Hẹn giờ', size: 'sm' }">
+  <Dialog v-model="showModal" :options="{ title: __('Delay'), size: 'sm' }">
     <template #body-content>
       <div class="space-y-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            Tin nhắn này sẽ được gửi
+            {{ __('Message will be sent') }}
           </label>
           
           <div class="flex items-center space-x-2">
@@ -13,7 +13,7 @@
               <Select
                 v-model="delayNumber"
                 :options="numberOptions"
-                placeholder="1"
+                :placeholder="__('1')"
               />
             </div>
             
@@ -22,13 +22,13 @@
               <Select
                 v-model="delayUnit"
                 :options="unitOptions"
-                placeholder="Ngày"
+                :placeholder="__('Day')"    
               />
             </div>
           </div>
           
           <p class="text-sm text-gray-500 mt-2">
-            sau khi người dùng nhận tin nhắn ở bước trước.
+            {{ __('after user receive message from previous step') }}
           </p>
         </div>
       </div>
@@ -41,14 +41,14 @@
           theme="gray"
           @click="cancel"
         >
-          Hủy
+            {{ __('Cancel') }}
         </Button>
         <Button
           variant="solid"
-          theme="blue"
+          theme="gray"
           @click="save"
         >
-          Lưu
+          {{ __('Save') }}
         </Button>
       </div>
     </template>
@@ -98,11 +98,11 @@ const numberOptions = computed(() => {
 })
 
 const unitOptions = [
-  { label: 'Phút', value: 'minute' },
-  { label: 'Giờ', value: 'hour' },
-  { label: 'Ngày', value: 'day' },
-  { label: 'Tuần', value: 'week' },
-  { label: 'Tháng', value: 'month' }
+  { label: __('Minute'), value: 'minute' },
+  { label: __('Hour'), value: 'hour' },
+  { label: __('Day'), value: 'day' },
+  { label: __('Week'), value: 'week' },
+  { label: __('Month'), value: 'month' }
 ]
 
 // Parse current delay when modal opens

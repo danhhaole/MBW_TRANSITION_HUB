@@ -16,12 +16,20 @@
         <label class="block text-sm font-medium text-gray-700 mb-2">
           {{ __("Email Subject") }} <span class="text-red-500">*</span>
         </label>
-        <input
+        <!-- <input
           v-model="localContent.email_subject"
           type="text"
           :placeholder="__('Enter email subject line...')"
           :disabled="readonly"
           class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          :class="{ 'bg-gray-100 cursor-not-allowed': readonly }"
+        />   -->
+        <FormControl 
+          v-model="localContent.email_subject"
+          :disabled="readonly"
+          :placeholder="__('Enter email subject line...')"
+          :type="'text'"
+          class="block w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           :class="{ 'bg-gray-100 cursor-not-allowed': readonly }"
         />
         <p class="mt-1 text-xs text-gray-500">
@@ -196,12 +204,15 @@
       </template>
       
       <template #actions>
-        <Button variant="ghost" @click="showTemplateDialog = false">
-          {{ __("Cancel") }}
-        </Button>
-        <Button variant="solid" theme="blue" @click="saveTemplate">
+
+        <div class="flex items-center justify-end gap-2">
+          <Button variant="outline" theme="gray" @click="showTemplateDialog = false">
+            {{ __("Cancel") }}
+          </Button>
+          <Button variant="solid" theme="gray" @click="saveTemplate">
           {{ __("Save Template") }}
         </Button>
+        </div>
       </template>
     </Dialog>
   </div>

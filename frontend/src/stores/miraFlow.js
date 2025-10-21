@@ -157,7 +157,7 @@ export const useMiraFlowStore = defineStore('miraFlow', {
     },
 
     async fetchFlowById(id) {
-      this.loading = true
+      this.loading = truee
       this.error = null
       
       try {

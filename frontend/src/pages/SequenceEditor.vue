@@ -18,13 +18,13 @@
 					<Button variant="outline" theme="gray" @click="goBack">
 						<div class="flex items-center">
 							<FeatherIcon name="arrow-left" class="w-4 h-4 mr-2" />
-							Back to List
+							{{ __('Back to List') }}
 						</div>
 					</Button>
-					<Button variant="solid" theme="blue" @click="saveSequence" :loading="saving">
+					<Button variant="solid" theme="gray" @click="saveSequence" :loading="saving">
 						<div class="flex items-center">
-							<FeatherIcon name="save" class="w-4 h-4 mr-2" />
-							Save Changes
+							<FeatherIcon name="refresh-cw" class="w-4 h-4 mr-2" />
+							{{ __('Sync All Changes') }}
 						</div>
 					</Button>
 				</div>
@@ -39,17 +39,17 @@
 						name="loader"
 						class="w-8 h-8 animate-spin mx-auto mb-4 text-gray-400"
 					/>
-					<p class="text-gray-500">Loading sequence...</p>
+					<p class="text-gray-500">{{ __('Loading sequence...') }}</p>
 				</div>
 			</div>
 
 			<div v-else-if="error" class="text-center py-12">
 				<div class="text-red-500 mb-4">
 					<FeatherIcon name="alert-circle" class="w-12 h-12 mx-auto mb-4" />
-					<h3 class="text-lg font-medium">Error Loading Sequence</h3>
+					<h3 class="text-lg font-medium"> {{__('Error Loading Sequence')}}</h3>
 					<p class="text-sm mt-2">{{ error }}</p>
 				</div>
-				<Button variant="outline" theme="gray" @click="goBack"> Go Back </Button>
+				<Button variant="outline" theme="gray" @click="goBack"> {{__('Go Back')}} </Button>
 			</div>
 
 			<div v-else class="space-y-6">
@@ -72,7 +72,7 @@
                 @click="showSettingsModal = true"
               >
                 <FeatherIcon name="settings" class="w-4 h-4 mr-2" />
-                Settings
+                {{__('Settings')}}
               </Button>
             </div>
           </div>
@@ -92,7 +92,7 @@
 							class="inline-flex items-center space-x-2 bg-white text-black px-4 py-2 rounded-full text-sm font-medium cursor-pointer hover:bg-blue-100 transition-colors"
 						>
 							<FeatherIcon name="play" class="w-4 h-4" />
-							<span>Bắt đầu gửi sau {{ initialDelay || '1 Ngày' }}</span>
+							<span>{{ __('Send after ') }}{{ initialDelay || '1 Ngày' }}</span>
 						</div>
 					</div>
 
@@ -116,9 +116,8 @@
 									class="inline-flex items-center space-x-2 bg-white text-black px-4 py-2 rounded-full text-sm font-medium cursor-pointer hover:bg-orange-100 transition-colors"
 								>
 									<FeatherIcon name="clock" class="w-4 h-4" />
-									<span
-										>Chờ {{ step.delay_from_previous || '1 day' }} rồi tiếp
-										tục</span
+									<span>{{ __('Wait ') }}{{ step.delay_from_previous || '1 day' }}
+										{{ __('then continue') }}</span
 									>
 								</div>
 							</div>
@@ -160,31 +159,31 @@
 											</div>
 										</div>
 
-										<!-- Actions Menu (Show on hover) -->
+										<!-- Actions Menu (Show on hover, hide when editing) -->
 										<div
-											v-if="hoveredStep === index"
-											class="absolute -right-[130px] top-1/2 transform -translate-y-1/2 bg-gray-50 p-2 flex flex-col space-y-1 z-20"
+											v-if="hoveredStep === index && expandedStep !== index"
+											class="absolute -right-[120px] top-1/2 transform -translate-y-1/2 bg-gray-50 p-2 flex flex-col space-y-1 z-20"
 										>
 											<button
 												@click="editStep(index)"
 												class="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
 											>
 												<FeatherIcon name="edit" class="w-4 h-4 mr-2" />
-												Chỉnh sửa
+												{{ __('Edit') }}
 											</button>
 											<button
 												@click="duplicateStep(index)"
 												class="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
 											>
 												<FeatherIcon name="copy" class="w-4 h-4 mr-2" />
-												Nhân bản
+												{{ __('Duplicate') }}
 											</button>
 											<button
 												@click="removeStep(index)"
 												class="flex items-center px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors"
 											>
 												<FeatherIcon name="trash-2" class="w-4 h-4 mr-2" />
-												Xóa
+												{{ __('Delete') }}
 											</button>
 										</div>
 									</div>
@@ -225,21 +224,21 @@
 												<label
 													class="block text-sm font-medium text-gray-700 mb-2"
 												>
-													Template ID
+													{{ __('Template ID') }}
 												</label>
-												<input
+												<FormControl 
 													v-model="step.template_id"
 													type="text"
-													class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-													placeholder="Enter template ID"
+													:placeholder="__('Enter template ID')"
 												/>
+												
 											</div>
 
 											<div>
 												<label
 													class="block text-sm font-medium text-gray-700 mb-2"
 												>
-													Action if Replied
+													{{ __('Action if Replied') }}
 												</label>
 												<Select
 													v-model="step.action_if_replied"
@@ -268,14 +267,14 @@
 										class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end space-x-3"
 									>
 										<Button variant="outline" theme="gray" @click="cancelEdit">
-											Hủy
+											{{ __('Cancel') }}
 										</Button>
 										<Button
 											variant="solid"
-											theme="blue"
+											theme="gray"
 											@click="saveStepContent(index)"
 										>
-											Lưu thay đổi
+											{{ __('Save Changes') }}
 										</Button>
 									</div>
 								</div>
@@ -304,7 +303,7 @@
 							>
 								<div class="flex items-center justify-center">
 									<FeatherIcon name="plus" class="w-5 h-5 mr-2" />
-									Thêm tin nhắn mới
+									{{ __('Add Step') }}
 								</div>
 							</Button>
 						</div>
@@ -447,27 +446,53 @@ const saveSequence = async () => {
 	}
 }
 
-const addStep = () => {
-	const newStep = {
-		step_order: parsedSteps.value.length + 1,
-		delay_from_previous: '0 minutes',
-		channel: 'Email',
-		template_id: '',
-		action_if_replied: 'Continue',
-		related_action: '',
-	}
+const addStep = async () => {
+	try {
+		const newStep = {
+			step_order: parsedSteps.value.length + 1,
+			delay_from_previous: '0 minutes',
+			channel: 'Email',
+			template_id: '',
+			action_if_replied: 'Continue',
+			related_action: '',
+		}
 
-	const currentSteps = [...parsedSteps.value, newStep]
-	sequenceData.value.steps = JSON.stringify(currentSteps)
+		const currentSteps = [...parsedSteps.value, newStep]
+		sequenceData.value.steps = JSON.stringify(currentSteps)
+		
+		// Auto-save to database
+		const result = await sequenceStore.updateSequence(route.params.id, sequenceData.value)
+		if (result.success) {
+			toast.success('Step added successfully!')
+		} else {
+			toast.error(result.error || 'Failed to add step')
+		}
+	} catch (error) {
+		console.error('Error adding step:', error)
+		toast.error('Failed to add step')
+	}
 }
 
-const removeStep = (index) => {
-	const currentSteps = parsedSteps.value.filter((_, i) => i !== index)
-	// Update step orders
-	currentSteps.forEach((step, i) => {
-		step.step_order = i + 1
-	})
-	sequenceData.value.steps = JSON.stringify(currentSteps)
+const removeStep = async (index) => {
+	try {
+		const currentSteps = parsedSteps.value.filter((_, i) => i !== index)
+		// Update step orders
+		currentSteps.forEach((step, i) => {
+			step.step_order = i + 1
+		})
+		sequenceData.value.steps = JSON.stringify(currentSteps)
+		
+		// Auto-save to database
+		const result = await sequenceStore.updateSequence(route.params.id, sequenceData.value)
+		if (result.success) {
+			toast.success('Step removed successfully!')
+		} else {
+			toast.error(result.error || 'Failed to remove step')
+		}
+	} catch (error) {
+		console.error('Error removing step:', error)
+		toast.error('Failed to remove step')
+	}
 }
 
 const moveStepUp = (index) => {
@@ -601,30 +626,54 @@ const updateStepContent = (index, content) => {
 	}
 }
 
-const duplicateStep = (index) => {
-	const currentSteps = [...parsedSteps.value]
-	const stepToDuplicate = { ...currentSteps[index] }
-	stepToDuplicate.step_order = currentSteps.length + 1
+const duplicateStep = async (index) => {
+	try {
+		const currentSteps = [...parsedSteps.value]
+		const stepToDuplicate = { ...currentSteps[index] }
+		stepToDuplicate.step_order = currentSteps.length + 1
 
-	currentSteps.push(stepToDuplicate)
+		currentSteps.push(stepToDuplicate)
 
-	// Update step orders
-	currentSteps.forEach((step, i) => {
-		step.step_order = i + 1
-	})
+		// Update step orders
+		currentSteps.forEach((step, i) => {
+			step.step_order = i + 1
+		})
 
-	sequenceData.value.steps = JSON.stringify(currentSteps)
-	toast.success('Step duplicated successfully')
+		sequenceData.value.steps = JSON.stringify(currentSteps)
+		
+		// Auto-save to database
+		const result = await sequenceStore.updateSequence(route.params.id, sequenceData.value)
+		if (result.success) {
+			toast.success('Step duplicated successfully!')
+		} else {
+			toast.error(result.error || 'Failed to duplicate step')
+		}
+	} catch (error) {
+		console.error('Error duplicating step:', error)
+		toast.error('Failed to duplicate step')
+	}
 }
 
 const cancelEdit = () => {
 	expandedStep.value = -1
 }
 
-const saveStepContent = (index) => {
-	// Content is already saved via updateStepContent
-	expandedStep.value = -1
-	toast.success('Step content saved successfully')
+const saveStepContent = async (index) => {
+	try {
+		// Auto-save to database immediately
+		sequenceData.value.steps = JSON.stringify(parsedSteps.value)
+		const result = await sequenceStore.updateSequence(route.params.id, sequenceData.value)
+		
+		if (result.success) {
+			expandedStep.value = -1
+			toast.success('Step saved successfully!')
+		} else {
+			toast.error(result.error || 'Failed to save step')
+		}
+	} catch (error) {
+		console.error('Error saving step:', error)
+		toast.error('Failed to save step')
+	}
 }
 
 // Additional Actions methods
@@ -633,7 +682,7 @@ const getInteractionType = (channel) => {
 		Email: 'EMAIL',
 		Zalo_OA: 'ZALO_CARE',
 		Zalo_ZNS: 'ZALO_ZNS',
-		SMS: 'ZALO_ZNS', // Use ZNS format for SMS
+		SMS: 'ZALO_ZNS', // SMS uses same format as ZNS
 		Messenger: 'ZALO_CARE', // Use CARE format for Messenger
 		AI_Call: 'ZALO_CARE', // Use CARE format for AI Call
 	}
@@ -644,11 +693,24 @@ const getStepAdditionalActions = (step) => {
 	return step.additional_actions || {}
 }
 
-const updateStepAdditionalActions = (index, actions) => {
-	const currentSteps = [...parsedSteps.value]
-	if (currentSteps[index]) {
-		currentSteps[index].additional_actions = actions
-		sequenceData.value.steps = JSON.stringify(currentSteps)
+const updateStepAdditionalActions = async (index, actions) => {
+	try {
+		const currentSteps = [...parsedSteps.value]
+		if (currentSteps[index]) {
+			currentSteps[index].additional_actions = actions
+			sequenceData.value.steps = JSON.stringify(currentSteps)
+			
+			// Auto-save to database
+			const result = await sequenceStore.updateSequence(route.params.id, sequenceData.value)
+			if (result.success) {
+				toast.success('Additional actions saved!')
+			} else {
+				toast.error(result.error || 'Failed to save additional actions')
+			}
+		}
+	} catch (error) {
+		console.error('Error saving additional actions:', error)
+		toast.error('Failed to save additional actions')
 	}
 }
 

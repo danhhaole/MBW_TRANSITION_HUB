@@ -17,7 +17,8 @@ export const useCampaignList = () => {
     statusFilter,
     typeFilter,
     activeFilter,
-    filteredCampaigns
+    filteredCampaigns,
+    statistics
   } = storeToRefs(campaignStore)
 
   // Load danh sách campaigns với pagination
@@ -79,7 +80,67 @@ export const useCampaignList = () => {
   const setSearchText = debounce((text) => {
     campaignStore.setSearchText(text)
     refreshCampaigns()
-  }, 400)
+  }, 500)
+
+  // Load statistics
+  const loadStatistics = async () => {
+    try {
+      await campaignStore.fetchStatistics()
+    } catch (err) {
+      console.error('Failed to load statistics:', err)
+    }
+  }
+
+  // Smart load campaigns with statistics for initial load
+  const smartLoadCampaigns = async (options = {}) => {
+    try {
+      const result = await campaignStore.getFilteredCampaigns({
+        page: pagination.value.page,
+        limit: pagination.value.limit,
+        searchText: searchText.value,
+        status: statusFilter.value,
+        type: typeFilter.value,
+        isActive: activeFilter.value !== 'all' ? (activeFilter.value === 'active' ? 1 : 0) : undefined,
+        ...options
+      })
+      
+      // Only calculate statistics for initial load (no filters, page 1)
+      const isInitialLoad = (!options.page || options.page === 1) && 
+                           !searchText.value && 
+                           statusFilter.value === 'all' && 
+                           typeFilter.value === 'all' && 
+                           activeFilter.value === 'all'
+      
+      if (result && result.count !== undefined && isInitialLoad) {
+        // Calculate statistics from loaded data for initial load
+        if (result.data) {
+          const statusCounts = { active: 0, draft: 0, paused: 0, archived: 0 }
+          result.data.forEach(campaign => {
+            const displayStatus = campaignStore.getCampaignStatusByDate(
+              campaign.start_date, 
+              campaign.end_date, 
+              campaign.status,
+              campaign.is_active
+            ).toLowerCase()
+            
+            if (statusCounts.hasOwnProperty(displayStatus)) {
+              statusCounts[displayStatus]++
+            }
+          })
+          
+          // Update statistics in store
+          campaignStore.statistics = {
+            total: result.count,
+            ...statusCounts
+          }
+        }
+      }
+      
+      return result
+    } catch (err) {
+      console.error('Failed to load campaigns:', err)
+    }
+  }
 
   return {
     campaigns,
@@ -91,7 +152,10 @@ export const useCampaignList = () => {
     typeFilter,
     activeFilter,
     pagination,
+    statistics,
     loadCampaigns,
+    smartLoadCampaigns,
+    loadStatistics,
     refreshCampaigns,
     goToPage,
     changeItemsPerPage,

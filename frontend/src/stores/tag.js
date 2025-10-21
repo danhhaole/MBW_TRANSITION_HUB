@@ -97,33 +97,64 @@ export const useTagStore = defineStore('tag', {
           params.filters = { ...params.filters, owner: this.filters.owner }
         }
 
-        const [listResult, countResult] = await Promise.all([
-          call('frappe.client.get_list', params),
-          call('frappe.client.get_count', {
-            doctype: 'Mira Tag',
-            filters: params.filters,
-            or_filters: params.or_filters
-          })
-        ])
+        // Try the new combined API first, fallback to old API if it fails
+        let result
+        try {
+          result = await call('mbw_mira.api.doc.get_list_data', params)
+          
+          if (result && result.success && Array.isArray(result.data)) {
+            // Enhance data with display fields
+            this.tags = result.data.map(tag => ({
+              ...tag,
+              formatted_created_at: this.formatDate(tag.creation),
+              formatted_modified: this.formatRelativeDate(tag.modified)
+            }))
 
-        if (listResult && Array.isArray(listResult)) {
-          // Enhance data with display fields
-          this.tags = listResult.map(tag => ({
-            ...tag,
-            formatted_created_at: this.formatDate(tag.creation),
-            formatted_modified: this.formatRelativeDate(tag.modified)
-          }))
+            // Update pagination
+            this.pagination.total = result.count || 0
+            this.pagination.page = options.page || 1
+            this.pagination.limit = options.limit || this.pagination.limit
+            this.pagination.showing_from = this.pagination.total > 0 ? ((this.pagination.page - 1) * this.pagination.limit) + 1 : 0
+            this.pagination.showing_to = Math.min(this.pagination.page * this.pagination.limit, this.pagination.total)
+            this.pagination.has_next = this.pagination.showing_to < this.pagination.total
+            this.pagination.has_prev = this.pagination.page > 1
 
-          // Update pagination
-          this.pagination.total = countResult || 0
-          this.pagination.page = options.page || 1
-          this.pagination.limit = options.limit || this.pagination.limit
-          this.pagination.showing_from = this.pagination.total > 0 ? ((this.pagination.page - 1) * this.pagination.limit) + 1 : 0
-          this.pagination.showing_to = Math.min(this.pagination.page * this.pagination.limit, this.pagination.total)
-          this.pagination.has_next = this.pagination.showing_to < this.pagination.total
-          this.pagination.has_prev = this.pagination.page > 1
+            return { success: true, data: this.tags, count: result.count }
+          } else {
+            throw new Error('New API returned invalid response')
+          }
+        } catch (newApiError) {
+          console.warn('New API failed, falling back to old API:', newApiError.message)
+          
+          // Fallback to old separate API calls
+          const [listResult, countResult] = await Promise.all([
+            call('frappe.client.get_list', params),
+            call('frappe.client.get_count', {
+              doctype: 'Mira Tag',
+              filters: params.filters,
+              or_filters: params.or_filters
+            })
+          ])
 
-          return { success: true, data: this.tags }
+          if (listResult && Array.isArray(listResult)) {
+            // Enhance data with display fields
+            this.tags = listResult.map(tag => ({
+              ...tag,
+              formatted_created_at: this.formatDate(tag.creation),
+              formatted_modified: this.formatRelativeDate(tag.modified)
+            }))
+
+            // Update pagination
+            this.pagination.total = countResult || 0
+            this.pagination.page = options.page || 1
+            this.pagination.limit = options.limit || this.pagination.limit
+            this.pagination.showing_from = this.pagination.total > 0 ? ((this.pagination.page - 1) * this.pagination.limit) + 1 : 0
+            this.pagination.showing_to = Math.min(this.pagination.page * this.pagination.limit, this.pagination.total)
+            this.pagination.has_next = this.pagination.showing_to < this.pagination.total
+            this.pagination.has_prev = this.pagination.page > 1
+
+            return { success: true, data: this.tags, count: countResult }
+          }
         }
 
         return { success: false, message: 'No data received' }
@@ -328,13 +359,32 @@ export const useTagStore = defineStore('tag', {
 
     async fetchStatistics() {
       try {
-        const totalResult = await call('frappe.client.get_count', { doctype: 'Mira Tag' })
+        // Try new API first
+        try {
+          const result = await call('mbw_mira.api.doc.get_list_data', {
+            doctype: 'Mira Tag',
+            fields: ['name'], // Minimal field to reduce data transfer
+            limit_page_length: 1 // We only need the count, not the data
+          })
 
-        this.statistics = {
-          total: totalResult || 0
+          if (result && result.success) {
+            this.statistics = {
+              total: result.count || 0
+            }
+            return this.statistics
+          } else {
+            throw new Error('New API returned invalid response')
+          }
+        } catch (newApiError) {
+          console.warn('New API failed for statistics, falling back to old API:', newApiError.message)
+          
+          // Fallback to old API
+          const totalResult = await call('frappe.client.get_count', { doctype: 'Mira Tag' })
+          this.statistics = {
+            total: totalResult || 0
+          }
+          return this.statistics
         }
-
-        return this.statistics
       } catch (error) {
         console.error('Error fetching statistics:', error)
         return this.statistics

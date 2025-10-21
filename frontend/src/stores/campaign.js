@@ -29,7 +29,15 @@ export const useCampaignStore = defineStore('campaign', {
     users: [],
     talentSegments: [],
     jobOpenings: [],
-    loadingOptions: false
+    loadingOptions: false,
+    // Statistics
+    statistics: {
+      total: 0,
+      active: 0,
+      draft: 0,
+      paused: 0,
+      archived: 0
+    }
   }),
 
   getters: {
@@ -119,47 +127,103 @@ export const useCampaignStore = defineStore('campaign', {
           ]
         }
 
-        const response = await call('frappe.client.get_list', {
-          doctype: "Mira Campaign",
-          fields: ['*'],
-          filters: options.filters,
-          or_filters: options.or_filters,
-          page_length: options.page_length,
-          start: options.start,
-          order_by: 'creation desc'
-        })
-
-        if (response && Array.isArray(response)) {
-          // Add computed fields
-          this.campaigns = response.map(campaign => ({
-            ...campaign,
-            displayStatus: this.getCampaignStatusByDate(
-              campaign.start_date, 
-              campaign.end_date, 
-              campaign.status,
-              campaign.is_active
-            ),
-            formattedStartDate: this.formatCampaignDate(campaign.start_date),
-            formattedEndDate: this.formatCampaignDate(campaign.end_date)
-          }))
+        // Try the new combined API first, fallback to old API if it fails
+        let result
+        try {
+          result = await call('mbw_mira.api.doc.get_list_data', {
+            doctype: "Mira Campaign",
+            fields: ['*'],
+            filters: options.filters,
+            or_filters: options.or_filters,
+            limit_page_length: options.page_length,
+            limit_start: options.start,
+            order_by: 'creation desc'
+          })
           
-          // Update pagination info (frappe-ui doesn't return pagination, so we calculate it)
-          const total = response.length
-          this.pagination = {
-            page,
-            limit,
-            total,
-            pages: Math.ceil(total / limit),
-            has_next: page * limit < total,
-            has_prev: page > 1,
-            showing_from: (page - 1) * limit + 1,
-            showing_to: Math.min(page * limit, total)
+          if (result && result.success && Array.isArray(result.data)) {
+            // Add computed fields
+            this.campaigns = result.data.map(campaign => ({
+              ...campaign,
+              displayStatus: this.getCampaignStatusByDate(
+                campaign.start_date, 
+                campaign.end_date, 
+                campaign.status,
+                campaign.is_active
+              ),
+              formattedStartDate: this.formatCampaignDate(campaign.start_date),
+              formattedEndDate: this.formatCampaignDate(campaign.end_date)
+            }))
+            
+            // Update pagination info with correct total count
+            const total = result.count || 0
+            this.pagination = {
+              page,
+              limit,
+              total,
+              pages: Math.ceil(total / limit),
+              has_next: page * limit < total,
+              has_prev: page > 1,
+              showing_from: total > 0 ? (page - 1) * limit + 1 : 0,
+              showing_to: Math.min(page * limit, total)
+            }
+            
+            return { data: result.data, pagination: this.pagination, count: result.count }
+          } else {
+            throw new Error('New API returned invalid response')
           }
+        } catch (newApiError) {
+          console.warn('New API failed, falling back to old API:', newApiError.message)
           
-          return { data: response, pagination: this.pagination }
-        } else {
-          throw new Error('Không thể tải danh sách chiến dịch')
+          // Fallback to old separate API calls
+          const [response, countResult] = await Promise.all([
+            call('frappe.client.get_list', {
+              doctype: "Mira Campaign",
+              fields: ['*'],
+              filters: options.filters,
+              or_filters: options.or_filters,
+              page_length: options.page_length,
+              start: options.start,
+              order_by: 'creation desc'
+            }),
+            call('frappe.client.get_count', {
+              doctype: "Mira Campaign",
+              filters: options.filters,
+              or_filters: options.or_filters
+            })
+          ])
+
+          if (response && Array.isArray(response)) {
+            // Add computed fields
+            this.campaigns = response.map(campaign => ({
+              ...campaign,
+              displayStatus: this.getCampaignStatusByDate(
+                campaign.start_date, 
+                campaign.end_date, 
+                campaign.status,
+                campaign.is_active
+              ),
+              formattedStartDate: this.formatCampaignDate(campaign.start_date),
+              formattedEndDate: this.formatCampaignDate(campaign.end_date)
+            }))
+            
+            // Update pagination info with correct total count
+            const total = countResult || 0
+            this.pagination = {
+              page,
+              limit,
+              total,
+              pages: Math.ceil(total / limit),
+              has_next: page * limit < total,
+              has_prev: page > 1,
+              showing_from: total > 0 ? (page - 1) * limit + 1 : 0,
+              showing_to: Math.min(page * limit, total)
+            }
+            
+            return { data: response, pagination: this.pagination, count: countResult }
+          }
         }
+
+        return { success: false, message: 'No data received' }
       } catch (error) {
         this.error = error.message || 'Có lỗi xảy ra khi tải campaigns'
         console.error('Failed to get campaigns:', error)
@@ -517,6 +581,71 @@ export const useCampaignStore = defineStore('campaign', {
         throw error
       } finally {
         this.loading = false
+      }
+    },
+
+    // Fetch statistics
+    async fetchStatistics() {
+      try {
+        // Try new API first - get all campaigns to calculate statistics
+        try {
+          const result = await call('mbw_mira.api.doc.get_list_data', {
+            doctype: 'Mira Campaign',
+            fields: ['status', 'is_active'],
+            limit_page_length: 1000
+          })
+
+          if (result && result.success) {
+            // Count by status
+            const statusCounts = { active: 0, draft: 0, paused: 0, archived: 0 }
+            if (result.data && Array.isArray(result.data)) {
+              result.data.forEach(item => {
+                // Use displayStatus logic to get accurate status
+                const displayStatus = this.getCampaignStatusByDate(
+                  item.start_date, 
+                  item.end_date, 
+                  item.status,
+                  item.is_active
+                ).toLowerCase()
+                
+                if (statusCounts.hasOwnProperty(displayStatus)) {
+                  statusCounts[displayStatus]++
+                }
+              })
+            }
+
+            this.statistics = {
+              total: result.count || 0,
+              ...statusCounts
+            }
+            return this.statistics
+          } else {
+            throw new Error('New API returned invalid response')
+          }
+        } catch (newApiError) {
+          console.warn('New API failed for statistics, falling back to old API:', newApiError.message)
+          
+          // Fallback to old separate API calls
+          const [totalResult, activeResult, draftResult, pausedResult, archivedResult] = await Promise.all([
+            call('frappe.client.get_count', { doctype: 'Mira Campaign' }),
+            call('frappe.client.get_count', { doctype: 'Mira Campaign', filters: { status: 'ACTIVE', is_active: 1 } }),
+            call('frappe.client.get_count', { doctype: 'Mira Campaign', filters: { status: 'DRAFT' } }),
+            call('frappe.client.get_count', { doctype: 'Mira Campaign', filters: { status: 'PAUSED' } }),
+            call('frappe.client.get_count', { doctype: 'Mira Campaign', filters: { status: 'ARCHIVED' } })
+          ])
+
+          this.statistics = {
+            total: totalResult || 0,
+            active: activeResult || 0,
+            draft: draftResult || 0,
+            paused: pausedResult || 0,
+            archived: archivedResult || 0
+          }
+          return this.statistics
+        }
+      } catch (error) {
+        console.error('Error fetching statistics:', error)
+        return this.statistics
       }
     },
 

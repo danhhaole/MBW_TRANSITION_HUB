@@ -128,8 +128,10 @@
                 theme="gray"
                 @click="clearAllFilters"
               >
+              <div class="flex items-center">
                 <FeatherIcon name="x" class="w-4 h-4 mr-2" />
-                Clear Filters
+                {{ __('Clear Filters') }}
+              </div>
               </Button>
             </div>
           </div>
@@ -302,6 +304,7 @@ import SequenceViewModal from '@/components/sequence/SequenceViewModal.vue'
 import SequenceCreateModal from '@/components/sequence/SequenceCreateModal.vue'
 import DeleteConfirmModal from '@/components/common/DeleteConfirmModal.vue'
 import LayoutHeader from "@/components/LayoutHeader.vue"
+import { debounce } from 'lodash'
 
 // Composables
 const router = useRouter()
@@ -339,7 +342,39 @@ const hasActiveFilters = computed(() => {
 // Methods
 const loadSequences = async (options = {}) => {
   try {
-    await sequenceStore.fetchSequences(options)
+    const result = await sequenceStore.fetchSequences(options)
+    
+    // Always update statistics from the result data
+    if (result && result.count !== undefined) {
+      // Check if this is a full data load (no filters, page 1)
+      const isFullLoad = (!options.page || options.page === 1) && 
+                        !sequenceStore.filters.search && 
+                        !sequenceStore.filters.status && 
+                        !sequenceStore.filters.owner
+      
+      if (isFullLoad && result.data) {
+        // For full load, calculate accurate statistics from all loaded data
+        const statusCounts = { active: 0, draft: 0, paused: 0, completed: 0 }
+        result.data.forEach(sequence => {
+          const status = sequence.status?.toLowerCase()
+          if (statusCounts.hasOwnProperty(status)) {
+            statusCounts[status]++
+          }
+        })
+        
+        // Update complete statistics
+        sequenceStore.statistics = {
+          total: result.count,
+          ...statusCounts
+        }
+      } else {
+        // For filtered/paginated load, only update total count
+        // Keep existing status breakdown (may not be 100% accurate but avoids extra API call)
+        sequenceStore.statistics.total = result.count
+      }
+    }
+    
+    return result
   } catch (error) {
     console.error('Error loading sequences:', error)
     toast.error('Unable to load sequences list')
@@ -356,10 +391,8 @@ const loadStatistics = async () => {
 
 const refreshData = async () => {
   try {
-    await Promise.all([
-      loadSequences({ page: 1 }),
-      loadStatistics()
-    ])
+    // Only load sequences, which will also calculate and update statistics
+    await loadSequences({ page: 1 })
     toast.success('Refreshed successfully')
   } catch (error) {
     console.error('Error refreshing data:', error)
@@ -464,7 +497,7 @@ const duplicateSequence = async (sequence) => {
     const result = await sequenceStore.duplicateSequence(sequence.name)
     if (result.success) {
       toast.success('Duplicated sequence successfully')
-      await loadSequences()
+      await loadSequences() // This will also update statistics
     } else {
       toast.error(result.error || 'Failed to duplicate sequence')
     }
@@ -479,8 +512,7 @@ const confirmDelete = async () => {
     const result = await sequenceStore.deleteSequence(deletingSequence.value.name)
     if (result.success) {
       toast.success(`Deleted sequence "${deletingSequence.value.title}" successfully`)
-      await loadSequences()
-      await loadStatistics()
+      await loadSequences() // This will also update statistics
     } else {
       toast.error(result.error || 'Failed to delete sequence')
     }
@@ -494,18 +526,20 @@ const confirmDelete = async () => {
 }
 
 const handleCreateSuccess = async (newSequence) => {
-  // Refresh the sequences list and statistics
-  await Promise.all([
-    loadSequences(),
-    loadStatistics()
-  ])
+  // Refresh the sequences list, which will also update statistics
+  await loadSequences()
 }
+
+// Debounced search function
+const debouncedSearch = debounce((searchValue) => {
+  sequenceStore.setSearch(searchValue)
+  loadSequences({ page: 1 })
+}, 500)
 
 // Watchers
 watch(searchText, (newValue) => {
-  sequenceStore.setSearch(newValue)
-  loadSequences({ page: 1 })
-}, { debounce: 300 })
+  debouncedSearch(newValue)
+})
 
 watch(statusFilter, (newValue) => {
   sequenceStore.setStatusFilter(newValue)
@@ -514,9 +548,7 @@ watch(statusFilter, (newValue) => {
 
 // Lifecycle
 onMounted(async () => {
-  await Promise.all([
-    loadSequences(),
-    loadStatistics()
-  ])
+  // Only load sequences, which will also calculate and update statistics
+  await loadSequences()
 })
 </script>

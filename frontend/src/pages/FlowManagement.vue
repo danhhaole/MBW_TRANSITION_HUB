@@ -273,28 +273,55 @@ const dropdownActions = computed(() => [
 const handleSearch = debounce((event) => {
   const value = event?.target?.value || searchText.value
   flowStore.setSearch(value)
-  loadFlows()
-}, 300)
+  loadFlows({ page: 1 })
+}, 500)
 
 const handleClearSearch = () => {
   searchText.value = ''
   flowStore.setSearch('')
-  loadFlows()
+  loadFlows({ page: 1 })
 }
 
 const handleStatusFilter = (value) => {
   console.log('Status filter changed:', value)
   flowStore.setStatusFilter(value)
-  loadFlows()
+  loadFlows({ page: 1 })
 }
 
 const handleRefresh = () => {
-  loadFlows()
+  loadFlows({ page: 1 })
 }
 
-const loadFlows = async () => {
+const loadFlows = async (options = {}) => {
   try {
-    await flowStore.fetchFlows()
+    const result = await flowStore.fetchFlows(options)
+    
+    // Smart statistics calculation - only for initial load without filters
+    const isInitialLoad = (!options.page || options.page === 1) && 
+                         !flowStore.filters.search && 
+                         !flowStore.filters.status && 
+                         !flowStore.filters.owner
+    
+    if (result && result.count !== undefined && isInitialLoad) {
+      // Calculate statistics from loaded data for initial load
+      if (result.data) {
+        const statusCounts = { active: 0, draft: 0, paused: 0, archived: 0 }
+        result.data.forEach(flow => {
+          const status = flow.status?.toLowerCase()
+          if (statusCounts.hasOwnProperty(status)) {
+            statusCounts[status]++
+          }
+        })
+        
+        // Update statistics in store
+        flowStore.statistics = {
+          total: result.count,
+          ...statusCounts
+        }
+      }
+    }
+    
+    return result
   } catch (error) {
     console.error('Error loading flows:', error)
     toast.showLoadError('flows', error)
@@ -369,7 +396,7 @@ const handlePublishFlow = async (flow) => {
     const result = await flowStore.updateFlow(flow.name, { status: 'Active' })
     if (result.success) {
       toast.success('Flow đã được xuất bản thành công')
-      await loadFlows() // Reload to show updated status
+      await loadFlows({ page: 1 }) // Reload to show updated status
     } else {
       toast.error(result.error || 'Có lỗi xảy ra khi xuất bản flow')
     }
@@ -388,7 +415,7 @@ const handleDuplicateFlow = async (flow) => {
     const result = await flowStore.duplicateFlow(flow.name)
     if (result.success) {
       toast.success('Flow đã được nhân bản thành công')
-      await loadFlows() // Reload to show the new flow
+      await loadFlows({ page: 1 }) // Reload to show the new flow
     } else {
       toast.error(result.error || 'Có lỗi xảy ra khi nhân bản flow')
     }
@@ -417,7 +444,7 @@ const handleDeleteFlow = async (flow) => {
 
 const handleFlowSuccess = (flow) => {
   toast.success(selectedFlow.value ? 'Flow đã được cập nhật thành công' : 'Flow đã được tạo thành công')
-  loadFlows() // Reload the list
+  loadFlows({ page: 1 }) // Reload the list
 }
 
 // Watchers
@@ -428,7 +455,7 @@ watch(searchText, (newValue) => {
 watch(statusFilter, (newValue) => {
   console.log('Status filter watcher:', newValue)
   flowStore.setStatusFilter(newValue)
-  loadFlows()
+  loadFlows({ page: 1 })
 })
 
 // Lifecycle

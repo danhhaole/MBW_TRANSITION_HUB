@@ -152,6 +152,19 @@ const allActionOptions = computed(() => {
       { label: __("When action is successful"), value: "send_success" },
       { label: __("When action fails"), value: "send_failed" }
     ]
+  } else if (props.interactionType === 'ZALO_ZNS') {
+    // For SMS and Zalo ZNS
+    return [
+      { label: __("When message is sent successfully"), value: "send_success" },
+      { label: __("When message fails to send"), value: "send_failed" }
+    ]
+  } else if (props.interactionType === 'ZALO_CARE') {
+    // For Zalo OA, Messenger, AI Call
+    return [
+      { label: __("When message is sent successfully"), value: "send_success" },
+      { label: __("When message fails to send"), value: "send_failed" },
+      { label: __("When user responds"), value: "user_response" }
+    ]
   }
   return []
 })
@@ -179,7 +192,8 @@ const getActionIcon = (trigger) => {
     email_open: 'mail-open',
     link_click: 'link',
     send_success: 'check-circle',
-    send_failed: 'x-circle'
+    send_failed: 'x-circle',
+    user_response: 'message-circle'
   }
   return icons[trigger] || 'settings'
 }
@@ -189,7 +203,8 @@ const getActionIconClass = (trigger) => {
     email_open: 'bg-blue-100 text-blue-600',
     link_click: 'bg-green-100 text-green-600',
     send_success: 'bg-emerald-100 text-emerald-600',
-    send_failed: 'bg-red-100 text-red-600'
+    send_failed: 'bg-red-100 text-red-600',
+    user_response: 'bg-purple-100 text-purple-600'
   }
   return classes[trigger] || 'bg-gray-100 text-gray-600'
 }
@@ -199,7 +214,8 @@ const getActionTitle = (trigger) => {
     email_open: __("When email is opened"),
     link_click: __("When link is clicked"),
     send_success: __("When action is successful"),
-    send_failed: __("When action fails")
+    send_failed: __("When action fails"),
+    user_response: __("When user responds")
   }
   return titles[trigger] || trigger
 }
@@ -209,7 +225,8 @@ const getActionDescription = (trigger) => {
     email_open: __("Triggered when the email is opened."),
     link_click: __("Triggered when the link is clicked."),
     send_success: __("Triggered when the action is successful."),
-    send_failed: __("Triggered when the action fails.")
+    send_failed: __("Triggered when the action fails."),
+    user_response: __("Triggered when the user responds to the message.")
   }
   return descriptions[trigger] || ''
 }

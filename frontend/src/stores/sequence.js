@@ -112,36 +112,70 @@ export const useSequenceStore = defineStore('sequence', {
           params.filters = { ...params.filters, owner_id: this.filters.owner }
         }
 
-        const [listResult, countResult] = await Promise.all([
-          call('frappe.client.get_list', params),
-          call('frappe.client.get_count', {
-            doctype: 'Mira Sequence',
-            filters: params.filters,
-            or_filters: params.or_filters
-          })
-        ])
+        // Try the new combined API first, fallback to old API if it fails
+        let result
+        try {
+          result = await call('mbw_mira.api.doc.get_list_data', params)
+          
+          if (result && result.success && Array.isArray(result.data)) {
+            // Enhance data with display fields
+            this.sequences = result.data.map(sequence => ({
+              ...sequence,
+              display_status: this.getStatusDisplay(sequence.status),
+              status_color: this.getStatusColor(sequence.status),
+              steps_count: this.getStepsCount(sequence.steps),
+              formatted_created_at: this.formatDate(sequence.created_at || sequence.creation),
+              formatted_modified: this.formatRelativeDate(sequence.modified)
+            }))
 
-        if (listResult && Array.isArray(listResult)) {
-          // Enhance data with display fields
-          this.sequences = listResult.map(sequence => ({
-            ...sequence,
-            display_status: this.getStatusDisplay(sequence.status),
-            status_color: this.getStatusColor(sequence.status),
-            steps_count: this.getStepsCount(sequence.steps),
-            formatted_created_at: this.formatDate(sequence.created_at || sequence.creation),
-            formatted_modified: this.formatRelativeDate(sequence.modified)
-          }))
+            // Update pagination
+            this.pagination.total = result.count || 0
+            this.pagination.page = options.page || 1
+            this.pagination.limit = options.limit || this.pagination.limit
+            this.pagination.showing_from = this.pagination.total > 0 ? ((this.pagination.page - 1) * this.pagination.limit) + 1 : 0
+            this.pagination.showing_to = Math.min(this.pagination.page * this.pagination.limit, this.pagination.total)
+            this.pagination.has_next = this.pagination.showing_to < this.pagination.total
+            this.pagination.has_prev = this.pagination.page > 1
 
-          // Update pagination
-          this.pagination.total = countResult || 0
-          this.pagination.page = options.page || 1
-          this.pagination.limit = options.limit || this.pagination.limit
-          this.pagination.showing_from = this.pagination.total > 0 ? ((this.pagination.page - 1) * this.pagination.limit) + 1 : 0
-          this.pagination.showing_to = Math.min(this.pagination.page * this.pagination.limit, this.pagination.total)
-          this.pagination.has_next = this.pagination.showing_to < this.pagination.total
-          this.pagination.has_prev = this.pagination.page > 1
+            return { success: true, data: this.sequences, count: result.count }
+          } else {
+            throw new Error('New API returned invalid response')
+          }
+        } catch (newApiError) {
+          console.warn('New API failed, falling back to old API:', newApiError.message)
+          
+          // Fallback to old separate API calls
+          const [listResult, countResult] = await Promise.all([
+            call('frappe.client.get_list', params),
+            call('frappe.client.get_count', {
+              doctype: 'Mira Sequence',
+              filters: params.filters,
+              or_filters: params.or_filters
+            })
+          ])
 
-          return { success: true, data: this.sequences }
+          if (listResult && Array.isArray(listResult)) {
+            // Enhance data with display fields
+            this.sequences = listResult.map(sequence => ({
+              ...sequence,
+              display_status: this.getStatusDisplay(sequence.status),
+              status_color: this.getStatusColor(sequence.status),
+              steps_count: this.getStepsCount(sequence.steps),
+              formatted_created_at: this.formatDate(sequence.created_at || sequence.creation),
+              formatted_modified: this.formatRelativeDate(sequence.modified)
+            }))
+
+            // Update pagination
+            this.pagination.total = countResult || 0
+            this.pagination.page = options.page || 1
+            this.pagination.limit = options.limit || this.pagination.limit
+            this.pagination.showing_from = this.pagination.total > 0 ? ((this.pagination.page - 1) * this.pagination.limit) + 1 : 0
+            this.pagination.showing_to = Math.min(this.pagination.page * this.pagination.limit, this.pagination.total)
+            this.pagination.has_next = this.pagination.showing_to < this.pagination.total
+            this.pagination.has_prev = this.pagination.page > 1
+
+            return { success: true, data: this.sequences, count: countResult }
+          }
         }
 
         return { success: false, message: 'No data received' }
@@ -357,31 +391,40 @@ export const useSequenceStore = defineStore('sequence', {
 
     async fetchStatistics() {
       try {
-        const [totalResult, statusResults] = await Promise.all([
-          call('frappe.client.get_count', { doctype: 'Mira Sequence' }),
-          call('frappe.client.get_list', {
-            doctype: 'Mira Sequence',
-            fields: ['status'],
-            limit_page_length: 1000
-          })
-        ])
-
-        // Count by status
-        const statusCounts = { active: 0, draft: 0, paused: 0, completed: 0 }
-        if (statusResults && Array.isArray(statusResults)) {
-          statusResults.forEach(item => {
-            const status = item.status?.toLowerCase()
+        // Use the main fetchSequences method to get all data for statistics
+        // This ensures we use the same API and get accurate statistics
+        const currentFilters = { ...this.filters }
+        const currentPagination = { ...this.pagination }
+        
+        // Temporarily clear filters and get all data for accurate statistics
+        this.filters = { search: '', status: '', owner: '' }
+        
+        const result = await this.fetchSequences({
+          page: 1,
+          limit: 1000, // Get more data for accurate statistics
+          order_by: 'modified desc'
+        })
+        
+        // Restore original filters and pagination
+        this.filters = currentFilters
+        this.pagination = currentPagination
+        
+        if (result && result.success && result.data) {
+          // Calculate statistics from the full dataset
+          const statusCounts = { active: 0, draft: 0, paused: 0, completed: 0 }
+          result.data.forEach(sequence => {
+            const status = sequence.status?.toLowerCase()
             if (statusCounts.hasOwnProperty(status)) {
               statusCounts[status]++
             }
           })
+          
+          this.statistics = {
+            total: result.count || 0,
+            ...statusCounts
+          }
         }
-
-        this.statistics = {
-          total: totalResult || 0,
-          ...statusCounts
-        }
-
+        
         return this.statistics
       } catch (error) {
         console.error('Error fetching statistics:', error)

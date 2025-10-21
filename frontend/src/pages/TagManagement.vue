@@ -97,8 +97,10 @@
                 theme="gray"
                 @click="clearAllFilters"
               >
+              <div class="flex items-center">
                 <FeatherIcon name="x" class="w-4 h-4 mr-2" />
                 {{ __('Clear Filters') }}
+              </div>
               </Button>
             </div>
           </div>
@@ -284,6 +286,7 @@ import TagFormModal from '@/components/tag/TagFormModal.vue'
 import TagViewModal from '@/components/tag/TagViewModal.vue'
 import DeleteConfirmModal from '@/components/common/DeleteConfirmModal.vue'
 import LayoutHeader from "@/components/LayoutHeader.vue";
+import { debounce } from 'lodash'
 
 // Composables
 const router = useRouter()
@@ -314,7 +317,12 @@ const hasActiveFilters = computed(() => {
 // Methods
 const loadTags = async (options = {}) => {
   try {
-    await tagStore.fetchTags(options)
+    const result = await tagStore.fetchTags(options)
+    // Update statistics from the fetchTags result to avoid duplicate API call
+    if (result && result.count !== undefined) {
+      tagStore.statistics.total = result.count
+    }
+    return result
   } catch (error) {
     console.error('Error loading tags:', error)
     toast.error('Không thể tải danh sách tags')
@@ -331,10 +339,8 @@ const loadStatistics = async () => {
 
 const refreshData = async () => {
   try {
-    await Promise.all([
-      loadTags({ page: 1 }),
-      loadStatistics()
-    ])
+    // Only call loadTags, which will also update statistics
+    await loadTags({ page: 1 })
     toast.success(__('Refreshed successfully'))
   } catch (error) {
     console.error('Error refreshing data:', error)
@@ -440,7 +446,6 @@ const confirmDelete = async () => {
     if (result.success) {
       toast.success(`Đã xóa tag "${deletingTag.value.title}" thành công`)
       await loadTags()
-      await loadStatistics()
     } else {
       toast.error(result.error || __('Failed to delete tag'))
     }
@@ -518,21 +523,23 @@ const handleFormSuccess = async (message) => {
   toast.success(message)
   closeModals()
   await loadTags()
-  await loadStatistics()
 }
+
+// Debounced search function
+const debouncedSearch = debounce((searchValue) => {
+  tagStore.setSearch(searchValue)
+  loadTags({ page: 1 })
+}, 500)
 
 // Watchers
 watch(searchText, (newValue) => {
-  tagStore.setSearch(newValue)
-  loadTags({ page: 1 })
-}, { debounce: 300 })
+  debouncedSearch(newValue)
+})
 
 
 // Lifecycle
 onMounted(async () => {
-  await Promise.all([
-    loadTags(),
-    loadStatistics()
-  ])
+  // Only call loadTags, which will also update statistics
+  await loadTags()
 })
 </script>

@@ -10,7 +10,7 @@
 							<FeatherIcon name="arrow-left" class="h-4 w-4" />
 						</template>
 					</Button>
-					<span class="text-gray-400">/</span>
+					
 
 					<!-- Editable Title -->
 					<div class="flex items-center space-x-2">
@@ -62,18 +62,7 @@
 
 				<!-- Right: Actions -->
 				<div class="flex items-center space-x-3">
-					<Button variant="outline" size="sm">
-						<template #prefix>
-							<FeatherIcon name="eye" class="h-4 w-4" />
-						</template>
-						Danh sách
-					</Button>
-					<Button variant="outline" size="sm">
-						<template #prefix>
-							<FeatherIcon name="edit" class="h-4 w-4" />
-						</template>
-						Biểu đồ
-					</Button>
+					
 					<Button 
 						:variant="hasUnsavedChanges ? 'solid' : 'outline'" 
 						size="sm" 
@@ -84,7 +73,7 @@
 						<template #prefix>
 							<FeatherIcon name="save" class="h-4 w-4" />
 						</template>
-						{{ hasUnsavedChanges ? 'Lưu*' : 'Lưu' }}
+						{{ hasUnsavedChanges ? 'Save*' : 'Save' }}
 					</Button>
 					<Button variant="solid" theme="green" size="sm">{{ __('Publish') }} </Button>
 				</div>
@@ -119,7 +108,7 @@
 							<div
 								v-for="(trigger, index) in flowData.triggers"
 								:key="`trigger-${index}`"
-								class="p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+								class="group relative p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
 								:class="{
 									'border-blue-500 bg-blue-50':
 										selectedItem?.type === 'trigger' &&
@@ -127,13 +116,22 @@
 								}"
 								@click="selectItem('trigger', index)"
 							>
+								<!-- Delete button - appears on hover -->
+								<button
+									@click.stop="deleteTrigger(index)"
+									class="absolute -top-1 -right-2 w-6 h-6 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600 flex items-center justify-center"
+									:title="__('Delete Trigger')"
+								>
+									<FeatherIcon name="trash-2" class="h-3 w-3" />
+								</button>
+								
 								<div class="flex items-start space-x-3">
 									<div
 										class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center"
 									>
 										<FeatherIcon name="zap" class="h-4 w-4 text-blue-600" />
 									</div>
-									<div class="flex-1 min-w-0">
+									<div class="flex-1 min-w-0 pr-8">
 										<h4 class="text-sm font-medium text-gray-900 truncate">
 											{{
 												trigger._ui_name ||
@@ -177,7 +175,7 @@
 							<div
 								v-for="(action, index) in flowData.actions"
 								:key="`action-${index}`"
-								class="p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+								class="group relative p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
 								:class="{
 									'border-blue-500 bg-blue-50':
 										selectedItem?.type === 'action' &&
@@ -185,13 +183,22 @@
 								}"
 								@click="selectItem('action', index)"
 							>
+								<!-- Delete button - appears on hover -->
+								<button
+									@click.stop="deleteAction(index)"
+									class="absolute -top-1 -right-2 w-6 h-6 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600 flex items-center justify-center"
+									:title="__('Delete Action')"
+								>
+									<FeatherIcon name="trash-2" class="h-3 w-3" />
+								</button>
+								
 								<div class="flex items-start space-x-3">
 									<div
 										class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center"
 									>
 										<FeatherIcon name="play" class="h-4 w-4 text-purple-600" />
 									</div>
-									<div class="flex-1 min-w-0">
+									<div class="flex-1 min-w-0 pr-8">
 										<h4 class="text-sm font-medium text-gray-900 truncate">
 											{{
 												action._ui_name ||
@@ -245,7 +252,7 @@
 					<div v-if="selectedItem" class="space-y-6">
 						<!-- Content Editors for Send_Message Actions -->
 						<div v-if="selectedItem.type === 'action' && isEmailAction()">
-							<h4 class="text-md font-medium text-gray-900 mb-4">Cấu hình Email</h4>
+							<h4 class="text-md font-medium text-gray-900 mb-4">{{ __('Email Configuration') }}</h4>
 							<EmailEditor
 								:content="getEmailContent()"
 								@update:content="updateEmailContent"
@@ -263,7 +270,7 @@
 						</div>
 
 						<div v-else-if="selectedItem.type === 'action' && isZaloAction()">
-							<h4 class="text-md font-medium text-gray-900 mb-4">Cấu hình Zalo</h4>
+							<h4 class="text-md font-medium text-gray-900 mb-4">{{ __('Zalo Configuration') }}</h4>
 							<ZaloEditor
 								:content="getZaloContent()"
 								@update:content="updateZaloContent"
@@ -282,11 +289,12 @@
 
 						<!-- SMS Action -->
 						<div v-else-if="selectedItem.type === 'action' && isSMSAction()">
-							<h4 class="text-md font-medium text-gray-900 mb-4">Cấu hình SMS</h4>
+							<h4 class="text-md font-medium text-gray-900 mb-4">{{ __('SMS Configuration') }}</h4>
 							<ZaloEditor
 								:content="getSMSContent()"
 								@update:content="updateSMSContent"
 								:readonly="false"
+								:available-flows="flows"
 							/>
 							
 							<!-- Additional Actions for SMS -->
@@ -301,12 +309,81 @@
 
 						<!-- Add Tag Action -->
 						<div v-else-if="selectedItem.type === 'action' && isAddTagAction()">
-							<h4 class="text-md font-medium text-gray-900 mb-4">Thêm Tag</h4>
-							<ActionConfig
-								action-type="add_tag"
-								:action-data="selectedItemData.parameters"
-								@update:action-data="updateActionData"
-							/>
+							<h4 class="text-md font-medium text-gray-900 mb-4">	{{ __('Add Tag') }}</h4>
+							<div class="space-y-4">
+								<!-- Select existing tags -->
+								<div>
+									<label class="block text-sm font-medium text-gray-700 mb-2">
+										{{ __('Select existing tags') }}
+									</label>
+									
+									<!-- Selected tags display -->
+									<div v-if="selectedTagsDisplay?.length > 0" class="mb-3">
+										<div class="flex flex-wrap gap-2">
+											<div
+												v-for="tag in selectedTagsDisplay"
+												:key="tag.value"
+												class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800 border border-blue-200"
+											>
+												<span>{{ tag.label }}</span>
+												<button
+													@click="removeSelectedTag(tag.value)"
+													class="ml-2 text-blue-600 hover:text-blue-800 focus:outline-none"
+												>
+													<FeatherIcon name="x" class="h-3 w-3" />
+												</button>
+											</div>
+										</div>
+									</div>
+									
+									<!-- Tag selector -->
+									<FormControl
+										type="select"
+										v-model="selectedTagToAdd"
+										:options="availableTagOptions"
+										:placeholder="__('Select existing tags')"
+										:loading="tagsLoading"
+										@change="addSelectedTag"
+									/>
+								</div>
+								
+								<!-- Or create new tag -->
+								<div class="text-center text-sm text-gray-500">
+									{{ __('Or') }}
+								</div>
+								
+								<div>
+									<label class="block text-sm font-medium text-gray-700 mb-2">
+										{{ __('Create new tag') }}
+									</label>
+									<div class="flex space-x-2">
+										<FormControl
+											v-model="newTagName"
+											type="text"
+											:placeholder="__('New tag name (VD: Webinar MBWN DMS 2110)')"
+											class="flex-1"
+										/>
+										<Button 
+											variant="outline" 
+											size="sm"
+											:loading="creatingTag"
+											@click="createNewTag"
+										>
+											<template #prefix>
+												<FeatherIcon name="plus" class="h-4 w-4" />
+											</template>
+											{{ __('Add') }}
+										</Button>
+									</div>
+								</div>
+								
+								<p class="text-xs text-gray-500">
+									{{ __('Tag will be added to the folder and assigned to the candidate') }}
+								</p>
+								<p v-if="selectedTagsDisplay.length === 0 && !newTagName.trim()" class="text-red-500 text-xs">
+									{{ __('Please select an existing tag or create a new tag') }}
+								</p>
+							</div>
 						</div>
 
 						<!-- Remove Tag Action -->
@@ -321,16 +398,16 @@
 
 						<!-- Smart Delay Action -->
 						<div v-else-if="selectedItem.type === 'action' && isSmartDelayAction()">
-							<h4 class="text-md font-medium text-gray-900 mb-4">Delay Thông Minh</h4>
+							<h4 class="text-md font-medium text-gray-900 mb-4">{{ __('Smart Delay') }}</h4>
 							<div class="space-y-4">
 								<div>
 									<label class="block text-sm font-medium text-gray-700 mb-2">
-										Thời gian chờ
+										{{ __('Duration') }}
 									</label>
 									<FormControl
 										v-model="selectedItemData.parameters.duration"
 										type="text"
-										placeholder="VD: 1 day, 2 hours, 30 minutes..."
+										:placeholder="__('VD: 1 day, 2 hours, 30 minutes...')"
 										@input="hasUnsavedChanges = true"
 									/>
 								</div>
@@ -339,27 +416,27 @@
 
 						<!-- Add Custom Field Action -->
 						<div v-else-if="selectedItem.type === 'action' && isAddCustomFieldAction()">
-							<h4 class="text-md font-medium text-gray-900 mb-4">Thêm Trường Tùy Chỉnh</h4>
+							<h4 class="text-md font-medium text-gray-900 mb-4">{{ __('Add Custom Field') }}</h4>
 							<div class="space-y-4">
 								<div>
 									<label class="block text-sm font-medium text-gray-700 mb-2">
-										Tên trường
+										{{ __('Field Name') }}
 									</label>
 									<FormControl
 										v-model="selectedItemData.parameters.field_name"
 										type="text"
-										placeholder="Nhập tên trường..."
+										:placeholder="__('Enter field name')"
 										@input="hasUnsavedChanges = true"
 									/>
 								</div>
 								<div>
 									<label class="block text-sm font-medium text-gray-700 mb-2">
-										Giá trị
+										{{ __('Value') }}
 									</label>
 									<FormControl
 										v-model="selectedItemData.parameters.field_value"
 										type="text"
-										placeholder="Nhập giá trị..."
+										:placeholder="__('Enter value')"
 										@input="hasUnsavedChanges = true"
 									/>
 								</div>
@@ -368,19 +445,30 @@
 
 						<!-- Start Flow Action -->
 						<div v-else-if="selectedItem.type === 'action' && isStartFlowAction()">
-							<h4 class="text-md font-medium text-gray-900 mb-4">Bắt Đầu Flow</h4>
+							<h4 class="text-md font-medium text-gray-900 mb-4">{{ __('Start Flow') }}</h4>
 							<div class="space-y-4">
+								<!-- Flow Selection -->
 								<div>
-									<Link
-										doctype="Mira Flow"
-										:filters="getFlowFilters()"
-										:model-value="selectedItemData.parameters.flow_id"
-										@update:model-value="updateFlowId"
-										label="Chọn Flow"
-										placeholder="Tìm kiếm flow..."
+									<label class="block text-sm font-medium text-gray-700 mb-2">
+										{{ __('Flow') }}
+									</label>
+									
+									<!-- Debug info -->
+									<!-- <div class="mb-2 p-2 bg-gray-100 rounded text-xs">
+										<div>Current flow_id: {{ selectedItemData.parameters?.flow_id }}</div>
+										<div>Available options: {{ availableFlowOptions.length }}</div>
+										<div>Loading: {{ flowsLoading }}</div>
+									</div> -->
+									
+									<FormControl
+										type="select"
+										v-model="selectedItemData.parameters.flow_id"
+										:options="availableFlowOptions"
+										:placeholder="__('Select flow to start')"
+										:loading="flowsLoading"
 									/>
 									<p class="text-xs text-gray-500 mt-1">
-										Chọn flow khác để bắt đầu (không thể chọn flow hiện tại)
+										{{ __('Select a different flow to start (cannot select the current flow)') }}
 									</p>
 								</div>
 							</div>
@@ -388,16 +476,16 @@
 
 						<!-- Subscribe to Sequence Action -->
 						<div v-else-if="selectedItem.type === 'action' && isSubscribeSequenceAction()">
-							<h4 class="text-md font-medium text-gray-900 mb-4">Đăng Ký Sequence</h4>
+							<h4 class="text-md font-medium text-gray-900 mb-4">{{ __('Subscribe to Sequence') }}</h4>
 							<div class="space-y-4">
 								<div>
 									<label class="block text-sm font-medium text-gray-700 mb-2">
-										Sequence ID
+										{{ __('Sequence ID') }}
 									</label>
 									<FormControl
 										v-model="selectedItemData.parameters.sequence_id"
 										type="text"
-										placeholder="Nhập ID của sequence..."
+										:placeholder="__('Enter sequence ID')"
 										@input="hasUnsavedChanges = true"
 									/>
 								</div>
@@ -407,12 +495,12 @@
 						<!-- Generic Parameters for other actions -->
 						<div v-else-if="selectedItem.type === 'action'" class="space-y-4">
 							<div>
-								<h4 class="text-md font-medium text-gray-900 mb-4">Tham số</h4>
+								<h4 class="text-md font-medium text-gray-900 mb-4">{{ __('Parameters') }}</h4>
 
 								<!-- Generic parameters display -->
 								<div class="bg-gray-50 p-4 rounded-lg">
-									<p class="text-sm text-gray-600 mb-2">Action Type: {{ selectedItemData.action_type }}</p>
-									<p class="text-sm text-gray-500">Chưa có UI cấu hình cho action type này.</p>
+									<p class="text-sm text-gray-600 mb-2">{{ __('Action Type') }}: {{ selectedItemData.action_type }}</p>
+									<p class="text-sm text-gray-500">{{ __('No UI configuration available for this action type.') }}</p>
 								</div>
 							</div>
 						</div>
@@ -550,24 +638,24 @@
 												class="h-4 w-4 text-blue-600"
 											/>
 											<span class="text-xs font-medium text-gray-900"
-												>Email Preview</span
+												>{{ __('Email Preview') }}</span
 											>
 										</div>
 										<div class="text-xs text-gray-500">
-											<div>From: your-company@example.com</div>
-											<div>To: customer@example.com</div>
+											<div>{{ __('From') }}: {{ emailContent.from_email }}</div>
+											<div>{{ __('To') }}: {{ emailContent.to_email }}</div>
 										</div>
 									</div>
 
 									<!-- Email Subject -->
 									<div class="bg-gray-50 p-3 rounded-lg">
 										<div class="text-xs font-medium text-gray-700 mb-1">
-											Subject:
+											{{ __('Subject') }}
 										</div>
 										<div class="text-sm text-gray-900">
 											{{
 												emailContent.email_subject ||
-												'Chưa có tiêu đề email'
+												__('No subject')
 											}}
 										</div>
 									</div>
@@ -755,6 +843,124 @@
 									</div>
 								</div>
 
+								<!-- SMS Preview -->
+								<div
+									v-else-if="
+										selectedItem &&
+										selectedItem.type === 'action' &&
+										isSMSAction()
+									"
+									:key="`sms-${previewKey}`"
+									class="space-y-4"
+								>
+									<!-- SMS Header -->
+									<div class="flex items-center space-x-3 mb-4">
+										<div
+											class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center"
+										>
+											<FeatherIcon name="message-square" class="h-4 w-4 text-white" />
+										</div>
+										<div>
+											<div class="text-xs font-medium text-gray-900">
+												{{ __('SMS message') }}
+											</div>
+											<p class="text-xs text-gray-500">
+												{{ __('Today at 10:46 AM') }}
+											</p>
+										</div>
+									</div>
+
+									<!-- SMS Message Bubbles -->
+									<div class="space-y-3 mb-6" :class="{ 'opacity-75 transition-opacity duration-200': isPreviewUpdating }">
+										<!-- Text Message Bubble -->
+										<div v-if="smsContent.message" class="bg-green-500 text-white p-3 rounded-lg rounded-br-sm max-w-[280px] ml-auto">
+											<div class="text-sm whitespace-pre-wrap">
+												{{ smsContent.message }}
+											</div>
+											
+											<!-- Timestamp -->
+											<div class="text-xs text-green-100 mt-2 text-right">
+												{{
+													new Date().toLocaleTimeString('vi-VN', {
+														hour: '2-digit',
+														minute: '2-digit',
+													})
+												}}
+											</div>
+										</div>
+
+										<!-- Image Bubbles -->
+										<div 
+											v-for="(image, imageIndex) in smsImages" 
+											:key="`sms-image-${image.id || imageIndex}-${image.file_name}`"
+											class="bg-green-500 text-white p-2 rounded-lg rounded-br-sm max-w-[280px] ml-auto"
+										>
+											<img 
+												:src="image.file_url" 
+												:alt="image.file_name"
+												class="w-full rounded-lg max-h-32 object-cover"
+											/>
+											<div class="text-xs text-green-100 mt-1 text-right">
+												{{
+													new Date().toLocaleTimeString('vi-VN', {
+														hour: '2-digit',
+														minute: '2-digit',
+													})
+												}}
+											</div>
+										</div>
+
+										<!-- Flow Trigger Bubbles -->
+										<div 
+											v-for="(block, blockIndex) in smsFlowTriggers" 
+											:key="`sms-flow-${block.id || blockIndex}`"
+											class="bg-green-500 text-white p-3 rounded-lg rounded-br-sm max-w-[280px] ml-auto"
+										>
+											<div class="flex items-center space-x-2 mb-2">
+												<FeatherIcon
+													name="play-circle"
+													class="h-4 w-4 text-green-100"
+												/>
+												<span class="text-sm">{{ __('Start Flow') }}</span>
+											</div>
+											<div class="text-sm font-medium">
+												{{ block.flow_display_name || block.flow_trigger || __('Unknown Flow') }}
+											</div>
+											<div class="text-xs text-green-100 mt-2 text-right">
+												{{
+													new Date().toLocaleTimeString('vi-VN', {
+														hour: '2-digit',
+														minute: '2-digit',
+													})
+												}}
+											</div>
+										</div>
+
+										<!-- Empty state -->
+										<div v-if="!smsContent.message && (!smsImages || smsImages.length === 0) && (!smsFlowTriggers || smsFlowTriggers.length === 0)" class="bg-green-500 text-white p-3 rounded-lg rounded-br-sm max-w-[280px] ml-auto">
+											<div class="text-sm">{{ __('No SMS content') }}</div>
+											<div class="text-xs text-green-100 mt-1 text-right">
+												{{
+													new Date().toLocaleTimeString('vi-VN', {
+														hour: '2-digit',
+														minute: '2-digit',
+													})
+												}}
+											</div>
+										</div>
+									</div>
+
+									<!-- Character Count -->
+									<div class="text-xs text-gray-500 text-center">
+										{{ (smsContent.message || '').length }}/160 characters
+									</div>
+									
+									<!-- Debug Info (temporary) -->
+									<!-- <div class="text-xs text-red-500 text-center mt-2" style="font-family: monospace;">
+										Debug: "{{ smsContent.message }}"
+									</div> -->
+								</div>
+
 								<!-- Default Preview -->
 								<div v-else class="text-center py-8">
 									<FeatherIcon
@@ -774,7 +980,7 @@
 		</div>
 
 		<!-- Add Trigger Modal -->
-		<Dialog v-model="showAddTrigger" :options="{ title: 'Thêm Trigger', size: 'md' }">
+		<Dialog v-model="showAddTrigger" :options="{ title: 'Add Trigger', size: 'md' }">
 			<template #body-content>
 				<div class="space-y-4">
 					<div>
@@ -784,7 +990,7 @@
 						<FormControl
 							v-model="triggerSearch"
 							type="text"
-							placeholder="{{ __('Search trigger') }}"
+							:placeholder="__('Search trigger')"
 						/>
 					</div>
 					<div class="max-h-60 overflow-y-auto">
@@ -792,9 +998,19 @@
 							<div
 								v-for="trigger in filteredTriggerOptions"
 								:key="trigger.id"
-								class="p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50"
-								@click="addTrigger(trigger)"
+								class="relative p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+								:class="{ 'opacity-50 pointer-events-none': addingTrigger }"
+								@click="handleAddTrigger(trigger)"
+								:disabled="addingTrigger"
 							>
+								<!-- Loading overlay -->
+								<div v-if="addingTrigger" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 rounded-lg">
+									<div class="flex items-center space-x-2">
+										<div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+										<span class="text-sm text-gray-600">{{ __('Adding...') }}</span>
+									</div>
+								</div>
+								
 								<h4 class="text-sm font-medium text-gray-900">
 									{{ trigger.name }}
 								</h4>
@@ -807,7 +1023,7 @@
 		</Dialog>
 
 		<!-- Add Action Modal -->
-		<Dialog v-model="showAddAction" :options="{ title: 'Thêm Action', size: 'md' }">
+		<Dialog v-model="showAddAction" :options="{ title: 'Add Action', size: 'md' }">
 			<template #body-content>
 				<div class="space-y-4">
 					<div>
@@ -817,7 +1033,7 @@
 						<FormControl
 							v-model="actionSearch"
 							type="text"
-							placeholder="{{ __('Search action') }}"
+							:placeholder="__('Search action')"
 						/>
 					</div>
 					<div class="max-h-60 overflow-y-auto">
@@ -825,9 +1041,19 @@
 							<div
 								v-for="action in filteredActionOptions"
 								:key="action.value"
-								class="p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50"
-								@click="addAction(action)"
+								class="relative p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+								:class="{ 'opacity-50 pointer-events-none': addingAction }"
+								@click="handleAddAction(action)"
+								:disabled="addingAction"
 							>
+								<!-- Loading overlay -->
+								<div v-if="addingAction" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 rounded-lg">
+									<div class="flex items-center space-x-2">
+										<div class="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600"></div>
+										<span class="text-sm text-gray-600">{{ __('Adding...') }}</span>
+									</div>
+								</div>
+								
 								<h4 class="text-sm font-medium text-gray-900">
 									{{ action.label }}
 								</h4>
@@ -845,6 +1071,7 @@
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useMiraFlowStore } from '../stores/miraFlow'
+import { useTagStore } from '../stores/tag'
 import { useToast } from '../composables/useToast'
 
 // Components
@@ -855,6 +1082,7 @@ import TriggerEditor from '../components/campaign/content-editors/TriggerEditor.
 import Link from '../components/Controls/Link.vue'
 import ActionConfig from '../components/campaign/ActionConfig.vue'
 import AdditionalActions from '../components/campaign/AdditionalActions.vue'
+import { storeToRefs } from 'pinia'
 
 // Router
 const route = useRoute()
@@ -862,6 +1090,9 @@ const router = useRouter()
 
 // Store
 const flowStore = useMiraFlowStore()
+const { flows, loading: flowsLoading } = storeToRefs(flowStore)
+const tagStore = useTagStore()
+const { tags, loading: tagsLoading } = storeToRefs(tagStore)
 
 // Toast
 const toast = useToast()
@@ -882,6 +1113,15 @@ const editTitleValue = ref('')
 const previewKey = ref(0) // Key to force preview re-render
 const titleInput = ref(null)
 const hasUnsavedChanges = ref(false)
+
+// Tag management
+const newTagName = ref('')
+const creatingTag = ref(false)
+const selectedTagToAdd = ref('')
+
+// Loading states for modal items
+const addingTrigger = ref(false)
+const addingAction = ref(false)
 
 // Flow data
 const flowData = ref({
@@ -912,8 +1152,8 @@ const actionTypeOptions = [
 const availableTriggers = [
 	{
 		id: 'on_create',
-		name: 'Khi tạo mới',
-		description: 'Kích hoạt khi tạo mới record',
+		name: 'On Create',
+		description: 'Trigger when creating a new record',
 		icon: 'plus-circle',
 		event_type: 'ON_CREATE',
 		trigger_type: 'on_create',
@@ -924,8 +1164,8 @@ const availableTriggers = [
 	},
 	{
 		id: 'on_update',
-		name: 'Khi cập nhật',
-		description: 'Kích hoạt khi cập nhật record',
+		name: 'On Update',
+		description: 'Trigger when updating a record',
 		icon: 'edit',
 		event_type: 'ON_UPDATE',
 		trigger_type: 'on_update',
@@ -936,8 +1176,8 @@ const availableTriggers = [
 	},
 	{
 		id: 'on_tag_added',
-		name: 'Khi thêm tag',
-		description: 'Kích hoạt khi thêm tag cho record',
+		name: 'On Tag Added',
+		description: 'Trigger when a tag is added to a record',
 		icon: 'tag',
 		event_type: 'ON_TAG_ADDED',
 		trigger_type: 'on_tag_added',
@@ -948,8 +1188,8 @@ const availableTriggers = [
 	},
 	{
 		id: 'on_status_changed',
-		name: 'Khi thay đổi trạng thái',
-		description: 'Kích hoạt khi thay đổi trạng thái record',
+		name: 'On Status Changed',
+		description: 'Trigger when a record status changes',
 		icon: 'refresh-cw',
 		event_type: 'ON_STATUS_CHANGED',
 		trigger_type: 'on_status_changed',
@@ -960,8 +1200,8 @@ const availableTriggers = [
 	},
 	{
 		id: 'on_sequence_completed',
-		name: 'Khi hoàn thành sequence',
-		description: 'Kích hoạt khi hoàn thành một sequence',
+		name: 'On Sequence Completed',
+		description: 'Trigger when a sequence is completed',
 		icon: 'check-circle',
 		event_type: 'ON_SEQUENCE_COMPLETED',
 		trigger_type: 'on_sequence_completed',
@@ -972,8 +1212,8 @@ const availableTriggers = [
 	},
 	{
 		id: 'on_scheduled_time',
-		name: 'Theo lịch trình',
-		description: 'Kích hoạt theo thời gian đã lên lịch',
+		name: 'On Scheduled Time',
+		description: 'Trigger when a scheduled time is reached',
 		icon: 'clock',
 		event_type: 'ON_SCHEDULED_TIME',
 		trigger_type: 'on_scheduled_time',
@@ -984,8 +1224,8 @@ const availableTriggers = [
 	},
 	{
 		id: 'on_score_reached',
-		name: 'Khi đạt điểm số',
-		description: 'Kích hoạt khi đạt điểm số nhất định',
+		name: 'On Score Reached',
+		description: 'Trigger when a score is reached',
 		icon: 'target',
 		event_type: 'ON_SCORE_REACHED',
 		trigger_type: 'on_score_reached',
@@ -996,8 +1236,8 @@ const availableTriggers = [
 	},
 	{
 		id: 'custom_event',
-		name: 'Sự kiện tùy chỉnh',
-		description: 'Kích hoạt bởi sự kiện tùy chỉnh',
+		name: 'Custom Event',
+		description: 'Trigger by a custom event',
 		icon: 'settings',
 		event_type: 'CUSTOM_EVENT',
 		trigger_type: 'custom_event',
@@ -1009,7 +1249,7 @@ const availableTriggers = [
 	{
 		id: 'form_submit',
 		name: 'Form Submitted',
-		description: 'Kích hoạt khi form được submit',
+		description: 'Trigger when a form is submitted',
 		icon: 'file-text',
 		event_type: 'Form_Submitted',
 		criteria: { form_name: '' },
@@ -1017,7 +1257,7 @@ const availableTriggers = [
 	{
 		id: 'schedule',
 		name: 'Schedule',
-		description: 'Kích hoạt theo lịch trình',
+		description: 'Trigger by a schedule',
 		icon: 'clock',
 		event_type: 'Schedule_Trigger',
 		criteria: { schedule: '' },
@@ -1026,9 +1266,9 @@ const availableTriggers = [
 
 const availableActions = [
 	{
-		label: 'Gửi Email',
+		label: 'Send Email',
 		value: 'send_email',
-		description: 'Gửi email cho khách hàng',
+		description: 'Send email to customer',
 		action_type: 'MESSAGE',
 		parameters: {
 			channel: 'Email',
@@ -1041,9 +1281,9 @@ const availableActions = [
 		},
 	},
 	{
-		label: 'Gửi SMS',
+		label: 'Send SMS',
 		value: 'send_sms',
-		description: 'Gửi tin nhắn SMS',
+		description: 'Send SMS to customer',
 		action_type: 'SMS',
 		parameters: {
 			channel: 'SMS',
@@ -1054,9 +1294,9 @@ const availableActions = [
 		},
 	},
 	{
-		label: 'Gửi Zalo',
+		label: 'Send Zalo',
 		value: 'send_zalo',
-		description: 'Gửi tin nhắn Zalo',
+		description: 'Send Zalo message to customer',
 		action_type: 'ZALO',
 		parameters: {
 			channel: 'Zalo',
@@ -1073,44 +1313,44 @@ const availableActions = [
 		},
 	},
 	{
-		label: 'Delay thông minh',
+		label: 'Smart Delay',
 		value: 'smart_delay',
-		description: 'Chờ một khoảng thời gian trước action tiếp theo',
+		description: 'Wait for a certain amount of time before the next action',
 		action_type: 'SMART_DELAY',
 		parameters: { duration: '1 day' },
 	},
 	{
-		label: 'Thêm Tag',
+		label: 'Add Tag',
 		value: 'add_tag',
-		description: 'Thêm tag cho khách hàng',
+		description: 'Add tag to customer',
 		action_type: 'ADD_TAG',
 		parameters: { tag_name: '' },
 	},
 	{
-		label: 'Xóa Tag',
+		label: 'Remove Tag',
 		value: 'remove_tag',
-		description: 'Xóa tag khỏi khách hàng',
+		description: 'Remove tag from customer',
 		action_type: 'REMOVE_TAG',
 		parameters: { tag_name: '' },
 	},
 	{
-		label: 'Thêm trường tùy chỉnh',
+		label: 'Add Custom Field',
 		value: 'add_custom_field',
-		description: 'Thêm trường dữ liệu tùy chỉnh',
+		description: 'Add custom field to customer',
 		action_type: 'ADD_CUSTOM_FIELD',
 		parameters: { field_name: '', field_value: '' },
 	},
 	{
-		label: 'Bắt đầu Flow',
+		label: 'Start Flow',
 		value: 'start_flow',
-		description: 'Bắt đầu một flow khác',
+		description: 'Start another flow',
 		action_type: 'START_FLOW',
 		parameters: { flow_id: '' },
 	},
 	{
-		label: 'Đăng ký Sequence',
+		label: 'Subscribe to Sequence',
 		value: 'subscribe_to_sequence',
-		description: 'Đăng ký khách hàng vào sequence',
+		description: 'Subscribe customer to sequence',
 		action_type: 'SUBSCRIBE_TO_SEQUENCE',
 		parameters: { sequence_id: '' },
 	},
@@ -1229,30 +1469,30 @@ const loadFlow = async () => {
 // Helper functions for mapping backend data to frontend format
 const getDefaultTriggerName = (triggerType) => {
 	const triggerMap = {
-		'ON_CREATE': 'Khi tạo mới',
-		'ON_UPDATE': 'Khi cập nhật', 
-		'ON_TAG_ADDED': 'Khi thêm tag',
-		'ON_STATUS_CHANGED': 'Khi thay đổi trạng thái',
-		'ON_SEQUENCE_COMPLETED': 'Khi hoàn thành sequence',
-		'ON_SCHEDULED_TIME': 'Theo lịch trình',
-		'ON_SCORE_REACHED': 'Khi đạt điểm số',
-		'CUSTOM_EVENT': 'Sự kiện tùy chỉnh'
+		'ON_CREATE': 'On Create',
+		'ON_UPDATE': 'On Update', 
+		'ON_TAG_ADDED': 'On Tag Added',
+		'ON_STATUS_CHANGED': 'On Status Changed',
+		'ON_SEQUENCE_COMPLETED': 'On Sequence Completed',
+		'ON_SCHEDULED_TIME': 'On Scheduled Time',
+		'ON_SCORE_REACHED': 'On Score Reached',
+		'CUSTOM_EVENT': 'Custom Event'
 	}
 	return triggerMap[triggerType] || triggerType
 }
 
 const getDefaultTriggerDescription = (triggerType) => {
 	const descriptionMap = {
-		'ON_CREATE': 'Kích hoạt khi tạo mới record',
-		'ON_UPDATE': 'Kích hoạt khi cập nhật record',
-		'ON_TAG_ADDED': 'Kích hoạt khi thêm tag',
-		'ON_STATUS_CHANGED': 'Kích hoạt khi thay đổi trạng thái',
-		'ON_SEQUENCE_COMPLETED': 'Kích hoạt khi hoàn thành sequence',
-		'ON_SCHEDULED_TIME': 'Kích hoạt theo lịch trình',
-		'ON_SCORE_REACHED': 'Kích hoạt khi đạt điểm số',
-		'CUSTOM_EVENT': 'Kích hoạt bởi sự kiện tùy chỉnh'
+		'ON_CREATE': 'Trigger when creating a record',
+		'ON_UPDATE': 'Trigger when updating a record',
+		'ON_TAG_ADDED': 'Trigger when adding a tag',
+		'ON_STATUS_CHANGED': 'Trigger when changing status',
+		'ON_SEQUENCE_COMPLETED': 'Trigger when completing a sequence',
+		'ON_SCHEDULED_TIME': 'Trigger by a schedule',
+		'ON_SCORE_REACHED': 'Trigger when reaching a score',
+		'CUSTOM_EVENT': 'Trigger by a custom event'
 	}
-	return descriptionMap[triggerType] || 'Không có mô tả'
+	return descriptionMap[triggerType] || 'No description'
 }
 
 const mapTriggerType = (backendType) => {
@@ -1271,52 +1511,52 @@ const mapTriggerType = (backendType) => {
 
 const getDefaultActionName = (actionType) => {
 	const actionMap = {
-		'MESSAGE': 'Gửi tin nhắn',
-		'SMS': 'Gửi SMS',
-		'EMAIL': 'Gửi Email',
-		'ZALO': 'Gửi Zalo',
+		'MESSAGE': 'Send Message',
+		'SMS': 'Send SMS',
+		'EMAIL': 'Send Email',
+		'ZALO': 'Send Zalo',
 		'ZALO_CARE': 'Zalo Care',
-		'START_FLOW': 'Bắt đầu Flow',
-		'SUBSCRIBE_TO_SEQUENCE': 'Đăng ký Sequence',
-		'UN_SUBSCRIBE_TO_SEQUENCE': 'Hủy đăng ký Sequence',
-		'SMART_DELAY': 'Delay thông minh',
-		'AI_CALL': 'Gọi AI',
-		'ADD_TAG': 'Thêm Tag',
-		'REMOVE_TAG': 'Xóa Tag',
-		'ADD_CUSTOM_FIELD': 'Thêm trường tùy chỉnh',
-		'REMOVE_CUSTOM_FIELD': 'Xóa trường tùy chỉnh',
-		'LEAD_SCORE': 'Tính điểm Lead',
-		'EXTERNAL_REQUEST': 'Gọi API ngoài',
+		'START_FLOW': 'Start Flow',
+		'SUBSCRIBE_TO_SEQUENCE': 'Subscribe to Sequence',
+		'UN_SUBSCRIBE_TO_SEQUENCE': 'Unsubscribe from Sequence',
+		'SMART_DELAY': 'Smart Delay',
+		'AI_CALL': 'Call AI',
+		'ADD_TAG': 'Add Tag',
+		'REMOVE_TAG': 'Remove Tag',
+		'ADD_CUSTOM_FIELD': 'Add Custom Field',
+		'REMOVE_CUSTOM_FIELD': 'Remove Custom Field',
+		'LEAD_SCORE': 'Lead Score',
+		'EXTERNAL_REQUEST': 'External Request',
 		'EMAIL_AI': 'Email AI',
-		'CONTENT_AI': 'Nội dung AI',
-		'SENT_NOTIFICATION': 'Gửi thông báo'
+		'CONTENT_AI': 'Content AI',
+		'SENT_NOTIFICATION': 'Send Notification'
 	}
 	return actionMap[actionType] || actionType
 }
 
 const getDefaultActionDescription = (actionType) => {
 	const descriptionMap = {
-		'MESSAGE': 'Gửi tin nhắn cho khách hàng',
-		'SMS': 'Gửi tin nhắn SMS',
-		'EMAIL': 'Gửi email cho khách hàng',
-		'ZALO': 'Gửi tin nhắn Zalo',
-		'ZALO_CARE': 'Gửi tin nhắn Zalo Care',
-		'START_FLOW': 'Bắt đầu một flow khác',
-		'SUBSCRIBE_TO_SEQUENCE': 'Đăng ký khách hàng vào sequence',
-		'UN_SUBSCRIBE_TO_SEQUENCE': 'Hủy đăng ký khách hàng khỏi sequence',
-		'SMART_DELAY': 'Delay thông minh dựa trên điều kiện',
-		'AI_CALL': 'Gọi AI để xử lý',
-		'ADD_TAG': 'Thêm tag cho khách hàng',
-		'REMOVE_TAG': 'Xóa tag khỏi khách hàng',
-		'ADD_CUSTOM_FIELD': 'Thêm trường dữ liệu tùy chỉnh',
-		'REMOVE_CUSTOM_FIELD': 'Xóa trường dữ liệu tùy chỉnh',
-		'LEAD_SCORE': 'Tính toán điểm số lead',
-		'EXTERNAL_REQUEST': 'Gọi API bên ngoài',
-		'EMAIL_AI': 'Tạo email bằng AI',
-		'CONTENT_AI': 'Tạo nội dung bằng AI',
-		'SENT_NOTIFICATION': 'Gửi thông báo hệ thống'
+		'MESSAGE': 'Send message to customer',
+		'SMS': 'Send SMS',
+		'EMAIL': 'Send Email',
+		'ZALO': 'Send Zalo',
+		'ZALO_CARE': 'Send Zalo Care',
+		'START_FLOW': 'Start another flow',
+		'SUBSCRIBE_TO_SEQUENCE': 'Subscribe customer to sequence',
+		'UN_SUBSCRIBE_TO_SEQUENCE': 'Unsubscribe customer from sequence',
+		'SMART_DELAY': 'Smart delay based on conditions',
+		'AI_CALL': 'Call AI to process',
+		'ADD_TAG': 'Add tag to customer',
+		'REMOVE_TAG': 'Remove tag from customer',
+		'ADD_CUSTOM_FIELD': 'Add custom field to customer',
+		'REMOVE_CUSTOM_FIELD': 'Remove custom field from customer',
+		'LEAD_SCORE': 'Lead Score',
+		'EXTERNAL_REQUEST': 'External Request',
+		'EMAIL_AI': 'Email AI',
+		'CONTENT_AI': 'Content AI',
+		'SENT_NOTIFICATION': 'Send Notification'
 	}
-	return descriptionMap[actionType] || 'Không có mô tả'
+	return descriptionMap[actionType] || 'No description'
 }
 
 // Ensure UI fields exist for display
@@ -1471,151 +1711,178 @@ const getSelectedItemDescription = () => {
 	return item?._ui_description || item?.description || 'Không có mô tả'
 }
 
-const addTrigger = async (triggerOption) => {
-	// Generate unique name with auto-numbering
-	const baseName = triggerOption.name
-	const existingTriggers = flowData.value.triggers.filter((t) =>
-		t._ui_name.startsWith(baseName),
-	)
-	const displayName =
-		existingTriggers.length > 0 ? `${baseName} ${existingTriggers.length + 1}` : baseName
-
-	const newTrigger = {
-		// Backend format fields
-		event_type: triggerOption.event_type,
-		trigger_type: triggerOption.trigger_type,
-		target_type: 'Talent',
-		status: 'ACTIVE',
-		Conditional_Split: [],
-		
-		// Explicitly set null values for optional fields
-		owner_id: null,
-		tags: null,
-		is_sharing: 0,
-		schedule_time: null,
-		channel: null,
-
-		// UI display fields (for internal use)
-		_ui_name: displayName,
-		_ui_description: triggerOption.description,
-		_ui_type: triggerOption.trigger_type,
-
-		// For display in list
-		name: displayName,
-		description: triggerOption.description,
-	}
+// Immediate loading handlers
+const handleAddTrigger = (triggerOption) => {
+	if (addingTrigger.value) return // Already processing
+	addingTrigger.value = true
 	
-	// Add to local state
-	flowData.value.triggers.push(newTrigger)
-	
-	// Auto-save immediately
-	try {
-		const result = await flowStore.updateFlow(flowData.value.name, flowData.value)
-		if (result.success) {
-			toast.success(`Đã thêm và lưu trigger: ${displayName}`)
-		} else {
-			toast.error('Có lỗi khi lưu trigger')
-		}
-	} catch (error) {
-		console.error('Error saving trigger:', error)
-		toast.error('Có lỗi khi lưu trigger')
-	}
-	
+	// Close dialog immediately when starting
 	showAddTrigger.value = false
 	triggerSearch.value = ''
+	
+	// Use setTimeout to ensure DOM updates immediately
+	setTimeout(() => addTrigger(triggerOption), 0)
+}
+
+const handleAddAction = (actionOption) => {
+	if (addingAction.value) return // Already processing
+	addingAction.value = true
+	
+	// Close dialog immediately when starting
+	showAddAction.value = false
+	actionSearch.value = ''
+	
+	// Use setTimeout to ensure DOM updates immediately
+	setTimeout(() => addAction(actionOption), 0)
+}
+
+const addTrigger = async (triggerOption) => {
+	try {
+		// Generate unique name with auto-numbering
+		const baseName = triggerOption.name
+		const existingTriggers = flowData.value.triggers.filter((t) =>
+			t._ui_name.startsWith(baseName),
+		)
+		const displayName =
+			existingTriggers.length > 0 ? `${baseName} ${existingTriggers.length + 1}` : baseName
+
+		const newTrigger = {
+			// Backend format fields
+			event_type: triggerOption.event_type,
+			trigger_type: triggerOption.trigger_type,
+			target_type: 'Talent',
+			status: 'ACTIVE',
+			Conditional_Split: [],
+			
+			// Explicitly set null values for optional fields
+			owner_id: null,
+			tags: null,
+			is_sharing: 0,
+			schedule_time: null,
+			channel: null,
+
+			// UI display fields (for internal use)
+			_ui_name: displayName,
+			_ui_description: triggerOption.description,
+			_ui_type: triggerOption.trigger_type,
+
+			// For display in list
+			name: displayName,
+			description: triggerOption.description,
+		}
+		
+		// Add to local state
+		flowData.value.triggers.push(newTrigger)
+		
+		// Auto-save immediately
+		const result = await flowStore.updateFlow(flowData.value.name, flowData.value)
+		if (result.success) {
+			toast.success(`Added and saved trigger: ${displayName}`)
+		} else {
+			toast.error('Error saving trigger')
+		}
+		
+		// Dialog already closed in handler
+	} catch (error) {
+		console.error('Error saving trigger:', error)
+		toast.error('Error saving trigger')
+	} finally {
+		addingTrigger.value = false
+	}
 }
 
 const addAction = async (actionOption) => {
-	// Prepare default parameters based on action type
-	let defaultParameters = { ...actionOption.parameters } || {}
-	
-	// Ensure proper structure for different action types
-	if (actionOption.action_type === 'SMS' || actionOption.value === 'send_sms') {
-		defaultParameters = {
-			...defaultParameters,
-			sms_content: {
-				blocks: [
-					{
-						id: 1,
-						type: 'text',
-						text_content: '',
-					},
-				],
-			},
-			template_id: ''
-		}
-	} else if (actionOption.action_type === 'ADD_TAG' || actionOption.value === 'add_tag') {
-		defaultParameters = {
-			...defaultParameters,
-			tag_name: ''
-		}
-	} else if (actionOption.action_type === 'REMOVE_TAG' || actionOption.value === 'remove_tag') {
-		defaultParameters = {
-			...defaultParameters,
-			tag_name: ''
-		}
-	} else if (actionOption.action_type === 'SMART_DELAY' || actionOption.value === 'smart_delay') {
-		defaultParameters = {
-			...defaultParameters,
-			duration: '1 day'
-		}
-	} else if (actionOption.action_type === 'ADD_CUSTOM_FIELD' || actionOption.value === 'add_custom_field') {
-		defaultParameters = {
-			...defaultParameters,
-			field_name: '',
-			field_value: ''
-		}
-	} else if (actionOption.action_type === 'START_FLOW' || actionOption.value === 'start_flow') {
-		defaultParameters = {
-			...defaultParameters,
-			flow_id: ''
-		}
-	} else if (actionOption.action_type === 'SUBSCRIBE_TO_SEQUENCE' || actionOption.value === 'subscribe_to_sequence') {
-		defaultParameters = {
-			...defaultParameters,
-			sequence_id: ''
-		}
-	}
-
-	const newAction = {
-		// Backend format fields
-		action_order: flowData.value.actions.length + 1, // Auto increment order
-		action_type: actionOption.action_type || actionOption.value,
-		channel_type: actionOption.parameters?.channel || null,
-		parameters: defaultParameters,
-		
-		// Link fields - explicitly set to null
-		next_flow: null,
-		sequence: null,
-		
-		// Other fields
-		delay_minutes: 0,
-		condition: null,
-
-		// UI display fields (for internal use)
-		_ui_name: actionOption.label,
-		_ui_description: actionOption.description,
-		_ui_type: actionOption.value,
-	}
-	
-	// Add to local state
-	flowData.value.actions.push(newAction)
-	
-	// Auto-save immediately
 	try {
+		// Prepare default parameters based on action type
+		let defaultParameters = { ...actionOption.parameters } || {}
+		
+		// Ensure proper structure for different action types
+		if (actionOption.action_type === 'SMS' || actionOption.value === 'send_sms') {
+			defaultParameters = {
+				...defaultParameters,
+				sms_content: {
+					blocks: [
+						{
+							id: 1,
+							type: 'text',
+							text_content: '',
+						},
+					],
+				},
+				template_id: ''
+			}
+		} else if (actionOption.action_type === 'ADD_TAG' || actionOption.value === 'add_tag') {
+			defaultParameters = {
+				...defaultParameters,
+				tag_name: ''
+			}
+		} else if (actionOption.action_type === 'REMOVE_TAG' || actionOption.value === 'remove_tag') {
+			defaultParameters = {
+				...defaultParameters,
+				tag_name: ''
+			}
+		} else if (actionOption.action_type === 'SMART_DELAY' || actionOption.value === 'smart_delay') {
+			defaultParameters = {
+				...defaultParameters,
+				duration: '1 day'
+			}
+		} else if (actionOption.action_type === 'ADD_CUSTOM_FIELD' || actionOption.value === 'add_custom_field') {
+			defaultParameters = {
+				...defaultParameters,
+				field_name: '',
+				field_value: ''
+			}
+		} else if (actionOption.action_type === 'START_FLOW' || actionOption.value === 'start_flow') {
+			defaultParameters = {
+				...defaultParameters,
+				flow_id: ''
+			}
+		} else if (actionOption.action_type === 'SUBSCRIBE_TO_SEQUENCE' || actionOption.value === 'subscribe_to_sequence') {
+			defaultParameters = {
+				...defaultParameters,
+				sequence_id: ''
+			}
+		}
+
+		const newAction = {
+			// Backend format fields
+			action_order: flowData.value.actions.length + 1, // Auto increment order
+			action_type: actionOption.action_type || actionOption.value,
+			channel_type: actionOption.parameters?.channel || null,
+			parameters: defaultParameters,
+			
+			// Link fields - explicitly set to null
+			next_flow: null,
+			sequence: null,
+			
+			// Other fields
+			delay_minutes: 0,
+			condition: null,
+
+			// UI display fields (for internal use)
+			_ui_name: actionOption.label,
+			_ui_description: actionOption.description,
+			_ui_type: actionOption.value,
+		}
+		
+		// Add to local state
+		flowData.value.actions.push(newAction)
+		
+		// Auto-save immediately
 		const result = await flowStore.updateFlow(flowData.value.name, flowData.value)
 		if (result.success) {
-			toast.success(`Đã thêm và lưu action: ${actionOption.label}`)
+			toast.success(`Added and saved action: ${actionOption.label}`)
 		} else {
-			toast.error('Có lỗi khi lưu action')
+			toast.error('Error saving action')
 		}
+		
+		// Dialog already closed in handler
 	} catch (error) {
 		console.error('Error saving action:', error)
-		toast.error('Có lỗi khi lưu action')
+		toast.error('Error saving action')
+	} finally {
+		addingAction.value = false
 	}
-	
-	showAddAction.value = false
-	actionSearch.value = ''
 }
 
 const handleSaveItem = () => {
@@ -1628,13 +1895,13 @@ const handleSaveItem = () => {
 		flowData.value.actions[index] = { ...selectedItemData.value }
 	}
 
-	toast.success('Đã lưu thay đổi')
+	toast.success('Saved changes')
 }
 
 const handleDeleteItem = () => {
 	if (!selectedItem.value) return
 
-	if (confirm('Bạn có chắc chắn muốn xóa mục này không?')) {
+	if (confirm('Are you sure you want to delete this item?')) {
 		const { type, index } = selectedItem.value
 		if (type === 'trigger') {
 			flowData.value.triggers.splice(index, 1)
@@ -1644,13 +1911,70 @@ const handleDeleteItem = () => {
 
 		selectedItem.value = null
 		selectedItemData.value = {}
-		toast.success('Đã xóa thành công')
+		hasUnsavedChanges.value = true
+		toast.success('Deleted successfully')
+	}
+}
+
+// Delete trigger from list (with hover button)
+const deleteTrigger = async (index) => {
+	if (confirm('Bạn có chắc chắn muốn xóa trigger này?')) {
+		// If deleting currently selected trigger, clear selection
+		if (selectedItem.value?.type === 'trigger' && selectedItem.value?.index === index) {
+			selectedItem.value = null
+			selectedItemData.value = {}
+		}
+		
+		// Remove trigger
+		flowData.value.triggers.splice(index, 1)
+		hasUnsavedChanges.value = true
+		
+		// Auto-save
+		try {
+			const result = await flowStore.updateFlow(flowData.value.name, flowData.value)
+			if (result.success) {
+				toast.success('Đã xóa trigger thành công')
+			} else {
+				toast.error('Lỗi khi xóa trigger')
+			}
+		} catch (error) {
+			console.error('Error deleting trigger:', error)
+			toast.error('Lỗi khi xóa trigger')
+		}
+	}
+}
+
+// Delete action from list (with hover button)
+const deleteAction = async (index) => {
+	if (confirm('Bạn có chắc chắn muốn xóa action này?')) {
+		// If deleting currently selected action, clear selection
+		if (selectedItem.value?.type === 'action' && selectedItem.value?.index === index) {
+			selectedItem.value = null
+			selectedItemData.value = {}
+		}
+		
+		// Remove action
+		flowData.value.actions.splice(index, 1)
+		hasUnsavedChanges.value = true
+		
+		// Auto-save
+		try {
+			const result = await flowStore.updateFlow(flowData.value.name, flowData.value)
+			if (result.success) {
+				toast.success('Đã xóa action thành công')
+			} else {
+				toast.error('Lỗi khi xóa action')
+			}
+		} catch (error) {
+			console.error('Error deleting action:', error)
+			toast.error('Lỗi khi xóa action')
+		}
 	}
 }
 
 const handleSave = async () => {
 	if (!flowData.value.name) {
-		toast.error('Không tìm thấy thông tin flow')
+		toast.error('Flow not found')
 		return
 	}
 
@@ -1675,14 +1999,14 @@ const handleSave = async () => {
 		const result = await flowStore.updateFlow(flowData.value.name, updateData)
 
 		if (result.success) {
-			toast.success('Flow đã được lưu thành công')
+			toast.success('Flow saved successfully')
 			hasUnsavedChanges.value = false
 		} else {
-			toast.error(result.error || 'Có lỗi xảy ra khi lưu flow')
+			toast.error(result.error || 'Error saving flow')
 		}
 	} catch (error) {
 		console.error('Error saving flow:', error)
-		toast.error('Có lỗi xảy ra khi lưu flow')
+		toast.error('Error saving flow')
 	} finally {
 		saving.value = false
 	}
@@ -1696,12 +2020,12 @@ const handleBack = () => {
 // Title editing methods
 const startEditTitle = () => {
 	editTitleValue.value = flowData.value.title || ''
-	isEditingTitle.value = true
+	editingTitle.value = true
 }
 
 const saveTitle = async () => {
 	if (!editTitleValue.value.trim()) {
-		toast.error('Tên flow không được để trống')
+		toast.error('Flow name cannot be empty')
 		return
 	}
 
@@ -1716,17 +2040,17 @@ const saveTitle = async () => {
 		})
 
 		if (result.success) {
-			toast.success('Đã cập nhật tên flow')
+			toast.success('Flow name updated successfully')
 		} else {
 			// Revert on error
 			flowData.value.title = oldTitle
-			toast.error(result.error || 'Có lỗi xảy ra khi cập nhật tên')
+			toast.error(result.error || 'Error updating flow name')
 		}
 	} catch (error) {
 		// Revert on error
 		flowData.value.title = oldTitle
 		console.error('Error updating title:', error)
-		toast.error('Có lỗi xảy ra khi cập nhật tên')
+		toast.error('Error updating flow name')
 	}
 }
 
@@ -1851,6 +2175,189 @@ const zaloContent = computed(() => {
 	return selectedItemData.value.parameters.zalo_content
 })
 
+// Cache for SMS content to prevent unnecessary re-computation
+const smsContentCache = ref(null)
+const lastSmsContentHash = ref('')
+
+// Separate cache for images to prevent unnecessary re-render
+const smsImagesCache = ref([])
+const lastImagesHash = ref('')
+
+// SMS Flow Triggers cache
+const smsFlowTriggersCache = ref([])
+const lastSmsFlowTriggersHash = ref('')
+
+const smsContent = computed(() => {
+	// Create a hash of the SMS content to detect actual changes
+	const currentHash = JSON.stringify({
+		selectedItem: selectedItem.value,
+		smsContent: selectedItemData.value.parameters?.sms_content
+	})
+	
+	// Return cached result if content hasn't changed
+	if (lastSmsContentHash.value === currentHash && smsContentCache.value) {
+		return smsContentCache.value
+	}
+	
+	console.log('🔍 SMS Content Debug - Computing new content')
+	
+	// Get SMS content directly from action (most reliable)
+	if (selectedItem.value?.type === 'action') {
+		const action = flowData.value.actions[selectedItem.value.index]
+		console.log('🔍 Direct action data:', action)
+		
+		if (action?.parameters?.sms_content?.blocks) {
+			// SMS content is stored in blocks format (like Zalo) - only process text content
+			let fullMessage = ''
+			
+			action.parameters.sms_content.blocks.forEach(block => {
+				// Text content
+				if (block.text_content) {
+					fullMessage += block.text_content + '\n'
+				}
+				
+				// Website URL (can be in any block type)
+				if (block.website_url) {
+					fullMessage += `🌐 ${block.website_url}\n`
+				}
+				
+				// Phone number (can be in any block type)  
+				if (block.phone_number) {
+					fullMessage += `📞 ${block.phone_number}\n`
+				}
+				
+				// Flow trigger (can be in any block type)
+				if (block.flow_trigger) {
+					// Use display name from block first, then fallback to flow ID
+					const flowName = block.flow_display_name || block.flow_trigger
+					fullMessage += `▶️ ${flowName}\n`
+				}
+				
+				// Skip image blocks - they're handled separately
+			})
+			
+			console.log('🔍 Extracted SMS text content:', fullMessage.trim())
+			const result = { 
+				message: fullMessage.trim()
+			}
+			
+			// Cache the result
+			smsContentCache.value = result
+			lastSmsContentHash.value = currentHash
+			return result
+		}
+		
+		if (action?.parameters?.sms_content?.message) {
+			// Direct message format
+			return action.parameters.sms_content
+		}
+	}
+	
+	// Try selectedItemData as fallback
+	if (selectedItemData.value.parameters?.sms_content?.blocks) {
+		let fullMessage = ''
+		
+		selectedItemData.value.parameters.sms_content.blocks.forEach(block => {
+			// Text content
+			if (block.text_content) {
+				fullMessage += block.text_content + '\n'
+			}
+			
+			// Website URL (can be in any block type)
+			if (block.website_url) {
+				fullMessage += `🌐 ${block.website_url}\n`
+			}
+			
+			// Phone number (can be in any block type)  
+			if (block.phone_number) {
+				fullMessage += `📞 ${block.phone_number}\n`
+			}
+			
+			// Flow trigger (can be in any block type)
+			if (block.flow_trigger) {
+				// Use display name from block first, then fallback to flow ID
+				const flowName = block.flow_display_name || block.flow_trigger
+				fullMessage += `▶️ ${flowName}\n`
+			}
+			
+			// Skip image blocks - they're handled separately
+		})
+		
+		const result = { 
+			message: fullMessage.trim()
+		}
+		
+		// Cache the result
+		smsContentCache.value = result
+		lastSmsContentHash.value = currentHash
+		return result
+	}
+	
+	if (selectedItemData.value.parameters?.sms_content?.message) {
+		const result = selectedItemData.value.parameters.sms_content
+		smsContentCache.value = result
+		lastSmsContentHash.value = currentHash
+		return result
+	}
+	
+	console.log('🔍 No SMS content found, returning empty')
+	const result = { message: '' }
+	smsContentCache.value = result
+	lastSmsContentHash.value = currentHash
+	return result
+})
+
+// Separate computed for SMS images to prevent unnecessary re-render
+const smsImages = computed(() => {
+	// Create hash only for image-related data
+	const imageHash = JSON.stringify({
+		selectedItem: selectedItem.value,
+		imageBlocks: selectedItemData.value.parameters?.sms_content?.blocks?.filter(block => block.type === 'image')
+	})
+	
+	// Return cached images if nothing changed
+	if (lastImagesHash.value === imageHash && smsImagesCache.value) {
+		return smsImagesCache.value
+	}
+	
+	let images = []
+	
+	// Get images from action data
+	if (selectedItem.value?.type === 'action') {
+		const action = flowData.value.actions[selectedItem.value.index]
+		
+		if (action?.parameters?.sms_content?.blocks) {
+			action.parameters.sms_content.blocks.forEach(block => {
+				if (block.type === 'image' && block.image) {
+					images.push({
+						id: block.id,
+						file_url: block.image.file_url,
+						file_name: block.image.file_name
+					})
+				}
+			})
+		}
+	}
+	
+	// Try fallback
+	if (images.length === 0 && selectedItemData.value.parameters?.sms_content?.blocks) {
+		selectedItemData.value.parameters.sms_content.blocks.forEach(block => {
+			if (block.type === 'image' && block.image) {
+				images.push({
+					id: block.id,
+					file_url: block.image.file_url,
+					file_name: block.image.file_name
+				})
+			}
+		})
+	}
+	
+	// Cache the result
+	smsImagesCache.value = images
+	lastImagesHash.value = imageHash
+	return images
+})
+
 const getEmailContent = () => {
 	if (!selectedItem.value || selectedItem.value.type !== 'action') return {}
 	const action = flowData.value.actions[selectedItem.value.index]
@@ -1958,6 +2465,9 @@ const updateSMSContent = (content) => {
 			selectedItemData.value.parameters.sms_content = content
 			selectedItemData.value.parameters.template_id = action.parameters.template_id
 		}
+		
+		// Force preview update
+		previewKey.value++
 	}
 
 	// Update the flow data as well to ensure persistence
@@ -1978,9 +2488,159 @@ const getFlowFilters = () => {
 	return [['name', '!=', flowData.value.name]]
 }
 
-const updateFlowId = (flowId) => {
+const availableFlowOptions = computed(() => {
+	console.log('🔍 Computing availableFlowOptions:', {
+		flowsValue: flows.value,
+		flowsLength: flows.value?.length,
+		currentFlowName: flowData.value.name,
+		flowsLoading: flowsLoading.value
+	})
+	
+	if (!flows.value || flows.value.length === 0) {
+		console.log('❌ No flows available')
+		return []
+	}
+	
+	// Filter out current flow to prevent infinite loop
+	const availableFlows = flows.value.filter(flow => flow.name !== flowData.value.name)
+	
+	console.log('✅ Available flows after filter:', availableFlows)
+	
+	const options = availableFlows.map(flow => ({
+		label: flow.title || flow.name,
+		value: flow.name,
+		description: flow.description || ''
+	}))
+	
+	console.log('🎯 Final flow options:', options)
+	return options
+})
+
+// Tag options for select (exclude already selected)
+const availableTagOptions = computed(() => {
+	const selectedValues = selectedItemData.value.parameters?.selected_tags || []
+	const options = tags.value
+		.filter(tag => !selectedValues.includes(tag.name))
+		.map(tag => ({
+			label: tag.title || tag.name,
+			value: tag.name
+		}))
+	
+	console.log('🏷️ Available tag options:', options)
+	return options
+})
+
+// Display selected tags with proper labels
+const selectedTagsDisplay = computed(() => {
+	const selectedValues = selectedItemData.value.parameters?.selected_tags || []
+	return selectedValues.map(value => {
+		const tag = tags.value.find(t => t.name === value)
+		return {
+			label: tag ? (tag.title || tag.name) : value,
+			value: value
+		}
+	})
+})
+
+// SMS Flow Triggers - separate computed for flow trigger blocks
+const smsFlowTriggers = computed(() => {
+	const currentHash = JSON.stringify({
+		selectedItem: selectedItem.value,
+		flowTriggerBlocks: selectedItemData.value.parameters?.sms_content?.blocks?.filter(block => block.type === 'flow_trigger')
+	})
+	
+	// Return cached flow triggers if nothing changed
+	if (lastSmsFlowTriggersHash.value === currentHash && smsFlowTriggersCache.value) {
+		return smsFlowTriggersCache.value
+	}
+	
+	// Process flow trigger blocks
+	const blocks = selectedItemData.value.parameters?.sms_content?.blocks || []
+	const flowTriggers = blocks.filter(block => block.type === 'flow_trigger' && block.flow_trigger)
+	
+	// Cache the result
+	smsFlowTriggersCache.value = flowTriggers
+	lastSmsFlowTriggersHash.value = currentHash
+	
+	console.log('🔄 SMS Flow Triggers computed:', flowTriggers)
+	return flowTriggers
+})
+
+const getFlowNameById = async (flowId) => {
+	if (!flowId) return null
+	
+	try {
+		// Try to get flow from store first (if cached)
+		const cachedFlow = flowStore.flows?.find(flow => flow.name === flowId)
+		if (cachedFlow) {
+			return cachedFlow.title || cachedFlow.name
+		}
+		
+		// If not cached, fetch from API
+		const result = await flowStore.fetchFlowById(flowId)
+		if (result?.success && result?.data) {
+			return result.data.title || result.data.name || flowId
+		}
+	} catch (error) {
+		console.error('Error fetching flow name:', error)
+	}
+	
+	// Fallback to flow ID
+	return flowId
+}
+
+// updateFlowId method removed - now using watcher for automatic sync
+
+const updateSMSFlowTrigger = (flowId) => {
+	console.log('updateSMSFlowTrigger called with:', flowId)
+	
 	if (selectedItemData.value.parameters) {
-		selectedItemData.value.parameters.flow_id = flowId
+		selectedItemData.value.parameters.flow_trigger_id = flowId
+		hasUnsavedChanges.value = true
+		
+		// Update SMS content blocks with flow trigger
+		if (selectedItemData.value.parameters.sms_content?.blocks) {
+			// Find or create flow trigger block
+			let flowBlock = selectedItemData.value.parameters.sms_content.blocks.find(block => block.type === 'flow_trigger')
+			if (!flowBlock) {
+				flowBlock = {
+					id: Date.now(),
+					type: 'flow_trigger',
+					flow_trigger: flowId
+				}
+				selectedItemData.value.parameters.sms_content.blocks.push(flowBlock)
+			} else {
+				flowBlock.flow_trigger = flowId
+			}
+		}
+		
+		// Sync with main flow data
+		if (selectedItem.value) {
+			const { type, index } = selectedItem.value
+			if (type === 'action') {
+				flowData.value.actions[index] = { ...selectedItemData.value }
+			}
+		}
+		
+		// Force preview update
+		previewKey.value++
+	}
+}
+
+// Tag management methods
+const addSelectedTag = () => {
+	if (!selectedTagToAdd.value) return
+	
+	if (!selectedItemData.value.parameters) {
+		selectedItemData.value.parameters = {}
+	}
+	
+	if (!selectedItemData.value.parameters.selected_tags) {
+		selectedItemData.value.parameters.selected_tags = []
+	}
+	
+	if (!selectedItemData.value.parameters.selected_tags.includes(selectedTagToAdd.value)) {
+		selectedItemData.value.parameters.selected_tags.push(selectedTagToAdd.value)
 		hasUnsavedChanges.value = true
 		
 		// Sync with main flow data
@@ -1990,6 +2650,72 @@ const updateFlowId = (flowId) => {
 				flowData.value.actions[index] = { ...selectedItemData.value }
 			}
 		}
+	}
+	
+	selectedTagToAdd.value = ''
+}
+
+const removeSelectedTag = (tagValue) => {
+	if (!selectedItemData.value.parameters?.selected_tags) return
+	
+	const index = selectedItemData.value.parameters.selected_tags.indexOf(tagValue)
+	if (index > -1) {
+		selectedItemData.value.parameters.selected_tags.splice(index, 1)
+		hasUnsavedChanges.value = true
+		
+		// Sync with main flow data
+		if (selectedItem.value) {
+			const { type, index: actionIndex } = selectedItem.value
+			if (type === 'action') {
+				flowData.value.actions[actionIndex] = { ...selectedItemData.value }
+			}
+		}
+	}
+}
+
+// Create new tag
+const createNewTag = async () => {
+	if (!newTagName.value.trim()) {
+		toast.error('Vui lòng nhập tên tag')
+		return
+	}
+
+	try {
+		creatingTag.value = true
+		const result = await tagStore.createTag({
+			title: newTagName.value.trim()
+		})
+
+		if (result.success) {
+			toast.success('Tạo tag thành công')
+			
+			// Add to selected tags
+			if (!selectedItemData.value.parameters) {
+				selectedItemData.value.parameters = {}
+			}
+			if (!selectedItemData.value.parameters.selected_tags) {
+				selectedItemData.value.parameters.selected_tags = []
+			}
+			selectedItemData.value.parameters.selected_tags.push(result.data.name)
+			hasUnsavedChanges.value = true
+			
+			// Sync with main flow data
+			if (selectedItem.value) {
+				const { type, index } = selectedItem.value
+				if (type === 'action') {
+					flowData.value.actions[index] = { ...selectedItemData.value }
+				}
+			}
+			
+			newTagName.value = ''
+		} else {
+			toast.error(result.error || 'Không thể tạo tag')
+		}
+	} catch (error) {
+		console.error('Error creating tag:', error)
+		toast.error('Không thể tạo tag')
+	} finally {
+		creatingTag.value = false
 	}
 }
 
@@ -2103,22 +2829,92 @@ const getTotalZaloCharacters = () => {
 	return totalZaloCharacters.value
 }
 
+// Debounced preview update
+const debouncedPreviewUpdate = ref(null)
+const isPreviewUpdating = ref(false)
+
 // Watch for selectedItemData changes to ensure preview updates
 watch(
 	() => selectedItemData.value,
 	(newValue) => {
 		console.log('selectedItemData changed:', newValue)
-		// Force reactivity by triggering nextTick
-		nextTick()
+		
+		// Clear existing timeout
+		if (debouncedPreviewUpdate.value) {
+			clearTimeout(debouncedPreviewUpdate.value)
+		}
+		
+		// Set updating state
+		isPreviewUpdating.value = true
+		
+		// Debounce preview update by 200ms (reduced for better responsiveness)
+		debouncedPreviewUpdate.value = setTimeout(() => {
+			previewKey.value++
+			isPreviewUpdating.value = false
+			nextTick()
+		}, 200)
 	},
 	{ deep: true, immediate: true },
+)
+
+// Watchers
+watch(
+	() => selectedItemData.value.parameters?.flow_id,
+	(newFlowId) => {
+		if (newFlowId && selectedItem.value?.type === 'action') {
+			console.log('Flow ID changed to:', newFlowId)
+			hasUnsavedChanges.value = true
+			
+			// Sync with main flow data
+			const { type, index } = selectedItem.value
+			if (type === 'action') {
+				if (!flowData.value.actions[index].parameters) {
+					flowData.value.actions[index].parameters = {}
+				}
+				flowData.value.actions[index].parameters.flow_id = newFlowId
+			}
+			
+			// Force preview update
+			previewKey.value++
+		}
+	}
 )
 
 // Computed properties will automatically update preview when content changes
 
 // Lifecycle
-onMounted(() => {
-	loadFlow()
+onMounted(async () => {
+	await loadFlow()
+	
+	// Load available flows for Start Flow action
+	try {
+		console.log('🌊 Loading flows for Start Flow action...')
+		const result = await flowStore.fetchFlows()
+		console.log('🌊 Flows fetch result:', result)
+		console.log('🌊 Flows in store after fetch:', flows.value)
+		console.log('🌊 Flows loading state:', flowsLoading.value)
+		
+		// If no flows loaded, add some test data for debugging
+		if (!flows.value || flows.value.length === 0) {
+			console.log('⚠️ No flows found, adding test data for debugging')
+			// This is temporary for debugging - remove in production
+			flowStore.flows = [
+				{ name: 'test-flow-1', title: 'Test Flow 1', status: 'Active', description: 'Test flow for debugging' },
+				{ name: 'test-flow-2', title: 'Test Flow 2', status: 'Draft', description: 'Another test flow' },
+				{ name: 'test-flow-3', title: 'Test Flow 3', status: 'Active', description: 'Third test flow' }
+			]
+			console.log('🧪 Added test flows:', flowStore.flows)
+		}
+	} catch (error) {
+		console.error('❌ Error loading flows:', error)
+	}
+	
+	// Load tags for Add Tag action
+	try {
+		await tagStore.fetchTags()
+	} catch (error) {
+		console.error('Error loading tags:', error)
+	}
 })
 </script>
 

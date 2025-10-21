@@ -1,5 +1,6 @@
 import { ref, reactive, computed, watch } from 'vue'
 import { useJobOpeningStore } from '@/stores/jobOpening.js'
+import { useToast } from '@/composables/useToast'
 import { debounce } from 'lodash'
 
 /**
@@ -9,6 +10,9 @@ import { debounce } from 'lodash'
 export function useJobOpening() {
   // Store
   const jobOpeningStore = useJobOpeningStore()
+  
+  // Toast
+  const toast = useToast()
   
   // State (using store state)
   const jobOpenings = computed(() => jobOpeningStore.jobOpenings)
@@ -58,34 +62,46 @@ export function useJobOpening() {
           ['department_name', 'like', `%${filters.search}%`]
         ] : [],
         page_length: pagination.value.limit,
-        start: (pagination.value.page - 1) * pagination.value.limit,
+        page: pagination.value.page,
         order_by: 'modified desc',
         ...params
       }
       const result = await jobOpeningStore.fetchJobOpenings(options)
 
-      console.log('result', result)
-      // Store handles all state updates internally
+      if (!result.success) {
+        toast.error(result.error || 'Failed to load job openings')
+      }
+      
+      return result
     } catch (err) {
       console.error('Error fetching job openings:', err)
+      toast.error('Failed to load job openings')
     }
   }
 
   const fetchStats = async () => {
     try {
       const result = await jobOpeningStore.fetchStatistics()
-      // Store handles all state updates internally
+      if (!result.success) {
+        toast.error(result.error || 'Failed to load statistics')
+      }
+      return result
     } catch (err) {
       console.error('Error fetching stats:', err)
+      toast.error('Failed to load statistics')
     }
   }
 
   const fetchFilterOptions = async () => {
     try {
       const result = await jobOpeningStore.fetchFilterOptions()
-      // Store handles all state updates internally
+      if (!result.success) {
+        toast.error(result.error || 'Failed to load filter options')
+      }
+      return result
     } catch (err) {
       console.error('Error fetching filter options:', err)
+      toast.error('Failed to load filter options')
     }
   }
 
@@ -113,12 +129,15 @@ export function useJobOpening() {
     try {
       const result = await jobOpeningStore.createJobOpening(jobOpeningData)
       if (result.success) {
+        toast.success('Job opening created successfully')
         await fetchStats()
         return result.data
       }
+      toast.error(result.error || 'Failed to create job opening')
       throw new Error(result.error)
     } catch (err) {
       console.error('Error creating job opening:', err)
+      toast.error('Failed to create job opening')
       throw err
     }
   }
@@ -127,12 +146,15 @@ export function useJobOpening() {
     try {
       const result = await jobOpeningStore.updateJobOpening(name, jobOpeningData)
       if (result.success) {
+        toast.success('Job opening updated successfully')
         await fetchStats()
         return result.data
       }
+      toast.error(result.error || 'Failed to update job opening')
       throw new Error(result.error)
     } catch (err) {
       console.error('Error updating job opening:', err)
+      toast.error('Failed to update job opening')
       throw err
     }
   }
@@ -141,12 +163,15 @@ export function useJobOpening() {
     try {
       const result = await jobOpeningStore.deleteJobOpening(name)
       if (result.success) {
+        toast.success('Job opening deleted successfully')
         await fetchStats()
         return true
       }
+      toast.error(result.error || 'Failed to delete job opening')
       throw new Error(result.error)
     } catch (err) {
       console.error('Error deleting job opening:', err)
+      toast.error('Failed to delete job opening')
       throw err
     }
   }
@@ -184,7 +209,7 @@ export function useJobOpening() {
     jobOpeningStore.setSearchText(searchText)
     jobOpeningStore.setPagination(1)
     fetchJobOpenings()
-  }, 400)
+  }, 500)
 
   const updateStatus = (status) => {
     if (status && status.target) status = status.target.value

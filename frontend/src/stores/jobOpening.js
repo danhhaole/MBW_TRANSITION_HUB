@@ -169,8 +169,8 @@ export const useJobOpeningStore = defineStore('jobOpening', {
             'creation', 'modified'
           ],
           order_by = this.orderBy,
-          page_length = this.pagination.limit,
-          start = (this.pagination.page - 1) * this.pagination.limit
+          limit_page_length = this.pagination.limit,
+          page = this.pagination.page
         } = options
 
         // Build filters
@@ -196,55 +196,90 @@ export const useJobOpeningStore = defineStore('jobOpening', {
           enhancedFilters['location_name'] = this.locationFilter
         }
 
-        // Fetch job openings
-        const response = await call('frappe.client.get_list', {
-          doctype: "Mira Job Opening",
-          filters: enhancedFilters,
-          or_filters: or_filters,
-          fields: fields,
-          order_by: order_by,
-          limit_start: start,
-          limit_page_length: page_length
-        })
+        // Try new API first
+        let result
+        try {
+          result = await call('mbw_mira.api.doc.get_list_data', {
+            doctype: "Mira Job Opening",
+            filters: enhancedFilters,
+            or_filters: or_filters,
+            fields: fields,
+            order_by: order_by,
+            limit_page_length: limit_page_length,
+            page: page
+          })
 
-        // Get total count for pagination
-        const totalCount = await call('frappe.client.get_count', {
-          doctype: "Mira Job Opening",
-          filters: enhancedFilters,
-          or_filters: or_filters
-        })
+          if (!result || !result.success) {
+            throw new Error('New API returned invalid response')
+          }
+        } catch (newApiError) {
+          console.warn('New API failed, falling back to old API:', newApiError.message)
+          
+          // Fallback to old API
+          const start = (page - 1) * limit_page_length
+          
+          const [response, totalCount] = await Promise.all([
+            call('frappe.client.get_list', {
+              doctype: "Mira Job Opening",
+              filters: enhancedFilters,
+              or_filters: or_filters,
+              fields: fields,
+              order_by: order_by,
+              limit_start: start,
+              limit_page_length: limit_page_length
+            }),
+            call('frappe.client.get_count', {
+              doctype: "Mira Job Opening",
+              filters: enhancedFilters,
+              or_filters: or_filters
+            })
+          ])
 
-        // Process job openings to add display fields
-        const processedJobOpenings = (response || []).map(job => ({
-          ...job,
-          display_status: this.getStatusDisplay(job.approval_status),
-          formattedPostingDate: this.formatDate(job.posting_date),
-          formattedClosingDate: this.formatDate(job.closing_date),
-          formattedCreation: this.formatDate(job.creation),
-          relativeCreation: this.formatRelativeDate(job.creation),
-          isExpired: this.isJobExpired(job.closing_date)
-        }))
-
-        this.jobOpenings = processedJobOpenings
-
-        // Update pagination
-        this.pagination = {
-          page: Math.floor(start / page_length) + 1,
-          limit: page_length,
-          total: totalCount || 0,
-          pages: Math.ceil((totalCount || 0) / page_length),
-          has_next: (start + page_length) < (totalCount || 0),
-          has_prev: start > 0,
-          showing_from: start + 1,
-          showing_to: Math.min(start + page_length, totalCount || 0)
+          // Wrap in new API format
+          result = {
+            success: true,
+            data: response || [],
+            count: totalCount || 0
+          }
         }
 
-        this.setSuccess('Job openings loaded successfully')
-        return {
-          success: true,
-          data: processedJobOpenings,
-          pagination: this.pagination
+        if (result && result.success) {
+          // Process job openings to add display fields
+          const processedJobOpenings = (result.data || []).map(job => ({
+            ...job,
+            display_status: this.getStatusDisplay(job.approval_status),
+            formattedPostingDate: this.formatDate(job.posting_date),
+            formattedClosingDate: this.formatDate(job.closing_date),
+            formattedCreation: this.formatDate(job.creation),
+            relativeCreation: this.formatRelativeDate(job.creation),
+            isExpired: this.isJobExpired(job.closing_date)
+          }))
+
+          this.jobOpenings = processedJobOpenings
+
+          // Update pagination
+          const total = result.count || 0
+          this.pagination = {
+            page: page,
+            limit: limit_page_length,
+            total: total,
+            pages: Math.ceil(total / limit_page_length),
+            has_next: page * limit_page_length < total,
+            has_prev: page > 1,
+            showing_from: total > 0 ? (page - 1) * limit_page_length + 1 : 0,
+            showing_to: Math.min(page * limit_page_length, total)
+          }
+
+          this.setSuccess('Job openings loaded successfully')
+          return {
+            success: true,
+            data: processedJobOpenings,
+            pagination: this.pagination,
+            count: total
+          }
         }
+
+        return { success: false, message: 'No data received' }
       } catch (error) {
         console.error('Error fetching job openings:', error)
         this.setError(error.message || 'Failed to fetch job openings')
@@ -484,59 +519,108 @@ export const useJobOpeningStore = defineStore('jobOpening', {
     // Get statistics
     async fetchStatistics() {
       try {
-        // Get statistics by status
-        const statusStats = await call('frappe.client.get_list', {
-          doctype: "Mira Job Opening",
-          fields: ['approval_status', 'count(*) as count'],
-          group_by: 'approval_status'
-        })
-
-        // Get statistics by department
-        const departmentStats = await call('frappe.client.get_list', {
-          doctype: "Mira Job Opening",
-          fields: ['department_name', 'count(*) as count'],
-          group_by: 'department_name'
-        })
-
-        // Get total count
-        const totalCount = await call('frappe.client.get_count', {
-          doctype: "Mira Job Opening"
-        })
-
-        // Get recent count (last 7 days)
-        const sevenDaysAgo = new Date()
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-        const recentCount = await call('frappe.client.get_count', {
-          doctype: "Mira Job Opening",
-          filters: [['creation', '>=', sevenDaysAgo.toISOString().split('T')[0]]]
-        })
-
-        const statistics = {
-          total: totalCount || 0,
-          by_status: {},
-          by_department: {},
-          recent: recentCount || 0
-        }
-
-        // Process status statistics
-        if (statusStats && Array.isArray(statusStats)) {
-          statusStats.forEach(stat => {
-            statistics.by_status[stat.approval_status] = stat.count
+        // Try new API first - get all job openings to calculate statistics
+        try {
+          const result = await call('mbw_mira.api.doc.get_list_data', {
+            doctype: "Mira Job Opening",
+            fields: ['approval_status', 'department_name', 'creation'],
+            limit_page_length: 1000
           })
-        }
 
-        // Process department statistics
-        if (departmentStats && Array.isArray(departmentStats)) {
-          departmentStats.forEach(stat => {
-            statistics.by_department[stat.department_name] = stat.count
-          })
-        }
+          if (result && result.success) {
+            const statistics = {
+              total: result.count || 0,
+              by_status: {},
+              by_department: {},
+              recent: 0
+            }
 
-        this.statistics = statistics
+            if (result.data && Array.isArray(result.data)) {
+              // Count by status
+              result.data.forEach(item => {
+                const status = item.approval_status || 'Unknown'
+                statistics.by_status[status] = (statistics.by_status[status] || 0) + 1
+              })
 
-        return {
-          success: true,
-          data: statistics
+              // Count by department
+              result.data.forEach(item => {
+                const department = item.department_name || 'Unknown'
+                statistics.by_department[department] = (statistics.by_department[department] || 0) + 1
+              })
+
+              // Count recent (last 7 days)
+              const sevenDaysAgo = new Date()
+              sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+              
+              statistics.recent = result.data.filter(item => {
+                if (!item.creation) return false
+                const creationDate = new Date(item.creation)
+                return creationDate >= sevenDaysAgo
+              }).length
+            }
+
+            this.statistics = statistics
+            return {
+              success: true,
+              data: statistics
+            }
+          } else {
+            throw new Error('New API returned invalid response')
+          }
+        } catch (newApiError) {
+          console.warn('New API failed for statistics, falling back to old API:', newApiError.message)
+          
+          // Fallback to old separate API calls
+          const [statusStats, departmentStats, totalCount, recentCount] = await Promise.all([
+            call('frappe.client.get_list', {
+              doctype: "Mira Job Opening",
+              fields: ['approval_status', 'count(*) as count'],
+              group_by: 'approval_status'
+            }),
+            call('frappe.client.get_list', {
+              doctype: "Mira Job Opening",
+              fields: ['department_name', 'count(*) as count'],
+              group_by: 'department_name'
+            }),
+            call('frappe.client.get_count', {
+              doctype: "Mira Job Opening"
+            }),
+            call('frappe.client.get_count', {
+              doctype: "Mira Job Opening",
+              filters: [['creation', '>=', (() => {
+                const sevenDaysAgo = new Date()
+                sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+                return sevenDaysAgo.toISOString().split('T')[0]
+              })()]]
+            })
+          ])
+
+          const statistics = {
+            total: totalCount || 0,
+            by_status: {},
+            by_department: {},
+            recent: recentCount || 0
+          }
+
+          // Process status statistics
+          if (statusStats && Array.isArray(statusStats)) {
+            statusStats.forEach(stat => {
+              statistics.by_status[stat.approval_status] = stat.count
+            })
+          }
+
+          // Process department statistics
+          if (departmentStats && Array.isArray(departmentStats)) {
+            departmentStats.forEach(stat => {
+              statistics.by_department[stat.department_name] = stat.count
+            })
+          }
+
+          this.statistics = statistics
+          return {
+            success: true,
+            data: statistics
+          }
         }
       } catch (error) {
         console.error('Error fetching statistics:', error)

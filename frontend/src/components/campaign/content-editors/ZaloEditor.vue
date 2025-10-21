@@ -121,15 +121,36 @@
               <label class="block text-sm font-medium text-gray-700">
                 {{ __("Start Flow") }}
               </label>
-              <div class="flex space-x-2">
+              
+              <!-- Flow Display Name -->
+              <div class="space-y-2">
+                <label class="block text-xs font-medium text-gray-600">
+                  {{ __("Display Name") }}
+                </label>
                 <input
-                  v-model="block.flow_trigger"
-                  :placeholder="__('Flow ID or trigger name')"
+                  v-model="block.flow_display_name"
+                  :placeholder="__('Enter display name (e.g., Register Course)')"
                   :disabled="readonly"
-                  class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   :class="{ 'bg-gray-100 cursor-not-allowed': readonly }"
                   @input="updateContent"
                 />
+              </div>
+
+              <!-- Flow Selection -->
+              <div class="flex space-x-2">
+                <select
+                  v-model="block.flow_trigger"
+                  :disabled="readonly"
+                  class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  :class="{ 'bg-gray-100 cursor-not-allowed': readonly }"
+                  @change="updateContent"
+                >
+                  <option value="">{{ __("Select flow...") }}</option>
+                  <option v-for="flow in availableFlows" :key="flow.name" :value="flow.name">
+                    {{ flow.title || flow.name }}
+                  </option>
+                </select>
                 <button
                   @click="removeAction(block, 'flow_trigger')"
                   class="text-red-500 hover:text-red-700 p-2"
@@ -279,7 +300,8 @@ import { useToast } from '../../../composables/useToast'
 
 const props = defineProps({
   content: { type: Object, default: () => ({}) },
-  readonly: { type: Boolean, default: false }
+  readonly: { type: Boolean, default: false },
+  availableFlows: { type: Array, default: () => [] }
 })
 
 const emit = defineEmits(['update:content', 'save', 'preview'])
