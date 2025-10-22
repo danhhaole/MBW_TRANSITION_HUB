@@ -115,35 +115,68 @@ export const useMiraFlowStore = defineStore('miraFlow', {
           params.filters = { ...params.filters, owner_id: this.filters.owner }
         }
 
-        const [listResult, countResult] = await Promise.all([
-          call('frappe.client.get_list', params),
-          call('frappe.client.get_count', {
-            doctype: 'Mira Flow',
-            filters: params.filters,
-            or_filters: params.or_filters
-          })
-        ])
+        // Try the new combined API first, fallback to old API if it fails
+        let result
+        try {
+          result = await call('mbw_mira.api.doc.get_list_data', params)
+          
+          if (result && result.success && Array.isArray(result.data)) {
+            // Enhance data with display fields
+            this.flows = result.data.map(flow => ({
+              ...flow,
+              display_status: this.getStatusDisplay(flow.status),
+              status_color: this.getStatusColor(flow.status),
+              formatted_created_at: this.formatDate(flow.created_at || flow.creation),
+              formatted_modified: this.formatRelativeDate(flow.modified)
+            }))
 
-        if (listResult && Array.isArray(listResult)) {
-          // Enhance data with display fields
-          this.flows = listResult.map(flow => ({
-            ...flow,
-            display_status: this.getStatusDisplay(flow.status),
-            status_color: this.getStatusColor(flow.status),
-            formatted_created_at: this.formatDate(flow.created_at || flow.creation),
-            formatted_modified: this.formatRelativeDate(flow.modified)
-          }))
+            // Update pagination
+            this.pagination.total = result.count || 0
+            this.pagination.page = options.page || 1
+            this.pagination.limit = options.limit || this.pagination.limit
+            this.pagination.showing_from = this.pagination.total > 0 ? ((this.pagination.page - 1) * this.pagination.limit) + 1 : 0
+            this.pagination.showing_to = Math.min(this.pagination.page * this.pagination.limit, this.pagination.total)
+            this.pagination.has_next = this.pagination.showing_to < this.pagination.total
+            this.pagination.has_prev = this.pagination.page > 1
 
-          // Update pagination
-          this.pagination.total = countResult || 0
-          this.pagination.page = options.page || 1
-          this.pagination.limit = options.limit || this.pagination.limit
-          this.pagination.showing_from = this.pagination.total > 0 ? ((this.pagination.page - 1) * this.pagination.limit) + 1 : 0
-          this.pagination.showing_to = Math.min(this.pagination.page * this.pagination.limit, this.pagination.total)
-          this.pagination.has_next = this.pagination.showing_to < this.pagination.total
-          this.pagination.has_prev = this.pagination.page > 1
+            return { success: true, data: this.flows, count: result.count }
+          } else {
+            throw new Error('New API returned invalid response')
+          }
+        } catch (newApiError) {
+          console.warn('New API failed, falling back to old API:', newApiError.message)
+          
+          // Fallback to old separate API calls
+          const [listResult, countResult] = await Promise.all([
+            call('frappe.client.get_list', params),
+            call('frappe.client.get_count', {
+              doctype: 'Mira Flow',
+              filters: params.filters,
+              or_filters: params.or_filters
+            })
+          ])
 
-          return { success: true, data: this.flows }
+          if (listResult && Array.isArray(listResult)) {
+            // Enhance data with display fields
+            this.flows = listResult.map(flow => ({
+              ...flow,
+              display_status: this.getStatusDisplay(flow.status),
+              status_color: this.getStatusColor(flow.status),
+              formatted_created_at: this.formatDate(flow.created_at || flow.creation),
+              formatted_modified: this.formatRelativeDate(flow.modified)
+            }))
+
+            // Update pagination
+            this.pagination.total = countResult || 0
+            this.pagination.page = options.page || 1
+            this.pagination.limit = options.limit || this.pagination.limit
+            this.pagination.showing_from = this.pagination.total > 0 ? ((this.pagination.page - 1) * this.pagination.limit) + 1 : 0
+            this.pagination.showing_to = Math.min(this.pagination.page * this.pagination.limit, this.pagination.total)
+            this.pagination.has_next = this.pagination.showing_to < this.pagination.total
+            this.pagination.has_prev = this.pagination.page > 1
+
+            return { success: true, data: this.flows, count: countResult }
+          }
         }
 
         return { success: false, message: 'No data received' }
@@ -392,23 +425,71 @@ export const useMiraFlowStore = defineStore('miraFlow', {
 
     async fetchStatistics() {
       try {
-        const [totalResult, activeResult, draftResult, pausedResult, archivedResult] = await Promise.all([
-          call('frappe.client.get_count', { doctype: 'Mira Flow' }),
-          call('frappe.client.get_count', { doctype: 'Mira Flow', filters: { status: 'Active' } }),
-          call('frappe.client.get_count', { doctype: 'Mira Flow', filters: { status: 'Draft' } }),
-          call('frappe.client.get_count', { doctype: 'Mira Flow', filters: { status: 'Paused' } }),
-          call('frappe.client.get_count', { doctype: 'Mira Flow', filters: { status: 'Archived' } })
-        ])
+        // Try new API first
+        try {
+          const [totalResult, activeResult, draftResult, pausedResult, archivedResult] = await Promise.all([
+            call('mbw_mira.api.doc.get_list_data', {
+              doctype: 'Mira Flow',
+              fields: ['name'], // Minimal field to reduce data transfer
+              limit_page_length: 1 // We only need the count, not the data
+            }),
+            call('mbw_mira.api.doc.get_list_data', {
+              doctype: 'Mira Flow',
+              fields: ['name'],
+              filters: { status: 'Active' },
+              limit_page_length: 1
+            }),
+            call('mbw_mira.api.doc.get_list_data', {
+              doctype: 'Mira Flow',
+              fields: ['name'],
+              filters: { status: 'Draft' },
+              limit_page_length: 1
+            }),
+            call('mbw_mira.api.doc.get_list_data', {
+              doctype: 'Mira Flow',
+              fields: ['name'],
+              filters: { status: 'Paused' },
+              limit_page_length: 1
+            }),
+            call('mbw_mira.api.doc.get_list_data', {
+              doctype: 'Mira Flow',
+              fields: ['name'],
+              filters: { status: 'Archived' },
+              limit_page_length: 1
+            })
+          ])
 
-        this.statistics = {
-          total: totalResult || 0,
-          active: activeResult || 0,
-          draft: draftResult || 0,
-          paused: pausedResult || 0,
-          archived: archivedResult || 0
+          this.statistics = {
+            total: totalResult?.count || 0,
+            active: activeResult?.count || 0,
+            draft: draftResult?.count || 0,
+            paused: pausedResult?.count || 0,
+            archived: archivedResult?.count || 0
+          }
+
+          return this.statistics
+        } catch (newApiError) {
+          console.warn('New API failed for statistics, falling back to old API:', newApiError.message)
+          
+          // Fallback to old API
+          const [totalResult, activeResult, draftResult, pausedResult, archivedResult] = await Promise.all([
+            call('frappe.client.get_count', { doctype: 'Mira Flow' }),
+            call('frappe.client.get_count', { doctype: 'Mira Flow', filters: { status: 'Active' } }),
+            call('frappe.client.get_count', { doctype: 'Mira Flow', filters: { status: 'Draft' } }),
+            call('frappe.client.get_count', { doctype: 'Mira Flow', filters: { status: 'Paused' } }),
+            call('frappe.client.get_count', { doctype: 'Mira Flow', filters: { status: 'Archived' } })
+          ])
+
+          this.statistics = {
+            total: totalResult || 0,
+            active: activeResult || 0,
+            draft: draftResult || 0,
+            paused: pausedResult || 0,
+            archived: archivedResult || 0
+          }
+
+          return this.statistics
         }
-
-        return this.statistics
       } catch (error) {
         console.error('Error fetching statistics:', error)
         return this.statistics
