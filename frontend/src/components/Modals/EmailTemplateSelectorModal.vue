@@ -79,7 +79,6 @@
 import EmailTemplateModal from '@/components/Modals/EmailTemplateModal.vue'
 import { TextEditor, createListResource } from 'frappe-ui'
 import { ref, computed, nextTick, watch, onMounted } from 'vue'
-import { usePermissionStore } from "@/stores/permission";
 
 const props = defineProps({
   doctype: {

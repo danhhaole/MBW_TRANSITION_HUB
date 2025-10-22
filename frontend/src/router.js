@@ -54,8 +54,9 @@ const routes = [
 	{ path: '/sequences', name: 'SequenceManagement', component: () => import('@/pages/SequenceManagement.vue') },
 	{ path: '/sequences/:id/edit', name: 'SequenceEditor', component: () => import('@/pages/SequenceEditor.vue') },
 
-	// Candidate Pool
-	{ path: '/talents', name: 'Talent', component: ()=>import('@/pages/CandidatePoolManagement.vue') },
+	// Talent Management
+	{ path: '/talents', name: 'Talent', component: ()=>import('@/pages/TalentManagement.vue') },
+	{ path: '/talents/:id', name: 'TalentDetail', component: ()=>import('@/pages/TalentDetail.vue') },
 	{ path: '/talent-pool/:id', name: 'TalentPoolDetail', component: ()=>import('@/pages/TalentPoolDetail.vue') },
 
 	

@@ -108,7 +108,6 @@
 import { capture } from '@/telemetry'
 import { Checkbox, Select, TextEditor, call } from 'frappe-ui'
 import { ref, nextTick, watch } from 'vue'
-import { usePermissionStore } from "@/stores/permission";
 
 const props = defineProps({
   emailTemplate: {
