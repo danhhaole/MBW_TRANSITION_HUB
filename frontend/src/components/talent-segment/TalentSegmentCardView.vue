@@ -175,6 +175,12 @@ const formatRelativeTime = (dateString) => {
   return formatDate(dateString)
 }
 
+const formatDate = (dateString) => {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  return date.toLocaleDateString()
+}
+
 const getDropdownOptions = (segment) => {
   return [
     {

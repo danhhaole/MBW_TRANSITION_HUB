@@ -72,8 +72,10 @@
             <div class="flex items-center space-x-3">
               <Badge theme="green" variant="subtle">Interview Scheduled</Badge>
               <Button variant="outline" size="sm">
-                <FeatherIcon name="eye" class="w-4 h-4 mr-2" />
-                View
+                <div class="flex items-center space-x-2">
+                  <FeatherIcon name="eye" class="w-4 h-4 mr-2" />
+                  View
+                </div>
               </Button>
             </div>
           </div>
@@ -94,8 +96,10 @@
             <div class="flex items-center space-x-3">
               <Badge theme="orange" variant="subtle">Under Review</Badge>
               <Button variant="outline" size="sm">
-                <FeatherIcon name="eye" class="w-4 h-4 mr-2" />
-                View
+                  <div class="flex items-center space-x-2">
+                  <FeatherIcon name="eye" class="w-4 h-4 mr-2" />
+                  View
+                </div>
               </Button>
             </div>
           </div>
@@ -116,8 +120,10 @@
             <div class="flex items-center space-x-3">
               <Badge theme="blue" variant="subtle">Offer Extended</Badge>
               <Button variant="outline" size="sm">
-                <FeatherIcon name="eye" class="w-4 h-4 mr-2" />
-                View
+                <div class="flex items-center space-x-2">
+                  <FeatherIcon name="eye" class="w-4 h-4 mr-2" />
+                  View
+                </div>
               </Button>
             </div>
           </div>
@@ -138,8 +144,10 @@
             <div class="flex items-center space-x-3">
               <Badge theme="red" variant="subtle">Not Selected</Badge>
               <Button variant="outline" size="sm">
-                <FeatherIcon name="eye" class="w-4 h-4 mr-2" />
-                View
+                <div class="flex items-center space-x-2">
+                  <FeatherIcon name="eye" class="w-4 h-4 mr-2" />
+                  View
+                </div>
               </Button>
             </div>
           </div>

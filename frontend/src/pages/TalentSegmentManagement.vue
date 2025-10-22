@@ -188,14 +188,14 @@
           </div>
 
           <!-- Empty State -->
-          <div v-else-if="!talentPools.length" class="text-center py-16">
+          <div v-else-if="!segments.length" class="text-center py-16">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 text-gray-300 mx-auto mb-4" fill="none"
               viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
                 d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <h3 class="text-lg font-medium text-gray-900 mb-1">No talent pools found</h3>
-            <p class="text-gray-500">Get started by creating a new talent pool.</p>
+            <h3 class="text-lg font-medium text-gray-900 mb-1">No talent segments found</h3>
+            <p class="text-gray-500">Get started by creating a new talent segment.</p>
           </div>
 
           <!-- Table View -->
@@ -207,21 +207,21 @@
                     <input
                       type="checkbox"
                       class="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                      :checked="selectedAll.length === items.length && items.length > 0"
-                      :indeterminate="selectedAll.length > 0 && selectedAll.length < items.length"
+                      :checked="selectedAll.length === segments.length && segments.length > 0"
+                      :indeterminate="selectedAll.length > 0 && selectedAll.length < segments.length"
                       @change="toggleSelectAll"
                     />
                   </th>
                   <th scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('FullName') }}</th>
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Segment Name') }}</th>
                   <th scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('PoolType') }}</th>
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Type') }}</th>
                   <th scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{__('Email') }}</th>
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{__('Description') }}</th>
                   <th scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{__('Phone') }}</th>
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{__('Candidate Count') }}</th>
                   <th scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{__('Readiness Score') }}</th>
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{__('Owner') }}</th>
                   <th scope="col"
                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{__('Created On') }}</th>
                   <th scope="col"
@@ -229,55 +229,54 @@
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
-                <tr v-for="pool in paginatedTalentPools" :key="pool.name" class="hover:bg-gray-50">
+                <tr v-for="segment in segments" :key="segment.name" class="hover:bg-gray-50">
                   <!-- check all -->
                   <td class="p-3 text-center">
                     <input
                       type="checkbox"
                       class="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                      :checked="selectedAll.includes(pool)"
-                      @change="toggleSelect(pool)"
+                      :checked="selectedAll.includes(segment)"
+                      @change="toggleSelect(segment)"
                     />
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center">
-                      <div class="text-xs font-medium text-gray-800 uppercase tracking-wider">{{ pool.full_name }}</div>
+                      <div class="text-sm font-medium text-gray-900">{{ segment.title }}</div>
                     </div>
                   </td>
                   <td class="px-6 py-4">
-                    <div @click="pool.title ? viewSegmentDetail(pool.segment_id) : null" :class="[
-                      'text-xs font-medium uppercase tracking-wider cursor-pointer',
-                      pool.title
-                        ? 'text-blue-600 hover:text-blue-800 hover:underline'
-                        : 'text-gray-500 cursor-default'
+                    <span :class="[
+                      'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
+                      segment.type_color?.bg || 'bg-gray-100',
+                      segment.type_color?.text || 'text-gray-800'
                     ]">
-                      {{ pool.title || 'Not classified' }}
+                      {{ segment.display_type || segment.type }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="text-sm text-gray-500 max-w-xs truncate">
+                      {{ segment.description || 'No description' }}
                     </div>
                   </td>
                   <td class="px-6 py-4">
-                    <div class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ pool.contact_email }}
-                    </div>
+                    <div class="text-sm text-gray-900">{{ segment.candidate_count || 0 }}</div>
                   </td>
                   <td class="px-6 py-4">
-                    <div class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ pool.contact_phone }}
-                    </div>
-                  </td>
-                  <td class="px-6 py-4">
-                    <div class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ pool.match_score }}</div>
+                    <div class="text-sm text-gray-500">{{ segment.owner_id || 'System' }}</div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-500">{{ formatDate(pool.creation) }}</div>
+                    <div class="text-sm text-gray-500">{{ segment.formatted_creation || formatDate(segment.creation) }}</div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-left text-sm font-medium">
-                    <button @click="view(pool)" class="p-1 text-slate-400 hover:text-blue-600 transition-colors"
+                    <button @click="handleViewDetails(segment)" class="p-1 text-slate-400 hover:text-blue-600 transition-colors"
                       :title="__('View Details')">
                       <FeatherIcon name="eye" class="w-4 h-4" />
                     </button>
-                    <!-- <button @click="handleEditTalentPool(pool)"
+                    <button @click="handleEdit(segment)"
                       class="p-1 text-slate-400 hover:text-blue-600 transition-colors" :title="__('Edit')">
                       <FeatherIcon name="edit" class="w-4 h-4" />
-                    </button> -->
-                    <button class="p-1 text-slate-400 hover:text-red-600 transition-colors" :title="__('Delete')">
+                    </button>
+                    <button @click="handleDelete(segment)" class="p-1 text-slate-400 hover:text-red-600 transition-colors" :title="__('Delete')">
                       <FeatherIcon name="trash-2" class="w-4 h-4" />
                     </button>
                   </td>
@@ -305,8 +304,8 @@
                 <div>
                   <p class="text-sm text-gray-700">
                     Showing <span class="font-medium">{{ (listPagination.currentPage - 1) * listPagination.itemsPerPage+ 1 }}</span>
-                    to <span class="font-medium">{{ Math.min(listPagination.currentPage * listPagination.itemsPerPage,talentPools.length) }}</span>
-                    of <span class="font-medium">{{ talentPools.length }}</span> results
+                    to <span class="font-medium">{{ Math.min(listPagination.currentPage * listPagination.itemsPerPage, segments.length) }}</span>
+                    of <span class="font-medium">{{ segments.length }}</span> results
                   </p>
                 </div>
                 <div>
@@ -564,7 +563,7 @@
 <script setup>
 import { ref, computed, onMounted, watch, onUnmounted, h, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { useTalentSegment } from '@/composables/useTalentSegment'
+import { useTalentSegmentStore } from '@/stores/talentSegment'
 import { Button, Dialog, Dropdown, FeatherIcon, FormControl, Breadcrumbs, Autocomplete, call } from 'frappe-ui'
 import TalentSegmentForm from '@/components/talent-segment/TalentSegmentForm.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
@@ -576,10 +575,12 @@ import { ToastContainer } from '@/components/shared'
 import { useToast } from '@/composables/useToast'
 
 const toastMessage = useToast()
+const router = useRouter()
 
 const { showToast, showSuccess, showError } = useToast()
 import { useTalentPoolStore } from '@/stores/talentPool'
 const talentPoolStore = useTalentPoolStore()
+const talentSegmentStore = useTalentSegmentStore()
 let title = __('Talent Pools')
 const breadcrumbs = [{ label: title, route: { name: 'TalentSegments' } }]
 
@@ -598,7 +599,7 @@ const selectedNames = computed(() => selectedAll.value.map(i => i.name))
 // Toggle chọn tất cả
 const toggleSelectAll = (event) => {
   if (event.target.checked) {
-    selectedAll.value = [...talentPools.value] // clone danh sách
+    selectedAll.value = [...segments.value] // clone danh sách segments
   } else {
     selectedAll.value = []
   }
@@ -618,6 +619,9 @@ const toggleSelect = (item) => {
 onMounted(async () => {
   await talentPoolStore.getTalentPools()
   await talentPoolStore.fetchSegments()
+  await talentSegmentStore.fetchTalentSegments()
+  // Add keyboard event listener
+  document.addEventListener('keydown', handleKeyDown)
 })
 
 const handleSegmentTypeFilter = (option) => {
@@ -725,23 +729,10 @@ const updateManyTalentPool = async () => {
   }
 }
 // Composables
-const router = useRouter()
-const {
-  segments,
-  selectedSegment,
-  loading,
-  error,
-  success,
-  filters,
-  isSearching,
-  segmentCount,
-  loadSegments,
-  searchSegments,
-  clearSearch: clearSegmentSearch,
-  setTypeFilter,
-  getSegmentDetails,
-  deleteSegment
-} = useTalentSegment()
+const segments = computed(() => talentSegmentStore.filteredTalentSegments)
+const loading = computed(() => talentSegmentStore.loading)
+const error = computed(() => talentSegmentStore.error)
+const success = computed(() => talentSegmentStore.success)
 
 // Local state
 const currentTab = ref('pools')
@@ -811,25 +802,16 @@ const totalPages = computed(() => Math.ceil(totalSegments.value / pagination.val
 
 const loadSegmentsWithPagination = async () => {
   try {
-    // Gọi loadSegments từ composable với params
-    const result = await loadSegments({
+    // Sử dụng store thay vì composable
+    const result = await talentSegmentStore.fetchTalentSegments({
       page: pagination.value.currentPage,
       limit: pagination.value.itemsPerPage
     })
 
     if (result) {
-      // loadSegments trong composable trả về { data, total }
-      segments.value = result.data
-      totalSegments.value = result.total
-      pagination.value.total = result.total
-
-      // Enrich data if needed
-      if (segments.value.length > 0) {
-        const enrichedSegments = await Promise.all(
-          segments.value.map(segment => enrichSegmentData(segment))
-        )
-        segments.value = enrichedSegments
-      }
+      // Store trả về { data, pagination }
+      totalSegments.value = result.pagination.total
+      pagination.value.total = result.pagination.total
     }
 
     console.log(`Loaded ${segments.value.length} segments, total: ${totalSegments.value}`)
@@ -936,21 +918,13 @@ const previousPage = () => {
   }
 }
 
-// Search handling
-const handleSearch = () => {
-  if (searchQuery.value !== filters.searchText) {
-    filters.searchText = searchQuery.value // Cập nhật filter
-    pagination.value.currentPage = 1 // Reset về trang 1
-    loadSegmentsWithPagination() // Gọi hàm mới
-  }
-}
-
+// Search handling - using store
 const clearSearch = () => {
   searchQuery.value = ''
-  filters.searchText = '' // Clear filter
-  pagination.value.currentPage = 1
-  loadSegmentsWithPagination() // Gọi hàm mới
+  talentSegmentStore.setSearchText('')
+  talentSegmentStore.fetchTalentSegments()
 }
+
 
 // Utility functions
 const formatLastUpdated = (dateStr) => {
@@ -1164,42 +1138,12 @@ const viewSegmentDetail = (segmentId) => {
   })
 }
 
-const handleViewDetails = async (segment) => {
-  router.push(`/talent-pools/${segment.name}/detail`)
-}
 
-const handleEdit = (segment) => {
-  editingSegment.value = segment
-  showCreateForm.value = true
-}
-
-const handleDelete = (segment) => {
-  deletingSegment.value = segment
-  showDeleteDialog.value = true
-}
-
-const confirmDelete = async () => {
-  if (!deletingSegment.value) return
-
-  const result = await deleteSegment(deletingSegment.value.name)
-  if (result) {
-    showDeleteDialog.value = false
-    deletingSegment.value = null
-
-    // Kiểm tra nếu trang hiện tại không còn items
-    if (segments.value.length === 1 && pagination.value.currentPage > 1) {
-      pagination.value.currentPage--
-    }
-
-    await loadSegmentsWithPagination() // Reload với pagination
-    showSuccess(__('Talent pool has been deleted successfully'))
-  }
-}
 
 const handleFormSuccess = async () => {
   showCreateForm.value = false
   editingSegment.value = null
-  await loadSegmentsWithPagination() // Dùng hàm mới
+  await talentSegmentStore.fetchTalentSegments() // Dùng store
   showSuccess(__('Talent pool has been saved successfully'))
 }
 
@@ -1212,9 +1156,41 @@ const handleFormClose = () => {
 const handleRefresh = async () => {
   selectedAll.value = []
   const currentFilter = selectedSegmentType.value
-  await loadSegmentsWithPagination()
+  await talentSegmentStore.fetchTalentSegments()
   await talentPoolStore.getTalentPools(currentFilter)
   showSuccess(__('Data refreshed'))
+}
+
+const handleSearch = async (query) => {
+  talentSegmentStore.setSearchText(query)
+  await talentSegmentStore.fetchTalentSegments()
+}
+
+const handleEdit = (segment) => {
+  editingSegment.value = segment
+  showCreateForm.value = true
+}
+
+const handleDelete = (segment) => {
+  deletingSegment.value = segment
+  showDeleteDialog.value = true
+}
+
+const handleViewDetails = (segment) => {
+  router.push(`/talent-segments/${segment.name}`)
+}
+
+const confirmDelete = async () => {
+  if (deletingSegment.value) {
+    try {
+      await talentSegmentStore.deleteTalentSegment(deletingSegment.value.name)
+      showSuccess(__('Talent segment deleted successfully'))
+      showDeleteDialog.value = false
+      deletingSegment.value = null
+    } catch (error) {
+      showError(error.message || __('Failed to delete talent segment'))
+    }
+  }
 }
 
 // Keyboard shortcuts
@@ -1231,7 +1207,7 @@ const handleKeyDown = (event) => {
 }
 
 // Watchers
-watch(() => filters.searchText, (newValue) => {
+watch(() => talentSegmentStore.searchText, (newValue) => {
   searchQuery.value = newValue
 })
 
@@ -1248,7 +1224,10 @@ watch(() => [error.value, success.value], ([errorVal, successVal]) => {
 })
 
 watch(() => pagination.value.currentPage, () => {
-  loadSegmentsWithPagination()
+  talentSegmentStore.fetchTalentSegments({
+    page: pagination.value.currentPage,
+    limit: pagination.value.itemsPerPage
+  })
 })
 
 // Reset editingSegment when dialog closes
@@ -1259,12 +1238,6 @@ watch(() => showCreateForm.value, (isOpen) => {
   }
 })
 
-// Initialize
-onMounted(() => {
-  loadSegmentsWithPagination()
-  // Add keyboard event listener
-  document.addEventListener('keydown', handleKeyDown)
-})
 
 onUnmounted(() => {
   // Remove keyboard event listener

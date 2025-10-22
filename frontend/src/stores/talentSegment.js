@@ -192,17 +192,39 @@ export const useTalentSegmentStore = defineStore('talentSegment', {
           ]
         }
         
-        const [data, total] = await Promise.all([
-          call('frappe.client.get_list', {
+        // Try the new combined API first, fallback to old API if it fails
+        let result
+        try {
+          result = await call('mbw_mira.api.doc.get_list_data', {
             doctype: 'Mira Segment',
             ...queryOptions
-          }),
-          call('frappe.client.get_count', {
-            doctype: 'Mira Segment',
-            filters: queryOptions.filters,
-            or_filters: queryOptions.or_filters
           })
-        ])
+          
+          if (result && result.success && Array.isArray(result.data)) {
+            var data = result.data
+            var total = result.count
+          } else {
+            throw new Error('New API returned invalid response')
+          }
+        } catch (newApiError) {
+          console.warn('New API failed, falling back to old API:', newApiError.message)
+          
+          // Fallback to old separate API calls
+          const [listResult, countResult] = await Promise.all([
+            call('frappe.client.get_list', {
+              doctype: 'Mira Segment',
+              ...queryOptions
+            }),
+            call('frappe.client.get_count', {
+              doctype: 'Mira Segment',
+              filters: queryOptions.filters,
+              or_filters: queryOptions.or_filters
+            })
+          ])
+          
+          var data = listResult
+          var total = countResult
+        }
         
         // Enhance data with display fields
         const enhancedData = (data || []).map(segment => ({
@@ -434,19 +456,44 @@ export const useTalentSegmentStore = defineStore('talentSegment', {
         const { page = 1, limit = 20 } = options
         const start = (page - 1) * limit
         
-        const [data, total] = await Promise.all([
-          call('frappe.client.get_list', {
+        // Try the new combined API first, fallback to old API if it fails
+        let result
+        try {
+          result = await call('mbw_mira.api.doc.get_list_data', {
             doctype: 'Mira Talent Pool',
             fields: ['talent_id', 'added_at', 'added_by'],
             filters: { segment_id: segmentId },
             limit_start: start,
             limit_page_length: limit
-          }),
-          call('frappe.client.get_count', {
-            doctype: 'Mira Talent Pool',
-            filters: { segment_id: segmentId }
           })
-        ])
+          
+          if (result && result.success && Array.isArray(result.data)) {
+            var data = result.data
+            var total = result.count
+          } else {
+            throw new Error('New API returned invalid response')
+          }
+        } catch (newApiError) {
+          console.warn('New API failed for talent pool, falling back to old API:', newApiError.message)
+          
+          // Fallback to old separate API calls
+          const [listResult, countResult] = await Promise.all([
+            call('frappe.client.get_list', {
+              doctype: 'Mira Talent Pool',
+              fields: ['talent_id', 'added_at', 'added_by'],
+              filters: { segment_id: segmentId },
+              limit_start: start,
+              limit_page_length: limit
+            }),
+            call('frappe.client.get_count', {
+              doctype: 'Mira Talent Pool',
+              filters: { segment_id: segmentId }
+            })
+          ])
+          
+          var data = listResult
+          var total = countResult
+        }
         
         const talents = data || []
         this.segmentTalents[segmentId] = talents
@@ -576,21 +623,55 @@ export const useTalentSegmentStore = defineStore('talentSegment', {
     // Statistics
     async fetchStatistics() {
       try {
-        const [totalCount, typeStats, recentCount] = await Promise.all([
-          call('frappe.client.get_count', {
-            doctype: 'Mira Segment'
-          }),
-          call('frappe.client.get_list', {
-            doctype: 'Mira Segment',
-            fields: ['type', 'count(name) as count'],
-            group_by: 'type',
-            as_dict: true
-          }),
-          call('frappe.client.get_count', {
-            doctype: 'Mira Segment',
-            filters: [['creation', '>=', this.formatDate(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000))]]
-          })
-        ])
+        // Try new API first
+        try {
+          const [totalResult, typeStatsResult, recentResult] = await Promise.all([
+            call('mbw_mira.api.doc.get_list_data', {
+              doctype: 'Mira Segment',
+              fields: ['name'], // Minimal field to reduce data transfer
+              limit_page_length: 1 // We only need the count, not the data
+            }),
+            call('frappe.client.get_list', {
+              doctype: 'Mira Segment',
+              fields: ['type', 'count(name) as count'],
+              group_by: 'type',
+              as_dict: true
+            }),
+            call('mbw_mira.api.doc.get_list_data', {
+              doctype: 'Mira Segment',
+              fields: ['name'],
+              filters: [['creation', '>=', this.formatDate(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000))]],
+              limit_page_length: 1
+            })
+          ])
+
+          var totalCount = totalResult?.count || 0
+          var typeStats = typeStatsResult
+          var recentCount = recentResult?.count || 0
+        } catch (newApiError) {
+          console.warn('New API failed for statistics, falling back to old API:', newApiError.message)
+          
+          // Fallback to old API
+          const [totalCountResult, typeStatsResult, recentCountResult] = await Promise.all([
+            call('frappe.client.get_count', {
+              doctype: 'Mira Segment'
+            }),
+            call('frappe.client.get_list', {
+              doctype: 'Mira Segment',
+              fields: ['type', 'count(name) as count'],
+              group_by: 'type',
+              as_dict: true
+            }),
+            call('frappe.client.get_count', {
+              doctype: 'Mira Segment',
+              filters: [['creation', '>=', this.formatDate(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000))]]
+            })
+          ])
+
+          var totalCount = totalCountResult
+          var typeStats = typeStatsResult
+          var recentCount = recentCountResult
+        }
         
         const by_type = {}
         if (typeStats && Array.isArray(typeStats)) {
