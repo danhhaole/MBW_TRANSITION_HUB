@@ -772,6 +772,7 @@ const autoSaveTimer = ref(null);
 const isAutoSaving = ref(false);
 const lastSaveSuccess = ref(false);
 const showSaveSuccess = ref(false);
+const isUpdatingFromAutoSave = ref(false); // Flag to prevent infinite loop
 
 // Campaign stores
 const campaignStore = useCampaignStore();
@@ -2529,7 +2530,9 @@ const autoSave = async () => {
     
     if (!campaignId || isAutoSaving.value) return;
 
+    // Set flags to prevent infinite loop
     isAutoSaving.value = true;
+    isUpdatingFromAutoSave.value = true;
 
     // Prepare mira_talent_campaign config for step 2 (Content Design)
     let miraTalentCampaignConfig = null;
@@ -2597,6 +2600,10 @@ const autoSave = async () => {
     // Don't show alert for auto-save errors to avoid interrupting user
   } finally {
     isAutoSaving.value = false;
+    // Reset flag after a short delay to allow any pending updates to complete
+    setTimeout(() => {
+      isUpdatingFromAutoSave.value = false;
+    }, 100);
   }
 };
 
@@ -2737,6 +2744,12 @@ const saveCurrentStepData = async () => {
 
 // Content editor handlers
 const handleContentUpdate = (updatedContent) => {
+  // Prevent infinite loop: skip if update is from auto-save or currently auto-saving
+  if (isAutoSaving.value || isUpdatingFromAutoSave.value) {
+    console.log('⏭️ Skipping content update - auto-save cycle in progress');
+    return;
+  }
+  
   // Update campaign data with content from editor
   Object.assign(campaignData.value, updatedContent);
   

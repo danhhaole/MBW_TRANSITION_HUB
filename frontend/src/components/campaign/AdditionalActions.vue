@@ -277,14 +277,24 @@ const saveActionConfig = (configData) => {
       ...configData,
       configured: true
     }
-    emitUpdate()
+    // Emit immediately when saving config (important action)
+    emitUpdateImmediate()
   }
   showConfigModal.value = false
   currentAction.value = null
   currentActionIndex.value = -1
 }
 
-const emitUpdate = () => {
+// Debounce timer for emit
+let emitTimer = null
+
+const emitUpdateImmediate = () => {
+  // Clear any pending debounced emit
+  if (emitTimer) {
+    clearTimeout(emitTimer)
+    emitTimer = null
+  }
+  
   const actionsData = {}
   actionsList.value.forEach(action => {
     actionsData[action.trigger] = {
@@ -296,9 +306,40 @@ const emitUpdate = () => {
   emit('update:modelValue', actionsData)
 }
 
+const emitUpdate = () => {
+  // Clear previous timer
+  if (emitTimer) {
+    clearTimeout(emitTimer)
+  }
+  
+  // Debounce emit to avoid too many updates
+  emitTimer = setTimeout(() => {
+    emitUpdateImmediate()
+  }, 300) // Wait 300ms before emitting
+}
+
+// Track if we're updating to prevent infinite loop
+const isUpdatingFromProps = ref(false)
+
 // Initialize from props
-watch(() => props.modelValue, (newValue) => {
+watch(() => props.modelValue, (newValue, oldValue) => {
+  // Prevent infinite loop: skip if we just emitted an update
+  if (isUpdatingFromProps.value) {
+    console.log('⏭️ Skipping props update - just emitted')
+    return
+  }
+  
+  // Deep equality check to avoid unnecessary updates
+  const newValueStr = JSON.stringify(newValue)
+  const oldValueStr = JSON.stringify(oldValue)
+  if (newValueStr === oldValueStr) {
+    console.log('⏭️ Skipping props update - no changes')
+    return
+  }
+  
   console.log('🔍 Initializing from props:', newValue)
+  isUpdatingFromProps.value = true
+  
   if (newValue && Object.keys(newValue).length > 0) {
     actionsList.value = Object.keys(newValue).map(trigger => ({
       trigger,
@@ -310,6 +351,11 @@ watch(() => props.modelValue, (newValue) => {
   } else {
     console.log('🔄 No props data, keeping actionsList empty')
   }
+  
+  // Reset flag after a short delay
+  setTimeout(() => {
+    isUpdatingFromProps.value = false
+  }, 100)
 }, { immediate: true })
 </script>
 
