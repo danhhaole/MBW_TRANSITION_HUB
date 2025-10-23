@@ -222,6 +222,7 @@ def install_test():
   insert_component()
   insert_all_script_data()
   insert_all_pages()
+  insert_builder_settings()
 
 def insert_component():
 	file_name = "builder_components.json"
@@ -234,6 +235,10 @@ def insert_all_script_data():
 def insert_all_pages():
 	file_name = "builder_pages.json"
 	read_page_module_path(file_name)
+
+def insert_builder_settings():
+	file_name = "builder_settings.json"
+	read_builder_settings_module_path(file_name)
 
 def insert_component_data(file_name):
 	path = frappe.get_app_path("mbw_mira")
@@ -293,3 +298,17 @@ def read_page_module_path(file_name):
 			except Exception as e:
 				frappe.log_error(frappe.get_traceback(), "read_page_module_path")
 		frappe.db.set_value("Website Settings","Website Settings","home_page","f-landing")
+
+def read_builder_settings_module_path(file_name):
+	path = frappe.get_app_path("mbw_mira")
+	file_path = os.path.join(path,'json_data_v2',file_name)
+	if os.path.exists(file_path):
+		out = ''
+		with open(file_path, 'r') as f:
+			out = json.load(f)
+		try:
+			frappe.get_doc(out).insert()
+		except frappe.NameError:
+			pass
+		except Exception as e:
+			frappe.log_error(frappe.get_traceback(), file_name)
