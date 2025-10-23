@@ -2149,20 +2149,32 @@ const isSubscribeSequenceAction = () => {
 }
 
 const emailContent = computed(() => {
-	console.log('emailContent computed called', selectedItemData.value.parameters?.email_content)
-	if (!selectedItemData.value.parameters?.email_content) {
-		return {
+	// Prevent re-compute during updates to avoid recursive triggers
+	if (isUpdatingSelectedItemData.value) {
+		return emailContentCache.value || {
 			email_subject: '',
 			email_content: '',
 			attachments: [],
 		}
 	}
-	return selectedItemData.value.parameters.email_content
+	
+	console.log('emailContent computed called', selectedItemData.value.parameters?.email_content)
+	const result = selectedItemData.value.parameters?.email_content || {
+		email_subject: '',
+		email_content: '',
+		attachments: [],
+	}
+	emailContentCache.value = result
+	return result
 })
 
+// Cache for email content
+const emailContentCache = ref(null)
+
 const zaloContent = computed(() => {
-	if (!selectedItemData.value.parameters?.zalo_content) {
-		return {
+	// Prevent re-compute during updates to avoid recursive triggers
+	if (isUpdatingSelectedItemData.value) {
+		return zaloContentCache.value || {
 			blocks: [
 				{
 					id: 1,
@@ -2172,8 +2184,22 @@ const zaloContent = computed(() => {
 			],
 		}
 	}
-	return selectedItemData.value.parameters.zalo_content
+	
+	const result = selectedItemData.value.parameters?.zalo_content || {
+		blocks: [
+			{
+				id: 1,
+				type: 'text',
+				text_content: '',
+			},
+		],
+	}
+	zaloContentCache.value = result
+	return result
 })
+
+// Cache for zalo content
+const zaloContentCache = ref(null)
 
 // Cache for SMS content to prevent unnecessary re-computation
 const smsContentCache = ref(null)
@@ -2390,57 +2416,75 @@ const updateEmailContent = (content) => {
 	console.log('updateEmailContent called with:', content)
 	if (!selectedItem.value || selectedItem.value.type !== 'action') return
 	
-	const actionIndex = selectedItem.value.index
-	const action = flowData.value.actions[actionIndex]
+	// Prevent recursive calls
+	if (isUpdatingSelectedItemData.value) {
+		console.log('⏭️ Skipping updateEmailContent - already updating')
+		return
+	}
 	
-	if (action) {
-		if (!action.parameters) action.parameters = {}
-		action.parameters.email_content = content
-		action.parameters.template_id = `EMAIL_${Date.now()}`
+	safeUpdateSelectedItemData(() => {
+		const actionIndex = selectedItem.value.index
+		const action = flowData.value.actions[actionIndex]
 		
-		// Chỉ update local state, không auto-save
-		console.log('Email content updated locally')
-		hasUnsavedChanges.value = true
-		
-		// Sync với selectedItemData để đảm bảo consistency
-		if (selectedItemData.value) {
-			if (!selectedItemData.value.parameters) selectedItemData.value.parameters = {}
-			selectedItemData.value.parameters.email_content = content
-			selectedItemData.value.parameters.template_id = action.parameters.template_id
+		if (action) {
+			if (!action.parameters) action.parameters = {}
+			action.parameters.email_content = content
+			action.parameters.template_id = `EMAIL_${Date.now()}`
+			
+			// Chỉ update local state, không auto-save
+			console.log('Email content updated locally')
+			hasUnsavedChanges.value = true
+			
+			// Sync với selectedItemData để đảm bảo consistency
+			if (selectedItemData.value) {
+				if (!selectedItemData.value.parameters) selectedItemData.value.parameters = {}
+				selectedItemData.value.parameters.email_content = content
+				selectedItemData.value.parameters.template_id = action.parameters.template_id
+			}
 		}
-	}
 
-	// Update the flow data as well to ensure persistence
-	if (selectedItem.value) {
-		const { type, index } = selectedItem.value
-		if (type === 'action') {
-			flowData.value.actions[index] = { ...selectedItemData.value }
+		// Update the flow data as well to ensure persistence
+		if (selectedItem.value) {
+			const { type, index } = selectedItem.value
+			if (type === 'action') {
+				flowData.value.actions[index] = { ...selectedItemData.value }
+			}
 		}
-	}
 
-	// Force preview re-render
-	previewKey.value++
+		// Force preview re-render
+		previewKey.value++
+	})
 }
 
 const updateZaloContent = (content) => {
 	console.log('updateZaloContent called with:', content)
-	if (!selectedItemData.value.parameters) {
-		selectedItemData.value.parameters = {}
+	
+	// Prevent recursive calls
+	if (isUpdatingSelectedItemData.value) {
+		console.log('⏭️ Skipping updateZaloContent - already updating')
+		return
 	}
-	selectedItemData.value.parameters.zalo_content = content
-	selectedItemData.value.parameters.template_id = `ZALO_${Date.now()}`
-	hasUnsavedChanges.value = true
-
-	// Update the flow data as well to ensure persistence
-	if (selectedItem.value) {
-		const { type, index } = selectedItem.value
-		if (type === 'action') {
-			flowData.value.actions[index] = { ...selectedItemData.value }
+	
+	safeUpdateSelectedItemData(() => {
+		if (!selectedItemData.value.parameters) {
+			selectedItemData.value.parameters = {}
 		}
-	}
+		selectedItemData.value.parameters.zalo_content = content
+		selectedItemData.value.parameters.template_id = `ZALO_${Date.now()}`
+		hasUnsavedChanges.value = true
 
-	// Force preview re-render
-	previewKey.value++
+		// Update the flow data as well to ensure persistence
+		if (selectedItem.value) {
+			const { type, index } = selectedItem.value
+			if (type === 'action') {
+				flowData.value.actions[index].parameters.zalo_content = content
+				flowData.value.actions[index].parameters.template_id = selectedItemData.value.parameters.template_id
+			}
+		}
+
+		// Force preview re-render
+		previewKey.value++
+	})
 }
 
 const updateSMSContent = (content) => {
@@ -2721,18 +2765,26 @@ const createNewTag = async () => {
 
 // Action data update function
 const updateActionData = (newData) => {
-	if (selectedItemData.value.parameters) {
-		Object.assign(selectedItemData.value.parameters, newData)
-		hasUnsavedChanges.value = true
-		
-		// Sync with main flow data
-		if (selectedItem.value) {
-			const { type, index } = selectedItem.value
-			if (type === 'action') {
-				flowData.value.actions[index] = { ...selectedItemData.value }
+	// Prevent recursive calls
+	if (isUpdatingSelectedItemData.value) {
+		console.log('⏭️ Skipping updateActionData - already updating')
+		return
+	}
+	
+	safeUpdateSelectedItemData(() => {
+		if (selectedItemData.value.parameters) {
+			Object.assign(selectedItemData.value.parameters, newData)
+			hasUnsavedChanges.value = true
+			
+			// Sync with main flow data
+			if (selectedItem.value) {
+				const { type, index } = selectedItem.value
+				if (type === 'action') {
+					flowData.value.actions[index] = { ...selectedItemData.value }
+				}
 			}
 		}
-	}
+	})
 }
 
 // AdditionalActions support functions
@@ -2749,23 +2801,31 @@ const getAdditionalActionsData = () => {
 const updateAdditionalActionsData = (newData) => {
 	if (!selectedItem.value || selectedItem.value.type !== 'action') return
 	
-	const actionIndex = selectedItem.value.index
-	const action = flowData.value.actions[actionIndex]
-	
-	if (action) {
-		if (!action.parameters) action.parameters = {}
-		action.parameters.additional_actions = newData
-		
-		// Sync with selectedItemData
-		if (selectedItemData.value.parameters) {
-			selectedItemData.value.parameters.additional_actions = newData
-		}
-		
-		hasUnsavedChanges.value = true
-		
-		// Sync with main flow data
-		flowData.value.actions[actionIndex] = { ...action }
+	// Prevent recursive calls
+	if (isUpdatingSelectedItemData.value) {
+		console.log('⏭️ Skipping updateAdditionalActionsData - already updating')
+		return
 	}
+	
+	safeUpdateSelectedItemData(() => {
+		const actionIndex = selectedItem.value.index
+		const action = flowData.value.actions[actionIndex]
+		
+		if (action) {
+			if (!action.parameters) action.parameters = {}
+			action.parameters.additional_actions = newData
+			
+			// Sync with selectedItemData
+			if (selectedItemData.value.parameters) {
+				selectedItemData.value.parameters.additional_actions = newData
+			}
+			
+			hasUnsavedChanges.value = true
+			
+			// Sync with main flow data
+			flowData.value.actions[actionIndex] = { ...action }
+		}
+	})
 }
 
 const updateTriggerContent = (content) => {
@@ -2832,35 +2892,35 @@ const getTotalZaloCharacters = () => {
 // Debounced preview update
 const debouncedPreviewUpdate = ref(null)
 const isPreviewUpdating = ref(false)
+const isUpdatingSelectedItemData = ref(false) // Flag to prevent recursive updates
 
-// Watch for selectedItemData changes to ensure preview updates
-watch(
-	() => selectedItemData.value,
-	(newValue) => {
-		console.log('selectedItemData changed:', newValue)
-		
-		// Clear existing timeout
-		if (debouncedPreviewUpdate.value) {
-			clearTimeout(debouncedPreviewUpdate.value)
-		}
-		
-		// Set updating state
-		isPreviewUpdating.value = true
-		
-		// Debounce preview update by 200ms (reduced for better responsiveness)
-		debouncedPreviewUpdate.value = setTimeout(() => {
-			previewKey.value++
-			isPreviewUpdating.value = false
-			nextTick()
-		}, 200)
-	},
-	{ deep: true, immediate: true },
-)
+// Helper function to safely update selectedItemData without triggering recursive watcher
+const safeUpdateSelectedItemData = (updateFn) => {
+	isUpdatingSelectedItemData.value = true
+	try {
+		updateFn()
+	} finally {
+		// Reset flag after a delay to allow watcher to settle
+		setTimeout(() => {
+			isUpdatingSelectedItemData.value = false
+		}, 300)
+	}
+}
+
+// WATCHER REMOVED - Causing recursive updates
+// Preview updates are now handled manually in update functions via previewKey.value++
+// This prevents the recursive loop caused by deep watching selectedItemData
 
 // Watchers
 watch(
 	() => selectedItemData.value.parameters?.flow_id,
 	(newFlowId) => {
+		// Prevent recursive updates
+		if (isUpdatingSelectedItemData.value) {
+			console.log('⏭️ Skipping flow_id watcher - already updating')
+			return
+		}
+		
 		if (newFlowId && selectedItem.value?.type === 'action') {
 			console.log('Flow ID changed to:', newFlowId)
 			hasUnsavedChanges.value = true
