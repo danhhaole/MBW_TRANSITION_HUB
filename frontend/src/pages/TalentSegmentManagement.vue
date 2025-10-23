@@ -474,38 +474,14 @@
       </template>
     </Dialog>
 
-    <!-- Create/Edit Dialog -->
-    <Dialog v-model="showCreateForm" :options="createDialogOptions">
-      <template #body-title>
-        <div class="bg-white">
-          <div class="mb-5 flex items-center justify-between">
-            <div>
-              <h3 class="text-2xl font-semibold leading-6 text-gray-900">
-                {{ editingSegment ? __('Edit Talent Pool') : __('Create Talent Pool') }}
-              </h3>
-            </div>
-          </div>
-        </div>
-      </template>
-      <template #body-content>
-        <div class="bg-white">
-          <div class="max-h-[60vh] overflow-y-auto">
-            <TalentSegmentForm ref="formRef" :segment="editingSegment" @success="handleFormSuccess"
-              @cancel="handleFormClose" />
-          </div>
-        </div>
-      </template>
-      <template #actions>
-        <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-          <Button variant="outline" theme="gray" @click="handleFormClose">
-            {{ __('Cancel') }}
-          </Button>
-          <Button variant="solid" theme="gray" @click="handleFormSubmit" :loading="loading">
-            {{ editingSegment ? __('Update') : __('Create') }}
-          </Button>
-        </div>
-      </template>
-    </Dialog>
+    <!-- Create/Edit Dialog - New Component -->
+    <TalentPoolDialog
+      v-model="showCreateForm"
+      :segment="editingSegment"
+      @success="handleDialogSuccess"
+      @cancel="handleFormClose"
+    />
+
 
     <!-- Delete Confirmation Dialog -->
     <Dialog v-model="showDeleteDialog" :options="deleteDialogOptions">
@@ -566,6 +542,7 @@ import { useRouter } from 'vue-router'
 import { useTalentSegmentStore } from '@/stores/talentSegment'
 import { Button, Dialog, Dropdown, FeatherIcon, FormControl, Breadcrumbs, Autocomplete, call } from 'frappe-ui'
 import TalentSegmentForm from '@/components/talent-segment/TalentSegmentForm.vue'
+import TalentPoolDialog from '@/components/talent-segment/TalentPoolDialog.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 // import Autocomplete from '@/components/frappe-ui/Autocomplete.vue'
 import TalentSegmentCardView from '@/components/talent-segment/TalentSegmentCardView.vue'
@@ -591,6 +568,7 @@ const talentPools = computed(() => talentPoolStore.filteredTalentPools)
 const uniqueSegmentTypes = computed(() => talentPoolStore.uniqueSegmentTypes)
 const selectedSegmentType = ref('')
 const selectedSegmentTypeEdit = ref('')
+
 //Checkbox many
 const items = ref([])
 const selectedAll = ref([])
@@ -727,6 +705,15 @@ const updateManyTalentPool = async () => {
     console.error('Error updating talent pools segment:', error)
     toastMessage.error(error.message || __('Update failed'))
   }
+}
+
+// Dialog handlers
+const handleDialogSuccess = async () => {
+  // Refresh the talent pools list
+  await talentPoolStore.getTalentPools()
+  await talentSegmentStore.fetchTalentSegments()
+  showCreateForm.value = false
+  editingSegment.value = null
 }
 // Composables
 const segments = computed(() => talentSegmentStore.filteredTalentSegments)
