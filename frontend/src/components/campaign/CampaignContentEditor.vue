@@ -105,31 +105,23 @@ const additionalActions = ref(props.modelValue.additional_actions || {})
 // Translation helper
 const __ = (text) => text
 
-// Track if we're updating from emit to prevent loop
-const isUpdatingFromEmit = ref(false)
-
-// Watch for external changes
-watch(() => props.modelValue, (newValue, oldValue) => {
-  // Skip if we just emitted an update
-  if (isUpdatingFromEmit.value) {
-    return
-  }
-  
-  // Deep equality check to avoid unnecessary updates
-  const newValueStr = JSON.stringify(newValue)
-  const oldValueStr = JSON.stringify(oldValue)
-  if (newValueStr === oldValueStr) {
-    return
-  }
-  
-  content.value = { ...content.value, ...newValue }
-}, { deep: true })
+// Flag to prevent recursive updates
+const isUpdating = ref(false)
 
 // Debounce timer for content updates
 let contentUpdateTimer = null
 
 // Handle content updates from child components
 const handleContentUpdate = (updatedContent) => {
+  // Prevent recursive updates
+  if (isUpdating.value) {
+    console.log('⏭️ Skipping handleContentUpdate - already updating')
+    return
+  }
+  
+  // Set flag immediately
+  isUpdating.value = true
+  
   // Update local content immediately for responsive UI
   content.value = { ...content.value, ...updatedContent }
   
@@ -140,13 +132,13 @@ const handleContentUpdate = (updatedContent) => {
   
   // Debounce emit to avoid too many updates during typing
   contentUpdateTimer = setTimeout(() => {
-    isUpdatingFromEmit.value = true
     emit('update:modelValue', content.value)
-    // Reset flag after a short delay
-    setTimeout(() => {
-      isUpdatingFromEmit.value = false
-    }, 100)
   }, 500) // Wait 500ms after user stops typing
+  
+  // Reset flag after debounce period + buffer
+  setTimeout(() => {
+    isUpdating.value = false
+  }, 700) // 500ms debounce + 200ms buffer
 }
 
 // Handle save action
@@ -166,6 +158,15 @@ let additionalActionsTimer = null
 
 // Handle additional actions update
 const handleAdditionalActionsUpdate = (actions) => {
+  // Prevent recursive updates
+  if (isUpdating.value) {
+    console.log('⏭️ Skipping handleAdditionalActionsUpdate - already updating')
+    return
+  }
+  
+  // Set flag immediately
+  isUpdating.value = true
+  
   // Update local state immediately
   additionalActions.value = actions
   const updatedContent = { 
@@ -181,13 +182,13 @@ const handleAdditionalActionsUpdate = (actions) => {
   
   // Debounce emit to avoid rapid updates
   additionalActionsTimer = setTimeout(() => {
-    isUpdatingFromEmit.value = true
     emit('update:modelValue', updatedContent)
-    // Reset flag after a short delay
-    setTimeout(() => {
-      isUpdatingFromEmit.value = false
-    }, 100)
   }, 500) // Wait 500ms after changes
+  
+  // Reset flag after debounce period + buffer
+  setTimeout(() => {
+    isUpdating.value = false
+  }, 700) // 500ms debounce + 200ms buffer
 }
 </script>
 
