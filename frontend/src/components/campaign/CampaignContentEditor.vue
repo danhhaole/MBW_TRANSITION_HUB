@@ -105,15 +105,48 @@ const additionalActions = ref(props.modelValue.additional_actions || {})
 // Translation helper
 const __ = (text) => text
 
+// Track if we're updating from emit to prevent loop
+const isUpdatingFromEmit = ref(false)
+
 // Watch for external changes
-watch(() => props.modelValue, (newValue) => {
+watch(() => props.modelValue, (newValue, oldValue) => {
+  // Skip if we just emitted an update
+  if (isUpdatingFromEmit.value) {
+    return
+  }
+  
+  // Deep equality check to avoid unnecessary updates
+  const newValueStr = JSON.stringify(newValue)
+  const oldValueStr = JSON.stringify(oldValue)
+  if (newValueStr === oldValueStr) {
+    return
+  }
+  
   content.value = { ...content.value, ...newValue }
 }, { deep: true })
 
+// Debounce timer for content updates
+let contentUpdateTimer = null
+
 // Handle content updates from child components
 const handleContentUpdate = (updatedContent) => {
+  // Update local content immediately for responsive UI
   content.value = { ...content.value, ...updatedContent }
-  emit('update:modelValue', content.value)
+  
+  // Clear previous timer
+  if (contentUpdateTimer) {
+    clearTimeout(contentUpdateTimer)
+  }
+  
+  // Debounce emit to avoid too many updates during typing
+  contentUpdateTimer = setTimeout(() => {
+    isUpdatingFromEmit.value = true
+    emit('update:modelValue', content.value)
+    // Reset flag after a short delay
+    setTimeout(() => {
+      isUpdatingFromEmit.value = false
+    }, 100)
+  }, 500) // Wait 500ms after user stops typing
 }
 
 // Handle save action
@@ -128,15 +161,33 @@ const handlePreview = () => {
   emit('preview', content.value)
 }
 
+// Debounce timer for additional actions updates
+let additionalActionsTimer = null
+
 // Handle additional actions update
 const handleAdditionalActionsUpdate = (actions) => {
+  // Update local state immediately
   additionalActions.value = actions
   const updatedContent = { 
     ...content.value, 
     additional_actions: actions 
   }
   content.value = updatedContent
-  emit('update:modelValue', updatedContent)
+  
+  // Clear previous timer
+  if (additionalActionsTimer) {
+    clearTimeout(additionalActionsTimer)
+  }
+  
+  // Debounce emit to avoid rapid updates
+  additionalActionsTimer = setTimeout(() => {
+    isUpdatingFromEmit.value = true
+    emit('update:modelValue', updatedContent)
+    // Reset flag after a short delay
+    setTimeout(() => {
+      isUpdatingFromEmit.value = false
+    }, 100)
+  }, 500) // Wait 500ms after changes
 }
 </script>
 
