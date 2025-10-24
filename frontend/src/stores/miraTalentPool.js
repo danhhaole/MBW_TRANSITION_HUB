@@ -420,6 +420,30 @@ export const useMiraTalentPoolStore = defineStore('miraTalentPool', {
       }
     },
     
+    async bulkInsertTalents(data) {
+      this.setLoading(true)
+      this.clearMessages()
+      
+      try {
+        // Use frappe-ui call() - pass data directly as array
+        const result = await call('mbw_mira.mbw_mira.doctype.mira_talent_pool.mira_talent_pool.bulk_insert_segments', {
+          data: data
+        })
+        
+        if (result && result.status === 'completed') {
+          this.setSuccess(`Bulk insert completed: ${result.summary?.success || 0} success, ${result.summary?.duplicate || 0} duplicate, ${result.summary?.fail || 0} failed`)
+          this.setLoading(false)
+          return result
+        }
+        
+        throw new Error('Bulk insert failed')
+      } catch (error) {
+        this.setError(this.parseError(error))
+        this.setLoading(false)
+        throw error
+      }
+    },
+    
     async searchTalentPools(query = "", limit = 10) {
       try {
         const or_filters = [

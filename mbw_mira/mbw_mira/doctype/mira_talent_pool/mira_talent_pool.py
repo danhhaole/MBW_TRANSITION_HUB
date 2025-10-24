@@ -63,19 +63,50 @@ def bulk_insert_segments():
     """
 
     try:
-        # 1. Lấy dữ liệu từ JSON body hoặc form_dict
+        # 1. Get data from request body (sent as JSON)
+        payload = None
+        
+        # Try to get from request body first (when sent via fetch with JSON body)
         if frappe.request and frappe.request.data:
-            payload = frappe.request.get_json()
-        else:
+            try:
+                payload = frappe.request.get_json()
+                if payload and isinstance(payload, list):
+                    # Direct JSON array in body
+                    pass
+                elif payload and isinstance(payload, dict) and 'data' in payload:
+                    # Wrapped in {data: [...]}
+                    payload = payload['data']
+            except Exception as e:
+                frappe.logger().error(f"Failed to parse request body: {e}")
+        
+        # If not found, try form_dict (when sent via frappe-ui call())
+        if payload is None:
             raw_data = frappe.form_dict.get("data")
-            payload = json.loads(raw_data) if raw_data else []
-
+            if raw_data:
+                if isinstance(raw_data, list):
+                    payload = raw_data
+                elif isinstance(raw_data, str):
+                    try:
+                        payload = json.loads(raw_data)
+                    except Exception as e:
+                        frappe.logger().error(f"Failed to parse form_dict data: {e}")
+                        frappe.throw(_("Invalid JSON format"))
+            else:
+                payload = []
+        
         # 2. Validate
         if not isinstance(payload, list):
-            frappe.throw(_("Input data must be a list of records"))
+            frappe.throw(_(f"Input data must be a list of records. Got type: {type(payload).__name__}"))
+        
+        # Log payload for debugging
+        frappe.logger().info(f"=== BULK INSERT START ===")
+        frappe.logger().info(f"Payload length: {len(payload)}")
+        frappe.logger().info(f"Payload content: {json.dumps(payload, indent=2)}")
 
         result = []
-        for item in payload:
+        inserted_count = 0
+        
+        for idx, item in enumerate(payload):
             status_entry = {
                 "data": item,
                 "status": "pending",
@@ -87,27 +118,50 @@ def bulk_insert_segments():
                     "talent_id": item.get("talent_id"),
                     "segment_id": item.get("segment_id"),
                 }
+                
+                # Log for debugging
+                frappe.logger().debug(f"Processing item {idx + 1}/{len(payload)}: {filters}")
 
-                if frappe.db.exists("Mira Talent Pool", filters):
+                # Check if exists
+                existing = frappe.db.exists("Mira Talent Pool", filters)
+                if existing:
                     status_entry["status"] = "duplicate"
-                    status_entry["message"] = "Record already exists"
+                    status_entry["message"] = f"Record already exists: {existing}"
+                    frappe.logger().debug(f"  → Duplicate found: {existing}")
                 else:
+                    # Insert new record
                     doc = frappe.new_doc("Mira Talent Pool")
                     doc.update(item)
                     doc.insert(ignore_permissions=True)
-
+                    
+                    # Commit immediately to prevent race condition
+                    frappe.db.commit()
+                    
+                    inserted_count += 1
                     status_entry["status"] = "success"
                     status_entry["message"] = f"Inserted: {doc.name}"
+                    frappe.logger().debug(f"  → Inserted: {doc.name}")
             except Exception as e:
                 status_entry["status"] = "fail"
                 status_entry["message"] = str(e)
+                frappe.logger().error(f"  → Failed: {str(e)}")
                 frappe.log_error(frappe.get_traceback(), "Bulk Insert Error")
 
             result.append(status_entry)
+        
+        frappe.logger().info(f"Bulk insert completed: {inserted_count} inserted out of {len(payload)} items")
+        
+        # Calculate summary
+        summary = {
+            "success": sum(1 for r in result if r["status"] == "success"),
+            "duplicate": sum(1 for r in result if r["status"] == "duplicate"),
+            "fail": sum(1 for r in result if r["status"] == "fail")
+        }
 
         return {
             "status": "completed",
             "total": len(payload),
+            "summary": summary,
             "results": result
         }
 

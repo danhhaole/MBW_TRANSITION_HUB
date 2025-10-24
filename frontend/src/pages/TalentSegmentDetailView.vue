@@ -281,10 +281,10 @@
 										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 										{{ __('Status') }}
 									</th>
-									<th scope="col"
+									<!-- <th scope="col"
 										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 										{{ __('Added') }}
-									</th>
+									</th> -->
 									<th scope="col"
 										class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
 										{{ __('Match Score') }}
@@ -338,15 +338,18 @@
 									</td>
 									<td class="px-6 py-4">
 										<div class="flex flex-wrap gap-1">
-											<span v-for="skill in processSkills(candidate.skills).slice(0, 4)"
-												:key="skill"
-												class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-												{{ skill }}
-											</span>
-											<span v-if="processSkills(candidate.skills).length > 4"
-												class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-												+{{ processSkills(candidate.skills).length - 4 }}
-											</span>
+											<template v-if="Array.isArray(candidate.skills) && candidate.skills.length > 0">
+												<span v-for="skill in candidate.skills.slice(0, 4)"
+													:key="skill"
+													class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+													{{ skill }}
+												</span>
+												<span v-if="candidate.skills.length > 4"
+													class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+													+{{ candidate.skills.length - 4 }}
+												</span>
+											</template>
+											<span v-else class="text-sm text-gray-400">No skills</span>
 										</div>
 									</td>
 									<!-- <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -526,16 +529,16 @@
 													</span>
 												</div>
 											</div>
-											<div v-if="candidate.skills && candidate.skills.length > 0" class="mt-2">
+											<div v-if="candidate.skills && processSkills(candidate.skills).length > 0" class="mt-2">
 												<div class="flex flex-wrap gap-1">
 													<span v-for="skill in processSkills(candidate.skills).slice(0, 3)"
 														:key="skill"
-														class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">
+														class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
 														{{ skill }}
 													</span>
-													<span v-if="candidate.skills.length > 3"
+													<span v-if="processSkills(candidate.skills).length > 3"
 														class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
-														+{{ candidate.skills.length - 3 }} {{ __('more') }}
+														+{{ processSkills(candidate.skills).length - 3 }} {{ __('more') }}
 													</span>
 												</div>
 											</div>
@@ -578,11 +581,11 @@
 					</div>
 				</div>
 				<div class="flex justify-end space-x-3 px-6 py-4 bg-gray-50">
-					<Button variant="outline" theme="gray" @click="closeAddCandidateModal">
+					<Button variant="outline" theme="gray" :disabled="savingCandidates" @click="closeAddCandidateModal">
 						{{ __('Cancel') }}
 					</Button>
 					<Button variant="solid" theme="gray" :loading="savingCandidates"
-						:disabled="selectedCandidates.length === 0" @click="addSelectedCandidatesToSegment">
+						:disabled="selectedCandidates.length === 0 || savingCandidates" @click="addSelectedCandidatesToSegment">
 						<template #prefix>
 							<FeatherIcon name="user-plus" class="h-4 w-4" />
 						</template>
@@ -619,6 +622,7 @@ import { Button, Dialog, Breadcrumbs, FeatherIcon } from 'frappe-ui'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import CampaignWizard from '@/components/campaign/CampaignWizard.vue'
 import TalentPoolDialog from '@/components/talent-segment/TalentPoolDialog.vue'
+import { processSkills } from '@/stores/candidate'
 import moment from 'moment'
 
 
@@ -768,15 +772,22 @@ const deselectAllCandidates = () => {
 }
 
 const addSelectedCandidatesToSegment = async () => {
-	if (selectedCandidates.value.length === 0) return
+	// Prevent double execution
+	if (selectedCandidates.value.length === 0 || savingCandidates.value) {
+		console.log('Skipping - already saving or no candidates selected')
+		return
+	}
 
 	console.log('Adding selected candidates to segment:', selectedCandidates.value)
 	console.log('Suggested candidates:', suggestedCandidates.value)
 	savingCandidates.value = true
 
 	try {
-		// Prepare data for bulk insert
-		const segmentData = selectedCandidates.value.map(candidateId => ({
+		// Prepare data for bulk insert - convert to plain array to avoid proxy issues
+		const candidateIds = [...selectedCandidates.value]
+		console.log('Candidate IDs to add:', candidateIds, 'Length:', candidateIds.length)
+		
+		const segmentData = candidateIds.map(candidateId => ({
 			talent_id: candidateId,
 			segment_id: route.params.id,
 			added_at: moment().format('YYYY-MM-DD HH:mm:ss'),
@@ -784,17 +795,19 @@ const addSelectedCandidatesToSegment = async () => {
 			match_score: suggestedCandidates.value.find(c => c.name === candidateId)?.score || 0
 		}))
 
-		console.log('Bulk insert data:', segmentData)
+		console.log('Bulk insert data:', segmentData, 'Length:', segmentData.length)
 
 		const result = await miraTalentPoolStore.bulkInsertTalents(segmentData)
 
-		if (result.success) {
+		console.log('Bulk insert result:', result)
+
+		if (result && result.status === 'completed') {
 			console.log('Bulk insert successful:', result)
 
 			// Show success message
-			const successCount = result.results.filter(r => r.status === 'success').length
-			const duplicateCount = result.results.filter(r => r.status === 'duplicate').length
-			const failCount = result.results.filter(r => r.status === 'fail').length
+			const successCount = result.summary?.success || 0
+			const duplicateCount = result.summary?.duplicate || 0
+			const failCount = result.summary?.fail || 0
 
 			console.log(`Successfully added ${successCount} candidates, ${duplicateCount} duplicates, ${failCount} failed`)
 
@@ -803,7 +816,7 @@ const addSelectedCandidatesToSegment = async () => {
 			await loadCandidates()
 			await loadTalentSegment()
 		} else {
-			console.error('Failed to bulk insert candidates:', result.error)
+			console.error('Failed to bulk insert candidates:', result)
 		}
 	} catch (error) {
 		console.error('Error adding candidates:', error)
@@ -886,8 +899,14 @@ const loadCandidates = async () => {
 					const segmentRelation = candidateSegmentResult.find(
 						(cs) => cs.talent_id === candidate.name,
 					)
-					return {
-						...candidate,
+					// Process skills to ensure it's an array
+				console.log('Raw skills for', candidate.full_name, ':', candidate.skills, 'Type:', typeof candidate.skills)
+				const processedSkills = processSkills(candidate.skills)
+				console.log('Processed skills:', processedSkills, 'Type:', typeof processedSkills, 'IsArray:', Array.isArray(processedSkills))
+				
+				return {
+					...candidate,
+					skills: processedSkills, // Override with processed skills
 						added_at: segmentRelation?.added_at,
 						added_by: segmentRelation?.added_by,
 						candidate_segment_id: segmentRelation?.name,
@@ -971,7 +990,7 @@ const closeAddCandidateModal = () => {
 
 
 const viewCandidateDetails = (candidate) => {
-	router.push(`/candidates/${candidate.name}`)
+	router.push(`/talents/${candidate.name}`)
 }
 
 const contactCandidate = (candidate) => {

@@ -211,7 +211,7 @@ export const useCandidateStore = defineStore('candidate', {
 
         // Fetch candidates
         const response = await call('frappe.client.get_list', {
-          doctype: 'Mira Contact',
+          doctype: 'Mira Talent',
           filters: enhancedFilters,
           or_filters: or_filters,
           fields: fields,
@@ -747,7 +747,43 @@ export const useCandidateStore = defineStore('candidate', {
 
     parseSkills(skillsStr) {
       if (!skillsStr) return []
-      return skillsStr.split(',').map(skill => skill.trim()).filter(skill => skill)
+      
+      // If already an array, return it
+      if (Array.isArray(skillsStr)) {
+        return skillsStr.filter(skill => skill && skill.trim())
+      }
+      
+      // If string, try to parse as JSON first
+      if (typeof skillsStr === 'string') {
+        // Handle Python list format: "['skill1', 'skill2']"
+        // Replace single quotes with double quotes for valid JSON
+        if (skillsStr.trim().startsWith('[') && skillsStr.trim().endsWith(']')) {
+          try {
+            const jsonStr = skillsStr.replace(/'/g, '"')
+            const parsed = JSON.parse(jsonStr)
+            if (Array.isArray(parsed)) {
+              return parsed.filter(skill => skill && skill.trim())
+            }
+          } catch (e) {
+            console.error('Failed to parse Python list format:', e)
+          }
+        }
+        
+        // Try standard JSON parse
+        try {
+          const parsed = JSON.parse(skillsStr)
+          if (Array.isArray(parsed)) {
+            return parsed.filter(skill => skill && skill.trim())
+          }
+        } catch (e) {
+          // Not JSON, continue to comma-separated parsing
+        }
+        
+        // Parse as comma-separated string
+        return skillsStr.split(',').map(skill => skill.trim()).filter(skill => skill)
+      }
+      
+      return []
     },
 
     // Process skills for display (legacy compatibility)
