@@ -126,7 +126,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { Dialog, Button, FeatherIcon } from 'frappe-ui'
 import { useToast } from '@/composables/useToast'
 import { call } from 'frappe-ui'
@@ -237,21 +237,30 @@ const resetForm = () => {
 
 const loadSegmentData = () => {
   if (props.segment) {
+    // Parse conditions first
+    let parsedConditions = []
+    try {
+      if (props.segment.criteria) {
+        // Check if criteria is string or object
+        if (typeof props.segment.criteria === 'string') {
+          parsedConditions = JSON.parse(props.segment.criteria)
+        } else if (typeof props.segment.criteria === 'object') {
+          // If it's already an object, use it directly
+          parsedConditions = Array.isArray(props.segment.criteria) ? props.segment.criteria : []
+        }
+      }
+    } catch (error) {
+      console.error('Error parsing segment criteria:', error)
+      parsedConditions = []
+    }
+    
+    // Set form data once
     formData.value = {
       title: props.segment.title || '',
       description: props.segment.description || '',
       type: props.segment.type || 'DYNAMIC',
       owner_id: props.segment.owner_id || '',
-      conditions: props.segment.criteria || []
-    }
-    
-    // Parse conditions if exists
-    try {
-      if (props.segment.criteria) {
-        formData.value.conditions = JSON.parse(props.segment.criteria)
-      }
-    } catch (error) {
-      console.error('Error parsing segment conditions:', error)
+      conditions: parsedConditions
     }
   } else {
     resetForm()
@@ -318,26 +327,20 @@ const handleCancel = () => {
 }
 
 // Watchers
-watch(() => props.modelValue, (newValue) => {
-  if (newValue) {
+watch(() => props.modelValue, (newValue, oldValue) => {
+  // Only load when dialog opens (false -> true)
+  if (newValue && !oldValue) {
     loadSegmentData()
     loadUserOptions()
   }
 })
 
-watch(() => props.segment, () => {
-  if (props.modelValue) {
+watch(() => props.segment, (newValue, oldValue) => {
+  // Only reload if segment actually changed and dialog is open
+  if (props.modelValue && newValue !== oldValue) {
     loadSegmentData()
   }
-})
-
-// Lifecycle
-onMounted(() => {
-  if (props.modelValue) {
-    loadSegmentData()
-    loadUserOptions()
-  }
-})
+}, { deep: false })
 </script>
 
 <style scoped>
