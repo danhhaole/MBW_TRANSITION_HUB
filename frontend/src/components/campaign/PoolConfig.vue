@@ -120,7 +120,7 @@ const loadTalentSegments = async () => {
   loadingSegments.value = true
   try {
     const result = await call('frappe.client.get_list', {
-      doctype: 'Mira Talent Segment',
+      doctype: 'Mira Segment',
       fields: ['name', 'title', 'description', 'candidate_count'],
       limit_page_length: 100
     })
@@ -136,7 +136,7 @@ const loadTalentSegments = async () => {
 
 // Handle segment change
 const handleSegmentChange = (value) => {
-  console.log("value", value)
+  console.log("Segment changed:", value)
   data.value.selectedSegment = value
 }
 
@@ -161,14 +161,28 @@ const levels = [
 
 // Watch for changes
 watch(data, (newData) => {
+  // Find selected segment and get candidate count
+  let candidateCount = 0
+  if (newData.selectedSegment) {
+    const segmentValue = newData.selectedSegment.value || newData.selectedSegment
+    const selectedSeg = segments.value.find(s => s.name === segmentValue)
+    if (selectedSeg) {
+      candidateCount = selectedSeg.candidate_count || 0
+      console.log("Selected segment candidate count:", candidateCount)
+    }
+  }
+  
   console.log("newData", {
     ...newData,
-    selectedSegment: newData.selectedSegment.value
+    selectedSegment: newData.selectedSegment.value || newData.selectedSegment,
+    candidateCount: candidateCount
   })
+  
   emit('update:modelValue', {
     ...newData,
-    selectedSegment: newData.selectedSegment.value
-  } )
+    selectedSegment: newData.selectedSegment.value || newData.selectedSegment,
+    candidateCount: candidateCount
+  })
 }, { deep: true })
 
 // Lifecycle

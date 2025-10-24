@@ -1146,9 +1146,16 @@ watch(sendingStrategy, (newStrategy) => {
 
 // Computed candidate count based on selected data
 const computedCandidateCount = computed(() => {
+  // If segment is selected, use candidate count from configData
+  if (segmentSelectionMode.value === 'segment' && configData.value.candidateCount !== undefined) {
+    return configData.value.candidateCount;
+  }
+  
+  // If search mode with records loaded
   if (selectedSource.value === 'search' && miraTalentCampaign.value.records) {
     return miraTalentCampaign.value.records.length || 0;
   }
+  
   // For other sources, we might need to implement specific logic
   return candidateCount.value;
 });
