@@ -596,33 +596,13 @@
 		<CampaignWizard v-model="showCampaignWizard" :preselected-segment="route.params.id"
 			@success="handleCampaignCreated" />
 
-		<!-- Edit Talent Segment Modal -->
-		<Dialog v-model="showEditTalentSegmentModal" :options="editSegmentDialogOptions">
-			<template #body-content>
-				<div class="bg-white ">
-					<!-- <div class="mb-5 flex items-center justify-between">
-						
-						<div class="flex items-center gap-1">
-							<Button variant="ghost" class="w-7" @click="showEditTalentSegmentModal = false">
-								<FeatherIcon name="x" class="h-4 w-4" />
-							</Button>
-						</div>
-					</div> -->
-					<div class="max-h-[60vh] overflow-y-auto p-4">
-						<TalentSegmentForm ref="formRef" :segment="editingSegmentData" @success="handleTalentSegmentUpdated"
-							@cancel="handleEditModalClose" />
-					</div>
-					<div class="flex justify-end space-x-3 pt-4 border-t border-gray-200 mt-4">
-						<Button variant="outline" theme="gray" @click="showEditTalentSegmentModal = false">
-							{{ __('Cancel') }}
-						</Button>
-						<Button variant="solid" theme="gray" @click="updateTalentSegment" :loading="loading">
-							{{ __('Update') }}
-						</Button>
-					</div>
-				</div>
-			</template>
-		</Dialog>
+		<!-- Edit Talent Pool Dialog -->
+		<TalentPoolDialog 
+			v-model="showEditTalentSegmentModal" 
+			:segment="editingSegmentData"
+			@success="handleTalentSegmentUpdated"
+			@cancel="handleEditModalClose"
+		/>
 	</div>
 </template>
 
@@ -638,7 +618,7 @@ import { usersStore } from '@/stores/users'
 import { Button, Dialog, Breadcrumbs, FeatherIcon } from 'frappe-ui'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import CampaignWizard from '@/components/campaign/CampaignWizard.vue'
-import TalentSegmentForm from '@/components/talent-segment/TalentSegmentForm.vue'
+import TalentPoolDialog from '@/components/talent-segment/TalentPoolDialog.vue'
 import moment from 'moment'
 
 
@@ -686,13 +666,6 @@ const minScore = ref(50)
 const suggestedCandidates = ref([])
 const selectedCandidates = ref([])
 const loadingSuggestedCandidates = ref(false)
-const formRef = ref(null)
-
-const updateTalentSegment = async () => {
-	if (formRef.value) {
-		await formRef.value.handleSubmit()
-	}
-}
 
 // Computed
 const filteredCandidates = computed(() => {
@@ -712,11 +685,7 @@ const addCandidateDialogOptions = computed(() => ({
 	size: '3xl',
 }))
 
-// Dialog options
-const editSegmentDialogOptions = computed(() => ({
-	title: __('Edit Talent Pool'),
-	size: '4xl',
-}))
+// Dialog options - No longer needed, TalentPoolDialog handles its own options
 
 
 
@@ -758,7 +727,7 @@ const loadSuggestedCandidates = async () => {
 	loadingSuggestedCandidates.value = true
 	try {
 		console.log('Loading suggested candidates with min score:', minScore.value)
-		const result = await call('mbw_mira.api.talent_segment.find_talent_profiles_by_segment', {
+		const result = await call('mbw_mira.mbw_mira.doctype.mira_segment.mira_segment.find_talentprofile_by_segment', {
 			segment_id: route.params.id,
 			min_score: minScore.value
 		})

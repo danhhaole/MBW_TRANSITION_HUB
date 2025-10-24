@@ -242,13 +242,13 @@ const loadSegmentData = () => {
       description: props.segment.description || '',
       type: props.segment.type || 'DYNAMIC',
       owner_id: props.segment.owner_id || '',
-      conditions: []
+      conditions: props.segment.criteria || []
     }
     
     // Parse conditions if exists
     try {
-      if (props.segment.conditions) {
-        formData.value.conditions = JSON.parse(props.segment.conditions)
+      if (props.segment.criteria) {
+        formData.value.conditions = JSON.parse(props.segment.criteria)
       }
     } catch (error) {
       console.error('Error parsing segment conditions:', error)
@@ -280,13 +280,13 @@ const handleSubmit = async () => {
       description: formData.value.description,
       type: formData.value.type,
       owner_id: formData.value.owner_id,
-      conditions: JSON.stringify(formData.value.conditions)
+      criteria: JSON.stringify(formData.value.conditions)
     }
 
     if (props.segment) {
       // Update existing
       await call('frappe.client.set_value', {
-        doctype: 'Mira Talent Segment',
+        doctype: 'Mira Segment',
         name: props.segment.name,
         fieldname: data
       })
@@ -295,7 +295,7 @@ const handleSubmit = async () => {
       // Create new
       await call('frappe.client.insert', {
         doc: {
-          doctype: 'Mira Talent Segment',
+          doctype: 'Mira Segment',
           ...data
         }
       })
