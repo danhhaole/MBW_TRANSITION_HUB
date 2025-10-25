@@ -61,7 +61,7 @@
    "fieldname": "type",
    "fieldtype": "Select",
    "label": "Flow Type",
-   "options": "Broadcast\nAutomation\nSequence"
+   "options": "Campaign\nAutomation\nSequence"
   },
   {
    "fieldname": "action_id",
@@ -103,7 +103,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-17 14:56:51.987282",
+ "modified": "2025-10-25 09:09:38.696097",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Flow",

@@ -129,7 +129,7 @@
 								<!-- Step Number Circle - Positioned at center -->
 								<div
 									class="absolute bg-white -left-12 top-6 w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium border border-solid border-blue-500 z-20 shadow-sm"
-									:class="getStepIconClass(step.channel)"
+									:class="getStepIconClass(step.flow?.channel || step.channel)"
 								>
 									{{ index + 1 }}
 								</div>
@@ -141,18 +141,60 @@
 									@mouseleave="hoveredStep = -1"
 								>
 									<div class="flex items-center justify-between">
-										<div class="flex items-center space-x-4">
+										<div class="flex items-center space-x-4 flex-1">
 											<!-- Step Info -->
-											<div>
-												<h3
-													class="font-medium text-gray-900 flex items-center"
-												>
+											<div class="flex-1">
+												<!-- Editable Title -->
+												<div class="flex items-center group">
 													<FeatherIcon
-														:name="getStepIcon(step.channel)"
-														class="w-4 h-4 mr-2"
+														:name="getStepIcon(step.flow?.channel || step.channel)"
+														class="w-4 h-4 mr-2 flex-shrink-0"
 													/>
-													{{ getStepTitle(step) }}
-												</h3>
+													
+													<!-- Display mode -->
+													<h3
+														v-if="editingTitleIndex !== index"
+														class="font-medium text-gray-900 flex items-center"
+													>
+														{{ getStepTitle(step) }}
+														<button
+															@click="startEditTitle(index, step)"
+															class="ml-2 opacity-0 group-hover:opacity-100 transition-opacity"
+														>
+															<FeatherIcon
+																name="edit"
+																class="w-4 h-4 text-black hover:text-blue-600"
+															/>
+														</button>
+													</h3>
+													
+													<!-- Edit mode -->
+													<div
+														v-else
+														class="flex items-center space-x-2 flex-1"
+													>
+														<input
+															v-model="editingTitleValue"
+															@keyup.enter="saveStepTitle(index)"
+															@keyup.esc="cancelEditTitle"
+															class="flex-1 px-2 py-1 border border-blue-500 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+															autofocus
+														/>
+														<button
+															@click="saveStepTitle(index)"
+															class="p-1 text-green-600 hover:bg-green-50 rounded"
+														>
+															<FeatherIcon name="check" class="w-4 h-4" />
+														</button>
+														<button
+															@click="cancelEditTitle"
+															class="p-1 text-red-600 hover:bg-red-50 rounded"
+														>
+															<FeatherIcon name="x" class="w-4 h-4" />
+														</button>
+													</div>
+												</div>
+												
 												<p class="text-sm text-gray-500 mt-1">
 													{{ getStepDescription(step) }}
 												</p>
@@ -179,7 +221,7 @@
 												{{ __('Duplicate') }}
 											</button>
 											<button
-												@click="removeStep(index)"
+												@click="confirmDeleteStep(index)"
 												class="flex items-center px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors"
 											>
 												<FeatherIcon name="trash-2" class="w-4 h-4 mr-2" />
@@ -196,7 +238,7 @@
 								>
 									<div class="p-6 space-y-6">
 										<!-- Email Editor -->
-										<div v-if="step.channel === 'Email'">
+										<div v-if="(step.flow?.channel || step.channel) === 'Email'">
 											<EmailEditor
 												:content="getStepContent(step)"
 												@update:content="updateStepContent(index, $event)"
@@ -206,10 +248,11 @@
 										<!-- Text Content Editor for SMS/Messenger/Zalo -->
 										<div
 											v-else-if="
-												step.channel === 'SMS' ||
-												step.channel === 'Messenger' ||
-												step.channel === 'Zalo_OA' ||
-												step.channel === 'Zalo_ZNS'
+												(step.flow?.channel || step.channel) === 'SMS' ||
+												(step.flow?.channel || step.channel) === 'Messenger' ||
+												(step.flow?.channel || step.channel) === 'Zalo_OA' ||
+												(step.flow?.channel || step.channel) === 'Zalo_ZNS' ||
+												(step.flow?.channel || step.channel) === 'Zalo'
 											"
 										>
 											<ZaloEditor
@@ -252,7 +295,7 @@
 										<div class="border-t border-gray-100 pt-6">
 											<AdditionalActions
 												:interaction-type="
-													getInteractionType(step.channel)
+													getInteractionType(step.flow?.channel || step.channel)
 												"
 												:model-value="getStepAdditionalActions(step)"
 												@update:model-value="
@@ -330,6 +373,51 @@
 			@cancel="cancelDelayEdit"
 			@update:show="showDelayModal = $event"
 		/>
+
+		<!-- Delete Confirmation Dialog -->
+		<div
+			v-if="showDeleteConfirm"
+			class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+			@click.self="cancelDelete"
+		>
+			<div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+				<div class="flex items-start mb-4">
+					<div class="flex-shrink-0">
+						<FeatherIcon name="alert-triangle" class="w-6 h-6 text-red-600" />
+					</div>
+					<div class="ml-3 flex-1">
+						<h3 class="text-lg font-medium text-gray-900">
+							{{ __('Delete Step') }}
+						</h3>
+						<p class="mt-2 text-sm text-gray-500">
+							{{ __('Are you sure you want to delete this step? This action cannot be undone.') }}
+						</p>
+					</div>
+				</div>
+				<div class="flex justify-end space-x-3 mt-6">
+					<Button
+						variant="outline"
+						@click="cancelDelete"
+						:disabled="deletingStep"
+					>
+						{{ __('Cancel') }}
+					</Button>
+					<Button
+						variant="solid"
+						theme="red"
+						@click="removeStep"
+						:loading="deletingStep"
+						:disabled="deletingStep"
+					>
+						<div class="flex items-center">
+							<FeatherIcon v-if="!deletingStep" name="trash-2" class="w-4 h-4 mr-2" />
+							<FeatherIcon v-else name="loader" class="w-4 h-4 mr-2 animate-spin" />
+							{{ deletingStep ? __('Deleting...') : __('Delete') }}
+						</div>
+					</Button>
+				</div>
+			</div>
+		</div>
 	</div>
 </template>
 
@@ -361,11 +449,17 @@ const showAddStepModal = ref(false)
 const showSettingsModal = ref(false)
 const editingStepIndex = ref(-1)
 const expandedStep = ref(-1)
+const editingTitleIndex = ref(-1)
+const editingTitleValue = ref('')
 const hoveredStep = ref(-1)
 const showDelayModal = ref(false)
 const editingDelayIndex = ref(-1)
 const currentEditingDelay = ref('')
 const initialDelay = ref('1 Ngày')
+const addingStep = ref(false)
+const deletingStep = ref(false)
+const showDeleteConfirm = ref(false)
+const stepToDelete = ref(null)
 
 // Options
 const statusOptions = [
@@ -392,17 +486,7 @@ const replyActionOptions = [
 // Computed
 const parsedSteps = computed(() => {
 	if (!sequenceData.value?.steps) return []
-
-	try {
-		const steps =
-			typeof sequenceData.value.steps === 'string'
-				? JSON.parse(sequenceData.value.steps)
-				: sequenceData.value.steps
-		return Array.isArray(steps) ? steps : []
-	} catch (error) {
-		console.error('Error parsing steps:', error)
-		return []
-	}
+	return Array.isArray(sequenceData.value.steps) ? sequenceData.value.steps : []
 })
 
 // Methods
@@ -413,7 +497,8 @@ const loadSequence = async () => {
 	try {
 		const result = await sequenceStore.fetchSequenceById(route.params.id)
 		if (result.success) {
-			sequenceData.value = { ...result.data }
+			// Force reactivity by creating new object
+			sequenceData.value = JSON.parse(JSON.stringify(result.data))
 		} else {
 			error.value = result.error || 'Sequence not found'
 		}
@@ -429,10 +514,18 @@ const saveSequence = async () => {
 	saving.value = true
 
 	try {
-		// Update steps JSON
-		sequenceData.value.steps = JSON.stringify(parsedSteps.value)
+		// Prepare steps JSON (delays only)
+		const stepsJson = parsedSteps.value.map(step => ({
+			delay: step.delay || '1 day',
+			flow_id: step.flow?.name || null
+		}))
 
-		const result = await sequenceStore.updateSequence(route.params.id, sequenceData.value)
+		// Update sequence with steps JSON
+		const result = await sequenceStore.updateSequence(route.params.id, {
+			...sequenceData.value,
+			steps: JSON.stringify(stepsJson)
+		})
+		
 		if (result.success) {
 			toast.success('Sequence saved successfully!')
 		} else {
@@ -446,85 +539,111 @@ const saveSequence = async () => {
 	}
 }
 
-const addStep = async () => {
+// Handle add step from modal
+const handleAddStep = async (newStep) => {
+	if (addingStep.value) return
+	
 	try {
-		const newStep = {
-			step_order: parsedSteps.value.length + 1,
-			delay_from_previous: '0 minutes',
-			channel: 'Email',
-			template_id: '',
-			action_if_replied: 'Continue',
-			related_action: '',
+		addingStep.value = true
+		
+		// Use sequenceData.value.name as fallback
+		const sequenceId = sequenceData.value?.name || route.params.id
+
+		if (!sequenceId || sequenceId === '0') {
+			toast.error('Invalid sequence ID. Please reload the page.')
+			return
 		}
 
-		const currentSteps = [...parsedSteps.value, newStep]
-		sequenceData.value.steps = JSON.stringify(currentSteps)
-		
-		// Auto-save to database
-		const result = await sequenceStore.updateSequence(route.params.id, sequenceData.value)
+		// Create step with action
+		const stepData = {
+			...newStep,
+			delay: newStep.delay || '1 day',
+			action: newStep.action || {
+				action_type: 'EMAIL',
+				channel_type: newStep.channel || 'Email',
+				parameters: {}
+			}
+		}
+
+		// Create step (Mira Flow + update steps JSON)
+		const result = await sequenceStore.createSequenceStep(sequenceId, stepData)
 		if (result.success) {
+			// Reload sequence data
+			await loadSequence()
 			toast.success('Step added successfully!')
+			showAddStepModal.value = false
 		} else {
 			toast.error(result.error || 'Failed to add step')
 		}
 	} catch (error) {
 		console.error('Error adding step:', error)
 		toast.error('Failed to add step')
+	} finally {
+		addingStep.value = false
 	}
 }
 
-const removeStep = async (index) => {
+const confirmDeleteStep = (index) => {
+	stepToDelete.value = index
+	showDeleteConfirm.value = true
+}
+
+const removeStep = async () => {
+	if (deletingStep.value || stepToDelete.value === null) return
+	
 	try {
-		const currentSteps = parsedSteps.value.filter((_, i) => i !== index)
-		// Update step orders
-		currentSteps.forEach((step, i) => {
-			step.step_order = i + 1
-		})
-		sequenceData.value.steps = JSON.stringify(currentSteps)
+		deletingStep.value = true
+		const index = stepToDelete.value
+		const stepToRemove = parsedSteps.value[index]
 		
-		// Auto-save to database
-		const result = await sequenceStore.updateSequence(route.params.id, sequenceData.value)
+		if (!stepToRemove || !stepToRemove.flow) {
+			toast.error('Invalid step')
+			return
+		}
+
+		// Delete step (Mira Flow + update steps JSON)
+		const result = await sequenceStore.deleteSequenceStep(
+			stepToRemove.flow.name,
+			route.params.id,
+			index
+		)
+		
 		if (result.success) {
+			// Reload sequence data
+			await loadSequence()
 			toast.success('Step removed successfully!')
+			showDeleteConfirm.value = false
+			stepToDelete.value = null
 		} else {
 			toast.error(result.error || 'Failed to remove step')
 		}
 	} catch (error) {
 		console.error('Error removing step:', error)
 		toast.error('Failed to remove step')
+	} finally {
+		deletingStep.value = false
 	}
 }
 
-const moveStepUp = (index) => {
-	if (index === 0) return
-
-	const currentSteps = [...parsedSteps.value]
-	const temp = currentSteps[index]
-	currentSteps[index] = currentSteps[index - 1]
-	currentSteps[index - 1] = temp
-
-	// Update step orders
-	currentSteps.forEach((step, i) => {
-		step.step_order = i + 1
-	})
-
-	sequenceData.value.steps = JSON.stringify(currentSteps)
+const cancelDelete = () => {
+	showDeleteConfirm.value = false
+	stepToDelete.value = null
 }
 
-const moveStepDown = (index) => {
+const moveStepUp = async (index) => {
+	if (index === 0) return
+
+	// Note: Reordering would require updating creation timestamps or adding an order field
+	// For now, we'll keep this as a placeholder
+	toast.info('Step reordering will be implemented with order field')
+}
+
+const moveStepDown = async (index) => {
 	if (index === parsedSteps.value.length - 1) return
 
-	const currentSteps = [...parsedSteps.value]
-	const temp = currentSteps[index]
-	currentSteps[index] = currentSteps[index + 1]
-	currentSteps[index + 1] = temp
-
-	// Update step orders
-	currentSteps.forEach((step, i) => {
-		step.step_order = i + 1
-	})
-
-	sequenceData.value.steps = JSON.stringify(currentSteps)
+	// Note: Reordering would require updating creation timestamps or adding an order field
+	// For now, we'll keep this as a placeholder
+	toast.info('Step reordering will be implemented with order field')
 }
 
 const getStatusVariant = (status) => {
@@ -553,26 +672,34 @@ const getStepIcon = (channel) => {
 		Email: 'mail',
 		SMS: 'message-square',
 		Messenger: 'message-circle',
-		Zalo_OA: 'phone',
-		Zalo_ZNS: 'smartphone',
-		AI_Call: 'phone-call',
+		Zalo_OA: 'message-circle',
+		Zalo_ZNS: 'message-circle',
+		Zalo: 'message-circle',
+		AI_Call: 'phone',
 	}
-	return iconMap[channel] || 'mail'
+	return iconMap[channel] || 'send'
 }
 
 const getStepIconClass = (channel) => {
 	const classMap = {
-		// Email: 'bg-blue-100 text-blue-600',
-		// SMS: 'bg-yellow-100 text-yellow-600',
-		// Messenger: 'bg-purple-100 text-purple-600',
-		// Zalo_OA: 'bg-green-100 text-green-600',
-		// Zalo_ZNS: 'bg-indigo-100 text-indigo-600',
-		// AI_Call: 'bg-red-100 text-red-600',
+		Email: 'text-blue-600 border-blue-500',
+		SMS: 'text-green-600 border-green-500',
+		Messenger: 'text-purple-600 border-purple-500',
+		Zalo_OA: 'text-blue-600 border-blue-500',
+		Zalo_ZNS: 'text-blue-600 border-blue-500',
+		Zalo: 'text-blue-600 border-blue-500',
+		AI_Call: 'text-orange-600 border-orange-500',
 	}
-	return classMap[channel] || 'bg-white text-blue-600'
+	return classMap[channel] || 'text-gray-600 border-gray-500'
 }
 
 const getStepTitle = (step) => {
+	// Use flow title if available, otherwise generate from channel
+	if (step.flow && step.flow.title) {
+		return step.flow.title
+	}
+
+	const channel = step.flow?.channel || step.channel
 	const titleMap = {
 		Email: 'Send Email',
 		SMS: 'Send SMS',
@@ -581,14 +708,15 @@ const getStepTitle = (step) => {
 		Zalo_ZNS: 'Send Zalo ZNS Message',
 		AI_Call: 'Make AI Call',
 	}
-	return titleMap[step.channel] || `Send ${step.channel}`
+	return titleMap[channel] || `Send ${channel}`
 }
 
 const getStepDescription = (step) => {
 	if (step.template_id) {
 		return `Using template: ${step.template_id}`
 	}
-	return `Send a ${step.channel?.toLowerCase()} message to the contact`
+	const channel = step.flow?.channel || step.channel || 'message'
+	return `Send a ${channel.toLowerCase()} message to the contact`
 }
 
 // Step management methods
@@ -597,20 +725,30 @@ const toggleStep = (index) => {
 }
 
 const getStepContent = (step) => {
-	if (step.channel === 'Email') {
+	// Get content from flow.actions[0].action_parameters
+	let actionParams = {}
+	if (step.flow && step.flow.actions && step.flow.actions.length > 0) {
+		try {
+			actionParams = JSON.parse(step.flow.actions[0].action_parameters || '{}')
+		} catch (e) {
+			console.error('Error parsing action parameters:', e)
+		}
+	}
+
+	if (step.flow?.channel === 'Email') {
 		return {
-			email_subject: step.email_subject || '',
-			email_content: step.email_content || '',
-			attachments: step.attachments || [],
+			email_subject: actionParams.subject || '',
+			email_content: actionParams.content || '',
+			attachments: actionParams.attachments || [],
 		}
 	} else {
 		// For SMS/Messenger/Zalo - use ZaloEditor format
 		return {
-			blocks: step.blocks || [
+			blocks: actionParams.blocks || [
 				{
 					id: 1,
 					type: 'text',
-					text_content: step.message_content || '',
+					text_content: actionParams.message_content || '',
 				},
 			],
 		}
@@ -618,32 +756,68 @@ const getStepContent = (step) => {
 }
 
 const updateStepContent = (index, content) => {
-	const currentSteps = [...parsedSteps.value]
-	if (currentSteps[index]) {
-		// Update all content fields
-		Object.assign(currentSteps[index], content)
-		sequenceData.value.steps = JSON.stringify(currentSteps)
+	// Don't mutate during render - just update the flow directly
+	const step = parsedSteps.value[index]
+	if (!step || !step.flow) return
+
+	// Update flow content locally
+	if (content.email_subject !== undefined || content.email_content !== undefined) {
+		// Update email action parameters
+		if (!step.flow.actions) {
+			step.flow.actions = []
+		}
+		if (step.flow.actions.length === 0) {
+			step.flow.actions.push({
+				action_type: 'EMAIL',
+				channel_type: 'Email',
+				action_parameters: JSON.stringify({})
+			})
+		}
+		
+		const params = JSON.parse(step.flow.actions[0].action_parameters || '{}')
+		
+		// Only update if value actually changed
+		let changed = false
+		if (content.email_subject !== undefined && params.subject !== content.email_subject) {
+			params.subject = content.email_subject
+			changed = true
+		}
+		if (content.email_content !== undefined && params.content !== content.email_content) {
+			params.content = content.email_content
+			changed = true
+		}
+		
+		if (changed) {
+			step.flow.actions[0].action_parameters = JSON.stringify(params)
+		}
 	}
 }
 
 const duplicateStep = async (index) => {
 	try {
-		const currentSteps = [...parsedSteps.value]
-		const stepToDuplicate = { ...currentSteps[index] }
-		stepToDuplicate.step_order = currentSteps.length + 1
+		const stepToDuplicate = parsedSteps.value[index]
+		if (!stepToDuplicate || !stepToDuplicate.flow) {
+			toast.error('Invalid step')
+			return
+		}
 
-		currentSteps.push(stepToDuplicate)
+		// Prepare new step data
+		const newStepData = {
+			title: stepToDuplicate.flow.title + ' (Copy)',
+			channel: stepToDuplicate.flow.channel,
+			delay: stepToDuplicate.delay || '1 day',
+			action: stepToDuplicate.flow.actions?.[0] ? {
+				action_type: stepToDuplicate.flow.actions[0].action_type,
+				channel_type: stepToDuplicate.flow.actions[0].channel_type,
+				parameters: JSON.parse(stepToDuplicate.flow.actions[0].action_parameters || '{}')
+			} : null
+		}
 
-		// Update step orders
-		currentSteps.forEach((step, i) => {
-			step.step_order = i + 1
-		})
-
-		sequenceData.value.steps = JSON.stringify(currentSteps)
-		
-		// Auto-save to database
-		const result = await sequenceStore.updateSequence(route.params.id, sequenceData.value)
+		// Create new step
+		const result = await sequenceStore.createSequenceStep(route.params.id, newStepData)
 		if (result.success) {
+			// Reload sequence data
+			await loadSequence()
 			toast.success('Step duplicated successfully!')
 		} else {
 			toast.error(result.error || 'Failed to duplicate step')
@@ -660,11 +834,29 @@ const cancelEdit = () => {
 
 const saveStepContent = async (index) => {
 	try {
-		// Auto-save to database immediately
-		sequenceData.value.steps = JSON.stringify(parsedSteps.value)
-		const result = await sequenceStore.updateSequence(route.params.id, sequenceData.value)
+		const stepToSave = parsedSteps.value[index]
+		if (!stepToSave || !stepToSave.flow) {
+			toast.error('Invalid step')
+			return
+		}
+
+		// Prepare step data for update
+		const stepData = {
+			title: stepToSave.flow.title,
+			channel: stepToSave.flow.channel,
+			actions: stepToSave.flow.actions || []
+		}
+
+		// Update step in Mira Flow
+		const result = await sequenceStore.updateSequenceStep(
+			stepToSave.flow.name,
+			stepData,
+			route.params.id
+		)
 		
 		if (result.success) {
+			// Reload sequence data
+			await loadSequence()
 			expandedStep.value = -1
 			toast.success('Step saved successfully!')
 		} else {
@@ -690,23 +882,104 @@ const getInteractionType = (channel) => {
 }
 
 const getStepAdditionalActions = (step) => {
-	return step.additional_actions || {}
+	// Get additional actions from flow.trigger_id
+	if (!step.flow || !step.flow.trigger_id) return {}
+	
+	console.log('📖 LOADING Additional Actions from triggers:', step.flow.trigger_id)
+	
+	const additionalActions = {}
+	const triggers = Array.isArray(step.flow.trigger_id) ? step.flow.trigger_id : []
+	
+	triggers.forEach(trigger => {
+		try {
+			// Parse conditions to get action data
+			const conditions = JSON.parse(trigger.conditions || '{}')
+			
+			// Convert trigger_type back to key
+			const triggerKey = getTriggerKeyFromType(trigger.trigger_type)
+			
+			console.log(`Converting back: ${trigger.trigger_type} -> ${triggerKey}`, conditions)
+			
+			if (triggerKey) {
+				additionalActions[triggerKey] = {
+					type: conditions.action_type,
+					data: conditions.action_data || {},
+					configured: conditions.configured || false
+				}
+			} else {
+				console.warn(`No mapping for trigger_type: ${trigger.trigger_type}`)
+			}
+		} catch (e) {
+			console.error('Error parsing trigger conditions:', e)
+		}
+	})
+	
+	console.log('Final additionalActions:', additionalActions)
+	
+	return additionalActions
 }
 
-const updateStepAdditionalActions = async (index, actions) => {
+// Helper to convert trigger_type back to key
+const getTriggerKeyFromType = (triggerType) => {
+	const keyMap = {
+		'ON_EMAIL_REPLY': 'reply',
+		'ON_LINK_CLICK': 'link_click',
+		'ON_EMAIL_OPEN': 'email_open',
+		'ON_EMAIL_BOUNCE': 'bounce',
+		'ON_UNSUBSCRIBE': 'unsubscribe',
+		'ON_SEND_SUCCESS': 'send_success',
+		'ON_SEND_FAILED': 'send_failed',
+		'ON_USER_RESPONSE': 'user_response'
+	}
+	return keyMap[triggerType]
+}
+
+const updateStepAdditionalActions = async (index, additionalActions) => {
 	try {
-		const currentSteps = [...parsedSteps.value]
-		if (currentSteps[index]) {
-			currentSteps[index].additional_actions = actions
-			sequenceData.value.steps = JSON.stringify(currentSteps)
+		const stepToUpdate = parsedSteps.value[index]
+		if (!stepToUpdate || !stepToUpdate.flow) {
+			toast.error('Invalid step')
+			return
+		}
+
+		console.log('📝 SAVING Additional Actions:')
+		console.log('Input additionalActions:', additionalActions)
+
+		// Convert additional actions to triggers
+		// Each additional action becomes a trigger with its corresponding action
+		const triggers = Object.entries(additionalActions).map(([triggerKey, actionData]) => {
+			console.log(`Converting: ${triggerKey} ->`, actionData)
+			const triggerType = getTriggerType(triggerKey)
+			console.log(`Trigger type: ${triggerType}`)
 			
-			// Auto-save to database
-			const result = await sequenceStore.updateSequence(route.params.id, sequenceData.value)
-			if (result.success) {
-				toast.success('Additional actions saved!')
-			} else {
-				toast.error(result.error || 'Failed to save additional actions')
+			return {
+				trigger_type: triggerType, // Use actual trigger type (now supported in DocType)
+				status: 'ACTIVE',
+				channel: stepToUpdate.flow.channel,
+				// Store action data in conditions
+				conditions: JSON.stringify({
+					action_type: actionData.type,
+					action_data: actionData.data,
+					configured: actionData.configured
+				})
 			}
+		})
+		
+		console.log('Final triggers to save:', triggers)
+
+		// Update flow with triggers
+		const result = await sequenceStore.updateFlowTriggers(
+			stepToUpdate.flow.name,
+			triggers,
+			route.params.id
+		)
+		
+		if (result.success) {
+			// Reload sequence data
+			await loadSequence()
+			toast.success('Additional actions saved!')
+		} else {
+			toast.error(result.error || 'Failed to save additional actions')
 		}
 	} catch (error) {
 		console.error('Error saving additional actions:', error)
@@ -714,14 +987,67 @@ const updateStepAdditionalActions = async (index, actions) => {
 	}
 }
 
-const handleAddStep = (newStep) => {
-	const currentSteps = [...parsedSteps.value, newStep]
-	// Update step orders
-	currentSteps.forEach((step, i) => {
-		step.step_order = i + 1
-	})
-	sequenceData.value.steps = JSON.stringify(currentSteps)
-	toast.success('Step added successfully')
+const startEditTitle = (index, step) => {
+	editingTitleIndex.value = index
+	editingTitleValue.value = step.flow?.title || 'New Step'
+}
+
+const cancelEditTitle = () => {
+	editingTitleIndex.value = -1
+	editingTitleValue.value = ''
+}
+
+const saveStepTitle = async (index) => {
+	try {
+		const step = parsedSteps.value[index]
+		if (!step || !step.flow) {
+			toast.error('Invalid step')
+			return
+		}
+
+		const newTitle = editingTitleValue.value.trim()
+		if (!newTitle) {
+			toast.error('Title cannot be empty')
+			return
+		}
+
+		// Update flow title
+		const result = await sequenceStore.updateSequenceStep(
+			step.flow.name,
+			{ title: newTitle },
+			route.params.id
+		)
+
+		if (result.success) {
+			await loadSequence()
+			toast.success('Step title updated!')
+			cancelEditTitle()
+		} else {
+			toast.error(result.error || 'Failed to update title')
+		}
+	} catch (error) {
+		console.error('Error updating title:', error)
+		toast.error('Failed to update title')
+	}
+}
+
+// Helper to convert trigger key to trigger_type
+const getTriggerType = (key) => {
+	const typeMap = {
+		// Old keys (for backward compatibility)
+		'reply': 'ON_EMAIL_REPLY',
+		'click': 'ON_LINK_CLICK',
+		'open': 'ON_EMAIL_OPEN',
+		'bounce': 'ON_EMAIL_BOUNCE',
+		'unsubscribe': 'ON_UNSUBSCRIBE',
+		// New keys from AdditionalActions component
+		'email_open': 'ON_EMAIL_OPEN',
+		'link_click': 'ON_LINK_CLICK',
+		'send_success': 'ON_SEND_SUCCESS',
+		'send_failed': 'ON_SEND_FAILED',
+		'user_response': 'ON_USER_RESPONSE'
+	}
+	return typeMap[key] || 'CUSTOM_EVENT'
 }
 
 const editDelay = (index) => {
@@ -736,17 +1062,20 @@ const editInitialDelay = () => {
 	showDelayModal.value = true
 }
 
-const saveDelayFromModal = (newDelay) => {
+const saveDelayFromModal = async (newDelay) => {
 	if (editingDelayIndex.value === 0) {
 		// Initial delay
 		initialDelay.value = newDelay
 		toast.success('Initial delay updated successfully')
 	} else {
-		// Step delay
-		const currentSteps = [...parsedSteps.value]
-		if (currentSteps[editingDelayIndex.value]) {
-			currentSteps[editingDelayIndex.value].delay_from_previous = newDelay
-			sequenceData.value.steps = JSON.stringify(currentSteps)
+		// Step delay - update in steps JSON
+		const stepToUpdate = parsedSteps.value[editingDelayIndex.value]
+		if (stepToUpdate) {
+			// Update local state
+			stepToUpdate.delay = newDelay
+			
+			// Save to sequence
+			await saveSequence()
 			toast.success('Delay updated successfully')
 		}
 	}

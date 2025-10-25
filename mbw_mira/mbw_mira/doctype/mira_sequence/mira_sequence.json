@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "format:SEQ-{#####}",
  "creation": "2025-10-15 16:21:39.730768",
  "doctype": "DocType",
  "engine": "InnoDB",

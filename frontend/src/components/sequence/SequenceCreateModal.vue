@@ -22,7 +22,7 @@
       <div class="space-y-3">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            {{ __('First Message Type') }}
+            {{ __('First Message Type') }} <span class="text-red-500">*</span>
           </label>
           <p class="text-sm text-gray-500 mb-4">
             {{ __('Choose the first message type for the sequence') }}
@@ -324,6 +324,7 @@ const createFirstStep = () => {
 
 const handleSubmit = async () => {
   if (!formData.value.title.trim() || !formData.value.messageType) {
+    toast.error(__('Please fill in all required fields'))
     return
   }
   
@@ -344,9 +345,13 @@ const handleSubmit = async () => {
     // Create sequence
     const result = await sequenceStore.createSequence(sequenceData)
     
-    if (result.success) {
+    console.log('Create sequence result:', result)
+    
+    if (result.success && result.data && result.data.name) {
       emit('success', 'Tạo sequence thành công!')
       emit('close')
+      
+      console.log('Navigating to sequence editor with ID:', result.data.name)
       
       // Navigate to sequence editor
       router.push({ 

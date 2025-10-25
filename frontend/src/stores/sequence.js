@@ -5,6 +5,7 @@ export const useSequenceStore = defineStore('sequence', {
   state: () => ({
     sequences: [],
     currentSequence: null,
+    sequenceSteps: {}, // Cache steps by sequence_id: { [sequence_id]: [steps] }
     loading: false,
     error: null,
     pagination: {
@@ -119,14 +120,25 @@ export const useSequenceStore = defineStore('sequence', {
           
           if (result && result.success && Array.isArray(result.data)) {
             // Enhance data with display fields
-            this.sequences = result.data.map(sequence => ({
-              ...sequence,
-              display_status: this.getStatusDisplay(sequence.status),
-              status_color: this.getStatusColor(sequence.status),
-              steps_count: this.getStepsCount(sequence.steps),
-              formatted_created_at: this.formatDate(sequence.created_at || sequence.creation),
-              formatted_modified: this.formatRelativeDate(sequence.modified)
-            }))
+            this.sequences = result.data.map(sequence => {
+              // Parse steps JSON to get count
+              let stepsCount = 0
+              try {
+                const steps = sequence.steps ? JSON.parse(sequence.steps) : []
+                stepsCount = Array.isArray(steps) ? steps.length : 0
+              } catch (e) {
+                console.error('Error parsing steps for sequence:', sequence.name, e)
+              }
+
+              return {
+                ...sequence,
+                display_status: this.getStatusDisplay(sequence.status),
+                status_color: this.getStatusColor(sequence.status),
+                steps_count: stepsCount,
+                formatted_created_at: this.formatDate(sequence.created_at || sequence.creation),
+                formatted_modified: this.formatRelativeDate(sequence.modified)
+              }
+            })
 
             // Update pagination
             this.pagination.total = result.count || 0
@@ -156,14 +168,25 @@ export const useSequenceStore = defineStore('sequence', {
 
           if (listResult && Array.isArray(listResult)) {
             // Enhance data with display fields
-            this.sequences = listResult.map(sequence => ({
-              ...sequence,
-              display_status: this.getStatusDisplay(sequence.status),
-              status_color: this.getStatusColor(sequence.status),
-              steps_count: this.getStepsCount(sequence.steps),
-              formatted_created_at: this.formatDate(sequence.created_at || sequence.creation),
-              formatted_modified: this.formatRelativeDate(sequence.modified)
-            }))
+            this.sequences = listResult.map(sequence => {
+              // Parse steps JSON to get count
+              let stepsCount = 0
+              try {
+                const steps = sequence.steps ? JSON.parse(sequence.steps) : []
+                stepsCount = Array.isArray(steps) ? steps.length : 0
+              } catch (e) {
+                console.error('Error parsing steps for sequence:', sequence.name, e)
+              }
+
+              return {
+                ...sequence,
+                display_status: this.getStatusDisplay(sequence.status),
+                status_color: this.getStatusColor(sequence.status),
+                steps_count: stepsCount,
+                formatted_created_at: this.formatDate(sequence.created_at || sequence.creation),
+                formatted_modified: this.formatRelativeDate(sequence.modified)
+              }
+            })
 
             // Update pagination
             this.pagination.total = countResult || 0
@@ -193,20 +216,23 @@ export const useSequenceStore = defineStore('sequence', {
       this.error = null
       
       try {
-        const sequenceResult = await call('frappe.client.get', {
-          doctype: 'Mira Sequence',
-          name: id
+        // Use new combined API - gets sequence + flows + actions in ONE call
+        const result = await call('mbw_mira.mbw_mira.doctype.mira_sequence.mira_sequence.get_sequence_with_flows', {
+          sequence_id: id
         })
 
-        if (sequenceResult && sequenceResult.name) {
+        if (result && result.name) {
+          // Cache steps
+          this.sequenceSteps[id] = result.steps || []
+
           // Enhance data with display fields
           const enhancedSequence = {
-            ...sequenceResult,
-            display_status: this.getStatusDisplay(sequenceResult.status),
-            status_color: this.getStatusColor(sequenceResult.status),
-            steps_count: this.getStepsCount(sequenceResult.steps),
-            formatted_created_at: this.formatDate(sequenceResult.created_at || sequenceResult.creation),
-            formatted_modified: this.formatRelativeDate(sequenceResult.modified)
+            ...result,
+            display_status: this.getStatusDisplay(result.status),
+            status_color: this.getStatusColor(result.status),
+            steps_count: (result.steps || []).length,
+            formatted_created_at: this.formatDate(result.created_at || result.creation),
+            formatted_modified: this.formatRelativeDate(result.modified)
           }
 
           this.currentSequence = enhancedSequence
@@ -268,16 +294,16 @@ export const useSequenceStore = defineStore('sequence', {
           throw new Error(validationResult.message)
         }
 
-        // Prepare complete sequence data
+        // Prepare sequence data (includes steps JSON with delays)
         const completeSequenceData = {
           title: sequenceData.title?.trim(),
           purpose: sequenceData.purpose?.trim() || '',
           status: sequenceData.status || 'Draft',
           enrollment_source: sequenceData.enrollment_source?.trim() || '',
-          steps: sequenceData.steps || '[]'
+          steps: sequenceData.steps // Keep steps JSON for delays
         }
         
-        // Update with complete data in one call
+        // Update sequence basic info
         const result = await call('frappe.client.set_value', {
           doctype: 'Mira Sequence',
           name: name,
@@ -311,6 +337,27 @@ export const useSequenceStore = defineStore('sequence', {
           throw new Error('Không thể xóa sequence đang hoạt động. Vui lòng tạm dừng sequence trước khi xóa.')
         }
 
+        // Delete all associated Mira Flow steps first
+        const stepsResult = await call('frappe.client.get_list', {
+          doctype: 'Mira Flow',
+          filters: {
+            sequence_id: sequenceId,
+            type: 'Sequence'
+          },
+          fields: ['name']
+        })
+
+        if (stepsResult && stepsResult.length > 0) {
+          // Delete each step
+          for (const step of stepsResult) {
+            await call('frappe.client.delete', {
+              doctype: 'Mira Flow',
+              name: step.name
+            })
+          }
+        }
+
+        // Delete the sequence
         const result = await call('frappe.client.delete', {
           doctype: 'Mira Sequence',
           name: sequenceId
@@ -319,6 +366,7 @@ export const useSequenceStore = defineStore('sequence', {
         if (result === undefined) {
           // Remove from local state
           this.sequences = this.sequences.filter(sequence => sequence.name !== sequenceId)
+          delete this.sequenceSteps[sequenceId]
           
           // Update pagination
           this.pagination.total = Math.max(0, this.pagination.total - 1)
@@ -351,16 +399,49 @@ export const useSequenceStore = defineStore('sequence', {
           throw new Error('Original sequence not found')
         }
 
+        // Parse steps JSON
+        let delaySteps = []
+        try {
+          delaySteps = originalSequence.steps ? JSON.parse(originalSequence.steps) : []
+        } catch (e) {
+          console.error('Error parsing steps:', e)
+        }
+
+        // Get original flows with actions
+        const originalFlows = await call('frappe.client.get_list', {
+          doctype: 'Mira Flow',
+          filters: {
+            sequence_id: sequenceId,
+            type: 'Sequence'
+          },
+          fields: ['*'],
+          order_by: 'creation asc'
+        })
+
+        // Fetch actions for each flow
+        const flowsWithActions = await Promise.all(
+          (originalFlows || []).map(async (flow) => {
+            const flowDetail = await call('frappe.client.get', {
+              doctype: 'Mira Flow',
+              name: flow.name
+            })
+            return {
+              ...flow,
+              actions: flowDetail.action_id || []
+            }
+          })
+        )
+
         // Prepare duplicate data
         const duplicateData = {
           title: `${originalSequence.title} (Copy)`,
           purpose: originalSequence.purpose,
-          status: 'Draft', // Always create duplicates as Draft
+          status: 'Draft',
           enrollment_source: originalSequence.enrollment_source,
-          steps: originalSequence.steps
+          steps: '[]' // Will update after creating flows
         }
 
-        // Create the duplicate
+        // Create the duplicate sequence
         const result = await call('frappe.client.insert', {
           doc: {
             doctype: 'Mira Sequence',
@@ -369,6 +450,53 @@ export const useSequenceStore = defineStore('sequence', {
         })
 
         if (result && result.name) {
+          const newSteps = []
+
+          // Duplicate all flows with actions
+          for (let i = 0; i < flowsWithActions.length; i++) {
+            const originalFlow = flowsWithActions[i]
+            const delay = delaySteps[i]?.delay || '1 day'
+
+            // Prepare flow doc with actions
+            const flowDoc = {
+              doctype: 'Mira Flow',
+              type: 'Sequence',
+              sequence_id: result.name,
+              title: originalFlow.title,
+              channel: originalFlow.channel,
+              status: 'Draft'
+            }
+
+            // Copy actions to child table
+            if (originalFlow.actions && originalFlow.actions.length > 0) {
+              flowDoc.action_id = originalFlow.actions.map(action => ({
+                action_type: action.action_type,
+                channel_type: action.channel_type,
+                action_parameters: action.action_parameters,
+                order: action.order || 0
+              }))
+            }
+
+            // Create flow with actions
+            const newFlow = await call('frappe.client.insert', {
+              doc: flowDoc
+            })
+
+            if (newFlow && newFlow.name) {
+              newSteps.push({
+                delay: delay,
+                flow_id: newFlow.name
+              })
+            }
+          }
+
+          // Update sequence with new steps JSON
+          await call('frappe.client.set_value', {
+            doctype: 'Mira Sequence',
+            name: result.name,
+            fieldname: { steps: JSON.stringify(newSteps) }
+          })
+
           // Refresh sequences list
           await this.fetchSequences()
           return { success: true, data: result }
@@ -433,34 +561,8 @@ export const useSequenceStore = defineStore('sequence', {
     },
 
     async getSequence(name) {
-      try {
-        const result = await call('frappe.client.get', {
-          doctype: 'Mira Sequence',
-          name: name
-        })
-
-        if (result) {
-          return {
-            success: true,
-            data: {
-              ...result,
-              display_status: this.getStatusDisplay(result.status),
-              status_color: this.getStatusColor(result.status),
-              steps_count: this.getStepsCount(result.steps),
-              formatted_created_at: this.formatDate(result.created_at || result.creation),
-              formatted_modified: this.formatRelativeDate(result.modified)
-            }
-          }
-        }
-
-        return { success: false, error: 'Sequence not found' }
-      } catch (error) {
-        console.error('Error fetching sequence:', error)
-        return { 
-          success: false, 
-          error: this.parseError(error) || 'Failed to fetch sequence details'
-        }
-      }
+      // Use fetchSequenceById for consistency
+      return await this.fetchSequenceById(name)
     },
 
     // Helper methods
@@ -486,8 +588,7 @@ export const useSequenceStore = defineStore('sequence', {
         title: sequenceData.title?.trim(),
         purpose: sequenceData.purpose?.trim() || '',
         status: sequenceData.status || 'Draft',
-        enrollment_source: sequenceData.enrollment_source?.trim() || '',
-        steps: sequenceData.steps || '[]'
+        enrollment_source: sequenceData.enrollment_source?.trim() || ''
       }
     },
 
@@ -511,13 +612,256 @@ export const useSequenceStore = defineStore('sequence', {
       return colorMap[status] || 'gray'
     },
 
-    getStepsCount(stepsJson) {
+    async fetchSequenceSteps(sequenceId) {
       try {
-        if (!stepsJson) return 0
-        const steps = typeof stepsJson === 'string' ? JSON.parse(stepsJson) : stepsJson
-        return Array.isArray(steps) ? steps.length : 0
+        const result = await call('frappe.client.get_list', {
+          doctype: 'Mira Flow',
+          filters: {
+            sequence_id: sequenceId,
+            type: 'Sequence'
+          },
+          fields: ['*'],
+          order_by: 'creation asc'
+        })
+
+        if (result) {
+          this.sequenceSteps[sequenceId] = result
+          return { success: true, data: result }
+        }
+
+        return { success: false, data: [] }
       } catch (error) {
-        return 0
+        console.error('Error fetching sequence steps:', error)
+        return { success: false, error: this.parseError(error), data: [] }
+      }
+    },
+
+    async createSequenceStep(sequenceId, stepData) {
+      try {
+        // Validate sequenceId
+        if (!sequenceId) {
+          throw new Error('sequenceId is required')
+        }
+
+        console.log('Creating step for sequence:', sequenceId)
+        console.log('Step data:', stepData)
+
+        // Verify sequence exists
+        let sequence
+        try {
+          sequence = await call('frappe.client.get', {
+            doctype: 'Mira Sequence',
+            name: sequenceId
+          })
+          console.log('Sequence found:', sequence)
+        } catch (error) {
+          console.error('Sequence not found in database:', sequenceId)
+          console.error('Error:', error)
+          throw new Error(`Sequence "${sequenceId}" does not exist in database. Please check if the sequence was created successfully.`)
+        }
+
+        if (!sequence || !sequence.name) {
+          throw new Error(`Sequence ${sequenceId} not found or invalid`)
+        }
+
+        // Prepare flow doc with actions in child table
+        const flowDoc = {
+          doctype: 'Mira Flow',
+          type: 'Sequence',
+          sequence_id: sequenceId,
+          title: stepData.title || 'New Step',
+          channel: stepData.channel || 'Email',
+          status: 'Draft'
+        }
+
+        // Add action to child table if provided
+        if (stepData.action) {
+          flowDoc.action_id = [{
+            action_type: stepData.action.action_type || 'EMAIL',
+            channel_type: stepData.action.channel_type || 'Email',
+            action_parameters: JSON.stringify(stepData.action.parameters || {})
+          }]
+        }
+
+        // Create Mira Flow with actions
+        const flowResult = await call('frappe.client.insert', {
+          doc: flowDoc
+        })
+
+        if (flowResult && flowResult.name) {
+
+          // Update sequence steps JSON to add delay
+          const sequence = await call('frappe.client.get', {
+            doctype: 'Mira Sequence',
+            name: sequenceId
+          })
+
+          let steps = []
+          try {
+            steps = sequence.steps ? JSON.parse(sequence.steps) : []
+          } catch (e) {
+            console.error('Error parsing steps:', e)
+          }
+
+          steps.push({
+            delay: stepData.delay || '1 day',
+            flow_id: flowResult.name
+          })
+
+          await call('frappe.client.set_value', {
+            doctype: 'Mira Sequence',
+            name: sequenceId,
+            fieldname: { steps: JSON.stringify(steps) }
+          })
+
+          // Refresh
+          await this.fetchSequenceById(sequenceId)
+          return { success: true, data: flowResult }
+        }
+
+        return { success: false, message: 'Failed to create step' }
+      } catch (error) {
+        console.error('Error creating step:', error)
+        return { success: false, error: this.parseError(error) }
+      }
+    },
+
+    async updateSequenceStep(flowName, stepData, sequenceId) {
+      try {
+        // Get current flow to update
+        const currentFlow = await call('frappe.client.get', {
+          doctype: 'Mira Flow',
+          name: flowName
+        })
+
+        if (!currentFlow) {
+          return { success: false, message: 'Flow not found' }
+        }
+
+        // Prepare updated doc
+        const updatedDoc = {
+          ...currentFlow,
+          title: stepData.title || currentFlow.title,
+          channel: stepData.channel || currentFlow.channel
+        }
+
+        // Update actions if provided
+        if (stepData.actions && Array.isArray(stepData.actions)) {
+          updatedDoc.action_id = stepData.actions.map(action => ({
+            action_type: action.action_type,
+            channel_type: action.channel_type,
+            action_parameters: typeof action.action_parameters === 'string' 
+              ? action.action_parameters 
+              : JSON.stringify(action.parameters || {}),
+            order: action.order || 0
+          }))
+        }
+
+        // Use frappe.client.save to update with child table
+        const result = await call('frappe.client.save', {
+          doc: updatedDoc
+        })
+
+        if (result) {
+          // Refresh if sequence_id is available
+          if (sequenceId) {
+            await this.fetchSequenceById(sequenceId)
+          }
+          return { success: true, data: result }
+        }
+
+        return { success: false, message: 'Failed to update step' }
+      } catch (error) {
+        console.error('Error updating step:', error)
+        return { success: false, error: this.parseError(error) }
+      }
+    },
+
+    async updateFlowTriggers(flowName, triggers, sequenceId) {
+      try {
+        // Get current flow
+        const currentFlow = await call('frappe.client.get', {
+          doctype: 'Mira Flow',
+          name: flowName
+        })
+
+        if (!currentFlow) {
+          return { success: false, message: 'Flow not found' }
+        }
+
+        // Update flow with triggers
+        const updatedDoc = {
+          ...currentFlow,
+          trigger_id: triggers.map(trigger => ({
+            trigger_type: trigger.trigger_type,
+            status: trigger.status || 'ACTIVE',
+            channel: trigger.channel,
+            conditions: trigger.conditions
+          }))
+        }
+
+        // Use frappe.client.save to update with child table
+        const result = await call('frappe.client.save', {
+          doc: updatedDoc
+        })
+
+        if (result) {
+          // Refresh if sequence_id is available
+          if (sequenceId) {
+            await this.fetchSequenceById(sequenceId)
+          }
+          return { success: true, data: result }
+        }
+
+        return { success: false, message: 'Failed to update triggers' }
+      } catch (error) {
+        console.error('Error updating triggers:', error)
+        return { success: false, error: this.parseError(error) }
+      }
+    },
+
+    async deleteSequenceStep(flowName, sequenceId, stepIndex) {
+      try {
+        // Delete Mira Flow
+        const result = await call('frappe.client.delete', {
+          doctype: 'Mira Flow',
+          name: flowName
+        })
+
+        if (result === undefined) {
+          // Update sequence steps JSON to remove the step
+          const sequence = await call('frappe.client.get', {
+            doctype: 'Mira Sequence',
+            name: sequenceId
+          })
+
+          let steps = []
+          try {
+            steps = sequence.steps ? JSON.parse(sequence.steps) : []
+          } catch (e) {
+            console.error('Error parsing steps:', e)
+          }
+
+          // Remove step at index
+          if (stepIndex !== undefined && stepIndex >= 0 && stepIndex < steps.length) {
+            steps.splice(stepIndex, 1)
+          }
+
+          await call('frappe.client.set_value', {
+            doctype: 'Mira Sequence',
+            name: sequenceId,
+            fieldname: { steps: JSON.stringify(steps) }
+          })
+
+          // Refresh
+          await this.fetchSequenceById(sequenceId)
+          return { success: true }
+        }
+
+        return { success: false, message: 'Failed to delete step' }
+      } catch (error) {
+        console.error('Error deleting step:', error)
+        return { success: false, error: this.parseError(error) }
       }
     },
 

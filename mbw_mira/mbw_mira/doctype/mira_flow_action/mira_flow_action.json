@@ -47,7 +47,6 @@
    "options": "Mira Flow"
   },
   {
-   "default": "0",
    "fieldname": "sequence",
    "fieldtype": "Link",
    "label": "Sequence",
@@ -73,7 +72,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-10-17 14:49:18.920860",
+ "modified": "2025-10-25 10:16:08.717446",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Flow Action",
