@@ -12,19 +12,9 @@
         @preview="handlePreview"
       />
       
-      <!-- Zalo ZNS Editor -->
-      <ZaloZnsEditor 
-        v-else-if="interaction_type === 'ZALO_ZNS'" 
-        :content="content"
-        :readonly="readonly"
-        @update:content="handleContentUpdate"
-        @save="handleSave"
-        @preview="handlePreview"
-      />
-      
-      <!-- Zalo Care Editor -->
-      <ZaloCareEditor 
-        v-else-if="interaction_type === 'ZALO_CARE'" 
+      <!-- Zalo Editor (for both ZNS and ZALO_CARE) -->
+      <ZaloEditor 
+        v-else-if="interaction_type === 'ZALO_ZNS' || interaction_type === 'ZALO_CARE'" 
         :content="content"
         :readonly="readonly"
         @update:content="handleContentUpdate"
@@ -55,8 +45,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import EmailEditor from './content-editors/EmailEditor.vue'
-import ZaloZnsEditor from './content-editors/ZaloEditor.vue'
-import ZaloCareEditor from './content-editors/ZaloCareEditor.vue'
+import ZaloEditor from './content-editors/ZaloEditor.vue'
 import AdditionalActions from './AdditionalActions.vue'
 import { FeatherIcon } from 'frappe-ui'
 
@@ -87,10 +76,9 @@ const content = ref({
   email_content: '',
   attachments: [],
   
-  // Zalo fields
-  message_content: '',
+  // Zalo fields (using blocks structure)
+  blocks: [],
   image_url: '',
-  action_buttons: [],
   
   // Common fields
   success_action: '',
@@ -113,6 +101,8 @@ let contentUpdateTimer = null
 
 // Handle content updates from child components
 const handleContentUpdate = (updatedContent) => {
+  console.log('📝 CampaignContentEditor received update:', updatedContent)
+  
   // Prevent recursive updates
   if (isUpdating.value) {
     console.log('⏭️ Skipping handleContentUpdate - already updating')
@@ -124,6 +114,7 @@ const handleContentUpdate = (updatedContent) => {
   
   // Update local content immediately for responsive UI
   content.value = { ...content.value, ...updatedContent }
+  console.log('📝 Updated content.value:', content.value)
   
   // Clear previous timer
   if (contentUpdateTimer) {
@@ -132,6 +123,7 @@ const handleContentUpdate = (updatedContent) => {
   
   // Debounce emit to avoid too many updates during typing
   contentUpdateTimer = setTimeout(() => {
+    console.log('📤 Emitting update:modelValue:', content.value)
     emit('update:modelValue', content.value)
   }, 500) // Wait 500ms after user stops typing
   
@@ -144,6 +136,15 @@ const handleContentUpdate = (updatedContent) => {
 // Handle save action
 const handleSave = () => {
   console.log('💾 Saving content:', content.value)
+  
+  // Clear any pending debounce timers
+  if (contentUpdateTimer) {
+    clearTimeout(contentUpdateTimer)
+    contentUpdateTimer = null
+  }
+  
+  // Emit immediately when saving
+  emit('update:modelValue', content.value)
   emit('save', content.value)
 }
 

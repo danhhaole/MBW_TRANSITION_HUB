@@ -883,6 +883,298 @@ export const useCampaignStore = defineStore('campaign', {
         console.error('Store error searching candidates:', error)
         return []
       }
+    },
+
+    // Create or update Mira Flow for campaign
+    async createOrUpdateCampaignFlow(campaignId, campaignData) {
+      try {
+        // Check if flow already exists for this campaign
+        const existingFlows = await call('frappe.client.get_list', {
+          doctype: 'Mira Flow',
+          filters: {
+            campaign_id: campaignId,
+            type: 'Campaign'
+          },
+          fields: ['name'],
+          limit: 1
+        })
+        
+        const flowExists = existingFlows && existingFlows.length > 0
+        const flowId = flowExists ? existingFlows[0].name : null
+        
+        // Prepare action parameters based on interaction method
+        const actionParameters = {}
+        
+        console.log('🔍 Preparing action parameters for:', campaignData.interaction_method)
+        console.log('🔍 campaignData:', {
+          message_content: campaignData.message_content,
+          action_buttons: campaignData.action_buttons,
+          email_subject: campaignData.email_subject,
+          email_content: campaignData.email_content
+        })
+        
+        if (campaignData.interaction_method === 'EMAIL') {
+          actionParameters.subject = campaignData.email_subject || ''
+          actionParameters.content = campaignData.email_content || ''
+          actionParameters.attachments = campaignData.attachments || []
+        } else if (campaignData.interaction_method === 'ZALO_ZNS') {
+          // ZNS uses blocks structure from ZaloEditor
+          actionParameters.blocks = campaignData.blocks || []
+          console.log('🔍 ZNS actionParameters:', actionParameters)
+        } else if (campaignData.interaction_method === 'ZALO_CARE') {
+          // ZALO_CARE also uses blocks structure
+          actionParameters.blocks = campaignData.blocks || []
+          actionParameters.image_url = campaignData.image_url || ''
+        }
+        
+        console.log('🔍 Final actionParameters:', actionParameters)
+        
+        // Helper to convert interaction method to channel
+        const getChannelFromInteractionMethod = (method) => {
+          const channelMap = {
+            'EMAIL': 'Email',
+            'ZALO_ZNS': 'SMS',
+            'ZALO_CARE': 'Zalo',
+            'SMS': 'SMS',
+            'AI_CALL': 'AI_Call'
+          }
+          return channelMap[method] || 'Email'
+        }
+        
+        // Helper to convert trigger key to trigger_type
+        const getTriggerTypeFromKey = (key) => {
+          const typeMap = {
+            'email_open': 'ON_EMAIL_OPEN',
+            'link_click': 'ON_LINK_CLICK',
+            'send_success': 'ON_SEND_SUCCESS',
+            'send_failed': 'ON_SEND_FAILED',
+            'user_response': 'ON_USER_RESPONSE'
+          }
+          return typeMap[key] || 'CUSTOM_EVENT'
+        }
+        
+        // Prepare flow data
+        const flowData = {
+          title: campaignData.campaign_name || 'Campaign Flow',
+          type: 'Campaign',
+          campaign_id: campaignId,
+          channel: getChannelFromInteractionMethod(campaignData.interaction_method),
+          status: 'Draft',
+          action_id: [{
+            doctype: 'Mira Flow Action',
+            action_type: campaignData.interaction_method || 'EMAIL',
+            channel_type: getChannelFromInteractionMethod(campaignData.interaction_method),
+            action_parameters: JSON.stringify(actionParameters),
+            order: 0
+          }]
+        }
+        
+        // Convert additional_actions to triggers
+        if (campaignData.additional_actions && Object.keys(campaignData.additional_actions).length > 0) {
+          flowData.trigger_id = Object.entries(campaignData.additional_actions).map(([triggerKey, actionData]) => ({
+            doctype: 'Mira Flow Trigger',
+            trigger_type: getTriggerTypeFromKey(triggerKey),
+            status: 'ACTIVE',
+            channel: flowData.channel,
+            conditions: JSON.stringify({
+              action_type: actionData.type,
+              action_data: actionData.data,
+              configured: actionData.configured
+            })
+          }))
+        }
+        
+        let result
+        if (flowExists) {
+          // Update existing flow
+          const existingFlow = await call('frappe.client.get', {
+            doctype: 'Mira Flow',
+            name: flowId
+          })
+          
+          console.log('🔍 Existing flow:', existingFlow)
+          console.log('🔍 Existing action_id:', existingFlow.action_id)
+          console.log('🔍 New flowData.action_id:', flowData.action_id)
+          
+          // Clear existing child tables and set new ones
+          // Mark old rows for deletion by setting __deleted: 1
+          const clearedActions = (existingFlow.action_id || []).map(row => {
+            console.log('🗑️ Marking action for deletion:', row.name)
+            return {
+              ...row,
+              __deleted: 1
+            }
+          })
+          
+          const clearedTriggers = (existingFlow.trigger_id || []).map(row => {
+            console.log('🗑️ Marking trigger for deletion:', row.name)
+            return {
+              ...row,
+              __deleted: 1
+            }
+          })
+          
+          console.log('🔍 Cleared actions:', clearedActions)
+          console.log('🔍 Cleared triggers:', clearedTriggers)
+          
+          const updatedDoc = {
+            ...existingFlow,
+            title: flowData.title,
+            type: flowData.type,
+            campaign_id: flowData.campaign_id,
+            channel: flowData.channel,
+            status: flowData.status,
+            // Combine deleted old rows with new rows
+            action_id: [...clearedActions, ...flowData.action_id],
+            trigger_id: [...clearedTriggers, ...(flowData.trigger_id || [])]
+          }
+          
+          console.log('📝 Updating flow with data:', updatedDoc)
+          console.log('📝 Action parameters:', actionParameters)
+          console.log('📝 action_id to save (combined):', updatedDoc.action_id)
+          console.log('📝 Number of actions:', updatedDoc.action_id.length)
+          
+          result = await call('frappe.client.save', {
+            doc: updatedDoc
+          })
+          
+          console.log('📝 Save result:', result)
+          console.log('📝 Result action_id:', result.action_id)
+        } else {
+          // Create new flow
+          result = await call('frappe.client.insert', {
+            doc: {
+              doctype: 'Mira Flow',
+              ...flowData
+            }
+          })
+        }
+        
+        console.log('✅ Campaign flow saved:', result)
+        return { success: true, data: result }
+      } catch (error) {
+        console.error('❌ Error saving campaign flow:', error)
+        return { success: false, error: error.message }
+      }
+    },
+
+    // Load campaign flow data
+    async loadCampaignFlow(campaignId, interactionMethod) {
+      try {
+        const flows = await call('frappe.client.get_list', {
+          doctype: 'Mira Flow',
+          filters: {
+            campaign_id: campaignId,
+            type: 'Campaign'
+          },
+          fields: ['name'],
+          limit: 1
+        })
+        
+        if (!flows || flows.length === 0) {
+          return { success: false, message: 'No flow found' }
+        }
+        
+        const flowDoc = await call('frappe.client.get', {
+          doctype: 'Mira Flow',
+          name: flows[0].name
+        })
+        
+        console.log('📖 Loading content from Flow:', flowDoc)
+        console.log('📖 Flow action_id:', flowDoc.action_id)
+        
+        const contentData = {}
+        
+        // Parse action parameters
+        if (flowDoc.action_id && flowDoc.action_id.length > 0) {
+          const mainAction = flowDoc.action_id[0]
+          console.log('📖 Main action:', mainAction)
+          console.log('📖 Action parameters (raw):', mainAction.action_parameters)
+          
+          // Use action_type from flow if interactionMethod is not provided
+          const methodToUse = interactionMethod || mainAction.action_type
+          console.log('📖 Interaction method (param):', interactionMethod)
+          console.log('📖 Action type (from flow):', mainAction.action_type)
+          console.log('📖 Method to use:', methodToUse)
+          
+          // Return interaction_method so caller can use it
+          contentData.interaction_method = mainAction.action_type
+          
+          try {
+            const params = JSON.parse(mainAction.action_parameters || '{}')
+            console.log('📖 Parsed params:', params)
+            
+            if (methodToUse === 'EMAIL') {
+              contentData.email_subject = params.subject || ''
+              contentData.email_content = params.content || ''
+              contentData.attachments = params.attachments || []
+              console.log('📖 Set email data:', { 
+                email_subject: contentData.email_subject, 
+                email_content: contentData.email_content 
+              })
+            } else if (methodToUse === 'ZALO_ZNS') {
+              // ZNS uses blocks structure
+              contentData.blocks = params.blocks || []
+              console.log('📖 Set ZNS data:', { 
+                blocks: contentData.blocks 
+              })
+            } else if (methodToUse === 'ZALO_CARE') {
+              // ZALO_CARE uses blocks structure
+              contentData.blocks = params.blocks || []
+              contentData.image_url = params.image_url || ''
+              console.log('📖 Set Zalo Care data:', { 
+                blocks: contentData.blocks,
+                image_url: contentData.image_url 
+              })
+            }
+          } catch (e) {
+            console.error('❌ Failed to parse action parameters:', e)
+            console.error('❌ Raw action_parameters:', mainAction.action_parameters)
+          }
+        }
+        
+        // Parse triggers to additional_actions
+        if (flowDoc.trigger_id && flowDoc.trigger_id.length > 0) {
+          const additionalActions = {}
+          
+          // Helper to convert trigger_type back to key
+          const getTriggerKeyFromType = (triggerType) => {
+            const keyMap = {
+              'ON_EMAIL_OPEN': 'email_open',
+              'ON_LINK_CLICK': 'link_click',
+              'ON_SEND_SUCCESS': 'send_success',
+              'ON_SEND_FAILED': 'send_failed',
+              'ON_USER_RESPONSE': 'user_response'
+            }
+            return keyMap[triggerType]
+          }
+          
+          flowDoc.trigger_id.forEach(trigger => {
+            try {
+              const conditions = JSON.parse(trigger.conditions || '{}')
+              const triggerKey = getTriggerKeyFromType(trigger.trigger_type)
+              if (triggerKey) {
+                additionalActions[triggerKey] = {
+                  type: conditions.action_type,
+                  data: conditions.action_data || {},
+                  configured: conditions.configured || false
+                }
+              }
+            } catch (e) {
+              console.warn('Failed to parse trigger:', e)
+            }
+          })
+          
+          contentData.additional_actions = additionalActions
+        }
+        
+        console.log('✅ Content loaded from Flow')
+        console.log('✅ Final contentData:', contentData)
+        return { success: true, data: contentData }
+      } catch (error) {
+        console.error('❌ Error loading campaign flow:', error)
+        return { success: false, error: error.message }
+      }
     }
   }
 })

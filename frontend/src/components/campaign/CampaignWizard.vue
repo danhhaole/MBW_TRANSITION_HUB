@@ -192,7 +192,7 @@
 
 
               <!-- Start/End Datetime -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-2">
                     {{ __("Start Date/Time") }}
@@ -229,12 +229,12 @@
                     {{ __("Local time") }} ({{ localTzLabel }})
                   </p>
                 </div>
-              </div>
+              </div> -->
 
 
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  {{ __("Objective") }} <span class="text-red-500">*</span>
+                  {{ __("Objective") }}
                 </label>
                 <textarea
                   v-model="campaignData.description"
@@ -285,6 +285,7 @@
                   @save="handleContentSave"
                   @preview="handleContentPreview"
                 />
+                {{contentEditorData}}
               </div>
             </div>
 
@@ -834,10 +835,9 @@ const campaignData = ref({
   // Content design fields
   email_subject: "", // For EMAIL method
   email_content: "", // For EMAIL method
-  message_content: "", // For ZALO methods
+  blocks: [], // For ZALO methods (ZaloEditor structure)
   image_url: "", // For image attachments
   attachments: [], // For email attachments
-  action_buttons: [], // For interactive buttons
   success_action: "", // Action when success
   failure_action: "", // Action when failure
   // Additional actions fields
@@ -1470,7 +1470,6 @@ const step1Valid = computed(() => {
   // In create mode, require all fields
   return !!(
     campaignData.value.campaign_name &&
-    campaignData.value.description &&
     campaignData.value.interaction_method
   );
 });
@@ -1490,9 +1489,8 @@ const contentEditorData = computed(() => ({
   email_subject: campaignData.value.email_subject,
   email_content: campaignData.value.email_content,
   attachments: campaignData.value.attachments || [],
-  message_content: campaignData.value.message_content,
+  blocks: campaignData.value.blocks || [],
   image_url: campaignData.value.image_url,
-  action_buttons: campaignData.value.action_buttons || [],
   success_action: campaignData.value.success_action,
   failure_action: campaignData.value.failure_action,
   additional_actions: campaignData.value.additional_actions || {}
@@ -2624,10 +2622,6 @@ const validateCurrentStep = () => {
       errors.push(__("Campaign name is required"));
     }
     
-    if (!isEditMode.value && !campaignData.value.description?.trim()) {
-      errors.push(__("Description is required"));
-    }
-    
     if (!campaignData.value.interaction_method) {
       errors.push(__("Please select an interaction method"));
     }
@@ -2659,6 +2653,11 @@ const validateCurrentStep = () => {
   return true;
 };
 
+// Helper function to create or update Mira Flow for campaign (use store method)
+const createOrUpdateCampaignFlow = async (campaignId) => {
+  return await campaignStore.createOrUpdateCampaignFlow(campaignId, campaignData.value);
+};
+
 const saveCurrentStepData = async () => {
   try {
     const campaignId = draftCampaign.value?.data?.name || editingCampaignData.value?.name;
@@ -2670,64 +2669,22 @@ const saveCurrentStepData = async () => {
 
     console.log('💾 Saving current step data for campaign:', campaignId);
     
-    // Prepare mira_talent_campaign config - preserve existing data and update for current step
-    let miraTalentCampaignConfig = null;
-    
-    // Try to get existing config first
-    let existingConfig = null;
-    try {
-      if (draftCampaign.value?.data?.mira_talent_campaign) {
-        existingConfig = JSON.parse(draftCampaign.value.data.mira_talent_campaign);
-      } else if (editingCampaignData.value?.mira_talent_campaign) {
-        existingConfig = JSON.parse(editingCampaignData.value.mira_talent_campaign);
-      }
-    } catch (e) {
-      console.warn('Failed to parse existing mira_talent_campaign:', e);
-    }
-    
+    // For step 2, save content to Mira Flow instead of JSON
     if (currentStep.value === 2) {
-      // For step 2, create/update the config
-      miraTalentCampaignConfig = {
-        ...existingConfig, // Preserve existing data
-        interaction_method: campaignData.value.interaction_method,
-        content_config: {
-          email_subject: campaignData.value.email_subject,
-          email_content: campaignData.value.email_content,
-          attachments: campaignData.value.attachments || [],
-          message_content: campaignData.value.message_content,
-          image_url: campaignData.value.image_url,
-          action_buttons: campaignData.value.action_buttons || [],
-          success_action: campaignData.value.success_action,
-          failure_action: campaignData.value.failure_action,
-        },
-        additional_actions: campaignData.value.additional_actions || existingConfig?.additional_actions || {},
-        step: currentStep.value,
-        updated_at: new Date().toISOString()
-      };
-    } else if (existingConfig) {
-      // For other steps, preserve existing config but don't overwrite
-      miraTalentCampaignConfig = existingConfig;
+      const flowResult = await createOrUpdateCampaignFlow(campaignId);
+      if (!flowResult.success) {
+        throw new Error(flowResult.error || 'Failed to save campaign flow');
+      }
+      console.log('✅ Campaign flow saved successfully');
     }
     
+    // Update basic campaign info
     const updateData = {
       campaign_name: campaignData.value.campaign_name,
       description: campaignData.value.description,
       interaction_method: campaignData.value.interaction_method,
       start_date: formatDateForDatabase(campaignData.value.start_date),
-      end_date: formatDateForDatabase(campaignData.value.end_date),
-      // Content design fields
-      email_subject: campaignData.value.email_subject,
-      email_content: campaignData.value.email_content,
-      attachments: JSON.stringify(campaignData.value.attachments || []),
-      message_content: campaignData.value.message_content,
-      image_url: campaignData.value.image_url,
-      action_buttons: JSON.stringify(campaignData.value.action_buttons || []),
-      success_action: campaignData.value.success_action,
-      failure_action: campaignData.value.failure_action,
-      // Save mira_talent_campaign config as JSON
-      ...(miraTalentCampaignConfig && {
-        mira_talent_campaign: JSON.stringify(miraTalentCampaignConfig)
-      })
+      end_date: formatDateForDatabase(campaignData.value.end_date)
     };
     
     await campaignStore.updateCampaignData(campaignId, updateData);
@@ -2739,9 +2696,6 @@ const saveCurrentStepData = async () => {
     }, 2000);
     
     console.log('✅ Current step data saved successfully');
-    if (miraTalentCampaignConfig) {
-      console.log('📝 Saved mira_talent_campaign config:', miraTalentCampaignConfig);
-    }
   } catch (error) {
     console.error('❌ Error saving step data:', error);
     toast.error(__('Failed to save data. Please try again.'));
@@ -2766,7 +2720,13 @@ const handleContentUpdate = (updatedContent) => {
   }
   
   console.log('📝 Content updated:', updatedContent);
-  console.log('📝 Additional actions:', campaignData.value.additional_actions);
+  console.log('📝 campaignData after update:', {
+    interaction_method: campaignData.value.interaction_method,
+    email_subject: campaignData.value.email_subject,
+    email_content: campaignData.value.email_content,
+    blocks: campaignData.value.blocks,
+    additional_actions: campaignData.value.additional_actions
+  });
   
   // Auto-save when content is updated in step 2
   if (currentStep.value === 2 && draftCampaign.value?.data?.name) {
@@ -2915,9 +2875,8 @@ const closeWizard = () => {
     email_subject: "",
     email_content: "",
     attachments: [],
-    message_content: "",
+    blocks: [],
     image_url: "",
-    action_buttons: [],
     success_action: "",
     failure_action: "",
     // Additional actions fields
@@ -3227,7 +3186,23 @@ watch(show, async (newVal) => {
         campaignData.value.description = ec.description || "";
         campaignData.value.type = ec.type || "MARKETING";
         campaignData.value.status = ec.status || campaignData.value.status;
-        campaignData.value.interaction_method = ec.interaction_method || "EMAIL"; // Default fallback
+        
+        // Load interaction_method from Flow if not in campaign
+        let interactionMethod = ec.interaction_method
+        if (!interactionMethod) {
+          // Try to get from Flow
+          try {
+            const flowResult = await campaignStore.loadCampaignFlow(ec.name, null)
+            if (flowResult.success && flowResult.data.interaction_method) {
+              interactionMethod = flowResult.data.interaction_method
+              console.log('📖 Loaded interaction_method from Flow:', interactionMethod)
+            }
+          } catch (e) {
+            console.warn('Failed to load interaction_method from Flow:', e)
+          }
+        }
+        campaignData.value.interaction_method = interactionMethod || "EMAIL"
+        
         campaignData.value.target_segment =
           ec.target_segment || campaignData.value.target_segment || "";
         campaignData.value.criteria = ec.criteria || ""; // Load criteria from database
@@ -3254,27 +3229,57 @@ watch(show, async (newVal) => {
           ec.start_date || campaignData.value.start_date || "";
         campaignData.value.end_date = ec.end_date || campaignData.value.end_date || "";
         
-        // Content design fields
-        campaignData.value.email_subject = ec.email_subject || "";
-        campaignData.value.email_content = ec.email_content || "";
+        // Load content from Mira Flow using store method
         try {
-          campaignData.value.attachments = ec.attachments ? JSON.parse(ec.attachments) : [];
+          console.log('🔍 Loading flow for campaign:', ec.name, 'interaction_method:', campaignData.value.interaction_method);
+          const flowResult = await campaignStore.loadCampaignFlow(ec.name, campaignData.value.interaction_method);
+          console.log('🔍 Flow result:', flowResult);
+          
+          if (flowResult.success && flowResult.data) {
+            // Apply loaded data to campaignData
+            console.log('🔍 Data to apply:', flowResult.data);
+            Object.assign(campaignData.value, flowResult.data);
+            console.log('✅ Content loaded from Flow via store');
+            console.log('✅ campaignData.blocks after load:', campaignData.value.blocks);
+            console.log('✅ contentEditorData.blocks:', contentEditorData.value.blocks);
+          } else {
+            console.log('⚠️ No flow found, using legacy fields');
+            // Fallback to legacy fields
+            campaignData.value.email_subject = ec.email_subject || "";
+            campaignData.value.email_content = ec.email_content || "";
+            try {
+              campaignData.value.attachments = ec.attachments ? JSON.parse(ec.attachments) : [];
+            } catch (e) {
+              campaignData.value.attachments = [];
+            }
+            campaignData.value.message_content = ec.message_content || "";
+            campaignData.value.image_url = ec.image_url || "";
+            try {
+              campaignData.value.action_buttons = ec.action_buttons ? JSON.parse(ec.action_buttons) : [];
+            } catch (e) {
+              campaignData.value.action_buttons = [];
+            }
+          }
         } catch (e) {
-          console.warn('Failed to parse attachments:', e);
-          campaignData.value.attachments = [];
+          console.warn('Failed to load flow, using legacy fields:', e);
+          // Fallback to legacy fields
+          campaignData.value.email_subject = ec.email_subject || "";
+          campaignData.value.email_content = ec.email_content || "";
+          try {
+            campaignData.value.attachments = ec.attachments ? JSON.parse(ec.attachments) : [];
+          } catch (e) {
+            campaignData.value.attachments = [];
+          }
+          campaignData.value.message_content = ec.message_content || "";
+          campaignData.value.image_url = ec.image_url || "";
+          try {
+            campaignData.value.action_buttons = ec.action_buttons ? JSON.parse(ec.action_buttons) : [];
+          } catch (e) {
+            campaignData.value.action_buttons = [];
+          }
         }
-        campaignData.value.message_content = ec.message_content || "";
-        campaignData.value.image_url = ec.image_url || "";
-        try {
-          campaignData.value.action_buttons = ec.action_buttons ? JSON.parse(ec.action_buttons) : [];
-        } catch (e) {
-          console.warn('Failed to parse action_buttons:', e);
-          campaignData.value.action_buttons = [];
-        }
-        campaignData.value.success_action = ec.success_action || "";
-        campaignData.value.failure_action = ec.failure_action || "";
         
-        // Load mira_talent_campaign config if exists
+        // Load mira_talent_campaign config if exists (legacy)
         if (ec.mira_talent_campaign) {
           try {
             const miraTalentConfig = JSON.parse(ec.mira_talent_campaign);
