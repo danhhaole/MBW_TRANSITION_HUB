@@ -90,25 +90,25 @@
               <div class="space-y-4 mt-6">
                 <h3 class="text-sm font-medium text-gray-900 uppercase tracking-wide">Professional</h3>
                 
-                <div v-if="talent.current_position" class="flex items-center space-x-3">
+                <div v-if="talent.current_city" class="flex items-center space-x-3">
                   <FeatherIcon name="briefcase" class="w-4 h-4 text-gray-400" />
-                  <span class="text-sm text-gray-700">{{ talent.current_position }}</span>
+                  <span class="text-sm text-gray-700">{{ talent.current_city }}</span>
                 </div>
                 
-                <div v-if="talent.current_company" class="flex items-center space-x-3">
+                <div v-if="talent.latest_company" class="flex items-center space-x-3">
                   <FeatherIcon name="building" class="w-4 h-4 text-gray-400" />
-                  <span class="text-sm text-gray-700">{{ talent.current_company }}</span>
+                  <span class="text-sm text-gray-700">{{ talent.latest_company }}</span>
                 </div>
                 
-                <div v-if="talent.experience_years" class="flex items-center space-x-3">
+                <div v-if="talent.total_years_of_experience" class="flex items-center space-x-3">
                   <FeatherIcon name="clock" class="w-4 h-4 text-gray-400" />
-                  <span class="text-sm text-gray-700">{{ talent.experience_years }} years experience</span>
+                  <span class="text-sm text-gray-700">{{ talent.total_years_of_experience }} years experience</span>
                 </div>
               </div>
 
 
               <!-- Social Links -->
-              <div class="space-y-4 mt-6">
+              <!-- <div class="space-y-4 mt-6">
                 <h3 class="text-sm font-medium text-gray-900 uppercase tracking-wide">Social</h3>
                 
                 <div v-if="talent.linkedin_profile" class="flex items-center space-x-3">
@@ -131,7 +131,7 @@
                     <span class="text-sm text-gray-700">{{ talent.zalo_profile }}</span>
                   </div>
                 </div>
-              </div>
+              </div> -->
 
               <!-- Tags -->
               <div class="mt-6">
@@ -392,7 +392,7 @@ const handleRefresh = async () => {
 }
 
 const goBack = () => {
-  router.push({ name: 'Talent' })
+  router.push({ name: 'TalentSegments' })
 }
 
 

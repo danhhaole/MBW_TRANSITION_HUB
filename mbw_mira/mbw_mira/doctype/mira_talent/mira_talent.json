@@ -13,19 +13,36 @@
   "linkedin_profile",
   "facebook_profile",
   "zalo_profile",
-  "current_location",
-  "preferred_location",
+  "current_city",
   "skills",
   "tags",
   "source",
-  "experience_years",
+  "total_years_of_experience",
   "education",
   "experience",
   "certifications",
   "languages",
   "resume",
   "current_status",
-  "notes"
+  "notes",
+  "desired_role",
+  "domain_expertise",
+  "cultural_fit",
+  "hard_skills",
+  "soft_skills",
+  "latest_company",
+  "highest_education",
+  "current_salary",
+  "expected_salary",
+  "preferred_work_model",
+  "availability_date",
+  "recruiter_owner_id",
+  "crm_status",
+  "recruitment_readiness",
+  "last_interaction_date",
+  "internal_rating",
+  "priority_level",
+  "interaction_notes"
  ],
  "fields": [
   {
@@ -64,25 +81,10 @@
    "label": "Zalo Profile"
   },
   {
-   "fieldname": "current_location",
-   "fieldtype": "Data",
-   "label": "Current Location"
-  },
-  {
-   "fieldname": "preferred_location",
-   "fieldtype": "Data",
-   "label": "Preferred Location"
-  },
-  {
    "description": "Comma-separated list of skills (e.g. Python, SQL, Communication)",
    "fieldname": "skills",
    "fieldtype": "Small Text",
    "label": "Skills"
-  },
-  {
-   "fieldname": "experience_years",
-   "fieldtype": "Float",
-   "label": "Years of Experience"
   },
   {
    "description": "JSON array of education records",
@@ -130,13 +132,15 @@
   },
   {
    "fieldname": "tags",
-   "fieldtype": "Small Text",
-   "label": "Tags"
+   "fieldtype": "Select",
+   "label": "Tags",
+   "options": "\nHighPotential\nProduct\nUrgent"
   },
   {
    "fieldname": "source",
-   "fieldtype": "Small Text",
-   "label": "Source"
+   "fieldtype": "Select",
+   "label": "Source",
+   "options": "\nNEW\nLinkedIn\nReferral\nHeadhunter"
   },
   {
    "fieldname": "email",
@@ -148,11 +152,116 @@
    "fieldname": "phone",
    "fieldtype": "Data",
    "label": "Contact Phone"
+  },
+  {
+   "fieldname": "current_city",
+   "fieldtype": "Text",
+   "label": "City/Address"
+  },
+  {
+   "fieldname": "total_years_of_experience",
+   "fieldtype": "Float",
+   "label": "Years of Experience"
+  },
+  {
+   "fieldname": "desired_role",
+   "fieldtype": "Text",
+   "label": "Desired Role"
+  },
+  {
+   "fieldname": "domain_expertise",
+   "fieldtype": "Markdown Editor",
+   "label": "Domain Expertise"
+  },
+  {
+   "fieldname": "cultural_fit",
+   "fieldtype": "Select",
+   "label": "Cultural Fit",
+   "options": "\nHigh\nMedium\nLow"
+  },
+  {
+   "fieldname": "hard_skills",
+   "fieldtype": "Select",
+   "label": "Hard Skills"
+  },
+  {
+   "fieldname": "soft_skills",
+   "fieldtype": "Select",
+   "label": "Soft Skills"
+  },
+  {
+   "fieldname": "latest_company",
+   "fieldtype": "Text",
+   "label": "Latest Company"
+  },
+  {
+   "fieldname": "highest_education",
+   "fieldtype": "Text",
+   "label": "Highest Education"
+  },
+  {
+   "fieldname": "current_salary",
+   "fieldtype": "Currency",
+   "label": "Current Salary"
+  },
+  {
+   "fieldname": "expected_salary",
+   "fieldtype": "Currency",
+   "label": "Expected Salary"
+  },
+  {
+   "fieldname": "preferred_work_model",
+   "fieldtype": "Select",
+   "label": "Work Model",
+   "options": "\nOn-site\nRemote\nHybrid"
+  },
+  {
+   "fieldname": "availability_date",
+   "fieldtype": "Date",
+   "label": "Availability Date"
+  },
+  {
+   "fieldname": "recruiter_owner_id",
+   "fieldtype": "Link",
+   "label": "Recruiter/Owner",
+   "options": "User"
+  },
+  {
+   "fieldname": "crm_status",
+   "fieldtype": "Select",
+   "label": "CRM Status"
+  },
+  {
+   "fieldname": "recruitment_readiness",
+   "fieldtype": "Select",
+   "label": "Recruitment Readiness"
+  },
+  {
+   "fieldname": "last_interaction_date",
+   "fieldtype": "Date",
+   "label": "Last Interaction Date"
+  },
+  {
+   "fieldname": "internal_rating",
+   "fieldtype": "Select",
+   "label": "Internal Rating",
+   "options": "\nA\nB\nC"
+  },
+  {
+   "fieldname": "priority_level",
+   "fieldtype": "Select",
+   "label": "Priority",
+   "options": "\nHigh\nMedium\nLow"
+  },
+  {
+   "fieldname": "interaction_notes",
+   "fieldtype": "Long Text",
+   "label": "Interaction Notes"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-13 11:49:06.762932",
+ "modified": "2025-10-27 15:15:26.763511",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Talent",

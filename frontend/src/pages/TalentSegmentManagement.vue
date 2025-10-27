@@ -6,7 +6,7 @@
       </template>
       <template #right-header>
         <!-- Create Button -->
-        <Button variant="solid" theme="gray" @click="showCreateForm = true" :loading="loading" class="">
+        <Button v-if="viewMode == 'card'" variant="solid" theme="gray" @click="showCreateForm = true" :loading="loading" class="">
           <template #prefix>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">
@@ -15,6 +15,16 @@
             </svg>
           </template>
           {{ __('Create Pool') }}
+        </Button>
+        <Button v-if="viewMode == 'list'" variant="solid" theme="gray" @click="openCreateDialog" :loading="loading" class="">
+          <template #prefix>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6">
+              </path>
+            </svg>
+          </template>
+          {{ __('Create Talent') }}
         </Button>
       </template>
     </LayoutHeader>
@@ -188,7 +198,7 @@
           </div>
 
           <!-- Empty State -->
-          <div v-else-if="!segments.length" class="text-center py-16">
+          <div v-else-if="!talents.length" class="text-center py-16">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 text-gray-300 mx-auto mb-4" fill="none"
               viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
@@ -199,160 +209,144 @@
           </div>
 
           <!-- Table View -->
-          <div v-else class="overflow-x-auto rounded-lg border border-gray-200">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th class="w-12 p-3">
-                    <input
-                      type="checkbox"
-                      class="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                      :checked="selectedAll.length === segments.length && segments.length > 0"
-                      :indeterminate="selectedAll.length > 0 && selectedAll.length < segments.length"
-                      @change="toggleSelectAll"
-                    />
-                  </th>
-                  <th scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Segment Name') }}</th>
-                  <th scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Type') }}</th>
-                  <th scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{__('Description') }}</th>
-                  <th scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{__('Candidate Count') }}</th>
-                  <th scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{__('Owner') }}</th>
-                  <th scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{__('Created On') }}</th>
-                  <th scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{__('Actions') }}</th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-                <tr v-for="segment in segments" :key="segment.name" class="hover:bg-gray-50">
-                  <!-- check all -->
-                  <td class="p-3 text-center">
-                    <input
-                      type="checkbox"
-                      class="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                      :checked="selectedAll.includes(segment)"
-                      @change="toggleSelect(segment)"
-                    />
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="flex items-center">
-                      <div class="text-sm font-medium text-gray-900">{{ segment.title }}</div>
-                    </div>
-                  </td>
-                  <td class="px-6 py-4">
-                    <span :class="[
-                      'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                      segment.type_color?.bg || 'bg-gray-100',
-                      segment.type_color?.text || 'text-gray-800'
-                    ]">
-                      {{ segment.display_type || segment.type }}
-                    </span>
-                  </td>
-                  <td class="px-6 py-4">
-                    <div class="text-sm text-gray-500 max-w-xs truncate">
-                      {{ segment.description || 'No description' }}
-                    </div>
-                  </td>
-                  <td class="px-6 py-4">
-                    <div class="text-sm text-gray-900">{{ segment.candidate_count || 0 }}</div>
-                  </td>
-                  <td class="px-6 py-4">
-                    <div class="text-sm text-gray-500">{{ segment.owner_id || 'System' }}</div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-500">{{ segment.formatted_creation || formatDate(segment.creation) }}</div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-left text-sm font-medium">
-                    <button @click="handleViewDetails(segment)" class="p-1 text-slate-400 hover:text-blue-600 transition-colors"
-                      :title="__('View Details')">
-                      <FeatherIcon name="eye" class="w-4 h-4" />
-                    </button>
-                    <button @click="handleEdit(segment)"
-                      class="p-1 text-slate-400 hover:text-blue-600 transition-colors" :title="__('Edit')">
-                      <FeatherIcon name="edit" class="w-4 h-4" />
-                    </button>
-                    <button @click="handleDelete(segment)" class="p-1 text-slate-400 hover:text-red-600 transition-colors" :title="__('Delete')">
-                      <FeatherIcon name="trash-2" class="w-4 h-4" />
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <div v-else class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200">
+                <!-- Table Header -->
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="w-12 p-3">
+                      <input
+                        type="checkbox"
+                        class="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                        :checked="selectedAllTalent.length === talents.length && talents.length > 0"
+                        :indeterminate="selectedAllTalent.length > 0 && selectedAllTalent.length < talents.length"
+                        @change="toggleSelectAllTalent"
+                      />
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Full Name
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Contact Email
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Contact Phone
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Skills
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Source
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody class="bg-white divide-y divide-gray-200">
+                  <tr v-for="talent in paginatedTalents" :key="talent.name"
+                    class="hover:bg-gray-50 transition-colors duration-200">
+                    <td class="p-3 text-center">
+                      <input
+                        type="checkbox"
+                        class="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                        :checked="selectedAllTalent.some(t => t.name === talent.name)"
+                        @change="toggleSelectTalent(talent)"
+                      />
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {{ talent.full_name }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {{ talent.email }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {{ talent.phone }}
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-900">
+                      <div class="flex flex-wrap gap-1">
+                        <span v-for="skill in processSkills(talent.skills)" :key="skill"
+                          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          {{ skill }}
+                        </span>
+                        <span v-if="!talent.skills || processSkills(talent.skills).length === 0" class="text-gray-400">-</span>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span :class="['px-2 inline-flex text-xs leading-5 font-semibold rounded-full', getStatusTheme(talent.current_status)]">
+                        {{ talent.source || 'Not Specified' }}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div class="flex items-center space-x-2">
+                        <button
+                          class="inline-flex items-center justify-center w-8 h-8 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-full transition-colors duration-200"
+                          @click.stop="handleViewTalent(talent)" :title="__('View')">
+                          <FeatherIcon name="eye" class="h-4 w-4" />
+                        </button>
+                        <button
+                          class="inline-flex items-center justify-center w-8 h-8 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-full transition-colors duration-200"
+                          @click.stop="handleEditTalent(talent)" :title="__('Edit')">
+                          <FeatherIcon name="edit" class="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
             <!-- Pagination -->
-            <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-              <div class="flex-1 flex justify-between sm:hidden">
-                <button @click="previousListPage" :disabled="listPagination.currentPage === 1" :class="[
-                  'relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md',
-                  listPagination.currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'
-                ]">
-                  {{ __('Previous') }}
-                </button>
-                <button @click="nextListPage" :disabled="listPagination.currentPage >= listTotalPages" :class="[
-                  'ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md',
-                  listPagination.currentPage >= listTotalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'
-                ]">
-                  {{ __('Next') }}
-                </button>
+            <div v-if="paginationTalent.total > 0"
+              class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200">
+              <!-- Items per page selector -->
+              <div class="flex items-center space-x-2">
+                <span class="text-sm text-gray-700">Items per page:</span>
+                <div class="w-20">
+                  <select v-model="paginationTalent.limit" @change="changeItemsPerPageTalent"
+                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                    <option v-for="option in itemsPerPageOptions" :key="option" :value="option">{{ option }}</option>
+                  </select>
+                </div>
               </div>
-              <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                <div>
-                  <p class="text-sm text-gray-700">
-                    Showing <span class="font-medium">{{ (listPagination.currentPage - 1) * listPagination.itemsPerPage+ 1 }}</span>
-                    to <span class="font-medium">{{ Math.min(listPagination.currentPage * listPagination.itemsPerPage, segments.length) }}</span>
-                    of <span class="font-medium">{{ segments.length }}</span> results
-                  </p>
-                </div>
-                <div>
-                  <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                    <button @click="previousListPage" :disabled="listPagination.currentPage === 1" :class="[
-                      'relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium',
-                      listPagination.currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:bg-gray-50'
-                    ]">
-                      <span class="sr-only">Previous</span>
-                      <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                        aria-hidden="true">
-                        <path fill-rule="evenodd"
-                          d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                          clip-rule="evenodd" />
-                      </svg>
-                    </button>
 
-                    <!-- Page numbers -->
-                    <template v-for="page in listVisiblePages" :key="page">
-                      <button v-if="page === '...'" disabled
-                        class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
-                        {{ page }}
-                      </button>
-                      <button v-else @click="goToListPage(page)" :class="[
-                        'relative inline-flex items-center px-4 py-2 border text-sm font-medium',
-                        page === listPagination.currentPage
-                          ? 'z-10 bg-indigo-50 border-indigo-500 text-indigo-600'
-                          : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                      ]">
-                        {{ page }}
-                      </button>
-                    </template>
+              <!-- Page info -->
+              <div class="text-sm text-gray-600">
+                Showing {{ paginationTalent.showing_from }} to {{ paginationTalent.showing_to }} of
+                {{ paginationTalent.total }} talent
+              </div>
 
-                    <button @click="nextListPage" :disabled="listPagination.currentPage >= listTotalPages" :class="[
-                      'relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium',
-                      listPagination.currentPage >= listTotalPages ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:bg-gray-50'
-                    ]">
-                      <span class="sr-only">Next</span>
-                      <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                        aria-hidden="true">
-                        <path fill-rule="evenodd"
-                          d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                          clip-rule="evenodd" />
-                      </svg>
-                    </button>
-                  </nav>
-                </div>
+              <!-- Page navigation -->
+              <div class="flex items-center space-x-1">
+                <button :disabled="!paginationTalent.has_prev" @click="goToTalentPage(1)"
+                  class="p-2 text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  :title="__('First page')">
+                  <FeatherIcon name="chevrons-left" class="h-4 w-4" />
+                </button>
+
+                <button :disabled="!paginationTalent.has_prev" @click="goToTalentPage(paginationTalent.page - 1)"
+                  class="p-2 text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  :title="__('Previous page')">
+                  <FeatherIcon name="chevron-left" class="h-4 w-4" />
+                </button>
+
+                <span class="mx-3 text-sm text-gray-700">
+                  Page {{ paginationTalent.page }} / {{ Math.ceil(paginationTalent.total / paginationTalent.limit) }}
+                </span>
+
+                <button :disabled="!paginationTalent.has_next" @click="goToTalentPage(paginationTalent.page + 1)"
+                  class="p-2 text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  :title="__('Next page')">
+                  <FeatherIcon name="chevron-right" class="h-4 w-4" />
+                </button>
+
+                <button :disabled="!paginationTalent.has_next" @click="goToTalentPage(Math.ceil(paginationTalent.total / paginationTalent.limit))"
+                  class="p-2 text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  :title="__('Last page')">
+                  <FeatherIcon name="chevrons-right" class="h-4 w-4" />
+                </button>
               </div>
             </div>
           </div>
@@ -376,6 +370,83 @@
         </div>
       </div>
     </div>
+
+    <!-- Create Options Dialog -->
+    <Dialog v-model="openDialogTalent" :options="{
+      title: '',
+      size: '3xl',
+    }">
+      <template #body-title>
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold text-gray-900">{{ __('Create Talent') }}</h3>
+          <p class="text-sm text-gray-500">{{ __('Please choose how you want to create a talent.') }}</p>
+        </div>
+      </template>
+
+      <template #body-content>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Create with Form -->
+          <div @click="openTalentForm" class="border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-blue-500 hover:shadow-sm transition-all">
+            <div class="flex flex-col items-center text-center">
+              <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </div>
+              <h4 class="font-medium text-gray-900">{{ __('Create with Form') }}</h4>
+              <p class="text-xs text-gray-500 mt-1">{{ __('Fill out information step by step.') }}</p>
+            </div>
+          </div>
+
+          <!-- Upload Excel/CSV -->
+          <div class="border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-green-500 hover:shadow-sm transition-all">
+            <div class="flex flex-col items-center text-center">
+              <div class="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center text-green-600 mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <h4 class="font-medium text-gray-900">{{ __('Upload Excel/CSV') }}</h4>
+              <p class="text-xs text-gray-500 mt-1">{{ __('Upload Excel/CSV file to create multiple talents.') }}</p>
+            </div>
+          </div>
+
+          <!-- Upload Single Profile Talent -->
+          <div class="border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-blue-400 hover:shadow-sm transition-all">
+            <div class="flex flex-col items-center text-center">
+              <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              <h4 class="font-medium text-gray-900">{{ __('Upload Single Profile Talent') }}</h4>
+              <p class="text-xs text-gray-500 mt-1">{{ __('Upload profile and AI extracts data') }}</p>
+            </div>
+          </div>
+
+          <!-- Upload Multiple Profiles Talent -->
+          <div class="border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-purple-500 hover:shadow-sm transition-all">
+            <div class="flex flex-col items-center text-center">
+              <div class="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center text-purple-600 mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+              <h4 class="font-medium text-gray-900">{{ __('Upload Profiles Talent') }}</h4>
+              <p class="text-xs text-gray-500 mt-1">{{ __('Upload many profiles.') }}</p>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <template #actions>
+        <div class="flex justify-end pt-4 border-t border-gray-200 mt-6">
+          <Button variant="outline" theme="gray" @click="closeCreateOptions" class="px-4">
+            {{ __('Cancel') }}
+          </Button>
+        </div>
+      </template>
+    </Dialog>
 
     <!-- Edit Talent Pool Dialog -->
     <Dialog v-model="showDialogTalentPool" :options="{
@@ -532,12 +603,218 @@
         </div>
       </template>
     </Dialog>
+
+    <Dialog v-model="showTalentForm" :options="{
+  title: 'Add New Talent',
+  size: '2xl'
+}">
+  <template #body-content>
+    <form @submit.prevent="handleTalentSubmit" class="space-y-4">
+      <!-- Full Name -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Full Name <span class="text-red-500">*</span></label>
+        <input
+          v-model="newTalent.full_name"
+          type="text"
+          required
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+        />
+      </div>
+
+      <!-- Email Input -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">
+          Email <span class="text-red-500">*</span>
+        </label>
+        <input
+          v-model="newTalent.email"
+          type="email"
+          required
+          @blur="checkEmail"
+          :class="[
+            'mt-1 block w-full rounded-md shadow-sm sm:text-sm',
+            emailError ? 'border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:outline-none focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+          ]"
+          aria-invalid="true"
+          aria-describedby="email-error"
+        />
+        <p v-if="emailError" class="mt-1 text-sm text-red-600" id="email-error">
+          {{ emailError }}
+        </p>
+      </div>
+
+      <!-- Phone -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Phone</label>
+        <input
+          v-model="newTalent.phone"
+          type="tel"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+        />
+      </div>
+
+      <!-- LinkedIn Profile -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">LinkedIn Profile <span class="text-red-500">*</span></label>
+        <div class="mt-1 flex rounded-md shadow-sm">
+          <input
+            v-model="newTalent.linkedin_profile"
+            type="text"
+            required
+            class="block w-full min-w-0 flex-1 rounded-none rounded-r-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            placeholder="username"
+          />
+        </div>
+      </div>
+
+       <!-- Skills Input -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Skills</label>
+        <div class="mt-1">
+          <div class="flex flex-wrap gap-2 mb-2">
+            <span
+              v-for="(skill, index) in skillTags"
+              :key="index"
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+            >
+              {{ skill }}
+              <button
+                type="button"
+                @click="removeSkill(index)"
+                class="ml-1.5 inline-flex text-blue-400 hover:text-blue-600 focus:outline-none"
+              >
+                <span class="sr-only">Remove skill</span>
+                <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+              </button>
+            </span>
+          </div>
+          <input
+            v-model="skillInput"
+            type="text"
+            placeholder="Type a skill and press Enter or Tab"
+            @keydown.enter.prevent="addSkill"
+            @blur="addSkill"
+            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+          />
+          <p class="mt-1 text-xs text-gray-500">Separate skills with commas or press Enter</p>
+        </div>
+      </div>
+
+      <!-- Source (Hidden) -->
+      <input type="hidden" v-model="newTalent.source" />
+
+      <!-- Latest Company -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Latest Company</label>
+        <input
+          v-model="newTalent.latest_company"
+          type="text"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+        />
+      </div>
+
+      <!-- Total Years of Experience -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Total Years of Experience <span class="text-red-500">*</span></label>
+        <input
+          v-model.number="newTalent.total_years_of_experience"
+          type="number"
+          min="0"
+          step="0.5"
+          required
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+        />
+      </div>
+
+      <!-- Desired Role -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Desired Role</label>
+        <input
+          v-model="newTalent.desired_role"
+          type="text"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+          placeholder="Enter desired role"
+        />
+      </div>
+
+      <!-- Source -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Source</label>
+        <select
+          v-model="newTalent.source"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+        >
+          <option v-for="source in sourceOptions" :key="source" :value="source">
+            {{ source }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Internal Rating -->
+      <!-- <div>
+        <label class="block text-sm font-medium text-gray-700">Internal Rating</label>
+        <div class="mt-1 flex space-x-2">
+          <button
+            v-for="rating in 5"
+            :key="rating"
+            type="button"
+            @click="newTalent.internal_rating = rating"
+            :class="[
+              'h-8 w-8 rounded-full flex items-center justify-center',
+              newTalent.internal_rating >= rating 
+                ? 'bg-yellow-400 text-white' 
+                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+            ]"
+          >
+            {{ rating }}
+          </button>
+        </div>
+      </div> -->
+
+      <!-- Interaction Notes -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Interaction Notes</label>
+        <textarea
+          v-model="newTalent.interaction_notes"
+          rows="3"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+          placeholder="Add any notes from your interaction with this talent"
+        ></textarea>
+      </div>
+
+     
+
+      <div class="flex justify-end space-x-3 pt-4">
+        <button
+          type="button"
+          @click="showTalentForm = false"
+          class="inline-flex justify-center rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          :class="[
+            'inline-flex justify-center rounded-md border border-transparent py-2 px-4 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2',
+            (!!emailError || !newTalent.full_name || !newTalent.email || !isEmailValid || !newTalent.linkedin_profile || newTalent.total_years_of_experience === null)
+              ? 'bg-gray-300 cursor-not-allowed'
+              : 'bg-gray-700 hover:bg-gray-700 focus:ring-gray-500'
+          ]"
+        >
+          Save Talent
+        </button>
+      </div>
+    </form>
+  </template>
+</Dialog>
   </div>
   <ToastContainer />
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, onUnmounted, h, reactive } from 'vue'
+import { ref, computed, onMounted, watch, onUnmounted, h, reactive, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTalentSegmentStore } from '@/stores/talentSegment'
 import { Button, Dialog, Dropdown, FeatherIcon, FormControl, Breadcrumbs, Autocomplete, call } from 'frappe-ui'
@@ -550,7 +827,8 @@ import TalentSegmentListView from '@/components/talent-segment/TalentSegmentList
 import Loading from '@/components/Loading.vue'
 import { ToastContainer } from '@/components/shared'
 import { useToast } from '@/composables/useToast'
-
+import { useTalentStore } from '@/stores/talent'
+const talentStore = useTalentStore()
 const toastMessage = useToast()
 const router = useRouter()
 
@@ -568,6 +846,178 @@ const talentPools = computed(() => talentPoolStore.filteredTalentPools)
 const uniqueSegmentTypes = computed(() => talentPoolStore.uniqueSegmentTypes)
 const selectedSegmentType = ref('')
 const selectedSegmentTypeEdit = ref('')
+const openDialogTalent = ref(false)
+
+const showTalentForm = ref(false)
+const newTalent = ref({
+  full_name: '',
+  email: '',
+  phone: '',
+  linkedin_profile: '',
+  facebook_profile: '',
+  skills: [],
+  source: 'NEW'
+})
+const skillInput = ref('')
+const skillTags = ref([])
+
+const emailError = ref('');
+const isEmailValid = computed(() => {
+  const email = newTalent.value.email;
+  if (!email) return true; // Empty is valid until submit
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+});
+
+const checkEmail = async () => {
+  if (!newTalent.value.email) {
+    emailError.value = '';
+    return;
+  }
+  
+  if (!isEmailValid.value) {
+    emailError.value = 'Please enter a valid email address';
+    return;
+  }
+  
+  try {
+    const exists = await talentStore.checkEmailExists(newTalent.value.email);
+    emailError.value = exists ? 'This email is already in use' : '';
+  } catch (error) {
+    console.error('Error checking email:', error);
+    emailError.value = '';
+  }
+};
+
+const talents = computed(() => talentStore.talents)
+// const paginationTalent = computed(() => talentStore.pagination)
+const filtersTalent = computed(() => talentStore.filters)
+const statisticsTalent = computed(() => talentStore.statistics)
+
+const sourceOptions = ref([
+  'NEW',
+  'Referral',
+  'LinkedIn',
+  'Job Board',
+  'Website',
+  'Agency',
+  'Campus',
+  'Other'
+]);
+
+// Add these methods to your component
+const openTalentForm = () => {
+  // Reset form
+  newTalent.value = {
+    full_name: '',
+    email: '',
+    phone: '',
+    linkedin_profile: '',
+    latest_company: '',
+    total_years_of_experience: null,
+    desired_role: '',
+    source: 'NEW',
+    // internal_rating: 0,
+    interaction_notes: '',
+    skills: [],
+    current_status: 'Active'
+  };
+  skillTags.value = [];
+  skillInput.value = '';
+  emailError.value = '';
+  
+  // Close the create options dialog and open the form
+  openDialogTalent.value = false;
+  showTalentForm.value = true;
+}
+
+const addSkill = () => {
+  if (!skillInput.value.trim()) return
+  
+  // Split by comma and trim each skill
+  const skillsToAdd = skillInput.value
+    .split(',')
+    .map(skill => skill.trim())
+    .filter(skill => skill !== '')
+  
+  // Add each skill if it doesn't already exist
+  skillsToAdd.forEach(skill => {
+    const normalizedSkill = skill.toLowerCase()
+    if (!skillTags.value.some(s => s.toLowerCase() === normalizedSkill)) {
+      skillTags.value.push(skill)
+    }
+  })
+  
+  skillInput.value = ''
+}
+
+const removeSkill = (index) => {
+  skillTags.value.splice(index, 1)
+}
+
+const handleTalentSubmit = async () => {
+  try {
+    // Validate required fields
+    if (!newTalent.value.full_name) {
+      showError('Full name is required');
+      return;
+    }
+    
+    if (!newTalent.value.email) {
+      showError('Email is required');
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newTalent.value.email)) {
+      showError('Please enter a valid email address');
+      return;
+    }
+
+    // Check for duplicate email
+    const emailExists = await talentStore.checkEmailExists(newTalent.value.email);
+    if (emailExists) {
+      showError('This email is already in use. Please use a different email address.');
+      return;
+    }
+
+    // Validate required fields
+    if (!newTalent.value.linkedin_profile) {
+      showError('LinkedIn profile is required');
+      return;
+    }
+
+    if (newTalent.value.total_years_of_experience === null || newTalent.value.total_years_of_experience === '') {
+      showError('Total years of experience is required');
+      return;
+    }
+
+    // Prepare the talent data
+    const talentData = {
+      ...newTalent.value,
+      skills: skillTags.value.join(', ')
+    };
+    
+    console.log("Submitting talent data:", talentData);
+    
+    // Call the API to create the talent
+    await talentStore.createTalent(talentData);
+    
+    // Show success message
+    showSuccess('Talent created successfully!');
+    
+    // Close the form
+    showTalentForm.value = false;
+    
+    // Refresh the talents list
+    await fetchTalents();
+    
+  } catch (error) {
+    console.error('Error creating talent:', error);
+    showError(error.message || 'Failed to create talent. Please try again.');
+  }
+};
 
 //Checkbox many
 const items = ref([])
@@ -707,6 +1157,15 @@ const updateManyTalentPool = async () => {
   }
 }
 
+const openCreateDialog = () => {
+  openDialogTalent.value = true
+  console.log('open dialog talent')
+}
+
+const closeCreateOptions = () => {
+  openDialogTalent.value = false
+}
+
 // Dialog handlers
 const handleDialogSuccess = async () => {
   // Refresh the talent pools list
@@ -723,13 +1182,136 @@ const success = computed(() => talentSegmentStore.success)
 
 // Local state
 const currentTab = ref('pools')
-const viewMode = ref('card') // Default to card view
+const viewMode = ref('list') // Default to card view
 const showCreateForm = ref(false)
 const showDeleteDialog = ref(false)
 const editingSegment = ref(null)
 const deletingSegment = ref(null)
 const searchQuery = ref('')
 const formRef = ref(null)
+
+// Talent list state
+const selectedAllTalent = ref([])
+const itemsPerPageOptions = [10, 20, 50, 100]
+
+// Pagination state for talents
+const paginationTalent = ref({
+  page: 1,
+  limit: 10,
+  total: 0,
+  has_next: false,
+  has_prev: false,
+  showing_from: 0,
+  showing_to: 0
+})
+
+// Computed properties for talent list
+const paginatedTalents = computed(() => {
+  const start = (paginationTalent.value.page - 1) * paginationTalent.value.limit
+  const end = start + paginationTalent.value.limit
+  return talents.value.slice(start, end)
+})
+
+// Talent list methods
+const toggleSelectAllTalent = () => {
+  if (selectedAllTalent.value.length === talents.value.length) {
+    selectedAllTalent.value = []
+  } else {
+    selectedAllTalent.value = [...talents.value]
+  }
+}
+
+const toggleSelectTalent = (talent) => {
+  const index = selectedAllTalent.value.findIndex(t => t.name === talent.name)
+  if (index === -1) {
+    selectedAllTalent.value.push(talent)
+  } else {
+    selectedAllTalent.value.splice(index, 1)
+  }
+}
+
+const goToTalentPage = (page) => {
+  if (page < 1 || page > Math.ceil(paginationTalent.value.total / paginationTalent.value.limit)) {
+    return
+  }
+  paginationTalent.value.page = page
+  fetchTalents()
+}
+
+const changeItemsPerPageTalent = () => {
+  paginationTalent.value.page = 1
+  fetchTalents()
+}
+
+const handleViewTalent = (talent) => {
+  // Implement view talent logic
+  console.log('View talent:', talent)
+  router.push({ name: 'TalentDetail', params: { id: talent.name } })
+}
+
+const handleEditTalent = (talent) => {
+  // Implement edit talent logic
+  console.log('Edit talent:', talent)
+}
+
+// Helper methods
+const processSkills = (skills) => {
+  if (!skills) return []
+  if (Array.isArray(skills)) return skills
+  return skills.split(',').map(skill => skill.trim()).filter(Boolean)
+}
+
+const getStatusTheme = (status) => {
+  const statusThemes = {
+    'Active': 'bg-green-100 text-green-800',
+    'Hired': 'bg-blue-100 text-blue-800',
+    'Inactive': 'bg-gray-100 text-gray-800',
+    'On Leave': 'bg-yellow-100 text-yellow-800',
+    'Terminated': 'bg-red-100 text-red-800'
+  }
+  return statusThemes[status] || 'bg-gray-100 text-gray-800'
+}
+
+// Fetch talents with pagination
+const fetchTalents = async () => {
+  try {
+    const result = await talentStore.fetchTalents({
+      page: paginationTalent.value.page,
+      limit: paginationTalent.value.limit,
+      filters: {
+        ...(searchQuery.value && { search: searchQuery.value })
+      }
+    })
+
+    if (result && result.success) {
+      paginationTalent.value = {
+        ...paginationTalent.value,
+        total: result.count || 0,
+        has_next: talentStore.pagination.has_next,
+        has_prev: talentStore.pagination.has_prev,
+        showing_from: talentStore.pagination.showing_from,
+        showing_to: talentStore.pagination.showing_to
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching talents:', error)
+    showError(error.message || 'Failed to fetch talents')
+  }
+}
+
+const loadingFunctions = inject('loadingFunctions', {
+	setLoading: () => {},
+	clearLoading: () => {},
+	showSavingLoading: () => {},
+	showCreatingLoading: () => {},
+	withLoading: async (fn) => await fn()
+})
+
+// Fetch talents on component mount
+onMounted(() => {
+  fetchTalents()
+  console.log('Loading functions injected:', loadingFunctions)
+})
 
 function handleFormSubmit() {
   if (formRef.value) {
@@ -1143,6 +1725,7 @@ const handleFormClose = () => {
 const handleRefresh = async () => {
   selectedAll.value = []
   const currentFilter = selectedSegmentType.value
+  await talentStore.fetchTalents()
   await talentSegmentStore.fetchTalentSegments()
   await talentPoolStore.getTalentPools(currentFilter)
   showSuccess(__('Data refreshed'))
