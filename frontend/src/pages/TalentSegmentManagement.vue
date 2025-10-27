@@ -399,7 +399,7 @@
           </div>
 
           <!-- Upload Excel/CSV -->
-          <div class="border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-green-500 hover:shadow-sm transition-all">
+          <div @click="openUploadModal" class="border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-green-500 hover:shadow-sm transition-all">
             <div class="flex flex-col items-center text-center">
               <div class="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center text-green-600 mb-3">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -809,6 +809,12 @@
     </form>
   </template>
 </Dialog>
+
+        <UploadExcelTalentModal
+					v-model="showUploadModal"
+					@created="handleTalentCreated"
+					@close="closeUploadModal"
+				/>
   </div>
   <ToastContainer />
 </template>
@@ -828,6 +834,9 @@ import Loading from '@/components/Loading.vue'
 import { ToastContainer } from '@/components/shared'
 import { useToast } from '@/composables/useToast'
 import { useTalentStore } from '@/stores/talent'
+import UploadExcelTalentModal from '@/components/UploadExcelTalentModal.vue'
+
+const showUploadModal = ref(false)
 const talentStore = useTalentStore()
 const toastMessage = useToast()
 const router = useRouter()
@@ -847,6 +856,20 @@ const uniqueSegmentTypes = computed(() => talentPoolStore.uniqueSegmentTypes)
 const selectedSegmentType = ref('')
 const selectedSegmentTypeEdit = ref('')
 const openDialogTalent = ref(false)
+
+const handleTalentCreated = async (result) => {
+	showSuccess(`Successfully created ${result.success} talent`)
+	await talentStore.fetchTalents()
+}
+
+const closeUploadModal = () => {
+	showUploadModal.value = false
+}
+
+const openUploadModal = () => {
+  openDialogTalent.value = false;
+	showUploadModal.value = true
+}
 
 const showTalentForm = ref(false)
 const newTalent = ref({
@@ -1159,7 +1182,6 @@ const updateManyTalentPool = async () => {
 
 const openCreateDialog = () => {
   openDialogTalent.value = true
-  console.log('open dialog talent')
 }
 
 const closeCreateOptions = () => {
