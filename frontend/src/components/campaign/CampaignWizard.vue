@@ -364,93 +364,16 @@
 
                   <!-- Custom Conditions Content -->
                   <div v-else-if="segmentSelectionMode === 'conditions'" class="space-y-4">
-                    <div class="bg-white rounded-lg border p-4">
-                      <h6 class="text-sm font-medium text-gray-900 mb-2">
-                        {{ __("Custom Conditions") }}
-                      </h6>
-                      <p class="text-xs text-gray-600 mb-4">
-                        {{ __("Create conditions to filter candidates who will receive your campaign") }}
-                      </p>
-
-                      <!-- Logic Selection -->
-                      <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                          {{ __("Condition Logic") }}
-                        </label>
-                        <div class="flex space-x-4">
-                          <label class="flex items-center">
-                            <input
-                              type="radio"
-                              v-model="conditionsLogic"
-                              value="any"
-                              class="mr-2"
-                            />
-                            <span class="text-sm text-gray-700">{{ __("Any conditions (OR)") }}</span>
-                          </label>
-                          <label class="flex items-center">
-                            <input
-                              type="radio"
-                              v-model="conditionsLogic"
-                              value="all"
-                              class="mr-2"
-                            />
-                            <span class="text-sm text-gray-700">{{ __("All conditions (AND)") }}</span>
-                          </label>
-                        </div>
-                      </div>
-
-                      <!-- Conditions List -->
-                      <div v-if="customConditions.length > 0" class="space-y-3 mb-4">
-                        <div
-                          v-for="(condition, index) in customConditions"
-                          :key="index"
-                          class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                        >
-                          <div class="flex-1 cursor-pointer" @click="editCondition(condition, index)">
-                            <span class="text-sm font-medium text-gray-900">
-                              {{ getConditionLabel(condition) }}
-                            </span>
-                            <span class="text-sm text-gray-600 ml-2">
-                              {{ condition.operator }} 
-                              <span v-if="!['is_empty', 'is_not_empty'].includes(condition.operator)">
-                                {{ condition.value }}
-                              </span>
-                            </span>
-                          </div>
-                          <div class="flex items-center space-x-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              @click="editCondition(condition, index)"
-                              class="text-blue-600 hover:text-blue-700"
-                            >
-                              <FeatherIcon name="edit" class="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              @click="removeCondition(index)"
-                              class="text-red-600 hover:text-red-700"
-                            >
-                              <FeatherIcon name="trash-2" class="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- Add Condition Button -->
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        @click="addCondition"
-                        class="w-full"
-                      >
-                        <template #prefix>
-                          <FeatherIcon name="plus" class="h-4 w-4" />
-                        </template>
-                        {{ __("Add Condition") }}
-                      </Button>
-                    </div>
+                    <ConditionsBuilder
+                      v-model="customConditions"
+                      doctype="Mira Talent"
+                      :title="__('Campaign Target Conditions')"
+                      :description="__('Define conditions to filter candidates who will receive your campaign')"
+                      :show-preview="false"
+                      :validate-on-change="true"
+                      @validate="handleConditionsValidate"
+                      @change="handleConditionsChange"
+                    />
                   </div>
                 </div>
 
@@ -704,6 +627,7 @@ import WorkflowBuilder from "./WorkflowBuilder.vue";
 import Link from "@/components/Controls/Link.vue";
 import StepFormDialog from "./StepFormDialog.vue";
 import SocialNetworkConfigDialog from "./SocialNetworkConfigDialog.vue";
+import ConditionsBuilder from "@/components/ConditionsFilter/ConditionsBuilder.vue";
 
 import { useCandidateStore } from "@/stores/candidate";
 import { useMiraTalentPoolStore } from "@/stores/miraTalentPool";
@@ -1315,15 +1239,28 @@ const getFieldOptions = (fieldValue) => {
   return field?.options || [];
 };
 
+// Conditions handlers
+const handleConditionsValidate = (validation) => {
+  console.log('📋 Conditions validation:', validation);
+  if (!validation.isValid) {
+    console.warn('⚠️ Invalid conditions:', validation.error);
+  }
+};
+
+const handleConditionsChange = (newConditions) => {
+  console.log('📋 Conditions changed:', newConditions);
+  // ConditionsBuilder returns array format, save directly to criteria
+  if (segmentSelectionMode.value === 'conditions') {
+    campaignData.value.criteria = JSON.stringify(newConditions);
+  }
+};
+
 // Watch conditions to save to criteria field
 watch(
-  () => ({ conditions: customConditions.value, logic: conditionsLogic.value }),
-  (newCriteria) => {
+  () => customConditions.value,
+  (newConditions) => {
     if (segmentSelectionMode.value === 'conditions') {
-      campaignData.value.criteria = JSON.stringify({
-        logic: newCriteria.logic,
-        conditions: newCriteria.conditions
-      });
+      campaignData.value.criteria = JSON.stringify(newConditions);
     }
   },
   { deep: true }
@@ -3211,18 +3148,23 @@ watch(show, async (newVal) => {
         if (ec.criteria) {
           try {
             const parsedCriteria = JSON.parse(ec.criteria);
-            conditionsLogic.value = parsedCriteria.logic || 'any';
-            customConditions.value = parsedCriteria.conditions || [];
+            // ConditionsBuilder uses array format directly
+            if (Array.isArray(parsedCriteria)) {
+              customConditions.value = parsedCriteria;
+            } else if (parsedCriteria.conditions) {
+              // Legacy format with logic + conditions
+              customConditions.value = parsedCriteria.conditions || [];
+              conditionsLogic.value = parsedCriteria.logic || 'any';
+            }
             segmentSelectionMode.value = 'conditions'; // Set to conditions mode
+            console.log('📋 Loaded conditions:', customConditions.value);
           } catch (e) {
             console.warn('Failed to parse criteria:', e);
             customConditions.value = [];
-            conditionsLogic.value = 'any';
           }
         } else {
           // Reset conditions if no criteria
           customConditions.value = [];
-          conditionsLogic.value = 'any';
           segmentSelectionMode.value = ''; // Reset selection mode
         }
         campaignData.value.start_date =

@@ -95,15 +95,17 @@ export const useMiraFlowStore = defineStore('miraFlow', {
         }
 
         // Add filters
-        if (options.filters) {
-          params.filters = options.filters
+        // Always filter by type = 'Automation' to exclude Campaign and Sequence flows
+        params.filters = {
+          type: 'Automation',
+          ...(options.filters || {})
         }
 
         if (this.filters.search) {
           params.or_filters = [
             ['title', 'like', `%${this.filters.search}%`],
             ['description', 'like', `%${this.filters.search}%`],
-            ['tags', 'like', `%${this.filters.search}%`]
+            ['tags', 'like', `%${this.filters.search}%`],
           ]
         }
 
@@ -431,30 +433,31 @@ export const useMiraFlowStore = defineStore('miraFlow', {
             call('mbw_mira.api.doc.get_list_data', {
               doctype: 'Mira Flow',
               fields: ['name'], // Minimal field to reduce data transfer
+              filters: { type: 'Automation' }, // Only Automation flows
               limit_page_length: 1 // We only need the count, not the data
             }),
             call('mbw_mira.api.doc.get_list_data', {
               doctype: 'Mira Flow',
               fields: ['name'],
-              filters: { status: 'Active' },
+              filters: { type: 'Automation', status: 'Active' },
               limit_page_length: 1
             }),
             call('mbw_mira.api.doc.get_list_data', {
               doctype: 'Mira Flow',
               fields: ['name'],
-              filters: { status: 'Draft' },
+              filters: { type: 'Automation', status: 'Draft' },
               limit_page_length: 1
             }),
             call('mbw_mira.api.doc.get_list_data', {
               doctype: 'Mira Flow',
               fields: ['name'],
-              filters: { status: 'Paused' },
+              filters: { type: 'Automation', status: 'Paused' },
               limit_page_length: 1
             }),
             call('mbw_mira.api.doc.get_list_data', {
               doctype: 'Mira Flow',
               fields: ['name'],
-              filters: { status: 'Archived' },
+              filters: { type: 'Automation', status: 'Archived' },
               limit_page_length: 1
             })
           ])
@@ -473,11 +476,11 @@ export const useMiraFlowStore = defineStore('miraFlow', {
           
           // Fallback to old API
           const [totalResult, activeResult, draftResult, pausedResult, archivedResult] = await Promise.all([
-            call('frappe.client.get_count', { doctype: 'Mira Flow' }),
-            call('frappe.client.get_count', { doctype: 'Mira Flow', filters: { status: 'Active' } }),
-            call('frappe.client.get_count', { doctype: 'Mira Flow', filters: { status: 'Draft' } }),
-            call('frappe.client.get_count', { doctype: 'Mira Flow', filters: { status: 'Paused' } }),
-            call('frappe.client.get_count', { doctype: 'Mira Flow', filters: { status: 'Archived' } })
+            call('frappe.client.get_count', { doctype: 'Mira Flow', filters: { type: 'Automation' } }),
+            call('frappe.client.get_count', { doctype: 'Mira Flow', filters: { type: 'Automation', status: 'Active' } }),
+            call('frappe.client.get_count', { doctype: 'Mira Flow', filters: { type: 'Automation', status: 'Draft' } }),
+            call('frappe.client.get_count', { doctype: 'Mira Flow', filters: { type: 'Automation', status: 'Paused' } }),
+            call('frappe.client.get_count', { doctype: 'Mira Flow', filters: { type: 'Automation', status: 'Archived' } })
           ])
 
           this.statistics = {
@@ -516,7 +519,8 @@ export const useMiraFlowStore = defineStore('miraFlow', {
         description: flowData.description?.trim() || '',
         status: flowData.status || 'Draft',
         tags: flowData.tags?.trim() || '',
-        owner_id: flowData.owner_id
+        owner_id: flowData.owner_id,
+        type: 'Automation'
       }
     },
 
