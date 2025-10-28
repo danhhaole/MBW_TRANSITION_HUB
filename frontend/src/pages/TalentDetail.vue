@@ -90,6 +90,19 @@
               <div class="space-y-4 mt-6">
                 <h3 class="text-sm font-medium text-gray-900 uppercase tracking-wide">Professional</h3>
                 
+                <!-- Resume Link -->
+                <div v-if="talent.resume" class="flex items-center space-x-3">
+                  <FeatherIcon name="file-text" class="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  <a 
+                    :href="'/files/' + talent.resume" 
+                    target="_blank" 
+                    class="text-sm text-blue-600 hover:text-blue-800 hover:underline truncate"
+                    :title="talent.resume"
+                  >
+                    {{ talent.resume }}
+                  </a>
+                </div>
+                
                 <div v-if="talent.current_city" class="flex items-center space-x-3">
                   <FeatherIcon name="briefcase" class="w-4 h-4 text-gray-400" />
                   <span class="text-sm text-gray-700">{{ talent.current_city }}</span>

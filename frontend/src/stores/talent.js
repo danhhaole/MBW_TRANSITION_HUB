@@ -246,6 +246,9 @@ export const useTalentStore = defineStore('talent', {
 			this.loading = true
 			this.error = null
 
+			console.log("talentData>>>>>>", talentData);
+			
+
 			try {
 				const validationResult = this.validateTalent(talentData)
 				if (!validationResult.isValid) {
@@ -254,6 +257,8 @@ export const useTalentStore = defineStore('talent', {
 
 				const preparedData = this.prepareTalentForSave(talentData)
 
+				console.log('Prepared Data>>>>:', preparedData);
+				
 				const result = await call('frappe.client.insert', {
 					doc: {
 						doctype: 'Mira Talent',
@@ -489,9 +494,13 @@ export const useTalentStore = defineStore('talent', {
 				experience: talentData.experience,
 				certifications: talentData.certifications,
 				languages: talentData.languages,
-				resume: talentData.resume,
+				resume: talentData.resume || '',
 				current_status: talentData.current_status || 'Active',
 				notes: talentData.notes?.trim(),
+				latest_company: talentData.latest_company?.trim(),
+				total_years_of_experience: parseFloat(talentData.total_years_of_experience) || 0,
+				desired_role: talentData.desired_role?.trim(),
+				interaction_notes: talentData.interaction_notes?.trim(),
 			}
 		},
 
