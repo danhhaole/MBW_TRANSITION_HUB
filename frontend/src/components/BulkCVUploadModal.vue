@@ -128,7 +128,7 @@
                                         <tr>
                                             <th class="p-2">{{ __("File Name") }}</th>
                                             <th class="p-2">{{ __("Status") }}</th>
-                                            <th class="p-2">{{ __("Candidate") }}</th>
+                                            <th class="p-2">{{ __("Talent") }}</th>
                                             <th class="p-2">{{ __("Error Message") }}</th>
                                         </tr>
                                     </thead>
@@ -139,10 +139,10 @@
                                                     class="px-2 py-1 text-xs font-medium rounded-full">{{ file.status
                                                     }}</span></td>
                                             <td class="p-2">
-                                                <a v-if="file.candidate_id"
-                                                    :href="`/app/ats_candidate/${file.candidate_id}`"
+                                                <a v-if="file.talent_id"
+                                                    :href="`/app/mira_talent/${file.talent_id}`"
                                                     class="text-blue-600 hover:underline" target="_blank">{{
-                                                        file.candidate_id }}</a>
+                                                        file.talent_id }}</a>
                                             </td>
                                             <td class="p-2 text-red-600">{{ file.error_message }}</td>
                                         </tr>
