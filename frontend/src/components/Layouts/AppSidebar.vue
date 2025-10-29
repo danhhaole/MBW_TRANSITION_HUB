@@ -122,6 +122,7 @@
       </SidebarLink>
     </div>
     <Notifications />
+    <Settings />
     <IntermediateStepModal v-model="showIntermediateModal" :currentStep="currentStep" />
   </div>
 </template>
@@ -163,6 +164,7 @@ import { capture } from '@/telemetry'
 import { useStorage } from '@vueuse/core'
 import { ref, computed, h, onMounted, reactive, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import Settings from '@/components/Settings/Settings.vue'
 
 const { getPinnedViews, getPublicViews } = viewsStore()
 const { toggle: toggleNotificationPanel } = notificationsStore()
@@ -275,49 +277,49 @@ const links = [
       },
     ]
   },
-  {
-    label: "Settings",
-    icon: TaskIcon,
-    to: 'Settings',
-    submenu: [
-      // {
-      //   label: "integrations",
-      //   icon: ExternalLinkIcon,
-      //   to: { name: 'CandidateDataSourceManagementDirect' }
-      // },
-      {
-        label: "Campaign Templates",
-        icon: NoteIcon,
-        to: { name: 'CampaignTemplateManagement' }
-      },
-      {
-        label: "Tags",
-        icon: TagIcon,
-        to: { name: 'TagManagement' }
-      },
-      {
-        label: "Connectors",
-        icon: ExternalLinkIcon,
-        to: { name: 'Connectors' }
-        // to: 'Connectors'
-      },
-      // {
-      //   label: "Email Templates",
-      //   icon: Email2Icon,
-      //   to: { name: 'EmailEditor' }
-      // },
-      // {
-      //   label: "Ladi Pages",
-      //   icon: NoteIcon,
-      //   to: 'ladi-pages',
-      // },
-      { label: __("Email Templates"),
-        icon: "file",
-        to: "ListEmailTemplate",
-        feature: "emailtemplate_full_access" 
-      },
-    ]
-  },
+  // {
+  //   label: "Settings",
+  //   icon: TaskIcon,
+  //   to: 'Settings',
+  //   submenu: [
+  //     // {
+  //     //   label: "integrations",
+  //     //   icon: ExternalLinkIcon,
+  //     //   to: { name: 'CandidateDataSourceManagementDirect' }
+  //     // },
+  //     // {
+  //     //   label: "Campaign Templates",
+  //     //   icon: NoteIcon,
+  //     //   to: { name: 'CampaignTemplateManagement' }
+  //     // },
+  //     {
+  //       label: "Tags",
+  //       icon: TagIcon,
+  //       to: { name: 'TagManagement' }
+  //     },
+  //     {
+  //       label: "Connectors",
+  //       icon: ExternalLinkIcon,
+  //       to: { name: 'Connectors' }
+  //       // to: 'Connectors'
+  //     },
+  //     // {
+  //     //   label: "Email Templates",
+  //     //   icon: Email2Icon,
+  //     //   to: { name: 'EmailEditor' }
+  //     // },
+  //     // {
+  //     //   label: "Ladi Pages",
+  //     //   icon: NoteIcon,
+  //     //   to: 'ladi-pages',
+  //     // },
+  //     { label: __("Email Templates"),
+  //       icon: "file",
+  //       to: "ListEmailTemplate",
+  //       feature: "emailtemplate_full_access" 
+  //     },
+  //   ]
+  // },
 
 ]
 

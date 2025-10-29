@@ -1,7 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <!-- Header -->
-
+  <div class="">
 
      <LayoutHeader>
       <template #left-header>
@@ -42,7 +40,7 @@
     </LayoutHeader>
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-full mx-2 px-4 sm:px-6 lg:px-8">
       <!-- Statistics Cards -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div class="bg-white rounded-lg shadow p-6">
