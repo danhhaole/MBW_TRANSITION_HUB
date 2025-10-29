@@ -58,6 +58,7 @@ const routes = [
 	{ path: '/talents', name: 'Talent', component: ()=>import('@/pages/TalentManagement.vue') },
 	{ path: '/talents/:id', name: 'TalentDetail', component: ()=>import('@/pages/TalentDetail.vue') },
 	{ path: '/talent-pool/:id', name: 'TalentPoolDetail', component: ()=>import('@/pages/TalentPoolDetail.vue') },
+	{ path: '/talent-test', name: 'Talents', component: ()=>import('@/pages/Talents.vue') },
 
 	
 
