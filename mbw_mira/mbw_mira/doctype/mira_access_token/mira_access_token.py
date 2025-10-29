@@ -5,7 +5,7 @@ import frappe
 import secrets
 from datetime import datetime, timedelta
 from frappe.model.document import Document
-
+import json
 
 class MiraAccessToken(Document):
 	pass
@@ -56,3 +56,9 @@ def validate_test_token(token: str) -> dict:
         frappe.throw("Token đã hết hạn.")
 
     return token_doc
+
+def get_token_from_header():
+    token = frappe.get_request_header("X-Talent-Token")
+    if not token:
+        frappe.throw("Thiếu token")
+    return token.strip()
