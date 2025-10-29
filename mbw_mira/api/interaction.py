@@ -5,9 +5,9 @@ from mbw_mira.utils import verify_signature
 from frappe.utils import now_datetime, add_days
 
 @frappe.whitelist(allow_guest=True)
-def track(candidate_id=None, action=None, type=None, url=None):
-    if not candidate_id or not type:
-        frappe.throw("Missing required parameters: candidate_id, type")
+def track(talent_id=None, action=None, type=None, url=None):
+    if not talent_id or not type:
+        frappe.throw("Missing required parameters: talent_id, type")
 
     # Ghi thêm thông tin User Agent, IP
     info = {
@@ -17,7 +17,7 @@ def track(candidate_id=None, action=None, type=None, url=None):
 
     doc = frappe.get_doc({
         "doctype": "Mira Interaction",
-        "candidate_id": candidate_id,
+        "talent_id": talent_id,
         "interaction_type": type,
         "action": action,
         "url": url,
@@ -27,14 +27,14 @@ def track(candidate_id=None, action=None, type=None, url=None):
     frappe.db.commit()
 
     # 2. Flag Candidate Mira Interaction last
-    if frappe.db.exists("Candidate", candidate_id):
-        frappe.db.set_value("Candidate", candidate_id, "last_interaction", now_datetime())
+    if frappe.db.exists("Mira Talent", talent_id):
+        frappe.db.set_value("Mira Talent", talent_id, "last_interaction", now_datetime())
         frappe.db.commit()
 
     frappe.publish_realtime(
         event="interaction_created",
         message={
-            "candidate_id": candidate_id,
+            "talent_id": talent_id,
             "interaction_type": type,
             "action": action
         },
@@ -44,23 +44,23 @@ def track(candidate_id=None, action=None, type=None, url=None):
 
 @frappe.whitelist(allow_guest=True)
 def click_redirect():
-    candidate_id = frappe.form_dict.get("candidate_id")
+    talent_id = frappe.form_dict.get("talent_id")
     action = frappe.form_dict.get("action")
     url = frappe.form_dict.get("url")
     sig = frappe.form_dict.get("sig")
 
-    if not candidate_id or not sig:
+    if not talent_id or not sig:
         frappe.throw("Missing required parameters")
 
     params = {
-        "candidate_id": candidate_id,
+        "talent_id": talent_id,
         "action": action,
         "url":url
     }
     if not verify_signature(params, sig):
         frappe.throw("Invalid signature")
 
-    track(candidate_id=candidate_id, action=action, type="EMAIL_CLICKED", url=url)
+    track(talent_id=talent_id, action=action, type="EMAIL_CLICKED", url=url)
 
     frappe.local.response["type"] = "redirect"
     frappe.local.response["location"] = url
@@ -68,10 +68,10 @@ def click_redirect():
 
 @frappe.whitelist(allow_guest=True)
 def tracking_pixel():
-    candidate_id = frappe.form_dict.get("candidate_id")
+    talent_id = frappe.form_dict.get("talent_id")
     action = frappe.form_dict.get("action")
 
-    track(candidate_id=candidate_id, action=action, type="EMAIL_OPENED")
+    track(talent_id=talent_id, action=action, type="EMAIL_OPENED")
 
     # Return transparent GIF
     frappe.local.response.type = "binary"
@@ -91,17 +91,16 @@ def tracking_pixel():
 
 @frappe.whitelist(allow_guest=True)
 def unsubscribe():
-    contact_id = frappe.form_dict.get("contact_id")
     talent_id = frappe.form_dict.get("talent_id")
     action = frappe.form_dict.get("action")
     sig = frappe.form_dict.get("sig")
     url =  frappe.form_dict.get("url")
 
-    if not contact_id or not sig or not talent_id:
+    if not talent_id or not sig or not talent_id:
         frappe.throw("Missing parameters")
 
     params = {
-        "contact_id": contact_id,
+        "talent_id": talent_id,
         "action": action,
         "url":url
     }
@@ -111,17 +110,17 @@ def unsubscribe():
     # 1. Log Mira Interaction
     frappe.get_doc({
         "doctype": "Mira Interaction",
-        "contact_id": contact_id,
+        "talent_id": talent_id,
         "action": action,
         "interaction_type": "EMAIL_UNSUBSCRIBED",
         "description": f"IP: {frappe.local.request_ip}, User-Agent: {frappe.local.request.headers.get('User-Agent')}"
     }).insert(ignore_permissions=True)
 
     # 2. Flag Candidate as Unsubscribed
-    if contact_id and frappe.db.exists("Mira Contact", contact_id):
+    if talent_id and frappe.db.exists("Mira Talent", talent_id):
         frappe.db.set_value(
-            "Mira Contact",
-            contact_id,
+            "Mira Talent",
+            talent_id,
             {
                 "email_opt_out": 1,
                 "last_interaction": now_datetime()
@@ -132,7 +131,7 @@ def unsubscribe():
     frappe.publish_realtime(
         event="interaction_created",
         message={
-            "candidate_id": contact_id,
+            "talent_id": talent_id,
             "interaction_type": "EMAIL_UNSUBSCRIBED",
             "action": action
         },

@@ -7,7 +7,6 @@
  "engine": "InnoDB",
  "field_order": [
   "talent_id",
-  "contact_id",
   "campaign_id",
   "interaction_type",
   "action",
@@ -46,12 +45,6 @@
    "fieldtype": "Link",
    "label": "Talent Profile",
    "options": "Mira Talent"
-  },
-  {
-   "fieldname": "contact_id",
-   "fieldtype": "Link",
-   "label": "Contact Profile",
-   "options": "Mira Contact"
   },
   {
    "fieldname": "campaign_id",
