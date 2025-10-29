@@ -61,6 +61,7 @@ import { confirmLoginToFrappeCloud } from '@/composables/frappecloud'
 import { Dropdown } from 'frappe-ui'
 import { theme, toggleTheme } from '@/stores/theme'
 import { computed, h, markRaw } from 'vue'
+import { showLanguage } from "@/composables/language";
 
 const props = defineProps({
   isCollapsed: {
@@ -88,7 +89,7 @@ const dropdownItems = computed(() => {
       "icon":"globe",
       "label":"Language",
       "name1":"language",
-      "is_standard":0,
+      "is_standard":1,
       "type":"menu"
     },{
       "icon":"settings",
@@ -167,6 +168,13 @@ function getStandardItem(item) {
         icon: item.icon,
         label: __(item.label),
         onClick: () => (showSettings.value = true),
+        condition: () => !isMobileView.value,
+      }
+    case 'language':
+      return {
+        icon: item.icon,
+        label: __(item.label),
+        onClick: () => (showLanguage.value = true),
         condition: () => !isMobileView.value,
       }
     case 'login_to_fc':

@@ -4,6 +4,7 @@
       <router-view />
     </component>
     <Dialogs />
+    <ChangeLanguage />
   </FrappeUIProvider>
   <Toast />
 </template>
@@ -14,6 +15,7 @@ import { sessionStore as session } from '@/stores/session'
 import { FrappeUIProvider, setConfig } from 'frappe-ui'
 import { computed, defineAsyncComponent, onMounted } from 'vue'
 import Toast from '@/components/ui/Toast.vue'
+import ChangeLanguage from '@/components/Settings/ChangeLanguage.vue'
 
 const MobileLayout = defineAsyncComponent(
   () => import('./components/Layouts/MobileLayout.vue'),
