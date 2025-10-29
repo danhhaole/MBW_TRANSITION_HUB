@@ -33,7 +33,7 @@ def create_mira_interaction(args):
 	description = args.get('description',"")
 	frappe.get_doc(
 		{
-			"doctype": "Mira MiraInteraction",
+			"doctype": "Mira Interaction",
 			"talent_id": talent_id,
 			"interaction_type": interaction_type,
 			"action": source_action,
