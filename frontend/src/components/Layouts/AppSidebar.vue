@@ -61,7 +61,7 @@
 
                   <!-- Label và chevron (chỉ hiện khi sidebar mở) -->
                   <div v-if="!isSidebarCollapsed" class="flex items-center justify-between flex-1 min-w-0">
-                    <span class="text-sm font-medium truncate"
+                    <span class="text-base font-medium truncate"
                       :class="hasActiveSubmenuItem(link.submenu) ? 'text-gray-900' : 'text-ink-gray-7'">
                       {{ __(link.label) }}
                     </span>
@@ -228,7 +228,7 @@ const links = [
     to: 'TalentSegments',
   },
   {
-    label: "Campaigns",
+    label: "Automation",
     icon: OrganizationsIcon,
     to: 'CampaignManagement',
   },
@@ -238,56 +238,10 @@ const links = [
     to: 'JobOpeningManagement',
   },
   {
-    label: "Flows",
-    icon: TaskIcon,
-    to: 'FlowManagement',
-  },
-  // {
-  //   label: "Candidate",
-  //   icon: OrganizationsIcon,
-  //   to: 'CandidateManagementSimple',
-  // },
-  {
       label: "My Tasks",
       icon: TaskIcon,
       to: { name: 'MyActions' },
   },
-  // {
-  //   label: "Candidate Pools",
-  //   icon: TaskIcon,
-  //   to: 'CandidatePoolManagement',
-  // },
-  // {
-  //   label: "Candidate",
-  //   icon: ContactsIcon,
-  //   to: 'CandidateManagement',
-  // },
-  // {
-  //   label: "Report",
-  //   icon: NoteIcon,
-  //   to: 'Report',
-  // },
-
-
-
-
-  // {
-  //   label: "Data Sources",
-  //   icon: PinIcon,
-  //   to: 'CandidateDataSourceManagement',
-  //   submenu: [
-  //     {
-  //       label: "Universal Pattern",
-  //       to: 'CandidateDataSourceManagement'
-  //     },
-  //     {
-  //       label: "Direct Pattern",
-  //       to: 'CandidateDataSourceManagementDirect'
-  //     },
-  //   ]
-  // },
-
-
   {
     label: "Report",
     icon: NoteIcon,
@@ -340,11 +294,6 @@ const links = [
         label: "Tags",
         icon: TagIcon,
         to: { name: 'TagManagement' }
-      },
-      {
-        label: "Sequences",
-        icon: SequenceIcon,
-        to: { name: 'SequenceManagement' }
       },
       {
         label: "Connectors",

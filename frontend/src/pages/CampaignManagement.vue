@@ -1,41 +1,16 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <LayoutHeader>
-      <template #left-header>
-        <Breadcrumbs :items="breadcrumbs" />
-      </template>
-      <template #right-header>
-        <!-- Create button -->
+  <div class="flex h-screen bg-gray-50">
+    <!-- Automation Sidebar -->
+    <AutomationSidebar
+      @create="handleCreateFromSidebar"
+    />
 
-        <Button
-          variant="solid"
-          theme="gray"
-          @click="openCreateDialog"
-          :loading="loading"
-          class=""
-        >
-          <template #prefix>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-              ></path>
-            </svg>
-          </template>
-          {{ __("Create New") }}
-        </Button>
-      </template>
-    </LayoutHeader>
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+     
 
-    <div class="container mx-auto px-6 py-6">
+      <div class="flex-1 overflow-auto">
+        <div class="max-w-full mx-2 px-6 py-6">
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
         <!-- Search box -->
@@ -261,6 +236,8 @@
 
       <!-- Toast notifications -->
       <toast-container />
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -282,12 +259,17 @@ import { Button, Breadcrumbs, Select } from "frappe-ui";
 import LayoutHeader from "@/components/LayoutHeader.vue";
 import Loading from "@/components/Loading.vue";
 import { useCampaignStore } from "@/stores/campaign";
+import AutomationSidebar from "@/components/AutomationSidebar.vue";
+import { useAutomationStatsStore } from "@/stores/automationStats";
 
 // Router
 const router = useRouter();
 
 // Campaign store
 const campaignStore = useCampaignStore();
+
+// Automation stats store
+const statsStore = useAutomationStatsStore();
 
 // Breadcrumbs
 const breadcrumbs = [{ label: __("Campaigns"), route: { name: "CampaignManagement" } }];
@@ -419,6 +401,14 @@ const openCreateDialog = () => {
   showCreateWizard.value = true;
 };
 
+const handleCreateFromSidebar = (section) => {
+  console.log('Create new from sidebar:', section);
+  if (section === 'campaigns') {
+    openCreateDialog();
+  }
+  // Flow và Sequence sẽ được xử lý sau
+};
+
 const openEditDialog = (campaign) => {
   selectedCampaign.value = campaign;
   showEditForm.value = true;
@@ -446,6 +436,9 @@ const handleCreateSuccess = async (event) => {
 
   // Reload data
   await loadCampaigns();
+
+  // Refresh sidebar stats
+  statsStore.refreshStats();
 
   console.log("Campaigns after reload:", campaigns.value.length);
 
@@ -504,6 +497,9 @@ const handleDelete = async (campaign) => {
     if (successDelete) {
       showToast(__(`Campaign "${campaign.campaign_name}" deleted`), "success");
       loadCampaigns();
+      
+      // Refresh sidebar stats
+      statsStore.refreshStats();
     } else {
       showToast(__("Error deleting campaign"), "error");
     }

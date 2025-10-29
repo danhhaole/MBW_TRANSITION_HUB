@@ -1,31 +1,16 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <LayoutHeader>
-      <template #left-header>
-        <Breadcrumbs :items="breadcrumbs" />
-      </template>
-      <template #right-header>
-        <!-- Create dropdown button -->
-        <Dropdown :options="dropdownActions" @click.stop>
-          <template v-slot="{ open }">
-            <Button variant="solid" theme="gray" size="sm" :disabled="loading">
-              <template #prefix>
-                <FeatherIcon name="plus" class="h-4 w-4" />
-              </template>
-              <span>{{ __("New") }}</span>
-              <template #suffix>
-                <FeatherIcon
-                  :name="open ? 'chevron-up' : 'chevron-down'"
-                  class="h-4 w-4"
-                />
-              </template>
-            </Button>
-          </template>
-        </Dropdown>
-      </template>
-    </LayoutHeader>
+  <div class="flex h-screen bg-gray-50">
+    <!-- Automation Sidebar -->
+    <AutomationSidebar
+      @create="handleCreateFromSidebar"
+    />
 
-    <div class="container mx-auto px-6 py-6">
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+
+
+      <div class="flex-1 overflow-auto">
+        <div class="max-w-full mx-2 px-6 py-6">
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
         <!-- Search box -->
@@ -191,14 +176,16 @@
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Flow Form Modal -->
-    <FlowFormModal
-      v-model="showFlowModal"
-      :flow="selectedFlow"
-      @success="handleFlowSuccess"
-    />
+      <!-- Flow Form Modal -->
+      <FlowFormModal
+        v-model="showFlowModal"
+        :flow="selectedFlow"
+        @success="handleFlowSuccess"
+      />
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -212,6 +199,8 @@ import { debounce } from 'lodash-es'
 // Components
 import LayoutHeader from "@/components/LayoutHeader.vue";
 import FlowFormModal from "@/components/Modals/FlowFormModal.vue";
+import AutomationSidebar from "@/components/AutomationSidebar.vue";
+import { useAutomationStatsStore } from "@/stores/automationStats";
 
 import { Button, Select, Badge, Dropdown, FeatherIcon, Breadcrumbs } from 'frappe-ui'
 
@@ -221,6 +210,9 @@ const router = useRouter()
 
 // Store
 const flowStore = useMiraFlowStore()
+
+// Automation stats store
+const statsStore = useAutomationStatsStore()
 
 // Toast
 const toast = useToast()
@@ -386,6 +378,14 @@ const handleCreateFlow = () => {
   showFlowModal.value = true
 }
 
+const handleCreateFromSidebar = (section) => {
+  console.log('Create new from sidebar:', section)
+  if (section === 'flows') {
+    handleCreateFlow()
+  }
+  // Campaign và Sequence sẽ được xử lý bởi router
+}
+
 const handleUploadFlow = () => {
   // TODO: Open file upload dialog
   toast.info('Flow upload coming soon')
@@ -429,22 +429,30 @@ const handleDeleteFlow = async (flow) => {
   if (confirm('Bạn có chắc chắn muốn xóa flow này không?')) {
     try {
       const result = await flowStore.deleteFlow(flow.name)
-      console.log(result)
       if (result.success) {
         toast.success('Flow đã được xóa thành công')
+        await loadFlows({ page: 1 })
+        
+        // Refresh sidebar stats
+        statsStore.refreshStats()
       } else {
         toast.error(result.error || 'Có lỗi xảy ra khi xóa flow')
       }
     } catch (error) {
-      console.error('Error deleting flow:', error)
       toast.error('Có lỗi xảy ra khi xóa flow')
     }
   }
 }
 
-const handleFlowSuccess = (flow) => {
-  toast.success(selectedFlow.value ? 'Flow đã được cập nhật thành công' : 'Flow đã được tạo thành công')
-  loadFlows({ page: 1 }) // Reload the list
+const handleFlowSuccess = async () => {
+  showFlowModal.value = false
+  selectedFlow.value = null
+  await loadFlows({ page: 1 })
+  
+  // Refresh sidebar stats
+  statsStore.refreshStats()
+  
+  toast.success('Flow đã được lưu thành công')
 }
 
 // Watchers

@@ -1,44 +1,17 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <!-- Header -->
-    <LayoutHeader>
-      <template #left-header>
-        <Breadcrumbs
-          :items="[
-            { label: 'Sequences Management', route: { name: 'SequenceManagement' } }
-          ]"
-        />
-      </template>
-      <template #right-header>
-        <!-- Create button -->
-        <div class="flex items-center space-x-3">
-          <Button
-            variant="outline"
-            theme="gray"
-            @click="refreshData"
-            :loading="loading"
-          >
-            <div class="flex items-center">
-              <FeatherIcon name="refresh-cw" class="w-4 h-4 mr-2" />
-              Refresh
-            </div>
-          </Button>
-          <Button
-            variant="solid"
-            theme="gray"
-            @click="showCreateModal = true"
-          >
-            <div class="flex items-center">
-              <FeatherIcon name="plus" class="w-4 h-4 mr-2" />
-              Create New Sequence
-            </div>
-          </Button>
-        </div>
-      </template>
-    </LayoutHeader>
+  <div class="flex h-screen bg-gray-50">
+    <!-- Automation Sidebar -->
+    <AutomationSidebar
+      @create="handleCreateFromSidebar"
+    />
 
-    <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+      <!-- Header -->
+
+      <!-- Main Content -->
+      <div class="flex-1 overflow-auto">
+        <div class="max-w-full mx-4 px-4 py-8">
       <!-- Statistics Cards -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div class="bg-white rounded-lg shadow p-6">
@@ -115,6 +88,17 @@
             </div>
             
             <div class="flex items-center space-x-3">
+              <Button
+              variant="outline"
+              theme="gray"
+              @click="refreshData"
+              :loading="loading"
+            >
+              <div class="flex items-center">
+                <FeatherIcon name="refresh-cw" class="w-4 h-4 mr-2" />
+                Refresh
+              </div>
+            </Button>
               <Select
                 v-model="statusFilter"
                 :options="statusOptions"
@@ -264,33 +248,35 @@
           </div>
         </div>
       </div>
+
+      <!-- Create Modal -->
+      <SequenceCreateModal
+        v-if="showCreateModal"
+        :show="showCreateModal"
+        @close="showCreateModal = false"
+        @success="handleCreateSuccess"
+      />
+
+      <!-- View Modal -->
+      <SequenceViewModal
+        v-if="showViewModal"
+        :show="showViewModal"
+        :sequence="viewingSequence"
+        @close="showViewModal = false"
+      />
+
+      <!-- Delete Confirmation Modal -->
+      <DeleteConfirmModal
+        v-if="showDeleteModal"
+        :show="showDeleteModal"
+        :title="'Delete Sequence'"
+        :message="`Are you sure you want to delete sequence '${deletingSequence?.title}'? This action cannot be undone.`"
+        @close="showDeleteModal = false"
+        @confirm="confirmDelete"
+      />
+        </div>
+      </div>
     </div>
-
-    <!-- Create Modal -->
-    <SequenceCreateModal
-      v-if="showCreateModal"
-      :show="showCreateModal"
-      @close="showCreateModal = false"
-      @success="handleCreateSuccess"
-    />
-
-    <!-- View Modal -->
-    <SequenceViewModal
-      v-if="showViewModal"
-      :show="showViewModal"
-      :sequence="viewingSequence"
-      @close="showViewModal = false"
-    />
-
-    <!-- Delete Confirmation Modal -->
-    <DeleteConfirmModal
-      v-if="showDeleteModal"
-      :show="showDeleteModal"
-      :title="'Delete Sequence'"
-      :message="`Are you sure you want to delete sequence '${deletingSequence?.title}'? This action cannot be undone.`"
-      @close="showDeleteModal = false"
-      @confirm="confirmDelete"
-    />
   </div>
 </template>
 
@@ -304,11 +290,14 @@ import SequenceViewModal from '@/components/sequence/SequenceViewModal.vue'
 import SequenceCreateModal from '@/components/sequence/SequenceCreateModal.vue'
 import DeleteConfirmModal from '@/components/common/DeleteConfirmModal.vue'
 import LayoutHeader from "@/components/LayoutHeader.vue"
+import AutomationSidebar from "@/components/AutomationSidebar.vue"
+import { useAutomationStatsStore } from "@/stores/automationStats"
 import { debounce } from 'lodash'
 
 // Composables
 const router = useRouter()
 const sequenceStore = useSequenceStore()
+const statsStore = useAutomationStatsStore()
 const toast = useToast()
 
 // Reactive state
@@ -340,6 +329,14 @@ const hasActiveFilters = computed(() => {
 })
 
 // Methods
+const handleCreateFromSidebar = (section) => {
+  console.log('Create new from sidebar:', section)
+  if (section === 'sequences') {
+    showCreateModal.value = true
+  }
+  // Campaign và Flow sẽ được xử lý bởi router
+}
+
 const loadSequences = async (options = {}) => {
   try {
     const result = await sequenceStore.fetchSequences(options)
@@ -508,26 +505,34 @@ const duplicateSequence = async (sequence) => {
 }
 
 const confirmDelete = async () => {
+  if (!deletingSequence.value) return
+  
   try {
     const result = await sequenceStore.deleteSequence(deletingSequence.value.name)
+    
     if (result.success) {
-      toast.success(`Deleted sequence "${deletingSequence.value.title}" successfully`)
-      await loadSequences() // This will also update statistics
+      toast.success(`Sequence "${deletingSequence.value.title}" đã được xóa`)
+      showDeleteModal.value = false
+      deletingSequence.value = null
+      await loadSequences({ page: 1 })
+      
+      // Refresh sidebar stats
+      statsStore.refreshStats()
     } else {
-      toast.error(result.error || 'Failed to delete sequence')
+      toast.error(result.error || 'Có lỗi xảy ra khi xóa sequence')
     }
   } catch (error) {
-    console.error('Error deleting sequence:', error)
-    toast.error('Failed to delete sequence')
-  } finally {
-    showDeleteModal.value = false
-    deletingSequence.value = null
+    toast.error('Có lỗi xảy ra khi xóa sequence')
   }
 }
 
 const handleCreateSuccess = async (newSequence) => {
-  // Refresh the sequences list, which will also update statistics
-  await loadSequences()
+  showCreateModal.value = false
+  toast.success(`Sequence "${newSequence.title}" đã được tạo thành công`)
+  await loadSequences({ page: 1 })
+  
+  // Refresh sidebar stats
+  statsStore.refreshStats()
 }
 
 // Debounced search function

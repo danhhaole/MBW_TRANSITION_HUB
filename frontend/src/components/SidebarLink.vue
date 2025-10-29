@@ -42,7 +42,7 @@
           <span
             class="
               ml-3 truncate whitespace-nowrap
-              text-sm font-medium leading-4
+              text-base font-medium leading-4
               transition-all duration-300 ease-in-out overflow-hidden
             "
             :class="
