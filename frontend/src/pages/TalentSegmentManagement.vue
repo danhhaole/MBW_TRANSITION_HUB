@@ -1411,20 +1411,16 @@
 			:options="{
 				title: 'Upload Single Talent Profile',
 				size: 'xl',
-				actions: [
-					{
-						label: 'Close',
-						variant: 'ghost',
-						onClick: () => (showSingleTalentDialog = false),
-					},
-				],
 			}"
 			:disableOutsideClickToClose="true"
 		>
 			<template #body-content>
 				<div class="space-y-4 p-4">
-					<!-- File Upload Section -->
-					<div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+						<!-- File Upload Section -->
+						<div 
+							v-if="!uploadedFile"
+							class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center"
+						>
 						<div class="space-y-2">
 							<FileUploader
 								:fileTypes="['.pdf']"
@@ -1465,23 +1461,56 @@
 						</div>
 					</div>
 
-					<!-- Processing State -->
+					<!-- Uploaded File Display -->
 					<div
-						v-if="isProcessing"
-						class="bg-blue-50 border border-blue-200 rounded-lg p-4"
+						v-if="uploadedFile"
+						class="bg-green-50 border border-green-200 rounded-lg p-4"
 					>
-						<div class="flex items-center space-x-3">
-							<div
-								class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"
-							></div>
-							<div>
-								<p class="text-sm font-medium text-blue-900">
-									{{ __('Đang phân tích Resume với AI') }}
-								</p>
-								<p class="text-xs text-blue-700">
-									{{ __('Đang trích xuất thông tin từ Resume của bạn...') }}
-								</p>
+						<div class="flex items-center justify-between">
+							<div class="flex items-center space-x-3">
+								<div class="flex-shrink-0">
+									<svg
+										class="h-8 w-8 text-green-600"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke="currentColor"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+										/>
+									</svg>
+								</div>
+								<div class="flex-1 min-w-0">
+									<p class="text-sm font-medium text-green-900">
+										{{ uploadedFile.name }}
+									</p>
+									<p class="text-xs text-green-700">
+										{{ formatFileSize(uploadedFile.size) }} • Uploaded successfully
+									</p>
+								</div>
 							</div>
+							<button
+								@click="removeUploadedFile"
+								:disabled="isProcessing"
+								class="flex-shrink-0 text-green-600 hover:text-green-800 disabled:opacity-50 disabled:cursor-not-allowed"
+							>
+								<svg
+									class="h-5 w-5"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M6 18L18 6M6 6l12 12"
+									/>
+								</svg>
+							</button>
 						</div>
 					</div>
 
@@ -1572,6 +1601,32 @@
 			</template>
 		</Dialog>
 
+		<!-- Full Screen Processing Overlay (Outside Dialog using Teleport) -->
+		<Teleport to="body">
+			<div
+				v-if="isProcessing && showSingleTalentDialog"
+				class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center"
+				style="z-index: 99999;"
+				@click.stop
+			>
+				<div class="bg-white rounded-lg p-8 shadow-2xl">
+					<div class="flex flex-col items-center space-y-4">
+						<div
+							class="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-500"
+						></div>
+						<div class="text-center">
+							<p class="text-lg font-medium text-gray-900">
+								{{ __('Đang phân tích Resume với AI') }}
+							</p>
+							<p class="text-sm text-gray-600 mt-2">
+								{{ __('Đang trích xuất thông tin từ Resume của bạn...') }}
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</Teleport>
+
 		<UploadExcelTalentModal
 			v-model="showUploadModal"
 			@created="handleTalentCreated"
@@ -1625,6 +1680,7 @@ let title = __('Talent Pools')
 const breadcrumbs = [{ label: title, route: { name: 'TalentSegments' } }]
 
 const fileInput = ref(null)
+const uploadedFile = ref(null)
 const isProcessing = ref(false)
 const errorMessage = ref('')
 const extractedData = ref(null)
@@ -1685,7 +1741,15 @@ const handleFileChange = (event) => {
 // Handle file upload
 const handleFileUpload = async (file) => {
 	console.log('File uploaded successfully:', file)
+	
+	// Store uploaded file info
+	uploadedFile.value = {
+		name: file.file_name || file.name,
+		url: file.file_url || file.url,
+		size: file.file_size || file.size
+	}
 
+	// Extract CV with the correct file name
 	extractCV(file.name)
 }
 
@@ -1823,6 +1887,31 @@ const openUploadSinge = () => {
 const openUploadMany = () => {
 	openDialogTalent.value = false
 	showBulkUploadModal.value = true
+}
+
+// Format file size helper
+const formatFileSize = (bytes) => {
+	if (!bytes) return '0 B'
+	const k = 1024
+	const sizes = ['B', 'KB', 'MB', 'GB']
+	const i = Math.floor(Math.log(bytes) / Math.log(k))
+	return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
+
+// Remove uploaded file
+const removeUploadedFile = () => {
+	uploadedFile.value = null
+	extractedData.value = null
+	errorMessage.value = ''
+}
+
+// Close single talent dialog and reset state
+const closeSingleTalentDialog = () => {
+	showSingleTalentDialog.value = false
+	uploadedFile.value = null
+	extractedData.value = null
+	errorMessage.value = ''
+	isProcessing.value = false
 }
 
 const showTalentForm = ref(false)
