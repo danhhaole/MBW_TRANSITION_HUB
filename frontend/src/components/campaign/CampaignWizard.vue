@@ -2768,10 +2768,12 @@ const saveEditCampaign = async () => {
   // Update campaign fields
   await campaignStore.updateCampaignData(editingCampaign.name, updatePayload);
 
-  emit("success", {
-    action: "updated",
-    data: { name: editingCampaign.name, ...updatePayload },
-  });
+  // Don't emit success to prevent closing the wizard
+  // User can continue editing after saving
+  // emit("success", {
+  //   action: "updated",
+  //   data: { name: editingCampaign.name, ...updatePayload },
+  // });
 };
 
 // Method to save draft (legacy - kept for compatibility)

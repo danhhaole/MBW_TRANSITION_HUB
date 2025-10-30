@@ -195,39 +195,6 @@
       </div>
   </div>
 
-  <!-- Delete Confirmation Dialog -->
-  <Dialog v-model="showDeleteDialog" :options="{ title: __('Confirm Delete'), size: 'sm' }">
-    <template #body-content>
-      <div class="text-center">
-        <div class="w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
-          <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.996-.833-2.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
-          </svg>
-        </div>
-        <p class="text-slate-600 mb-2">
-          {{ __('Are you sure you want to delete campaign?') }}
-        </p>
-        <p class="font-medium text-gray-900">
-          "{{ itemToDelete?.campaign_name || itemToDelete?.name }}"
-        </p>
-        <p class="text-sm text-red-600 mt-2">
-          {{ __('This action cannot be undone!') }}
-        </p>
-      </div>
-    </template>
-    <template #actions>
-      <div class="flex justify-end">
-
-        <Button variant="ghost" @click="showDeleteDialog = false">
-          {{ __('Cancel') }}
-        </Button>
-        <Button variant="solid" theme="red" @click="confirmDelete">
-          {{ __('Delete') }}
-        </Button>
-      </div>
-    </template>
-  </Dialog>
 
   <!-- QR Code Dialog -->
   <Dialog v-model="showQrDialog" :options="{ title: 'QR Code', size: 'md' }">
@@ -288,8 +255,6 @@ const emit = defineEmits([
 ])
 
 // Refs
-const showDeleteDialog = ref(false)
-const itemToDelete = ref(null)
 const showQrDialog = ref(false)
 const qrData = ref({ url: '', image: '' })
 
@@ -428,17 +393,8 @@ const handleView = (item) => {
 }
 
 const handleDelete = (item) => {
-  // Set the item to delete and show dialog
-  itemToDelete.value = item
-  showDeleteDialog.value = true
-}
-
-const confirmDelete = () => {
-  if (itemToDelete.value) {
-    emit('delete', itemToDelete.value)
-    showDeleteDialog.value = false
-    itemToDelete.value = null
-  }
+  // Emit delete event directly to parent
+  emit('delete', item)
 }
 
 const handlePageChange = (page) => {

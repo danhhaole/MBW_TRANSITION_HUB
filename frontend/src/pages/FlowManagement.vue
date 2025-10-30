@@ -181,7 +181,7 @@
       <FlowFormModal
         v-model="showFlowModal"
         :flow="selectedFlow"
-        @success="handleFlowSuccess"
+        @success="(data) => handleFlowSuccess(data)"
       />
         </div>
       </div>
@@ -444,10 +444,11 @@ const handleDeleteFlow = async (flow) => {
   }
 }
 
-const handleFlowSuccess = async () => {
+const handleFlowSuccess = async (data) => {
   showFlowModal.value = false
   selectedFlow.value = null
   await loadFlows({ page: 1 })
+  router.push({ name: 'FlowEditor', params: { id: data.name } })
   
   // Refresh sidebar stats
   statsStore.refreshStats()

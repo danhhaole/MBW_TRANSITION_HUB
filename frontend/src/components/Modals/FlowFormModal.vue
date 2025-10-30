@@ -2,7 +2,7 @@
   <Dialog
     v-model="show"
     :options="{
-      title: isEditing ? 'Chỉnh sửa Flow' : 'Tạo Flow mới',
+      title: isEditing ? __('Edit Flow') : __('Create Flow'),
       size: 'md'
     }"
   >
@@ -11,12 +11,12 @@
         <!-- Flow Name Field -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            Tên Flow <span class="text-red-500">*</span>
+            {{ __('Title') }} <span class="text-red-500">*</span>
           </label>
           <FormControl
             v-model="form.title"
             type="text"
-            placeholder="Nhập tên flow..."
+            :placeholder="__('Enter title')"
             :disabled="loading"
             @input="clearError('title')"
           />
@@ -28,13 +28,13 @@
         <!-- Status Field -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            Trạng thái <span class="text-red-500">*</span>
+            {{ __('Status') }} <span class="text-red-500">*</span>
           </label>
           <FormControl
             v-model="form.status"
             type="select"
             :options="statusOptions"
-            placeholder="Chọn trạng thái..."
+            :placeholder="__('Select status')"
             :disabled="loading"
             @change="clearError('status')"
           />
@@ -46,12 +46,12 @@
         <!-- Description Field (Optional) -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            Mô tả
+            {{  __('Description') }}
           </label>
           <FormControl
             v-model="form.description"
             type="textarea"
-            placeholder="Nhập mô tả flow..."
+            :placeholder="__('Enter description')"
             :disabled="loading"
             rows="3"
           />
@@ -62,7 +62,7 @@
           <div class="flex">
             <FeatherIcon name="alert-circle" class="h-5 w-5 text-red-400" />
             <div class="ml-3">
-              <h3 class="text-sm font-medium text-red-800">Có lỗi xảy ra</h3>
+              <h3 class="text-sm font-medium text-red-800">{{ __('Error') }}</h3>
               <div class="mt-2 text-sm text-red-700">
                 {{ generalError }}
               </div>
@@ -79,14 +79,14 @@
           @click="handleCancel"
           :disabled="loading"
         >
-          Hủy
+          {{ __('Cancel') }}
         </Button>
         <Button
           variant="solid"
           @click="handleSubmit"
           :loading="loading"
         >
-          {{ isEditing ? 'Cập nhật' : 'Tạo mới' }}
+          {{ isEditing ? __('Update') : __('Create') }}
         </Button>
       </div>
     </template>
@@ -130,10 +130,10 @@ const form = ref({
 
 // Status options
 const statusOptions = [
-  { label: 'Bản nháp', value: 'Draft' },
-  { label: 'Đang hoạt động', value: 'Active' },
-  { label: 'Tạm dừng', value: 'Paused' },
-  { label: 'Đã lưu trữ', value: 'Archived' }
+  { label: __('Draft'), value: 'Draft' },
+  { label: __('Active'), value: 'Active' },
+  { label: __('Paused'), value: 'Paused' },
+  { label: __('Archived'), value: 'Archived' }
 ]
 
 // Computed
@@ -171,13 +171,13 @@ const validateForm = () => {
   errors.value = {}
   
   if (!form.value.title || form.value.title.trim().length === 0) {
-    errors.value.title = 'Tên flow là bắt buộc'
+    errors.value.title = __('Title is required')
   } else if (form.value.title.length > 200) {
-    errors.value.title = 'Tên flow không được vượt quá 200 ký tự'
+    errors.value.title = __('Title cannot exceed 200 characters')
   }
   
   if (!form.value.status) {
-    errors.value.status = 'Trạng thái là bắt buộc'
+    errors.value.status = __('Status is required')
   }
   
   return Object.keys(errors.value).length === 0
@@ -216,11 +216,11 @@ const handleSubmit = async () => {
       show.value = false
       resetForm()
     } else {
-      generalError.value = result.error || result.message || 'Có lỗi xảy ra khi lưu flow'
+      generalError.value = result.error || result.message || __('An error occurred while saving the flow')
     }
   } catch (error) {
     console.error('Error submitting flow:', error)
-    generalError.value = error.message || 'Có lỗi xảy ra khi lưu flow'
+    generalError.value = error.message || __('An error occurred while saving the flow')
   } finally {
     loading.value = false
   }

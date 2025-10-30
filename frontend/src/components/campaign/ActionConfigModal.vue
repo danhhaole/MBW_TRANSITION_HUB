@@ -146,104 +146,22 @@
         <h4 class="text-sm font-medium text-gray-900">{{ __("Send Email Notification") }}</h4>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            {{ __("Sender Name") }} <span class="text-red-500">*</span>
+            {{ __("Email Content") }} <span class="text-red-500">*</span>
           </label>
-          <FormControl
-            v-model="localAction.data.sender_name"
-            type="text"
-            :placeholder="__('Sender Name')"
-            :class="{ 'border-red-300': localAction.type === 'send_email' && !localAction.data.sender_name }"
+          <TextEditor
+            editor-class="prose-sm min-h-[20rem] border rounded-lg border-gray-300 p-3"
+            :content="localAction.data.content"
+            :placeholder="__('Compose your email content here...')"
+            @change="(val) => localAction.data.content = val"
+            :bubbleMenu="true"
+            :fixedMenu="true"
           />
-          <p v-if="localAction.type === 'send_email' && !localAction.data.sender_name" class="text-red-500 text-xs mt-1">
-            {{ __("Sender name is required") }}
+          <p class="text-xs text-gray-500 mt-2">
+            {{ __("Use rich text formatting to create professional emails") }}
           </p>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            {{ __("Reply Email") }} <span class="text-red-500">*</span>
-          </label>
-          <FormControl
-            v-model="localAction.data.reply_email"
-            type="email"
-            :placeholder="__('Reply Email')"
-            :class="{ 'border-red-300': localAction.type === 'send_email' && (!localAction.data.reply_email || !isValidEmail(localAction.data.reply_email)) }"
-          />
-          <p v-if="localAction.type === 'send_email' && !localAction.data.reply_email" class="text-red-500 text-xs mt-1">
-            {{ __("Reply email is required") }}
+          <p v-if="localAction.type === 'send_email' && !localAction.data.content" class="text-red-500 text-xs mt-1">
+            {{ __("Email content is required") }}
           </p>
-          <p v-else-if="localAction.type === 'send_email' && localAction.data.reply_email && !isValidEmail(localAction.data.reply_email)" class="text-red-500 text-xs mt-1">
-            {{ __("Please enter a valid email address") }}
-          </p>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            {{ __("Send to") }} <span class="text-red-500">*</span>
-          </label>
-          <!-- Email recipients list -->
-          <div v-if="emailRecipients.length > 0" class="mb-3">
-            <div class="space-y-2">
-              <div
-                v-for="(email, index) in emailRecipients"
-                :key="index"
-                class="flex items-center justify-between p-2 bg-gray-50 rounded-md border"
-              >
-                <span class="text-sm">{{ email }}</span>
-                <button
-                  @click="removeEmailRecipient(index)"
-                  class="text-red-500 hover:text-red-700 focus:outline-none"
-                >
-                  <FeatherIcon name="x" class="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-          <!-- Add new email -->
-          <div class="flex space-x-2">
-            <FormControl
-              v-model="newEmailRecipient"
-              type="email"
-              :placeholder="__('Enter email address')"
-              class="flex-1"
-              @keyup.enter="addEmailRecipient"
-            />
-            <Button 
-              variant="outline" 
-              @click="addEmailRecipient"
-              :disabled="!newEmailRecipient.trim() || emailRecipients.length >= 5"
-            >
-              <template #prefix>
-                <FeatherIcon name="plus" class="h-4 w-4" />
-              </template>
-              {{ __("Add") }}
-            </Button>
-          </div>
-          <p class="text-xs text-gray-500 mt-1">
-            {{ __("Maximum 5 email addresses") }} ({{ emailRecipients.length }}/5)
-          </p>
-          <p v-if="localAction.type === 'send_email' && emailRecipients.length === 0" class="text-red-500 text-xs mt-1">
-            {{ __("At least one email address is required") }}
-          </p>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            {{ __("Subject") }}
-          </label>
-          <FormControl
-            v-model="localAction.data.subject"
-            type="text"
-            :placeholder="__('Subject')"
-          />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            {{ __("Content") }}
-          </label>
-          <FormControl
-            v-model="localAction.data.content"
-            type="textarea"
-            :rows="4"
-            :placeholder="__('Content')"
-          />
         </div>
       </div>
 
@@ -298,7 +216,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { Button, FeatherIcon, FormControl, Autocomplete } from 'frappe-ui'
+import { Button, FeatherIcon, FormControl, Autocomplete, TextEditor } from 'frappe-ui'
 import { useTagStore } from '@/stores/tag'
 import { useMiraFlowStore } from '@/stores/miraFlow'
 import { useToast } from '@/composables/useToast'
@@ -329,12 +247,6 @@ const toast = useToast()
 // Translation helper
 const __ = (text) => text
 
-// Email validation helper
-const isValidEmail = (email) => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  return emailRegex.test(email)
-}
-
 // Local state
 const localAction = ref({
   trigger: props.action.trigger,
@@ -348,7 +260,6 @@ const localAction = ref({
 const newTagName = ref('')
 const creatingTag = ref(false)
 const selectedTagToAdd = ref('')
-const newEmailRecipient = ref('')
 
 // Action type options
 const actionTypeOptions = [
@@ -413,20 +324,6 @@ const flowOptions = computed(() => {
   return options
 })
 
-// Email recipients management
-const emailRecipients = computed({
-  get: () => {
-    const recipients = localAction.value.data.recipients
-    if (typeof recipients === 'string') {
-      return recipients.split(',').map(email => email.trim()).filter(email => email)
-    }
-    return Array.isArray(recipients) ? recipients : []
-  },
-  set: (newRecipients) => {
-    localAction.value.data.recipients = newRecipients.join(', ')
-  }
-})
-
 // Tag management methods
 const addSelectedTag = () => {
   if (!selectedTagToAdd.value) return
@@ -449,44 +346,6 @@ const removeSelectedTag = (tagValue) => {
   if (index > -1) {
     localAction.value.data.selected_tags.splice(index, 1)
   }
-}
-
-// Email recipients methods
-const addEmailRecipient = () => {
-  const email = newEmailRecipient.value.trim()
-  if (!email) return
-  
-  // Basic email validation
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (!emailRegex.test(email)) {
-    toast.error('Please enter a valid email address')
-    return
-  }
-  
-  // Check if email already exists
-  if (emailRecipients.value.includes(email)) {
-    toast.error('Email address already added')
-    return
-  }
-  
-  // Check max limit
-  if (emailRecipients.value.length >= 5) {
-    toast.error('Maximum 5 email addresses allowed')
-    return
-  }
-  
-  // Add email
-  const newRecipients = [...emailRecipients.value, email]
-  emailRecipients.value = newRecipients
-  newEmailRecipient.value = ''
-  
-  toast.success('Email address added')
-}
-
-const removeEmailRecipient = (index) => {
-  const newRecipients = emailRecipients.value.filter((_, i) => i !== index)
-  emailRecipients.value = newRecipients
-  toast.success('Email address removed')
 }
 
 // Create new tag
@@ -534,12 +393,7 @@ const isValid = computed(() => {
     case 'remove_tag':
       return !!(localAction.value.data.selected_tags && localAction.value.data.selected_tags.length > 0)
     case 'send_email':
-      return !!(
-        localAction.value.data.sender_name && 
-        localAction.value.data.reply_email &&
-        isValidEmail(localAction.value.data.reply_email) &&
-        emailRecipients.value.length > 0
-      )
+      return !!(localAction.value.data.content && localAction.value.data.content.trim())
     case 'next_flow':
       return !!localAction.value.data.flow_id
     case 'unsubscribe':

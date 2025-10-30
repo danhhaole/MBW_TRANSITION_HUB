@@ -337,33 +337,13 @@ export const useSequenceStore = defineStore('sequence', {
           throw new Error('Không thể xóa sequence đang hoạt động. Vui lòng tạm dừng sequence trước khi xóa.')
         }
 
-        // Delete all associated Mira Flow steps first
-        const stepsResult = await call('frappe.client.get_list', {
-          doctype: 'Mira Flow',
-          filters: {
-            sequence_id: sequenceId,
-            type: 'Sequence'
-          },
-          fields: ['name']
+        // Use new API that handles links
+        const response = await call('mbw_mira.api.campaign.delete_sequence_with_links', {
+          sequence_name: sequenceId,
+          force_delete: false
         })
 
-        if (stepsResult && stepsResult.length > 0) {
-          // Delete each step
-          for (const step of stepsResult) {
-            await call('frappe.client.delete', {
-              doctype: 'Mira Flow',
-              name: step.name
-            })
-          }
-        }
-
-        // Delete the sequence
-        const result = await call('frappe.client.delete', {
-          doctype: 'Mira Sequence',
-          name: sequenceId
-        })
-
-        if (result === undefined) {
+        if (response && response.status === 'success') {
           // Remove from local state
           this.sequences = this.sequences.filter(sequence => sequence.name !== sequenceId)
           delete this.sequenceSteps[sequenceId]
@@ -372,13 +352,50 @@ export const useSequenceStore = defineStore('sequence', {
           this.pagination.total = Math.max(0, this.pagination.total - 1)
           
           return { success: true }
+        } else if (response && response.error_type === 'LinkExistsError') {
+          // Return the error with linked documents info
+          const error = new Error(response.message)
+          error.linkedDocuments = response.linked_documents
+          error.errorType = 'LinkExistsError'
+          throw error
+        } else {
+          throw new Error(response.message || 'Failed to delete sequence')
         }
-
-        return { success: false, message: 'Failed to delete sequence' }
       } catch (error) {
         console.error('Error deleting sequence:', error)
         this.error = this.parseError(error)
-        return { success: false, error: this.error }
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async forceDeleteSequence(sequenceId) {
+      this.loading = true
+      this.error = null
+      
+      try {
+        const response = await call('mbw_mira.api.campaign.delete_sequence_with_links', {
+          sequence_name: sequenceId,
+          force_delete: true
+        })
+
+        if (response && response.status === 'success') {
+          // Remove from local state
+          this.sequences = this.sequences.filter(sequence => sequence.name !== sequenceId)
+          delete this.sequenceSteps[sequenceId]
+          
+          // Update pagination
+          this.pagination.total = Math.max(0, this.pagination.total - 1)
+          
+          return { success: true }
+        } else {
+          throw new Error(response.message || 'Failed to delete sequence')
+        }
+      } catch (error) {
+        console.error('Error force deleting sequence:', error)
+        this.error = this.parseError(error)
+        throw error
       } finally {
         this.loading = false
       }

@@ -568,16 +568,51 @@ export const useCampaignStore = defineStore('campaign', {
         this.loading = true
         this.error = null
 
-        const response = await call('frappe.client.delete', {
-          doctype: "Mira Campaign",
-          name: name
+        // Try using new API that handles links
+        const response = await call('mbw_mira.api.campaign.delete_campaign_with_links', {
+          campaign_name: name,
+          force_delete: false
         })
-        if (response) {
+        
+        if (response && response.status === 'success') {
           return response
+        } else if (response && response.error_type === 'LinkExistsError') {
+          // Return the error with linked documents info
+          const error = new Error(response.message)
+          error.linkedDocuments = response.linked_documents
+          error.errorType = 'LinkExistsError'
+          throw error
+        } else {
+          throw new Error(response.message || 'Failed to delete campaign')
         }
       } catch (error) {
         this.error = `Không thể xóa chiến dịch "${campaignName}"`
         console.error('Failed to delete campaign:', error)
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    // Force delete campaign with all linked documents
+    async forceRemoveCampaign(name, campaignName) {
+      try {
+        this.loading = true
+        this.error = null
+
+        const response = await call('mbw_mira.api.campaign.delete_campaign_with_links', {
+          campaign_name: name,
+          force_delete: true
+        })
+        
+        if (response && response.status === 'success') {
+          return response
+        } else {
+          throw new Error(response.message || 'Failed to delete campaign')
+        }
+      } catch (error) {
+        this.error = `Không thể xóa chiến dịch "${campaignName}"`
+        console.error('Failed to force delete campaign:', error)
         throw error
       } finally {
         this.loading = false

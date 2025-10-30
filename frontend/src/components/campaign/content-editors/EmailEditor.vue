@@ -184,19 +184,21 @@
 
           <!-- Rich Text Editor -->
           <div>
-            <textarea
+            <TextEditor
               ref="dialogTextarea"
-              v-model="dialogContent"
-              rows="15"
+              editor-class="prose-sm min-h-[20rem] border rounded-lg border-gray-300 p-3"
+              :content="dialogContent"
               :placeholder="emailPlaceholder"
-              class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+              @change="(val) => dialogContent = val"
+              :bubbleMenu="true"
+              :fixedMenu="true"
             />
             <div class="flex justify-between items-center mt-2">
               <p class="text-xs text-gray-500">
                 {{ __("Use variables like [Candidate Name], [Job Title], [Company]") }}
               </p>
               <span class="text-xs text-gray-500">
-                {{ (dialogContent?.length || 0) }} {{ __("characters") }}
+                {{ getTextLength(dialogContent) }} {{ __("characters") }}
               </span>
             </div>
           </div>
@@ -220,7 +222,7 @@
 
 <script setup>
 import { ref, watch, nextTick } from 'vue'
-import { FeatherIcon, Dialog, Button, FileUploader } from 'frappe-ui'
+import { FeatherIcon, Dialog, Button, FileUploader, TextEditor, FormControl } from 'frappe-ui'
 import { useToast } from '../../../composables/useToast'
 
 const props = defineProps({
@@ -320,17 +322,23 @@ const useTemplate = () => {
 const insertVariableInDialog = (variable) => {
   if (!dialogTextarea.value) return
   
-  const textarea = dialogTextarea.value
-  const start = textarea.selectionStart
-  const end = textarea.selectionEnd
-  
-  const newContent = textarea.value.substring(0, start) + variable + textarea.value.substring(end)
-  dialogContent.value = newContent
-  
-  nextTick(() => {
-    textarea.focus()
-    textarea.setSelectionRange(start + variable.length, start + variable.length)
-  })
+  // For TextEditor, we need to insert HTML content
+  const editor = dialogTextarea.value.editor
+  if (editor) {
+    editor.chain().focus().insertContent(variable).run()
+  } else {
+    // Fallback: append to content
+    dialogContent.value = (dialogContent.value || '') + variable
+  }
+}
+
+// Get text length from HTML content
+const getTextLength = (htmlContent) => {
+  if (!htmlContent) return 0
+  // Strip HTML tags to get text length
+  const div = document.createElement('div')
+  div.innerHTML = htmlContent
+  return div.textContent?.length || 0
 }
 
 // Handle file upload success

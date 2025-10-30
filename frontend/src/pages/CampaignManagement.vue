@@ -236,6 +236,58 @@
 
       <!-- Toast notifications -->
       <toast-container />
+
+      <!-- Delete Confirmation Dialog -->
+      <Dialog
+        v-model="showDeleteConfirmDialog"
+        :options="{
+          title: 'Confirm Delete Campaign',
+          size: 'md',
+        }"
+      >
+        <template #body-content>
+          <div class="space-y-4">
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div class="flex items-start">
+                <svg class="h-6 w-6 text-yellow-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <div class="ml-3">
+                  <h3 class="text-sm font-medium text-yellow-800">
+                    {{ __('Warning') }}
+                  </h3>
+                  <p class="mt-2 text-sm text-yellow-700">
+                    {{ __('Deleting this campaign will also delete all related data.') }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p class="text-sm text-red-800">
+                <strong>{{ __('This action cannot be undone.') }}</strong> {{ __('Are you sure you want to continue?') }}
+              </p>
+            </div>
+          </div>
+        </template>
+
+        <template #actions>
+          <div class="flex justify-end space-x-2">
+            <Button
+              @click="cancelDelete"
+              variant="outline"
+            >
+              {{ __('Cancel') }}
+            </Button>
+            <Button
+              @click="confirmForceDelete"
+              theme="red"
+            >
+              {{ __('Confirm') }}
+            </Button>
+          </div>
+        </template>
+      </Dialog>
         </div>
       </div>
     </div>
@@ -255,7 +307,7 @@ import {
   CampaignView,
 } from "@/components/campaign";
 import { ToastContainer } from "@/components/shared";
-import { Button, Breadcrumbs, Select } from "frappe-ui";
+import { Button, Breadcrumbs, Select, Dialog } from "frappe-ui";
 import LayoutHeader from "@/components/LayoutHeader.vue";
 import Loading from "@/components/Loading.vue";
 import { useCampaignStore } from "@/stores/campaign";
@@ -284,6 +336,11 @@ const refreshTrigger = ref(0);
 const searchDebounceTimer = ref(null);
 const isSearching = ref(false);
 
+// Delete confirmation dialog
+const showDeleteConfirmDialog = ref(false);
+const campaignToDelete = ref(null);
+const linkedDocuments = ref([]);
+
 // Composables
 const {
   campaigns,
@@ -302,7 +359,7 @@ const {
   setActiveFilter,
 } = useCampaignList();
 
-const { deleteCampaign } = useCampaignCRUD();
+const { deleteCampaign, forceDeleteCampaign } = useCampaignCRUD();
 const { success, error, info } = useToast();
 
 // Wrapper để thống nhất cách hiển thị toast như kỳ vọng showToast
@@ -500,12 +557,46 @@ const handleDelete = async (campaign) => {
       
       // Refresh sidebar stats
       statsStore.refreshStats();
+    }
+  } catch (errorDelete) {
+    console.error('Delete error:', errorDelete);
+    
+    // Check if it's a LinkExistsError
+    if (errorDelete.errorType === 'LinkExistsError' && errorDelete.linkedDocuments) {
+      // Show Frappe UI dialog with linked documents
+      campaignToDelete.value = campaign;
+      linkedDocuments.value = errorDelete.linkedDocuments;
+      showDeleteConfirmDialog.value = true;
     } else {
       showToast(__("Error deleting campaign"), "error");
     }
-  } catch (errorDelete) {
+  }
+};
+
+const confirmForceDelete = async () => {
+  if (!campaignToDelete.value) return;
+  
+  try {
+    await forceDeleteCampaign(campaignToDelete.value.name, campaignToDelete.value.campaign_name);
+    showToast(
+      __("Campaign deleted successfully!"),
+      "success"
+    );
+    loadCampaigns();
+    statsStore.refreshStats();
+    showDeleteConfirmDialog.value = false;
+    campaignToDelete.value = null;
+    linkedDocuments.value = [];
+  } catch (forceError) {
+    console.error('Force delete error:', forceError);
     showToast(__("Error deleting campaign"), "error");
   }
+};
+
+const cancelDelete = () => {
+  showDeleteConfirmDialog.value = false;
+  campaignToDelete.value = null;
+  linkedDocuments.value = [];
 };
 
 // Initialize

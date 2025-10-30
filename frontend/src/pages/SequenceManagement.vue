@@ -274,6 +274,58 @@
         @close="showDeleteModal = false"
         @confirm="confirmDelete"
       />
+
+      <!-- Delete with Links Confirmation Dialog -->
+      <Dialog
+        v-model="showDeleteConfirmDialog"
+        :options="{
+          title: 'Delete Sequence',
+          size: 'md',
+        }"
+      >
+        <template #body-content>
+          <div class="space-y-4">
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div class="flex items-start">
+                <svg class="h-6 w-6 text-yellow-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <div class="ml-3">
+                  <h3 class="text-sm font-medium text-yellow-800">
+                    {{ __('Warning') }}
+                  </h3>
+                  <p class="mt-2 text-sm text-yellow-700">
+                    {{ __('Deleting this sequence will also delete all related data.') }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p class="text-sm text-red-800">
+                <strong>{{ __('This action cannot be undone.') }}</strong> {{ __('Are you sure you want to continue?') }}
+              </p>
+            </div>
+          </div>
+        </template>
+
+        <template #actions>
+          <div class="flex justify-end space-x-2">
+            <Button
+              @click="cancelDelete"
+              variant="outline"
+            >
+              {{ __('Cancel') }}
+            </Button>
+            <Button
+              @click="confirmForceDelete"
+              theme="red"
+            >
+              {{ __('Confirm') }}
+            </Button>
+          </div>
+        </template>
+      </Dialog>
         </div>
       </div>
     </div>
@@ -283,7 +335,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import { Button, Select, Badge, Dropdown, FeatherIcon, Breadcrumbs } from 'frappe-ui'
+import { Button, Select, Badge, Dropdown, FeatherIcon, Breadcrumbs, Dialog } from 'frappe-ui'
 import { useSequenceStore } from '@/stores/sequence'
 import { useToast } from '@/composables/useToast'
 import SequenceViewModal from '@/components/sequence/SequenceViewModal.vue'
@@ -308,6 +360,11 @@ const showViewModal = ref(false)
 const showDeleteModal = ref(false)
 const viewingSequence = ref(null)
 const deletingSequence = ref(null)
+
+// Delete confirmation dialog
+const showDeleteConfirmDialog = ref(false)
+const sequenceToDelete = ref(null)
+const linkedDocuments = ref([])
 
 // Status options for filter
 const statusOptions = [
@@ -511,19 +568,54 @@ const confirmDelete = async () => {
     const result = await sequenceStore.deleteSequence(deletingSequence.value.name)
     
     if (result.success) {
-      toast.success(`Sequence "${deletingSequence.value.title}" đã được xóa`)
+      toast.success(`Sequence "${deletingSequence.value.title}" deleted successfully`)
       showDeleteModal.value = false
       deletingSequence.value = null
       await loadSequences({ page: 1 })
       
       // Refresh sidebar stats
       statsStore.refreshStats()
-    } else {
-      toast.error(result.error || 'Có lỗi xảy ra khi xóa sequence')
     }
   } catch (error) {
-    toast.error('Có lỗi xảy ra khi xóa sequence')
+    console.error('Delete error:', error)
+    
+    // Check if it's a LinkExistsError
+    if (error.errorType === 'LinkExistsError' && error.linkedDocuments) {
+      // Close old modal and show new dialog
+      showDeleteModal.value = false
+      sequenceToDelete.value = deletingSequence.value
+      linkedDocuments.value = error.linkedDocuments
+      showDeleteConfirmDialog.value = true
+    } else {
+      toast.error('Error deleting sequence')
+    }
   }
+}
+
+const confirmForceDelete = async () => {
+  if (!sequenceToDelete.value) return
+  
+  try {
+    const result = await sequenceStore.forceDeleteSequence(sequenceToDelete.value.name)
+    
+    if (result.success) {
+      toast.success('Sequence deleted successfully')
+      await loadSequences({ page: 1 })
+      statsStore.refreshStats()
+      showDeleteConfirmDialog.value = false
+      sequenceToDelete.value = null
+      linkedDocuments.value = []
+    }
+  } catch (forceError) {
+    console.error('Force delete error:', forceError)
+    toast.error('Error deleting sequence')
+  }
+}
+
+const cancelDelete = () => {
+  showDeleteConfirmDialog.value = false
+  sequenceToDelete.value = null
+  linkedDocuments.value = []
 }
 
 const handleCreateSuccess = async (newSequence) => {

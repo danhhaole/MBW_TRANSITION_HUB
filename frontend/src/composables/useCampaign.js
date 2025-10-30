@@ -209,7 +209,17 @@ export const useCampaignCRUD = () => {
       await campaignStore.removeCampaign(name, campaignName)
       return true
     } catch (err) {
-      return false
+      throw err
+    }
+  }
+
+  // Force xóa campaign cùng với linked documents
+  const forceDeleteCampaign = async (name, campaignName) => {
+    try {
+      await campaignStore.forceRemoveCampaign(name, campaignName)
+      return true
+    } catch (err) {
+      throw err
     }
   }
 
@@ -226,6 +236,7 @@ export const useCampaignCRUD = () => {
     updateCampaign,
     updateCampaignBasic,
     deleteCampaign,
+    forceDeleteCampaign,
     resetState
   }
 }

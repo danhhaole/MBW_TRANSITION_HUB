@@ -578,3 +578,160 @@ def get_job_qrcode(campaign_id, target_url=None):
             "status": "error", 
             "message": f"Failed to generate QR code: {str(e)}"
         }
+
+@frappe.whitelist()
+def delete_campaign_with_links(campaign_name, force_delete=False):
+    """
+    Delete campaign and handle linked documents
+    
+    Args:
+        campaign_name: Name of the campaign to delete
+        force_delete: If True, will delete linked documents first
+    
+    Returns:
+        Dict with status and message
+    """
+    try:
+        # Check if campaign exists
+        if not frappe.db.exists("Mira Campaign", campaign_name):
+            return {
+                "status": "error",
+                "message": f"Campaign {campaign_name} not found"
+            }
+        
+        # Get linked documents
+        linked_docs = []
+        
+        # Check for linked Mira Flow
+        flows = frappe.get_all(
+            "Mira Flow",
+            filters={"campaign_id": campaign_name},
+            fields=["name", "title"]
+        )
+        if flows:
+            linked_docs.extend([{"doctype": "Mira Flow", "name": f.name, "title": f.title} for f in flows])
+        
+        # Check for linked Talent Campaign records
+        talent_campaigns = frappe.get_all(
+            "Mira Talent Campaign",
+            filters={"campaign_id": campaign_name},
+            fields=["name"]
+        )
+        if talent_campaigns:
+            linked_docs.extend([{"doctype": "Mira Talent Campaign", "name": tc.name} for tc in talent_campaigns])
+        
+        # If there are linked documents and force_delete is False, return the list
+        if linked_docs and not force_delete:
+            return {
+                "status": "error",
+                "error_type": "LinkExistsError",
+                "message": f"Cannot delete campaign because it has {len(linked_docs)} linked document(s)",
+                "linked_documents": linked_docs
+            }
+        
+        # If force_delete is True, delete all linked documents first
+        if force_delete and linked_docs:
+            deleted_count = 0
+            for doc_info in linked_docs:
+                try:
+                    frappe.delete_doc(doc_info["doctype"], doc_info["name"], ignore_permissions=True, force=True)
+                    deleted_count += 1
+                except Exception as e:
+                    print(f"Error deleting {doc_info['doctype']} {doc_info['name']}: {e}")
+            
+            frappe.db.commit()
+            print(f"Deleted {deleted_count} linked documents")
+        
+        # Now delete the campaign
+        frappe.delete_doc("Mira Campaign", campaign_name, ignore_permissions=True, force=True)
+        frappe.db.commit()
+        
+        return {
+            "status": "success",
+            "message": f"Campaign {campaign_name} deleted successfully",
+            "deleted_links": len(linked_docs) if force_delete else 0
+        }
+        
+    except Exception as e:
+        frappe.db.rollback()
+        error_msg = str(e)
+        print(f"Error deleting campaign: {error_msg}")
+        
+        return {
+            "status": "error",
+            "message": f"Failed to delete campaign: {error_msg}"
+        }
+
+@frappe.whitelist()
+def delete_sequence_with_links(sequence_name, force_delete=False):
+    """
+    Delete sequence and handle linked documents
+    
+    Args:
+        sequence_name: Name of the sequence to delete
+        force_delete: If True, will delete linked documents first
+    
+    Returns:
+        Dict with status and message
+    """
+    try:
+        # Check if sequence exists
+        if not frappe.db.exists("Mira Sequence", sequence_name):
+            return {
+                "status": "error",
+                "message": f"Sequence {sequence_name} not found"
+            }
+        
+        # Get linked documents
+        linked_docs = []
+        
+        # Check for linked Mira Flow
+        flows = frappe.get_all(
+            "Mira Flow",
+            filters={"sequence_id": sequence_name},
+            fields=["name", "title"]
+        )
+        if flows:
+            linked_docs.extend([{"doctype": "Mira Flow", "name": f.name, "title": f.title} for f in flows])
+        
+        # If there are linked documents and force_delete is False, return the list
+        if linked_docs and not force_delete:
+            return {
+                "status": "error",
+                "error_type": "LinkExistsError",
+                "message": f"Cannot delete sequence because it has {len(linked_docs)} linked document(s)",
+                "linked_documents": linked_docs
+            }
+        
+        # If force_delete is True, delete all linked documents first
+        if force_delete and linked_docs:
+            deleted_count = 0
+            for doc_info in linked_docs:
+                try:
+                    frappe.delete_doc(doc_info["doctype"], doc_info["name"], ignore_permissions=True, force=True)
+                    deleted_count += 1
+                except Exception as e:
+                    print(f"Error deleting {doc_info['doctype']} {doc_info['name']}: {e}")
+            
+            frappe.db.commit()
+            print(f"Deleted {deleted_count} linked documents")
+        
+        # Now delete the sequence
+        frappe.delete_doc("Mira Sequence", sequence_name, ignore_permissions=True, force=True)
+        frappe.db.commit()
+        
+        return {
+            "status": "success",
+            "message": f"Sequence {sequence_name} deleted successfully",
+            "deleted_links": len(linked_docs) if force_delete else 0
+        }
+        
+    except Exception as e:
+        frappe.db.rollback()
+        error_msg = str(e)
+        print(f"Error deleting sequence: {error_msg}")
+        
+        return {
+            "status": "error",
+            "message": f"Failed to delete sequence: {error_msg}"
+        }
