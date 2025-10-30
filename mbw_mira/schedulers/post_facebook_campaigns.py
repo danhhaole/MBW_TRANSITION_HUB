@@ -18,7 +18,6 @@ def run():
         },
         fields=["name", "campaign_name", "post_schedule_time","social_page_name","social_page_id","template_content"]
     )
-    #from mbw_mira.workers.ats import fetch_mbw_ats_data
     for c in campaigns:
         if c.social_page_id and c.social_page_name and c.post_schedule_time:           
             frappe.enqueue(

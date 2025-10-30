@@ -5,189 +5,44 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "basic_info_section",
-  "name_template",
-  "alias",
-  "description",
-  "thumbnail",
-  "column_break_basic",
-  "type",
-  "category",
-  "purpose",
-  "order_no",
-  "classification_section",
-  "platform_ids",
-  "column_break_class",
-  "is_default",
-  "is_premium",
-  "is_suggestion",
-  "scope_section",
-  "scope_type",
-  "scope_users",
-  "column_break_scope",
-  "scope_teams",
-  "template_configuration_section",
-  "flow_type",
-  "channel",
+  "trigger_name",
+  "trigger_type",
   "target_type",
+  "channel",
+  "column_break_basic",
+  "status",
+  "order",
+  "is_default",
+  "configuration_section",
+  "conditions",
   "column_break_config",
-  "flow_parent_id",
-  "configuration_json",
-  "actions_triggers_section",
-  "template_actions",
-  "column_break_actions",
-  "template_triggers",
-  "cta_section",
-  "is_has_url_cta",
-  "column_break_cta",
-  "url_cta",
-  "statistics_section",
-  "flow_total",
-  "version",
-  "column_break_stats",
-  "usage_count",
-  "last_used_at",
+  "schedule_time_expression",
+  "delay_minutes",
   "metadata_section",
-  "owner_id",
-  "creator_id",
-  "sub_owner_id",
+  "tags",
+  "description",
   "column_break_meta",
-  "created_at",
-  "updated_at",
-  "is_delete"
+  "configuration_json"
  ],
  "fields": [
   {
-   "fieldname": "basic_info_section",
-   "fieldtype": "Section Break",
-   "label": "Basic Information"
-  },
-  {
-   "fieldname": "name_template",
+   "fieldname": "trigger_name",
    "fieldtype": "Data",
-   "label": "Template Name",
-   "reqd": 1,
-   "unique": 1
-  },
-  {
-   "fieldname": "alias",
-   "fieldtype": "Data",
-   "label": "Alias",
-   "description": "URL-friendly identifier"
-  },
-  {
-   "fieldname": "description",
-   "fieldtype": "Small Text",
-   "label": "Description"
-  },
-  {
-   "fieldname": "thumbnail",
-   "fieldtype": "Attach Image",
-   "label": "Thumbnail"
-  },
-  {
-   "fieldname": "column_break_basic",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "type",
-   "fieldtype": "Select",
-   "label": "Type",
-   "options": "FLOW\nSEQUENCE\nCAMPAIGN",
-   "default": "FLOW",
+   "label": "Trigger Name",
    "reqd": 1
   },
   {
-   "fieldname": "category",
-   "fieldtype": "Table MultiSelect",
-   "label": "Categories",
-   "options": "Mira Flow Template Category"
-  },
-  {
-   "fieldname": "purpose",
-   "fieldtype": "Table MultiSelect",
-   "label": "Purposes",
-   "options": "Mira Flow Template Purpose"
-  },
-  {
-   "fieldname": "order_no",
-   "fieldtype": "Int",
-   "label": "Order Number",
-   "default": "999"
-  },
-  {
-   "fieldname": "classification_section",
-   "fieldtype": "Section Break",
-   "label": "Classification"
-  },
-  {
-   "fieldname": "platform_ids",
-   "fieldtype": "Table MultiSelect",
-   "label": "Platforms",
-   "options": "Mira Flow Template Platform",
-   "description": "Platforms supported (e.g., LADIMAIL, LADIPAGE)"
-  },
-  {
-   "fieldname": "column_break_class",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "is_default",
-   "fieldtype": "Check",
-   "label": "Is Default Template",
-   "default": "0"
-  },
-  {
-   "fieldname": "is_premium",
-   "fieldtype": "Check",
-   "label": "Is Premium",
-   "default": "0"
-  },
-  {
-   "fieldname": "is_suggestion",
-   "fieldtype": "Check",
-   "label": "Show as Suggestion",
-   "default": "0"
-  },
-  {
-   "fieldname": "scope_section",
-   "fieldtype": "Section Break",
-   "label": "Scope & Permissions"
-  },
-  {
-   "fieldname": "scope_type",
+   "fieldname": "trigger_type",
    "fieldtype": "Select",
-   "label": "Scope Type",
-   "options": "PRIVATE\nTEAM\nORGANIZATION\nPUBLIC",
-   "default": "PRIVATE",
+   "label": "Trigger Type",
+   "options": "ON_CREATE\nON_UPDATE\nON_TAG_ADDED\nON_STATUS_CHANGED\nON_SEQUENCE_COMPLETED\nON_SCHEDULED_TIME\nON_SCORE_REACHED\nON_EMAIL_OPEN\nON_EMAIL_REPLY\nON_LINK_CLICK\nON_EMAIL_BOUNCE\nON_UNSUBSCRIBE\nON_SEND_SUCCESS\nON_SEND_FAILED\nON_USER_RESPONSE\nCUSTOM_EVENT",
    "reqd": 1
   },
   {
-   "fieldname": "scope_users",
-   "fieldtype": "Table MultiSelect",
-   "label": "Scope Users",
-   "options": "Mira Flow Template User"
-  },
-  {
-   "fieldname": "column_break_scope",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "scope_teams",
-   "fieldtype": "Table MultiSelect",
-   "label": "Scope Teams",
-   "options": "Mira Flow Template Team"
-  },
-  {
-   "fieldname": "template_configuration_section",
-   "fieldtype": "Section Break",
-   "label": "Template Configuration"
-  },
-  {
-   "fieldname": "flow_type",
+   "fieldname": "target_type",
    "fieldtype": "Select",
-   "label": "Flow Type",
-   "options": "Campaign\nAutomation\nSequence"
+   "label": "Target Type",
+   "options": "Talent\nTalent Pool\nCampaign\nApplicant"
   },
   {
    "fieldname": "channel",
@@ -196,154 +51,91 @@
    "options": "Email\nSMS\nZalo\nMessenger"
   },
   {
-   "fieldname": "target_type",
+   "fieldname": "column_break_basic",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
    "fieldtype": "Select",
-   "label": "Target Type",
-   "options": "Talent\nTalent Pool\nApplicant"
+   "label": "Status",
+   "options": "DRAFT\nACTIVE\nPAUSED\nARCHIVED",
+   "default": "DRAFT"
+  },
+  {
+   "fieldname": "order",
+   "fieldtype": "Int",
+   "label": "Execution Order",
+   "default": "0",
+   "description": "Order in which this trigger should be evaluated"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_default",
+   "fieldtype": "Check",
+   "label": "Is Default Trigger",
+   "description": "Use this trigger by default when creating from template"
+  },
+  {
+   "fieldname": "configuration_section",
+   "fieldtype": "Section Break",
+   "label": "Configuration"
+  },
+  {
+   "fieldname": "conditions",
+   "fieldtype": "Code",
+   "label": "Conditions",
+   "options": "JSON",
+   "description": "JSON configuration for trigger conditions"
   },
   {
    "fieldname": "column_break_config",
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "flow_parent_id",
+   "description": "Cron expression hoặc datetime pattern cho scheduled trigger",
+   "fieldname": "schedule_time_expression",
    "fieldtype": "Data",
-   "label": "Flow Parent ID",
-   "description": "Parent flow reference if this is a child template"
+   "label": "Schedule Time Expression",
+   "depends_on": "eval:doc.trigger_type=='ON_SCHEDULED_TIME'"
   },
   {
-   "fieldname": "configuration_json",
-   "fieldtype": "Long Text",
-   "label": "Configuration JSON",
-   "description": "Store additional configuration as JSON"
-  },
-  {
-   "fieldname": "actions_triggers_section",
-   "fieldtype": "Section Break",
-   "label": "Template Actions & Triggers"
-  },
-  {
-   "fieldname": "template_actions",
-   "fieldtype": "Table",
-   "label": "Template Actions",
-   "options": "Mira Flow Template Action"
-  },
-  {
-   "fieldname": "column_break_actions",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "template_triggers",
-   "fieldtype": "Table",
-   "label": "Template Triggers",
-   "options": "Mira Flow Template Trigger"
-  },
-  {
-   "fieldname": "cta_section",
-   "fieldtype": "Section Break",
-   "label": "Call to Action"
-  },
-  {
-   "fieldname": "is_has_url_cta",
-   "fieldtype": "Check",
-   "label": "Has URL CTA",
-   "default": "0"
-  },
-  {
-   "fieldname": "column_break_cta",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "url_cta",
-   "fieldtype": "Data",
-   "label": "CTA URL",
-   "depends_on": "eval:doc.is_has_url_cta==1"
-  },
-  {
-   "fieldname": "statistics_section",
-   "fieldtype": "Section Break",
-   "label": "Statistics"
-  },
-  {
-   "fieldname": "flow_total",
+   "fieldname": "delay_minutes",
    "fieldtype": "Int",
-   "label": "Total Flows Created",
+   "label": "Delay Minutes",
    "default": "0",
-   "read_only": 1
-  },
-  {
-   "fieldname": "version",
-   "fieldtype": "Data",
-   "label": "Version",
-   "read_only": 1
-  },
-  {
-   "fieldname": "column_break_stats",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "usage_count",
-   "fieldtype": "Int",
-   "label": "Usage Count",
-   "default": "0",
-   "read_only": 1
-  },
-  {
-   "fieldname": "last_used_at",
-   "fieldtype": "Datetime",
-   "label": "Last Used At",
-   "read_only": 1
+   "description": "Delay before trigger execution"
   },
   {
    "fieldname": "metadata_section",
    "fieldtype": "Section Break",
-   "label": "Metadata"
+   "label": "Additional Information"
   },
   {
-   "fieldname": "owner_id",
-   "fieldtype": "Link",
-   "label": "Owner",
-   "options": "User"
+   "fieldname": "tags",
+   "fieldtype": "Small Text",
+   "label": "Tags"
   },
   {
-   "fieldname": "creator_id",
-   "fieldtype": "Link",
-   "label": "Creator",
-   "options": "User"
-  },
-  {
-   "fieldname": "sub_owner_id",
-   "fieldtype": "Link",
-   "label": "Sub Owner",
-   "options": "User"
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
   },
   {
    "fieldname": "column_break_meta",
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "created_at",
-   "fieldtype": "Datetime",
-   "label": "Created At",
-   "read_only": 1
-  },
-  {
-   "fieldname": "updated_at",
-   "fieldtype": "Datetime",
-   "label": "Updated At",
-   "read_only": 1
-  },
-  {
-   "fieldname": "is_delete",
-   "fieldtype": "Check",
-   "label": "Is Deleted",
-   "default": "0"
+   "fieldname": "configuration_json",
+   "fieldtype": "Long Text",
+   "label": "Configuration JSON",
+   "description": "Additional configuration as JSON",
+   "options": "JSON"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-29 14:56:41.712956",
+ "modified": "2025-10-30 14:28:59.721188",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Flow Template",
