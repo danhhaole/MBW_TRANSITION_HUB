@@ -57,6 +57,7 @@
 		</div>
 
 		<!-- Main Content Area -->
+
 		<div class="flex-1 flex flex-col overflow-hidden">
 			<!-- Top Bar -->
 			<div class="bg-white border-b border-gray-200 px-6 py-4">
@@ -75,9 +76,11 @@
 					</div>
 					<div class="flex items-center gap-3">
 						<Input
+							v-if="activeSection === 'pools'"
 							type="text"
-							:placeholder="`Search ${activeSection}...`"
-							v-model="searchQuery"
+							:placeholder="`Search pools...`"
+							:model-value="talentSegmentStore.searchText"
+    						@input="handleSearchInput"
 							class="w-64"
 						>
 							<template #prefix>
@@ -113,7 +116,7 @@
 							>
 								<FeatherIcon name="code" class="w-6 h-6 text-blue-600" />
 							</div>
-							<Dropdown :options="poolActions">
+							<Dropdown :options="poolActions(segment)">
 								<template #default="{ open }">
 									<Button variant="ghost" icon="more-vertical" @click="open" />
 								</template>
@@ -164,7 +167,7 @@
 								variant="ghost"
 								theme="blue"
 								class="w-full justify-start"
-								@click="managePool(segment)"
+								@click="GoDetails(segment)"
 							>
 								Manage Pool →
 							</Button>
@@ -174,13 +177,11 @@
 
 				<!-- Talents Table View -->
 				<Card v-else>
-					<template #header>
-						<div class="flex items-center justify-between">
-							<h3 class="text-lg font-semibold text-gray-900">Talent List</h3>
-						</div>
-					</template>
+					<div>
+						{{ talents }}
+					</div>
 
-					<div class="overflow-x-auto">
+					<!-- <div class="overflow-x-auto">
 						<table class="w-full">
 							<thead class="bg-gray-50 border-b border-gray-200">
 								<tr>
@@ -283,22 +284,107 @@
 								</tr>
 							</tbody>
 						</table>
-					</div>
+					</div> -->
 				</Card>
 			</div>
 		</div>
+
+		<TalentPoolDialog
+			v-model="showTalentPoolDialog"
+			:segment="selectedPool"
+			@success="handlePoolCreated"
+			@cancel="showTalentPoolDialog = false"
+		/>
+
+		<Dialog v-model="showDeleteDialog" :options="deleteDialogOptions">
+			<template #body>
+				<div class="bg-white px-4 pb-6 pt-5 sm:px-6">
+					<div class="mb-5 flex items-center justify-between">
+						<div>
+							<h3 class="text-2xl font-semibold leading-6 text-gray-900">
+								{{ __('Confirm Delete') }}
+							</h3>
+						</div>
+						<div class="flex items-center gap-1">
+							<Button variant="ghost" class="w-7" @click="showDeleteDialog = false">
+								<FeatherIcon name="x" class="h-4 w-4" />
+							</Button>
+						</div>
+					</div>
+					<div>
+						<div class="sm:flex sm:items-start">
+							<div
+								class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10"
+							>
+								<svg
+									class="h-6 w-6 text-red-600"
+									xmlns="http://www.w3.org/2000/svg"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+									/>
+								</svg>
+							</div>
+							<div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+								<h3 class="text-lg leading-6 font-medium text-gray-900">
+									{{ __('Delete Talent Pool') }}
+								</h3>
+								<div class="mt-2">
+									<p class="text-sm text-gray-500">
+										{{ __('Are you sure you want to delete') }} "{{
+											deletingPool?.title
+										}}"? {{ __('This action cannot be undone.') }}
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="px-4 pb-7 pt-4 sm:px-6">
+					<div class="flex justify-end items-center gap-3">
+						<Button
+							variant="outline"
+							theme="gray"
+							@click="showDeleteDialog = false"
+							:disabled="loading"
+						>
+							{{ __('Cancel') }}
+						</Button>
+						<Button
+							variant="solid"
+							theme="red"
+							@click="confirmDelete"
+							:loading="loading"
+						>
+							{{ __('Delete') }}
+						</Button>
+					</div>
+				</div>
+			</template>
+		</Dialog>
 	</div>
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { Button, Input, Card, Badge, Avatar, FeatherIcon, Dropdown, Progress } from 'frappe-ui'
+import TalentPoolDialog from '@/components/talent-segment/TalentPoolDialog.vue'
 import { useTalentSegmentStore } from '@/stores/talentSegment'
-import { useTalentPoolStore } from '@/stores/talentPool'
+import { useTalentStore } from '@/stores/talent'
+import { useRouter } from 'vue-router'
+import { useToast } from '@/composables/useToast'
+
+const { showSuccess, showError } = useToast()
 
 // Active section
 const activeSection = ref('pools')
-const searchQuery = ref('')
+const router = useRouter()
 // Menu items
 const menuItems = [
 	{ id: 'pools', label: 'Talent Pools', icon: 'layers', count: 6 },
@@ -307,10 +393,25 @@ const menuItems = [
 
 // Store
 const talentSegmentStore = useTalentSegmentStore()
-const talentPoolStore = useTalentPoolStore()
+const talentPoolStore = useTalentStore()
+
+console.log('talentPoolStore', talentPoolStore)
 
 // Pools
+const searchPool = ref('')
+const showTalentPoolDialog = ref(false)
+const selectedPool = ref(null)
+const showDeleteDialog = ref(false)
+const deletingPool = ref(null)
+const loading = ref(false)
+const deleteDialogOptions = {
+	title: 'Delete Talent Pool',
+	size: 'sm',
+	modalClass: 'max-w-md',
+}
 const segments = computed(() => talentSegmentStore.talentSegments)
+// Talents
+const talents = computed(() => talentPoolStore.talents)
 
 const parseCriteria = (criteria) => {
 	try {
@@ -330,93 +431,81 @@ const parseCriteria = (criteria) => {
 		return []
 	}
 }
-onMounted(async () => {
-	const segments = await talentSegmentStore.fetchTalentSegments()
-	console.log('segments', segments)
-})
 
-const talents = ref([
-	{
-		id: 't1',
-		name: 'Nguyễn Văn A',
-		role: 'Senior Python Developer',
-		pool: 'Develop Python',
-		status: 'Active',
-		email: 'nguyen.a@email.com',
-		phone: '+84 123 456 789',
-		location: 'Hanoi, Vietnam',
-		experience: '5+ years',
-		avatar: null,
-	},
-	{
-		id: 't2',
-		name: 'Trần Thị B',
-		role: 'Full Stack Developer',
-		pool: 'Software Developers',
-		status: 'Active',
-		email: 'tran.b@email.com',
-		phone: '+84 987 654 321',
-		location: 'Ho Chi Minh, Vietnam',
-		experience: '3+ years',
-		avatar: null,
-	},
-	{
-		id: 't3',
-		name: 'Lê Văn C',
-		role: 'Frontend Developer',
-		pool: 'Software Developers',
-		status: 'Inactive',
-		email: 'le.c@email.com',
-		phone: '+84 555 123 456',
-		location: 'Da Nang, Vietnam',
-		experience: '2+ years',
-		avatar: null,
-	},
-	{
-		id: 't4',
-		name: 'Phạm Thị D',
-		role: 'UI/UX Designer',
-		pool: 'UI/UX & Product Designers',
-		status: 'Active',
-		email: 'pham.d@email.com',
-		phone: '+84 444 567 890',
-		location: 'Hanoi, Vietnam',
-		experience: '4+ years',
-		avatar: null,
-	},
-	{
-		id: 't5',
-		name: 'Hoàng Văn E',
-		role: 'Sales Manager',
-		pool: 'Sales & Account Managers',
-		status: 'Active',
-		email: 'hoang.e@email.com',
-		phone: '+84 333 789 012',
-		location: 'Ho Chi Minh, Vietnam',
-		experience: '6+ years',
-		avatar: null,
-	},
-])
+// Xử lý việc mở dialog để tạo mới
+const handleNewItem = () => {
+	console.log('Create new>>>>', activeSection.value)
+	if (activeSection.value == 'pools') {
+		showTalentPoolDialog.value = true
+		selectedPool.value = null
+	}
+}
 
-const poolActions = [
+const poolActions = (pool) => [
 	{
 		label: 'Edit Pool',
 		icon: 'edit',
-		onClick: () => console.log('Edit pool'),
+		onClick: () => handleEditPool(pool),
 	},
 	{
 		label: 'Delete Pool',
 		icon: 'trash-2',
-		onClick: () => console.log('Delete pool'),
+		onClick: () => handleDetelePoool(pool),
 	},
 ]
 
-const handleNewItem = () => {
-	console.log('Create new', activeSection.value)
+const handlePoolCreated = async () => {
+	await talentSegmentStore.fetchTalentSegments()
+	showTalentPoolDialog.value = false
+	selectedPool.value = null
 }
 
-const managePool = (pool) => {
+const GoDetails = (pool) => {
 	console.log('Manage pool', pool.name)
+	router.push(`/talent-segments/${pool.name}`)
+}
+
+const handleEditPool = (pool) => {
+	console.log('Edit pool', pool)
+	selectedPool.value = pool
+	showTalentPoolDialog.value = true
+}
+
+const handleDetelePoool = (pool) => {
+	deletingPool.value = pool
+	showDeleteDialog.value = true
+}
+
+const confirmDelete = async () => {
+	if (deletingPool.value) {
+		try {
+			loading.value = true
+			await talentSegmentStore.deleteTalentSegment(deletingPool.value.name)
+			showSuccess(__('Talent pool deleted successfully'))
+			showDeleteDialog.value = false
+			deletingPool.value = null
+			await talentSegmentStore.fetchTalentSegments()
+		} catch (error) {
+			console.error('Error deleting pool:', error)
+			showError(error.message || __('Failed to delete talent pool'))
+		} finally {
+			loading.value = false
+		}
+	}
+}
+
+const handleSearchInput = (event) => {
+
+    // Clear any existing timeout
+    if (searchPool.value) {
+        clearTimeout(searchPool.value)
+    }
+    
+    // Set a new timeout to fetch after user stops typing (500ms delay)
+    searchPool.value = setTimeout(() => {
+        talentSegmentStore.setSearchText(event)
+        talentSegmentStore.fetchTalentSegments()
+    }, 500)
 }
 
 const viewTalent = (talent) => {
@@ -426,6 +515,19 @@ const viewTalent = (talent) => {
 const editTalent = (talent) => {
 	console.log('Edit talent', talent.name)
 }
+
+
+
+onMounted(async () => {
+	await talentSegmentStore.fetchTalentSegments()
+	await talentPoolStore.fetchTalents()
+})
+
+onUnmounted(() => {
+    if (searchPool.value) {
+        clearTimeout(searchPool.value)
+    }
+})
 </script>
 
 <style scoped>

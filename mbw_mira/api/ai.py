@@ -148,6 +148,7 @@ def generate_job_description(
 
 
 def extract_cv_backend(file_name):
+    print('========================= file_name 1: ', file_name, flush=True)
     # url_extract_ai = f"{AI_BASEURL}/v2/genai/hr-assistants/cv-extraction/pdf-upload"
     url_extract_ai = f"{AI_BASEURL_V2}/api/v1/cv_extract"
 
@@ -158,9 +159,9 @@ def extract_cv_backend(file_name):
 
     try:
         file_name = frappe.db.get_value("File", {"name": file_name}, "file_name")
-
+        print('========================= file_name 2: ', file_name, flush=True)
         file_path = get_files_path(file_name)
-
+        print('========================= file_path 3: ', file_path, flush=True)
         with open(file_path, "rb") as f:
             files = {"file": (file_name, f, "application/pdf")}
             response = requests.post(url_extract_ai, files=files, headers=headers)

@@ -177,6 +177,7 @@ def process_resume_files(session_name):
     and create ATS_Candidate records.
     """
     try:
+        print('========================= session_name 1: ', session_name, flush=True)
         session = frappe.get_doc("Mira ResumeUploadSession", session_name)
         session.status = "Processing"
         session.save(ignore_permissions=True)
@@ -184,6 +185,8 @@ def process_resume_files(session_name):
         for file in session.files:
             try:
                 fname = frappe.get_doc("File", {"file_name": file.file_name})
+                print('========================= fname 2: ', fname, flush=True)
+                print('========================= fname.name 3: ', fname.name, flush=True)
                 # Call external API to extract data
                 candidate_data = extract_cv_backend(fname.name)
                 if not candidate_data:
@@ -207,9 +210,11 @@ def process_resume_files(session_name):
                         # Create ATS_Candidate record
                         candidate = frappe.new_doc("Mira Talent")
                         candidate.update(data.get("personal_info", {}))
-						# avata
-                        # candidate.can_avatar = data.get("can_avatar")
-
+						# full_name
+                        print('========================= data 1: ', data, flush=True)
+                        print('========================= full_name: ', data.get("personal_info", {}).get("can_full_name"), flush=True)
+                        candidate.full_name = data.get("personal_info", {}).get("can_full_name")
+                        
                         # Add child tables
                         # for table in ["candidate_work_experience", "candidate_project", "candidate_skill",
                         #             "candidate_certification", "candidate_award", "candidate_course"]:
