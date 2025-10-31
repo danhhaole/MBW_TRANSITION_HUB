@@ -24,7 +24,7 @@ const routes = [
 	{ path: '/my-actions', name: 'MyActions', component: () => import('@/pages/MyActions.vue') },
 
 	// Talent Segment
-	{ path: '/talent-segments', name: 'TalentSegments', component: ()=>import('@/pages/TalentSegmentManagement.vue') },
+	{ path: '/talent-segments', name: 'TalentSegments', component: ()=>import('@/pages/Talents.vue') },
 	{ path: '/talent-segments/:id', name: 'TalentSegmentDetail', component: () =>import('@/pages/TalentSegmentDetailView.vue') },
 	{ path: '/talent-segments/:id/detail', name: 'TalentSegmentDetailView', component: () =>import('@/pages/TalentSegmentDetailView.vue') },
 

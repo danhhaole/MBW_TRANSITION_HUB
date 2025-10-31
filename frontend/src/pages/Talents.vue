@@ -851,6 +851,16 @@
 				</div>
 			</template>
 		</Dialog>
+
+		<!-- Upload CSV/Excel Talent -->
+		<UploadExcelTalentModal
+			v-model="showUploadModal"
+			@created="handleTalentCreated"
+			@close="closeUploadModal"
+		/>
+
+		<!-- Upload BulkCV Talent -->
+		<BulkCVUploadModal v-model="showBulkUploadModal" />
 	</div>
 </template>
 
@@ -872,6 +882,8 @@ import { useTalentSegmentStore } from '@/stores/talentSegment'
 import { useTalentStore } from '@/stores/talent'
 import { useRouter } from 'vue-router'
 import { useToast } from '@/composables/useToast'
+import UploadExcelTalentModal from '@/components/UploadExcelTalentModal.vue'
+import BulkCVUploadModal from '@/components/BulkCVUploadModal.vue'
 
 const { showSuccess, showError } = useToast()
 
@@ -879,10 +891,21 @@ const { showSuccess, showError } = useToast()
 const activeSection = ref('pools')
 const router = useRouter()
 // Menu items
-const menuItems = [
-	{ id: 'pools', label: 'Talent Pools', icon: 'layers', count: 6 },
-	{ id: 'talents', label: 'All Talents', icon: 'users', count: 5 },
-]
+// Reactive menu items with computed counts
+const menuItems = computed(() => [
+  { 
+    id: 'pools', 
+    label: 'Talent Pools', 
+    icon: 'layers', 
+    count: talentSegmentStore.pagination.total 
+  },
+  { 
+    id: 'talents', 
+    label: 'All Talents', 
+    icon: 'users', 
+    count: talentPoolStore.pagination.total 
+  }
+])
 
 // Store
 const talentSegmentStore = useTalentSegmentStore()
@@ -932,6 +955,9 @@ const sourceOptions = ref([
 const skillInput = ref('')
 const skillTags = ref([])
 const talents = computed(() => talentPoolStore.talents)
+const showUploadModal = ref(false)
+const showSingleTalentDialog = ref(false)
+const showBulkUploadModal = ref(false)
 const isEmailValid = computed(() => {
 	const email = newTalent.value.email
 	if (!email) return true // Empty is valid until submit
@@ -1223,14 +1249,29 @@ const handleTalentSubmit = async () => {
 
 const openUploadModal = () => {
 	console.log('Open upload modal')
+	openDialogTalentOption.value = false
+	showUploadModal.value = true
+}
+
+const closeUploadModal = () => {
+	showUploadModal.value = false
+}
+
+const handleTalentCreated = async (result) => {
+	showSuccess(`Successfully created ${result.success} talent`)
+	await talentPoolStore.fetchTalents()
 }
 
 const openUploadSinge = () => {
 	console.log('Open upload single')
+	openDialogTalentOption.value = false
+	showSingleTalentDialog.value = true
 }
 
 const openUploadMany = () => {
 	console.log('Open upload many')
+	openDialogTalentOption.value = false
+	showBulkUploadModal.value = true
 }
 
 const viewTalent = (talent) => {
