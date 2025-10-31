@@ -77,7 +77,7 @@
                     </div>
 
                     <!-- Job Selection -->
-                    <!-- <div class="card mb-6">
+                    <div class="card mb-6">
                         <div class="card-header">
                             <div class="flex items-center">
                                 <div class="icon-circle bg-green-100 text-green-600 mr-3">
@@ -87,17 +87,17 @@
                                     </svg>
                                 </div>
                                 <div>
-                                    <h5 class="card-title">{{ __("Select Job Position") }}</h5>
-                                    <p class="card-subtitle">{{ __("Link job openings to a specific job (optional)") }}
+                                    <h5 class="card-title">{{ __("Select Segment") }}</h5>
+                                    <p class="card-subtitle">{{ __("Link segment to a specific (optional)") }}
                                     </p>
                                 </div>
                             </div>
                         </div>
                         <div class="card-body">
-                            <Link :doctype=""Mira Job Opening"" v-model="selectedJob"
-                                :placeholder="__('Select job opening')" />
+                            <Link :doctype="'Mira Segment'" v-model="selectedJob"
+                                :placeholder="__('Select segment')" />
                         </div>
-                    </div> -->
+                    </div>
 
                     <!-- Upload Area -->
                     <div class="card">

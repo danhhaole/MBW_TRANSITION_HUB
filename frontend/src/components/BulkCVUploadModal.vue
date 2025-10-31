@@ -8,6 +8,13 @@
                 </Button>
             </div>
             <div class="p-4">
+                <!-- Job Selection -->
+                <div class="mb-4">
+                    <h4 class="font-sm font-bold">{{ __("Select Segment (Optional)") }}</h4>
+                    <div>
+                        <Link :doctype="'Mira Segment'" v-model="selected_segment" :placeholder="__('Select segment')" />
+                    </div>
+                </div>
                 <!-- Dropzone and File Input -->
                 <div :class="[
                     'border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors duration-300',
@@ -167,7 +174,6 @@ import { useToast } from '@/composables/useToast'
 const { showToast, showSuccess, showError } = useToast()
 
 const { $socket } = globalStore();
-
 // Props for v-model to control dialog visibility from parent
 const props = defineProps({
     modelValue: {
@@ -192,7 +198,7 @@ const isUploading = ref(false);
 const isLoadingHistory = ref(false);
 const uploadSessions = ref([]);
 const expandedSessions = ref([]);
-const selected_jobs = ref(null);
+const selected_segment = ref(null);
 // --- File Handling ---
 const triggerFileInput = () => {
     fileInput.value.click();
@@ -264,7 +270,7 @@ const uploadFiles = async () => {
         
         // Add other data
         formData.append('note', '');
-        formData.append('job_opening', selected_jobs.value || '');
+        formData.append('job_opening', selected_segment.value || '');
 
         const response = await fetch('/api/method/mbw_mira.mbw_mira.doctype.mira_resumeuploadsession.mira_resumeuploadsession.upload_resumes', {
             method: 'POST',

@@ -466,39 +466,6 @@
 						</div>
 					</div>
 
-					<!-- Upload Single Profile Talent -->
-					<div
-						@click="openUploadSinge"
-						class="border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-blue-400 hover:shadow-sm transition-all"
-					>
-						<div class="flex flex-col items-center text-center">
-							<div
-								class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 mb-3"
-							>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									class="h-6 w-6"
-									fill="none"
-									viewBox="0 0 24 24"
-									stroke="currentColor"
-								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-									/>
-								</svg>
-							</div>
-							<h4 class="font-medium text-gray-900">
-								{{ __('Upload Single Profile Talent') }}
-							</h4>
-							<p class="text-xs text-gray-500 mt-1">
-								{{ __('Upload profile and AI extracts data') }}
-							</p>
-						</div>
-					</div>
-
 					<!-- Upload Multiple Profiles Talent -->
 					<div
 						@click="openUploadMany"
@@ -524,7 +491,7 @@
 								</svg>
 							</div>
 							<h4 class="font-medium text-gray-900">
-								{{ __('Upload Profiles Talent') }}
+								{{ __('Upload Many') }}
 							</h4>
 							<p class="text-xs text-gray-500 mt-1">
 								{{ __('Upload many profiles.') }}
@@ -956,7 +923,6 @@ const skillInput = ref('')
 const skillTags = ref([])
 const talents = computed(() => talentPoolStore.talents)
 const showUploadModal = ref(false)
-const showSingleTalentDialog = ref(false)
 const showBulkUploadModal = ref(false)
 const isEmailValid = computed(() => {
 	const email = newTalent.value.email
@@ -1260,12 +1226,6 @@ const closeUploadModal = () => {
 const handleTalentCreated = async (result) => {
 	showSuccess(`Successfully created ${result.success} talent`)
 	await talentPoolStore.fetchTalents()
-}
-
-const openUploadSinge = () => {
-	console.log('Open upload single')
-	openDialogTalentOption.value = false
-	showSingleTalentDialog.value = true
 }
 
 const openUploadMany = () => {
