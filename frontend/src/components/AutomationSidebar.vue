@@ -20,7 +20,7 @@
           :class="[
             'w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-2 transition-all',
             isActive
-              ? 'bg-blue-50 text-blue-700 shadow-sm'
+              ? 'bg-blue-50 text-blue-700'
               : 'text-gray-700 hover:bg-gray-50'
           ]"
         >

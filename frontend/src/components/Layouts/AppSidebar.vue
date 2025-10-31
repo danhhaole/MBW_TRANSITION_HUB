@@ -31,12 +31,12 @@
               <span>{{ __(view.name) }}</span>
             </div>
           </template>
-          <nav class="flex flex-col">
+          <nav class="flex flex-col gap-2">
             <!-- Main menu items -->
             <template v-for="link in view.views" :key="link.label">
               <!-- Menu item không có submenu -->
               <SidebarLink v-if="!link.submenu || link.submenu.length === 0" :icon="link.icon" :label="__(link.label)"
-                :to="link.to" :isCollapsed="isSidebarCollapsed" class="mx-2 my-0.5" />
+                :to="link.to" :isCollapsed="isSidebarCollapsed" :relatedRoutes="link.relatedRoutes || []" class="mx-2 my-0.5" />
 
               <!-- Menu item có submenu -->
               <div v-else class="mx-2 my-0.5 relative group overflow-visible">
@@ -233,6 +233,7 @@ const links = [
     label: "Automation",
     icon: OrganizationsIcon,
     to: 'CampaignManagement',
+    relatedRoutes: ['CampaignManagement', 'FlowManagement', 'SequenceManagement', 'FlowEditor', 'SequenceEditor'],
   },
   {
     label: "Job Opening",

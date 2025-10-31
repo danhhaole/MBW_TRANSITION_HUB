@@ -6,8 +6,8 @@
     "
     :class="[
       isActive
-        ? 'bg-gray-100 text-gray-900 font-semibold'
-        : 'hover:bg-gray-100 text-gray-600',
+        ? 'bg-gray-200 text-gray-900 font-semibold'
+        : 'hover:bg-gray-100 text-gray-700',
       'px-2 py-1.5'
     ]"
     @click="handleClick"
@@ -21,12 +21,12 @@
               <FeatherIcon
                 v-if="typeof icon === 'string'"
                 :name="icon"
-                class="w-4 h-4 text-gray-500"
+                :class="isActive ? 'w-4 h-4 text-gray-900' : 'w-4 h-4 text-gray-600'"
               />
               <component
                 v-else
                 :is="icon"
-                class="w-4 h-4 text-gray-500"
+                :class="isActive ? 'w-4 h-4 text-gray-900' : 'w-4 h-4 text-gray-600'"
               />
             </span>
           </slot>
@@ -87,6 +87,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  relatedRoutes: {
+    type: Array,
+    default: () => [],
+  },
 })
 
 function handleClick() {
@@ -106,6 +110,12 @@ const isActive = computed(() => {
   if (typeof props.to === 'object' && route.query.view) {
     return route.query.view == props.to?.query?.view
   }
-  return route.name === props.to
+  // Check if current route matches main route
+  if (route.name === props.to) return true
+  // Check if current route is in relatedRoutes
+  if (props.relatedRoutes.length > 0) {
+    return props.relatedRoutes.includes(route.name)
+  }
+  return false
 })
 </script>
