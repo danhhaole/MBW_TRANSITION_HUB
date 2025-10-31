@@ -55,7 +55,7 @@
         <template #prefix>
           <FeatherIcon name="plus" class="w-4 h-4" />
         </template>
-        Create New
+        {{ createButtonLabel }}
       </Button>
     </div>
   </div>
@@ -80,6 +80,10 @@ const props = defineProps({
   sequenceCount: {
     type: Number,
     default: null
+  },
+  flowTemplateCount: {
+    type: Number,
+    default: null
   }
 })
 
@@ -101,6 +105,9 @@ const finalFlowCount = computed(() =>
 )
 const finalSequenceCount = computed(() => 
   props.sequenceCount !== null ? props.sequenceCount : statsStore.sequenceCount
+)
+const finalFlowTemplateCount = computed(() => 
+  props.flowTemplateCount !== null ? props.flowTemplateCount : statsStore.flowTemplateCount
 )
 
 // Menu items configuration
@@ -125,6 +132,13 @@ const menuItems = computed(() => [
     icon: 'list', 
     count: finalSequenceCount.value,
     route: '/sequences'
+  },
+  { 
+    id: 'flow-templates', 
+    label: 'Flow Templates', 
+    icon: 'layout', 
+    count: finalFlowTemplateCount.value,
+    route: '/flow-templates'
   }
 ])
 
@@ -134,7 +148,24 @@ const activeSection = computed(() => {
   if (path.includes('/campaigns')) return 'campaigns'
   if (path.includes('/flows')) return 'flows'
   if (path.includes('/sequences')) return 'sequences'
+  if (path.includes('/flow-templates')) return 'flow-templates'
   return null
+})
+
+// Dynamic button label based on active section
+const createButtonLabel = computed(() => {
+  switch (activeSection.value) {
+    case 'campaigns':
+      return 'Create Campaign'
+    case 'flows':
+      return 'Create Flow'
+    case 'sequences':
+      return 'Create Sequence'
+    case 'flow-templates':
+      return 'Create Template'
+    default:
+      return 'Create New'
+  }
 })
 
 // Handle create button click

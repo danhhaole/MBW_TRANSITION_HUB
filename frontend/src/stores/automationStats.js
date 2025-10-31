@@ -10,7 +10,8 @@ export const useAutomationStatsStore = defineStore('automationStats', {
     stats: {
       campaigns: { total: 0, active: 0, draft: 0, paused: 0, completed: 0 },
       flows: { total: 0, active: 0, draft: 0, paused: 0, archived: 0 },
-      sequences: { total: 0, active: 0, draft: 0, paused: 0, completed: 0 }
+      sequences: { total: 0, active: 0, draft: 0, paused: 0, completed: 0 },
+      flowTemplates: { total: 0, system: 0, my: 0 }
     },
     loading: false,
     error: null,
@@ -22,6 +23,7 @@ export const useAutomationStatsStore = defineStore('automationStats', {
     campaignCount: (state) => state.stats.campaigns.total,
     flowCount: (state) => state.stats.flows.total,
     sequenceCount: (state) => state.stats.sequences.total,
+    flowTemplateCount: (state) => state.stats.flowTemplates.total,
     
     /**
      * Check xem cache còn valid không
@@ -38,7 +40,8 @@ export const useAutomationStatsStore = defineStore('automationStats', {
     allCounts: (state) => ({
       campaigns: state.stats.campaigns.total,
       flows: state.stats.flows.total,
-      sequences: state.stats.sequences.total
+      sequences: state.stats.sequences.total,
+      flowTemplates: state.stats.flowTemplates.total
     })
   },
 
@@ -162,7 +165,8 @@ export const useAutomationStatsStore = defineStore('automationStats', {
       this.stats = {
         campaigns: { total: 0, active: 0, draft: 0, paused: 0, completed: 0 },
         flows: { total: 0, active: 0, draft: 0, paused: 0, archived: 0 },
-        sequences: { total: 0, active: 0, draft: 0, paused: 0, completed: 0 }
+        sequences: { total: 0, active: 0, draft: 0, paused: 0, completed: 0 },
+        flowTemplates: { total: 0, system: 0, my: 0 }
       }
       this.lastFetched = null
       this.error = null
