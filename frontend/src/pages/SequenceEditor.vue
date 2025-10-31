@@ -471,11 +471,11 @@ const statusOptions = [
 
 const channelOptions = [
 	{ label: 'Email', value: 'Email' },
-	{ label: 'SMS', value: 'SMS' },
-	{ label: 'Messenger', value: 'Messenger' },
-	{ label: 'Zalo OA', value: 'Zalo_OA' },
-	{ label: 'Zalo ZNS', value: 'Zalo_ZNS' },
-	{ label: 'AI Call', value: 'AI_Call' },
+	// { label: 'SMS', value: 'SMS' },
+	// { label: 'Messenger', value: 'Messenger' },
+	// { label: 'Zalo OA', value: 'Zalo_OA' },
+	// { label: 'Zalo ZNS', value: 'Zalo_ZNS' },
+	// { label: 'AI Call', value: 'AI_Call' },
 ]
 
 const replyActionOptions = [
@@ -702,11 +702,11 @@ const getStepTitle = (step) => {
 	const channel = step.flow?.channel || step.channel
 	const titleMap = {
 		Email: 'Send Email',
-		SMS: 'Send SMS',
-		Messenger: 'Send Messenger Message',
-		Zalo_OA: 'Send Zalo OA Message',
-		Zalo_ZNS: 'Send Zalo ZNS Message',
-		AI_Call: 'Make AI Call',
+		// SMS: 'Send SMS',
+		// Messenger: 'Send Messenger Message',
+		// Zalo_OA: 'Send Zalo OA Message',
+		// Zalo_ZNS: 'Send Zalo ZNS Message',
+		// AI_Call: 'Make AI Call',
 	}
 	return titleMap[channel] || `Send ${channel}`
 }

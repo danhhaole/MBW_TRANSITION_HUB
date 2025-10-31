@@ -250,16 +250,7 @@ const links = [
     icon: NoteIcon,
     to: 'Report',
     submenu: [
-      {
-        label: "Contact",
-        icon: ContactsIcon,
-        to: { name: 'CandidateManagement' },
-      },
-      {
-        label: "Talents",
-        icon: NoteIcon,
-        to: { name: 'Talent' },
-      },
+      
       {
         label: "Interactions",
         icon: ReplyIcon,
