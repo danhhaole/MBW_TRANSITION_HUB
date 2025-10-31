@@ -4,9 +4,9 @@
     <div class="border-b border-gray-200 pb-4">
       <div class="flex items-center space-x-2 mb-2">
         <FeatherIcon name="zap" class="h-5 w-5 text-purple-600" />
-        <h3 class="text-lg font-medium text-gray-900">Cấu hình Trigger</h3>
+        <h3 class="text-lg font-medium text-gray-900">{{ __('Config Trigger') }}</h3>
       </div>
-      <p class="text-sm text-gray-500">Thiết lập điều kiện kích hoạt flow</p>
+      <p class="text-sm text-gray-500">{{ __('Config trigger to activate flow') }}</p>
     </div>
 
     <!-- Trigger Name & Description (Read-only) -->
@@ -15,43 +15,23 @@
     </div>
 
     <!-- Connected Account Selection -->
-    <div class="space-y-3">
-      <label class="block text-sm font-medium text-gray-700">
-        <FeatherIcon name="user" class="inline h-4 w-4 mr-1" />
-        Chọn tài khoản đã liên kết
-      </label>
-      <div class="relative">
-        <select
-          v-model="localContent.connected_account"
-          class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          @change="updateContent"
-        >
-          <option value="">Chọn tài khoản...</option>
-          <option value="zalo_account_1">Zalo Business - Công ty ABC</option>
-          <option value="zalo_account_2">Zalo Business - Shop XYZ</option>
-          <option value="facebook_account_1">Facebook Page - Fanpage DEF</option>
-        </select>
-        <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-          <FeatherIcon name="chevron-down" class="h-4 w-4 text-gray-400" />
-        </div>
-      </div>
-    </div>
+    
 
     <!-- Sequence Selection (only for sequence triggers) -->
     <div v-if="isSequenceTrigger()" class="space-y-3">
       <label class="block text-sm font-medium text-gray-700">
         <FeatherIcon name="list" class="inline h-4 w-4 mr-1" />
-        Chọn Sequence
+        {{ __('Select Sequence') }}
       </label>
       <select
         v-model="localContent.sequence_id"
         class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
         @change="updateContent"
       >
-        <option value="">Chọn sequence...</option>
-        <option value="seq_1">Sequence Chào mừng khách hàng mới</option>
-        <option value="seq_2">Sequence Khuyến mãi cuối tuần</option>
-        <option value="seq_3">Sequence Chăm sóc khách hàng VIP</option>
+        <option value="">{{ __('Select sequence') }}</option>
+        <option value="seq_1">{{ __('Welcome new subscriber') }}</option>
+        <option value="seq_2">{{ __('Promotion at the end of the week') }}</option>
+        <option value="seq_3">{{ __('VIP care') }}</option>
       </select>
     </div>
 
@@ -59,7 +39,7 @@
     <div v-if="isNewSubscriberTrigger()" class="space-y-3">
       <label class="block text-sm font-medium text-gray-700">
         <FeatherIcon name="radio" class="inline h-4 w-4 mr-1" />
-        Kênh áp dụng (tùy chọn)
+        {{ __('Channel Selection') }}
       </label>
       <div class="flex flex-wrap gap-3">
         <label class="inline-flex items-center">
@@ -70,7 +50,7 @@
             class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
             @change="updateContent"
           />
-          <span class="ml-2 text-sm text-gray-700">Zalo</span>
+          <span class="ml-2 text-sm text-gray-700">{{ __('Zalo') }}</span>
         </label>
         <label class="inline-flex items-center">
           <input
@@ -80,7 +60,7 @@
             class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
             @change="updateContent"
           />
-          <span class="ml-2 text-sm text-gray-700">Facebook</span>
+          <span class="ml-2 text-sm text-gray-700">{{ __('Facebook') }}</span>
         </label>
         <label class="inline-flex items-center">
           <input
@@ -90,7 +70,7 @@
             class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
             @change="updateContent"
           />
-          <span class="ml-2 text-sm text-gray-700">Email</span>
+          <span class="ml-2 text-sm text-gray-700">{{ __('Email') }}</span>
         </label>
         <label class="inline-flex items-center">
           <input
@@ -100,20 +80,20 @@
             class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
             @change="updateContent"
           />
-          <span class="ml-2 text-sm text-gray-700">SMS</span>
+          <span class="ml-2 text-sm text-gray-700">{{ __('SMS') }}</span>
         </label>
       </div>
     </div>
 
     <!-- Advanced Conditions - Always show for all trigger types -->
     <div class="space-y-4">
-      <div class="border-t border-gray-200 pt-4">
+      <div class=" border-gray-200 pt-4">
         <label class="block text-sm font-medium text-gray-700 mb-3">
           <FeatherIcon name="filter" class="inline h-4 w-4 mr-1" />
-          Điều kiện kích hoạt
+          {{ __('Advanced Conditions') }}
         </label>
         <p class="text-xs text-gray-500 mb-4">
-          Kích hoạt khi đáp ứng các điều kiện sau
+          {{ __('Trigger when the following conditions are met') }}
         </p>
         
         <!-- Condition Groups -->
@@ -127,15 +107,15 @@
                   class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                   @change="updateContent"
                 >
-                  <option value="">Chọn trường...</option>
-                  <option value="ho_ten">Họ tên</option>
-                  <option value="email">Email</option>
-                  <option value="phone">Số điện thoại</option>
-                  <option value="age">Tuổi</option>
-                  <option value="gender">Giới tính</option>
-                  <option value="location">Địa điểm</option>
-                  <option value="source">Nguồn đăng ký</option>
-                  <option value="tag">Tag</option>
+                  <option value="">{{ __('Select field') }}</option>
+                  <option value="ho_ten">{{ __('Full name') }}</option>
+                  <option value="email">{{ __('Email') }}</option>
+                  <option value="phone">{{ __('Phone') }}</option>
+                  <option value="age">{{ __('Age') }}</option>
+                  <option value="gender">{{ __('Gender') }}</option>
+                  <option value="location">{{ __('Location') }}</option>
+                  <option value="source">{{ __('Source') }}</option>
+                  <option value="tag">{{ __('Tag') }}</option>
                 </select>
                 
                 <select
@@ -143,16 +123,16 @@
                   class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                   @change="updateContent"
                 >
-                  <option value="equals">Là</option>
-                  <option value="not_equals">Không là</option>
-                  <option value="contains">Chứa</option>
-                  <option value="not_contains">Không chứa</option>
-                  <option value="starts_with">Bắt đầu bằng</option>
-                  <option value="ends_with">Kết thúc bằng</option>
-                  <option value="greater_than">Lớn hơn</option>
-                  <option value="less_than">Nhỏ hơn</option>
-                  <option value="is_empty">Trống</option>
-                  <option value="is_not_empty">Không trống</option>
+                  <option value="equals">{{ __('Is') }}</option>
+                  <option value="not_equals">{{ __('Is not') }}</option>
+                  <option value="contains">{{ __('Contains') }}</option>
+                  <option value="not_contains">{{ __('Does not contain') }}</option>
+                  <option value="starts_with">{{ __('Starts with') }}</option>
+                  <option value="ends_with">{{ __('Ends with') }}</option>
+                  <option value="greater_than">{{ __('Greater than') }}</option>
+                  <option value="less_than">{{ __('Less than') }}</option>
+                  <option value="is_empty">{{ __('Is empty') }}</option>
+                  <option value="is_not_empty">{{ __('Is not empty') }}</option>
                 </select>
                 
                 <input
@@ -166,8 +146,8 @@
                 
                 <button
                   @click="removeCondition(index)"
-                  class="text-red-500 hover:text-red-700 p-1 rounded"
-                  title="Xóa điều kiện"
+                  class="text-red-500 hover:text-red-700 p-1 rounded "
+                  title="{{ __('Remove condition') }}"
                 >
                   <FeatherIcon name="trash-2" class="h-4 w-4" />
                 </button>
@@ -185,7 +165,7 @@
               class="w-full inline-flex items-center justify-center px-3 py-2 border border-dashed border-gray-300 rounded-md text-sm font-medium text-gray-600 bg-white hover:bg-gray-50 hover:border-gray-400"
             >
               <FeatherIcon name="plus" class="h-4 w-4 mr-1" />
-              Thêm điều kiện
+              {{ __('Add condition') }}
             </button>
           </div>
         </div>
@@ -193,17 +173,17 @@
     </div>
 
     <!-- Preview Summary -->
-    <div v-if="localContent.trigger_type" class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+    <!-- <div v-if="localContent.trigger_type" class="bg-blue-50 border border-blue-200 rounded-lg p-4">
       <div class="flex items-start space-x-2">
         <FeatherIcon name="info" class="h-4 w-4 text-blue-600 mt-0.5" />
         <div>
-          <h4 class="text-sm font-medium text-blue-900">Tóm tắt cấu hình</h4>
+          <h4 class="text-sm font-medium text-blue-900">{{ __('Summary') }}</h4>
           <p class="text-sm text-blue-700 mt-1">
             {{ getTriggerSummary() }}
           </p>
         </div>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -278,16 +258,16 @@ const removeCondition = (index) => {
 // Get field placeholder
 const getFieldPlaceholder = (field) => {
   const placeholders = {
-    ho_ten: 'VD: Minh, Nguyễn Văn A',
-    email: 'VD: minh@example.com',
-    phone: 'VD: 0123456789',
-    age: 'VD: 25',
-    gender: 'VD: Nam, Nữ',
-    location: 'VD: Hà Nội, TP.HCM',
-    source: 'VD: Facebook, Website',
-    tag: 'VD: VIP, Khách hàng mới'
+    ho_ten: __('E.g: Minh, Nguyen Van A'),
+    email: __('E.g: minh@example.com'),
+    phone: __('E.g: 0123456789'),
+    age: __('E.g: 25'),
+    gender: __('E.g: Male, Female'),
+    location: __('E.g: Hanoi, HCMC'),
+    source: __('E.g: Facebook, Website'),
+    tag: __('E.g: VIP, New customer')
   }
-  return placeholders[field] || 'Nhập giá trị...'
+  return placeholders[field] || __('Enter value...')
 }
 
 // Get condition preview
@@ -295,27 +275,27 @@ const getConditionPreview = (condition) => {
   if (!condition.field || !condition.operator) return ''
   
   const fieldNames = {
-    ho_ten: 'Họ tên',
-    email: 'Email',
-    phone: 'Số điện thoại',
-    age: 'Tuổi',
-    gender: 'Giới tính',
-    location: 'Địa điểm',
-    source: 'Nguồn đăng ký',
-    tag: 'Tag'
+    ho_ten: __('Full name'),
+    email: __('Email'),
+    phone: __('Phone number'),
+    age: __('Age'),
+    gender: __('Gender'),
+    location: __('Location'),
+    source: __('Registration source'),
+    tag: __('Tag')
   }
   
   const operatorNames = {
-    equals: 'là',
-    not_equals: 'không là',
-    contains: 'chứa',
-    not_contains: 'không chứa',
-    starts_with: 'bắt đầu bằng',
-    ends_with: 'kết thúc bằng',
-    greater_than: 'lớn hơn',
-    less_than: 'nhỏ hơn',
-    is_empty: 'trống',
-    is_not_empty: 'không trống'
+    equals: __('is'),
+    not_equals: __('is not'),
+    contains: __('contains'),
+    not_contains: __('does not contain'),
+    starts_with: __('starts with'),
+    ends_with: __('ends with'),
+    greater_than: __('greater than'),
+    less_than: __('less than'),
+    is_empty: __('is empty'),
+    is_not_empty: __('is not empty')
   }
   
   const fieldName = fieldNames[condition.field] || condition.field
@@ -331,9 +311,9 @@ const getConditionPreview = (condition) => {
 // Get trigger summary
 const getTriggerSummary = () => {
   const triggerTypes = {
-    subscribe_sequence: 'Kích hoạt khi khách hàng đăng ký sequence',
-    unsubscribe_sequence: 'Kích hoạt khi khách hàng hủy đăng ký sequence',
-    new_subscriber_all: 'Kích hoạt khi có khách hàng mới đăng ký'
+    subscribe_sequence: __('Trigger when customer subscribes to sequence'),
+    unsubscribe_sequence: __('Trigger when customer unsubscribes from sequence'),
+    new_subscriber_all: __('Trigger when there is a new subscriber')
   }
   
   let summary = triggerTypes[localContent.value.trigger_type] || ''
@@ -343,11 +323,11 @@ const getTriggerSummary = () => {
   }
   
   if (localContent.value.channels && localContent.value.channels.length > 0) {
-    summary += ` từ kênh: ${localContent.value.channels.join(', ')}`
+    summary += ` ${__('from channels')}: ${localContent.value.channels.join(', ')}`
   }
   
   if (localContent.value.Conditional_Split && localContent.value.Conditional_Split.length > 0) {
-    summary += ` khi ${localContent.value.Conditional_Split.map(c => getConditionPreview(c)).join(' và ')}`
+    summary += ` ${__('when')} ${localContent.value.Conditional_Split.map(c => getConditionPreview(c)).join(` ${__('and')} `)}`
   }
   
   return summary
