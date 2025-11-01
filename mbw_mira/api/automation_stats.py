@@ -129,6 +129,17 @@ def get_automation_stats(filters=None):
             frappe.log_error(f"Error getting sequence stats: {str(e)}")
             stats['sequences'] = {'total': 0, 'active': 0, 'draft': 0, 'paused': 0, 'completed': 0}
         
+        # Flow Template stats
+        try:
+            stats['flowTemplates'] = {
+                'total': frappe.db.count('Mira Flow Template', {'is_delete': 0}),
+                'system': frappe.db.count('Mira Flow Template', {'is_delete': 0, 'is_default': 1}),
+                'my': frappe.db.count('Mira Flow Template', {'is_delete': 0, 'is_default': 0})
+            }
+        except Exception as e:
+            frappe.log_error(f"Error getting flow template stats: {str(e)}")
+            stats['flowTemplates'] = {'total': 0, 'system': 0, 'my': 0}
+        
         return {
             'success': True,
             'data': stats

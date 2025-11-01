@@ -20,10 +20,10 @@ export const useAutomationStatsStore = defineStore('automationStats', {
   }),
 
   getters: {
-    campaignCount: (state) => state.stats.campaigns.total,
-    flowCount: (state) => state.stats.flows.total,
-    sequenceCount: (state) => state.stats.sequences.total,
-    flowTemplateCount: (state) => state.stats.flowTemplates.total,
+    campaignCount: (state) => state.stats.campaigns?.total || 0,
+    flowCount: (state) => state.stats.flows?.total || 0,
+    sequenceCount: (state) => state.stats.sequences?.total || 0,
+    flowTemplateCount: (state) => state.stats.flowTemplates?.total || 0,
     
     /**
      * Check xem cache còn valid không
@@ -38,10 +38,10 @@ export const useAutomationStatsStore = defineStore('automationStats', {
      * Get all counts
      */
     allCounts: (state) => ({
-      campaigns: state.stats.campaigns.total,
-      flows: state.stats.flows.total,
-      sequences: state.stats.sequences.total,
-      flowTemplates: state.stats.flowTemplates.total
+      campaigns: state.stats.campaigns?.total || 0,
+      flows: state.stats.flows?.total || 0,
+      sequences: state.stats.sequences?.total || 0,
+      flowTemplates: state.stats.flowTemplates?.total || 0
     })
   },
 
@@ -66,7 +66,13 @@ export const useAutomationStatsStore = defineStore('automationStats', {
         const result = await call('mbw_mira.api.automation_stats.get_automation_stats')
 
         if (result && result.success) {
-          this.stats = result.data
+          // Merge with default values to ensure all properties exist
+          this.stats = {
+            campaigns: result.data.campaigns || { total: 0, active: 0, draft: 0, paused: 0, completed: 0 },
+            flows: result.data.flows || { total: 0, active: 0, draft: 0, paused: 0, archived: 0 },
+            sequences: result.data.sequences || { total: 0, active: 0, draft: 0, paused: 0, completed: 0 },
+            flowTemplates: result.data.flowTemplates || { total: 0, system: 0, my: 0 }
+          }
           this.lastFetched = Date.now()
           console.log('✅ Automation stats fetched:', this.allCounts)
           return this.stats

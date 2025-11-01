@@ -219,21 +219,38 @@ export const useFlowTemplateStore = defineStore('flowTemplate', {
       this.error = null
       
       try {
-        const result = await call('frappe.client.set_value', {
+        // First, get the current document to preserve fields like modified
+        const currentDoc = await call('frappe.client.get', {
           doctype: 'Mira Flow Template',
-          name: name,
-          fieldname: templateData
+          name: name
+        })
+
+        if (!currentDoc) {
+          return { success: false, error: __('Template not found') }
+        }
+
+        // Merge with new data
+        const updatedDoc = {
+          ...currentDoc,
+          ...templateData,
+          doctype: 'Mira Flow Template',
+          name: name
+        }
+
+        // Use save_doc to properly handle child tables
+        const result = await call('frappe.client.save', {
+          doc: updatedDoc
         })
 
         if (result) {
           // Update in local state
           const index = this.templates.findIndex(t => t.name === name)
           if (index !== -1) {
-            this.templates[index] = this.enhanceTemplate({ ...this.templates[index], ...templateData })
+            this.templates[index] = this.enhanceTemplate(result)
           }
           
           if (this.currentTemplate?.name === name) {
-            this.currentTemplate = this.enhanceTemplate({ ...this.currentTemplate, ...templateData })
+            this.currentTemplate = this.enhanceTemplate(result)
           }
 
           return { success: true, data: result }

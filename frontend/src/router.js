@@ -56,6 +56,8 @@ const routes = [
 
 	// Flow Templates
 	{ path: '/flow-templates', name: 'FlowTemplateManagement', component: () => import('@/pages/FlowTemplateManagement.vue') },
+	{ path: '/flow-templates/new', name: 'FlowTemplateCreate', component: () => import('@/pages/FlowTemplateEditor.vue') },
+	{ path: '/flow-templates/:id/edit', name: 'FlowTemplateEdit', component: () => import('@/pages/FlowTemplateEditor.vue') },
 
 	// Talent Management
 	{ path: '/talents', name: 'Talent', component: ()=>import('@/pages/TalentManagement.vue') },
