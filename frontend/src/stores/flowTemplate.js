@@ -327,18 +327,32 @@ export const useFlowTemplateStore = defineStore('flowTemplate', {
       }
     },
 
-    async useTemplate(templateName) {
-      // This will be implemented later to create a flow from template
-      // For now, just return the template data
+    async useTemplate(templateName, flowTitle = null) {
+      this.loading = true
+      this.error = null
+      
       try {
-        const result = await this.fetchTemplateById(templateName)
+        const result = await call('mbw_mira.api.flow_template.create_flow_from_template', {
+          template_name: templateName,
+          flow_title: flowTitle
+        })
+
         if (result.success) {
-          return { success: true, data: result.data }
+          return { 
+            success: true, 
+            data: result.flow,
+            flow_name: result.flow_name,
+            message: result.message
+          }
         }
-        return result
+
+        return { success: false, error: result.message || __('Failed to create flow from template') }
       } catch (error) {
         console.error('Error using template:', error)
-        return { success: false, error: this.parseError(error) }
+        this.error = this.parseError(error)
+        return { success: false, error: this.error }
+      } finally {
+        this.loading = false
       }
     },
 

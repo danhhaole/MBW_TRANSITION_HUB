@@ -470,15 +470,32 @@ const viewTemplateDetails = async (template) => {
 }
 
 const handleUseTemplate = async (template) => {
-	// For now, just show alert as requested
-	alert(`Using template: ${template.name_template}\n\nThis feature will be implemented later.`)
-
-	// Future implementation:
-	// 1. Create a new flow/sequence/campaign from template
-	// 2. Navigate to the editor with pre-filled data
-	// 3. Update usage_count
-
-	showDetailModal.value = false
+	try {
+		// Show loading
+		modalLoading.value = true
+		
+		// Call store action to create flow from template
+		const result = await templateStore.useTemplate(
+			template.name,
+			`${template.name_template} - ${new Date().toLocaleString()}`
+		)
+		
+		if (result.success) {
+			toast.success(result.message || __('Flow created successfully from template!'))
+			showDetailModal.value = false
+			
+			// Navigate to flow editor
+			// TODO: Update this path based on your flow editor route
+			router.push(`/flows/${result.flow_name}/edit`)
+		} else {
+			toast.error(result.error || __('Failed to create flow from template'))
+		}
+	} catch (error) {
+		console.error('Error using template:', error)
+		toast.error(__('An error occurred while creating flow'))
+	} finally {
+		modalLoading.value = false
+	}
 }
 
 const handleCreateNew = () => {

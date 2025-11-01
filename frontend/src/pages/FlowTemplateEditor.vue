@@ -929,11 +929,16 @@ const viewAction = (index) => {
     const params = JSON.parse(action.action_parameters)
     currentActionContent.value = params.email_content || params.zalo_content || params.sms_content
     
-    // Convert additional_actions from Array to Object format
-    const additionalActionsArray = params.additional_actions || []
-    if (Array.isArray(additionalActionsArray)) {
+    // Load additional_actions - support both Object and Array formats
+    const additionalActionsData = params.additional_actions || {}
+    
+    if (typeof additionalActionsData === 'object' && !Array.isArray(additionalActionsData)) {
+      // Already in Object format: {email_open: {...}, link_click: {...}}
+      currentAdditionalActions.value = additionalActionsData
+    } else if (Array.isArray(additionalActionsData)) {
+      // Legacy Array format: [{trigger: 'email_open', ...}] - convert to Object
       const additionalActionsObject = {}
-      additionalActionsArray.forEach(action => {
+      additionalActionsData.forEach(action => {
         if (action.trigger) {
           additionalActionsObject[action.trigger] = {
             type: action.type || action.trigger,
@@ -963,12 +968,16 @@ const editAction = (index) => {
     const params = JSON.parse(action.action_parameters)
     currentActionContent.value = params.email_content || params.zalo_content || params.sms_content
     
-    // Convert additional_actions from Array to Object format
-    const additionalActionsArray = params.additional_actions || []
-    if (Array.isArray(additionalActionsArray)) {
-      // Convert [{trigger: 'email_open', ...}] to {email_open: {...}}
+    // Load additional_actions - support both Object and Array formats
+    const additionalActionsData = params.additional_actions || {}
+    
+    if (typeof additionalActionsData === 'object' && !Array.isArray(additionalActionsData)) {
+      // Already in Object format: {email_open: {...}, link_click: {...}}
+      currentAdditionalActions.value = additionalActionsData
+    } else if (Array.isArray(additionalActionsData)) {
+      // Legacy Array format: [{trigger: 'email_open', ...}] - convert to Object
       const additionalActionsObject = {}
-      additionalActionsArray.forEach(action => {
+      additionalActionsData.forEach(action => {
         if (action.trigger) {
           additionalActionsObject[action.trigger] = {
             type: action.type || action.trigger,
@@ -1015,63 +1024,42 @@ const saveAction = () => {
   console.log('💾 Saving action...')
   console.log('Current content:', currentActionContent.value)
   console.log('Additional actions:', currentAdditionalActions.value)
-  console.log('Additional actions length:', currentAdditionalActions.value?.length)
-  console.log('Additional actions type:', typeof currentAdditionalActions.value)
-  console.log('Additional actions is array:', Array.isArray(currentAdditionalActions.value))
   
-  const actionParams = {}
-  
-  if (templateData.value.channel === 'Email') {
-    actionParams.email_content = currentActionContent.value
-  } else if (templateData.value.channel === 'Zalo') {
-    actionParams.zalo_content = currentActionContent.value
-  } else if (templateData.value.channel === 'SMS') {
-    actionParams.sms_content = currentActionContent.value
+  // Build parameters object that matches FlowEditor structure
+  const parameters = {
+    channel: templateData.value.channel
   }
   
-  // Add additional actions - convert to plain array to avoid Proxy issues
-  // Always try to convert, even if it's a Proxy object
-  if (currentAdditionalActions.value) {
-    const plainActions = JSON.parse(JSON.stringify(currentAdditionalActions.value))
-    console.log('🔄 Converted additional actions:', plainActions)
-    console.log('🔄 Converted type:', typeof plainActions)
-    console.log('🔄 Is array:', Array.isArray(plainActions))
-    
-    // Check if it's an object (not array) and convert to array
-    if (plainActions && typeof plainActions === 'object' && !Array.isArray(plainActions)) {
-      // Convert object to array - use Object.entries to get both key (trigger) and value
-      const actionsArray = Object.entries(plainActions).map(([triggerKey, action]) => ({
-        trigger: triggerKey,  // Use the key as trigger (e.g., 'email_open', 'link_click')
-        type: action.type || triggerKey,
-        data: action.data || {},
-        configured: action.configured || false
-      }))
-      console.log('🔄 Converted object to array:', actionsArray)
-      
-      if (actionsArray.length > 0) {
-        actionParams.additional_actions = actionsArray
-        console.log('✅ Added additional_actions to params (from object)')
-      }
-    } else if (Array.isArray(plainActions) && plainActions.length > 0) {
-      // Ensure all items have 'trigger' field
-      const normalizedActions = plainActions.map(action => ({
-        trigger: action.type || action.trigger,
-        ...action
-      }))
-      actionParams.additional_actions = normalizedActions
-      console.log('✅ Added additional_actions to params (already array)')
-    } else {
-      console.log('⚠️ Additional actions is empty')
-    }
-  } else {
-    console.log('⚠️ No additional actions')
+  // Add content based on channel
+  if (templateData.value.channel === 'Email') {
+    parameters.email_content = currentActionContent.value
+  } else if (templateData.value.channel === 'Zalo') {
+    parameters.zalo_content = currentActionContent.value
+  } else if (templateData.value.channel === 'SMS') {
+    parameters.sms_content = currentActionContent.value
+  }
+  
+  // Add additional actions - keep as Object format (FlowEditor expects Object)
+  if (currentAdditionalActions.value && Object.keys(currentAdditionalActions.value).length > 0) {
+    // Keep as object format: {email_open: {type, data, configured}, link_click: {...}}
+    parameters.additional_actions = JSON.parse(JSON.stringify(currentAdditionalActions.value))
+    console.log('✅ Added additional_actions (Object format):', parameters.additional_actions)
+  }
+  
+  // Map channel to action_type to match FlowEditor format
+  // Use MESSAGE for all messaging actions to match FlowEditor
+  const channelToActionType = {
+    'Email': 'MESSAGE',
+    'SMS': 'MESSAGE',
+    'Zalo': 'MESSAGE',
+    'Messenger': 'MESSAGE'
   }
   
   const actionData = {
     action_name: `Send ${templateData.value.channel}`,
-    action_type: templateData.value.channel.toUpperCase(),
+    action_type: channelToActionType[templateData.value.channel] || 'MESSAGE',
     channel_type: templateData.value.channel,
-    action_parameters: JSON.stringify(actionParams),
+    action_parameters: JSON.stringify(parameters),
     status: 'ACTIVE',
     order: editingActionIndex.value !== null ? actions.value[editingActionIndex.value].order : actions.value.length,
     is_default: actions.value.length === 0 ? 1 : 0

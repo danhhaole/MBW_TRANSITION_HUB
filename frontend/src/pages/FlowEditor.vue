@@ -665,11 +665,13 @@
 										<div class="text-xs font-medium text-gray-700 mb-2">
 											Content:
 										</div>
-										<div class="text-sm text-gray-800 whitespace-pre-wrap">
-											{{
-												emailContent.email_content ||
-												__('No email content')
-											}}
+										<div 
+											v-if="emailContent.email_content"
+											class="text-sm text-gray-800 prose prose-sm max-w-none"
+											v-html="emailContent.email_content"
+										></div>
+										<div v-else class="text-sm text-gray-500 italic">
+											{{ __('No email content') }}
 										</div>
 									</div>
 
@@ -2068,9 +2070,11 @@ const isEmailAction = () => {
 	const action = flowData.value.actions[selectedItem.value.index]
 	console.log('isEmailAction: checking action', action)
 	const result = action && (
+		action.action_type === 'EMAIL' ||  // Direct EMAIL type
 		action.action_type === 'MESSAGE' || 
 		action._ui_type === 'send_email' ||
-		(action.action_type === 'Send_Message' && action.parameters?.channel === 'Email')
+		(action.action_type === 'Send_Message' && action.parameters?.channel === 'Email') ||
+		(action.channel_type === 'Email')  // Check channel_type
 	)
 	console.log('isEmailAction result:', result)
 	return result
@@ -2081,7 +2085,10 @@ const isZaloAction = () => {
 	const action = flowData.value.actions[selectedItem.value.index]
 	return action && (
 		action.action_type === 'ZALO' ||
-		(action.action_type === 'Send_Message' && action.parameters?.channel === 'Zalo')
+		action.action_type === 'ZALO_CARE' ||
+		action.action_type === 'ZALO_ZNS' ||
+		(action.action_type === 'Send_Message' && action.parameters?.channel === 'Zalo') ||
+		(action.channel_type === 'Zalo')
 	)
 }
 
@@ -2090,7 +2097,8 @@ const isSMSAction = () => {
 	const action = flowData.value.actions[selectedItem.value.index]
 	return action && (
 		action.action_type === 'SMS' ||
-		action._ui_type === 'send_sms'
+		action._ui_type === 'send_sms' ||
+		(action.channel_type === 'SMS')
 	)
 }
 
