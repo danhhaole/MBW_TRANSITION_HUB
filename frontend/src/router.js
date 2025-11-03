@@ -65,7 +65,9 @@ const routes = [
 	{ path: '/talent-pool/:id', name: 'TalentPoolDetail', component: ()=>import('@/pages/TalentPoolDetail.vue') },
 	{ path: '/talent-test', name: 'Talents', component: ()=>import('@/pages/Talents.vue') },
 
-	
+	//Pool
+	{ path: '/talent-pool', name: 'TalentPool', component: ()=>import('@/pages/TalentsManagement.vue') },
+	{ path: '/segment-pool', name: 'SegmentPool', component: ()=>import('@/pages/SegmentManagement.vue') },
 
 	// Email Editor
 	{ path: '/email-editor', name: 'EmailEditor', component: ()=>import('@/pages/EmailEditor.vue') },
