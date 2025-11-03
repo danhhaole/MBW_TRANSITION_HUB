@@ -85,38 +85,58 @@
       </div>
     </div>
 
-    <!-- Advanced Conditions - Always show for all trigger types -->
-    <div class="space-y-4">
-      <div class=" border-gray-200 pt-4">
-        <label class="block text-sm font-medium text-gray-700 mb-3">
-          <FeatherIcon name="filter" class="inline h-4 w-4 mr-1" />
-          {{ __('Advanced Conditions') }}
+    <!-- Status Selection -->
+    <div class="space-y-3">
+      <label class="block text-sm font-medium text-gray-700">
+        <FeatherIcon name="activity" class="inline h-4 w-4 mr-1" />
+        {{ __("Status") }}
+      </label>
+      <FormControl
+        type="select"
+        v-model="localContent.status"
+        :options="statusOptions"
+        @change="updateContent"
+      />
+      <p class="text-xs text-gray-500">
+        {{ __("Set the status of this trigger") }}
+      </p>
+    </div>
+
+    <!-- Conditional Split -->
+    <div class="space-y-3">
+      <div class="flex items-center justify-between">
+        <label class="block text-sm font-medium text-gray-700">
+          <FeatherIcon name="git-branch" class="inline h-4 w-4 mr-1" />
+          {{ __('Conditional Split') }}
         </label>
-        <p class="text-xs text-gray-500 mb-4">
-          {{ __('Trigger when the following conditions are met') }}
-        </p>
-        
-        <!-- Condition Groups -->
-        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-          <div class="space-y-3">
-            <div v-for="(condition, index) in localContent.Conditional_Split" :key="index" 
-                 class="bg-white border border-gray-200 rounded-lg p-3">
-              <div class="flex items-center space-x-2">
-                <select
-                  v-model="condition.field"
-                  class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-                  @change="updateContent"
-                >
-                  <option value="">{{ __('Select field') }}</option>
-                  <option value="ho_ten">{{ __('Full name') }}</option>
-                  <option value="email">{{ __('Email') }}</option>
-                  <option value="phone">{{ __('Phone') }}</option>
-                  <option value="age">{{ __('Age') }}</option>
-                  <option value="gender">{{ __('Gender') }}</option>
-                  <option value="location">{{ __('Location') }}</option>
-                  <option value="source">{{ __('Source') }}</option>
-                  <option value="tag">{{ __('Tag') }}</option>
-                </select>
+        <button
+          @click="addCondition"
+          class="inline-flex items-center px-3 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded-md hover:bg-blue-200"
+        >
+          <FeatherIcon name="plus" class="h-3 w-3 mr-1" />
+          {{ __('Add condition') }}
+        </button>
+      </div>
+      <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+        <div class="space-y-3">
+          <div v-for="(condition, index) in localContent.Conditional_Split" :key="index" 
+               class="bg-white border border-gray-200 rounded-lg p-3">
+            <div class="flex items-center space-x-2">
+              <select
+                v-model="condition.field"
+                class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                @change="updateContent"
+              >
+                <option value="">{{ __('Select field') }}</option>
+                <option value="ho_ten">{{ __('Full name') }}</option>
+                <option value="email">{{ __('Email') }}</option>
+                <option value="phone">{{ __('Phone') }}</option>
+                <option value="age">{{ __('Age') }}</option>
+                <option value="gender">{{ __('Gender') }}</option>
+                <option value="location">{{ __('Location') }}</option>
+                <option value="source">{{ __('Source') }}</option>
+                <option value="tag">{{ __('Tag') }}</option>
+              </select>
                 
                 <select
                   v-model="condition.operator"
@@ -151,7 +171,7 @@
                 >
                   <FeatherIcon name="trash-2" class="h-4 w-4" />
                 </button>
-              </div>
+            </div>
               
               <!-- Condition Preview -->
               <div v-if="condition.field && condition.operator" class="mt-2 text-xs text-gray-600 bg-blue-50 px-2 py-1 rounded">
@@ -168,7 +188,6 @@
               {{ __('Add condition') }}
             </button>
           </div>
-        </div>
       </div>
     </div>
 
@@ -189,7 +208,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { FeatherIcon } from 'frappe-ui'
+import { FeatherIcon, FormControl } from 'frappe-ui'
 
 const props = defineProps({
   content: { type: Object, default: () => ({}) },
@@ -206,6 +225,7 @@ const localContent = ref({
   trigger_type: '',
   sequence_id: '',
   channels: [],
+  status: 'DRAFT',
   Conditional_Split: [],
   ...props.content
 })
@@ -219,10 +239,19 @@ watch(() => props.content, (newContent) => {
     trigger_type: '',
     sequence_id: '',
     channels: [],
+    status: 'DRAFT',
     Conditional_Split: [],
     ...newContent
   }
 }, { deep: true, immediate: true })
+
+// Status options for FormControl
+const statusOptions = [
+  { label: 'Draft', value: 'DRAFT' },
+  { label: 'Active', value: 'ACTIVE' },
+  { label: 'Paused', value: 'PAUSED' },
+  { label: 'Archived', value: 'ARCHIVED' },
+]
 
 // Update content
 const updateContent = () => {

@@ -61,8 +61,10 @@
           <!-- Content Preview -->
           <div v-if="localContent.email_content" class="mt-4 p-3 bg-white rounded border">
             <div class="text-xs text-gray-500 mb-2">{{ __("Preview:") }}</div>
-            <div class="text-sm text-gray-700 line-clamp-3">
-              {{ localContent.email_content.substring(0, 150) }}{{ localContent.email_content.length > 150 ? '...' : '' }}
+            <div 
+              class="prose prose-sm max-w-none text-gray-700 line-clamp-3 overflow-hidden"
+              v-html="getPreviewContent(localContent.email_content)"
+            >
             </div>
           </div>
         </div>
@@ -130,6 +132,15 @@
       </div>
     </div>
 
+    <!-- Email Template Selector Modal -->
+    <EmailTemplateSelectorModal
+      v-model="showTemplateSelectorModal"
+      doctype="Mira Campaign"
+      @apply="applyTemplate"
+      @openSettings="openTemplateSettings"
+      @close="handleSelectorClose"
+    />
+
     <!-- Email Template Editor Dialog -->
     <Dialog
       v-model="showTemplateDialog"
@@ -145,41 +156,42 @@
             <h4 class="text-lg font-semibold">{{ __("Create Email Template") }}</h4>
             <div class="flex space-x-2">
               <Button
+                :label="__('Generate with AI')"
+                icon-left="zap"
                 variant="outline"
-                @click="generateWithAI"
                 :loading="aiGenerating"
-              >
-              <div class="flex items-center">
-
-                  <FeatherIcon name="zap" class="h-4 w-4 mr-2" />
-                  {{ __("Generate with AI") }}
-              </div>
-              </Button>
+                @click="generateWithAI"
+              />
               <Button
+                :label="__('Use Template')"
+                icon-left="layout"
                 variant="outline"
                 @click="useTemplate"
-              >
-              <div class="flex items-center">
-
-                <FeatherIcon name="layout" class="h-4 w-4 mr-2" />
-                {{ __("Use Template") }}
-              </div>
-              </Button>
+              />
             </div>
           </div>
 
-          <!-- Variable Buttons -->
-          <div class="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg">
-            <span class="text-xs font-medium text-gray-700 mr-2">{{ __("Variables:") }}</span>
-            <button
-              v-for="variable in variables"
-              :key="variable.key"
-              @click="insertVariableInDialog(variable.value)"
-              class="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
-              type="button"
+          <!-- Insert Fields Autocomplete -->
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-sm font-medium text-gray-700">
+              {{ __("Insert Fields") }}
+            </label>
+            <Autocomplete
+              v-model="selectedDialogField"
+              :options="fieldAutocompleteOptions"
+              :placeholder="__('Search fields...')"
+              class="w-64"
             >
-              {{ variable.label }}
-            </button>
+              <template #target="{ togglePopover }">
+                <Button
+                  :label="__('Insert Field')"
+                  icon-left="plus-circle"
+                  variant="outline"
+                  size="sm"
+                  @click="togglePopover"
+                />
+              </template>
+            </Autocomplete>
           </div>
 
           <!-- Rich Text Editor -->
@@ -221,9 +233,11 @@
 </template>
 
 <script setup>
-import { ref, watch, nextTick } from 'vue'
-import { FeatherIcon, Dialog, Button, FileUploader, TextEditor, FormControl } from 'frappe-ui'
+import { ref, watch, nextTick, computed } from 'vue'
+import { FeatherIcon, Dialog, Button, FileUploader, TextEditor, FormControl, Autocomplete } from 'frappe-ui'
 import { useToast } from '../../../composables/useToast'
+import EmailTemplateSelectorModal from '@/components/Modals/EmailTemplateSelectorModal.vue'
+import { showSettings, activeSettingsPage } from '@/composables/settings'
 
 const props = defineProps({
   content: { type: Object, default: () => ({}) },
@@ -240,32 +254,92 @@ const localContent = ref({
 })
 
 const showTemplateDialog = ref(false)
+const showTemplateSelectorModal = ref(false)
 const dialogContent = ref('')
 const aiGenerating = ref(false)
 const dialogTextarea = ref(null)
+const selectedDialogField = ref(null)
 const toast = useToast()
 
 const __ = (text) => text
 
-const variables = [
-  { key: 'name', label: __('Name'), value: '[Candidate Name]' },
-  { key: 'job', label: __('Job Title'), value: '[Job Title]' },
-  { key: 'company', label: __('Company'), value: '[Company]' }
+// Talent & Campaign fields for insertion - grouped
+const talentFieldsGrouped = [
+  {
+    group: 'Campaign Info',
+    items: [
+      { fieldname: 'campaign_name', label: 'Campaign Name' },
+      { fieldname: 'campaign_type', label: 'Campaign Type' },
+      { fieldname: 'campaign_description', label: 'Campaign Description' },
+    ]
+  },
+  {
+    group: 'Personal Info',
+    items: [
+      { fieldname: 'full_name', label: 'Full Name' },
+      { fieldname: 'email', label: 'Email' },
+      { fieldname: 'phone', label: 'Phone' },
+      { fieldname: 'gender', label: 'Gender' },
+      { fieldname: 'date_of_birth', label: 'Date of Birth' },
+      { fieldname: 'current_city', label: 'City/Address' },
+    ]
+  },
+  {
+    group: 'Professional',
+    items: [
+      { fieldname: 'latest_title', label: 'Latest Title' },
+      { fieldname: 'latest_company', label: 'Latest Company' },
+      { fieldname: 'skills', label: 'Skills' },
+      { fieldname: 'total_years_of_experience', label: 'Years of Experience' },
+      { fieldname: 'highest_education', label: 'Highest Education' },
+    ]
+  },
+  {
+    group: 'Career Preferences',
+    items: [
+      { fieldname: 'desired_role', label: 'Desired Role' },
+      { fieldname: 'domain_expertise', label: 'Domain Expertise' },
+      { fieldname: 'current_salary', label: 'Current Salary' },
+      { fieldname: 'expected_salary', label: 'Expected Salary' },
+      { fieldname: 'preferred_work_model', label: 'Work Model' },
+      { fieldname: 'availability_date', label: 'Availability Date' },
+    ]
+  },
+  {
+    group: 'Status & Social',
+    items: [
+      { fieldname: 'current_status', label: 'Current Status' },
+      { fieldname: 'cultural_fit', label: 'Cultural Fit' },
+      { fieldname: 'internal_rating', label: 'Internal Rating' },
+      { fieldname: 'priority_level', label: 'Priority' },
+      { fieldname: 'linkedin_profile', label: 'LinkedIn Profile' },
+      { fieldname: 'facebook_profile', label: 'Facebook Profile' },
+      { fieldname: 'zalo_profile', label: 'Zalo Profile' },
+    ]
+  },
 ]
 
-const emailPlaceholder = `Hello [Candidate Name],
+// Field autocomplete options for dialog
+const fieldAutocompleteOptions = computed(() => {
+  return talentFieldsGrouped.map(group => ({
+    group: group.group,
+    items: group.items.map(field => ({
+      label: field.label,
+      value: field.fieldname,
+      description: `{{ ${field.fieldname} }}`,
+    }))
+  }))
+})
 
-We hope this email finds you well. We have an exciting opportunity at [Company] that we believe would be a perfect fit for your skills and experience.
-
-Position: [Job Title]
-Location: Ho Chi Minh City
-Type: Full-time
-
-We would love to discuss this opportunity with you further. Are you available for a brief call this week?
-
-Best regards,
-HR Team
-[Company]`
+const emailPlaceholder = `<p>Hello {{ full_name }},</p>
+<p>We hope this email finds you well. We have an exciting opportunity at {{ latest_company }} that we believe would be a perfect fit for your skills and experience.</p>
+<p><strong>Position:</strong> {{ latest_title }}<br>
+<strong>Location:</strong> Ho Chi Minh City<br>
+<strong>Type:</strong> Full-time</p>
+<p>We would love to discuss this opportunity with you further. Are you available for a brief call this week?</p>
+<p>Best regards,<br>
+HR Team<br>
+{{ latest_company }}</p>`
 
 // Open template editor dialog
 const openTemplateEditor = () => {
@@ -288,34 +362,107 @@ const generateWithAI = async () => {
   // Simulate AI generation
   await new Promise(resolve => setTimeout(resolve, 2000))
   
-  const aiContent = `Hello [Candidate Name],
+  const aiContent = `<p>Hello {{ full_name }},</p>
 
-I hope this message finds you well. I'm reaching out because we have an exciting opportunity at [Company] that perfectly matches your background and expertise.
+<p>I hope this message finds you well. I'm reaching out because we have an exciting opportunity at {{ latest_company }} that perfectly matches your background and expertise.</p>
 
-We're currently looking for a talented [Job Title] to join our dynamic team. Based on your experience and skills, I believe this role could be an excellent fit for your career growth.
+<p>We're currently looking for a talented {{ latest_title }} to join our dynamic team. Based on your experience and skills, I believe this role could be an excellent fit for your career growth.</p>
 
-Here's what makes this opportunity special:
-• Competitive salary and comprehensive benefits
-• Flexible working arrangements
-• Opportunity to work with cutting-edge technology
-• Collaborative and innovative work environment
-• Clear career progression path
+<p><strong>Here's what makes this opportunity special:</strong></p>
+<ul>
+<li>Competitive salary and comprehensive benefits</li>
+<li>Flexible working arrangements</li>
+<li>Opportunity to work with cutting-edge technology</li>
+<li>Collaborative and innovative work environment</li>
+<li>Clear career progression path</li>
+</ul>
 
-I'd love to schedule a brief call to discuss this opportunity in more detail. Are you available for a 15-minute conversation this week?
+<p>I'd love to schedule a brief call to discuss this opportunity in more detail. Are you available for a 15-minute conversation this week?</p>
 
-Looking forward to hearing from you.
+<p>Looking forward to hearing from you.</p>
 
-Best regards,
-[Your Name]
-HR Team - [Company]`
+<p>Best regards,<br>
+{{ full_name }}<br>
+HR Team - {{ latest_company }}</p>`
 
   dialogContent.value = aiContent
   aiGenerating.value = false
 }
 
-// Use predefined template
+// Use predefined template - open selector modal
 const useTemplate = () => {
-  dialogContent.value = emailPlaceholder
+  showTemplateSelectorModal.value = true
+}
+
+// Apply selected template
+const applyTemplate = (template) => {
+  if (template.subject) {
+    localContent.value.email_subject = template.subject
+  }
+  if (template.message) {
+    dialogContent.value = template.message
+  }
+  showTemplateSelectorModal.value = false
+  
+  // Ensure editor dialog stays open
+  nextTick(() => {
+    showTemplateDialog.value = true
+  })
+  
+  toast.success(__('Template applied successfully'))
+}
+
+// Open template settings
+const openTemplateSettings = () => {
+  // Open settings dialog and set active page to Email Templates
+  showSettings.value = true
+  activeSettingsPage.value = 'Email Templates'
+}
+
+// Handle selector modal close
+const handleSelectorClose = () => {
+  // Ensure editor dialog stays open when selector closes
+  nextTick(() => {
+    showTemplateDialog.value = true
+  })
+}
+
+// Get preview content (strip HTML for preview or limit length)
+const getPreviewContent = (content) => {
+  if (!content) return ''
+  // Limit content length for preview
+  if (content.length > 200) {
+    return content.substring(0, 200) + '...'
+  }
+  return content
+}
+
+// Watch for field selection in dialog
+watch(selectedDialogField, (newValue) => {
+  if (newValue) {
+    insertFieldToDialog(newValue)
+    // Reset selection after insert
+    setTimeout(() => {
+      selectedDialogField.value = null
+    }, 100)
+  }
+})
+
+// Insert field to dialog editor
+const insertFieldToDialog = (option) => {
+  if (!option) return
+  
+  const fieldPlaceholder = `{{ ${option.value} }}`
+  
+  // For TextEditor, we need to insert HTML content
+  if (dialogTextarea.value?.editor) {
+    dialogTextarea.value.editor.chain().focus().insertContent(fieldPlaceholder).run()
+  } else {
+    // Fallback: append to content
+    dialogContent.value += fieldPlaceholder
+  }
+  
+  toast.success(`Inserted field: ${option.label}`)
 }
 
 // Insert variable in dialog textarea

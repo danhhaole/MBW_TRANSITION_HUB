@@ -64,6 +64,7 @@ import NoteIcon from '@/components/Icons/NoteIcon.vue'
 import CampaignTemplateSettings from '@/components/Settings/CampaignTemplateSettings.vue'
 import TagSettings from '@/components/Settings/TagSettings.vue'
 import ConnectorSettings from '@/components/Settings/ConnectorSettings.vue'
+import MiraEmailTemplateSettings from '@/components/Settings/MiraEmailTemplateSettings.vue'
 import SidebarLink from '@/components/SidebarLink.vue'
 import { usersStore } from '@/stores/users'
 import {
@@ -81,6 +82,7 @@ const user = computed(() => getUser() || {})
 
 const tabs = computed(() => {
   let _tabs = [
+
     // {
     //   label: __('Automation'),
     //   hideLabel: false,
@@ -111,6 +113,17 @@ const tabs = computed(() => {
           label: __('Connectors'),
           icon: ExternalLinkIcon,
           component: markRaw(ConnectorSettings),
+        },
+      ],
+    },
+        {
+      label: __('Communication'),
+      hideLabel: false,
+      items: [
+        {
+          label: __('Email Templates'),
+          icon: Email2Icon,
+          component: markRaw(MiraEmailTemplateSettings),
         },
       ],
     },
