@@ -70,13 +70,13 @@
    "fieldname": "job_opening",
    "fieldtype": "Link",
    "label": "Job Opening",
-   "options": "Mira Job Opening"
+   "options": "Mira Segment"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-27 08:45:17.314062",
+ "modified": "2025-10-31 10:42:47.112263",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira ResumeUploadSession",

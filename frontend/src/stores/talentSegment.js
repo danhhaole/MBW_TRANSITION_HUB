@@ -15,7 +15,7 @@ export const useTalentSegmentStore = defineStore('talentSegment', {
     // Pagination state
     pagination: {
       page: 1,
-      limit: 20,
+      limit: 6,
       total: 0,
       pages: 1,
       has_next: false,
@@ -202,7 +202,7 @@ export const useTalentSegmentStore = defineStore('talentSegment', {
           
           if (result && result.success && Array.isArray(result.data)) {
             var data = result.data
-            var total = result.count
+            var total = searchText ? result.data.length : (result.count || 0);
           } else {
             throw new Error('New API returned invalid response')
           }
@@ -215,15 +215,15 @@ export const useTalentSegmentStore = defineStore('talentSegment', {
               doctype: 'Mira Segment',
               ...queryOptions
             }),
-            call('frappe.client.get_count', {
-              doctype: 'Mira Segment',
-              filters: queryOptions.filters,
-              or_filters: queryOptions.or_filters
+            searchText ? Promise.resolve(0) : call('frappe.client.get_count', {
+                doctype: 'Mira Segment',
+                filters: queryOptions.filters,
+                or_filters: queryOptions.or_filters
             })
           ])
           
           var data = listResult
-          var total = countResult
+          var total = searchText ? data.length : (countResult || 0);          
         }
         
         // Enhance data with display fields

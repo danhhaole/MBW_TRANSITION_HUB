@@ -9,7 +9,7 @@ export const useTalentStore = defineStore('talent', {
 		error: null,
 		pagination: {
 			page: 1,
-			limit: 20,
+			limit: 2,
 			total: 0,
 			has_next: false,
 			has_prev: false,
