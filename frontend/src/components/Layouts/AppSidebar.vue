@@ -233,7 +233,29 @@ const links = [
     label: "Automation",
     icon: OrganizationsIcon,
     to: 'CampaignManagement',
-    relatedRoutes: ['CampaignManagement', 'FlowManagement', 'SequenceManagement', 'FlowEditor', 'SequenceEditor'],
+    relatedRoutes: ['CampaignManagement', 'FlowManagement', 'SequenceManagement', 'FlowEditor', 'SequenceEditor', 'FlowTemplateManagement'],
+    submenu: [
+      {
+        label: "Campaigns",
+        icon: Email2Icon,
+        to: { name: 'CampaignManagement' },
+      },
+      {
+        label: "Flows",
+        icon: SequenceIcon,
+        to: { name: 'FlowManagement' },
+      },
+      {
+        label: "Sequences",
+        icon: NoteIcon,
+        to: { name: 'SequenceManagement' },
+      },
+      {
+        label: "Flow Templates",
+        icon: TaskIcon,
+        to: { name: 'FlowTemplateManagement' },
+      },
+    ]
   },
   {
     label: "Job Opening",

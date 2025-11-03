@@ -1,13 +1,28 @@
 <template>
   <div class="flex h-screen bg-gray-50">
-    <!-- Automation Sidebar -->
-    <AutomationSidebar
-      @create="handleCreateFromSidebar"
-    />
-
     <!-- Main Content Area -->
     <div class="flex-1 flex flex-col overflow-hidden">
-
+      <!-- Layout Header -->
+      <LayoutHeader>
+        <template #left-header>
+          <Breadcrumbs :items="breadcrumbs" />
+        </template>
+        <template #right-header>
+          <Dropdown :options="dropdownActions" placement="left">
+            <template #default="{ open }">
+              <Button variant="solid" theme="gray">
+                <template #prefix>
+                  <FeatherIcon name="plus" class="h-4 w-4" />
+                </template>
+                {{ __("Create Flow") }}
+                <template #suffix>
+                  <FeatherIcon name="chevron-down" class="h-4 w-4" />
+                </template>
+              </Button>
+            </template>
+          </Dropdown>
+        </template>
+      </LayoutHeader>
 
       <div class="flex-1 overflow-auto">
         <div class="max-w-full mx-2 px-6 py-6">
@@ -199,8 +214,8 @@ import { debounce } from 'lodash-es'
 // Components
 import LayoutHeader from "@/components/LayoutHeader.vue";
 import FlowFormModal from "@/components/Modals/FlowFormModal.vue";
-import AutomationSidebar from "@/components/AutomationSidebar.vue";
-import { useAutomationStatsStore } from "@/stores/automationStats";
+// import AutomationSidebar from "@/components/AutomationSidebar.vue";
+// import { useAutomationStatsStore } from "@/stores/automationStats";
 
 import { Button, Select, Badge, Dropdown, FeatherIcon, Breadcrumbs } from 'frappe-ui'
 
@@ -210,9 +225,6 @@ const router = useRouter()
 
 // Store
 const flowStore = useMiraFlowStore()
-
-// Automation stats store
-const statsStore = useAutomationStatsStore()
 
 // Toast
 const toast = useToast()
@@ -434,7 +446,7 @@ const handleDeleteFlow = async (flow) => {
         await loadFlows({ page: 1 })
         
         // Refresh sidebar stats
-        statsStore.refreshStats()
+        // statsStore.refreshStats()
       } else {
         toast.error(result.error || 'Có lỗi xảy ra khi xóa flow')
       }
@@ -451,7 +463,7 @@ const handleFlowSuccess = async (data) => {
   router.push({ name: 'FlowEditor', params: { id: data.name } })
   
   // Refresh sidebar stats
-  statsStore.refreshStats()
+  // statsStore.refreshStats()
   
   toast.success('Flow đã được lưu thành công')
 }

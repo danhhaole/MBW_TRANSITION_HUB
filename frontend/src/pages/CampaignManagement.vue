@@ -1,13 +1,23 @@
 <template>
   <div class="flex h-screen bg-gray-50">
-    <!-- Automation Sidebar -->
-    <AutomationSidebar
-      @create="handleCreateFromSidebar"
-    />
-
     <!-- Main Content Area -->
     <div class="flex-1 flex flex-col overflow-hidden">
-     
+      <!-- Layout Header -->
+      <LayoutHeader>
+        <template #left-header>
+          <Breadcrumbs :items="breadcrumbs" />
+        </template>
+        <template #right-header>
+          <Button variant="solid" theme="gray" @click="openCreateDialog">
+            <template #prefix>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+            </template>
+            {{ __("Create Campaign") }}
+          </Button>
+        </template>
+      </LayoutHeader>
 
       <div class="flex-1 overflow-auto">
         <div class="max-w-full mx-2 px-6 py-6">
@@ -311,8 +321,8 @@ import { Button, Breadcrumbs, Select, Dialog } from "frappe-ui";
 import LayoutHeader from "@/components/LayoutHeader.vue";
 import Loading from "@/components/Loading.vue";
 import { useCampaignStore } from "@/stores/campaign";
-import AutomationSidebar from "@/components/AutomationSidebar.vue";
-import { useAutomationStatsStore } from "@/stores/automationStats";
+// import AutomationSidebar from "@/components/AutomationSidebar.vue";
+// import { useAutomationStatsStore } from "@/stores/automationStats";
 
 // Router
 const router = useRouter();
@@ -321,7 +331,7 @@ const router = useRouter();
 const campaignStore = useCampaignStore();
 
 // Automation stats store
-const statsStore = useAutomationStatsStore();
+// const statsStore = useAutomationStatsStore();
 
 // Breadcrumbs
 const breadcrumbs = [{ label: __("Campaigns"), route: { name: "CampaignManagement" } }];
@@ -495,7 +505,7 @@ const handleCreateSuccess = async (event) => {
   await loadCampaigns();
 
   // Refresh sidebar stats
-  statsStore.refreshStats();
+  // statsStore.refreshStats();
 
   console.log("Campaigns after reload:", campaigns.value.length);
 
@@ -556,7 +566,7 @@ const handleDelete = async (campaign) => {
       loadCampaigns();
       
       // Refresh sidebar stats
-      statsStore.refreshStats();
+      // statsStore.refreshStats();
     }
   } catch (errorDelete) {
     console.error('Delete error:', errorDelete);
@@ -583,7 +593,7 @@ const confirmForceDelete = async () => {
       "success"
     );
     loadCampaigns();
-    statsStore.refreshStats();
+    // statsStore.refreshStats();
     showDeleteConfirmDialog.value = false;
     campaignToDelete.value = null;
     linkedDocuments.value = [];

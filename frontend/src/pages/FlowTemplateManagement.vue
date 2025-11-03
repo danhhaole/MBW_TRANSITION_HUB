@@ -1,10 +1,22 @@
 <template>
 	<div class="flex h-screen bg-gray-50">
-		<!-- Automation Sidebar -->
-		<AutomationSidebar @create="handleCreateFromSidebar" />
-
 		<!-- Main Content Area -->
 		<div class="flex-1 flex flex-col overflow-hidden">
+			<!-- Layout Header -->
+			<LayoutHeader>
+				<template #left-header>
+					<Breadcrumbs :items="breadcrumbs" />
+				</template>
+				<template #right-header>
+					<Button variant="solid" theme="gray" @click="showFormModal = true">
+						<template #prefix>
+							<FeatherIcon name="plus" class="h-4 w-4" />
+						</template>
+						{{ __("Create Template") }}
+					</Button>
+				</template>
+			</LayoutHeader>
+
 			<!-- Main Content -->
 			<div class="flex-1 overflow-auto">
 				<div class="max-w-full mx-4 px-4 py-8">
@@ -329,18 +341,22 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Button, Select, Badge, FeatherIcon } from 'frappe-ui'
+import { Button, Select, Badge, FeatherIcon, FormControl, Breadcrumbs } from 'frappe-ui'
 import { useFlowTemplateStore } from '@/stores/flowTemplate'
 import { useToast } from '@/composables/useToast'
-import AutomationSidebar from '@/components/AutomationSidebar.vue'
+// import AutomationSidebar from '@/components/AutomationSidebar.vue'
 import FlowTemplateDetailModal from '@/components/flowTemplate/FlowTemplateDetailModal.vue'
 import FlowTemplateFormModal from '@/components/flowTemplate/FlowTemplateFormModal.vue'
+import LayoutHeader from "@/components/LayoutHeader.vue"
 import { debounce } from 'lodash'
 
 // Composables
 const router = useRouter()
 const templateStore = useFlowTemplateStore()
 const toast = useToast()
+
+// Breadcrumbs
+const breadcrumbs = [{ label: __('Flow Templates'), route: { name: 'FlowTemplateManagement' } }]
 
 // Reactive state
 const activeTab = ref('system')

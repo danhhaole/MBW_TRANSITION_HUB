@@ -1,13 +1,21 @@
 <template>
   <div class="flex h-screen bg-gray-50">
-    <!-- Automation Sidebar -->
-    <AutomationSidebar
-      @create="handleCreateFromSidebar"
-    />
-
     <!-- Main Content Area -->
     <div class="flex-1 flex flex-col overflow-hidden">
-      <!-- Header -->
+      <!-- Layout Header -->
+      <LayoutHeader>
+        <template #left-header>
+          <Breadcrumbs :items="breadcrumbs" />
+        </template>
+        <template #right-header>
+          <Button variant="solid" theme="gray" @click="showCreateModal = true">
+            <template #prefix>
+              <FeatherIcon name="plus" class="h-4 w-4" />
+            </template>
+            {{ __("Create Sequence") }}
+          </Button>
+        </template>
+      </LayoutHeader>
 
       <!-- Main Content -->
       <div class="flex-1 overflow-auto">
@@ -342,15 +350,18 @@ import SequenceViewModal from '@/components/sequence/SequenceViewModal.vue'
 import SequenceCreateModal from '@/components/sequence/SequenceCreateModal.vue'
 import DeleteConfirmModal from '@/components/common/DeleteConfirmModal.vue'
 import LayoutHeader from "@/components/LayoutHeader.vue"
-import AutomationSidebar from "@/components/AutomationSidebar.vue"
-import { useAutomationStatsStore } from "@/stores/automationStats"
+// import AutomationSidebar from '@/components/AutomationSidebar.vue'
+// import { useAutomationStatsStore } from '@/stores/automationStats'
 import { debounce } from 'lodash'
 
 // Composables
 const router = useRouter()
 const sequenceStore = useSequenceStore()
-const statsStore = useAutomationStatsStore()
+// const statsStore = useAutomationStatsStore()
 const toast = useToast()
+
+// Breadcrumbs
+const breadcrumbs = [{ label: __('Sequences'), route: { name: 'SequenceManagement' } }]
 
 // Reactive state
 const searchText = ref('')
@@ -574,7 +585,7 @@ const confirmDelete = async () => {
       await loadSequences({ page: 1 })
       
       // Refresh sidebar stats
-      statsStore.refreshStats()
+      // statsStore.refreshStats()
     }
   } catch (error) {
     console.error('Delete error:', error)
@@ -601,7 +612,7 @@ const confirmForceDelete = async () => {
     if (result.success) {
       toast.success('Sequence deleted successfully')
       await loadSequences({ page: 1 })
-      statsStore.refreshStats()
+      // statsStore.refreshStats()
       showDeleteConfirmDialog.value = false
       sequenceToDelete.value = null
       linkedDocuments.value = []
@@ -624,7 +635,7 @@ const handleCreateSuccess = async (newSequence) => {
   await loadSequences({ page: 1 })
   
   // Refresh sidebar stats
-  statsStore.refreshStats()
+  // statsStore.refreshStats()
 }
 
 // Debounced search function
