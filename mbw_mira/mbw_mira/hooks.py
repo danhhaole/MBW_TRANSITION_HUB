@@ -169,9 +169,6 @@ scheduler_events = {
     "daily": [
         # "mbw_mira.schedulers.fetch_ats_mbw_campaigns.run",
         "mbw_mira.schedulers.fetch_jobboard_topcv_campaigns.run",
-        "mbw_mira.schedulers.fetch_jobboard_vietnamworks_campaigns.run",
-        "mbw_mira.schedulers.fetch_social_facebook_campaigns.run",
-        "mbw_mira.schedulers.fetch_social_linkedin_campaigns.run",
         "mbw_mira.schedulers.auto_share_social_posts.run",
     ],
     "hourly": [

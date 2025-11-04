@@ -312,13 +312,13 @@ const links = [
 		to: 'Dashboard',
 	},
 	{
-		label: 'Talent Pools',
+		label: 'Talent Manager',
 		icon: DealsIcon,
 		to: 'TalentPool',
 		relatedRoutes: ['TalentPool', 'SegmentPool'],
 		submenu: [
 			{
-				label: 'Segments',
+				label: 'Pools',
 				icon: 'layers',
 				to: 'SegmentPool',
 			},

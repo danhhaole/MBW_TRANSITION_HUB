@@ -420,7 +420,7 @@
 					<div class="mb-6 flex items-center justify-between">
 						<div>
 							<h3 class="text-xl font-semibold leading-6 text-gray-900">
-								{{ __('Add Talents to Segment') }}
+								{{ __('Add Talents to Pool') }}
 							</h3>
 							<p class="mt-1 text-sm text-gray-500">
 								{{ __('Select talents to add to') }} "{{ talentSegment.title }}"
@@ -570,7 +570,7 @@
 										{{ __('Selected Talents') }} ({{ selectedCandidates.length }})
 									</h4>
 									<p class="text-sm text-gray-700 mt-1">
-										{{ __('Ready to add to segment') }}
+										{{ __('Ready to add to pool') }}
 									</p>
 								</div>
 								<Button variant="ghost" theme="gray" size="sm" @click="deselectAllCandidates">
@@ -589,7 +589,7 @@
 						<template #prefix>
 							<FeatherIcon name="user-plus" class="h-4 w-4" />
 						</template>
-						{{ savingCandidates ? __('Adding...') : __('Add Selected to Segment') }}
+						{{ savingCandidates ? __('Adding...') : __('Add Selected to pool') }}
 					</Button>
 				</div>
 			</template>

@@ -24,7 +24,7 @@
 								/>
 							</svg>
 						</template>
-						{{ __('Create Segment') }}
+						{{ __('Create Pool') }}
 					</Button>
 				</template>
 			</LayoutHeader>
@@ -37,7 +37,7 @@
 						<div class="flex items-center gap-2">
 							<Input
 								type="text"
-								:placeholder="__('Search segment')"
+								:placeholder="__('Search pool')"
 								:model-value="talentSegmentStore.searchText"
 								@input="handleSearchInput"
 								class="w-64"
@@ -52,7 +52,7 @@
 								<template #prefix>
 									<FeatherIcon name="filter" class="w-4 h-4" />
 								</template>
-								Filter
+								{{__("Filter")}}
 							</Button>
 							<!-- Refresh Button -->
 							<Button
@@ -129,7 +129,7 @@
 									</div>
 									<div>
 										<div class="text-xs text-gray-500 mb-1">
-											Engagement Rate
+											{{__("Engagement Rate")}}
 										</div>
 										<div class="flex items-center gap-2">
 											<Progress
@@ -172,7 +172,7 @@
 										class="w-full justify-start"
 										@click="GoDetails(segment)"
 									>
-										Manage Pool →
+										{{__("Manage Pool")}} →
 									</Button>
 								</div>
 							</Card>
@@ -686,7 +686,7 @@ import { useRouter } from 'vue-router'
 import { useToast } from '@/composables/useToast'
 import { useTalentSegmentStore } from '@/stores/talentSegment'
 // Breadcrumbs
-const breadcrumbs = [{ label: __('Segments'), route: { name: 'SegmentPool' } }]
+const breadcrumbs = [{ label: __('Pools'), route: { name: 'SegmentPool' } }]
 const { showSuccess, showError } = useToast()
 const router = useRouter()
 // Store
