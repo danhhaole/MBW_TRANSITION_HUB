@@ -133,7 +133,7 @@
 									class="inline-flex items-center space-x-2 bg-white text-black px-4 py-2 rounded-full text-sm font-medium cursor-pointer hover:bg-orange-100 transition-colors"
 								>
 									<FeatherIcon name="clock" class="w-4 h-4" />
-									<span>{{ __('Wait ') }}{{ step.delay_from_previous || '1 day' }}
+									<span>{{ __('Wait ') }}{{ step.delay || step.delay_from_previous || '1 day' }}
 										{{ __('then continue') }}</span
 									>
 								</div>
@@ -531,6 +531,12 @@ const loadSequence = async () => {
 		if (result.success) {
 			// Force reactivity by creating new object
 			sequenceData.value = JSON.parse(JSON.stringify(result.data))
+			
+			// Load initial delay from first step
+			if (sequenceData.value.steps && sequenceData.value.steps.length > 0) {
+				const firstStep = sequenceData.value.steps[0]
+				initialDelay.value = firstStep.delay || firstStep.delay_from_previous || '1 day'
+			}
 		} else {
 			error.value = result.error || 'Sequence not found'
 		}
@@ -1195,7 +1201,11 @@ const getTriggerType = (key) => {
 
 const editDelay = (index) => {
 	editingDelayIndex.value = index
-	currentEditingDelay.value = parsedSteps.value[index].delay_from_previous || '1 day'
+	const step = parsedSteps.value[index]
+	const delayValue = step.delay || step.delay_from_previous || '1 day'
+	console.log(`🔍 Edit delay for step ${index}:`, delayValue)
+	console.log('📦 Step data:', step)
+	currentEditingDelay.value = delayValue
 	showDelayModal.value = true
 }
 
@@ -1207,8 +1217,18 @@ const editInitialDelay = () => {
 
 const saveDelayFromModal = async (newDelay) => {
 	if (editingDelayIndex.value === 0) {
-		// Initial delay
+		// Initial delay - update first step
 		initialDelay.value = newDelay
+		
+		if (parsedSteps.value.length > 0) {
+			const firstStep = parsedSteps.value[0]
+			firstStep.delay = newDelay
+			firstStep.delay_from_previous = newDelay
+			
+			// Save to sequence
+			await saveSequence()
+		}
+		
 		toast.success('Initial delay updated successfully')
 	} else {
 		// Step delay - update in steps JSON
@@ -1216,6 +1236,7 @@ const saveDelayFromModal = async (newDelay) => {
 		if (stepToUpdate) {
 			// Update local state
 			stepToUpdate.delay = newDelay
+			stepToUpdate.delay_from_previous = newDelay
 			
 			// Save to sequence
 			await saveSequence()

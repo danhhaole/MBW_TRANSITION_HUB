@@ -105,12 +105,21 @@ const unitOptions = [
   { label: __('Month'), value: 'month' }
 ]
 
-// Parse current delay when modal opens
+// Parse current delay when modal opens or currentDelay changes
 watch(() => props.currentDelay, (newDelay) => {
   if (newDelay) {
     parseDelay(newDelay)
   }
 }, { immediate: true })
+
+// Also parse when modal opens
+watch(() => props.show, (isShown) => {
+  if (isShown && props.currentDelay) {
+    console.log('🔍 Modal opened with currentDelay:', props.currentDelay)
+    parseDelay(props.currentDelay)
+    console.log('📝 Parsed to:', delayNumber.value, delayUnit.value)
+  }
+})
 
 const parseDelay = (delayString) => {
   // Parse strings like "1 day", "2 hours", "30 minutes", etc.
@@ -135,15 +144,20 @@ const parseDelay = (delayString) => {
 }
 
 const formatDelay = () => {
+  // Return English format for consistency: "1 day", "2 hours", etc.
   const unitMap = {
-    'minute': 'phút',
-    'hour': 'giờ', 
-    'day': 'ngày',
-    'week': 'tuần',
-    'month': 'tháng'
+    'minute': 'minute',
+    'hour': 'hour', 
+    'day': 'day',
+    'week': 'week',
+    'month': 'month'
   }
   
-  return `${delayNumber.value} ${unitMap[delayUnit.value] || delayUnit.value}`
+  const unit = unitMap[delayUnit.value] || delayUnit.value
+  // Add 's' for plural
+  const pluralUnit = delayNumber.value > 1 ? `${unit}s` : unit
+  
+  return `${delayNumber.value} ${pluralUnit}`
 }
 
 const save = () => {
