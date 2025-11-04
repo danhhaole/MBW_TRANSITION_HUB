@@ -191,6 +191,31 @@ const handleAdditionalActionsUpdate = (actions) => {
     isUpdating.value = false
   }, 700) // 500ms debounce + 200ms buffer
 }
+
+// Watch for external changes to modelValue and sync back to local state
+watch(() => props.modelValue, (newValue) => {
+  if (isUpdating.value) {
+    console.log('⏭️ Skipping props sync - currently updating')
+    return
+  }
+  
+  // Update content
+  content.value = {
+    email_subject: '',
+    email_content: '',
+    attachments: [],
+    blocks: [],
+    image_url: '',
+    success_action: '',
+    failure_action: '',
+    ...newValue
+  }
+  
+  // Update additional actions separately to ensure clean state
+  additionalActions.value = newValue.additional_actions || {}
+  
+  console.log('🔄 Synced from props:', { content: content.value, additionalActions: additionalActions.value })
+}, { deep: true })
 </script>
 
 <style scoped>

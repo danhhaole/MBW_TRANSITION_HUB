@@ -2491,7 +2491,8 @@ const autoSave = async () => {
           success_action: campaignData.value.success_action,
           failure_action: campaignData.value.failure_action,
         },
-        additional_actions: campaignData.value.additional_actions || existingConfig?.additional_actions || {},
+        // FIXED: Don't merge with old config, just use current state
+        additional_actions: campaignData.value.additional_actions || {},
         step: currentStep.value,
         updated_at: new Date().toISOString(),
         auto_saved: true

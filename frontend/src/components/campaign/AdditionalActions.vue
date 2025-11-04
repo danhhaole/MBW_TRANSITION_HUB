@@ -260,7 +260,12 @@ const handleAddAction = (option) => {
 }
 
 const removeAction = (index) => {
+  console.log('🗑️ Removing action at index:', index)
+  console.log('📋 Before remove:', actionsList.value)
+  
   actionsList.value.splice(index, 1)
+  
+  console.log('📋 After remove:', actionsList.value)
   emitUpdate()
 }
 
@@ -295,6 +300,7 @@ const emitUpdateImmediate = () => {
     emitTimer = null
   }
   
+  // Create a fresh object from current actionsList
   const actionsData = {}
   actionsList.value.forEach(action => {
     actionsData[action.trigger] = {
@@ -303,6 +309,10 @@ const emitUpdateImmediate = () => {
       configured: action.configured
     }
   })
+  
+  console.log('📤 Emitting additional_actions:', actionsData)
+  console.log('📋 Current actionsList:', actionsList.value)
+  
   emit('update:modelValue', actionsData)
 }
 
@@ -337,26 +347,31 @@ watch(() => props.modelValue, (newValue, oldValue) => {
     return
   }
   
-  console.log('🔍 Initializing from props:', newValue)
+  console.log('🔍 AdditionalActions - Syncing from props:', newValue)
+  console.log('🔍 Old value:', oldValue)
   isUpdatingFromProps.value = true
   
+  // IMPORTANT: Always create a fresh array from props, don't merge with existing
   if (newValue && Object.keys(newValue).length > 0) {
+    // Create fresh actionsList from props
     actionsList.value = Object.keys(newValue).map(trigger => ({
       trigger,
       type: newValue[trigger].type || '',
       data: newValue[trigger].data || {},
       configured: newValue[trigger].configured || false
     }))
-    console.log('✅ Initialized actionsList:', actionsList.value)
+    console.log('✅ Synced actionsList from props:', actionsList.value)
   } else {
-    console.log('🔄 No props data, keeping actionsList empty')
+    // If props is empty, clear actionsList
+    actionsList.value = []
+    console.log('🔄 Props empty, cleared actionsList')
   }
   
   // Reset flag after a short delay
   setTimeout(() => {
     isUpdatingFromProps.value = false
   }, 100)
-}, { immediate: true })
+}, { immediate: true, deep: true })
 </script>
 
 <style scoped>

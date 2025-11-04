@@ -995,13 +995,17 @@ export const useCampaignStore = defineStore('campaign', {
           campaign_id: campaignId,
           channel: getChannelFromInteractionMethod(campaignData.interaction_method),
           status: 'Draft',
-          action_id: [{
-            doctype: 'Mira Flow Action',
-            action_type: campaignData.interaction_method || 'EMAIL',
-            channel_type: getChannelFromInteractionMethod(campaignData.interaction_method),
-            action_parameters: JSON.stringify(actionParameters),
-            order: 0
-          }]
+          // Action will be set later (reuse existing or create new)
+          action_id: []
+        }
+        
+        // Prepare new action data
+        const newAction = {
+          doctype: 'Mira Flow Action',
+          action_type: campaignData.interaction_method || 'EMAIL',
+          channel_type: getChannelFromInteractionMethod(campaignData.interaction_method),
+          action_parameters: JSON.stringify(actionParameters),
+          order: 0
         }
         
         // Convert additional_actions to triggers
@@ -1017,6 +1021,12 @@ export const useCampaignStore = defineStore('campaign', {
               configured: actionData.configured
             })
           }))
+          
+          console.log('🔍 Converted additional_actions to triggers:', flowData.trigger_id)
+        } else {
+          // If no additional_actions, set empty array to delete all triggers
+          flowData.trigger_id = []
+          console.log('🔍 No additional_actions, will delete all triggers')
         }
         
         let result
@@ -1029,28 +1039,23 @@ export const useCampaignStore = defineStore('campaign', {
           
           console.log('🔍 Existing flow:', existingFlow)
           console.log('🔍 Existing action_id:', existingFlow.action_id)
-          console.log('🔍 New flowData.action_id:', flowData.action_id)
           
-          // Clear existing child tables and set new ones
-          // Mark old rows for deletion by setting __deleted: 1
-          const clearedActions = (existingFlow.action_id || []).map(row => {
-            console.log('🗑️ Marking action for deletion:', row.name)
-            return {
-              ...row,
-              __deleted: 1
+          // SIMPLE FIX: Reuse existing action if exists, otherwise create new
+          let finalAction
+          if (existingFlow.action_id && existingFlow.action_id.length > 0) {
+            // Reuse first action (campaign flow only has 1 action)
+            const existingAction = existingFlow.action_id[0]
+            console.log('♻️ Reusing existing action:', existingAction.name)
+            finalAction = {
+              ...existingAction,
+              ...newAction,
+              name: existingAction.name // Keep same name to update
             }
-          })
-          
-          const clearedTriggers = (existingFlow.trigger_id || []).map(row => {
-            console.log('🗑️ Marking trigger for deletion:', row.name)
-            return {
-              ...row,
-              __deleted: 1
-            }
-          })
-          
-          console.log('🔍 Cleared actions:', clearedActions)
-          console.log('🔍 Cleared triggers:', clearedTriggers)
+          } else {
+            // Create new action
+            console.log('✨ Creating new action')
+            finalAction = newAction
+          }
           
           const updatedDoc = {
             ...existingFlow,
@@ -1059,10 +1064,14 @@ export const useCampaignStore = defineStore('campaign', {
             campaign_id: flowData.campaign_id,
             channel: flowData.channel,
             status: flowData.status,
-            // Combine deleted old rows with new rows
-            action_id: [...clearedActions, ...flowData.action_id],
-            trigger_id: [...clearedTriggers, ...(flowData.trigger_id || [])]
+            // Single action (reused or new)
+            action_id: [finalAction],
+            // Replace with new triggers (Frappe will delete old ones)
+            trigger_id: flowData.trigger_id || []
           }
+          
+          console.log('📝 Final action:', finalAction)
+          console.log('📝 Final triggers:', updatedDoc.trigger_id)
           
           console.log('📝 Updating flow with data:', updatedDoc)
           console.log('📝 Action parameters:', actionParameters)
@@ -1080,9 +1089,11 @@ export const useCampaignStore = defineStore('campaign', {
           result = await call('frappe.client.insert', {
             doc: {
               doctype: 'Mira Flow',
-              ...flowData
+              ...flowData,
+              action_id: [newAction] // Add the new action
             }
           })
+          console.log('✨ Created new flow with action')
         }
         
         console.log('✅ Campaign flow saved:', result)
