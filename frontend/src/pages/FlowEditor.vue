@@ -250,65 +250,8 @@
 
 					<!-- Configuration Panel Content -->
 					<div v-if="selectedItem" class="space-y-6">
-						<!-- Content Editors for Send_Message Actions -->
-						<div v-if="selectedItem.type === 'action' && isEmailAction()">
-							<h4 class="text-md font-medium text-gray-900 mb-4">{{ __('Email Configuration') }}</h4>
-							<EmailEditor
-								:content="getEmailContent()"
-								@update:content="updateEmailContent"
-								:readonly="false"
-							/>
-							
-							<!-- Additional Actions for Email -->
-							<div class="mt-6">
-								<AdditionalActions
-									interaction-type="EMAIL"
-									:model-value="getAdditionalActionsData()"
-									@update:model-value="updateAdditionalActionsData"
-								/>
-							</div>
-						</div>
-
-						<div v-else-if="selectedItem.type === 'action' && isZaloAction()">
-							<h4 class="text-md font-medium text-gray-900 mb-4">{{ __('Zalo Configuration') }}</h4>
-							<ZaloEditor
-								:content="getZaloContent()"
-								@update:content="updateZaloContent"
-								:readonly="false"
-							/>
-							
-							<!-- Additional Actions for Zalo -->
-							<div class="mt-6">
-								<AdditionalActions
-									interaction-type="ZALO_CARE"
-									:model-value="getAdditionalActionsData()"
-									@update:model-value="updateAdditionalActionsData"
-								/>
-							</div>
-						</div>
-
-						<!-- SMS Action -->
-						<div v-else-if="selectedItem.type === 'action' && isSMSAction()">
-							<h4 class="text-md font-medium text-gray-900 mb-4">{{ __('SMS Configuration') }}</h4>
-							<ZaloEditor
-								:content="getSMSContent()"
-								@update:content="updateSMSContent"
-								:readonly="false"
-								:available-flows="flows"
-							/>
-							
-							<!-- Additional Actions for SMS -->
-							<div class="mt-6">
-								<AdditionalActions
-									interaction-type="EMAIL"
-									:model-value="getAdditionalActionsData()"
-									@update:model-value="updateAdditionalActionsData"
-								/>
-							</div>
-						</div>
-
-						<!-- Add Tag Action -->
-						<div v-else-if="selectedItem.type === 'action' && isAddTagAction()">
+						<!-- Add Tag Action - Check first before Email/SMS/Zalo -->
+						<div v-if="selectedItem.type === 'action' && isAddTagAction()">
 							<h4 class="text-md font-medium text-gray-900 mb-4">	{{ __('Add Tag') }}</h4>
 							<div class="space-y-4">
 								<!-- Select existing tags -->
@@ -489,6 +432,66 @@
 										@input="hasUnsavedChanges = true"
 									/>
 								</div>
+							</div>
+						</div>
+
+						<!-- Email Action - Check after specific actions -->
+						<div v-else-if="selectedItem.type === 'action' && isEmailAction()">
+							<h4 class="text-md font-medium text-gray-900 mb-4">{{ __('Email Configuration') }}</h4>
+							<EmailEditor
+								:content="getEmailContent()"
+								@update:content="updateEmailContent"
+								:readonly="false"
+							/>
+							
+							<!-- Additional Actions for Email -->
+							<div class="mt-6">
+								<AdditionalActions
+									interaction-type="EMAIL"
+									:model-value="getAdditionalActionsData()"
+									@update:model-value="updateAdditionalActionsData"
+								/>
+							</div>
+						</div>
+
+						<!-- Zalo Action -->
+						<div v-else-if="selectedItem.type === 'action' && isZaloAction()">
+							<h4 class="text-md font-medium text-gray-900 mb-4">{{ __('Zalo Configuration') }}</h4>
+							<ZaloEditor
+								:content="getZaloContent()"
+								@update:content="updateZaloContent"
+								:readonly="false"
+							/>
+							
+							<!-- Additional Actions for Zalo -->
+							<div class="mt-6">
+								<AdditionalActions
+									interaction-type="ZALO_CARE"
+									:model-value="getAdditionalActionsData()"
+									@update:model-value="updateAdditionalActionsData"
+									@select-action="selectActionById"
+								/>
+							</div>
+						</div>
+
+						<!-- SMS Action -->
+						<div v-else-if="selectedItem.type === 'action' && isSMSAction()">
+							<h4 class="text-md font-medium text-gray-900 mb-4">{{ __('SMS Configuration') }}</h4>
+							<ZaloEditor
+								:content="getSMSContent()"
+								@update:content="updateSMSContent"
+								:readonly="false"
+								:available-flows="flows"
+							/>
+							
+							<!-- Additional Actions for SMS -->
+							<div class="mt-6">
+								<AdditionalActions
+									interaction-type="EMAIL"
+									:model-value="getAdditionalActionsData()"
+									@update:model-value="updateAdditionalActionsData"
+									@select-action="selectActionById"
+								/>
 							</div>
 						</div>
 
@@ -1426,7 +1429,9 @@ const loadFlow = async () => {
 			const processedActions = flow.actions ? flow.actions.map(action => ({
 				// Map child table fields to UI format
 				...action,
-				_ui_name: getDefaultActionName(action.action_type),
+				// Keep original name (ID) from database
+				name: action.name,  // ✅ Giữ name gốc (ID)
+				_ui_name: getDefaultActionName(action.action_type),  // Label để hiển thị
 				_ui_description: getDefaultActionDescription(action.action_type),
 				_ui_type: action.action_type,
 				// Map backend fields to frontend format
@@ -1439,8 +1444,6 @@ const loadFlow = async () => {
 						return {}
 					}
 				})(),
-				// Override name for display
-				name: getDefaultActionName(action.action_type),
 				description: getDefaultActionDescription(action.action_type)
 			})) : []
 
@@ -1693,6 +1696,21 @@ const selectItem = (type, index) => {
 	
 	console.log('selectedItem.value:', selectedItem.value)
 	console.log('selectedItemData.value:', selectedItemData.value)
+}
+
+const selectActionById = (actionId) => {
+	console.log('🎯 Selecting action by ID:', actionId)
+	
+	// Find action index by name
+	const actionIndex = flowData.value.actions.findIndex(action => action.name === actionId)
+	
+	if (actionIndex !== -1) {
+		console.log('✅ Found action at index:', actionIndex)
+		selectItem('action', actionIndex)
+	} else {
+		console.warn('❌ Action not found:', actionId)
+		toast.error('Action not found')
+	}
 }
 
 const getSelectedItemTitle = () => {
@@ -2799,11 +2817,70 @@ const updateActionData = (newData) => {
 const getAdditionalActionsData = () => {
 	if (!selectedItem.value || selectedItem.value.type !== 'action') return {}
 	
-	const action = flowData.value.actions[selectedItem.value.index]
-	if (!action || !action.parameters) return {}
+	const parentAction = flowData.value.actions[selectedItem.value.index]
+	if (!parentAction) return {}
 	
-	// Return the additional_actions data from parameters
-	return action.parameters.additional_actions || {}
+	console.log('📖 Getting additional actions for parent:', parentAction.name)
+	
+	// Get metadata from parent's parameters
+	const metadata = parentAction.parameters?.additional_actions || {}
+	console.log('Parent metadata:', metadata)
+	
+	// Convert metadata to additional actions format
+	const additionalActions = {}
+	
+	Object.entries(metadata).forEach(([triggerKey, meta]) => {
+		if (meta.configured) {
+			// Action đã configure → Tìm child action theo parent_action_id
+			const childAction = flowData.value.actions.find(action => 
+				action.parent_action_id === parentAction.name &&
+				action.action_type === meta.action_type
+			)
+			
+			if (childAction) {
+				console.log(`Found child action for ${triggerKey}:`, childAction)
+				
+				additionalActions[triggerKey] = {
+					configured: true,
+					type: denormalizeActionType(childAction.action_type),
+					data: childAction.parameters || {},
+					action_id: childAction.name  // Dùng name thật từ database
+				}
+			} else {
+				console.warn(`Child action not found for ${triggerKey}`)
+			}
+		} else {
+			// Action chưa configure → Load từ metadata
+			console.log(`Loading unconfigured action for ${triggerKey}`)
+			
+			additionalActions[triggerKey] = {
+				configured: false,
+				type: meta.action_type ? denormalizeActionType(meta.action_type) : '',
+				data: {}
+			}
+		}
+	})
+	
+	console.log('Converted to additional actions format:', additionalActions)
+	return additionalActions
+}
+
+// Helper to denormalize action type (reverse of normalizeActionType)
+const denormalizeActionType = (type) => {
+	const typeMap = {
+		'ADD_TAG': 'add_tag',
+		'REMOVE_TAG': 'remove_tag',
+		'SUBSCRIBE_TO_SEQUENCE': 'add_to_sequence',
+		'START_FLOW': 'next_flow',
+		'EMAIL': 'email',
+		'ADD_CUSTOM_FIELD': 'add_custom_field',
+		'SMART_DELAY': 'smart_delay',
+		'SMS': 'sms',
+		'ZALO': 'zalo',
+		'ZALO_CARE': 'zalo_care',
+		'ZALO_ZNS': 'zalo_zns'
+	}
+	return typeMap[type] || type?.toLowerCase()
 }
 
 const updateAdditionalActionsData = (newData) => {
@@ -2817,23 +2894,207 @@ const updateAdditionalActionsData = (newData) => {
 	
 	safeUpdateSelectedItemData(() => {
 		const actionIndex = selectedItem.value.index
-		const action = flowData.value.actions[actionIndex]
+		const parentAction = flowData.value.actions[actionIndex]
 		
-		if (action) {
-			if (!action.parameters) action.parameters = {}
-			action.parameters.additional_actions = newData
+		if (!parentAction) return
+		
+		console.log('📝 Updating additional actions for parent action:', parentAction)
+		console.log('   - name:', parentAction.name)
+		console.log('   - _ui_name:', parentAction._ui_name)
+		console.log('New additional actions data:', newData)
+		
+		// Remove old child actions that belong to this parent
+		flowData.value.actions = flowData.value.actions.filter(action => 
+			action.parent_action_id !== parentAction.name
+		)
+		
+		// Prepare additional_actions metadata for parent
+		const additionalActionsMetadata = {}
+		
+		// Create new child actions and build metadata
+		Object.entries(newData).forEach(([triggerKey, actionData]) => {
+			console.log(`🔍 Processing trigger: ${triggerKey}`, actionData)
+			console.log(`   - configured: ${actionData.configured}`)
+			console.log(`   - type: ${actionData.type}`)
 			
-			// Sync with selectedItemData
-			if (selectedItemData.value.parameters) {
-				selectedItemData.value.parameters.additional_actions = newData
+			const triggerName = getTriggerDisplayName(triggerKey)
+			
+			if (actionData.configured && actionData.type) {
+				// Action đã được configure → Tạo child action
+				const actionTypeNormalized = normalizeActionType(actionData.type)
+				const actionName = getActionDisplayName(actionTypeNormalized)
+				
+				// Generate unique name for child action
+				const childActionName = `${parentAction.name}_${triggerKey}_${Date.now()}`
+				
+				// Create child action (only contains action data)
+				const childAction = {
+					name: childActionName,
+					_ui_name: actionName,  
+					_ui_description: `Execute when ${triggerName.toLowerCase()}`,
+					_ui_type: actionData.type,
+					_ui_trigger_key: triggerKey,
+					action_type: actionTypeNormalized,
+					channel_type: parentAction.channel_type || 'Email',
+					parameters: actionData.data || {}, // Only action data
+					parent_action_id: parentAction.name,
+					trigger_id: null,
+					order: flowData.value.actions.length + 1
+				}
+				
+				console.log('➕ Creating child action:', childAction)
+				flowData.value.actions.push(childAction)
+				
+				// Store metadata with link to child action
+				additionalActionsMetadata[triggerKey] = {
+					trigger_event: triggerKey,
+					trigger_label: triggerName,
+					action_type: actionTypeNormalized,
+					action_id: childActionName, // Link to child action
+					configured: true
+				}
+			} else {
+				// Action chưa configure → Chỉ lưu metadata, không tạo child action
+				console.log(`⏭️ Skipping child action for ${triggerKey} - not configured yet`)
+				
+				additionalActionsMetadata[triggerKey] = {
+					trigger_event: triggerKey,
+					trigger_label: triggerName,
+					action_type: actionData.type || null,
+					action_id: null, // Chưa có child action
+					configured: false
+				}
 			}
-			
-			hasUnsavedChanges.value = true
-			
-			// Sync with main flow data
-			flowData.value.actions[actionIndex] = { ...action }
+		})
+		
+		// Update parent action's parameters with metadata
+		if (!parentAction.parameters) {
+			parentAction.parameters = {}
 		}
+		parentAction.parameters.additional_actions = additionalActionsMetadata
+		
+		// Sync with selectedItemData
+		if (selectedItemData.value.parameters) {
+			selectedItemData.value.parameters.additional_actions = additionalActionsMetadata
+		}
+		
+		// Force update flowData
+		flowData.value.actions[actionIndex] = { ...parentAction }
+		
+		console.log('📦 Parent action metadata:', additionalActionsMetadata)
+		console.log('💾 Updated parent action:', parentAction)
+		
+		hasUnsavedChanges.value = true
 	})
+	
+	// Auto-save after updating additional actions
+	setTimeout(async () => {
+		console.log('💾 Auto-saving flow after additional actions update...')
+		try {
+			const result = await flowStore.updateFlow(flowData.value.name, flowData.value)
+			if (result.success) {
+				// Reload flow để lấy name mới từ database
+				console.log('🔄 Reloading flow to get updated action names...')
+				const currentActionIndex = selectedItem.value?.index
+				const parentActionName = flowData.value.actions[currentActionIndex]?.name
+				
+				await loadFlow()
+				
+				// Update metadata với action_id mới sau khi reload
+				if (parentActionName && currentActionIndex !== undefined) {
+					const reloadedParent = flowData.value.actions[currentActionIndex]
+					if (reloadedParent && reloadedParent.name === parentActionName) {
+						// Tìm child actions mới
+						const childActions = flowData.value.actions.filter(a => 
+							a.parent_action_id === parentActionName
+						)
+						
+						// Update metadata với action_id thật
+						if (reloadedParent.parameters?.additional_actions) {
+							Object.entries(reloadedParent.parameters.additional_actions).forEach(([triggerKey, meta]) => {
+								const matchingChild = childActions.find(c => c.action_type === meta.action_type)
+								if (matchingChild && meta.configured) {
+									meta.action_id = matchingChild.name
+									console.log(`✅ Updated action_id for ${triggerKey}:`, matchingChild.name)
+								}
+							})
+						}
+					}
+				}
+				
+				// Re-select action sau khi reload
+				if (currentActionIndex !== undefined && currentActionIndex >= 0) {
+					setTimeout(() => {
+						selectItem('action', currentActionIndex)
+					}, 100)
+				}
+				
+				toast.success('Additional actions saved successfully!')
+			} else {
+				toast.error(result.error || 'Failed to save additional actions')
+			}
+		} catch (error) {
+			console.error('Error saving additional actions:', error)
+			toast.error('Failed to save additional actions')
+		}
+	}, 500)
+}
+
+// Helper to normalize action type
+const normalizeActionType = (type) => {
+	const typeMap = {
+		'add_tag': 'ADD_TAG',
+		'remove_tag': 'REMOVE_TAG',
+		'add_to_sequence': 'SUBSCRIBE_TO_SEQUENCE',
+		'subscribe_to_sequence': 'SUBSCRIBE_TO_SEQUENCE',
+		'next_flow': 'START_FLOW',
+		'start_flow': 'START_FLOW',
+		'send_email': 'EMAIL',
+		'email': 'EMAIL',
+		'update_field': 'ADD_CUSTOM_FIELD',
+		'add_custom_field': 'ADD_CUSTOM_FIELD',
+		'smart_delay': 'SMART_DELAY',
+		'sms': 'SMS',
+		'zalo': 'ZALO',
+		'zalo_care': 'ZALO_CARE',
+		'zalo_zns': 'ZALO_ZNS'
+	}
+	return typeMap[type?.toLowerCase()] || type?.toUpperCase()
+}
+
+// Helper to get action display name
+const getActionDisplayName = (actionType) => {
+	const nameMap = {
+		'ADD_TAG': 'Add Tag',
+		'REMOVE_TAG': 'Remove Tag',
+		'SUBSCRIBE_TO_SEQUENCE': 'Subscribe to Sequence',
+		'START_FLOW': 'Start Flow',
+		'EMAIL': 'Send Email',
+		'SMS': 'Send SMS',
+		'ZALO': 'Send Zalo',
+		'ZALO_CARE': 'Send Zalo Care',
+		'ZALO_ZNS': 'Send Zalo ZNS',
+		'ADD_CUSTOM_FIELD': 'Add Custom Field',
+		'SMART_DELAY': 'Smart Delay'
+	}
+	return nameMap[actionType] || actionType
+}
+
+// Helper to get trigger display name
+const getTriggerDisplayName = (triggerKey) => {
+	const nameMap = {
+		'ON_EMAIL_OPEN': 'Email Opened',
+		'ON_LINK_CLICK': 'Link Clicked',
+		'ON_SEND_SUCCESS': 'Send Success',
+		'ON_SEND_FAILED': 'Send Failed',
+		'ON_USER_RESPONSE': 'User Response',
+		'email_open': 'Email Opened',
+		'link_click': 'Link Clicked',
+		'send_success': 'Send Success',
+		'send_failed': 'Send Failed',
+		'user_response': 'User Response'
+	}
+	return nameMap[triggerKey] || triggerKey.replace(/_/g, ' ')
 }
 
 const updateTriggerContent = (content) => {

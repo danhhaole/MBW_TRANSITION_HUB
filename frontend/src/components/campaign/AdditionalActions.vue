@@ -131,7 +131,7 @@ const props = defineProps({
 })
 
 // Emits
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'select-action'])
 
 // Translation helper
 const __ = (text) => text
@@ -270,9 +270,17 @@ const removeAction = (index) => {
 }
 
 const configureAction = (action, index) => {
-  currentAction.value = { ...action }
-  currentActionIndex.value = index
-  showConfigModal.value = true
+  // Check if action already has action_id (already configured and saved)
+  if (action.action_id) {
+    // Emit event to select the child action in FlowEditor
+    console.log('Action already configured, selecting child action:', action.action_id)
+    emit('select-action', action.action_id)
+  } else {
+    // Open modal to configure
+    currentAction.value = { ...action }
+    currentActionIndex.value = index
+    showConfigModal.value = true
+  }
 }
 
 const saveActionConfig = (configData) => {

@@ -294,6 +294,8 @@ export const useMiraFlowStore = defineStore('miraFlow', {
             delay_minutes: action.delay_minutes || 0,
             condition: action.condition || '',
             order: action.action_order || index + 1,
+            trigger_id: action.trigger_id || null,  // Link to trigger if this is a trigger action
+            parent_action_id: action.parent_action_id || null,  // Link to parent action if this is a sub-action
             __isLocal: 1
           }))
         }

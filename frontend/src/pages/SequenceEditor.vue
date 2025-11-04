@@ -32,21 +32,11 @@
 		</LayoutHeader>
 
 		<!-- Global Loading Overlay -->
-		<div
-			v-if="isProcessing"
-			class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center"
-		>
-			<div class="bg-white rounded-lg p-6 shadow-xl">
-				<div class="flex flex-col items-center space-y-4">
-					<FeatherIcon
-						name="loader"
-						class="w-12 h-12 animate-spin text-blue-500"
-					/>
-					<p class="text-gray-700 font-medium">{{ __('Processing...') }}</p>
-					<p class="text-sm text-gray-500">{{ __('Please wait, do not close this page') }}</p>
-				</div>
-			</div>
-		</div>
+		<LoadingOverlay
+			:show="isProcessing"
+			:title="__('Processing...')"
+			:description="__('Please wait, do not close this page')"
+		/>
 
 		<!-- Main Content -->
 		<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -445,6 +435,7 @@ import { Button, Select, Badge, FeatherIcon, Breadcrumbs } from 'frappe-ui'
 import { useSequenceStore } from '@/stores/sequence'
 import { useToast } from '@/composables/useToast'
 import LayoutHeader from '@/components/LayoutHeader.vue'
+import LoadingOverlay from '@/components/LoadingOverlay.vue'
 import AddStepModal from '@/components/sequence/AddStepModal.vue'
 import DelayEditModal from '@/components/sequence/DelayEditModal.vue'
 import EmailEditor from '@/components/campaign/content-editors/EmailEditor.vue'
