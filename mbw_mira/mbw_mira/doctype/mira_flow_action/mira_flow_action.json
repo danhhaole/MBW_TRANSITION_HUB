@@ -7,6 +7,7 @@
  "engine": "InnoDB",
  "field_order": [
   "flow_id",
+  "trigger_id",
   "action_type",
   "channel_type",
   "action_parameters",
@@ -27,7 +28,7 @@
    "fieldname": "action_type",
    "fieldtype": "Select",
    "label": "Action Type",
-   "options": "MESSAGE\nSMS\nEMAIL\nZALO\nZALO_CARE\nZALO_ZNS\nSTART_FLOW\nSUBSCRIBE_TO_SEQUENCE\nUN_SUBSCRIBE_TO_SEQUENCE\nSMART_DELAY\nAI_CALL\nADD_TAG\nREMOVE_TAG\nADD_CUSTOM_FIELD\nREMOVE_CUSTOM_FIELD\nLEAD_SCORE\nEXTERNAL_REQUEST\nEMAIL_AI\nCONTENT_AI\nSENT_NOTIFICATION"
+   "options": "MESSAGE\nSMS\nEMAIL\nZALO\nZALO_CARE\nZALO_ZNS\nSTART_FLOW\nSUBSCRIBE_TO_SEQUENCE\nUN_SUBSCRIBE_TO_SEQUENCE\nSMART_DELAY\nAI_CALL\nADD_TAG\nREMOVE_TAG\nADD_CUSTOM_FIELD\nREMOVE_CUSTOM_FIELD\nLEAD_SCORE\nEXTERNAL_REQUEST\nEMAIL_AI\nCONTENT_AI\nSENT_NOTIFICATION\nUNSUBSCRIBE"
   },
   {
    "fieldname": "channel_type",
@@ -66,13 +67,19 @@
    "fieldname": "order",
    "fieldtype": "Int",
    "label": "Order"
+  },
+  {
+   "fieldname": "trigger_id",
+   "fieldtype": "Link",
+   "label": "Trigger",
+   "options": "Mira Flow Trigger"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-10-27 09:24:19.122098",
+ "modified": "2025-11-04 09:50:13.137021",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Flow Action",

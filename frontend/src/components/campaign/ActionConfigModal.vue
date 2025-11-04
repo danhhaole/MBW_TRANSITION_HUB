@@ -215,7 +215,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { Button, FeatherIcon, FormControl, Autocomplete, TextEditor } from 'frappe-ui'
 import { useTagStore } from '@/stores/tag'
 import { useMiraFlowStore } from '@/stores/miraFlow'
@@ -247,19 +247,54 @@ const toast = useToast()
 // Translation helper
 const __ = (text) => text
 
+// Helper to get default data structure for each action type
+const getDefaultDataForType = (type, existingData = {}) => {
+  switch (type) {
+    case 'add_tag':
+    case 'remove_tag':
+      return {
+        selected_tags: existingData.selected_tags || [],
+        ...existingData
+      }
+    case 'send_email':
+      return {
+        content: existingData.content || '',
+        ...existingData
+      }
+    case 'next_flow':
+      return {
+        flow_id: existingData.flow_id || '',
+        ...existingData
+      }
+    case 'unsubscribe':
+      return {
+        send_confirmation: existingData.send_confirmation || false,
+        ...existingData
+      }
+    default:
+      return { ...existingData }
+  }
+}
+
 // Local state
 const localAction = ref({
   trigger: props.action.trigger,
   type: props.action.type || '',
-  data: { 
-    selected_tags: [],
-    ...props.action.data 
-  }
+  data: getDefaultDataForType(props.action.type, props.action.data)
 })
 
 const newTagName = ref('')
 const creatingTag = ref(false)
 const selectedTagToAdd = ref('')
+
+// Watch for action type changes and reset data structure
+watch(() => localAction.value.type, (newType, oldType) => {
+  if (newType !== oldType && oldType) {
+    // Reset data when type changes (but keep existing data if same type)
+    console.log('🔄 Action type changed from', oldType, 'to', newType)
+    localAction.value.data = getDefaultDataForType(newType, {})
+  }
+})
 
 // Action type options
 const actionTypeOptions = [
