@@ -640,7 +640,7 @@ const router = useRouter()
 const breadcrumbs = computed(() => {
 	console.log('Breadcrumbs computed, route params:', route.params)
 	return [
-		{ label: __('Talent Pools'), route: { name: 'TalentSegments' } },
+		{ label: __('Talent Pools'), route: { name: 'SegmentPool' } },
 		{ label: talentSegment.title || __('Loading...'), route: { name: 'TalentSegmentDetail' } },
 	]
 })
