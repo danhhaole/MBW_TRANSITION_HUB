@@ -988,6 +988,61 @@ export const useCampaignStore = defineStore('campaign', {
           return typeMap[key] || 'CUSTOM_EVENT'
         }
         
+        // Helper to convert action type to backend format
+        const normalizeActionType = (type) => {
+          if (!type) return ''
+          
+          // Map frontend action types to backend enum values
+          const actionTypeMap = {
+            'add_tag': 'ADD_TAG',
+            'remove_tag': 'REMOVE_TAG',
+            'add_to_sequence': 'SUBSCRIBE_TO_SEQUENCE',
+            'subscribe_to_sequence': 'SUBSCRIBE_TO_SEQUENCE',
+            'unsubscribe_from_sequence': 'UN_SUBSCRIBE_TO_SEQUENCE',
+            'un_subscribe_to_sequence': 'UN_SUBSCRIBE_TO_SEQUENCE',
+            'start_flow': 'START_FLOW',
+            'next_flow': 'START_FLOW', // next_flow in UI maps to START_FLOW
+            'add_custom_field': 'ADD_CUSTOM_FIELD',
+            'remove_custom_field': 'REMOVE_CUSTOM_FIELD',
+            'update_field': 'ADD_CUSTOM_FIELD', // Update field is same as add custom field
+            'lead_score': 'LEAD_SCORE',
+            'external_request': 'EXTERNAL_REQUEST',
+            'smart_delay': 'SMART_DELAY',
+            'message': 'MESSAGE',
+            'sms': 'SMS',
+            'email': 'EMAIL',
+            'send_email': 'EMAIL', // Send email maps to EMAIL
+            'send_sms': 'SMS', // Send SMS maps to SMS
+            'send_message': 'MESSAGE', // Send message maps to MESSAGE
+            'zalo': 'ZALO',
+            'zalo_care': 'ZALO_CARE',
+            'zalo_zns': 'ZALO_ZNS',
+            'send_zalo': 'ZALO', // Send zalo maps to ZALO
+            'ai_call': 'AI_CALL',
+            'email_ai': 'EMAIL_AI',
+            'content_ai': 'CONTENT_AI',
+            'sent_notification': 'SENT_NOTIFICATION',
+            'send_notification': 'SENT_NOTIFICATION' // Send notification maps to SENT_NOTIFICATION
+          }
+          
+          // If already uppercase, check if it needs mapping
+          if (type === type.toUpperCase()) {
+            // Check common uppercase variations
+            const upperMap = {
+              'SEND_EMAIL': 'EMAIL',
+              'SEND_SMS': 'SMS',
+              'SEND_MESSAGE': 'MESSAGE',
+              'SEND_ZALO': 'ZALO',
+              'SEND_NOTIFICATION': 'SENT_NOTIFICATION'
+            }
+            return upperMap[type] || type
+          }
+          
+          // Convert to lowercase for lookup
+          const lowerType = type.toLowerCase()
+          return actionTypeMap[lowerType] || type.toUpperCase()
+        }
+        
         // Prepare flow data
         const flowData = {
           title: campaignData.campaign_name || 'Campaign Flow',
@@ -1008,25 +1063,36 @@ export const useCampaignStore = defineStore('campaign', {
           order: 0
         }
         
-        // Convert additional_actions to triggers
+        // Convert additional_actions to triggers and their actions
         if (campaignData.additional_actions && Object.keys(campaignData.additional_actions).length > 0) {
+          // Create triggers (without action data in conditions)
           flowData.trigger_id = Object.entries(campaignData.additional_actions).map(([triggerKey, actionData]) => ({
             doctype: 'Mira Flow Trigger',
             trigger_type: getTriggerTypeFromKey(triggerKey),
             status: 'ACTIVE',
             channel: flowData.channel,
-            conditions: JSON.stringify({
-              action_type: actionData.type,
-              action_data: actionData.data,
-              configured: actionData.configured
-            })
+            conditions: null // Don't store action data here anymore
           }))
           
+          // Create actions for each trigger (if configured)
+          flowData.trigger_actions = Object.entries(campaignData.additional_actions)
+            .filter(([triggerKey, actionData]) => actionData.configured && actionData.type)
+            .map(([triggerKey, actionData]) => ({
+              doctype: 'Mira Flow Action',
+              trigger_type: getTriggerTypeFromKey(triggerKey), // Temporary key to link later
+              action_type: normalizeActionType(actionData.type),
+              channel_type: flowData.channel,
+              action_parameters: JSON.stringify(actionData.data || {}),
+              order: 0
+            }))
+          
           console.log('🔍 Converted additional_actions to triggers:', flowData.trigger_id)
+          console.log('🔍 Converted additional_actions to trigger actions:', flowData.trigger_actions)
         } else {
-          // If no additional_actions, set empty array to delete all triggers
+          // If no additional_actions, set empty arrays
           flowData.trigger_id = []
-          console.log('🔍 No additional_actions, will delete all triggers')
+          flowData.trigger_actions = []
+          console.log('🔍 No additional_actions, will delete all triggers and actions')
         }
         
         let result
@@ -1039,24 +1105,53 @@ export const useCampaignStore = defineStore('campaign', {
           
           console.log('🔍 Existing flow:', existingFlow)
           console.log('🔍 Existing action_id:', existingFlow.action_id)
+          console.log('🔍 Existing trigger_id:', existingFlow.trigger_id)
           
-          // SIMPLE FIX: Reuse existing action if exists, otherwise create new
-          let finalAction
-          if (existingFlow.action_id && existingFlow.action_id.length > 0) {
-            // Reuse first action (campaign flow only has 1 action)
-            const existingAction = existingFlow.action_id[0]
-            console.log('♻️ Reusing existing action:', existingAction.name)
-            finalAction = {
-              ...existingAction,
+          // STEP 1: Prepare main action (campaign email/zalo action)
+          let mainAction
+          const existingMainAction = (existingFlow.action_id || []).find(a => !a.trigger_id)
+          if (existingMainAction) {
+            console.log('♻️ Reusing existing main action:', existingMainAction.name)
+            mainAction = {
+              ...existingMainAction,
               ...newAction,
-              name: existingAction.name // Keep same name to update
+              name: existingMainAction.name
             }
           } else {
-            // Create new action
-            console.log('✨ Creating new action')
-            finalAction = newAction
+            console.log('✨ Creating new main action')
+            mainAction = newAction
           }
           
+          // STEP 2: Create map of existing triggers by trigger_type
+          const existingTriggerMap = {}
+          ;(existingFlow.trigger_id || []).forEach(trigger => {
+            existingTriggerMap[trigger.trigger_type] = trigger
+          })
+          
+          // STEP 3: Process triggers - separate new and existing
+          const finalTriggers = []
+          const newTriggersToCreate = []
+          
+          ;(flowData.trigger_id || []).forEach((newTrigger) => {
+            const existingTrigger = existingTriggerMap[newTrigger.trigger_type]
+            
+            if (existingTrigger) {
+              // Reuse existing trigger
+              console.log('♻️ Reusing existing trigger:', existingTrigger.name, newTrigger.trigger_type)
+              finalTriggers.push({
+                ...existingTrigger,
+                ...newTrigger,
+                name: existingTrigger.name
+              })
+            } else {
+              // Mark as new trigger (will be created)
+              console.log('✨ New trigger to create:', newTrigger.trigger_type)
+              finalTriggers.push(newTrigger)
+              newTriggersToCreate.push(newTrigger.trigger_type)
+            }
+          })
+          
+          // STEP 4: First save - update triggers
           const updatedDoc = {
             ...existingFlow,
             title: flowData.title,
@@ -1064,14 +1159,14 @@ export const useCampaignStore = defineStore('campaign', {
             campaign_id: flowData.campaign_id,
             channel: flowData.channel,
             status: flowData.status,
-            // Single action (reused or new)
-            action_id: [finalAction],
-            // Replace with new triggers (Frappe will delete old ones)
-            trigger_id: flowData.trigger_id || []
+            // Keep existing actions for now
+            action_id: existingFlow.action_id || [],
+            // Update triggers
+            trigger_id: finalTriggers
           }
           
-          console.log('📝 Final action:', finalAction)
-          console.log('📝 Final triggers:', updatedDoc.trigger_id)
+          console.log('📝 Step 1: Saving triggers first')
+          console.log('📝 Triggers to save:', finalTriggers)
           
           console.log('📝 Updating flow with data:', updatedDoc)
           console.log('📝 Action parameters:', actionParameters)
@@ -1082,18 +1177,126 @@ export const useCampaignStore = defineStore('campaign', {
             doc: updatedDoc
           })
           
-          console.log('📝 Save result:', result)
-          console.log('📝 Result action_id:', result.action_id)
+          console.log('✅ Step 1 complete - Triggers saved:', result)
+          
+          // STEP 5: Get updated flow to get trigger names (especially for new triggers)
+          const updatedFlow = await call('frappe.client.get', {
+            doctype: 'Mira Flow',
+            name: flowId
+          })
+          
+          console.log('🔍 Updated flow with trigger names:', updatedFlow.trigger_id)
+          
+          // STEP 6: Build trigger map with names
+          const updatedTriggerMap = {}
+          ;(updatedFlow.trigger_id || []).forEach(trigger => {
+            updatedTriggerMap[trigger.trigger_type] = trigger
+          })
+          
+          // STEP 7: Process actions - link with triggers
+          const finalActions = [mainAction] // Start with main action
+          
+          ;(flowData.trigger_actions || []).forEach((triggerAction) => {
+            const trigger = updatedTriggerMap[triggerAction.trigger_type]
+            
+            if (!trigger) {
+              console.warn('⚠️ No trigger found for action:', triggerAction.trigger_type)
+              return
+            }
+            
+            // Find existing action for this trigger
+            const existingTriggerAction = (updatedFlow.action_id || []).find(
+              a => a.trigger_id === trigger.name
+            )
+            
+            let action
+            if (existingTriggerAction) {
+              console.log('♻️ Reusing existing trigger action:', existingTriggerAction.name)
+              action = {
+                ...existingTriggerAction,
+                ...triggerAction,
+                name: existingTriggerAction.name,
+                trigger_id: trigger.name // Link to trigger
+              }
+            } else {
+              console.log('✨ Creating new trigger action for:', triggerAction.trigger_type)
+              action = {
+                ...triggerAction,
+                trigger_id: trigger.name // Link to trigger
+              }
+            }
+            
+            delete action.trigger_type // Remove temporary key
+            finalActions.push(action)
+          })
+          
+          // STEP 8: Final save - update actions
+          console.log('📝 Step 2: Saving actions with trigger_id links')
+          console.log('📝 Final actions:', finalActions)
+          
+          result = await call('frappe.client.save', {
+            doc: {
+              ...updatedFlow,
+              action_id: finalActions
+            }
+          })
+          
+          console.log('✅ Step 2 complete - Actions saved with trigger links')
         } else {
           // Create new flow
+          console.log('✨ Creating new flow')
+          
+          // First, create flow with main action and triggers
           result = await call('frappe.client.insert', {
             doc: {
               doctype: 'Mira Flow',
               ...flowData,
-              action_id: [newAction] // Add the new action
+              action_id: [newAction], // Main action only
+              trigger_id: flowData.trigger_id || []
             }
           })
-          console.log('✨ Created new flow with action')
+          
+          console.log('✅ Created new flow:', result)
+          
+          // If there are trigger actions, update flow to add them with trigger_id links
+          if (flowData.trigger_actions && flowData.trigger_actions.length > 0) {
+            console.log('🔗 Linking trigger actions to triggers')
+            
+            // Get the created flow to get trigger names
+            const createdFlow = await call('frappe.client.get', {
+              doctype: 'Mira Flow',
+              name: result.name
+            })
+            
+            // Create map of triggers by trigger_type
+            const triggerMap = {}
+            ;(createdFlow.trigger_id || []).forEach(trigger => {
+              triggerMap[trigger.trigger_type] = trigger
+            })
+            
+            // Create actions with trigger_id links
+            const triggerActions = flowData.trigger_actions.map(action => {
+              const trigger = triggerMap[action.trigger_type]
+              const linkedAction = {
+                ...action,
+                trigger_id: trigger?.name // Link to created trigger
+              }
+              delete linkedAction.trigger_type // Remove temporary key
+              return linkedAction
+            })
+            
+            console.log('📝 Trigger actions to add:', triggerActions)
+            
+            // Update flow with trigger actions
+            result = await call('frappe.client.save', {
+              doc: {
+                ...createdFlow,
+                action_id: [...createdFlow.action_id, ...triggerActions]
+              }
+            })
+            
+            console.log('✅ Updated flow with trigger actions')
+          }
         }
         
         console.log('✅ Campaign flow saved:', result)
@@ -1179,7 +1382,7 @@ export const useCampaignStore = defineStore('campaign', {
           }
         }
         
-        // Parse triggers to additional_actions
+        // Parse triggers and their actions to additional_actions
         if (flowDoc.trigger_id && flowDoc.trigger_id.length > 0) {
           const additionalActions = {}
           
@@ -1195,23 +1398,83 @@ export const useCampaignStore = defineStore('campaign', {
             return keyMap[triggerType]
           }
           
+          // Helper to convert action_type back to frontend format
+          const denormalizeActionType = (type) => {
+            const typeMap = {
+              'ADD_TAG': 'add_tag',
+              'REMOVE_TAG': 'remove_tag',
+              'SUBSCRIBE_TO_SEQUENCE': 'add_to_sequence',
+              'UN_SUBSCRIBE_TO_SEQUENCE': 'unsubscribe_from_sequence',
+              'START_FLOW': 'next_flow', // START_FLOW in UI is "next_flow"
+              'ADD_CUSTOM_FIELD': 'update_field',
+              'REMOVE_CUSTOM_FIELD': 'remove_custom_field',
+              'LEAD_SCORE': 'lead_score',
+              'EXTERNAL_REQUEST': 'external_request',
+              'SMART_DELAY': 'smart_delay',
+              'MESSAGE': 'message',
+              'SMS': 'sms',
+              'EMAIL': 'send_email', // EMAIL action in trigger context is "send_email"
+              'ZALO': 'zalo',
+              'ZALO_CARE': 'zalo_care',
+              'ZALO_ZNS': 'zalo_zns',
+              'AI_CALL': 'ai_call',
+              'EMAIL_AI': 'email_ai',
+              'CONTENT_AI': 'content_ai',
+              'SENT_NOTIFICATION': 'sent_notification'
+            }
+            return typeMap[type] || type.toLowerCase()
+          }
+          
+          // Create map of actions by trigger_id
+          const actionsByTriggerId = {}
+          ;(flowDoc.action_id || []).forEach(action => {
+            if (action.trigger_id) {
+              actionsByTriggerId[action.trigger_id] = action
+            }
+          })
+          
+          console.log('📖 Actions by trigger_id:', actionsByTriggerId)
+          
+          // Build additional_actions from triggers and their actions
           flowDoc.trigger_id.forEach(trigger => {
             try {
-              const conditions = JSON.parse(trigger.conditions || '{}')
               const triggerKey = getTriggerKeyFromType(trigger.trigger_type)
-              if (triggerKey) {
+              if (!triggerKey) {
+                console.warn('⚠️ Unknown trigger type:', trigger.trigger_type)
+                return
+              }
+              
+              // Find action for this trigger
+              const triggerAction = actionsByTriggerId[trigger.name]
+              
+              if (triggerAction) {
+                // Parse action parameters
+                const actionParams = JSON.parse(triggerAction.action_parameters || '{}')
+                
                 additionalActions[triggerKey] = {
-                  type: conditions.action_type,
-                  data: conditions.action_data || {},
-                  configured: conditions.configured || false
+                  type: denormalizeActionType(triggerAction.action_type),
+                  data: actionParams,
+                  configured: true // If action exists, it's configured
                 }
+                
+                console.log('✅ Loaded trigger action:', triggerKey, additionalActions[triggerKey])
+              } else {
+                // Trigger exists but no action configured yet
+                additionalActions[triggerKey] = {
+                  type: '',
+                  data: {},
+                  configured: false
+                }
+                
+                console.log('⚠️ Trigger without action:', triggerKey)
               }
             } catch (e) {
-              console.warn('Failed to parse trigger:', e)
+              console.error('❌ Failed to parse trigger:', trigger, e)
             }
           })
           
           contentData.additional_actions = additionalActions
+          console.log('📖 Final additional_actions:', additionalActions)
         }
         
         console.log('✅ Content loaded from Flow')
