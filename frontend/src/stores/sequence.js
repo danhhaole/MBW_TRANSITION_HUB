@@ -794,8 +794,11 @@ export const useSequenceStore = defineStore('sequence', {
       }
     },
 
-    async updateFlowTriggers(flowName, triggers, sequenceId) {
+    async updateFlowTriggers(flowName, triggersData, sequenceId) {
       try {
+        console.log('🔄 Updating flow triggers for:', flowName)
+        console.log('📝 Triggers data:', triggersData)
+        
         // Get current flow
         const currentFlow = await call('frappe.client.get', {
           doctype: 'Mira Flow',
@@ -806,31 +809,154 @@ export const useSequenceStore = defineStore('sequence', {
           return { success: false, message: 'Flow not found' }
         }
 
-        // Update flow with triggers
+        // STEP 1: Create map of existing triggers by trigger_type
+        const existingTriggerMap = {}
+        ;(currentFlow.trigger_id || []).forEach(trigger => {
+          existingTriggerMap[trigger.trigger_type] = trigger
+        })
+
+        // STEP 2: Process triggers - reuse existing or create new
+        const finalTriggers = []
+        const newTriggersData = triggersData.triggers || []
+        
+        newTriggersData.forEach((newTrigger) => {
+          const existingTrigger = existingTriggerMap[newTrigger.trigger_type]
+          
+          if (existingTrigger) {
+            // Reuse existing trigger
+            console.log('♻️ Reusing existing trigger:', existingTrigger.name, newTrigger.trigger_type)
+            finalTriggers.push({
+              ...existingTrigger,
+              status: newTrigger.status || 'ACTIVE',
+              channel: newTrigger.channel,
+              conditions: null
+            })
+          } else {
+            // New trigger
+            console.log('✨ New trigger:', newTrigger.trigger_type)
+            finalTriggers.push({
+              doctype: 'Mira Flow Trigger',
+              trigger_type: newTrigger.trigger_type,
+              status: newTrigger.status || 'ACTIVE',
+              channel: newTrigger.channel,
+              conditions: null
+            })
+          }
+        })
+
+        console.log('📝 Final triggers:', finalTriggers)
+
+        // STEP 3: First save - update triggers
         const updatedDoc = {
           ...currentFlow,
-          trigger_id: triggers.map(trigger => ({
-            trigger_type: trigger.trigger_type,
-            status: trigger.status || 'ACTIVE',
-            channel: trigger.channel,
-            conditions: trigger.conditions
-          }))
+          trigger_id: finalTriggers
         }
 
-        // Use frappe.client.save to update with child table
         const result = await call('frappe.client.save', {
           doc: updatedDoc
         })
 
-        if (result) {
-          // Refresh if sequence_id is available
-          if (sequenceId) {
-            await this.fetchSequenceById(sequenceId)
+        console.log('✅ Step 1 complete - Triggers saved')
+
+        // STEP 4: Get updated flow to get trigger names
+        const updatedFlow = await call('frappe.client.get', {
+          doctype: 'Mira Flow',
+          name: flowName
+        })
+
+        // Create trigger map with names
+        const triggerMap = {}
+        ;(updatedFlow.trigger_id || []).forEach(trigger => {
+          triggerMap[trigger.trigger_type] = trigger
+        })
+
+        console.log('🔍 Trigger map:', triggerMap)
+
+        // STEP 5: Process actions - keep existing, update, or create new
+        const mainActions = (updatedFlow.action_id || []).filter(action => !action.trigger_id)
+        console.log('📝 Main actions:', mainActions)
+
+        const finalActions = [...mainActions]
+
+        // Keep existing trigger actions that still have triggers
+        ;(updatedFlow.action_id || []).forEach(existingAction => {
+          if (existingAction.trigger_id) {
+            const trigger = (updatedFlow.trigger_id || []).find(t => t.name === existingAction.trigger_id)
+            
+            if (trigger) {
+              // Check if this trigger has new action data
+              const newActionData = (triggersData.trigger_actions || []).find(
+                a => a.trigger_type === trigger.trigger_type
+              )
+              
+              if (newActionData) {
+                // Update existing action
+                console.log('♻️ Updating trigger action:', existingAction.name, trigger.trigger_type)
+                finalActions.push({
+                  ...existingAction,
+                  action_type: newActionData.action_type,
+                  channel_type: newActionData.channel_type,
+                  action_parameters: newActionData.action_parameters,
+                  order: newActionData.order || 0
+                })
+              } else {
+                // Keep existing action as-is
+                console.log('♻️ Keeping trigger action:', existingAction.name, trigger.trigger_type)
+                finalActions.push(existingAction)
+              }
+            } else {
+              // Trigger was deleted, don't keep this action
+              console.log('🗑️ Removing action for deleted trigger:', existingAction.trigger_id)
+            }
           }
-          return { success: true, data: result }
+        })
+
+        // Add new trigger actions (for triggers that don't have actions yet)
+        ;(triggersData.trigger_actions || []).forEach((triggerAction) => {
+          const trigger = triggerMap[triggerAction.trigger_type]
+          
+          if (!trigger) {
+            console.warn('⚠️ No trigger found for action:', triggerAction.trigger_type)
+            return
+          }
+          
+          // Check if we already have action for this trigger
+          const alreadyHasAction = finalActions.some(a => a.trigger_id === trigger.name)
+          
+          if (!alreadyHasAction) {
+            console.log('✨ Creating new trigger action for:', triggerAction.trigger_type)
+            const linkedAction = {
+              doctype: 'Mira Flow Action',
+              action_type: triggerAction.action_type,
+              channel_type: triggerAction.channel_type,
+              action_parameters: triggerAction.action_parameters,
+              trigger_id: trigger.name,
+              order: triggerAction.order || 0
+            }
+            finalActions.push(linkedAction)
+          }
+        })
+
+        console.log('📝 Final actions:', finalActions)
+
+        // STEP 6: Final save - update actions
+        const finalDoc = {
+          ...updatedFlow,
+          action_id: finalActions
         }
 
-        return { success: false, message: 'Failed to update triggers' }
+        await call('frappe.client.save', {
+          doc: finalDoc
+        })
+
+        console.log('✅ Step 2 complete - Actions updated')
+
+        // Refresh if sequence_id is available
+        if (sequenceId) {
+          await this.fetchSequenceById(sequenceId)
+        }
+        
+        return { success: true, data: result }
       } catch (error) {
         console.error('Error updating triggers:', error)
         return { success: false, error: this.parseError(error) }

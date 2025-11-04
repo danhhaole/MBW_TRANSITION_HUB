@@ -952,10 +952,10 @@ export const useCampaignStore = defineStore('campaign', {
           actionParameters.subject = campaignData.email_subject || ''
           actionParameters.content = campaignData.email_content || ''
           actionParameters.attachments = campaignData.attachments || []
-        } else if (campaignData.interaction_method === 'ZALO_ZNS') {
-          // ZNS uses blocks structure from ZaloEditor
+        } else if (campaignData.interaction_method === 'ZALO_ZNS' || campaignData.interaction_method === 'SMS') {
+          // ZNS and SMS use blocks structure from ZaloEditor
           actionParameters.blocks = campaignData.blocks || []
-          console.log('🔍 ZNS actionParameters:', actionParameters)
+          console.log('🔍 ZNS/SMS actionParameters:', actionParameters)
         } else if (campaignData.interaction_method === 'ZALO_CARE') {
           // ZALO_CARE also uses blocks structure
           actionParameters.blocks = campaignData.blocks || []
@@ -1196,6 +1196,44 @@ export const useCampaignStore = defineStore('campaign', {
           // STEP 7: Process actions - link with triggers
           const finalActions = [mainAction] // Start with main action
           
+          // Get list of trigger types that should have actions (configured ones)
+          const configuredTriggerTypes = (flowData.trigger_actions || []).map(a => a.trigger_type)
+          
+          // Keep existing trigger actions that still have triggers (even if not in flowData.trigger_actions)
+          // This prevents deleting actions when user just adds a new trigger without configuring it
+          ;(updatedFlow.action_id || []).forEach(existingAction => {
+            if (existingAction.trigger_id) {
+              // Find the trigger for this action
+              const trigger = (updatedFlow.trigger_id || []).find(t => t.name === existingAction.trigger_id)
+              
+              if (trigger) {
+                // Check if this trigger type is being updated
+                const newActionData = (flowData.trigger_actions || []).find(
+                  a => a.trigger_type === trigger.trigger_type
+                )
+                
+                if (newActionData) {
+                  // Update existing action with new data
+                  console.log('♻️ Updating existing trigger action:', existingAction.name, trigger.trigger_type)
+                  finalActions.push({
+                    ...existingAction,
+                    ...newActionData,
+                    name: existingAction.name,
+                    trigger_id: trigger.name
+                  })
+                } else {
+                  // Keep existing action as-is (trigger still exists but no new data)
+                  console.log('♻️ Keeping existing trigger action:', existingAction.name, trigger.trigger_type)
+                  finalActions.push(existingAction)
+                }
+              } else {
+                // Trigger was deleted, don't include this action
+                console.log('🗑️ Removing action for deleted trigger:', existingAction.trigger_id)
+              }
+            }
+          })
+          
+          // Add new trigger actions (for triggers that don't have actions yet)
           ;(flowData.trigger_actions || []).forEach((triggerAction) => {
             const trigger = updatedTriggerMap[triggerAction.trigger_type]
             
@@ -1204,30 +1242,18 @@ export const useCampaignStore = defineStore('campaign', {
               return
             }
             
-            // Find existing action for this trigger
-            const existingTriggerAction = (updatedFlow.action_id || []).find(
-              a => a.trigger_id === trigger.name
-            )
+            // Check if we already processed this action above
+            const alreadyProcessed = finalActions.some(a => a.trigger_id === trigger.name)
             
-            let action
-            if (existingTriggerAction) {
-              console.log('♻️ Reusing existing trigger action:', existingTriggerAction.name)
-              action = {
-                ...existingTriggerAction,
-                ...triggerAction,
-                name: existingTriggerAction.name,
-                trigger_id: trigger.name // Link to trigger
-              }
-            } else {
+            if (!alreadyProcessed) {
               console.log('✨ Creating new trigger action for:', triggerAction.trigger_type)
-              action = {
+              const action = {
                 ...triggerAction,
-                trigger_id: trigger.name // Link to trigger
+                trigger_id: trigger.name
               }
+              delete action.trigger_type // Remove temporary key
+              finalActions.push(action)
             }
-            
-            delete action.trigger_type // Remove temporary key
-            finalActions.push(action)
           })
           
           // STEP 8: Final save - update actions
@@ -1361,10 +1387,10 @@ export const useCampaignStore = defineStore('campaign', {
                 email_subject: contentData.email_subject, 
                 email_content: contentData.email_content 
               })
-            } else if (methodToUse === 'ZALO_ZNS') {
-              // ZNS uses blocks structure
+            } else if (methodToUse === 'ZALO_ZNS' || methodToUse === 'SMS') {
+              // ZNS and SMS use blocks structure
               contentData.blocks = params.blocks || []
-              console.log('📖 Set ZNS data:', { 
+              console.log('📖 Set ZNS/SMS data:', { 
                 blocks: contentData.blocks 
               })
             } else if (methodToUse === 'ZALO_CARE') {

@@ -51,12 +51,13 @@ def get_sequence_with_flows(sequence_id):
 				'sequence_id': flow_doc.sequence_id,
 				'creation': flow_doc.creation,
 				'modified': flow_doc.modified,
-				'actions': [
+				'action_id': [
 					{
 						'name': action.name,
 						'action_type': action.action_type,
 						'channel_type': action.channel_type,
 						'action_parameters': action.action_parameters,
+						'trigger_id': action.trigger_id if hasattr(action, 'trigger_id') else None,
 						'order': action.order if hasattr(action, 'order') else 0
 					}
 					for action in (flow_doc.action_id or [])

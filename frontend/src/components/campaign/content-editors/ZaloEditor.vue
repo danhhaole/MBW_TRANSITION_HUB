@@ -2,7 +2,7 @@
   <div class="space-y-6">
     <!-- Header -->
     <div class="flex items-center justify-between">
-      <h3 class="text-lg font-medium text-gray-900">{{ __("Zalo ZNS Message") }}</h3>
+      <h3 class="text-lg font-medium text-gray-900">{{ __("Message") }}</h3>
       <div class="flex items-center space-x-2">
         <span class="text-sm text-gray-500">
           {{ totalCharacters }}/{{ maxCharacters }} {{ __("characters") }}

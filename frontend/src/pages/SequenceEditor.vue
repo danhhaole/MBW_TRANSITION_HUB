@@ -31,6 +31,23 @@
 			</template>
 		</LayoutHeader>
 
+		<!-- Global Loading Overlay -->
+		<div
+			v-if="isProcessing"
+			class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center"
+		>
+			<div class="bg-white rounded-lg p-6 shadow-xl">
+				<div class="flex flex-col items-center space-y-4">
+					<FeatherIcon
+						name="loader"
+						class="w-12 h-12 animate-spin text-blue-500"
+					/>
+					<p class="text-gray-700 font-medium">{{ __('Processing...') }}</p>
+					<p class="text-sm text-gray-500">{{ __('Please wait, do not close this page') }}</p>
+				</div>
+			</div>
+		</div>
+
 		<!-- Main Content -->
 		<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 			<div v-if="loading" class="flex items-center justify-center py-12">
@@ -460,6 +477,21 @@ const addingStep = ref(false)
 const deletingStep = ref(false)
 const showDeleteConfirm = ref(false)
 const stepToDelete = ref(null)
+const savingStepContent = ref(false)
+const savingAdditionalActions = ref(false)
+const duplicatingStep = ref(false)
+const updatingTitle = ref(false)
+
+// Global loading overlay - combines all loading states
+const isProcessing = computed(() => {
+	return saving.value || 
+		addingStep.value || 
+		deletingStep.value || 
+		savingStepContent.value || 
+		savingAdditionalActions.value || 
+		duplicatingStep.value || 
+		updatingTitle.value
+})
 
 // Options
 const statusOptions = [
@@ -725,11 +757,13 @@ const toggleStep = (index) => {
 }
 
 const getStepContent = (step) => {
-	// Get content from flow.actions[0].action_parameters
+	// Get content from flow.action_id[0].action_parameters (main action, no trigger_id)
 	let actionParams = {}
-	if (step.flow && step.flow.actions && step.flow.actions.length > 0) {
+	const mainAction = (step.flow?.action_id || []).find(a => !a.trigger_id)
+	
+	if (mainAction) {
 		try {
-			actionParams = JSON.parse(step.flow.actions[0].action_parameters || '{}')
+			actionParams = JSON.parse(mainAction.action_parameters || '{}')
 		} catch (e) {
 			console.error('Error parsing action parameters:', e)
 		}
@@ -760,24 +794,27 @@ const updateStepContent = (index, content) => {
 	const step = parsedSteps.value[index]
 	if (!step || !step.flow) return
 
-	// Update flow content locally
-	if (content.email_subject !== undefined || content.email_content !== undefined) {
-		// Update email action parameters
-		if (!step.flow.actions) {
-			step.flow.actions = []
+	// Ensure action_id exists
+	if (!step.flow.action_id) {
+		step.flow.action_id = []
+	}
+	
+	// Find or create main action (no trigger_id)
+	let mainAction = step.flow.action_id.find(a => !a.trigger_id)
+	if (!mainAction) {
+		mainAction = {
+			action_type: step.flow.channel === 'Email' ? 'EMAIL' : 'SMS',
+			channel_type: step.flow.channel,
+			action_parameters: JSON.stringify({})
 		}
-		if (step.flow.actions.length === 0) {
-			step.flow.actions.push({
-				action_type: 'EMAIL',
-				channel_type: 'Email',
-				action_parameters: JSON.stringify({})
-			})
-		}
-		
-		const params = JSON.parse(step.flow.actions[0].action_parameters || '{}')
-		
-		// Only update if value actually changed
-		let changed = false
+		step.flow.action_id.push(mainAction)
+	}
+	
+	const params = JSON.parse(mainAction.action_parameters || '{}')
+	let changed = false
+	
+	// Update email content
+	if (content.email_subject !== undefined || content.email_content !== undefined || content.attachments !== undefined) {
 		if (content.email_subject !== undefined && params.subject !== content.email_subject) {
 			params.subject = content.email_subject
 			changed = true
@@ -786,15 +823,29 @@ const updateStepContent = (index, content) => {
 			params.content = content.email_content
 			changed = true
 		}
-		
-		if (changed) {
-			step.flow.actions[0].action_parameters = JSON.stringify(params)
+		if (content.attachments !== undefined) {
+			params.attachments = content.attachments
+			changed = true
 		}
+	}
+	
+	// Update SMS/Zalo blocks
+	if (content.blocks !== undefined) {
+		params.blocks = content.blocks
+		changed = true
+	}
+	
+	if (changed) {
+		mainAction.action_parameters = JSON.stringify(params)
 	}
 }
 
 const duplicateStep = async (index) => {
+	if (duplicatingStep.value) return
+	
 	try {
+		duplicatingStep.value = true
+		
 		const stepToDuplicate = parsedSteps.value[index]
 		if (!stepToDuplicate || !stepToDuplicate.flow) {
 			toast.error('Invalid step')
@@ -802,14 +853,15 @@ const duplicateStep = async (index) => {
 		}
 
 		// Prepare new step data
+		const mainAction = (stepToDuplicate.flow.action_id || []).find(a => !a.trigger_id)
 		const newStepData = {
 			title: stepToDuplicate.flow.title + ' (Copy)',
 			channel: stepToDuplicate.flow.channel,
 			delay: stepToDuplicate.delay || '1 day',
-			action: stepToDuplicate.flow.actions?.[0] ? {
-				action_type: stepToDuplicate.flow.actions[0].action_type,
-				channel_type: stepToDuplicate.flow.actions[0].channel_type,
-				parameters: JSON.parse(stepToDuplicate.flow.actions[0].action_parameters || '{}')
+			action: mainAction ? {
+				action_type: mainAction.action_type,
+				channel_type: mainAction.channel_type,
+				parameters: JSON.parse(mainAction.action_parameters || '{}')
 			} : null
 		}
 
@@ -825,6 +877,8 @@ const duplicateStep = async (index) => {
 	} catch (error) {
 		console.error('Error duplicating step:', error)
 		toast.error('Failed to duplicate step')
+	} finally {
+		duplicatingStep.value = false
 	}
 }
 
@@ -833,7 +887,11 @@ const cancelEdit = () => {
 }
 
 const saveStepContent = async (index) => {
+	if (savingStepContent.value) return
+	
 	try {
+		savingStepContent.value = true
+		
 		const stepToSave = parsedSteps.value[index]
 		if (!stepToSave || !stepToSave.flow) {
 			toast.error('Invalid step')
@@ -844,7 +902,7 @@ const saveStepContent = async (index) => {
 		const stepData = {
 			title: stepToSave.flow.title,
 			channel: stepToSave.flow.channel,
-			actions: stepToSave.flow.actions || []
+			actions: stepToSave.flow.action_id || [] // Use action_id, not actions
 		}
 
 		// Update step in Mira Flow
@@ -865,6 +923,8 @@ const saveStepContent = async (index) => {
 	} catch (error) {
 		console.error('Error saving step:', error)
 		toast.error('Failed to save step')
+	} finally {
+		savingStepContent.value = false
 	}
 }
 
@@ -882,39 +942,81 @@ const getInteractionType = (channel) => {
 }
 
 const getStepAdditionalActions = (step) => {
-	// Get additional actions from flow.trigger_id
+	// Get additional actions from flow.trigger_id and flow.action_id
 	if (!step.flow || !step.flow.trigger_id) return {}
 	
 	console.log('📖 LOADING Additional Actions from triggers:', step.flow.trigger_id)
+	console.log('📖 LOADING Actions:', step.flow.action_id)
+	
+	// Helper to denormalize action type
+	const denormalizeActionType = (type) => {
+		const typeMap = {
+			'ADD_TAG': 'add_tag',
+			'REMOVE_TAG': 'remove_tag',
+			'SUBSCRIBE_TO_SEQUENCE': 'add_to_sequence',
+			'START_FLOW': 'next_flow',
+			'EMAIL': 'send_email',
+			'ADD_CUSTOM_FIELD': 'update_field',
+			// Add more mappings as needed
+		}
+		return typeMap[type] || type.toLowerCase()
+	}
 	
 	const additionalActions = {}
 	const triggers = Array.isArray(step.flow.trigger_id) ? step.flow.trigger_id : []
 	
-	triggers.forEach(trigger => {
-		try {
-			// Parse conditions to get action data
-			const conditions = JSON.parse(trigger.conditions || '{}')
-			
-			// Convert trigger_type back to key
-			const triggerKey = getTriggerKeyFromType(trigger.trigger_type)
-			
-			console.log(`Converting back: ${trigger.trigger_type} -> ${triggerKey}`, conditions)
-			
-			if (triggerKey) {
-				additionalActions[triggerKey] = {
-					type: conditions.action_type,
-					data: conditions.action_data || {},
-					configured: conditions.configured || false
-				}
-			} else {
-				console.warn(`No mapping for trigger_type: ${trigger.trigger_type}`)
-			}
-		} catch (e) {
-			console.error('Error parsing trigger conditions:', e)
+	// Create map of actions by trigger_id
+	const actionsByTriggerId = {}
+	const actions = Array.isArray(step.flow.action_id) ? step.flow.action_id : []
+	actions.forEach(action => {
+		if (action.trigger_id) {
+			actionsByTriggerId[action.trigger_id] = action
 		}
 	})
 	
-	console.log('Final additionalActions:', additionalActions)
+	console.log('📖 Actions by trigger_id:', actionsByTriggerId)
+	
+	// Build additional_actions from triggers and their actions
+	triggers.forEach(trigger => {
+		try {
+			// Convert trigger_type back to key
+			const triggerKey = getTriggerKeyFromType(trigger.trigger_type)
+			
+			if (!triggerKey) {
+				console.warn(`No mapping for trigger_type: ${trigger.trigger_type}`)
+				return
+			}
+			
+			// Find action for this trigger
+			const triggerAction = actionsByTriggerId[trigger.name]
+			
+			if (triggerAction) {
+				// Parse action parameters
+				const actionParams = JSON.parse(triggerAction.action_parameters || '{}')
+				
+				additionalActions[triggerKey] = {
+					type: denormalizeActionType(triggerAction.action_type),
+					data: actionParams,
+					configured: true
+				}
+				
+				console.log(`✅ Loaded trigger action: ${triggerKey}`, additionalActions[triggerKey])
+			} else {
+				// Trigger exists but no action configured yet
+				additionalActions[triggerKey] = {
+					type: '',
+					data: {},
+					configured: false
+				}
+				
+				console.log(`⚠️ Trigger without action: ${triggerKey}`)
+			}
+		} catch (e) {
+			console.error('Error parsing trigger:', trigger, e)
+		}
+	})
+	
+	console.log('📖 Final additionalActions:', additionalActions)
 	
 	return additionalActions
 }
@@ -935,7 +1037,11 @@ const getTriggerKeyFromType = (triggerType) => {
 }
 
 const updateStepAdditionalActions = async (index, additionalActions) => {
+	if (savingAdditionalActions.value) return
+	
 	try {
+		savingAdditionalActions.value = true
+		
 		const stepToUpdate = parsedSteps.value[index]
 		if (!stepToUpdate || !stepToUpdate.flow) {
 			toast.error('Invalid step')
@@ -947,30 +1053,59 @@ const updateStepAdditionalActions = async (index, additionalActions) => {
 
 		// Convert additional actions to triggers
 		// Each additional action becomes a trigger with its corresponding action
-		const triggers = Object.entries(additionalActions).map(([triggerKey, actionData]) => {
+		// Helper to normalize action type to backend format
+		const normalizeActionType = (type) => {
+			if (!type) return ''
+			const actionTypeMap = {
+				'add_tag': 'ADD_TAG',
+				'remove_tag': 'REMOVE_TAG',
+				'add_to_sequence': 'SUBSCRIBE_TO_SEQUENCE',
+				'next_flow': 'START_FLOW',
+				'send_email': 'EMAIL',
+				'update_field': 'ADD_CUSTOM_FIELD',
+				// Add more mappings as needed
+			}
+			return actionTypeMap[type.toLowerCase()] || type.toUpperCase()
+		}
+		
+		// Separate triggers and trigger actions
+		const triggers = []
+		const triggerActions = []
+		
+		Object.entries(additionalActions).forEach(([triggerKey, actionData]) => {
 			console.log(`Converting: ${triggerKey} ->`, actionData)
 			const triggerType = getTriggerType(triggerKey)
 			console.log(`Trigger type: ${triggerType}`)
 			
-			return {
-				trigger_type: triggerType, // Use actual trigger type (now supported in DocType)
+			// Add trigger (without conditions)
+			triggers.push({
+				trigger_type: triggerType,
 				status: 'ACTIVE',
-				channel: stepToUpdate.flow.channel,
-				// Store action data in conditions
-				conditions: JSON.stringify({
-					action_type: actionData.type,
-					action_data: actionData.data,
-					configured: actionData.configured
+				channel: stepToUpdate.flow.channel
+			})
+			
+			// Add trigger action (if configured)
+			if (actionData.configured && actionData.type) {
+				triggerActions.push({
+					trigger_type: triggerType, // Temporary key for linking
+					action_type: normalizeActionType(actionData.type),
+					channel_type: stepToUpdate.flow.channel,
+					action_parameters: JSON.stringify(actionData.data || {}),
+					order: 0
 				})
 			}
 		})
 		
 		console.log('Final triggers to save:', triggers)
+		console.log('Final trigger actions to save:', triggerActions)
 
-		// Update flow with triggers
+		// Update flow with triggers and trigger actions
 		const result = await sequenceStore.updateFlowTriggers(
 			stepToUpdate.flow.name,
-			triggers,
+			{
+				triggers: triggers,
+				trigger_actions: triggerActions
+			},
 			route.params.id
 		)
 		
@@ -984,6 +1119,8 @@ const updateStepAdditionalActions = async (index, additionalActions) => {
 	} catch (error) {
 		console.error('Error saving additional actions:', error)
 		toast.error('Failed to save additional actions')
+	} finally {
+		savingAdditionalActions.value = false
 	}
 }
 
@@ -998,7 +1135,11 @@ const cancelEditTitle = () => {
 }
 
 const saveStepTitle = async (index) => {
+	if (updatingTitle.value) return
+	
 	try {
+		updatingTitle.value = true
+		
 		const step = parsedSteps.value[index]
 		if (!step || !step.flow) {
 			toast.error('Invalid step')
@@ -1028,6 +1169,8 @@ const saveStepTitle = async (index) => {
 	} catch (error) {
 		console.error('Error updating title:', error)
 		toast.error('Failed to update title')
+	} finally {
+		updatingTitle.value = false
 	}
 }
 
