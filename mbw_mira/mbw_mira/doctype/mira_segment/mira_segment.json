@@ -12,7 +12,8 @@
   "criteria",
   "owner_id",
   "type",
-  "candidate_count"
+  "candidate_count",
+  "sync_id"
  ],
  "fields": [
   {
@@ -44,7 +45,7 @@
    "fieldname": "type",
    "fieldtype": "Select",
    "label": "Type",
-   "options": "DYNAMIC\nMANUAL"
+   "options": "DYNAMIC\nMANUAL\nATS_SYNC"
   },
   {
    "description": "S\u1ed1 l\u01b0\u1ee3ng \u1ee9ng vi\u00ean hi\u1ec7n c\u00f3 trong ph\u00e2n kh\u00fac (d\u00f9ng \u0111\u1ec3 hi\u1ec3n th\u1ecb, \u0111\u01b0\u1ee3c c\u1eadp nh\u1eadt \u0111\u1ecbnh k\u1ef3).",
@@ -56,12 +57,21 @@
    "description": "(Ph\u00e2n kh\u00fac Nh\u00e2n t\u00e0i / Talent Pool)",
    "fieldname": "section_break_lenk",
    "fieldtype": "Section Break"
+  },
+  {
+   "depends_on": "eval:doc.type=='ATS_SYNC'",
+   "description": "ID c\u1ee7a Position t\u1eeb ATS (d\u00f9ng \u0111\u1ec3 tr\u00e1nh duplicate khi \u0111\u1ed3ng b\u1ed9)",
+   "fieldname": "sync_id",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Sync ID",
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-24 16:09:53.445572",
+ "modified": "2025-11-04 08:30:25.792310",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Segment",

@@ -4,6 +4,7 @@ from mbw_mira.integrations.ats.frappe_site_provider import FrappeSiteProvider
 from datetime import datetime
 import json
 from urllib.parse import unquote
+from frappe.utils import get_datetime_str
 
 logger = logging.getLogger(__name__)
 
@@ -167,3 +168,395 @@ def map_mbw_ats_to_talentprofiles(record, campaign_name, source_name, segment_id
         "hard_skills": "",
         "languages": "[]",
     }
+
+# Đồng bộ Postion -> Segment
+def sync_ats_positions_to_segments():
+    """
+    Synchronize positions from ATS to Mira Segments
+    """
+    # Get active ATS data sources
+    data_sources = frappe.get_all(
+        "Mira Data Source",
+        filters={
+            "source_type": "ATS",
+            "is_active": 1,
+            "status": "Active",
+            "sync_direction": ["in", ["Pull", "Both"]]
+        },
+        fields=["name", "source_title", "source_name"]
+    )
+
+    if not data_sources:
+        frappe.log_error("No active ATS data sources found", "ATS Sync: No Data Sources")
+        return
+
+    for data_source in data_sources:
+        try:
+            data_source_doc = frappe.get_doc("Mira Data Source", data_source.name)
+            sync_data_source_positions(data_source_doc)
+        except Exception as e:
+            frappe.log_error(
+                f"Failed to sync positions for data source {data_source.name}: {str(e)}",
+                "ATS Sync Error"
+            )
+
+def sync_data_source_positions(data_source):
+    """
+    Sync positions for a specific ATS data source
+    Args:
+        data_source: Mira Data Source document object
+    """
+    # Create sync log
+    sync_log = frappe.get_doc({
+        "doctype": "Mira ATS Sync Log",
+        "connection": data_source.name,
+        "sync_type": "Position to Segment",
+        "status": "In Progress",
+        "start_time": frappe.utils.now(),
+        "details": f"Starting sync from {data_source.source_title} ({data_source.source_name})"
+    })
+    sync_log.insert(ignore_permissions=True)
+    frappe.db.commit()
+
+    try:
+        with FrappeSiteProvider(data_source.name) as provider:
+            if provider.sync_direction not in ("Pull", "Both"):
+                sync_log.status = "Failed"
+                sync_log.details = "Sync direction not set to Pull or Both"
+                sync_log.save()
+                return
+
+            # Fetch positions from ATS
+            positions = provider.get_list(
+                "ATS_Position",
+                filters={"cat_status": "Active"},
+                fields=["name", "position_name", "position_description", "required_skills"]
+            )
+
+            sync_log.total_records = len(positions)
+            success_count = 0
+            failed_count = 0
+            error_log = []
+
+            for position in positions:
+                try:
+                    # Check if segment already exists
+                    position_id = position.get("name")
+                    segment_name = f"ATS-{position_id}"
+                    segment = frappe.db.get_value(
+                        "Mira Segment",
+                        {"sync_id": position_id, "type": "ATS_SYNC"},
+                        "name"
+                    )
+
+                    # Prepare segment data
+                    # Parse HTML description to plain text
+                    description_html = position.get("position_description") or ""
+                    description_text = parse_html_to_text(description_html)
+                    
+                    # Extract skills and convert to criteria format
+                    skills = extract_skills(position.get("required_skills")) if position.get("required_skills") else []
+                    criteria = build_criteria_from_skills(skills)
+                    
+                    segment_data = {
+                        "doctype": "Mira Segment",
+                        "title": position.get("position_name"),
+                        "description": description_text,
+                        "type": "ATS_SYNC",
+                        "sync_id": position_id,  # Cần giữ để tránh duplicate và cho phép update
+                        "criteria": json.dumps(criteria)
+                    }
+
+                    if segment:
+                        # Update existing segment
+                        segment_doc = frappe.get_doc("Mira Segment", segment)
+                        segment_doc.update(segment_data)
+                        segment_doc.save(ignore_permissions=True)
+                        action = "updated"
+                    else:
+                        # Create new segment
+                        segment_doc = frappe.get_doc(segment_data)
+                        segment_doc.insert(ignore_permissions=True)
+                        action = "created"
+
+                    # Log success
+                    success_count += 1
+                    
+                    # Commit after each successful segment to avoid conflicts
+                    frappe.db.commit()
+
+                except Exception as e:
+                    failed_count += 1
+                    error_log.append({
+                        "position": position.get("name"),
+                        "error": str(e)[:200]  # Limit error message length
+                    })
+                    
+                    # Rollback failed transaction
+                    frappe.db.rollback()
+
+            # Update sync log
+            sync_log.reload()  # Reload to avoid concurrent modification
+            sync_log.status = "Completed" if failed_count == 0 else "Partially Completed"
+            sync_log.success_count = success_count
+            sync_log.failed_count = failed_count
+            sync_log.error_log = json.dumps(error_log, indent=2)
+            sync_log.end_time = frappe.utils.now()
+            sync_log.details = f"Sync completed. Success: {success_count}, Failed: {failed_count}"
+            sync_log.save(ignore_permissions=True)
+
+    except Exception as e:
+        try:
+            sync_log.reload()  # Reload to avoid concurrent modification
+            sync_log.status = "Failed"
+            sync_log.error_log = str(e)[:500]  # Limit error log length
+            sync_log.end_time = frappe.utils.now()
+            sync_log.details = f"Sync failed: {str(e)[:200]}"
+            sync_log.save(ignore_permissions=True)
+        except Exception as save_error:
+            # If save fails, just log it
+            pass
+        
+        # Shorten error title to avoid exceeding 140 chars
+        error_title = f"ATS Sync Error: {data_source.name[:30]}"
+        error_message = f"Failed to sync positions for {data_source.name}\n\nError: {str(e)}"
+        frappe.log_error(error_message, error_title)
+    finally:
+        frappe.db.commit()
+
+def parse_html_to_text(html_content):
+    """
+    Parse HTML content to plain text
+    
+    Args:
+        html_content: HTML string
+        
+    Returns:
+        Plain text string
+    """
+    if not html_content:
+        return ""
+    
+    try:
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(html_content, 'html.parser')
+        
+        # Remove script and style elements
+        for script in soup(["script", "style"]):
+            script.decompose()
+        
+        # Get text and clean up
+        text = soup.get_text(separator='\n', strip=True)
+        
+        # Clean up extra whitespace
+        lines = [line.strip() for line in text.splitlines() if line.strip()]
+        text = '\n'.join(lines)
+        
+        return text
+    except Exception as e:
+        # If parsing fails, return original content
+        return html_content
+
+def extract_skills(html_content):
+    """
+    Extract skills from HTML content
+    
+    Args:
+        html_content: HTML string containing skills
+        
+    Returns:
+        List of skill strings
+    """
+    if not html_content:
+        return []
+    
+    try:
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(html_content, 'html.parser')
+        text = soup.get_text(separator=',', strip=True)
+        
+        # Split by common delimiters and clean up
+        skills = []
+        for part in text.split(','):
+            part = part.strip()
+            if part and len(part) < 50:  # Simple validation to avoid long strings
+                skills.append(part)
+        
+        return skills
+    except Exception as e:
+        return []
+
+def build_criteria_from_skills(skills):
+    """
+    Build criteria filter format from skills list
+    
+    Args:
+        skills: List of skill strings
+        
+    Returns:
+        List of filter criteria in format [["field", "operator", "value"]]
+    """
+    if not skills:
+        return []
+    
+    # Return simple criteria format without "or"
+    # If multiple skills, only use the first one
+    # Format: [["skills", "==", "skill"]]
+    first_skill = skills[0] if skills else ""
+    return [["skills", "==", first_skill]]
+
+def sync_ats_candidates_to_talents():
+    """
+    Synchronize candidates from all active ATS Data Sources to Mira Talents
+    """
+    # Get active ATS data sources
+    data_sources = frappe.get_all(
+        "Mira Data Source",
+        filters={
+            "source_type": "ATS",
+            "is_active": 1,
+            "status": "Active",
+            "sync_direction": ["in", ["Pull", "Both"]]
+        },
+        fields=["name", "source_title", "source_name"]
+    )
+
+    if not data_sources:
+        frappe.log_error("No active ATS data sources found for candidate sync", "ATS Candidate Sync: No Data Sources")
+        return
+
+    for data_source in data_sources:
+        try:
+            data_source_doc = frappe.get_doc("Mira Data Source", data_source.name)
+            sync_data_source_candidates(data_source_doc)
+        except Exception as e:
+            frappe.log_error(
+                f"Failed to sync candidates for data source {data_source.name}: {str(e)}",
+                "ATS Candidate Sync Error"
+            )
+
+def sync_data_source_candidates(data_source):
+    """
+    Sync candidates for a specific ATS data source to Mira Talents
+    
+    Args:
+        data_source: Mira Data Source document object
+    """
+    # Create sync log
+    sync_log = frappe.get_doc({
+        "doctype": "Mira ATS Sync Log",
+        "connection": data_source.name,
+        "sync_type": "Candidate to Talent",  # Tạo sync type mới
+        "status": "In Progress",
+        "start_time": frappe.utils.now(),
+        "details": f"Starting candidate sync from {data_source.source_title} ({data_source.source_name})"
+    })
+    sync_log.insert(ignore_permissions=True)
+    frappe.db.commit()
+
+    try:
+        with FrappeSiteProvider(data_source.name) as provider:
+            if provider.sync_direction not in ("Pull", "Both"):
+                sync_log.status = "Failed"
+                sync_log.details = "Sync direction not set to Pull or Both"
+                sync_log.save(ignore_permissions=True)
+                return
+
+            # Fetch candidates from ATS
+            # Bạn có thể thêm filters nếu cần
+            candidates = provider.get_list(
+                "ATS_Candidate",
+                filters={},  # Có thể thêm filters như {"rejected": 0}
+                fields=["name"]  # Chỉ lấy name, chi tiết sẽ lấy trong loop
+            )
+
+            sync_log.total_records = len(candidates)
+            sync_log.save(ignore_permissions=True)
+            frappe.db.commit()
+            
+            success_count = 0
+            failed_count = 0
+            error_log = []
+
+            for candidate in candidates:
+                try:
+                    # Lấy chi tiết candidate
+                    candidate_doc = provider.get_doc("ATS_Candidate", candidate.get('name'))
+                    
+                    # Sử dụng hàm mapping có sẵn
+                    talent_data = map_mbw_ats_to_talentprofiles(
+                        candidate_doc, 
+                        campaign_name=None,  # Không dùng campaign
+                        source_name=data_source.name,
+                        segment_id=None
+                    )
+                    
+                    # Kiểm tra talent đã tồn tại
+                    existing = None
+                    if talent_data.get("email"):
+                        existing = frappe.db.exists("Mira Talent", {"email": talent_data["email"]})
+                    
+                    if not existing and candidate_doc.get("name"):
+                        existing = frappe.db.exists("Mira Talent", {"sync_id": candidate_doc.get("name")})
+
+                    if existing:
+                        # Update existing talent
+                        talent = frappe.get_doc("Mira Talent", existing)
+                        talent.update(talent_data)
+                        talent.save(ignore_permissions=True)
+                        action = "updated"
+                    else:
+                        # Create new talent
+                        talent = frappe.get_doc(talent_data)
+                        talent.insert(ignore_permissions=True)
+                        action = "created"
+
+                    success_count += 1
+                    
+                    # Commit sau mỗi talent thành công
+                    frappe.db.commit()
+
+                except Exception as e:
+                    failed_count += 1
+                    error_log.append({
+                        "candidate": candidate.get("name"),
+                        "error": str(e)[:200]
+                    })
+                    
+                    # Rollback failed transaction
+                    frappe.db.rollback()
+
+            # Update sync log
+            sync_log.reload()
+            sync_log.status = "Completed" if failed_count == 0 else "Partially Completed"
+            sync_log.success_count = success_count
+            sync_log.failed_count = failed_count
+            sync_log.error_log = json.dumps(error_log, indent=2)
+            sync_log.end_time = frappe.utils.now()
+            sync_log.details = f"Candidate sync completed. Success: {success_count}, Failed: {failed_count}"
+            sync_log.save(ignore_permissions=True)
+
+    except Exception as e:
+        try:
+            sync_log.reload()
+            sync_log.status = "Failed"
+            sync_log.error_log = str(e)[:500]
+            sync_log.end_time = frappe.utils.now()
+            sync_log.details = f"Candidate sync failed: {str(e)[:200]}"
+            sync_log.save(ignore_permissions=True)
+        except Exception as save_error:
+            pass
+        
+        # Log error với title ngắn
+        error_title = f"ATS Candidate Sync: {data_source.name[:30]}"
+        error_message = f"Failed to sync candidates for {data_source.name}\n\nError: {str(e)}"
+        frappe.log_error(error_message, error_title)
+    finally:
+        frappe.db.commit()
+
+def schedule_sync():
+    """
+    Schedule this function to run periodically
+    """
+    sync_ats_positions_to_segments()
+    sync_ats_candidates_to_talents()
