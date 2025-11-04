@@ -9,19 +9,18 @@ SECRET_KEY = frappe.local.conf.get("form_secret", "MY_SUPER_SECRET_KEY")
 def get_captcha():
     """Tạo ảnh captcha"""
     text = ''.join(random.choices(string.ascii_uppercase + string.digits, k=5))
-    frappe.session.data["captcha_code"] = text
-    frappe.session.save()
+    frappe.cache().set_value("captcha_code", text, expires_in_sec=300)
 
     image = Image.new('RGB', (120, 40), color=(255, 255, 255))
     draw = ImageDraw.Draw(image)
-    font = ImageFont.load_default()
+    font = ImageFont.load_default(20)
     draw.text((20, 10), text, fill=(0, 0, 0), font=font)
 
     # Nhiễu nhẹ
     for _ in range(5):
         x1, y1 = random.randint(0, 120), random.randint(0, 40)
         x2, y2 = random.randint(0, 120), random.randint(0, 40)
-        draw.line((x1, y1, x2, y2), fill=(150, 150, 150), width=1)
+        draw.line((x1, y1, x2, y2), fill=(150, 150, 150), width=2)
 
     img_bytes = io.BytesIO()
     image.save(img_bytes, format='PNG')
@@ -32,7 +31,8 @@ def get_captcha():
 @frappe.whitelist(allow_guest=True)
 def validate_captcha(code):
     """Kiểm tra captcha nhập vào"""
-    saved = frappe.session.data.get("captcha_code")
+    saved = frappe.cache().get_value("captcha_code")
+    
     return {"valid": code.strip().upper() == saved}
 
 
@@ -50,3 +50,29 @@ def validate_submission(data):
     expected = hmac.new(SECRET_KEY.encode(), data["form_timestamp"].encode(), hashlib.sha256).hexdigest()
     if data["form_hash"] != expected:
         frappe.throw("Form tampered.")
+
+@frappe.whitelist(allow_guest=True)
+def submit_form():
+    data = frappe.form_dict
+    validate_submission(data)
+    # Kiểm tra CAPTCHA
+    if not data.get("captcha_input") or not frappe.cache().get_value("captcha_code"):
+        return {"message": "Sai mã CAPTCHA"}
+    valid_capcha = validate_captcha(data.get("captcha_input"))
+    if  not valid_capcha.get("valid"):
+        return {"message": "Sai mã CAPTCHA"}
+
+    # Ghi log hoặc lưu form vào DocType
+    doc = frappe.get_doc({
+        "doctype": "Web Form Submission",
+        "form_name": "Contact Form",
+        "full_name": data.full_name,
+        "email": data.email,
+        "message": data.message,
+        "client_ip": data.client_ip,
+        "user_agent": data.user_agent,
+        "timestamp": data.timestamp,
+    })
+    doc.insert(ignore_permissions=True)
+
+    return {"message": "success"}
