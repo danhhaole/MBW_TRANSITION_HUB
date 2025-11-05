@@ -34,7 +34,13 @@
 					<div class="flex items-center justify-between mb-6">
 						<!-- Search -->
 						<div class="flex items-center gap-2">
-							<Input type="text" :placeholder="__('Search talents')" class="w-64">
+							<Input 
+								type="text" 
+								:placeholder="__('Search talents')" 
+								:model-value="talentPoolStore.filters.search"
+								@input="handleSearchInput"
+								class="w-64"
+							>
 								<template #prefix>
 									<FeatherIcon name="search" class="w-4 h-4 text-gray-400" />
 								</template>
@@ -79,7 +85,7 @@
 					<!-- Main Content -->
 					<div class="bg-white rounded-lg border border-gray-200">
 						<Card>
-							<div class="overflow-x-auto">
+							<div v-if="talents.length > 0" class="overflow-x-auto">
 								<table class="w-full">
 									<thead class="bg-gray-50 border-b border-gray-200">
 										<tr>
@@ -151,9 +157,6 @@
 													<div>
 														<div class="font-medium text-gray-900">
 															{{ talent.full_name }}
-														</div>
-														<div class="text-sm text-gray-500">
-															{{ talent.experience }}
 														</div>
 													</div>
 												</div>
@@ -232,6 +235,7 @@
 
 							<!-- Pagination Talent-->
 							<div
+								v-if="visiblePageNumbersTalent.length > 1 || talentPoolStore.pagination.total > talentPoolStore.pagination.limit"
 								class="px-6 py-4 border-t border-gray-200 flex items-center justify-between"
 							>
 								<div class="flex-1 flex justify-between sm:hidden">
@@ -371,7 +375,7 @@
 				</template>
 
 				<template #body-content>
-					<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 						<!-- Create with Form -->
 						<div
 							@click="openTalentForm"
@@ -467,6 +471,39 @@
 								</h4>
 								<p class="text-xs text-gray-500 mt-1">
 									{{ __('Upload many profiles.') }}
+								</p>
+							</div>
+						</div>
+
+						<!-- Sync from ATS -->
+						<div
+							@click="syncFromATS"
+							class="border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-orange-500 hover:shadow-sm transition-all"
+						>
+							<div class="flex flex-col items-center text-center">
+								<div
+									class="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center text-orange-600 mb-3"
+								>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										class="h-6 w-6"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke="currentColor"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+										/>
+									</svg>
+								</div>
+								<h4 class="font-medium text-gray-900">
+									{{ __('Sync from ATS') }}
+								</h4>
+								<p class="text-xs text-gray-500 mt-1">
+									{{ __('Import candidates from your ATS system.') }}
 								</p>
 							</div>
 						</div>
@@ -815,12 +852,18 @@
 
 			<!-- Upload BulkCV Talent -->
 			<BulkCVUploadModal v-model="showBulkUploadModal" />
+
+			<!-- ATS Talent Sync Dialog -->
+			<ATSTalentSyncDialog
+				v-model="showATSTalentSyncDialog"
+				@success="handleSyncSuccess"
+			/>
 		</div>
 	</div>
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import {
 	Breadcrumbs,
 	Button,
@@ -837,6 +880,7 @@ import { useToast } from '@/composables/useToast'
 import { useTalentStore } from '@/stores/talent'
 import UploadExcelTalentModal from '@/components/UploadExcelTalentModal.vue'
 import BulkCVUploadModal from '@/components/BulkCVUploadModal.vue'
+import ATSTalentSyncDialog from '@/components/ATSTalentSyncDialog.vue'
 // Breadcrumbs
 const breadcrumbs = [{ label: __('Talents'), route: { name: 'TalentPool' } }]
 const { showSuccess, showError } = useToast()
@@ -989,8 +1033,37 @@ const goToPageTalent = (pageNumber) => {
 		fetchTalents()
 	}
 }
+
+const handleSearchInput = (event) => {
+	// Clear any existing timeout
+	if (searchTimeout.value) {
+		clearTimeout(searchTimeout.value)
+	}
+
+	// Set a new timeout to fetch after user stops typing (500ms delay)
+	searchTimeout.value = setTimeout(() => {
+		// Reset to first page when searching
+		talentPoolStore.pagination.page = 1
+		talentPoolStore.setSearch(event)
+		// Force refresh with updated search text
+		talentPoolStore.fetchTalents({
+			page: 1,
+			limit: talentPoolStore.pagination.limit,
+		})
+	}, 500)
+}
+
+const handleRefresh = async () => {
+	await talentPoolStore.fetchTalents({
+		page: talentPoolStore.pagination.page,
+		limit: talentPoolStore.pagination.limit,
+	})
+}
+
 const showUploadModal = ref(false)
 const showBulkUploadModal = ref(false)
+const showATSTalentSyncDialog = ref(false)
+const searchTimeout = ref(null)
 const isEmailValid = computed(() => {
 	const email = newTalent.value.email
 	if (!email) return true // Empty is valid until submit
@@ -1220,6 +1293,16 @@ const openUploadMany = () => {
 	showBulkUploadModal.value = true
 }
 
+const syncFromATS = () => {
+	openDialogTalentOption.value = false
+	showATSTalentSyncDialog.value = true
+}
+
+const handleSyncSuccess = async () => {
+	showSuccess(__('Talents synced successfully from ATS'))
+	await talentPoolStore.fetchTalents()
+}
+
 const viewTalent = (talent) => {
 	console.log('View talent', talent.name)
 	router.push({ name: 'TalentDetail', params: { id: talent.name } })
@@ -1231,5 +1314,11 @@ const deleteTalent = (talent) => {
 
 onMounted(async () => {
 	await talentPoolStore.fetchTalents()
+})
+
+onUnmounted(() => {
+	if (searchTimeout.value) {
+		clearTimeout(searchTimeout.value)
+	}
 })
 </script>

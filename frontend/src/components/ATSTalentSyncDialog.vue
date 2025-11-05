@@ -11,10 +11,10 @@
         <div class="flex items-start justify-between mb-4">
           <div>
             <h3 class="text-lg font-semibold text-gray-900">
-              {{ __('Sync Positions from ATS') }}
+              {{ __('Sync Candidates from ATS') }}
             </h3>
             <p class="text-sm text-gray-500 mt-1">
-              {{ __('Import position data from your ATS system to create talent pools.') }}
+              {{ __('Import candidate data from your ATS system to create talent profiles.') }}
             </p>
           </div>
         </div>
@@ -90,7 +90,7 @@
         <div v-if="currentStep === 1 && !showConnectionForm" class="space-y-4">
           <div class="flex items-center justify-between mb-4">
             <div class="text-sm text-gray-600">
-              {{ __('Select an active ATS connection to sync positions from:') }}
+              {{ __('Select an active ATS connection to sync candidates from:') }}
             </div>
             <Button
               variant="solid"
@@ -405,7 +405,7 @@
             v-model="filterConditions"
             doctype="Mira Talent"
             :title="__('Filter Conditions')"
-            :description="__('Add conditions to filter which positions to sync. Leave empty to sync all active positions.')"
+            :description="__('Add conditions to filter which candidates to sync. Leave empty to sync all active candidates.')"
             :show-preview="false"
             :validate-on-change="false"
           />
@@ -686,7 +686,7 @@ const startSync = async () => {
   
   syncing.value = true
   try {
-    const response = await call('mbw_mira.api.sync_segment.sync_positions', {
+    const response = await call('mbw_mira.api.sync_segment.sync_candidates', {
       data_source_name: selectedConnection.value.name
     })
     
@@ -718,7 +718,7 @@ const fetchSyncLogs = async () => {
       doctype: 'Mira ATS Sync Log',
       filters: {
         connection: selectedConnection.value.name,
-        sync_type: 'Position to Segment'
+        sync_type: 'Candidate to Talent'
       },
       fields: [
         'name',

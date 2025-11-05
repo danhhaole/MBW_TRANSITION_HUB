@@ -48,12 +48,12 @@
 							</Input>
 						</div>
 						<div class="flex items-center gap-2">
-							<Button variant="outline">
+							<!-- <Button variant="outline">
 								<template #prefix>
 									<FeatherIcon name="filter" class="w-4 h-4" />
 								</template>
 								{{__("Filter")}}
-							</Button>
+							</Button> -->
 							<!-- Refresh Button -->
 							<Button
 								variant="outline"
@@ -157,7 +157,7 @@
 													{{ skill }}
 												</span>
 											</template>
-											<span v-else class="text-gray-500 text-sm">
+											<span v-else class="text-gray-500 text-sm px-3 py-1">
 												{{ __('No skill') }}
 											</span>
 										</div>
