@@ -477,6 +477,27 @@
 							</div>
 						</div>
 
+						<!-- Unsubscribe from Sequence Action -->
+						<div v-else-if="selectedItem.type === 'action' && isUnsubscribeSequenceAction()">
+							<h4 class="text-md font-medium text-gray-900 mb-4">{{ __('Unsubscribe from Sequence') }}</h4>
+							<div class="space-y-4">
+								<div>
+									<label class="block text-sm font-medium text-gray-700 mb-2">
+										{{ __('Sequence ID') }}
+									</label>
+									<FormControl
+										v-model="selectedItemData.parameters.sequence_id"
+										type="text"
+										:placeholder="__('Enter sequence ID to unsubscribe')"
+										@input="hasUnsavedChanges = true"
+									/>
+								</div>
+								<p class="text-xs text-gray-500">
+									{{ __('Customer will be removed from the specified sequence') }}
+								</p>
+							</div>
+						</div>
+
 						<!-- Email Action - Check after specific actions -->
 						<div v-else-if="selectedItem.type === 'action' && isEmailAction()">
 							<h4 class="text-md font-medium text-gray-900 mb-4">{{ __('Email Configuration') }}</h4>
@@ -597,7 +618,7 @@
 			</div>
 
 			<!-- Column 3: Mobile Preview -->
-			<!-- <div class="w-96 bg-gray-100 p-6">
+			<div class="w-96 bg-gray-100 p-6">
 				<div class="text-center mb-4">
 					<h3 class="text-sm font-medium text-gray-900">{{ __('Preview') }}</h3>
 					<p class="text-xs text-gray-500">{{ __('Preview on mobile') }}</p>
@@ -1027,7 +1048,7 @@
 						</div>
 					</div>
 				</div>
-			</div> -->
+			</div>
 		</div>
 
 		<!-- Add Trigger Modal -->
@@ -1405,6 +1426,13 @@ const availableActions = [
 		action_type: 'SUBSCRIBE_TO_SEQUENCE',
 		parameters: { sequence_id: '' },
 	},
+	{
+		label: 'Unsubscribe from Sequence',
+		value: 'unsubscribe_from_sequence',
+		description: 'Unsubscribe customer from sequence',
+		action_type: 'UN_SUBSCRIBE_TO_SEQUENCE',
+		parameters: { sequence_id: '' },
+	},
 ]
 
 // Computed
@@ -1589,6 +1617,7 @@ const getDefaultActionName = (actionType) => {
 		'START_FLOW': 'Start Flow',
 		'SUBSCRIBE_TO_SEQUENCE': 'Subscribe to Sequence',
 		'UN_SUBSCRIBE_TO_SEQUENCE': 'Unsubscribe from Sequence',
+		'UNSUBSCRIBE': 'Unsubscribe',
 		'SMART_DELAY': 'Smart Delay',
 		'AI_CALL': 'Call AI',
 		'ADD_TAG': 'Add Tag',
@@ -1614,6 +1643,7 @@ const getDefaultActionDescription = (actionType) => {
 		'START_FLOW': 'Start another flow',
 		'SUBSCRIBE_TO_SEQUENCE': 'Subscribe customer to sequence',
 		'UN_SUBSCRIBE_TO_SEQUENCE': 'Unsubscribe customer from sequence',
+		'UNSUBSCRIBE': 'Unsubscribe customer',
 		'SMART_DELAY': 'Smart delay based on conditions',
 		'AI_CALL': 'Call AI to process',
 		'ADD_TAG': 'Add tag to customer',
@@ -2324,6 +2354,16 @@ const isSubscribeSequenceAction = () => {
 	return action && (
 		action.action_type === 'SUBSCRIBE_TO_SEQUENCE' ||
 		action._ui_type === 'subscribe_to_sequence'
+	)
+}
+
+const isUnsubscribeSequenceAction = () => {
+	if (!selectedItem.value || selectedItem.value.type !== 'action') return false
+	const action = flowData.value.actions[selectedItem.value.index]
+	return action && (
+		action.action_type === 'UN_SUBSCRIBE_TO_SEQUENCE' ||
+		action.action_type === 'UNSUBSCRIBE' ||
+		action._ui_type === 'unsubscribe_from_sequence'
 	)
 }
 
@@ -3293,6 +3333,8 @@ const getActionDisplayName = (actionType) => {
 		'ADD_TAG': 'Add Tag',
 		'REMOVE_TAG': 'Remove Tag',
 		'SUBSCRIBE_TO_SEQUENCE': 'Subscribe to Sequence',
+		'UN_SUBSCRIBE_TO_SEQUENCE': 'Unsubscribe from Sequence',
+		'UNSUBSCRIBE': 'Unsubscribe',
 		'START_FLOW': 'Start Flow',
 		'EMAIL': 'Send Email',
 		'SMS': 'Send SMS',

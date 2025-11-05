@@ -3,6 +3,52 @@ from frappe import _
 import json
 
 
+def normalize_action_type(action_type):
+    """
+    Normalize action type from various formats to standard Mira Flow Action type
+    
+    Args:
+        action_type: Action type string (can be lowercase, uppercase, or legacy format)
+        
+    Returns:
+        str: Normalized action type
+    """
+    if not action_type:
+        return 'MESSAGE'
+    
+    # Convert to uppercase for comparison
+    action_type_upper = str(action_type).upper()
+    
+    # Mapping from legacy/template formats to standard formats
+    type_mapping = {
+        'ADD_TAG': 'ADD_TAG',
+        'REMOVE_TAG': 'REMOVE_TAG',
+        'NEXT_FLOW': 'START_FLOW',  # ✅ Legacy format
+        'START_FLOW': 'START_FLOW',
+        'ADD_TO_SEQUENCE': 'SUBSCRIBE_TO_SEQUENCE',
+        'SUBSCRIBE_TO_SEQUENCE': 'SUBSCRIBE_TO_SEQUENCE',
+        'SMART_DELAY': 'SMART_DELAY',
+        'ADD_CUSTOM_FIELD': 'ADD_CUSTOM_FIELD',
+        'REMOVE_CUSTOM_FIELD': 'REMOVE_CUSTOM_FIELD',
+        'EMAIL': 'EMAIL',
+        'SMS': 'SMS',
+        'ZALO': 'ZALO',
+        'ZALO_CARE': 'ZALO_CARE',
+        'ZALO_ZNS': 'ZALO_ZNS',
+        'MESSAGE': 'MESSAGE',
+        'AI_CALL': 'AI_CALL',
+        'LEAD_SCORE': 'LEAD_SCORE',
+        'EXTERNAL_REQUEST': 'EXTERNAL_REQUEST',
+        'EMAIL_AI': 'EMAIL_AI',
+        'CONTENT_AI': 'CONTENT_AI',
+        'SENT_NOTIFICATION': 'SENT_NOTIFICATION',
+        'UNSUBSCRIBE': 'UNSUBSCRIBE',
+        'UN_SUBSCRIBE_TO_SEQUENCE': 'UN_SUBSCRIBE_TO_SEQUENCE',
+    }
+    
+    return type_mapping.get(action_type_upper, action_type_upper)
+
+
 @frappe.whitelist()
 def create_flow_from_template(template_name, flow_title=None):
     """
@@ -82,7 +128,8 @@ def create_flow_from_template(template_name, flow_title=None):
             for template_action in template.template_actions:
                 # Create main action
                 action = flow_doc.append("action_id", {})
-                action.action_type = template_action.action_type
+                # ✅ Normalize action type
+                action.action_type = normalize_action_type(template_action.action_type)
                 action.channel_type = template_action.channel_type
                 action.order = template_action.order or 0
                 
@@ -108,9 +155,9 @@ def create_flow_from_template(template_name, flow_title=None):
                                 # Create child action
                                 child_action = flow_doc.append("action_id", {})
                                 
-                                # ✅ Get action_type from either 'action_type' or 'type' field
-                                action_type = action_config.get('action_type') or action_config.get('type', '').upper()
-                                child_action.action_type = action_type
+                                # ✅ Get action_type from either 'action_type' or 'type' field and normalize it
+                                raw_action_type = action_config.get('action_type') or action_config.get('type', '').upper()
+                                child_action.action_type = normalize_action_type(raw_action_type)
                                 child_action.channel_type = None  # Child actions don't have channel
                                 child_action.order = action.order + 0.1  # Slightly after parent
                                 
@@ -118,13 +165,13 @@ def create_flow_from_template(template_name, flow_title=None):
                                 # Note: We'll set parent_action_id after insert when we have the actual name
                                 child_action.parent_trigger = trigger_key
                                 
-                                # Build child action parameters
-                                child_params = {
-                                    'trigger_event': trigger_key,
-                                    'parent_action': template_action.name  # Temporary, will update after insert
-                                }
+                                # ✅ Build child action parameters (only action-specific data, no metadata)
+                                child_params = {}
                                 
-                                # ✅ Copy action-specific data from template
+                                # Store parent info temporarily for relationship setup (not in parameters)
+                                child_action._temp_parent_template_name = template_action.name
+                                
+                                # Copy action-specific data from template
                                 # Template structure: {type: 'add_tag', data: {selected_tags: [...]}, configured: true}
                                 action_type = action_config.get('action_type') or action_config.get('type', '').upper()
                                 action_data = action_config.get('data', {})
@@ -175,10 +222,9 @@ def create_flow_from_template(template_name, flow_title=None):
         # Now we have the actual action.name values
         for action in flow_doc.action_id:
             if hasattr(action, 'parent_trigger') and action.parent_trigger:
-                # Find parent action
+                # Find parent action using temporary attribute
                 try:
-                    params = json.loads(action.action_parameters)
-                    parent_template_name = params.get('parent_action')
+                    parent_template_name = getattr(action, '_temp_parent_template_name', None)
                     
                     if parent_template_name and parent_template_name in action_mapping:
                         parent_action = action_mapping[parent_template_name]
@@ -193,6 +239,10 @@ def create_flow_from_template(template_name, flow_title=None):
                                 additional_actions[action.parent_trigger]['action_id'] = action.name
                                 parent_params['additional_actions'] = additional_actions
                                 parent_action.action_parameters = json.dumps(parent_params)
+                        
+                        # Clean up temporary attribute
+                        if hasattr(action, '_temp_parent_template_name'):
+                            delattr(action, '_temp_parent_template_name')
                 except Exception as e:
                     frappe.log_error(f"Error updating parent_action_id: {str(e)}")
                     pass
