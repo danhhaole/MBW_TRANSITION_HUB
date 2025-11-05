@@ -140,7 +140,7 @@
    "fieldname": "source",
    "fieldtype": "Select",
    "label": "Source",
-   "options": "\nNEW\nLinkedIn\nReferral\nHeadhunter\nNurturing Interaction"
+   "options": "\nNEW\nLinkedIn\nReferral\nHeadhunter\nNurturing Interaction\nMBW ATS"
   },
   {
    "fieldname": "email",
@@ -266,7 +266,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-30 13:54:36.219834",
+ "modified": "2025-11-05 08:19:59.008008",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Talent",

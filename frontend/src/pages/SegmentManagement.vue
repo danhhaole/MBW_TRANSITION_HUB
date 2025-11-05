@@ -350,7 +350,7 @@
 					</template>
 
 					<template #body-content>
-						<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 							<!-- Create Manually -->
 							<div
 								@click="openManualSegmentCreation"
@@ -472,6 +472,12 @@
 					:segment="selectedPool"
 					@success="handlePoolCreated"
 					@cancel="showTalentPoolDialog = false"
+				/>
+
+				<!-- ATS Sync Dialog -->
+				<ATSSyncDialog
+					v-model="showATSSyncDialog"
+					@success="handleSyncSuccess"
 				/>
 
 				<!-- AI Suggestion Modal -->
@@ -680,8 +686,12 @@ import {
 	Dropdown,
 	Progress,
 	FileUploader,
+	Dialog,
+	LoadingIndicator,
 } from 'frappe-ui'
 import LayoutHeader from '@/components/LayoutHeader.vue'
+import ATSSyncDialog from '@/components/ATSSyncDialog.vue'
+import TalentPoolDialog from '@/components/talent-segment/TalentPoolDialog.vue'
 import { useRouter } from 'vue-router'
 import { useToast } from '@/composables/useToast'
 import { useTalentSegmentStore } from '@/stores/talentSegment'
@@ -702,6 +712,7 @@ const companyURL = ref('')
 const isFetchingPositions = ref(false)
 const aiPositions = ref([])
 const selectedPositions = ref([])
+const showATSSyncDialog = ref(false)
 const loading = computed(() => talentSegmentStore.loading)
 
 // Mock data for positions - replace with actual API call
@@ -931,8 +942,14 @@ const createPoolsFromSelection = async () => {
 }
 
 const syncFromATS = async () => {
-	// Add your ATS sync logic here
-	console.log('Sync from ATS')
+	openDialogSegmentOption.value = false
+	showATSSyncDialog.value = true
+}
+
+const handleSyncSuccess = async () => {
+	// Refresh segment list after successful sync
+	await fetchSegments()
+	showSuccess(__('Positions synced successfully'))
 }
 
 const handlePoolCreated = async () => {

@@ -218,6 +218,7 @@ def sync_data_source_positions(data_source):
     sync_log.insert(ignore_permissions=True)
     frappe.db.commit()
 
+    total_records = 0
     try:
         with FrappeSiteProvider(data_source.name) as provider:
             if provider.sync_direction not in ("Pull", "Both"):
@@ -233,7 +234,7 @@ def sync_data_source_positions(data_source):
                 fields=["name", "position_name", "position_description", "required_skills"]
             )
 
-            sync_log.total_records = len(positions)
+            total_records = len(positions)
             success_count = 0
             failed_count = 0
             error_log = []
@@ -298,6 +299,7 @@ def sync_data_source_positions(data_source):
             # Update sync log
             sync_log.reload()  # Reload to avoid concurrent modification
             sync_log.status = "Completed" if failed_count == 0 else "Partially Completed"
+            sync_log.total_records = total_records
             sync_log.success_count = success_count
             sync_log.failed_count = failed_count
             sync_log.error_log = json.dumps(error_log, indent=2)
@@ -309,6 +311,7 @@ def sync_data_source_positions(data_source):
         try:
             sync_log.reload()  # Reload to avoid concurrent modification
             sync_log.status = "Failed"
+            sync_log.total_records = total_records
             sync_log.error_log = str(e)[:500]  # Limit error log length
             sync_log.end_time = frappe.utils.now()
             sync_log.details = f"Sync failed: {str(e)[:200]}"
@@ -487,7 +490,7 @@ def sync_data_source_candidates(data_source):
                     talent_data = map_mbw_ats_to_talentprofiles(
                         candidate_doc, 
                         campaign_name=None,  # Không dùng campaign
-                        source_name=data_source.name,
+                        source_name="MBW ATS",
                         segment_id=None
                     )
                     

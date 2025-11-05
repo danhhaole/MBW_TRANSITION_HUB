@@ -59,6 +59,7 @@
                   <option value="">{{ __('Select pool type') }}</option>
                   <option value="STATIC">{{ __('Static') }}</option>
                   <option value="DYNAMIC">{{ __('Dynamic') }}</option>
+                  <option value="ATS_SYNC">{{ __('ATS Sync') }}</option>
                 </select>
               </div>
 

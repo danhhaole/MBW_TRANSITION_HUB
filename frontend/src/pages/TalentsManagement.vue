@@ -7,7 +7,7 @@
 					<Breadcrumbs :items="breadcrumbs" />
 				</template>
 				<template #right-header>
-					<Button variant="solid" theme="gray" @click="openCreateDialog">
+					<Button variant="solid" theme="gray" @click="openDialogTalentOption = true">
 						<template #prefix>
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
@@ -85,6 +85,7 @@
 										<tr>
 											<th class="w-12 p-3">
 												<input
+													class="rounded border-gray-300"
 													type="checkbox"
 													:checked="isAllCurrentPageSelected"
 													@change="toggleSelectAllTalent"
@@ -130,6 +131,7 @@
 										>
 											<td class="p-3 text-center">
 												<input
+													class="rounded border-gray-300"
 													type="checkbox"
 													:checked="
 														selectedAllTalent.some(

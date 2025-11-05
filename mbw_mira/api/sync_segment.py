@@ -49,7 +49,7 @@ def sync_positions(data_source_name):
             "message": f"Sync failed: {str(e)}"
         }
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def sync_candidates(data_source_name):
     """
     Sync candidates from ATS to Mira Talents

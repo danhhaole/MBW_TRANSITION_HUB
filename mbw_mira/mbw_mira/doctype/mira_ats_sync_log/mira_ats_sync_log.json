@@ -32,7 +32,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Sync Type",
-   "options": "Position to Segment\nSegment to Position",
+   "options": "Position to Segment\nSegment to Position\nCandidate to Talent",
    "reqd": 1
   },
   {
