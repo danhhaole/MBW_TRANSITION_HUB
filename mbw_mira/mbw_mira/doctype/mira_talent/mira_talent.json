@@ -43,7 +43,9 @@
   "internal_rating",
   "priority_level",
   "interaction_notes",
-  "latest_title"
+  "latest_title",
+  "email_id_invalid",
+  "email_opt_out"
  ],
  "fields": [
   {
@@ -262,7 +264,19 @@
    "fieldname": "latest_title",
    "fieldtype": "Text",
    "label": "Latest Title"
-  }
+  },
+  {
+    "default": "0",
+    "fieldname": "email_opt_out",
+    "fieldtype": "Int",
+    "label": "email_opt_out"
+   },
+   {
+    "default": "0",
+    "fieldname": "email_id_invalid",
+    "fieldtype": "Int",
+    "label": "Invalid Email"
+   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],

@@ -2,6 +2,8 @@ import frappe
 import io, random, string, base64, hashlib, hmac
 from PIL import Image, ImageDraw, ImageFont
 
+from mbw_mira.utils import get_real_ip
+
 SECRET_KEY = frappe.local.conf.get("form_secret", "MY_SUPER_SECRET_KEY")
 
 
@@ -61,7 +63,7 @@ def submit_form():
     valid_capcha = validate_captcha(data.get("captcha_input"))
     if  not valid_capcha.get("valid"):
         return {"message": "Sai mã CAPTCHA"}
-
+    real_ip =get_real_ip()
     # Ghi log hoặc lưu form vào DocType
     doc = frappe.get_doc({
         "doctype": "Web Form Submission",
@@ -69,7 +71,7 @@ def submit_form():
         "full_name": data.full_name,
         "email": data.email,
         "message": data.message,
-        "client_ip": data.client_ip,
+        "client_ip": real_ip,
         "user_agent": data.user_agent,
         "timestamp": data.timestamp,
     })

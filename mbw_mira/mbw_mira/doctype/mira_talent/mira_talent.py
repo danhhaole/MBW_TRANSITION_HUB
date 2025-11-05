@@ -6,8 +6,51 @@ from frappe.model.document import Document
 from frappe.utils import cstr, cint, flt, add_days, nowdate, get_datetime,now_datetime
 from mbw_mira.api.common import get_filter_options, get_form_data, get_list_data
 import json
+
+from mbw_mira.mbw_mira.doctype.mira_task.mira_task import create_mira_task_from_event
 class MiraTalent(Document):
+
+    def after_insert(doc, method):
+        create_mira_task_from_event(
+            event_trigger="ON_CREATE",
+            target_type="Talent",
+            target_id=doc.name,
+            event_payload=doc.as_dict()
+        )
+    def on_update(self):
+        if not self.get("__islocal"):  # nghĩa là UPDATE, không phải INSERT
+            self.on_talent_update()
+            old_doc = self.get_doc_before_save()
+            if old_doc.crm_status != self.crm_status:
+                self.on_status_changed(old_doc.crm_status,self.crm_status)
+            if old_doc.tags != self.tags:
+                self.on_tag_added()
+            
+    def on_talent_update(self):
+        create_mira_task_from_event(
+                event_trigger="ON_UPDATE",
+                target_type="Talent",
+                target_id=self.name,
+                event_payload=self.as_dict()
+            )
     
+    def on_tag_added(self):
+        create_mira_task_from_event(
+            event_trigger="ON_TAG_ADDED",
+            target_type="Talent",
+            target_id=self.name,
+            event_payload={"tags": self.tags}
+        )
+    def on_status_changed(self,old_status, new_status):
+        create_mira_task_from_event(
+            event_trigger="ON_STATUS_CHANGED",
+            target_type="Talent",
+            target_id=self.name,
+            event_payload={
+                "old_status": old_status,
+                "new_status": new_status
+            }
+        )
     def after_save(self):
         pass
         #Tạo Talent Campaign

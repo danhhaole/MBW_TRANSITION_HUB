@@ -6,7 +6,7 @@ from rapidfuzz import fuzz
 from frappe.utils import now_datetime
 from mbw_mira.mbw_mira.doctype.mira_interaction.mira_interaction import create_mira_interaction
 from urllib.parse import unquote
-
+import ipaddress
 import csv
 
 
@@ -478,3 +478,20 @@ def convert_po_to_csv(po_path, csv_path):
 #     # Ghi ra file mới
 #     po.save(output_po_path)
 #     print(f"Đã dịch và lưu: {output_po_path}")
+
+
+def get_real_ip():
+    req = frappe.local.request
+    ip = (
+        req.headers.get("X-Forwarded-For")
+        or req.headers.get("X-Real-IP")
+        or req.remote_addr
+    )
+    # Lấy IP đầu tiên nếu có chuỗi danh sách
+    if "," in ip:
+        ip = ip.split(",")[0].strip()
+    try:
+        ipaddress.ip_address(ip)
+    except ValueError:
+        ip = "0.0.0.0"
+    return ip

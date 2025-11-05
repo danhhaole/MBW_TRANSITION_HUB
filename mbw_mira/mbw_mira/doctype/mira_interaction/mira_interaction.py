@@ -4,6 +4,7 @@
 import frappe
 from frappe.utils import nowdate
 from frappe.model.document import Document
+from mbw_mira.mbw_mira.doctype.mira_task.mira_task import create_mira_task_from_event
 
 
 class MiraInteraction(Document):
@@ -75,7 +76,13 @@ class MiraInteraction(Document):
 
 	def handle_email_sent(self):
 		"""Ghi nhận khi gửi email thành công."""
-		pass
+		create_mira_task_from_event(
+				event_trigger="ON_SEND_SUCCESS",
+				target_type="Talent",
+				target_id=self.talent_id,
+				event_payload={"talent_id": self.talent_id}
+			)
+			
 
 	def handle_email_delivered(self):
 		"""Ghi nhận khi email được gửi đến hộp thư người nhận."""
@@ -83,15 +90,21 @@ class MiraInteraction(Document):
 
 	def handle_email_bounced(self):
 		"""Hard bounce – đánh dấu email invalid."""
-		pass
+		frappe.db.set_value("Mira Talent",self.talent_id,"email_id_invalid", 1)
 
 	def handle_email_engagement(self):
 		"""Email opened hoặc clicked."""
 		self._update_talent_interaction("Quan tâm AI")
+		create_mira_task_from_event(
+			event_trigger="ON_LINK_CLICK",
+			target_type="Talent",
+			target_id=self.talent_id,
+			event_payload={"url": self.url}
+		)
 
 	def handle_email_unsubscribe(self):
 		"""Người dùng hủy đăng ký."""
-		pass
+		frappe.db.set_value("Mira Talent",self.talent_id,"email_opt_out", 1)
 
 	def handle_email_replied(self):
 		"""Người dùng phản hồi email."""

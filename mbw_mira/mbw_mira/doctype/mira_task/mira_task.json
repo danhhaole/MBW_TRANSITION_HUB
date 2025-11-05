@@ -1,0 +1,145 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-11-05 09:15:22.053955",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+    "subject",
+    "trigger_type",
+    "trigger_value",
+    "action_type",
+    "action_value",
+    "related_talent",
+    "flow",
+    "condition",
+    "due_time",
+    "status",
+    "error_log",
+    "executed_at",
+    "execution_result",
+    "reference_doctype",
+    "reference_name"
+  ],
+  "fields": [
+    {
+      "fieldname": "subject",
+      "label": "Subject",
+      "fieldtype": "Data",
+      "reqd": 1
+    },
+    {
+      "fieldname": "trigger_type",
+      "label": "Trigger Type",
+      "fieldtype": "Data",
+      "description": "Loại hành động tạo ra task (vd: On Create, On Update, On Interaction)"
+    },
+    {
+      "fieldname": "trigger_value",
+      "label": "Trigger Value",
+      "fieldtype": "Data",
+      "description": "Tên hoặc giá trị cụ thể của trigger (vd: campaign_open, form_submit)"
+    },
+    {
+      "fieldname": "action_type",
+      "label": "Action Type",
+      "fieldtype": "Data",
+      "description": "Loại action sẽ được thực hiện (vd: Send Email, Start Flow, Update Field)"
+    },
+    {
+      "fieldname": "action_value",
+      "label": "Action Value",
+      "fieldtype": "Data",
+      "description": "Giá trị cụ thể của action (vd: email_template_id, flow_id)"
+    },
+    {
+      "fieldname": "related_talent",
+      "label": "Related Talent",
+      "fieldtype": "Link",
+      "options": "Mira Talent"
+    },
+    {
+      "fieldname": "flow",
+      "label": "Flow",
+      "fieldtype": "Link",
+      "options": "Mira Flow",
+      "description": "Flow mà task này thuộc về hoặc sẽ kích hoạt"
+    },
+    {
+      "fieldname": "condition",
+      "label": "Condition (JSON)",
+      "fieldtype": "Code",
+      "options": "JSON",
+      "description": "Điều kiện thực thi task (ví dụ: {'field':'status','equals':'active'})"
+    },
+    {
+      "fieldname": "due_time",
+      "label": "Due Time",
+      "fieldtype": "Datetime"
+    },
+    {
+      "fieldname": "status",
+      "label": "Status",
+      "fieldtype": "Select",
+      "options": "Pending\nIn Progress\nCompleted\nFailed",
+      "default": "Pending"
+    },
+    {
+      "fieldname": "error_log",
+      "label": "Error Log",
+      "fieldtype": "Small Text",
+      "hidden": 1
+    },
+    {
+      "fieldname": "scheduled_at",
+      "label": "Scheduled At",
+      "fieldtype": "Datetime"
+    },
+    {
+      "fieldname": "executed_at",
+      "label": "Executed At",
+      "fieldtype": "Datetime"
+    },
+    {
+      "fieldname": "execution_result",
+      "label": "Execution Result",
+      "fieldtype": "Small Text"
+    },{
+        "fieldname": "reference_doctype",
+        "label": "Reference Doctype",
+        "fieldtype": "Data"
+      },
+      {
+        "fieldname": "reference_name",
+        "label": "Reference Name",
+        "fieldtype": "Dynamic Link",
+        "options": "reference_doctype"
+      }
+  ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-11-05 09:15:22.053955",
+ "modified_by": "Administrator",
+ "module": "MBW Mira",
+ "name": "Mira Task",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
