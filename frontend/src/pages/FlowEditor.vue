@@ -334,12 +334,51 @@
 
 						<!-- Remove Tag Action -->
 						<div v-else-if="selectedItem.type === 'action' && isRemoveTagAction()">
-							<h4 class="text-md font-medium text-gray-900 mb-4">Xóa Tag</h4>
-							<ActionConfig
-								action-type="remove_tag"
-								:action-data="selectedItemData.parameters"
-								@update:action-data="updateActionData"
-							/>
+							<h4 class="text-md font-medium text-gray-900 mb-4">{{ __('Remove Tag') }}</h4>
+							<div class="space-y-4">
+								<!-- Select existing tags to remove -->
+								<div>
+									<label class="block text-sm font-medium text-gray-700 mb-2">
+										{{ __('Select tags to remove') }}
+									</label>
+									
+									<!-- Selected tags display -->
+									<div v-if="selectedTagsDisplay?.length > 0" class="mb-3">
+										<div class="flex flex-wrap gap-2">
+											<div
+												v-for="tag in selectedTagsDisplay"
+												:key="tag.value"
+												class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-red-100 text-red-800 border border-red-200"
+											>
+												<span>{{ tag.label }}</span>
+												<button
+													@click="removeSelectedTag(tag.value)"
+													class="ml-2 text-red-600 hover:text-red-800 focus:outline-none"
+												>
+													<FeatherIcon name="x" class="h-3 w-3" />
+												</button>
+											</div>
+										</div>
+									</div>
+									
+									<!-- Tag selector -->
+									<FormControl
+										type="select"
+										v-model="selectedTagToAdd"
+										:options="availableTagOptions"
+										:placeholder="__('Select tags to remove')"
+										:loading="tagsLoading"
+										@change="addSelectedTag"
+									/>
+								</div>
+								
+								<p class="text-xs text-gray-500">
+									{{ __('Selected tags will be removed from the candidate') }}
+								</p>
+								<p v-if="selectedTagsDisplay.length === 0" class="text-red-500 text-xs">
+									{{ __('Please select at least one tag to remove') }}
+								</p>
+							</div>
 						</div>
 
 						<!-- Smart Delay Action -->

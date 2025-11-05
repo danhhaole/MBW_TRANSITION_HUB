@@ -30,12 +30,20 @@
 
           <!-- Right: Actions -->
           <div class="flex items-center space-x-3">
+            <!-- Use Template button (only in edit mode) -->
             <Button
+              v-if="isEditMode"
               variant="outline"
-              @click="handleBack"
+              @click="handleUseTemplate"
+              :loading="usingTemplate"
             >
-              {{ __('Cancel') }}
+              <template #prefix>
+                <FeatherIcon name="play" class="h-4 w-4" />
+              </template>
+              {{ __('Use Template') }}
             </Button>
+            
+            <!-- Save/Update button -->
             <Button
               theme="blue"
               :loading="saving"
@@ -229,8 +237,7 @@
               <Button
                 variant="outline"
                 size="sm"
-                @click="handleAddAction"
-                :disabled="!templateData.channel"
+                @click="showAddAction = true"
               >
                 <template #prefix>
                   <FeatherIcon name="plus" class="h-4 w-4" />
@@ -469,6 +476,40 @@
       </template>
     </Dialog>
 
+    <!-- ✅ Action Picker Dialog -->
+    <Dialog
+      v-model="showAddAction"
+      :options="{ title: __('Add Action'), size: 'lg' }"
+    >
+      <template #body-content>
+        <div class="space-y-4">
+          <!-- Search -->
+          <div class="relative">
+            <input
+              v-model="actionSearch"
+              type="text"
+              :placeholder="__('Search actions...')"
+              class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+            />
+            <FeatherIcon name="search" class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+          </div>
+
+          <!-- Action List -->
+          <div class="grid grid-cols-1 gap-3 max-h-96 overflow-y-auto">
+            <div
+              v-for="action in filteredActionOptions"
+              :key="action.value"
+              class="p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+              @click="handleSelectAction(action)"
+            >
+              <h4 class="text-sm font-medium text-gray-900">{{ action.label }}</h4>
+              <p class="text-xs text-gray-500 mt-1">{{ action.description }}</p>
+            </div>
+          </div>
+        </div>
+      </template>
+    </Dialog>
+
     <!-- Edit/View Action Modal -->
     <Dialog 
       v-model="isEditActionOpen" 
@@ -480,7 +521,7 @@
       <template #body-content>
         <div class="space-y-6" @click.stop>
           <!-- Email Editor -->
-          <div v-if="templateData.channel === 'Email'">
+          <div v-if="selectedActionType?.action_type === 'EMAIL'">
             <EmailEditor
               :content="currentActionContent"
               @update:content="updateActionContent"
@@ -488,8 +529,22 @@
             />
           </div>
 
-          <!-- Message Editor -->
-          <div v-else>
+          <!-- SMS Editor -->
+          <div v-else-if="selectedActionType?.action_type === 'SMS'">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">SMS Content</label>
+              <textarea
+                v-model="currentActionContent.message"
+                rows="4"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                :readonly="isViewMode"
+                placeholder="Enter SMS message..."
+              />
+            </div>
+          </div>
+
+          <!-- Zalo Editor -->
+          <div v-else-if="selectedActionType?.action_type === 'ZALO'">
             <ZaloEditor
               :content="currentActionContent"
               @update:content="updateActionContent"
@@ -497,8 +552,104 @@
             />
           </div>
 
-          <!-- Additional Actions -->
-          <div v-if="!isViewMode">
+          <!-- Add Tag -->
+          <div v-else-if="selectedActionType?.action_type === 'ADD_TAG'">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Tag Name</label>
+              <input
+                v-model="currentActionContent.tag_name"
+                type="text"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                :readonly="isViewMode"
+                placeholder="Enter tag name..."
+              />
+            </div>
+          </div>
+
+          <!-- Remove Tag -->
+          <div v-else-if="selectedActionType?.action_type === 'REMOVE_TAG'">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Tag Name</label>
+              <input
+                v-model="currentActionContent.tag_name"
+                type="text"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                :readonly="isViewMode"
+                placeholder="Enter tag name to remove..."
+              />
+            </div>
+          </div>
+
+          <!-- Smart Delay -->
+          <div v-else-if="selectedActionType?.action_type === 'SMART_DELAY'">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Duration</label>
+              <input
+                v-model="currentActionContent.duration"
+                type="text"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                :readonly="isViewMode"
+                placeholder="e.g., 1 day, 2 hours..."
+              />
+            </div>
+          </div>
+
+          <!-- Add Custom Field -->
+          <div v-else-if="selectedActionType?.action_type === 'ADD_CUSTOM_FIELD'">
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Field Name</label>
+                <input
+                  v-model="currentActionContent.field_name"
+                  type="text"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  :readonly="isViewMode"
+                  placeholder="Enter field name..."
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Field Value</label>
+                <input
+                  v-model="currentActionContent.field_value"
+                  type="text"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  :readonly="isViewMode"
+                  placeholder="Enter field value..."
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Start Flow -->
+          <div v-else-if="selectedActionType?.action_type === 'START_FLOW'">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Flow ID</label>
+              <input
+                v-model="currentActionContent.flow_id"
+                type="text"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                :readonly="isViewMode"
+                placeholder="Enter flow ID..."
+              />
+            </div>
+          </div>
+
+          <!-- Subscribe to Sequence -->
+          <div v-else-if="selectedActionType?.action_type === 'SUBSCRIBE_TO_SEQUENCE'">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Sequence ID</label>
+              <input
+                v-model="currentActionContent.sequence_id"
+                type="text"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                :readonly="isViewMode"
+                placeholder="Enter sequence ID..."
+              />
+            </div>
+          </div>
+
+          <!-- Additional Actions (only for messaging actions) -->
+          <div v-if="!isViewMode && ['EMAIL', 'SMS', 'ZALO'].includes(selectedActionType?.action_type)">
             <AdditionalActions
               :interaction-type="getInteractionType()"
               :model-value="currentAdditionalActions"
@@ -547,10 +698,13 @@ const templateStore = useFlowTemplateStore()
 
 // State
 const saving = ref(false)
+const usingTemplate = ref(false)
 const errors = ref({})
 const showAddTrigger = ref(false)
+const showAddAction = ref(false)  // ✅ Action picker dialog
 const showEditAction = ref(false)
 const triggerSearch = ref('')
+const actionSearch = ref('')  // ✅ Search for actions
 const editingActionIndex = ref(null)
 const editingTriggerIndex = ref(null)
 const currentActionContent = ref(null)
@@ -558,6 +712,7 @@ const currentAdditionalActions = ref({})  // Object, not Array
 const currentTriggerConfig = ref(null)
 const showTriggerConfig = ref(false)
 const selectedTriggerType = ref(null)
+const selectedActionType = ref(null)  // ✅ Selected action type
 const isViewMode = ref(false)
 
 const templateData = ref({
@@ -670,6 +825,99 @@ const availableTriggers = [
   }
 ]
 
+// ✅ Available actions list (copied from FlowEditor)
+const availableActions = [
+  {
+    label: 'Send Email',
+    value: 'send_email',
+    description: 'Send email to customer',
+    action_type: 'EMAIL',
+    parameters: {
+      channel: 'Email',
+      template_id: '',
+      email_content: {
+        email_subject: '',
+        email_content: '',
+        attachments: [],
+      },
+    },
+  },
+  {
+    label: 'Send SMS',
+    value: 'send_sms',
+    description: 'Send SMS to customer',
+    action_type: 'SMS',
+    parameters: {
+      channel: 'SMS',
+      template_id: '',
+      sms_content: {
+        message: '',
+      },
+    },
+  },
+  {
+    label: 'Send Zalo',
+    value: 'send_zalo',
+    description: 'Send Zalo message to customer',
+    action_type: 'ZALO',
+    parameters: {
+      channel: 'Zalo',
+      template_id: '',
+      zalo_content: {
+        blocks: [
+          {
+            id: 1,
+            type: 'text',
+            text_content: '',
+          },
+        ],
+      },
+    },
+  },
+  {
+    label: 'Smart Delay',
+    value: 'smart_delay',
+    description: 'Wait for a certain amount of time before the next action',
+    action_type: 'SMART_DELAY',
+    parameters: { duration: '1 day' },
+  },
+  {
+    label: 'Add Tag',
+    value: 'add_tag',
+    description: 'Add tag to customer',
+    action_type: 'ADD_TAG',
+    parameters: { tag_name: '' },
+  },
+  {
+    label: 'Remove Tag',
+    value: 'remove_tag',
+    description: 'Remove tag from customer',
+    action_type: 'REMOVE_TAG',
+    parameters: { tag_name: '' },
+  },
+  {
+    label: 'Add Custom Field',
+    value: 'add_custom_field',
+    description: 'Add custom field to customer',
+    action_type: 'ADD_CUSTOM_FIELD',
+    parameters: { field_name: '', field_value: '' },
+  },
+  {
+    label: 'Start Flow',
+    value: 'start_flow',
+    description: 'Start another flow',
+    action_type: 'START_FLOW',
+    parameters: { flow_id: '' },
+  },
+  {
+    label: 'Subscribe to Sequence',
+    value: 'subscribe_to_sequence',
+    description: 'Subscribe customer to sequence',
+    action_type: 'SUBSCRIBE_TO_SEQUENCE',
+    parameters: { sequence_id: '' },
+  },
+]
+
 const filteredTriggerOptions = computed(() => {
   if (!triggerSearch.value) return availableTriggers
   return availableTriggers.filter(trigger =>
@@ -678,9 +926,43 @@ const filteredTriggerOptions = computed(() => {
   )
 })
 
+const filteredActionOptions = computed(() => {
+  if (!actionSearch.value) return availableActions
+  return availableActions.filter(action =>
+    action.label.toLowerCase().includes(actionSearch.value.toLowerCase()) ||
+    action.description.toLowerCase().includes(actionSearch.value.toLowerCase())
+  )
+})
+
 // Methods
 const handleBack = () => {
   router.push('/flow-templates')
+}
+
+const handleUseTemplate = async () => {
+  try {
+    usingTemplate.value = true
+    
+    // Call store action to create flow from template
+    const result = await templateStore.useTemplate(
+      templateData.value.name,
+      `${templateData.value.name_template} - ${new Date().toLocaleString()}`
+    )
+    
+    if (result.success) {
+      toast.success(result.message || __('Flow created successfully from template!'))
+      
+      // Navigate to flow editor
+      router.push(`/flows/${result.flow_name}/edit`)
+    } else {
+      toast.error(result.error || __('Failed to create flow from template'))
+    }
+  } catch (error) {
+    console.error('Error using template:', error)
+    toast.error(__('An error occurred while creating flow'))
+  } finally {
+    usingTemplate.value = false
+  }
 }
 
 const validateForm = () => {
@@ -893,18 +1175,26 @@ const getTriggerConfigSummary = (configJson) => {
   }
 }
 
-const handleAddAction = () => {
+// ✅ Handle selecting action from picker
+const handleSelectAction = (actionOption) => {
+  console.log('Selected action:', actionOption)
+  
+  selectedActionType.value = actionOption
   editingActionIndex.value = null
   isViewMode.value = false
   
-  // Initialize content based on channel
-  if (templateData.value.channel === 'Email') {
+  // Initialize content based on action type
+  if (actionOption.action_type === 'EMAIL') {
     currentActionContent.value = {
       email_subject: '',
       email_content: '',
       attachments: []
     }
-  } else {
+  } else if (actionOption.action_type === 'SMS') {
+    currentActionContent.value = {
+      message: ''
+    }
+  } else if (actionOption.action_type === 'ZALO') {
     currentActionContent.value = {
       blocks: [{
         id: Date.now(),
@@ -912,11 +1202,40 @@ const handleAddAction = () => {
         text_content: ''
       }]
     }
+  } else if (actionOption.action_type === 'ADD_TAG') {
+    currentActionContent.value = {
+      tag_name: ''
+    }
+  } else if (actionOption.action_type === 'REMOVE_TAG') {
+    currentActionContent.value = {
+      tag_name: ''
+    }
+  } else if (actionOption.action_type === 'SMART_DELAY') {
+    currentActionContent.value = {
+      duration: '1 day'
+    }
+  } else if (actionOption.action_type === 'ADD_CUSTOM_FIELD') {
+    currentActionContent.value = {
+      field_name: '',
+      field_value: ''
+    }
+  } else if (actionOption.action_type === 'START_FLOW') {
+    currentActionContent.value = {
+      flow_id: ''
+    }
+  } else if (actionOption.action_type === 'SUBSCRIBE_TO_SEQUENCE') {
+    currentActionContent.value = {
+      sequence_id: ''
+    }
+  } else {
+    currentActionContent.value = {}
   }
   
-  // Initialize additional actions as empty object (not array)
+  // Initialize additional actions as empty object
   currentAdditionalActions.value = {}
   
+  // Close picker, open editor
+  showAddAction.value = false
   isEditActionOpen.value = true
 }
 
@@ -925,9 +1244,22 @@ const viewAction = (index) => {
   isViewMode.value = true
   const action = actions.value[index]
   
+  // ✅ Set selectedActionType based on action_type
+  selectedActionType.value = availableActions.find(a => a.action_type === action.action_type) || null
+  
   try {
     const params = JSON.parse(action.action_parameters)
-    currentActionContent.value = params.email_content || params.zalo_content || params.sms_content
+    
+    // Load content based on action type
+    if (action.action_type === 'EMAIL') {
+      currentActionContent.value = params.email_content || params
+    } else if (action.action_type === 'SMS') {
+      currentActionContent.value = params.sms_content || params
+    } else if (action.action_type === 'ZALO') {
+      currentActionContent.value = params.zalo_content || params
+    } else {
+      currentActionContent.value = params
+    }
     
     // Load additional_actions - support both Object and Array formats
     const additionalActionsData = params.additional_actions || {}
@@ -964,9 +1296,22 @@ const editAction = (index) => {
   isViewMode.value = false
   const action = actions.value[index]
   
+  // ✅ Set selectedActionType based on action_type
+  selectedActionType.value = availableActions.find(a => a.action_type === action.action_type) || null
+  
   try {
     const params = JSON.parse(action.action_parameters)
-    currentActionContent.value = params.email_content || params.zalo_content || params.sms_content
+    
+    // Load content based on action type
+    if (action.action_type === 'EMAIL') {
+      currentActionContent.value = params.email_content || params
+    } else if (action.action_type === 'SMS') {
+      currentActionContent.value = params.sms_content || params
+    } else if (action.action_type === 'ZALO') {
+      currentActionContent.value = params.zalo_content || params
+    } else {
+      currentActionContent.value = params
+    }
     
     // Load additional_actions - support both Object and Array formats
     const additionalActionsData = params.additional_actions || {}
@@ -1014,51 +1359,50 @@ const updateAdditionalActions = (newActions) => {
 }
 
 const getInteractionType = () => {
-  if (templateData.value.channel === 'Email') return 'EMAIL'
-  if (templateData.value.channel === 'Zalo') return 'ZALO_CARE'
-  if (templateData.value.channel === 'SMS') return 'SMS'
+  if (selectedActionType.value?.action_type === 'EMAIL') return 'EMAIL'
+  if (selectedActionType.value?.action_type === 'ZALO') return 'ZALO_CARE'
+  if (selectedActionType.value?.action_type === 'SMS') return 'SMS'
   return 'EMAIL'
 }
 
 const saveAction = () => {
   console.log('💾 Saving action...')
+  console.log('Selected action type:', selectedActionType.value)
   console.log('Current content:', currentActionContent.value)
   console.log('Additional actions:', currentAdditionalActions.value)
   
+  if (!selectedActionType.value) {
+    toast.error('No action type selected')
+    return
+  }
+  
   // Build parameters object that matches FlowEditor structure
-  const parameters = {
-    channel: templateData.value.channel
-  }
+  const parameters = { ...currentActionContent.value }
   
-  // Add content based on channel
-  if (templateData.value.channel === 'Email') {
-    parameters.email_content = currentActionContent.value
-  } else if (templateData.value.channel === 'Zalo') {
-    parameters.zalo_content = currentActionContent.value
-  } else if (templateData.value.channel === 'SMS') {
-    parameters.sms_content = currentActionContent.value
-  }
-  
-  // Add additional actions - keep as Object format (FlowEditor expects Object)
-  if (currentAdditionalActions.value && Object.keys(currentAdditionalActions.value).length > 0) {
-    // Keep as object format: {email_open: {type, data, configured}, link_click: {...}}
-    parameters.additional_actions = JSON.parse(JSON.stringify(currentAdditionalActions.value))
-    console.log('✅ Added additional_actions (Object format):', parameters.additional_actions)
-  }
-  
-  // Map channel to action_type to match FlowEditor format
-  // Use MESSAGE for all messaging actions to match FlowEditor
-  const channelToActionType = {
-    'Email': 'MESSAGE',
-    'SMS': 'MESSAGE',
-    'Zalo': 'MESSAGE',
-    'Messenger': 'MESSAGE'
+  // Add channel for messaging actions
+  if (['EMAIL', 'SMS', 'ZALO'].includes(selectedActionType.value.action_type)) {
+    parameters.channel = selectedActionType.value.parameters.channel
+    
+    // Add content based on action type
+    if (selectedActionType.value.action_type === 'EMAIL') {
+      parameters.email_content = currentActionContent.value
+    } else if (selectedActionType.value.action_type === 'ZALO') {
+      parameters.zalo_content = currentActionContent.value
+    } else if (selectedActionType.value.action_type === 'SMS') {
+      parameters.sms_content = currentActionContent.value
+    }
+    
+    // Add additional actions - keep as Object format (FlowEditor expects Object)
+    if (currentAdditionalActions.value && Object.keys(currentAdditionalActions.value).length > 0) {
+      parameters.additional_actions = JSON.parse(JSON.stringify(currentAdditionalActions.value))
+      console.log('✅ Added additional_actions (Object format):', parameters.additional_actions)
+    }
   }
   
   const actionData = {
-    action_name: `Send ${templateData.value.channel}`,
-    action_type: channelToActionType[templateData.value.channel] || 'MESSAGE',
-    channel_type: templateData.value.channel,
+    action_name: selectedActionType.value.label,
+    action_type: selectedActionType.value.action_type,
+    channel_type: selectedActionType.value.parameters?.channel || null,
     action_parameters: JSON.stringify(parameters),
     status: 'ACTIVE',
     order: editingActionIndex.value !== null ? actions.value[editingActionIndex.value].order : actions.value.length,
@@ -1070,8 +1414,14 @@ const saveAction = () => {
   
   if (editingActionIndex.value !== null) {
     console.log('✏️ Updating action at index:', editingActionIndex.value)
+    // ✅ Merge với existing action để giữ lại additional_actions
+    const existingAction = actions.value[editingActionIndex.value]
+    const mergedAction = {
+      ...existingAction,
+      ...actionData
+    }
     // Use splice to ensure reactivity
-    actions.value.splice(editingActionIndex.value, 1, actionData)
+    actions.value.splice(editingActionIndex.value, 1, mergedAction)
   } else {
     console.log('➕ Adding new action')
     actions.value.push(actionData)

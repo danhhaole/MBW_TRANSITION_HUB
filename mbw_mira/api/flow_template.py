@@ -74,9 +74,13 @@ def create_flow_from_template(template_name, flow_title=None):
         
         # Copy actions from template
         # Mira Flow Action fields: flow_id, action_type, channel_type, action_parameters,
-        # next_flow, sequence, delay_minutes, condition, order
+        # next_flow, sequence, delay_minutes, condition, order, parent_action_id
         if template.template_actions:
+            # Track created actions to handle parent-child relationships
+            action_mapping = {}  # template_action.name -> created_action.name
+            
             for template_action in template.template_actions:
+                # Create main action
                 action = flow_doc.append("action_id", {})
                 action.action_type = template_action.action_type
                 action.channel_type = template_action.channel_type
@@ -85,9 +89,116 @@ def create_flow_from_template(template_name, flow_title=None):
                 # Copy action parameters (email content, additional actions, etc.)
                 if template_action.action_parameters:
                     action.action_parameters = template_action.action_parameters
+                
+                # Store mapping for later use
+                action_mapping[template_action.name] = action
+                
+                # ✅ Handle additional_actions: Create child actions
+                if template_action.action_parameters:
+                    try:
+                        params = json.loads(template_action.action_parameters)
+                        additional_actions = params.get('additional_actions', {})
+                        
+                        if additional_actions and isinstance(additional_actions, dict):
+                            # Process each additional action
+                            for trigger_key, action_config in additional_actions.items():
+                                if not action_config.get('configured'):
+                                    continue  # Skip unconfigured actions
+                                
+                                # Create child action
+                                child_action = flow_doc.append("action_id", {})
+                                
+                                # ✅ Get action_type from either 'action_type' or 'type' field
+                                action_type = action_config.get('action_type') or action_config.get('type', '').upper()
+                                child_action.action_type = action_type
+                                child_action.channel_type = None  # Child actions don't have channel
+                                child_action.order = action.order + 0.1  # Slightly after parent
+                                
+                                # Set parent relationship
+                                # Note: We'll set parent_action_id after insert when we have the actual name
+                                child_action.parent_trigger = trigger_key
+                                
+                                # Build child action parameters
+                                child_params = {
+                                    'trigger_event': trigger_key,
+                                    'parent_action': template_action.name  # Temporary, will update after insert
+                                }
+                                
+                                # ✅ Copy action-specific data from template
+                                # Template structure: {type: 'add_tag', data: {selected_tags: [...]}, configured: true}
+                                action_type = action_config.get('action_type') or action_config.get('type', '').upper()
+                                action_data = action_config.get('data', {})
+                                
+                                if action_type in ['ADD_TAG', 'add_tag']:
+                                    # Support both formats: selected_tags (array) or tag_name (string)
+                                    if 'selected_tags' in action_data:
+                                        child_params['selected_tags'] = action_data.get('selected_tags', [])
+                                    elif 'tag_name' in action_config:
+                                        child_params['tag_name'] = action_config.get('tag_name', '')
+                                    elif 'tag_name' in action_data:
+                                        child_params['tag_name'] = action_data.get('tag_name', '')
+                                        
+                                elif action_type in ['REMOVE_TAG', 'remove_tag']:
+                                    if 'selected_tags' in action_data:
+                                        child_params['selected_tags'] = action_data.get('selected_tags', [])
+                                    elif 'tag_name' in action_config:
+                                        child_params['tag_name'] = action_config.get('tag_name', '')
+                                    elif 'tag_name' in action_data:
+                                        child_params['tag_name'] = action_data.get('tag_name', '')
+                                        
+                                elif action_type in ['ADD_CUSTOM_FIELD', 'add_custom_field']:
+                                    child_params['field_name'] = action_data.get('field_name', action_config.get('field_name', ''))
+                                    child_params['field_value'] = action_data.get('field_value', action_config.get('field_value', ''))
+                                    
+                                elif action_type in ['SMART_DELAY', 'smart_delay']:
+                                    child_params['duration'] = action_data.get('duration', action_config.get('duration', '1 day'))
+                                    
+                                elif action_type in ['START_FLOW', 'start_flow']:
+                                    child_params['flow_id'] = action_data.get('flow_id', action_config.get('flow_id', ''))
+                                    
+                                elif action_type in ['SUBSCRIBE_TO_SEQUENCE', 'subscribe_to_sequence']:
+                                    child_params['sequence_id'] = action_data.get('sequence_id', action_config.get('sequence_id', ''))
+                                
+                                child_action.action_parameters = json.dumps(child_params)
+                                
+                                # Store mapping for parent relationship
+                                action_mapping[f"{template_action.name}_{trigger_key}"] = child_action
+                                
+                    except Exception as e:
+                        frappe.log_error(f"Error processing additional_actions for {template_action.name}: {str(e)}")
+                        pass
         
         # Insert the flow
         flow_doc.insert()
+        
+        # ✅ Update parent_action_id for child actions after insert
+        # Now we have the actual action.name values
+        for action in flow_doc.action_id:
+            if hasattr(action, 'parent_trigger') and action.parent_trigger:
+                # Find parent action
+                try:
+                    params = json.loads(action.action_parameters)
+                    parent_template_name = params.get('parent_action')
+                    
+                    if parent_template_name and parent_template_name in action_mapping:
+                        parent_action = action_mapping[parent_template_name]
+                        action.parent_action_id = parent_action.name
+                        
+                        # Update parent's additional_actions metadata with child action_id
+                        if parent_action.action_parameters:
+                            parent_params = json.loads(parent_action.action_parameters)
+                            additional_actions = parent_params.get('additional_actions', {})
+                            
+                            if action.parent_trigger in additional_actions:
+                                additional_actions[action.parent_trigger]['action_id'] = action.name
+                                parent_params['additional_actions'] = additional_actions
+                                parent_action.action_parameters = json.dumps(parent_params)
+                except Exception as e:
+                    frappe.log_error(f"Error updating parent_action_id: {str(e)}")
+                    pass
+        
+        # Save updated relationships
+        flow_doc.save()
         frappe.db.commit()
         
         # Increment usage count for template
