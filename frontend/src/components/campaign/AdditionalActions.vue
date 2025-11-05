@@ -40,34 +40,44 @@
         </div>
       </div>
     </div>
-
+    {{ sortedActionsList }}
     <!-- Actions List -->
-    <div v-if="actionsList.length > 0" class="space-y-3">
+    <div v-if="sortedActionsList.length > 0" class="space-y-3">
       <div
-        v-for="(action, index) in actionsList"
+        v-for="(action, index) in sortedActionsList"
         :key="`${action.trigger}-${index}`"
-        class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border"
+        class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border cursor-pointer hover:bg-gray-100 transition-colors"
+        :class="{ 'opacity-50': action.is_disabled }"
+        @click="handleActionClick(action, index)"
       >
-        <div class="flex items-center space-x-3">
+        <div class="flex items-center space-x-3 flex-1">
           <!-- Action Icon -->
           <div class="w-8 h-8 rounded-full flex items-center justify-center" :class="getActionIconClass(action.trigger)">
             <FeatherIcon :name="getActionIcon(action.trigger)" class="h-4 w-4" />
           </div>
           
           <!-- Action Info -->
-          <div>
-            <div class="text-sm font-medium text-gray-900">
+          <div class="flex-1">
+            <div class="text-sm font-medium text-gray-900 flex items-center gap-2">
               {{ getActionTitle(action.trigger) }}
+              <span v-if="action.is_disabled" class="text-xs text-red-600 font-normal">(Disabled)</span>
             </div>
             <div class="text-xs text-gray-500">
               {{ getActionDescription(action.trigger) }}
+            </div>
+            <!-- Show linked action name if configured -->
+            <div v-if="action.configured && action.action_id" class="mt-1 text-xs text-blue-600 flex items-center gap-1">
+              <FeatherIcon name="link" class="h-3 w-3" />
+              {{ getActionTypeName(action.type) }}
             </div>
           </div>
         </div>
 
         <!-- Action Buttons -->
-        <div class="flex items-center space-x-2">
+        <div class="flex items-center space-x-2" @click.stop>
+          <!-- Only show Configure if not configured yet -->
           <Button
+            v-if="!action.configured || !action.action_id"
             variant="ghost"
             size="sm"
             @click="configureAction(action, index)"
@@ -127,6 +137,11 @@ const props = defineProps({
   modelValue: {
     type: Object,
     default: () => ({})
+  },
+  // If true, clicking configured action will emit select-action event instead of opening modal
+  enableActionSelection: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -142,6 +157,21 @@ const showConfigModal = ref(false)
 const currentAction = ref(null)
 const currentActionIndex = ref(-1)
 const showDropdown = ref(false)
+
+// Sorted actions list - sort by trigger key to maintain consistent order
+const sortedActionsList = computed(() => {
+  return [...actionsList.value].sort((a, b) => {
+    // Define order for triggers
+    const triggerOrder = {
+      'email_open': 1,
+      'link_click': 2,
+      'send_success': 3,
+      'send_failed': 4,
+      'user_response': 5
+    }
+    return (triggerOrder[a.trigger] || 999) - (triggerOrder[b.trigger] || 999)
+  })
+})
 
 // All possible actions based on interaction type
 const allActionOptions = computed(() => {
@@ -231,6 +261,22 @@ const getActionDescription = (trigger) => {
   return descriptions[trigger] || ''
 }
 
+const getActionTypeName = (type) => {
+  const names = {
+    'add_tag': __('Add Tag'),
+    'remove_tag': __('Remove Tag'),
+    'subscribe_to_sequence': __('Subscribe to Sequence'),
+    'start_flow': __('Start Flow'),
+    'send_email': __('Send Email'),
+    'add_custom_field': __('Add Custom Field'),
+    'smart_delay': __('Smart Delay'),
+    'unsubscribe': __('Unsubscribe'),
+    'sms': __('Send SMS'),
+    'zalo': __('Send Zalo')
+  }
+  return names[type] || type
+}
+
 // Methods
 const addAction = (option) => {
   console.log('🔍 Adding action:', option)
@@ -259,6 +305,23 @@ const handleAddAction = (option) => {
   showDropdown.value = false // Close dropdown after adding
 }
 
+const handleActionClick = (action, index) => {
+  // If action is configured and has action_id, select it in FlowEditor
+  console.log('🔍 Action clicked:', action)
+  console.log('   - enableActionSelection:', props.enableActionSelection)
+  console.log('   - action.configured:', action.configured)
+  console.log('   - action.action_id:', action.action_id)
+  
+  if (props.enableActionSelection && action.configured && action.action_id) {
+    console.log('✅ Action configured, selecting in FlowEditor:', action.action_id)
+    emit('select-action', action.action_id)
+  } else {
+    // If not configured or enableActionSelection is false, open configure modal
+    console.log('⚙️ Opening modal')
+    configureAction(action, index)
+  }
+}
+
 const removeAction = (index) => {
   console.log('🗑️ Removing action at index:', index)
   console.log('📋 Before remove:', actionsList.value)
@@ -270,17 +333,10 @@ const removeAction = (index) => {
 }
 
 const configureAction = (action, index) => {
-  // Check if action already has action_id (already configured and saved)
-  if (action.action_id) {
-    // Emit event to select the child action in FlowEditor
-    console.log('Action already configured, selecting child action:', action.action_id)
-    emit('select-action', action.action_id)
-  } else {
-    // Open modal to configure
-    currentAction.value = { ...action }
-    currentActionIndex.value = index
-    showConfigModal.value = true
-  }
+  // Open modal to configure (only for unconfigured actions)
+  currentAction.value = { ...action }
+  currentActionIndex.value = index
+  showConfigModal.value = true
 }
 
 const saveActionConfig = (configData) => {
@@ -314,7 +370,8 @@ const emitUpdateImmediate = () => {
     actionsData[action.trigger] = {
       type: action.type,
       data: action.data,
-      configured: action.configured
+      configured: action.configured,
+      action_id: action.action_id || null  // ✅ Include action_id
     }
   })
   
@@ -366,7 +423,8 @@ watch(() => props.modelValue, (newValue, oldValue) => {
       trigger,
       type: newValue[trigger].type || '',
       data: newValue[trigger].data || {},
-      configured: newValue[trigger].configured || false
+      configured: newValue[trigger].configured || false,
+      action_id: newValue[trigger].action_id || null
     }))
     console.log('✅ Synced actionsList from props:', actionsList.value)
   } else {

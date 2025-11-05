@@ -286,6 +286,7 @@ export const useMiraFlowStore = defineStore('miraFlow', {
         // Add child table data if exists
         if (flowData.actions && Array.isArray(flowData.actions)) {
           completeFlowData.action_id = flowData.actions.map((action, index) => ({
+            name: action.name || undefined,  // Include name if exists (for updates)
             action_type: action.action_type || action._ui_type,
             channel_type: action.channel_type || '',
             action_parameters: JSON.stringify(action.parameters || action),
@@ -368,6 +369,72 @@ export const useMiraFlowStore = defineStore('miraFlow', {
         return { success: false, message: 'Failed to delete flow' }
       } catch (error) {
         console.error('Error deleting flow:', error)
+        this.error = this.parseError(error)
+        return { success: false, error: this.error }
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async addChildAction(flowName, parentActionName, actionData) {
+      this.loading = true
+      this.error = null
+      
+      try {
+        console.log('📤 Calling add_child_action with:', {
+          flow_name: flowName,
+          parent_action_name: parentActionName,
+          action_data: actionData
+        })
+        
+        const result = await call('mbw_mira.mbw_mira.doctype.mira_flow.mira_flow.add_child_action', {
+          flow_name: flowName,
+          parent_action_name: parentActionName,
+          action_data: JSON.stringify(actionData)
+        })
+
+        if (result.success) {
+          return {
+            success: true,
+            child_action_name: result.child_action_name,
+            parent_action_name: result.parent_action_name
+          }
+        } else {
+          throw new Error(result.error || 'Failed to add child action')
+        }
+      } catch (error) {
+        console.error('Error adding child action:', error)
+        this.error = this.parseError(error)
+        return { success: false, error: this.error }
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async removeChildAction(flowName, parentActionName, triggerKey) {
+      this.loading = true
+      this.error = null
+      
+      try {
+        console.log('📤 Calling remove_child_action with:', {
+          flow_name: flowName,
+          parent_action_name: parentActionName,
+          trigger_key: triggerKey
+        })
+        
+        const result = await call('mbw_mira.mbw_mira.doctype.mira_flow.mira_flow.remove_child_action', {
+          flow_name: flowName,
+          parent_action_name: parentActionName,
+          trigger_key: triggerKey
+        })
+
+        if (result.success) {
+          return { success: true }
+        } else {
+          throw new Error(result.error || 'Failed to remove child action')
+        }
+      } catch (error) {
+        console.error('Error removing child action:', error)
         this.error = this.parseError(error)
         return { success: false, error: this.error }
       } finally {

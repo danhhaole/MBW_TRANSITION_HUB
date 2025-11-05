@@ -64,16 +64,16 @@
 				<div class="flex items-center space-x-3">
 					
 					<Button 
-						:variant="hasUnsavedChanges ? 'solid' : 'outline'" 
+						:variant="'solid'" 
 						size="sm" 
+						:theme="'gray'"
 						@click="handleSave" 
 						:loading="saving"
-						:class="hasUnsavedChanges ? 'bg-orange-600 hover:bg-orange-700' : ''"
 					>
 						<template #prefix>
 							<FeatherIcon name="save" class="h-4 w-4" />
 						</template>
-						{{ hasUnsavedChanges ? 'Save*' : 'Save' }}
+						{{ 'Save' }}
 					</Button>
 					<Button variant="solid" theme="green" size="sm">{{ __('Publish') }} </Button>
 				</div>
@@ -174,17 +174,19 @@
 						<div class="space-y-2">
 							<div
 								v-for="(action, index) in flowData.actions"
-								:key="`action-${index}`"
+								:key="`action-${action.name}-${index}`"
 								class="group relative p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
 								:class="{
 									'border-blue-500 bg-blue-50':
 										selectedItem?.type === 'action' &&
 										selectedItem?.index === index,
+									'opacity-50': action.parameters?.is_disabled === 1
 								}"
 								@click="selectItem('action', index)"
 							>
-								<!-- Delete button - appears on hover -->
+								<!-- Delete button - appears on hover (only if can delete) -->
 								<button
+									v-if="canDeleteAction(index)"
 									@click.stop="deleteAction(index)"
 									class="absolute -top-1 -right-2 w-6 h-6 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600 flex items-center justify-center"
 									:title="__('Delete Action')"
@@ -199,12 +201,13 @@
 										<FeatherIcon name="play" class="h-4 w-4 text-purple-600" />
 									</div>
 									<div class="flex-1 min-w-0 pr-8">
-										<h4 class="text-sm font-medium text-gray-900 truncate">
+										<h4 class="text-sm font-medium text-gray-900 truncate flex items-center gap-2">
 											{{
 												action._ui_name ||
 												action.name ||
 												'Action không tên'
 											}}
+											<span v-if="action.parameters?.is_disabled === 1" class="text-xs text-red-600 font-normal">(Disabled)</span>
 										</h4>
 										<p class="text-xs text-gray-500 mt-1">
 											{{
@@ -450,6 +453,8 @@
 									interaction-type="EMAIL"
 									:model-value="getAdditionalActionsData()"
 									@update:model-value="updateAdditionalActionsData"
+									:enable-action-selection="true"
+									@select-action="selectActionById"
 								/>
 							</div>
 						</div>
@@ -469,6 +474,7 @@
 									interaction-type="ZALO_CARE"
 									:model-value="getAdditionalActionsData()"
 									@update:model-value="updateAdditionalActionsData"
+									:enable-action-selection="true"
 									@select-action="selectActionById"
 								/>
 							</div>
@@ -487,9 +493,10 @@
 							<!-- Additional Actions for SMS -->
 							<div class="mt-6">
 								<AdditionalActions
-									interaction-type="EMAIL"
+									interaction-type="SMS"
 									:model-value="getAdditionalActionsData()"
 									@update:model-value="updateAdditionalActionsData"
+									:enable-action-selection="true"
 									@select-action="selectActionById"
 								/>
 							</div>
@@ -519,7 +526,11 @@
 
 						<!-- Action Buttons -->
 						<div class="flex justify-end pt-6 border-t border-gray-200">
-							<Button variant="outline" @click="handleDeleteItem">
+							<Button 
+								v-if="canDeleteSelectedItem()"
+								variant="outline" 
+								@click="handleDeleteItem"
+							>
 								<template #prefix>
 									<FeatherIcon name="trash-2" class="h-4 w-4" />
 								</template>
@@ -547,27 +558,27 @@
 			</div>
 
 			<!-- Column 3: Mobile Preview -->
-			<div class="w-96 bg-gray-100 p-6">
+			<!-- <div class="w-96 bg-gray-100 p-6">
 				<div class="text-center mb-4">
 					<h3 class="text-sm font-medium text-gray-900">{{ __('Preview') }}</h3>
 					<p class="text-xs text-gray-500">{{ __('Preview on mobile') }}</p>
 				</div>
 
-				<!-- Mobile Frame - iPhone Style -->
+				
 				<div
 					class="mx-auto w-80 h-[600px] bg-gradient-to-b from-gray-800 to-gray-900 rounded-[2.5rem] p-1 shadow-2xl border border-gray-700"
 				>
-					<!-- Outer Frame -->
+					
 					<div class="w-full h-full bg-black rounded-[2rem] p-1 relative">
-						<!-- Screen -->
+						
 						<div
 							class="w-full h-full bg-white rounded-[1.8rem] relative overflow-hidden shadow-inner"
 						>
-							<!-- Dynamic Island (iPhone 14 Pro style) -->
+							
 							<div
 								class="absolute top-2 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-black rounded-full z-10 shadow-lg"
 							>
-								<!-- Camera and sensors -->
+								
 								<div
 									class="absolute top-1.5 left-4 w-2 h-2 bg-gray-800 rounded-full"
 								></div>
@@ -576,7 +587,7 @@
 								></div>
 							</div>
 
-							<!-- Status Bar -->
+							
 							<div
 								class="flex justify-between items-center px-6 py-3 bg-white relative z-0"
 							>
@@ -584,20 +595,20 @@
 									<span class="text-sm font-semibold">9:41</span>
 								</div>
 								<div class="flex items-center space-x-1">
-									<!-- Signal Bars -->
+									
 									<div class="flex items-end space-x-0.5">
 										<div class="w-1 h-2 bg-black rounded-full"></div>
 										<div class="w-1 h-3 bg-black rounded-full"></div>
 										<div class="w-1 h-4 bg-black rounded-full"></div>
 										<div class="w-1 h-3 bg-gray-300 rounded-full"></div>
 									</div>
-									<!-- WiFi -->
+									
 									<svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
 										<path
 											d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.07 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"
 										/>
 									</svg>
-									<!-- Battery -->
+									
 									<div class="flex items-center">
 										<div
 											class="w-6 h-3 border border-black rounded-sm relative"
@@ -611,19 +622,19 @@
 								</div>
 							</div>
 
-							<!-- Home Indicator -->
+							
 							<div
 								class="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-black rounded-full opacity-60 shadow-sm"
 							></div>
 
-							<!-- Screen Reflection Effect -->
+							
 							<div
 								class="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent pointer-events-none rounded-[1.8rem]"
 							></div>
 
-							<!-- Content -->
+							
 							<div class="p-4 h-full overflow-y-auto pb-8">
-								<!-- Email Preview -->
+								
 								<div
 									v-if="
 										selectedItem &&
@@ -633,7 +644,7 @@
 									:key="`email-${previewKey}`"
 									class="space-y-4 mb-6"
 								>
-									<!-- Email Header -->
+									
 									<div class="border-b border-gray-200 pb-3">
 										<div class="flex items-center space-x-2 mb-2">
 											<FeatherIcon
@@ -650,7 +661,7 @@
 										</div>
 									</div>
 
-									<!-- Email Subject -->
+									
 									<div class="bg-gray-50 p-3 rounded-lg">
 										<div class="text-xs font-medium text-gray-700 mb-1">
 											{{ __('Subject') }}
@@ -663,7 +674,6 @@
 										</div>
 									</div>
 
-									<!-- Email Body -->
 									<div class="bg-white border border-gray-200 rounded-lg p-3">
 										<div class="text-xs font-medium text-gray-700 mb-2">
 											Content:
@@ -678,7 +688,7 @@
 										</div>
 									</div>
 
-									<!-- Attachments -->
+									
 									<div
 										v-if="
 											emailContent.attachments &&
@@ -700,7 +710,7 @@
 									</div>
 								</div>
 
-								<!-- Zalo Preview -->
+								
 								<div
 									v-else-if="
 										selectedItem &&
@@ -710,7 +720,7 @@
 									:key="`zalo-${previewKey}`"
 									class="space-y-4"
 								>
-									<!-- Zalo Header -->
+									
 									<div class="flex items-center space-x-3 mb-4">
 										<div
 											class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center"
@@ -727,14 +737,14 @@
 										</div>
 									</div>
 
-									<!-- Zalo Messages -->
+									
 									<div class="space-y-3 mb-6">
 										<div
 											v-for="(block, index) in zaloContent.blocks"
 											:key="block.id || index"
 											class="bg-blue-500 text-white p-3 rounded-lg rounded-br-sm max-w-[280px] ml-auto"
 										>
-											<!-- Image Block -->
+											
 											<div v-if="block.type === 'image'" class="mb-2">
 												<img
 													v-if="block.image"
@@ -760,12 +770,12 @@
 												</div>
 											</div>
 
-											<!-- Text Content -->
+											
 											<div v-if="block.text_content" class="text-sm mb-2">
 												{{ block.text_content }}
 											</div>
 
-											<!-- Website URL -->
+											
 											<div v-if="block.website_url" class="mb-2">
 												<div class="bg-white bg-opacity-20 rounded-md p-2">
 													<div class="flex items-center space-x-2">
@@ -781,7 +791,7 @@
 												</div>
 											</div>
 
-											<!-- Phone Number -->
+											
 											<div v-if="block.phone_number" class="mb-2">
 												<div class="bg-white bg-opacity-20 rounded-md p-2">
 													<div class="flex items-center space-x-2">
@@ -796,7 +806,7 @@
 												</div>
 											</div>
 
-											<!-- Flow Trigger -->
+											
 											<div v-if="block.flow_trigger" class="mb-2">
 												<div class="bg-white bg-opacity-20 rounded-md p-2">
 													<div class="flex items-center space-x-2">
@@ -811,7 +821,7 @@
 												</div>
 											</div>
 
-											<!-- Timestamp -->
+											
 											<div class="text-xs text-blue-100 mt-2 text-right">
 												{{
 													new Date().toLocaleTimeString('vi-VN', {
@@ -822,7 +832,7 @@
 											</div>
 										</div>
 
-										<!-- Empty state if no blocks -->
+										
 										<div
 											v-if="
 												!zaloContent.blocks ||
@@ -842,13 +852,13 @@
 										</div>
 									</div>
 
-									<!-- Character Count -->
+									
 									<div class="text-xs text-gray-500 text-center">
 										{{ totalZaloCharacters }}/2000 ký tự
 									</div>
 								</div>
 
-								<!-- SMS Preview -->
+								
 								<div
 									v-else-if="
 										selectedItem &&
@@ -858,7 +868,7 @@
 									:key="`sms-${previewKey}`"
 									class="space-y-4"
 								>
-									<!-- SMS Header -->
+									
 									<div class="flex items-center space-x-3 mb-4">
 										<div
 											class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center"
@@ -875,15 +885,15 @@
 										</div>
 									</div>
 
-									<!-- SMS Message Bubbles -->
+									
 									<div class="space-y-3 mb-6" :class="{ 'opacity-75 transition-opacity duration-200': isPreviewUpdating }">
-										<!-- Text Message Bubble -->
+										
 										<div v-if="smsContent.message" class="bg-green-500 text-white p-3 rounded-lg rounded-br-sm max-w-[280px] ml-auto">
 											<div class="text-sm whitespace-pre-wrap">
 												{{ smsContent.message }}
 											</div>
 											
-											<!-- Timestamp -->
+											
 											<div class="text-xs text-green-100 mt-2 text-right">
 												{{
 													new Date().toLocaleTimeString('vi-VN', {
@@ -894,7 +904,7 @@
 											</div>
 										</div>
 
-										<!-- Image Bubbles -->
+										
 										<div 
 											v-for="(image, imageIndex) in smsImages" 
 											:key="`sms-image-${image.id || imageIndex}-${image.file_name}`"
@@ -915,7 +925,7 @@
 											</div>
 										</div>
 
-										<!-- Flow Trigger Bubbles -->
+										
 										<div 
 											v-for="(block, blockIndex) in smsFlowTriggers" 
 											:key="`sms-flow-${block.id || blockIndex}`"
@@ -941,7 +951,7 @@
 											</div>
 										</div>
 
-										<!-- Empty state -->
+										
 										<div v-if="!smsContent.message && (!smsImages || smsImages.length === 0) && (!smsFlowTriggers || smsFlowTriggers.length === 0)" class="bg-green-500 text-white p-3 rounded-lg rounded-br-sm max-w-[280px] ml-auto">
 											<div class="text-sm">{{ __('No SMS content') }}</div>
 											<div class="text-xs text-green-100 mt-1 text-right">
@@ -955,18 +965,15 @@
 										</div>
 									</div>
 
-									<!-- Character Count -->
+									
 									<div class="text-xs text-gray-500 text-center">
 										{{ (smsContent.message || '').length }}/160 characters
 									</div>
 									
-									<!-- Debug Info (temporary) -->
-									<!-- <div class="text-xs text-red-500 text-center mt-2" style="font-family: monospace;">
-										Debug: "{{ smsContent.message }}"
-									</div> -->
+									
 								</div>
 
-								<!-- Default Preview -->
+							
 								<div v-else class="text-center py-8">
 									<FeatherIcon
 										name="smartphone"
@@ -981,7 +988,7 @@
 						</div>
 					</div>
 				</div>
-			</div>
+			</div> -->
 		</div>
 
 		<!-- Add Trigger Modal -->
@@ -1274,7 +1281,7 @@ const availableActions = [
 		label: 'Send Email',
 		value: 'send_email',
 		description: 'Send email to customer',
-		action_type: 'MESSAGE',
+		action_type: 'EMAIL',
 		parameters: {
 			channel: 'Email',
 			template_id: '',
@@ -1426,26 +1433,45 @@ const loadFlow = async () => {
 				description: getDefaultTriggerDescription(trigger.trigger_type)
 			})) : []
 
-			const processedActions = flow.actions ? flow.actions.map(action => ({
+			const processedActions = flow.actions ? flow.actions.map(action => {
 				// Map child table fields to UI format
-				...action,
-				// Keep original name (ID) from database
-				name: action.name,  // ✅ Giữ name gốc (ID)
-				_ui_name: getDefaultActionName(action.action_type),  // Label để hiển thị
-				_ui_description: getDefaultActionDescription(action.action_type),
-				_ui_type: action.action_type,
-				// Map backend fields to frontend format
-				action_order: action.order,
-				parameters: (() => {
-					try {
-						return action.action_parameters ? JSON.parse(action.action_parameters) : {}
-					} catch (error) {
-						console.warn('Error parsing action parameters:', error)
-						return {}
+				const processed = {
+					...action,
+					// Keep original name (ID) from database
+					name: action.name,  
+					_ui_name: getDefaultActionName(action.action_type),  
+					_ui_description: getDefaultActionDescription(action.action_type),
+					_ui_type: action.action_type,
+					// Map backend fields to frontend format
+					action_order: action.order,
+					// Giữ lại action_parameters string gốc (source of truth)
+					action_parameters: action.action_parameters,
+					// Parse parameters object để dùng trong UI
+					parameters: (() => {
+						try {
+							return action.action_parameters ? JSON.parse(action.action_parameters) : {}
+						} catch (error) {
+							console.warn('Error parsing action parameters:', error)
+							return {}
+						}
+					})(),
+					description: getDefaultActionDescription(action.action_type)
+				}
+
+				// ✅ Merge với existing action nếu có (giữ lại local changes)
+				const existingAction = flowData.value?.actions?.find(a => a.name === action.name)
+				if (existingAction) {
+					// Giữ lại parameters từ existing (có thể đã được user edit)
+					// Nhưng luôn update action_parameters từ DB (source of truth)
+					return {
+						...existingAction,
+						...processed,
+						action_parameters: action.action_parameters,  // ✅ Luôn lấy từ DB
+						parameters: processed.parameters  // ✅ Parse lại từ action_parameters mới
 					}
-				})(),
-				description: getDefaultActionDescription(action.action_type)
-			})) : []
+				}
+				return processed
+			}) : []
 
 			flowData.value = {
 				name: flow.name,
@@ -1456,9 +1482,9 @@ const loadFlow = async () => {
 				actions: processedActions,
 			}
 
-			console.log('Flow data set:', flowData.value)
-			console.log('Processed triggers:', processedTriggers)
-			console.log('Processed actions:', processedActions)
+			console.log('✅ Flow data set:', flowData.value)
+			console.log('✅ Processed actions:', processedActions)
+			console.log('✅ First action action_parameters:', processedActions[0]?.action_parameters)
 		} else {
 			console.error('Invalid result:', result)
 			toast.error('Không thể tải thông tin flow')
@@ -1675,6 +1701,7 @@ const migrateToNewFormat = (items, type) => {
 
 const selectItem = (type, index) => {
 	console.log('selectItem called with:', type, index)
+	console.log('flowData.value:', flowData.value)
 	selectedItem.value = { type, index }
 	const item =
 		type === 'trigger' ? flowData.value.triggers[index] : flowData.value.actions[index]
@@ -1692,6 +1719,12 @@ const selectItem = (type, index) => {
 	// Ensure criteria object exists for triggers
 	if (type === 'trigger' && !selectedItemData.value.criteria) {
 		selectedItemData.value.criteria = {}
+	}
+	
+	// ✅ For actions: Ensure action_parameters is synced with parameters
+	// This prevents losing additional_actions when switching between actions
+	if (type === 'action' && item.action_parameters) {
+		selectedItemData.value.action_parameters = item.action_parameters
 	}
 	
 	console.log('selectedItem.value:', selectedItem.value)
@@ -1891,6 +1924,8 @@ const addAction = async (actionOption) => {
 		// Auto-save immediately
 		const result = await flowStore.updateFlow(flowData.value.name, flowData.value)
 		if (result.success) {
+			// ✅ Reload để lấy name thật từ DB
+			await loadFlow()
 			toast.success(`Added and saved action: ${actionOption.label}`)
 		} else {
 			toast.error('Error saving action')
@@ -1912,7 +1947,9 @@ const handleSaveItem = () => {
 	if (type === 'trigger') {
 		flowData.value.triggers[index] = { ...selectedItemData.value }
 	} else {
-		flowData.value.actions[index] = { ...selectedItemData.value }
+		// ✅ Chỉ update parameters, giữ lại action_parameters từ flowData
+		const currentAction = flowData.value.actions[index]
+		mergeActionParameters(currentAction, selectedItemData.value.parameters)
 	}
 
 	toast.success('Saved changes')
@@ -1920,9 +1957,11 @@ const handleSaveItem = () => {
 
 const handleDeleteItem = () => {
 	if (!selectedItem.value) return
-
+	
+	// Nút xóa chỉ hiện khi canDeleteSelectedItem() = true, nên không cần check nữa
 	if (confirm('Are you sure you want to delete this item?')) {
 		const { type, index } = selectedItem.value
+		
 		if (type === 'trigger') {
 			flowData.value.triggers.splice(index, 1)
 		} else {
@@ -1964,8 +2003,50 @@ const deleteTrigger = async (index) => {
 	}
 }
 
+// ✅ Computed: Map of action indices that can be deleted - FULLY REACTIVE
+const deletableActions = computed(() => {
+	const result = {}
+	
+	flowData.value.actions.forEach((action, index) => {
+		// Check xem có child actions không (chỉ count action active, không count disabled)
+		const hasChildActions = flowData.value.actions.some(
+			a => a.parent_action_id === action.name && a.parameters?.is_disabled !== 1
+		)
+
+		console.log('hasChildActions', hasChildActions, action)
+		
+		if (hasChildActions) {
+			result[index] = false
+			console.log(`❌ Action ${index}: has child actions`)
+			return
+		}
+		
+		// Check xem có additional_actions không
+		const additionalActions = action.parameters?.additional_actions
+		const hasAdditionalActions = additionalActions && 
+			Object.keys(additionalActions).length > 0
+		
+		if (hasAdditionalActions) {
+			result[index] = false
+			console.log(`❌ Action ${index}: has additional actions`, additionalActions)
+			return
+		}
+		
+		result[index] = true
+		console.log(`✅ Action ${index}: can delete`)
+	})
+	
+	return result
+})
+
+// Helper function to check if action can be deleted
+const canDeleteAction = (index) => {
+	return deletableActions.value[index] !== false
+}
+
 // Delete action from list (with hover button)
 const deleteAction = async (index) => {
+	// Không cần check nữa vì nút đã bị ẩn nếu không thể xóa
 	if (confirm('Bạn có chắc chắn muốn xóa action này?')) {
 		// If deleting currently selected action, clear selection
 		if (selectedItem.value?.type === 'action' && selectedItem.value?.index === index) {
@@ -2145,6 +2226,39 @@ const isSmartDelayAction = () => {
 		action.action_type === 'SMART_DELAY' ||
 		action._ui_type === 'smart_delay'
 	)
+}
+
+// ✅ Check xem có thể xóa action không (không phải parent action) - REACTIVE
+const canDeleteSelectedItem = () => {
+	if (!selectedItem.value) return false
+	
+	const { type, index } = selectedItem.value
+	
+	// Trigger luôn có thể xóa
+	if (type === 'trigger') return true
+	
+	// Force reactivity
+	const actionsCount = flowData.value.actions.length
+	
+	// Check action
+	const actionToDelete = flowData.value.actions[index]
+	if (!actionToDelete) return false
+	
+	// Check xem có child actions không
+	const hasChildActions = flowData.value.actions.some(
+		action => action.parent_action_id === actionToDelete.name
+	)
+	
+	if (hasChildActions) return false
+	
+	// Check xem có additional_actions không - Force deep reactivity
+	const additionalActions = actionToDelete.parameters?.additional_actions
+	const hasAdditionalActions = additionalActions && 
+		Object.keys(additionalActions).length > 0
+	
+	if (hasAdditionalActions) return false
+	
+	return true
 }
 
 const isAddCustomFieldAction = () => {
@@ -2438,6 +2552,25 @@ const getSMSContent = () => {
 	}
 }
 
+// ✅ Helper: Merge parameters và giữ lại additional_actions
+const mergeActionParameters = (currentAction, newParameters) => {
+	if (!currentAction) return
+	
+	// Lưu lại additional_actions từ currentAction (có action_id)
+	const oldAdditionalActions = currentAction.parameters?.additional_actions || {}
+	
+	// Merge parameters
+	currentAction.parameters = { ...currentAction.parameters, ...newParameters }
+	
+	// Restore additional_actions từ currentAction (có action_id)
+	if (Object.keys(oldAdditionalActions).length > 0) {
+		currentAction.parameters.additional_actions = oldAdditionalActions
+	}
+	
+	// Sync vào action_parameters
+	currentAction.action_parameters = JSON.stringify(currentAction.parameters)
+}
+
 const updateEmailContent = (content) => {
 	console.log('updateEmailContent called with:', content)
 	if (!selectedItem.value || selectedItem.value.type !== 'action') return
@@ -2473,7 +2606,8 @@ const updateEmailContent = (content) => {
 		if (selectedItem.value) {
 			const { type, index } = selectedItem.value
 			if (type === 'action') {
-				flowData.value.actions[index] = { ...selectedItemData.value }
+				const currentAction = flowData.value.actions[index]
+				mergeActionParameters(currentAction, selectedItemData.value.parameters)
 			}
 		}
 
@@ -2544,7 +2678,9 @@ const updateSMSContent = (content) => {
 	if (selectedItem.value) {
 		const { type, index } = selectedItem.value
 		if (type === 'action') {
-			flowData.value.actions[index] = { ...selectedItemData.value }
+			// ✅ Chỉ update parameters, giữ lại action_parameters từ flowData
+			const currentAction = flowData.value.actions[index]
+			mergeActionParameters(currentAction, selectedItemData.value.parameters)
 		}
 	}
 
@@ -2688,7 +2824,8 @@ const updateSMSFlowTrigger = (flowId) => {
 		if (selectedItem.value) {
 			const { type, index } = selectedItem.value
 			if (type === 'action') {
-				flowData.value.actions[index] = { ...selectedItemData.value }
+				const currentAction = flowData.value.actions[index]
+				mergeActionParameters(currentAction, selectedItemData.value.parameters)
 			}
 		}
 		
@@ -2717,7 +2854,8 @@ const addSelectedTag = () => {
 		if (selectedItem.value) {
 			const { type, index } = selectedItem.value
 			if (type === 'action') {
-				flowData.value.actions[index] = { ...selectedItemData.value }
+				const currentAction = flowData.value.actions[index]
+				mergeActionParameters(currentAction, selectedItemData.value.parameters)
 			}
 		}
 	}
@@ -2737,7 +2875,8 @@ const removeSelectedTag = (tagValue) => {
 		if (selectedItem.value) {
 			const { type, index: actionIndex } = selectedItem.value
 			if (type === 'action') {
-				flowData.value.actions[actionIndex] = { ...selectedItemData.value }
+				const currentAction = flowData.value.actions[actionIndex]
+				mergeActionParameters(currentAction, selectedItemData.value.parameters)
 			}
 		}
 	}
@@ -2773,7 +2912,8 @@ const createNewTag = async () => {
 			if (selectedItem.value) {
 				const { type, index } = selectedItem.value
 				if (type === 'action') {
-					flowData.value.actions[index] = { ...selectedItemData.value }
+					const currentAction = flowData.value.actions[index]
+					mergeActionParameters(currentAction, selectedItemData.value.parameters)
 				}
 			}
 			
@@ -2806,7 +2946,8 @@ const updateActionData = (newData) => {
 			if (selectedItem.value) {
 				const { type, index } = selectedItem.value
 				if (type === 'action') {
-					flowData.value.actions[index] = { ...selectedItemData.value }
+					const currentAction = flowData.value.actions[index]
+					mergeActionParameters(currentAction, selectedItemData.value.parameters)
 				}
 			}
 		}
@@ -2821,21 +2962,49 @@ const getAdditionalActionsData = () => {
 	if (!parentAction) return {}
 	
 	console.log('📖 Getting additional actions for parent:', parentAction.name)
+	console.log('   - Index:', selectedItem.value.index)
+	console.log('   - Full parent action:', parentAction)
 	
-	// Get metadata from parent's parameters
-	const metadata = parentAction.parameters?.additional_actions || {}
+	
+	// ✅ Parse từ action_parameters (string) thay vì dùng parameters (object cũ)
+	let metadata = {}
+	try {
+		if (parentAction.action_parameters) {
+			const params = JSON.parse(parentAction.action_parameters)
+			metadata = params.additional_actions || {}
+		} else if (parentAction.parameters) {
+			// Fallback nếu không có action_parameters
+			metadata = parentAction.parameters.additional_actions || {}
+		}
+	} catch (error) {
+		console.error('Error parsing action_parameters:', error)
+		metadata = parentAction.parameters?.additional_actions || {}
+	}
+	
 	console.log('Parent metadata:', metadata)
+	console.log('Metadata keys:', Object.keys(metadata))
+	console.log('Parent action_parameters:', parentAction.action_parameters)
 	
 	// Convert metadata to additional actions format
 	const additionalActions = {}
 	
 	Object.entries(metadata).forEach(([triggerKey, meta]) => {
 		if (meta.configured) {
-			// Action đã configure → Tìm child action theo parent_action_id
-			const childAction = flowData.value.actions.find(action => 
-				action.parent_action_id === parentAction.name &&
-				action.action_type === meta.action_type
-			)
+			// Action đã configure → Tìm child action theo action_id từ metadata
+			let childAction = null
+			
+			// Ưu tiên tìm theo action_id từ metadata
+			if (meta.action_id) {
+				childAction = flowData.value.actions.find(action => action.name === meta.action_id)
+			}
+			
+			// Fallback: Tìm theo parent_action_id và action_type
+			if (!childAction) {
+				childAction = flowData.value.actions.find(action => 
+					action.parent_action_id === parentAction.name &&
+					action.action_type === meta.action_type
+				)
+			}
 			
 			if (childAction) {
 				console.log(`Found child action for ${triggerKey}:`, childAction)
@@ -2844,10 +3013,11 @@ const getAdditionalActionsData = () => {
 					configured: true,
 					type: denormalizeActionType(childAction.action_type),
 					data: childAction.parameters || {},
-					action_id: childAction.name  // Dùng name thật từ database
+					action_id: childAction.name,  // ✅ Có action_id
+					is_disabled: childAction.parameters?.is_disabled === 1
 				}
 			} else {
-				console.warn(`Child action not found for ${triggerKey}`)
+				console.warn(`Child action not found for ${triggerKey}, metadata:`, meta)
 			}
 		} else {
 			// Action chưa configure → Load từ metadata
@@ -2856,7 +3026,8 @@ const getAdditionalActionsData = () => {
 			additionalActions[triggerKey] = {
 				configured: false,
 				type: meta.action_type ? denormalizeActionType(meta.action_type) : '',
-				data: {}
+				data: {},
+				is_disabled: false
 			}
 		}
 	})
@@ -2883,7 +3054,7 @@ const denormalizeActionType = (type) => {
 	return typeMap[type] || type?.toLowerCase()
 }
 
-const updateAdditionalActionsData = (newData) => {
+const updateAdditionalActionsData = async (newData) => {
 	if (!selectedItem.value || selectedItem.value.type !== 'action') return
 	
 	// Prevent recursive calls
@@ -2892,152 +3063,167 @@ const updateAdditionalActionsData = (newData) => {
 		return
 	}
 	
-	safeUpdateSelectedItemData(() => {
-		const actionIndex = selectedItem.value.index
-		const parentAction = flowData.value.actions[actionIndex]
-		
-		if (!parentAction) return
-		
-		console.log('📝 Updating additional actions for parent action:', parentAction)
-		console.log('   - name:', parentAction.name)
-		console.log('   - _ui_name:', parentAction._ui_name)
-		console.log('New additional actions data:', newData)
-		
-		// Remove old child actions that belong to this parent
-		flowData.value.actions = flowData.value.actions.filter(action => 
-			action.parent_action_id !== parentAction.name
-		)
-		
-		// Prepare additional_actions metadata for parent
-		const additionalActionsMetadata = {}
-		
-		// Create new child actions and build metadata
-		Object.entries(newData).forEach(([triggerKey, actionData]) => {
-			console.log(`🔍 Processing trigger: ${triggerKey}`, actionData)
-			console.log(`   - configured: ${actionData.configured}`)
-			console.log(`   - type: ${actionData.type}`)
+	console.log('💾 Saving additional actions...')
+	try {
+			const currentActionIndex = selectedItem.value?.index
+			const parentAction = flowData.value.actions[currentActionIndex]
 			
-			const triggerName = getTriggerDisplayName(triggerKey)
+			if (!parentAction) {
+				toast.error('Parent action not found')
+				return
+			}
 			
-			if (actionData.configured && actionData.type) {
-				// Action đã được configure → Tạo child action
-				const actionTypeNormalized = normalizeActionType(actionData.type)
-				const actionName = getActionDisplayName(actionTypeNormalized)
-				
-				// Generate unique name for child action
-				const childActionName = `${parentAction.name}_${triggerKey}_${Date.now()}`
-				
-				// Create child action (only contains action data)
-				const childAction = {
-					name: childActionName,
-					_ui_name: actionName,  
-					_ui_description: `Execute when ${triggerName.toLowerCase()}`,
-					_ui_type: actionData.type,
-					_ui_trigger_key: triggerKey,
-					action_type: actionTypeNormalized,
-					channel_type: parentAction.channel_type || 'Email',
-					parameters: actionData.data || {}, // Only action data
-					parent_action_id: parentAction.name,
-					trigger_id: null,
-					order: flowData.value.actions.length + 1
+			// Prepare metadata và child actions
+			let hasUnconfiguredActions = false
+			let hasConfiguredActions = false
+			
+			// ✅ Get old metadata from action_parameters (source of truth)
+			let oldMetadata = {}
+			try {
+				if (parentAction.action_parameters) {
+					const params = JSON.parse(parentAction.action_parameters)
+					oldMetadata = params.additional_actions || {}
 				}
+			} catch (error) {
+				console.error('Error parsing action_parameters:', error)
+				oldMetadata = parentAction.parameters?.additional_actions || {}
+			}
+			
+			const newTriggerKeys = Object.keys(newData)
+			const oldTriggerKeys = Object.keys(oldMetadata)
+			
+			console.log('🔍 Comparing triggers:')
+			console.log('   - Old triggers:', oldTriggerKeys)
+			console.log('   - New triggers:', newTriggerKeys)
+			console.log('   - Old metadata:', oldMetadata)
+			console.log('   - New data:', newData)
+			
+			// Detect deleted triggers
+			const deletedTriggers = oldTriggerKeys.filter(key => !newTriggerKeys.includes(key))
+			console.log('   - Deleted triggers:', deletedTriggers)
+			
+			// Delete removed additional actions
+			for (const triggerKey of deletedTriggers) {
+				console.log(`🗑️ Deleting additional action for ${triggerKey}...`)
 				
-				console.log('➕ Creating child action:', childAction)
-				flowData.value.actions.push(childAction)
+				const result = await flowStore.removeChildAction(
+					flowData.value.name,
+					parentAction.name,
+					triggerKey
+				)
 				
-				// Store metadata with link to child action
-				additionalActionsMetadata[triggerKey] = {
-					trigger_event: triggerKey,
-					trigger_label: triggerName,
-					action_type: actionTypeNormalized,
-					action_id: childActionName, // Link to child action
-					configured: true
-				}
-			} else {
-				// Action chưa configure → Chỉ lưu metadata, không tạo child action
-				console.log(`⏭️ Skipping child action for ${triggerKey} - not configured yet`)
-				
-				additionalActionsMetadata[triggerKey] = {
-					trigger_event: triggerKey,
-					trigger_label: triggerName,
-					action_type: actionData.type || null,
-					action_id: null, // Chưa có child action
-					configured: false
+				if (result.success) {
+					console.log(`✅ Child action deleted for ${triggerKey}`)
+				} else {
+					console.error(`❌ Failed to delete child action for ${triggerKey}`)
+					toast.error(`Failed to delete action for ${triggerKey}`)
 				}
 			}
-		})
-		
-		// Update parent action's parameters with metadata
-		if (!parentAction.parameters) {
-			parentAction.parameters = {}
-		}
-		parentAction.parameters.additional_actions = additionalActionsMetadata
-		
-		// Sync with selectedItemData
-		if (selectedItemData.value.parameters) {
-			selectedItemData.value.parameters.additional_actions = additionalActionsMetadata
-		}
-		
-		// Force update flowData
-		flowData.value.actions[actionIndex] = { ...parentAction }
-		
-		console.log('📦 Parent action metadata:', additionalActionsMetadata)
-		console.log('💾 Updated parent action:', parentAction)
-		
-		hasUnsavedChanges.value = true
-	})
-	
-	// Auto-save after updating additional actions
-	setTimeout(async () => {
-		console.log('💾 Auto-saving flow after additional actions update...')
-		try {
-			const result = await flowStore.updateFlow(flowData.value.name, flowData.value)
-			if (result.success) {
-				// Reload flow để lấy name mới từ database
-				console.log('🔄 Reloading flow to get updated action names...')
-				const currentActionIndex = selectedItem.value?.index
-				const parentActionName = flowData.value.actions[currentActionIndex]?.name
-				
+			
+			// ✅ Nếu xóa hết → Reload và return luôn
+			if (deletedTriggers.length > 0 && Object.keys(newData).length === 0) {
+				console.log('🔄 All actions deleted, reloading...')
+				await loadFlow()
+				if (currentActionIndex !== undefined && currentActionIndex >= 0) {
+					selectItem('action', currentActionIndex)
+				}
+				toast.success('Additional actions deleted successfully!')
+				return
+			}
+			
+			// Ensure parent metadata exists
+			if (!parentAction.parameters.additional_actions) {
+				parentAction.parameters.additional_actions = {}
+			}
+			
+			// Step 1: Save unconfigured actions FIRST
+			for (const [triggerKey, actionData] of Object.entries(newData)) {
+				if (!actionData.configured || !actionData.type) {
+					// Action chưa configure → Lưu metadata
+					console.log(`⏭️ Preparing metadata for ${triggerKey} - not configured yet`)
+					
+					parentAction.parameters.additional_actions[triggerKey] = {
+						trigger_event: triggerKey,
+						trigger_label: getTriggerDisplayName(triggerKey),
+						action_type: actionData.type || null,
+						action_id: null,
+						configured: false
+					}
+					
+					hasUnconfiguredActions = true
+				} else {
+					hasConfiguredActions = true
+				}
+			}
+			
+			// Save unconfigured metadata trước
+			if (hasUnconfiguredActions) {
+				console.log('💾 Saving unconfigured metadata first...')
+				// ✅ Sync parameters object vào action_parameters string
+				parentAction.action_parameters = JSON.stringify(parentAction.parameters)
+				flowData.value.actions[currentActionIndex] = { ...parentAction }
+				await flowStore.updateFlow(flowData.value.name, flowData.value)
+			}
+			
+			// Step 2: Create configured child actions AFTER
+			let hasNewConfiguredActions = false
+			for (const [triggerKey, actionData] of Object.entries(newData)) {
+				// ✅ Chỉ tạo nếu: configured = true, có type, và CHƯA có action_id
+				if (actionData.configured && actionData.type && !actionData.action_id) {
+					// Action đã configure nhưng chưa tạo → Gọi API tạo child action
+					console.log(`📝 Creating NEW child action for ${triggerKey}...`)
+					
+					const result = await flowStore.addChildAction(
+						flowData.value.name,
+						parentAction.name,
+						{
+							action_type: normalizeActionType(actionData.type),
+							channel_type: parentAction.channel_type || 'Email',
+							action_parameters: actionData.data || {},
+							trigger_key: triggerKey,
+							trigger_label: getTriggerDisplayName(triggerKey)
+						}
+					)
+					
+					if (result.success) {
+						console.log(`✅ Child action created: ${result.child_action_name}`)
+						hasNewConfiguredActions = true
+					} else {
+						console.error(`❌ Failed to create child action for ${triggerKey}:`, result.error)
+						toast.error(`Failed to create action for ${triggerKey}`)
+					}
+				} else if (actionData.configured && actionData.action_id) {
+					console.log(`⏭️ Skipping ${triggerKey} - already has action_id: ${actionData.action_id}`)
+				}
+			}
+			
+			// ✅ Reload nếu có: new configured actions, hoặc deleted actions
+			if (hasNewConfiguredActions || deletedTriggers.length > 0) {
+				console.log('🔄 Reloading flow after creating/deleting actions...')
 				await loadFlow()
 				
-				// Update metadata với action_id mới sau khi reload
-				if (parentActionName && currentActionIndex !== undefined) {
-					const reloadedParent = flowData.value.actions[currentActionIndex]
-					if (reloadedParent && reloadedParent.name === parentActionName) {
-						// Tìm child actions mới
-						const childActions = flowData.value.actions.filter(a => 
-							a.parent_action_id === parentActionName
-						)
-						
-						// Update metadata với action_id thật
-						if (reloadedParent.parameters?.additional_actions) {
-							Object.entries(reloadedParent.parameters.additional_actions).forEach(([triggerKey, meta]) => {
-								const matchingChild = childActions.find(c => c.action_type === meta.action_type)
-								if (matchingChild && meta.configured) {
-									meta.action_id = matchingChild.name
-									console.log(`✅ Updated action_id for ${triggerKey}:`, matchingChild.name)
-								}
-							})
-						}
-					}
-				}
-				
-				// Re-select action sau khi reload
+				// Re-select action để sync selectedItemData
 				if (currentActionIndex !== undefined && currentActionIndex >= 0) {
-					setTimeout(() => {
-						selectItem('action', currentActionIndex)
-					}, 100)
+					selectItem('action', currentActionIndex)
+					console.log(' Re-selected action, selectedItemData:', selectedItemData.value)
 				}
 				
 				toast.success('Additional actions saved successfully!')
 			} else {
-				toast.error(result.error || 'Failed to save additional actions')
+				console.log(' No new configured actions, skipping reload')
+				// Reload để cập nhật flowData ngay cả khi chỉ thêm unconfigured actions
+				if (hasUnconfiguredActions) {
+					console.log(' Reloading flow after saving unconfigured metadata...')
+					await loadFlow()
+					if (currentActionIndex !== undefined && currentActionIndex >= 0) {
+						selectItem('action', currentActionIndex)
+					}
+				}
 			}
-		} catch (error) {
-			console.error('Error saving additional actions:', error)
-			toast.error('Failed to save additional actions')
-		}
-	}, 500)
+	} catch (error) {
+		console.error('Error saving additional actions:', error)
+		toast.error('Failed to save additional actions')
+	}
 }
 
 // Helper to normalize action type
