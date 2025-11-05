@@ -914,6 +914,7 @@ const sourceOptions = ref([
 	'Campus',
 	'Other',
 ])
+const loading = computed(() => talentPoolStore.loading)
 const skillInput = ref('')
 const skillTags = ref([])
 const talents = computed(() => talentPoolStore.talents)

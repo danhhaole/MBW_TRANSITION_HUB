@@ -135,8 +135,8 @@ export const useTalentStore = defineStore('talent', {
 							experience_display: this.formatExperience(talent.experience_years),
 						}))
 
-						// Update pagination
-						this.pagination.total = result.count || 0
+						// Update pagination - use data.length when searching to match current page results
+						this.pagination.total = this.filters.search ? result.data.length : (result.count || 0)
 						this.pagination.page = options.page || 1
 						this.pagination.limit = options.limit || this.pagination.limit
 						this.pagination.showing_from =
@@ -161,7 +161,7 @@ export const useTalentStore = defineStore('talent', {
 					// Fallback to old separate API calls
 					const [listResult, countResult] = await Promise.all([
 						call('frappe.client.get_list', params),
-						call('frappe.client.get_count', {
+						this.filters.search ? Promise.resolve(0) : call('frappe.client.get_count', {
 							doctype: 'Mira Talent',
 							filters: params.filters,
 							or_filters: params.or_filters,
@@ -178,8 +178,8 @@ export const useTalentStore = defineStore('talent', {
 							experience_display: this.formatExperience(talent.experience_years),
 						}))
 
-						// Update pagination
-						this.pagination.total = countResult || 0
+						// Update pagination - use data.length when searching to match current page results
+						this.pagination.total = this.filters.search ? listResult.length : (countResult || 0)
 						this.pagination.page = options.page || 1
 						this.pagination.limit = options.limit || this.pagination.limit
 						this.pagination.showing_from =
