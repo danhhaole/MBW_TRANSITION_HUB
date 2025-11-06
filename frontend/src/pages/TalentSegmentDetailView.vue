@@ -5,6 +5,38 @@
 				<Breadcrumbs :items="breadcrumbs" />
 			</template>
 			<template #right-header>
+				<Button variant="solid" theme="blue" @click="showCampaignWizard = true">
+					<template #prefix>
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+							stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+								d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+						</svg>
+					</template>
+					{{ __('Create Campaign') }}
+				</Button>
+
+				<Button variant="solid" theme="green" @click="showAddCandidateModal = true">
+					<template #prefix>
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+							stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+								d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+						</svg>
+					</template>
+					{{ __('Add Talent') }}
+				</Button>
+
+				<!-- <Button variant="solid" theme="gray" @click="showAnalytics = !showAnalytics">
+					<template #prefix>
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+							stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+								d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+						</svg>
+					</template>
+					{{ __('Analytics') }}
+				</Button> -->
 				<Button variant="outline" theme="gray" @click="openEditModal">
 					<template #prefix>
 						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
@@ -116,7 +148,7 @@
 							<div class="text-2xl font-bold text-green-900">
 								{{candidates.filter(c => c.status === 'ACTIVE').length}}
 							</div>
-							<div class="text-sm text-green-700">{{ __('Active Talents') }}</div>
+							<div class="text-sm text-green-700">{{ __('New Talents') }}</div>
 						</div>
 					</div>
 				</div>
@@ -152,7 +184,7 @@
 									'ACTIVE').length /
 									candidates.length) * 100) : 0}}%
 							</div>
-							<div class="text-sm text-purple-700">{{ __('Mira Interaction Rate') }}</div>
+							<div class="text-sm text-purple-700">{{ __('Interaction Rate') }}</div>
 						</div>
 					</div>
 				</div>
@@ -275,41 +307,6 @@
 				</div>
 			</div>
 
-			<!-- Action Buttons -->
-			<div class="flex flex-wrap gap-3 mb-6">
-				<Button variant="solid" theme="blue" @click="showCampaignWizard = true">
-					<template #prefix>
-						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-							stroke="currentColor">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-								d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
-						</svg>
-					</template>
-					{{ __('Create Campaign') }}
-				</Button>
-
-				<Button variant="solid" theme="green" @click="showAddCandidateModal = true">
-					<template #prefix>
-						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-							stroke="currentColor">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-								d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-						</svg>
-					</template>
-					{{ __('Add Talent') }}
-				</Button>
-
-				<Button variant="solid" theme="gray" @click="showAnalytics = !showAnalytics">
-					<template #prefix>
-						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-							stroke="currentColor">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-								d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-						</svg>
-					</template>
-					{{ __('Analytics') }}
-				</Button>
-			</div>
 
 			<!-- Analytics Section (Initially Hidden) -->
 			<div v-if="showAnalytics" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
@@ -348,7 +345,7 @@
 				<div class="p-6">
 					<div class="flex justify-between items-center mb-6">
 						<h3 class="text-lg font-medium text-gray-900">
-							{{ __('Talents in this segment') }}
+							{{ __('Talents in this Pool') }}
 						</h3>
 						<div class="flex items-center space-x-3">
 							<div class="relative">
@@ -364,7 +361,7 @@
 								</div>
 
 							</div>
-							<Button variant="solid" theme="gray" @click="showAddCandidateModal = true">
+							<!-- <Button variant="solid" theme="gray" @click="showAddCandidateModal = true">
 								<template #prefix>
 									<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
 										viewBox="0 0 24 24" stroke="currentColor">
@@ -373,7 +370,7 @@
 									</svg>
 								</template>
 								{{ __('Add Talent') }}
-							</Button>
+							</Button> -->
 						</div>
 					</div>
 
@@ -984,7 +981,7 @@ const filteredSuggestedCandidates = computed(() => {
 
 // Dialog options
 const addCandidateDialogOptions = computed(() => ({
-	title: __('Add Talents to Segment'),
+	title: __('Add Talents to Pool'),
 	size: '3xl',
 }))
 
