@@ -199,10 +199,19 @@ const edges = computed(() => {
   const parentActions = activeActions.filter(a => !a.parent_action_id)
   const childActions = activeActions.filter(a => a.parent_action_id)
 
-  // Trigger -> Parent Actions
-  triggers.forEach((trigger, triggerIndex) => {
-    parentActions.forEach((action) => {
-      const actionIndex = activeActions.indexOf(action)
+  // ✅ Sort parent actions by order
+  const sortedParentActions = [...parentActions].sort((a, b) => {
+    const orderA = a.order ?? 0
+    const orderB = b.order ?? 0
+    return orderA - orderB
+  })
+
+  // Trigger -> FIRST Parent Action only
+  if (sortedParentActions.length > 0) {
+    const firstParentAction = sortedParentActions[0]
+    const actionIndex = activeActions.indexOf(firstParentAction)
+    
+    triggers.forEach((trigger, triggerIndex) => {
       result.push({
         id: `e-t${triggerIndex}-a${actionIndex}`,
         source: `trigger-${triggerIndex}`,
@@ -216,7 +225,29 @@ const edges = computed(() => {
         style: { stroke: '#94a3b8', strokeWidth: 2 }
       })
     })
-  })
+  }
+
+  // ✅ Parent Actions -> Next Parent Action (sequential chain)
+  for (let i = 0; i < sortedParentActions.length - 1; i++) {
+    const currentAction = sortedParentActions[i]
+    const nextAction = sortedParentActions[i + 1]
+    
+    const currentIndex = activeActions.indexOf(currentAction)
+    const nextIndex = activeActions.indexOf(nextAction)
+    
+    result.push({
+      id: `e-a${currentIndex}-a${nextIndex}`,
+      source: `action-${currentIndex}`,
+      target: `action-${nextIndex}`,
+      type: 'default',
+      animated: false,
+      markerEnd: {
+        type: 'arrowclosed',
+        color: '#94a3b8',
+      },
+      style: { stroke: '#94a3b8', strokeWidth: 2 }
+    })
+  }
 
   // ✅ All Parent -> Child connections (support multi-level)
   childActions.forEach((child) => {
