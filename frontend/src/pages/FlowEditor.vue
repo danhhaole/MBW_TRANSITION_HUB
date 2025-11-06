@@ -287,131 +287,128 @@
 					<!-- Configuration Panel Content -->
 					<div v-if="selectedItem" class="space-y-6">
 						<!-- Add Tag Action - Check first before Email/SMS/Zalo -->
-						<div v-if="selectedItem.type === 'action' && isAddTagAction()">
-							<h4 class="text-md font-medium text-gray-900 mb-4">	{{ __('Add Tag') }}</h4>
-							<div class="space-y-4">
-								<!-- Select existing tags -->
-								<div>
-									<label class="block text-sm font-medium text-gray-700 mb-2">
-										{{ __('Select existing tags') }}
-									</label>
-									
-									<!-- Selected tags display -->
-									<div v-if="selectedTagsDisplay?.length > 0" class="mb-3">
-										<div class="flex flex-wrap gap-2">
-											<div
-												v-for="tag in selectedTagsDisplay"
-												:key="tag.value"
-												class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800 border border-blue-200"
-											>
-												<span>{{ tag.label }}</span>
-												<button
-													@click="removeSelectedTag(tag.value)"
-													class="ml-2 text-blue-600 hover:text-blue-800 focus:outline-none"
-												>
-													<FeatherIcon name="x" class="h-3 w-3" />
-												</button>
-											</div>
-										</div>
+						<div v-if="selectedItem.type === 'action' && isAddTagAction()" class="space-y-3">
+							<h4 class="text-md font-medium text-gray-900">{{ __('Add Tag') }}</h4>
+							
+							<!-- Selected tag display (card style) -->
+							<div v-if="selectedTagsDisplay?.length > 0">
+								<label class="block text-sm font-medium text-gray-700 mb-2">
+									{{ __("Selected tag") }}
+								</label>
+								<div class="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center justify-between">
+									<div class="flex items-center space-x-2">
+										<FeatherIcon name="tag" class="h-4 w-4 text-blue-600" />
+										<span class="text-sm font-medium text-blue-900">{{ selectedTagsDisplay[0].label }}</span>
 									</div>
-									
-									<!-- Tag selector -->
-									<FormControl
-										type="select"
-										v-model="selectedTagToAdd"
-										:options="availableTagOptions"
-										:placeholder="__('Select existing tags')"
-										:loading="tagsLoading"
-										@change="addSelectedTag"
-									/>
+									<button
+										@click="removeSelectedTag(selectedTagsDisplay[0].value)"
+										class="text-blue-600 hover:text-blue-800 focus:outline-none"
+									>
+										<FeatherIcon name="x" class="h-4 w-4" />
+									</button>
 								</div>
+							</div>
+							
+							<!-- Tag selector (only show if no tag selected) -->
+							<div v-else>
+								<label class="block text-sm font-medium text-gray-700 mb-2">
+									{{ __("Select existing tag") }}
+								</label>
+								<FormControl
+									type="select"
+									v-model="selectedTagToAdd"
+									:options="availableTagOptions"
+									:placeholder="__('Select existing tag')"
+									:loading="tagsLoading"
+									@change="addSelectedTag"
+								/>
 								
 								<!-- Or create new tag -->
-								<div class="text-center text-sm text-gray-500">
-									{{ __('Or') }}
-								</div>
-								
-								<div>
-									<label class="block text-sm font-medium text-gray-700 mb-2">
-										{{ __('Create new tag') }}
-									</label>
-									<div class="flex space-x-2">
-										<FormControl
-											v-model="newTagName"
-											type="text"
-											:placeholder="__('New tag name (VD: Webinar MBWN DMS 2110)')"
-											class="flex-1"
-										/>
-										<Button 
-											variant="outline" 
-											size="sm"
-											:loading="creatingTag"
-											@click="createNewTag"
-										>
-											<template #prefix>
-												<FeatherIcon name="plus" class="h-4 w-4" />
-											</template>
-											{{ __('Add') }}
-										</Button>
+								<div class="relative my-3">
+									<div class="absolute inset-0 flex items-center">
+										<div class="w-full border-t border-gray-200"></div>
+									</div>
+									<div class="relative flex justify-center text-xs">
+										<span class="px-2 bg-white text-gray-500">{{ __('or') }}</span>
 									</div>
 								</div>
 								
-								<p class="text-xs text-gray-500">
-									{{ __('Tag will be added to the folder and assigned to the candidate') }}
-								</p>
-								<p v-if="selectedTagsDisplay.length === 0 && !newTagName.trim()" class="text-red-500 text-xs">
-									{{ __('Please select an existing tag or create a new tag') }}
-								</p>
+								<label class="block text-sm font-medium text-gray-700 mb-2">
+									{{ __('Create new tag') }}
+								</label>
+								<div class="flex space-x-2">
+									<FormControl
+										v-model="newTagName"
+										type="text"
+										:placeholder="__('New tag name (VD: Webinar MBWN DMS 2110)')"
+										class="flex-1"
+									/>
+									<Button 
+										variant="outline" 
+										size="sm"
+										:loading="creatingTag"
+										@click="createNewTag"
+									>
+										<template #prefix>
+											<FeatherIcon name="plus" class="h-4 w-4" />
+										</template>
+										{{ __('Add') }}
+									</Button>
+								</div>
 							</div>
+							
+							<p class="text-xs text-gray-500">
+								{{ __("Tag will be added to the folder and assigned to the candidate") }}
+							</p>
+							<p v-if="selectedTagsDisplay.length === 0 && !newTagName.trim()" class="text-red-500 text-xs">
+								{{ __("Please select a tag or create a new tag") }}
+							</p>
 						</div>
 
 						<!-- Remove Tag Action -->
-						<div v-else-if="selectedItem.type === 'action' && isRemoveTagAction()">
-							<h4 class="text-md font-medium text-gray-900 mb-4">{{ __('Remove Tag') }}</h4>
-							<div class="space-y-4">
-								<!-- Select existing tags to remove -->
-								<div>
-									<label class="block text-sm font-medium text-gray-700 mb-2">
-										{{ __('Select tags to remove') }}
-									</label>
-									
-									<!-- Selected tags display -->
-									<div v-if="selectedTagsDisplay?.length > 0" class="mb-3">
-										<div class="flex flex-wrap gap-2">
-											<div
-												v-for="tag in selectedTagsDisplay"
-												:key="tag.value"
-												class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-red-100 text-red-800 border border-red-200"
-											>
-												<span>{{ tag.label }}</span>
-												<button
-													@click="removeSelectedTag(tag.value)"
-													class="ml-2 text-red-600 hover:text-red-800 focus:outline-none"
-												>
-													<FeatherIcon name="x" class="h-3 w-3" />
-												</button>
-											</div>
-										</div>
+						<div v-else-if="selectedItem.type === 'action' && isRemoveTagAction()" class="space-y-3">
+							<h4 class="text-md font-medium text-gray-900">{{ __('Remove Tag') }}</h4>
+							
+							<!-- Selected tag display (card style) -->
+							<div v-if="selectedTagsDisplay?.length > 0">
+								<label class="block text-sm font-medium text-gray-700 mb-2">
+									{{ __("Selected tag") }}
+								</label>
+								<div class="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center justify-between">
+									<div class="flex items-center space-x-2">
+										<FeatherIcon name="tag" class="h-4 w-4 text-red-600" />
+										<span class="text-sm font-medium text-red-900">{{ selectedTagsDisplay[0].label }}</span>
 									</div>
-									
-									<!-- Tag selector -->
-									<FormControl
-										type="select"
-										v-model="selectedTagToAdd"
-										:options="availableTagOptions"
-										:placeholder="__('Select tags to remove')"
-										:loading="tagsLoading"
-										@change="addSelectedTag"
-									/>
+									<button
+										@click="removeSelectedTag(selectedTagsDisplay[0].value)"
+										class="text-red-600 hover:text-red-800 focus:outline-none"
+									>
+										<FeatherIcon name="x" class="h-4 w-4" />
+									</button>
 								</div>
-								
-								<p class="text-xs text-gray-500">
-									{{ __('Selected tags will be removed from the candidate') }}
-								</p>
-								<p v-if="selectedTagsDisplay.length === 0" class="text-red-500 text-xs">
-									{{ __('Please select at least one tag to remove') }}
-								</p>
 							</div>
+							
+							<!-- Tag selector (only show if no tag selected) -->
+							<div v-else>
+								<label class="block text-sm font-medium text-gray-700 mb-2">
+									{{ __("Select tag to remove") }}
+								</label>
+								<FormControl
+									type="select"
+									v-model="selectedTagToAdd"
+									:options="availableTagOptions"
+									:placeholder="__('Select tag to remove')"
+									:loading="tagsLoading"
+									@change="addSelectedTag"
+								/>
+							</div>
+							
+							<p class="text-xs text-gray-500">
+								{{ __("Selected tag will be removed from the candidate") }}
+							</p>
+							<p v-if="selectedTagsDisplay.length === 0" class="text-red-500 text-xs">
+								{{ __("Please select a tag to remove") }}
+							</p>
 						</div>
 
 						<!-- Smart Delay Action -->
@@ -2969,21 +2966,16 @@ const addSelectedTag = () => {
 		selectedItemData.value.parameters = {}
 	}
 	
-	if (!selectedItemData.value.parameters.selected_tags) {
-		selectedItemData.value.parameters.selected_tags = []
-	}
+	// Only allow 1 tag - replace existing tag
+	selectedItemData.value.parameters.selected_tags = [selectedTagToAdd.value]
+	hasUnsavedChanges.value = true
 	
-	if (!selectedItemData.value.parameters.selected_tags.includes(selectedTagToAdd.value)) {
-		selectedItemData.value.parameters.selected_tags.push(selectedTagToAdd.value)
-		hasUnsavedChanges.value = true
-		
-		// Sync with main flow data
-		if (selectedItem.value) {
-			const { type, index } = selectedItem.value
-			if (type === 'action') {
-				const currentAction = flowData.value.actions[index]
-				mergeActionParameters(currentAction, selectedItemData.value.parameters)
-			}
+	// Sync with main flow data
+	if (selectedItem.value) {
+		const { type, index } = selectedItem.value
+		if (type === 'action') {
+			const currentAction = flowData.value.actions[index]
+			mergeActionParameters(currentAction, selectedItemData.value.parameters)
 		}
 	}
 	
@@ -3025,14 +3017,11 @@ const createNewTag = async () => {
 		if (result.success) {
 			toast.success('Tạo tag thành công')
 			
-			// Add to selected tags
+			// Replace with new tag (only 1 tag allowed)
 			if (!selectedItemData.value.parameters) {
 				selectedItemData.value.parameters = {}
 			}
-			if (!selectedItemData.value.parameters.selected_tags) {
-				selectedItemData.value.parameters.selected_tags = []
-			}
-			selectedItemData.value.parameters.selected_tags.push(result.data.name)
+			selectedItemData.value.parameters.selected_tags = [result.data.name]
 			hasUnsavedChanges.value = true
 			
 			// Sync with main flow data

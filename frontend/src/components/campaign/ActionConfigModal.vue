@@ -16,35 +16,33 @@
     <!-- Action Configuration -->
     <div v-if="localAction.type" class="border-t pt-4">
       <!-- Add Tag Configuration -->
-      <div v-if="localAction.type === 'add_tag'" class="space-y-4">
-        <h4 class="text-sm font-medium text-gray-900">{{ __("Add Tag") }}</h4>
+      <div v-if="localAction.type === 'add_tag'" class="space-y-3">
+        <h4 class="text-sm font-medium text-gray-900 mb-3">{{ __("Add Tag") }}</h4>
         
-        <!-- Select existing tags -->
-        <div>
+        <!-- Selected tag display (card style) -->
+        <div v-if="selectedTagsDisplay?.length > 0">
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            {{ __("Selected tag") }}
+          </label>
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <FeatherIcon name="tag" class="h-4 w-4 text-blue-600" />
+              <span class="text-sm font-medium text-blue-900">{{ selectedTagsDisplay[0].label }}</span>
+            </div>
+            <button
+              @click="removeSelectedTag(selectedTagsDisplay[0].value)"
+              class="text-blue-600 hover:text-blue-800 focus:outline-none"
+            >
+              <FeatherIcon name="x" class="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+        
+        <!-- Tag selector (only show if no tag selected) -->
+        <div v-else>
           <label class="block text-sm font-medium text-gray-700 mb-2">
             {{ __("Select existing tag") }}
           </label>
-          
-          <!-- Selected tags display -->
-          <div v-if="selectedTagsDisplay?.length > 0" class="mb-3">
-            <div class="flex flex-wrap gap-2">
-              <div
-                v-for="tag in selectedTagsDisplay"
-                :key="tag.value"
-                class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800 border border-blue-200"
-              >
-                <span>{{ tag.label }}</span>
-                <button
-                  @click="removeSelectedTag(tag.value)"
-                  class="ml-2 text-blue-600 hover:text-blue-800 focus:outline-none"
-                >
-                  <FeatherIcon name="x" class="h-3 w-3" />
-                </button>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Tag selector -->
           <FormControl
             type="select"
             v-model="selectedTagToAdd"
@@ -53,14 +51,17 @@
             :loading="tagsLoading"
             @change="addSelectedTag"
           />
-        </div>
-        
-        <!-- Or create new tag -->
-        <div class="text-center text-sm text-gray-500">
-          {{ __("or") }}
-        </div>
-        
-        <div>
+          
+          <!-- Or create new tag -->
+          <div class="relative my-3">
+            <div class="absolute inset-0 flex items-center">
+              <div class="w-full border-t border-gray-200"></div>
+            </div>
+            <div class="relative flex justify-center text-xs">
+              <span class="px-2 bg-white text-gray-500">{{ __("or") }}</span>
+            </div>
+          </div>
+          
           <label class="block text-sm font-medium text-gray-700 mb-2">
             {{ __("Create new tag") }}
           </label>
@@ -85,44 +86,42 @@
           </div>
         </div>
         
-        <p class="text-xs text-gray-500">
+        <p class="text-xs text-gray-500 mt-2">
           {{ __("Tag will be added to the directory and assigned to the candidate") }}
         </p>
-        <p v-if="localAction.type === 'add_tag' && selectedTagsDisplay.length === 0 && !newTagName.trim()" class="text-red-500 text-xs">
-          {{ __("Please select existing tags or create a new tag") }}
+        <p v-if="localAction.type === 'add_tag' && selectedTagsDisplay.length === 0 && !newTagName.trim()" class="text-red-500 text-xs mt-1">
+          {{ __("Please select an existing tag or create a new tag") }}
         </p>
       </div>
 
       <!-- Remove Tag Configuration -->
-      <div v-else-if="localAction.type === 'remove_tag'" class="space-y-4">
-        <h4 class="text-sm font-medium text-gray-900">{{ __("Remove Tag") }}</h4>
+      <div v-else-if="localAction.type === 'remove_tag'" class="space-y-3">
+        <h4 class="text-sm font-medium text-gray-900 mb-3">{{ __("Remove Tag") }}</h4>
         
-        <!-- Select tags to remove -->
-        <div>
+        <!-- Selected tag display (card style) -->
+        <div v-if="selectedTagsDisplay.length > 0">
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            {{ __("Selected tag") }}
+          </label>
+          <div class="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <FeatherIcon name="tag" class="h-4 w-4 text-red-600" />
+              <span class="text-sm font-medium text-red-900">{{ selectedTagsDisplay[0].label }}</span>
+            </div>
+            <button
+              @click="removeSelectedTag(selectedTagsDisplay[0].value)"
+              class="text-red-600 hover:text-red-800 focus:outline-none"
+            >
+              <FeatherIcon name="x" class="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+        
+        <!-- Tag selector (only show if no tag selected) -->
+        <div v-else>
           <label class="block text-sm font-medium text-gray-700 mb-2">
             {{ __("Select tag to remove") }}
           </label>
-          
-          <!-- Selected tags display -->
-          <div v-if="selectedTagsDisplay.length > 0" class="mb-3">
-            <div class="flex flex-wrap gap-2">
-              <div
-                v-for="tag in selectedTagsDisplay"
-                :key="tag.value"
-                class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-red-100 text-red-800 border border-red-200"
-              >
-                <span>{{ tag.label }}</span>
-                <button
-                  @click="removeSelectedTag(tag.value)"
-                  class="ml-2 text-red-600 hover:text-red-800 focus:outline-none"
-                >
-                  <FeatherIcon name="x" class="h-3 w-3" />
-                </button>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Tag selector -->
           <FormControl
             type="select"
             v-model="selectedTagToAdd"
@@ -133,11 +132,11 @@
           />
         </div>
         
-        <p class="text-xs text-gray-500">
+        <p class="text-xs text-gray-500 mt-2">
           {{ __("Tag will be removed from the candidate") }}
         </p>
-        <p v-if="localAction.type === 'remove_tag' && selectedTagsDisplay.length === 0" class="text-red-500 text-xs">
-          {{ __("Please select at least one tag to remove") }}
+        <p v-if="localAction.type === 'remove_tag' && selectedTagsDisplay.length === 0" class="text-red-500 text-xs mt-1">
+          {{ __("Please select a tag to remove") }}
         </p>
       </div>
 
@@ -363,13 +362,8 @@ const flowOptions = computed(() => {
 const addSelectedTag = () => {
   if (!selectedTagToAdd.value) return
   
-  if (!localAction.value.data.selected_tags) {
-    localAction.value.data.selected_tags = []
-  }
-  
-  if (!localAction.value.data.selected_tags.includes(selectedTagToAdd.value)) {
-    localAction.value.data.selected_tags.push(selectedTagToAdd.value)
-  }
+  // Only allow 1 tag - replace existing tag
+  localAction.value.data.selected_tags = [selectedTagToAdd.value]
   
   selectedTagToAdd.value = ''
 }
@@ -398,11 +392,8 @@ const createNewTag = async () => {
 
     if (result.success) {
       toast.success('Tag created successfully')
-      // Add to selected tags
-      if (!localAction.value.data.selected_tags) {
-        localAction.value.data.selected_tags = []
-      }
-      localAction.value.data.selected_tags.push(result.data.name)
+      // Replace with new tag (only 1 tag allowed)
+      localAction.value.data.selected_tags = [result.data.name]
       newTagName.value = ''
     } else {
       toast.error(result.error || 'Failed to create tag')
