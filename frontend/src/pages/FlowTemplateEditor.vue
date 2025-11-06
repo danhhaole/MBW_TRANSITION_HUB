@@ -835,7 +835,7 @@ const availableActions = [
     parameters: {
       channel: 'Email',
       template_id: '',
-      email_content: {
+      template: {
         email_subject: '',
         email_content: '',
         attachments: [],
@@ -1252,7 +1252,7 @@ const viewAction = (index) => {
     
     // Load content based on action type
     if (action.action_type === 'EMAIL') {
-      currentActionContent.value = params.email_content || params
+      currentActionContent.value = params.template || params  // ✅ Changed to template
     } else if (action.action_type === 'SMS') {
       currentActionContent.value = params.sms_content || params
     } else if (action.action_type === 'ZALO') {
@@ -1304,7 +1304,7 @@ const editAction = (index) => {
     
     // Load content based on action type
     if (action.action_type === 'EMAIL') {
-      currentActionContent.value = params.email_content || params
+      currentActionContent.value = params.template || params  // ✅ Changed to template
     } else if (action.action_type === 'SMS') {
       currentActionContent.value = params.sms_content || params
     } else if (action.action_type === 'ZALO') {
@@ -1385,7 +1385,7 @@ const saveAction = () => {
     
     // Add content based on action type
     if (selectedActionType.value.action_type === 'EMAIL') {
-      parameters.email_content = currentActionContent.value
+      parameters.template = currentActionContent.value  // ✅ Changed from email_content to template
     } else if (selectedActionType.value.action_type === 'ZALO') {
       parameters.zalo_content = currentActionContent.value
     } else if (selectedActionType.value.action_type === 'SMS') {

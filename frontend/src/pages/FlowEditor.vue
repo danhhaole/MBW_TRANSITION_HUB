@@ -1383,7 +1383,7 @@ const availableActions = [
 		parameters: {
 			channel: 'Email',
 			template_id: '',
-			email_content: {
+			template: {
 				email_subject: '',
 				email_content: '',
 				attachments: [],
@@ -2426,8 +2426,8 @@ const emailContent = computed(() => {
 		}
 	}
 	
-	console.log('emailContent computed called', selectedItemData.value.parameters?.email_content)
-	const result = selectedItemData.value.parameters?.email_content || {
+	console.log('emailContent computed called', selectedItemData.value.parameters?.template)
+	const result = selectedItemData.value.parameters?.template || {
 		email_subject: '',
 		email_content: '',
 		attachments: [],
@@ -2655,7 +2655,7 @@ const smsImages = computed(() => {
 const getEmailContent = () => {
 	if (!selectedItem.value || selectedItem.value.type !== 'action') return {}
 	const action = flowData.value.actions[selectedItem.value.index]
-	return action?.parameters?.email_content || {
+	return action?.parameters?.template || {
 		email_subject: '',
 		email_content: '',
 		attachments: []
@@ -2715,17 +2715,16 @@ const updateEmailContent = (content) => {
 		
 		if (action) {
 			if (!action.parameters) action.parameters = {}
-			action.parameters.email_content = content
+			action.parameters.template = content
 			action.parameters.template_id = `EMAIL_${Date.now()}`
 			
 			// Chỉ update local state, không auto-save
-			console.log('Email content updated locally')
 			hasUnsavedChanges.value = true
 			
 			// Sync với selectedItemData để đảm bảo consistency
 			if (selectedItemData.value) {
 				if (!selectedItemData.value.parameters) selectedItemData.value.parameters = {}
-				selectedItemData.value.parameters.email_content = content
+				selectedItemData.value.parameters.template = content
 				selectedItemData.value.parameters.template_id = action.parameters.template_id
 			}
 		}
