@@ -4,7 +4,8 @@
 import frappe
 from frappe.utils import nowdate
 from frappe.model.document import Document
-from mbw_mira.mbw_mira.doctype.mira_task.mira_task import create_mira_task_from_event
+from mbw_mira.mbw_mira.doctype.mira_task_definition.mira_task_definition import create_task_definitions_from_event
+from mbw_mira.workers import resume_event
 
 
 class MiraInteraction(Document):
@@ -76,12 +77,14 @@ class MiraInteraction(Document):
 
 	def handle_email_sent(self):
 		"""Ghi nhận khi gửi email thành công."""
-		create_mira_task_from_event(
-				event_trigger="ON_SEND_SUCCESS",
-				target_type="Talent",
-				target_id=self.talent_id,
-				event_payload={"talent_id": self.talent_id}
-			)
+		resume_event("email_sent", self.talent_id)
+  
+		# create_task_definitions_from_event(
+		# 		event_trigger="ON_SEND_SUCCESS",
+		# 		target_type="Talent",
+		# 		target_id=self.talent_id,
+		# 		event_payload={"talent_id": self.talent_id}
+		# 	)
 			
 
 	def handle_email_delivered(self):
@@ -95,12 +98,13 @@ class MiraInteraction(Document):
 	def handle_email_engagement(self):
 		"""Email opened hoặc clicked."""
 		self._update_talent_interaction("Quan tâm AI")
-		create_mira_task_from_event(
-			event_trigger="ON_LINK_CLICK",
-			target_type="Talent",
-			target_id=self.talent_id,
-			event_payload={"url": self.url}
-		)
+		resume_event("email_open", self.talent_id)
+		# create_task_definitions_from_event(
+		# 	event_trigger="ON_LINK_CLICK",
+		# 	target_type="Talent",
+		# 	target_id=self.talent_id,
+		# 	event_payload={"url": self.url}
+		# )
 
 	def handle_email_unsubscribe(self):
 		"""Người dùng hủy đăng ký."""

@@ -5,123 +5,62 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-    "subject",
-    "trigger_type",
-    "trigger_value",
-    "action_type",
-    "action_value",
-    "related_talent",
-    "flow",
-    "condition",
-    "due_time",
-    "status",
-    "error_log",
-    "executed_at",
-    "execution_result",
-    "reference_doctype",
-    "reference_name",
-    "order_task"
-
-  ],
-  "fields": [
-    {
-      "fieldname": "subject",
-      "label": "Subject",
-      "fieldtype": "Data",
-      "reqd": 1
-    },
-    {
-      "fieldname": "trigger_type",
-      "label": "Trigger Type",
-      "fieldtype": "Data",
-      "description": "Loại hành động tạo ra task (vd: On Create, On Update, On Interaction)"
-    },
-    {
-      "fieldname": "trigger_value",
-      "label": "Trigger Value",
-      "fieldtype": "Data",
-      "description": "Tên hoặc giá trị cụ thể của trigger (vd: campaign_open, form_submit)"
-    },
-    {
-      "fieldname": "action_type",
-      "label": "Action Type",
-      "fieldtype": "Data",
-      "description": "Loại action sẽ được thực hiện (vd: Send Email, Start Flow, Update Field)"
-    },
-    {
-      "fieldname": "action_value",
-      "label": "Action Value",
-      "fieldtype": "Data",
-      "description": "Giá trị cụ thể của action (vd: email_template_id, flow_id)"
-    },
-    {
-      "fieldname": "related_talent",
-      "label": "Related Talent",
-      "fieldtype": "Link",
-      "options": "Mira Talent"
-    },
-    {
-      "fieldname": "flow",
-      "label": "Flow",
-      "fieldtype": "Link",
-      "options": "Mira Flow",
-      "description": "Flow mà task này thuộc về hoặc sẽ kích hoạt"
-    },
-    {
-      "fieldname": "condition",
-      "label": "Condition (JSON)",
-      "fieldtype": "Code",
-      "options": "JSON",
-      "description": "Điều kiện thực thi task (ví dụ: {'field':'status','equals':'active'})"
-    },
-    {
-      "fieldname": "due_time",
-      "label": "Due Time",
-      "fieldtype": "Datetime"
-    },
-    {
-      "fieldname": "status",
-      "label": "Status",
-      "fieldtype": "Select",
-      "options": "Pending\nIn Progress\nCompleted\nFailed",
-      "default": "Pending"
-    },
-    {
-      "fieldname": "error_log",
-      "label": "Error Log",
-      "fieldtype": "Small Text",
-      "hidden": 1
-    },
-    {
-      "fieldname": "scheduled_at",
-      "label": "Scheduled At",
-      "fieldtype": "Datetime"
-    },
-    {
-      "fieldname": "executed_at",
-      "label": "Executed At",
-      "fieldtype": "Datetime"
-    },
-    {
-      "fieldname": "execution_result",
-      "label": "Execution Result",
-      "fieldtype": "Small Text"
-    },{
-        "fieldname": "reference_doctype",
-        "label": "Reference Doctype",
-        "fieldtype": "Data"
-      },
-      {
-        "fieldname": "reference_name",
-        "label": "Reference Name",
-        "fieldtype": "Dynamic Link",
-        "options": "reference_doctype"
-      }, {
-        "fieldname": "order_task",
-        "fieldtype": "Int",
-        "label": "Order"
-       }
-  ],
+   "subject",
+   "task_definition",
+   "flow_action",
+   "related_talent",
+   "status",
+   "scheduled_at",
+   "executed_at",
+   "error_log"
+ ],
+ "fields": [
+   {
+     "fieldname": "subject",
+     "label": "Subject",
+     "fieldtype": "Data"
+   },
+   {
+     "fieldname": "task_definition",
+     "label": "Task Definition",
+     "fieldtype": "Link",
+     "options": "Mira Task Definition"
+   },
+   {
+     "fieldname": "flow_action",
+     "label": "Flow Action",
+     "fieldtype": "Link",
+     "options": "Mira Flow Action"
+   },
+   {
+     "fieldname": "related_talent",
+     "label": "Related Talent",
+     "fieldtype": "Link",
+     "options": "Mira Talent"
+   },
+   {
+     "fieldname": "status",
+     "label": "Status",
+     "fieldtype": "Select",
+     "options": "Pending\nIn Progress\nCompleted\nFailed",
+     "default": "Pending"
+   },
+   {
+     "fieldname": "scheduled_at",
+     "label": "Scheduled At",
+     "fieldtype": "Datetime"
+   },
+   {
+     "fieldname": "executed_at",
+     "label": "Executed At",
+     "fieldtype": "Datetime"
+   },
+   {
+     "fieldname": "error_log",
+     "label": "Error Log",
+     "fieldtype": "Small Text"
+   }
+ ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],

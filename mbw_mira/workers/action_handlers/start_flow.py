@@ -3,7 +3,7 @@ from frappe.utils import now_datetime
 from datetime import timedelta
 
 from mbw_mira.helpers.date_time import get_business_hours_schedule, get_user_timezone_string
-from mbw_mira.mbw_mira.doctype.mira_task.mira_task import create_mira_task_from_event
+from mbw_mira.mbw_mira.doctype.mira_task_definition.mira_task_definition import create_task_definitions_from_event
 
 
 def handle_start_flow(task):
@@ -34,7 +34,7 @@ def handle_start_flow(task):
 
 
     # Gọi lại pipeline tạo task dựa trên flow mới
-    create_mira_task_from_event(
+    create_task_definitions_from_event(
         event_trigger="ON_FLOW_STARTED",
         target_type=target_type,
         target_id=target_id,

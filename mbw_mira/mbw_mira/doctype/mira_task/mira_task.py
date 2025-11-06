@@ -4,9 +4,9 @@
 from datetime import timedelta
 import frappe
 from frappe.model.document import Document
-from frappe.utils import now_datetime,get_datetime
-from frappe.utils.safe_exec import safe_eval
+from frappe.utils import now_datetime,add_to_date
 from mbw_mira.helpers.date_time import get_user_timezone_string,get_business_hours_schedule
+from mbw_mira.mbw_mira.doctype.mira_task_definition.mira_task_definition import run_next_action
 
 class MiraTask(Document):
 	
@@ -96,3 +96,77 @@ def create_mira_task_from_event(event_trigger: str, target_type: str, target_id:
         frappe.db.commit()
                 
 
+def complete_action(task_name, success=True, error_message=None):
+    task = frappe.get_doc("Mira Task", task_name)
+    task_definition = frappe.get_doc("Mira Task Definition", task.task_definition)
+
+    # Tìm runtime action tương ứng trong child table
+    action = None
+    for a in task_definition.task_actions:
+        if a.task_id == task.name:
+            action = a
+            break
+
+    if not action:
+        frappe.throw(f"Runtime action for task {task.name} not found")
+
+    # Cập nhật trạng thái task runtime
+    if success:
+        task.status = "Completed"
+        task.executed_at = now_datetime()
+        task.save(ignore_permissions=True)
+        action.status = "Completed"
+    else:
+        task.status = "Failed"
+        task.error_log = error_message or "Unknown error"
+        task.executed_at = now_datetime()
+        task.save(ignore_permissions=True)
+        action.status = "Failed"
+        task_definition.status = "Failed"
+        task_definition.completed_at = now_datetime()
+        task_definition.save(ignore_permissions=True)
+        frappe.db.commit()
+        return  # dừng flow
+
+    # Nếu action cần chờ event → chuyển sang trạng thái chờ, không chạy tiếp
+    if action.trigger_event and action.trigger_event != "none":
+        action.status = "Waiting Event"
+        task_definition.status = "Waiting Event"
+        task_definition.save(ignore_permissions=True)
+        frappe.db.commit()
+        return  # Dừng flow ở đây → resume khi event đến
+
+    # Nếu có next action → chuyển tiếp
+    if action.next_action_id:
+        task_definition.current_action = action.next_action_id
+        task_definition.status = "Running"
+        task_definition.save(ignore_permissions=True)
+
+        frappe.db.commit()
+
+        # Gọi engine để chạy step tiếp theo
+        run_next_action(task_definition.name)
+
+        return
+
+    # Nếu không có action tiếp theo → flow kết thúc
+    task_definition.status = "Completed"
+    task_definition.completed_at = now_datetime()
+    task_definition.save(ignore_permissions=True)
+    frappe.db.commit()
+    
+@frappe.whitelist()
+def create_task_for_action(task_definition_name, action):
+    task = frappe.new_doc("Mira Task")
+    task.subject = f"{action.action_type} - {task_definition_name}"
+    task.task_definition = task_definition_name
+    task.flow_action = action.flow_action_id
+    task.related_talent = frappe.db.get_value("Mira Task Definition", task_definition_name, "talent")
+    task.action_type = action.action_type
+    task.status = "Pending"
+    task.insert(ignore_permissions=True)
+
+    action.task_id = task.name
+    action.save(ignore_permissions=True)
+
+    return task
