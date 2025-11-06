@@ -312,25 +312,25 @@ const links = [
 		to: 'Dashboard',
 	},
 	{
-		label: 'Talent Manager',
+		label: 'Talent Hub',
 		icon: DealsIcon,
 		to: 'TalentPool',
 		relatedRoutes: ['TalentPool', 'SegmentPool'],
 		submenu: [
 			{
-				label: 'Pools',
+				label: 'Talent Pools',
 				icon: 'layers',
 				to: 'SegmentPool',
 			},
 			{
-				label: 'Talents',
+				label: 'Talent Profiles',
 				icon: 'users',
 				to: 'TalentPool',
 			},
 		],
 	},
 	{
-		label: 'Automation',
+		label: 'Talent Campaigns',
 		icon: OrganizationsIcon,
 		to: 'CampaignManagement',
 		relatedRoutes: [
