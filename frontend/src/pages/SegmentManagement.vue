@@ -122,7 +122,7 @@
 								<!-- Card Body -->
 								<div class="space-y-3">
 									<div>
-										<div class="text-xs text-gray-500 mb-1">Candidates</div>
+										<div class="text-xs text-gray-500 mb-1">Talents</div>
 										<div class="text-2xl font-bold text-gray-900">
 											{{ segment.candidate_count }}
 										</div>
@@ -680,12 +680,9 @@ import {
 	Button,
 	Input,
 	Card,
-	Badge,
-	Avatar,
 	FeatherIcon,
 	Dropdown,
 	Progress,
-	FileUploader,
 	Dialog,
 	LoadingIndicator,
 } from 'frappe-ui'

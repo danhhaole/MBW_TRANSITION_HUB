@@ -13,7 +13,10 @@
   "owner_id",
   "type",
   "candidate_count",
-  "sync_id"
+  "sync_id",
+  "overall_potential_score",
+  "high_rate",
+  "quality_distribution"
  ],
  "fields": [
   {
@@ -66,12 +69,27 @@
    "hidden": 1,
    "label": "Sync ID",
    "read_only": 1
+  },
+  {
+   "fieldname": "overall_potential_score",
+   "fieldtype": "Data",
+   "label": "Overall Potential Score"
+  },
+  {
+   "fieldname": "high_rate",
+   "fieldtype": "Data",
+   "label": "High Availability Rate"
+  },
+  {
+   "fieldname": "quality_distribution",
+   "fieldtype": "Data",
+   "label": " Quality Distribution"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-04 08:30:25.792310",
+ "modified": "2025-11-06 08:57:01.942081",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Segment",

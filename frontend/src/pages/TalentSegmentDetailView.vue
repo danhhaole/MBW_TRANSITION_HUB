@@ -157,6 +157,123 @@
 					</div>
 				</div>
 			</div>
+			
+
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+				<!-- Overall Potential Score -->
+				<div class="bg-gradient-to-r from-teal-50 to-teal-100 p-6 rounded-lg border border-teal-200">
+					<div class="flex items-center">
+						<div class="flex-shrink-0">
+							<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-teal-600" fill="none"
+								viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+									d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+							</svg>
+						</div>
+						<div class="ml-4">
+							<div class="text-2xl font-bold text-teal-900">
+								92/100
+							</div>
+							<!-- <div class="text-sm text-teal-700">{{ __('Overall Potential Score') }}</div> -->
+							<div class="text-xs text-teal-600 mt-1">{{ __('Higher than overall score 85/100') }}</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- High Recruitment Readiness Rate -->
+				<div class="bg-gradient-to-r from-indigo-50 to-indigo-100 p-6 rounded-lg border border-indigo-200">
+					<div class="flex items-center">
+						<div class="flex-shrink-0">
+							<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-600" fill="none"
+								viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+									d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+							</svg>
+						</div>
+						<div class="ml-4">
+							<div class="text-2xl font-bold text-indigo-900">
+								45%
+							</div>
+							<div class="text-sm text-indigo-700">{{ __('High hiring readiness rate') }}</div>
+						</div>
+					</div>
+				</div>
+				
+			</div>
+
+			<!-- Advanced Quality Assessment -->
+			<div class="mb-8">
+				<div class="mb-4">
+					<h2 class="text-2xl font-bold text-gray-900">{{ __('Advanced Quality Assessment') }}</h2>
+					<p class="text-sm text-gray-600 mt-1">{{ __('In-depth analysis of skills and experience distribution') }}</p>
+				</div>
+				
+				<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+					<!-- Skill Deep Dive Chart -->
+					<SkillRadarChart 
+						:title="__('Skill Deep Dive')"
+						:data="skillsData"
+						chartHeight="450px"
+					/>
+					
+					<!-- Experience Distribution Chart -->
+					<ExperienceDistributionChart 
+						:title="__('Experience vs. Seniority')"
+						:data="experienceData"
+						chartHeight="450px"
+					/>
+				</div>
+			</div>
+
+			<!-- Readiness & Conversion Focus -->
+			<div class="mb-8">
+				<div class="mb-4">
+					<h2 class="text-2xl font-bold text-gray-900">{{ __('Readiness & Conversion Focus') }}</h2>
+					<p class="text-sm text-gray-600 mt-1">{{ __('Identify who needs to be contacted immediately') }}</p>
+				</div>
+				
+				<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+					<!-- Recruitment Priority Matrix -->
+					<RecruitmentPriorityBubbleChart 
+						:title="__('Recruitment Priority Matrix')"
+						:data="recruitmentPriorityData"
+						chartHeight="450px"
+					/>
+					
+					<!-- Salary Alignment -->
+					<SalaryAlignmentDonutChart 
+						:title="__('Salary Alignment')"
+						:data="salaryAlignmentData"
+						chartHeight="450px"
+					/>
+				</div>
+			</div>
+
+			<!-- Health & Nurturing Action -->
+			<div class="mb-8">
+				<div class="mb-4">
+					<h2 class="text-2xl font-bold text-gray-900">{{ __('Health & Nurturing Action') }}</h2>
+					<p class="text-sm text-gray-600 mt-1">{{ __('Manage daily CRM activities and talent engagement') }}</p>
+				</div>
+				
+				<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+					<!-- Talent Requiring Update -->
+					<TalentUpdateTable 
+						:title="__('Talent Requiring Update')"
+						:subtitle="__('Talents needing re-engagement (6+ months inactive)')"
+						:data="talentUpdateData"
+						tableHeight="450px"
+						@contact-talent="handleContactTalent"
+					/>
+					
+					<!-- Quality Source Analysis -->
+					<QualitySourceBarChart 
+						:title="__('Quality Source Analysis')"
+						:data="qualitySourceData"
+						chartHeight="450px"
+					/>
+				</div>
+			</div>
 
 			<!-- Action Buttons -->
 			<div class="flex flex-wrap gap-3 mb-6">
@@ -622,6 +739,12 @@ import { Button, Dialog, Breadcrumbs, FeatherIcon } from 'frappe-ui'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import CampaignWizard from '@/components/campaign/CampaignWizard.vue'
 import TalentPoolDialog from '@/components/talent-segment/TalentPoolDialog.vue'
+import SkillRadarChart from '@/components/charts/SkillRadarChart.vue'
+import ExperienceDistributionChart from '@/components/charts/ExperienceDistributionChart.vue'
+import RecruitmentPriorityBubbleChart from '@/components/charts/RecruitmentPriorityBubbleChart.vue'
+import SalaryAlignmentDonutChart from '@/components/charts/SalaryAlignmentDonutChart.vue'
+import TalentUpdateTable from '@/components/charts/TalentUpdateTable.vue'
+import QualitySourceBarChart from '@/components/charts/QualitySourceBarChart.vue'
 import { processSkills } from '@/stores/candidate'
 import moment from 'moment'
 
@@ -655,6 +778,182 @@ const loadingCampaigns = ref(false)
 const talentSegment = reactive({})
 const candidates = ref([])
 const relatedCampaigns = ref([])
+
+// Chart data - Fake data for demonstration
+const skillsData = ref([
+	{ name: 'Python', value: 85 },
+	{ name: 'Machine Learning', value: 72 },
+	{ name: 'Data Analysis', value: 90 },
+	{ name: 'SQL', value: 78 },
+	{ name: 'Deep Learning', value: 65 },
+	{ name: 'NLP', value: 58 },
+	{ name: 'TensorFlow', value: 70 },
+	{ name: 'PyTorch', value: 62 }
+])
+
+const experienceData = ref([
+	{ name: '0-2 years', value: 15 },
+	{ name: '3-5 years', value: 28 },
+	{ name: '6-10 years', value: 35 },
+	{ name: '11-15 years', value: 18 },
+	{ name: '15+ years', value: 12 }
+])
+
+// Recruitment Priority Matrix data - Bubble Chart
+const recruitmentPriorityData = ref([
+	{ 
+		name: 'High Priority', 
+		value: [7, 2, 42], // [timeline_days, readiness_index, talent_count]
+		readinessLabel: 'High',
+		timelineLabel: '0-10 days',
+		color: '#10B981' // Green
+	},
+	{ 
+		name: 'Quick Win', 
+		value: [15, 2, 28], 
+		readinessLabel: 'High',
+		timelineLabel: '11-20 days',
+		color: '#34D399'
+	},
+	{ 
+		name: 'Medium Priority', 
+		value: [30, 1, 35], 
+		readinessLabel: 'Medium',
+		timelineLabel: '21-40 days',
+		color: '#FBBF24' // Yellow
+	},
+	{ 
+		name: 'Consider', 
+		value: [45, 1, 22], 
+		readinessLabel: 'Medium',
+		timelineLabel: '41-60 days',
+		color: '#FCD34D'
+	},
+	{ 
+		name: 'Low Priority', 
+		value: [60, 0, 18], 
+		readinessLabel: 'Low',
+		timelineLabel: '61-80 days',
+		color: '#F87171' // Red
+	},
+	{ 
+		name: 'Long Term', 
+		value: [75, 0, 12], 
+		readinessLabel: 'Low',
+		timelineLabel: '80+ days',
+		color: '#EF4444'
+	}
+])
+
+// Salary Alignment data - Donut Chart
+const salaryAlignmentData = ref([
+	{ 
+		name: 'In-Budget', 
+		value: 58,
+		color: '#10B981' // Green - phù hợp ngân sách
+	},
+	{ 
+		name: 'Slightly Over-Budget', 
+		value: 28,
+		color: '#FBBF24' // Yellow - vượt ngân sách một chút
+	},
+	{ 
+		name: 'Under-Budget', 
+		value: 14,
+		color: '#3B82F6' // Blue - dưới ngân sách
+	}
+])
+
+// Talent Requiring Update data - Table
+const talentUpdateData = ref([
+	{
+		name: 'Nguyen Van A',
+		title: 'Senior Data Scientist',
+		lastInteraction: '2023-12-15',
+		daysSince: 328,
+		status: 'Passive',
+		source: 'LinkedIn'
+	},
+	{
+		name: 'Tran Thi B',
+		title: 'ML Engineer',
+		lastInteraction: '2024-01-20',
+		daysSince: 292,
+		status: 'Interested',
+		source: 'Referral'
+	},
+	{
+		name: 'Le Van C',
+		title: 'Data Analyst',
+		lastInteraction: '2023-11-10',
+		daysSince: 363,
+		status: 'Considering',
+		source: 'Headhunter'
+	},
+	{
+		name: 'Pham Thi D',
+		title: 'Python Developer',
+		lastInteraction: '2024-02-05',
+		daysSince: 276,
+		status: 'Passive',
+		source: 'LinkedIn'
+	},
+	{
+		name: 'Hoang Van E',
+		title: 'AI Engineer',
+		lastInteraction: '2023-10-25',
+		daysSince: 379,
+		status: 'Inactive',
+		source: 'Career Fair'
+	},
+	{
+		name: 'Vu Thi F',
+		title: 'Data Engineer',
+		lastInteraction: '2024-01-08',
+		daysSince: 304,
+		status: 'Passive',
+		source: 'LinkedIn'
+	}
+])
+
+// Quality Source Analysis data - Bar Chart
+const qualitySourceData = ref([
+	{
+		name: 'Referral',
+		value: 78,
+		totalTalents: 45,
+		color: '#10B981',
+		colorEnd: '#34D399'
+	},
+	{
+		name: 'Headhunter',
+		value: 65,
+		totalTalents: 38,
+		color: '#3B82F6',
+		colorEnd: '#60A5FA'
+	},
+	{
+		name: 'LinkedIn',
+		value: 52,
+		totalTalents: 67,
+		color: '#8B5CF6',
+		colorEnd: '#A78BFA'
+	},
+	{
+		name: 'Career Fair',
+		value: 45,
+		totalTalents: 28,
+		color: '#F59E0B',
+		colorEnd: '#FBBF24'
+	},
+	{
+		name: 'Job Board',
+		value: 38,
+		totalTalents: 52,
+		color: '#EF4444',
+		colorEnd: '#F87171'
+	}
+])
 
 // Modals
 const showAddCandidateModal = ref(false)
@@ -1042,6 +1341,13 @@ const openEditModal = () => {
 	console.log('Opening edit modal with data:', editingSegmentData.value)
 	console.log('Original talentSegment:', talentSegment)
 	showEditTalentSegmentModal.value = true
+}
+
+const handleContactTalent = (talent) => {
+	console.log('Contact talent:', talent)
+	// TODO: Implement contact talent functionality
+	// This could open a modal, navigate to talent detail, or trigger an email/call action
+	alert(`Contacting ${talent.name}...`)
 }
 
 // Lifecycle
