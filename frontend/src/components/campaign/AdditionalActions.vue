@@ -322,11 +322,18 @@ const handleActionClick = (action, index) => {
   }
 }
 
-const removeAction = (index) => {
-  console.log('🗑️ Removing action at index:', index)
+const removeAction = (sortedIndex) => {
+  // ✅ Get action from sorted list first
+  const actionToRemove = sortedActionsList.value[sortedIndex]
+  
+  console.log('🗑️ Removing action:', actionToRemove)
   console.log('📋 Before remove:', actionsList.value)
   
-  actionsList.value.splice(index, 1)
+  // ✅ Find and remove by trigger (not by sorted index)
+  const actualIndex = actionsList.value.findIndex(a => a.trigger === actionToRemove.trigger)
+  if (actualIndex >= 0) {
+    actionsList.value.splice(actualIndex, 1)
+  }
   
   console.log('📋 After remove:', actionsList.value)
   emitUpdate()
@@ -340,14 +347,19 @@ const configureAction = (action, index) => {
 }
 
 const saveActionConfig = (configData) => {
-  if (currentActionIndex.value >= 0) {
-    actionsList.value[currentActionIndex.value] = {
-      ...actionsList.value[currentActionIndex.value],
-      ...configData,
-      configured: true
+  if (currentAction.value && currentAction.value.trigger) {
+    // ✅ Find action by trigger (not by index) to avoid sort issues
+    const actionIndex = actionsList.value.findIndex(a => a.trigger === currentAction.value.trigger)
+    
+    if (actionIndex >= 0) {
+      actionsList.value[actionIndex] = {
+        ...actionsList.value[actionIndex],
+        ...configData,
+        configured: true
+      }
+      // Emit immediately when saving config (important action)
+      emitUpdateImmediate()
     }
-    // Emit immediately when saving config (important action)
-    emitUpdateImmediate()
   }
   showConfigModal.value = false
   currentAction.value = null
