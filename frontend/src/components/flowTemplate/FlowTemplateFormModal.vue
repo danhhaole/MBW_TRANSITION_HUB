@@ -5,6 +5,7 @@
       title: isEditMode ? __('Edit Flow Template') : __('Create Flow Template'),
       size: '2xl',
     }"
+    :disableOutsideClickToClose="true"
   >
     <template #body-content>
       <div class="space-y-6">
@@ -699,9 +700,15 @@ const loadTemplateData = () => {
       if (action.action_parameters) {
         try {
           const params = JSON.parse(action.action_parameters)
-          if (params.email_content) {
+          // ✅ Load from "template" (new structure)
+          if (params.template) {
+            emailContent.value = params.template
+          }
+          // ⚠️ Fallback to old structure for backward compatibility
+          else if (params.email_content) {
             emailContent.value = params.email_content
           }
+          
           if (params.zalo_content) {
             messageContent.value = params.zalo_content
           }
@@ -815,7 +822,8 @@ const handleSubmit = () => {
   const actionParams = {}
   
   if (submitData.channel === 'Email') {
-    actionParams.email_content = emailContent.value
+    // ✅ Save to "template" (new structure)
+    actionParams.template = emailContent.value
     submitData.template_actions.push({
       action_name: 'Send Email',
       action_type: 'EMAIL',
