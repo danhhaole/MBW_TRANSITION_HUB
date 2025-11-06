@@ -330,7 +330,30 @@ const links = [
 		],
 	},
 	{
-		label: 'Talent Campaigns',
+		label:'Talent Campaigns',
+		icon:OrganizationsIcon,
+		to:'',
+		relatedRoutes: [],
+		submenu: [
+			{
+				label: 'Attraction',
+				icon: Email2Icon,
+				to: { name: 'CampaignManagement' },
+			},
+			{
+				label: 'Attract–Nurture',
+				icon: SequenceIcon,
+				to: { name: 'CampaignManagement' },
+			},
+			{
+				label: 'Recruitment',
+				icon: Email2Icon,
+				to: { name: 'CampaignManagement' },
+			},
+			]
+	},
+	{
+		label: 'Automation',
 		icon: OrganizationsIcon,
 		to: 'CampaignManagement',
 		relatedRoutes: [
