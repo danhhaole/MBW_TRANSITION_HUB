@@ -338,17 +338,17 @@ const links = [
 			{
 				label: 'Attraction',
 				icon: Email2Icon,
-				to: { name: 'CampaignManagement' },
+				to: { name: 'AttractionCampaign' },
 			},
 			{
 				label: 'Attract–Nurture',
 				icon: SequenceIcon,
-				to: { name: 'CampaignManagement' },
+				to: { name: 'NurtureCampaign' },
 			},
 			{
 				label: 'Recruitment',
-				icon: Email2Icon,
-				to: { name: 'CampaignManagement' },
+				icon: "git",
+				to: { name: 'RecruitmentCampaign' },
 			},
 			]
 	},
