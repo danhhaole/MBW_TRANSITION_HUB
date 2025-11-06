@@ -4,9 +4,9 @@
 from datetime import timedelta
 import frappe
 from frappe.model.document import Document
-from frappe.utils import now_datetime
+from frappe.utils import now_datetime,get_datetime
 from frappe.utils.safe_exec import safe_eval
-from mbw_mira.helpers.date_time import get_next_working_time
+from mbw_mira.helpers.date_time import get_user_timezone_string,get_business_hours_schedule
 
 class MiraTask(Document):
 	
@@ -22,7 +22,9 @@ def create_mira_task_from_event(event_trigger: str, target_type: str, target_id:
     target_id      = name of the record (Talent-0001)
     event_payload  = dict (data đi kèm nếu cần kiểm tra điều kiện)
     """
-
+    # Prevent re-trigger same flow from itself
+    if event_trigger == "ON_FLOW_STARTED" and event_payload and event_payload.get("source_flow") == trigger.parent:
+        return
     # 1) Tìm danh sách trigger phù hợp
     triggers = frappe.get_all(
         "Mira Flow Trigger",
@@ -61,12 +63,14 @@ def create_mira_task_from_event(event_trigger: str, target_type: str, target_id:
             ],
             order_by="sort_order asc"
         )
-        scheduled_time = get_next_working_time()      
+        user_timezone = get_user_timezone_string()
+        scheduled_time = get_business_hours_schedule(user_timezone)
+        # print("actions",actions)      
 		
         # 4) Tạo task cho từng action
         for action in actions:
             if action.delay_minutes:
-                scheduled_time = scheduled_time + timedelta(minutes=action.delay_minutes)
+                scheduled_time = (scheduled_time + timedelta(minutes=action.delay_minutes))
             try:
                 task = frappe.get_doc({
 					"doctype": "Mira Task",
@@ -75,17 +79,18 @@ def create_mira_task_from_event(event_trigger: str, target_type: str, target_id:
 					"related_talent": target_id,
 					"trigger_type": event_trigger,
 					"trigger": trigger.name,
-					"action": action.name,
+					"action_value": action.next_flow,
 					"action_type": action.action_type,
-					"action_parameters": action.action_parameters,
 					"flow":action.parent,
 					"status": "Pending",
-					"condition":action.condition,
+					"condition":action.action_parameters,
 					"order": action.order,
 					"scheduled_at": scheduled_time
 				})
                 task.insert(ignore_permissions=True)
+                print('scheduled_at',scheduled_time)
             except Exception as e:
+                frappe.log_error("Lỗi lưu Task",str(e))
                 print(e)
                 pass
         frappe.db.commit()

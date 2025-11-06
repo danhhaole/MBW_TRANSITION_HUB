@@ -16,7 +16,8 @@
   "sequence",
   "delay_minutes",
   "condition",
-  "order"
+  "order",
+  "trigger_event"
  ],
  "fields": [
   {
@@ -80,7 +81,13 @@
    "fieldtype": "Link",
    "label": "Action",
    "options": "Mira Flow Action"
-  }
+  },
+  {
+    "fieldname": "trigger_event",
+    "fieldtype": "Select",
+    "label": "Trigger Event",
+    "options": "ON_CREATE\nON_UPDATE\nON_TAG_ADDED\nON_STATUS_CHANGED\nON_SEQUENCE_COMPLETED\nON_SCHEDULED_TIME\nON_SCORE_REACHED\nON_EMAIL_OPEN\nON_EMAIL_REPLY\nON_LINK_CLICK\nON_EMAIL_BOUNCE\nON_UNSUBSCRIBE\nON_SEND_SUCCESS\nON_SEND_FAILED\nON_USER_RESPONSE\nCUSTOM_EVENT"
+   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,

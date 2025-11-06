@@ -10,34 +10,39 @@ import ipaddress
 import csv
 
 
-def send_email_job(talentprofile_id, action_id, step_id):
+def send_email_job(task_id):
     from mbw_mira.utils.email import send_email
     """
     Gửi email cho ứng viên, hỗ trợ cả message raw hoặc template.
     """
 
     # Lấy thông tin candidate
-    talentprofiles = frappe.get_cached_doc("Mira Talent", talentprofile_id)
-    action = frappe.get_doc("Mira Action", action_id)
-    step = frappe.get_cached_doc("Mira Campaign Step", step_id)
-
+    task = frappe.get_doc("Mira Task", task_id)
+    talentprofiles = frappe.get_cached_doc("Mira Talent", task.related_talent)
+    
+    frappe.log_error(f"Vào đây")
     logger = frappe.logger("campaign")
-    if not talentprofiles.contact_email:
-        frappe.throw("Candidate does not have an email.")
+    if not talentprofiles.email:
+        frappe.throw("Talent does not have an email.")
     # Nếu ứng viên đã unsubcrible
     if talentprofiles.email_opt_out:
-        logger.error("Candidate unsubcrible")
+        logger.error("Talent unsubcrible")
+        return
+    #Nếu email không tồn tại
+    if talentprofiles.email_id_invalid:
+        logger.error("Talent Email Invalid")
         return
 
-    context = (talentprofiles, action, step)
-    message = render_template(step.template, context)
+    context = (talentprofiles, task)
+    
+    condition = {}
+    if hasattr(task, "condition"):
+        condition = json.loads(task.condition)
 
-    config_step = {}
-    if step and hasattr(step, "config"):
-        config_step = json.loads(step.config)
+    message = render_template(condition.template.get("email_content"), context)
     subject = "Thông báo"
-    if config_step and hasattr(config_step, "subject"):
-        subject = render_template(config_step.get("subject"), context)
+    if condition and hasattr(condition, "email_subject"):
+        subject = render_template(condition.get("email_subject"), context)
     talent_email = talentprofiles.email
     template = None
     template_args = None
@@ -55,7 +60,7 @@ def send_email_job(talentprofile_id, action_id, step_id):
         )
         return
 
-    action.executed_at = now_datetime()
+    task.executed_at = now_datetime()
     try:
         result = send_email(
             recipients=[talent_email],
@@ -64,32 +69,33 @@ def send_email_job(talentprofile_id, action_id, step_id):
             template=template,
             template_args=template_args,
         )
-        create_mira_interaction(
-            {
-                "talent_id": talentprofile_id,
-                "interaction_type": "EMAIL_SENT",
-                "source_action": action.name,
-            }
-        )
+        
         if result:
-            action.status = "EXECUTED"
-            action.result = {
+            task.status = "Completed"
+            task.execution_result = {
                 "status": "Success",
-                "message": f"[EMAIL] Sent to {talentprofile_id} — step: {step} — candidate: {talentprofile_id}",
+                "message": f"[EMAIL] Sent to {talentprofiles.name} — task: {task.name}",
             }
+            create_mira_interaction(
+                {
+                    "talent_id": talentprofiles.name,
+                    "interaction_type": "EMAIL_SENT",
+                    "source_action": task.name,
+                }
+            )
         else:
-            action.status = "FAILED"
-            action.result = {
-                "error": f"[EMAIL] Error Sent to {talent_email} — step: {step} — candidate: {talentprofile_id}",
+            task.status = "Failed"
+            task.execution_result = {
+                "error": f"[EMAIL] Error Sent to {talent_email} — step: {task.name}",
                 "traceback": frappe.get_traceback(),
             }
-        action.save(ignore_permissions=True)
+        task.save(ignore_permissions=True)
         frappe.db.commit()
     except Exception as e:
         frappe.log_error(frappe.get_traceback(), "[EMAIL ERROR] send_email_job")
-        action.status = "FAILED"
-        action.result = {"error": str(e), "traceback": frappe.get_traceback()}
-        action.save(ignore_permissions=True)
+        task.status = "Failed"
+        task.execution_result = {"error": str(e), "traceback": frappe.get_traceback()}
+        task.save(ignore_permissions=True)
         frappe.db.commit()
         raise
 
@@ -130,11 +136,9 @@ def send_sms_job(talentprofile_id, action_id, step_id):
 
 def render_template(template_str, context):
     from urllib.parse import urlencode
-    from frappe.utils import get_url
-
     if not template_str:
         return "Xin chào bạn"
-    talentprofiles, action, step = context
+    talentprofiles, task = context
     origin = frappe.request.headers.get("Origin")
     protocol = frappe.request.scheme
     host = frappe.request.host
@@ -143,8 +147,8 @@ def render_template(template_str, context):
         base_url = origin
     params = {
         "candidate_id": talentprofiles.name,
-        "action": action.name,
-        "url": f"{base_url}/mbw_mira/ladi?campaign={step.campaign}",
+        "action": task.name,
+        "url": f"{base_url}/mbw_mira/ladi?campaign={task.campaign}",
     }
 
     context_parse = {"candidate_name": talentprofiles.full_name}
@@ -165,13 +169,13 @@ def render_template(template_str, context):
     )
 
     context_parse["register_link"] = (
-        f"{base_url}/mbw_mira/register?campaign={step.campaign}"
+        f"{base_url}/mbw_mira/register?campaign={task.campaign}"
     )
     context_parse["ladi_link"] = (
-        f"{base_url}/mbw_mira/ladi?campaign={step.campaign}"
+        f"{base_url}/mbw_mira/ladi?campaign={task.campaign}"
     )
     context_parse["apply_link"] = (
-        f"{base_url}/mbw_mira/application?campaign={step.campaign}&email={talentprofiles.email}&name={talentprofiles.full_name}"
+        f"{base_url}/mbw_mira/application?campaign={task.campaign}&email={talentprofiles.email}&name={talentprofiles.full_name}"
     )
     
 

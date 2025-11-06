@@ -161,22 +161,34 @@ scheduler_events = {
         ],
         "0/2 * * * *": [
             "mbw_mira.schedulers.enroll_talent_campaign.run",
-            "mbw_mira.schedulers.create_actions.run",
-            "mbw_mira.schedulers.send_email_action.run",
-            "mbw_mira.schedulers.send_sms_action.run"
+            "mbw_mira.schedulers.task_mira_flow.schedule_message_tasks",
+            "mbw_mira.schedulers.task_mira_flow.schedule_sms_tasks",
+            "mbw_mira.schedulers.task_mira_flow.schedule_email_tasks",
+            "mbw_mira.schedulers.task_mira_flow.schedule_zalo_tasks",
+            "mbw_mira.schedulers.task_mira_flow.schedule_zalo_care_tasks",
+            "mbw_mira.schedulers.task_mira_flow.schedule_zalo_zns_tasks",
+            "mbw_mira.schedulers.task_mira_flow.schedule_start_flow_tasks",
+            "mbw_mira.schedulers.task_mira_flow.schedule_subscribe_sequence_tasks",
+            "mbw_mira.schedulers.task_mira_flow.schedule_unsubscribe_sequence_tasks",
+            "mbw_mira.schedulers.task_mira_flow.schedule_smart_delay_tasks",
+            "mbw_mira.schedulers.task_mira_flow.schedule_ai_call_tasks",
+            "mbw_mira.schedulers.task_mira_flow.schedule_add_tag_tasks",
+            "mbw_mira.schedulers.task_mira_flow.schedule_remove_tag_tasks",
+            "mbw_mira.schedulers.task_mira_flow.schedule_add_custom_field_tasks",
+            "mbw_mira.schedulers.task_mira_flow.schedule_remove_custom_field_tasks",
+            "mbw_mira.schedulers.task_mira_flow.schedule_lead_score_tasks",
+            "mbw_mira.schedulers.task_mira_flow.schedule_external_request_tasks",
+            "mbw_mira.schedulers.task_mira_flow.schedule_email_ai_tasks",
+            "mbw_mira.schedulers.task_mira_flow.schedule_content_ai_tasks",
+            "mbw_mira.schedulers.task_mira_flow.schedule_sent_notification_tasks",
+            "mbw_mira.schedulers.task_mira_flow.schedule_unsubscribe_tasks"
         ],
     },
     "daily": [
-        "mbw_mira.schedulers.fetch_ats_mbw_campaigns.run",
-        "mbw_mira.schedulers.fetch_jobboard_topcv_campaigns.run"
+        "mbw_mira.schedulers.fetch_ats_mbw_campaigns.run"
     ],
     "hourly": [
         # "mbw_mira.schedulers.enroll_talent_campaign.run",
-        # "mbw_mira.schedulers.send_email_action.run",
-        # "mbw_mira.schedulers.send_sms_action.run",
-        # "mbw_mira.schedulers.create_actions.run",
-        # "mbw_mira.schedulers.auto_segment_talent_profiles.run",
-        # "mbw_mira.schedulers.excel_source_campaigns.run"
     ],
     # "weekly": [],
     # "monthly": [],
