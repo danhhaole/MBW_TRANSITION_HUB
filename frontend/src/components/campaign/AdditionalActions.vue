@@ -40,7 +40,7 @@
         </div>
       </div>
     </div>
-    {{ sortedActionsList }}
+    <!-- {{ sortedActionsList }} -->
     <!-- Actions List -->
     <div v-if="sortedActionsList.length > 0" class="space-y-3">
       <div

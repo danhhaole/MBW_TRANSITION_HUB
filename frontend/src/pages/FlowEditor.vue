@@ -1,5 +1,12 @@
 <template>
 	<div class="min-h-screen bg-gray-50">
+		<!-- Loading Overlay -->
+		<LoadingOverlay
+			:show="isProcessing"
+			:title="__('Processing...')"
+			:description="__('Please wait, do not close this page')"
+		/>
+
 		<!-- Header -->
 		<div class="bg-white border-b border-gray-200 px-6 py-4">
 			<div class="flex items-center justify-between">
@@ -60,6 +67,22 @@
 					</div>
 				</div>
 
+				<!-- Center: View Toggle -->
+				<div class="flex items-center gap-3 bg-gray-50 px-4 py-2 rounded-lg border border-gray-200">
+					<span class="text-sm font-medium text-gray-600" :class="{ 'text-blue-600': !isGraphView }">
+						<FeatherIcon name="list" class="h-4 w-4 inline-block mr-1" />
+						{{ __('List') }}
+					</span>
+					<Switch
+						v-model="isGraphView"
+						class="mx-1"
+					/>
+					<span class="text-sm font-medium text-gray-600" :class="{ 'text-blue-600': isGraphView }">
+						<FeatherIcon name="git-branch" class="h-4 w-4 inline-block mr-1" />
+						{{ __('Graph') }}
+					</span>
+				</div>
+
 				<!-- Right: Actions -->
 				<div class="flex items-center space-x-3">
 					
@@ -81,7 +104,17 @@
 		</div>
 
 		<!-- Main Content -->
-		<div class="flex h-[calc(100vh-80px)]">
+		<!-- Graph View -->
+		<div v-if="isGraphView" class="h-[calc(100vh-80px)]">
+			<FlowGraphViewV2
+				:flow-data="flowData"
+				:selected-item="selectedItem"
+				@node-select="handleGraphNodeSelect"
+			/>
+		</div>
+
+		<!-- List View -->
+		<div v-else class="flex h-[calc(100vh-80px)]">
 			<!-- Column 1: Triggers & Actions List -->
 			<div class="w-80 bg-white border-r border-gray-200 flex flex-col">
 				<!-- Triggers Section -->
@@ -1147,13 +1180,16 @@ import { useTagStore } from '../stores/tag'
 import { useToast } from '../composables/useToast'
 
 // Components
-import { Button, FormControl, Dialog, FeatherIcon } from 'frappe-ui'
+import { Button, FormControl, Dialog, FeatherIcon, Switch } from 'frappe-ui'
 import EmailEditor from '../components/campaign/content-editors/EmailEditor.vue'
 import ZaloEditor from '../components/campaign/content-editors/ZaloEditor.vue'
 import TriggerEditor from '../components/campaign/content-editors/TriggerEditor.vue'
 import Link from '../components/Controls/Link.vue'
 import ActionConfig from '../components/campaign/ActionConfig.vue'
 import AdditionalActions from '../components/campaign/AdditionalActions.vue'
+import FlowGraphView from '../components/flow/FlowGraphView.vue'
+import FlowGraphViewV2 from '../components/flow/FlowGraphViewV2.vue'
+import LoadingOverlay from '../components/LoadingOverlay.vue'
 import { storeToRefs } from 'pinia'
 
 // Router
@@ -1174,11 +1210,13 @@ const __ = (text) => text
 
 // Reactive data
 const saving = ref(false)
+const isProcessing = ref(false)  // ✅ Loading overlay state
 const selectedItem = ref(null)
 const selectedItemData = ref({})
 const showAddTrigger = ref(false)
 const showAddAction = ref(false)
 const triggerSearch = ref('')
+const isGraphView = ref(false) // View toggle state
 const actionSearch = ref('')
 const editingTitle = ref(false)
 const editTitleValue = ref('')
@@ -1467,6 +1505,7 @@ const loadFlow = async () => {
 	}
 
 	try {
+		isProcessing.value = true  // ✅ Show loading overlay
 		console.log('Calling fetchFlowById...')
 		const result = await flowStore.fetchFlowById(flowId)
 		console.log('fetchFlowById result:', result)
@@ -1561,6 +1600,8 @@ const loadFlow = async () => {
 		console.error('Error loading flow:', error)
 		toast.error('Có lỗi xảy ra khi tải flow')
 		router.push({ name: 'FlowManagement' })
+	} finally {
+		isProcessing.value = false  // ✅ Hide loading overlay
 	}
 }
 
@@ -1798,6 +1839,12 @@ const selectItem = (type, index) => {
 	
 	console.log('selectedItem.value:', selectedItem.value)
 	console.log('selectedItemData.value:', selectedItemData.value)
+}
+
+// Handle node selection from graph view
+const handleGraphNodeSelect = (item) => {
+	console.log('Graph node selected:', item)
+	selectItem(item.type, item.index)
 }
 
 const selectActionById = (actionId) => {
@@ -2149,6 +2196,7 @@ const handleSave = async () => {
 	}
 
 	saving.value = true
+	isProcessing.value = true  // ✅ Show loading overlay
 
 	try {
 		console.log('Flow data to save:', flowData.value)
@@ -2179,6 +2227,7 @@ const handleSave = async () => {
 		toast.error('Error saving flow')
 	} finally {
 		saving.value = false
+		isProcessing.value = false  // ✅ Hide loading overlay
 	}
 }
 
