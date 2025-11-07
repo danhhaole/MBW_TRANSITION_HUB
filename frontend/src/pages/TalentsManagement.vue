@@ -155,7 +155,7 @@
 														size="md"
 													/>
 													<div>
-														<div class="font-medium text-gray-900">
+														<div class="font-medium text-base text-gray-900">
 															{{ talent.full_name }}
 														</div>
 													</div>
@@ -914,7 +914,7 @@ import UploadExcelTalentModal from '@/components/UploadExcelTalentModal.vue'
 import BulkCVUploadModal from '@/components/BulkCVUploadModal.vue'
 import ATSTalentSyncDialog from '@/components/ATSTalentSyncDialog.vue'
 // Breadcrumbs
-const breadcrumbs = [{ label: __('Talents'), route: { name: 'TalentPool' } }]
+const breadcrumbs = [{ label: __('Talent Profiles'), route: { name: 'TalentPool' } }]
 const { showSuccess, showError } = useToast()
 const router = useRouter()
 //Store
@@ -1106,10 +1106,10 @@ const isEmailValid = computed(() => {
 
 const processSkills = (skills) => {
 	if (!skills) return []
-	if (Array.isArray(skills)) return skills
-	return skills
+	if (Array.isArray(skills)) return skills.join(',')
+	return skills.replace('[','').replace(']','')
 		.split(',')
-		.map((skill) => skill.trim())
+		.map((skill) => decodeURIComponent(skill.trim()))
 		.filter(Boolean)
 }
 

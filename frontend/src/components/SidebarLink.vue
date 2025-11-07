@@ -97,7 +97,8 @@ function handleClick() {
   if (!props.to) return
   if (typeof props.to === 'object') {
     router.push(props.to)
-  }else if(props.to.indexOf("http" != -1)){
+  }
+  else if(props.to.indexOf("http") != -1){
     window.open(props.to,"_blank")
   } else {
     router.push({ name: props.to })
