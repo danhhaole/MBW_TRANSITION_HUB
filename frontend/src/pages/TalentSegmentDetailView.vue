@@ -57,6 +57,23 @@
 					</template>
 					{{ __('Delete') }}
 				</Button>
+
+				<!-- Status Dropdown -->
+				<Dropdown :options="statusOptions">
+					<template #default="{ open }">
+						<Button variant="outline" theme="gray" @click="open">
+							<template #prefix>
+								<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+								</svg>
+							</template>
+							{{ segmentStatus === 'active' ? __('Hoạt động') : __('Không hoạt động') }}
+							<template #suffix>
+								<FeatherIcon name="chevron-down" class="h-4 w-4 ml-1" />
+							</template>
+						</Button>
+					</template>
+				</Dropdown>
 			</template>
 		</LayoutHeader>
 
@@ -732,7 +749,7 @@ import { useCandidateStore } from '@/stores/candidate'
 import { useTalentSegmentStore } from '@/stores/talentSegment'
 import { useMiraTalentPoolStore } from '@/stores/miraTalentPool'
 import { usersStore } from '@/stores/users'
-import { Button, Dialog, Breadcrumbs, FeatherIcon } from 'frappe-ui'
+import { Button, Dialog, Breadcrumbs, FeatherIcon, Dropdown } from 'frappe-ui'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import CampaignWizard from '@/components/campaign/CampaignWizard.vue'
 import TalentPoolDialog from '@/components/talent-segment/TalentPoolDialog.vue'
@@ -770,6 +787,38 @@ const breadcrumbs = computed(() => {
 const loading = ref(false)
 const loadingCandidates = ref(false)
 const loadingCampaigns = ref(false)
+
+// Segment Status
+const segmentStatus = ref('active') // 'active' or 'inactive'
+
+// Status Dropdown Options
+const statusOptions = computed(() => [
+	{
+		label: __('Hoạt động'),
+		icon: 'check-circle',
+		onClick: () => updateSegmentStatus('active')
+	},
+	{
+		label: __('Không hoạt động'),
+		icon: 'x-circle',
+		onClick: () => updateSegmentStatus('inactive')
+	}
+])
+
+// Update segment status
+const updateSegmentStatus = async (status) => {
+	try {
+		segmentStatus.value = status
+		// TODO: Call API to update segment status in backend
+		// await call('your.api.method', {
+		//   segment_id: route.params.id,
+		//   status: status
+		// })
+		console.log('Segment status updated to:', status)
+	} catch (error) {
+		console.error('Error updating segment status:', error)
+	}
+}
 
 // Data
 const talentSegment = reactive({})

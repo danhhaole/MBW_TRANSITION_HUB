@@ -233,6 +233,38 @@
 								</table>
 							</div>
 
+							<!-- Empty State -->
+							<div v-else class="text-center py-12">
+								<div class="text-gray-500">
+									<FeatherIcon
+										name="users"
+										class="w-12 h-12 mx-auto mb-4 text-gray-300"
+									/>
+									<p class="text-lg font-medium text-gray-500">
+										{{ __('No talents found') }}
+									</p>
+									<p
+										class="text-sm text-gray-400 my-1"
+										v-if="talentPoolStore.filters.search"
+									>
+										{{ __('No results for') }} "{{
+											talentPoolStore.filters.search
+										}}"
+									</p>
+									<Button
+										variant="solid"
+										theme="gray"
+										class="mt-4"
+										@click="openDialogTalentOption = true"
+									>
+										<template #prefix>
+											<FeatherIcon name="plus" class="w-4 h-4" />
+										</template>
+										{{ __('Create Talent') }}
+									</Button>
+								</div>
+							</div>
+
 							<!-- Pagination Talent-->
 							<div
 								v-if="visiblePageNumbersTalent.length > 1 || talentPoolStore.pagination.total > talentPoolStore.pagination.limit"

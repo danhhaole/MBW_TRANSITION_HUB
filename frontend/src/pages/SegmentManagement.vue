@@ -121,12 +121,50 @@
 
 								<!-- Card Body -->
 								<div class="space-y-3">
-									<div>
-										<div class="text-xs text-gray-500 mb-1">Talents</div>
-										<div class="text-2xl font-bold text-gray-900">
-											{{ segment.candidate_count }}
+									<!-- 5 Metrics in One Row -->
+									<div class="grid grid-cols-5 gap-2">
+										<!-- Talents Count -->
+										<div class="text-center">
+											<div class="text-xs text-gray-500 mb-1">Talents</div>
+											<div class="text-xl font-bold text-gray-900">
+												{{ segment.candidate_count || 0 }}
+											</div>
+										</div>
+
+										<!-- New Talents -->
+										<div class="text-center">
+											<div class="text-xs text-gray-500 mb-1">New Talents</div>
+											<div class="text-lg font-semibold text-green-600">
+												{{ segment.active_candidates_count || 0 }}
+											</div>
+										</div>
+
+										<!-- Overall Potential Score -->
+										<div class="text-center">
+											<div class="text-xs text-gray-500 mb-1">Potential Score</div>
+											<div class="text-lg font-semibold text-gray-900">
+												{{ segment.overall_potential_score || 0 }}
+											</div>
+										</div>
+
+										<!-- High Hiring Readiness Rate -->
+										<div class="text-center">
+											<div class="text-xs text-gray-500 mb-1">High Rate</div>
+											<div class="text-lg font-semibold text-gray-900">
+												{{ segment.high_rate || 0 }}%
+											</div>
+										</div>
+
+										<!-- Quality Distribution -->
+										<div class="text-center">
+											<div class="text-xs text-gray-500 mb-1">Quality</div>
+											<div class="text-sm font-semibold text-gray-900">
+												{{ segment.quality_distribution || __("None") }}
+											</div>
 										</div>
 									</div>
+
+									<!-- Engagement Rate -->
 									<div>
 										<div class="text-xs text-gray-500 mb-1">
 											{{__("Engagement Rate")}}
@@ -141,6 +179,8 @@
 											</span>
 										</div>
 									</div>
+
+									<!-- Top Skills -->
 									<div>
 										<div class="text-xs text-gray-500 mb-1">Top Skills</div>
 										<div class="flex flex-wrap gap-2">
@@ -196,7 +236,7 @@
 								</p>
 								<Button
 									variant="solid" theme="gray"
-									@click="showTalentPoolDialog = true"
+									@click="openDialogSegmentOption = true"
 								>
 									<template #prefix>
 										<FeatherIcon name="plus" class="w-4 h-4" />
