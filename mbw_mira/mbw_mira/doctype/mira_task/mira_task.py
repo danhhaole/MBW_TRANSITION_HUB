@@ -6,7 +6,6 @@ import frappe
 from frappe.model.document import Document
 from frappe.utils import now_datetime,add_to_date
 from mbw_mira.helpers.date_time import get_user_timezone_string,get_business_hours_schedule
-from mbw_mira.mbw_mira.doctype.mira_task_definition.mira_task_definition import run_next_action
 
 class MiraTask(Document):
 	
@@ -155,7 +154,7 @@ def complete_action(task_name, success=True, error_message=None):
     task_definition.save(ignore_permissions=True)
     frappe.db.commit()
     
-@frappe.whitelist()
+
 def create_task_for_action(task_definition_name, action):
     task = frappe.new_doc("Mira Task")
     task.subject = f"{action.action_type} - {task_definition_name}"
@@ -168,5 +167,41 @@ def create_task_for_action(task_definition_name, action):
 
     action.task_id = task.name
     action.save(ignore_permissions=True)
+
+    return task
+def run_next_action(task_definition_name):
+    td = frappe.get_doc("Mira Task Definition", task_definition_name)
+
+    # Determine which action to run
+    # If this is a new flow → lấy action nhỏ nhất theo order_no
+    if not td.current_action:
+        if not td.task_actions:
+            frappe.throw(f"No runtime actions found for {task_definition_name}")
+
+        runtime_action = sorted(td.task_actions, key=lambda x: x.order_no)[0]
+        td.current_action = runtime_action.name
+        td.status = "Running"
+        td.started_at = now_datetime()
+        td.save(ignore_permissions=True)
+    else:
+        # If flow already started → lấy action theo current_action
+        runtime_action = next((a for a in td.task_actions if a.name == td.current_action), None)
+        if not runtime_action:
+            frappe.throw(f"Invalid current_action on task definition {task_definition_name}")
+
+    # Create execution task
+    task = create_task_for_action(td.name, runtime_action)
+
+    # Set schedule time based on business hours
+    user_timezone = get_user_timezone_string()
+    task.scheduled_at = get_business_hours_schedule(user_timezone)
+    task.save(ignore_permissions=True)
+
+    frappe.db.commit()
+
+    frappe.logger().info(
+        f"[Flow Engine] Scheduled task {task.name} for action {runtime_action.action_type} "
+        f"at {task.scheduled_at}"
+    )
 
     return task
