@@ -1,7 +1,7 @@
 <template>
   <FrappeUIProvider>
     <component :is="layoutComponent">
-      <router-view />
+      <router-view :key="$route.path" />
     </component>
     <Dialogs />
     <ChangeLanguage />
@@ -14,8 +14,11 @@ import { Dialogs } from '@/utils/dialogs'
 import { sessionStore as session } from '@/stores/session'
 import { FrappeUIProvider, setConfig } from 'frappe-ui'
 import { computed, defineAsyncComponent, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import Toast from '@/components/ui/Toast.vue'
 import ChangeLanguage from '@/components/Settings/ChangeLanguage.vue'
+
+const $route = useRoute()
 
 const MobileLayout = defineAsyncComponent(
   () => import('./components/Layouts/MobileLayout.vue'),

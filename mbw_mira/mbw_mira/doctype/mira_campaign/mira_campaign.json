@@ -20,6 +20,7 @@
   "owner_id",
   "start_date",
   "end_date",
+  "interaction_method",
   "source_config",
   "total",
   "current",
@@ -43,6 +44,7 @@
   {
    "fieldname": "type",
    "fieldtype": "Select",
+   "in_standard_filter": 1,
    "label": "Type",
    "options": "NURTURING\nATTRACTION\nREFERRAL\nRECRUITMENT\nGATHERING"
   },
@@ -193,11 +195,17 @@
   {
    "fieldname": "column_break_social_media_end",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "interaction_method",
+   "fieldtype": "Select",
+   "label": "Interaction Method",
+   "options": "EMAIL\nZALO_ZNS\nZALO_CARE"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-13 13:49:10.050127",
+ "modified": "2025-11-07 11:05:53.575310",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Campaign",

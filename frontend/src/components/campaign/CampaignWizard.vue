@@ -254,39 +254,25 @@
 
             <!-- Step 2: Content Design -->
             <div v-if="step === 2" class="animate-fadeIn">
-              <div class="space-y-4">
-                <div class="text-center mb-6">
-                  <h4 class="text-lg font-medium text-gray-900 mb-2">
-                    {{ __("Design Content") }}
-                  </h4>
-                  <p class="text-sm text-gray-600">
-                    {{ __("Create the content for your campaign based on the selected interaction method") }}
-                  </p>
-                </div>
-
-                <!-- Show warning if no interaction method selected -->
-                <div v-if="!campaignData.interaction_method" class="text-center py-12">
-                  <FeatherIcon name="alert-triangle" class="h-8 w-8 text-yellow-600 mx-auto mb-2" />
-                  <h4 class="text-lg font-medium text-yellow-900 mb-2">
-                    {{ __("No interaction method selected") }}
-                  </h4>
-                  <p class="text-yellow-700">
-                    {{ __("Please go back to Step 1 to select an interaction method") }}
-                  </p>
-                </div>
-
-                <!-- Content Editor -->
-                <CampaignContentEditor
-                  v-else
-                  :interaction_type="campaignData.interaction_method"
-                  :model-value="contentEditorData"
-                  :readonly="!canEditContent"
-                  @update:model-value="handleContentUpdate"
-                  @save="handleContentSave"
-                  @preview="handleContentPreview"
-                />
-                {{contentEditorData}}
-              </div>
+              <!-- NURTURING: Multiple flows editor -->
+              <CampaignNurturingFlowEditor
+                v-if="props.campaignType === 'NURTURING'"
+                :interaction-method="campaignData.interaction_method"
+                :model-value="nurturingFlows"
+                :campaign-id="draftCampaign?.name"
+                @update:model-value="nurturingFlows = $event"
+              />
+              
+              <!-- ATTRACTION/RECRUITMENT: Single content editor -->
+              <CampaignSingleContentEditor
+                v-else
+                :interaction-method="campaignData.interaction_method"
+                :model-value="contentEditorData"
+                :readonly="!canEditContent"
+                @update:model-value="handleContentUpdate"
+                @save="handleContentSave"
+                @preview="handleContentPreview"
+              />
             </div>
 
             <!-- Step 3: Target Segment -->
@@ -618,6 +604,8 @@ import CampaignWizardHeader from "./CampaignWizardHeader.vue";
 import CampaignWizardStepper from "./CampaignWizardStepper.vue";
 import CampaignWizardContent from "./CampaignWizardContent.vue";
 import CampaignContentEditor from "./CampaignContentEditor.vue";
+import CampaignSingleContentEditor from "./CampaignSingleContentEditor.vue";
+import CampaignNurturingFlowEditor from "./CampaignNurturingFlowEditor.vue";
 import { call } from "frappe-ui";
 import PoolConfig from "./PoolConfig.vue";
 import FileConfig from "./FileConfig.vue";
@@ -660,6 +648,11 @@ const props = defineProps({
   // New prop for editing campaign
   editingCampaign: {
     type: Object,
+    default: null,
+  },
+  // Campaign type from route (ATTRACTION, NURTURING, RECRUITMENT)
+  campaignType: {
+    type: String,
     default: null,
   },
 });
@@ -744,7 +737,7 @@ const advancedFilters = reactive({
 const campaignData = ref({
   campaign_name: "",
   description: "",
-  type: "GATHERING", // Default single type
+  type: props.campaignType || "GATHERING", // Use campaignType from props or default to GATHERING
   status: "DRAFT",
   interaction_method: "", // New field: 'EMAIL', 'ZALO_ZNS', 'ZALO_CARE'
   target_segment: props.preselectedSegment || "",
@@ -1432,6 +1425,55 @@ const contentEditorData = computed(() => ({
   failure_action: campaignData.value.failure_action,
   additional_actions: campaignData.value.additional_actions || {}
 }));
+
+// Nurturing flows data (for NURTURING campaign type)
+const nurturingFlows = ref([]);
+
+// Create nurturing flows (Mira Flow with type=Campaign)
+const createNurturingFlows = async (campaignId) => {
+  if (!nurturingFlows.value || nurturingFlows.value.length === 0) {
+    console.log('⚠️ No nurturing flows to create');
+    return;
+  }
+
+  for (let i = 0; i < nurturingFlows.value.length; i++) {
+    const flow = nurturingFlows.value[i];
+    
+    // Create Mira Flow document
+    const flowPayload = {
+      doctype: 'Mira Flow',
+      flow_name: flow.name || `Flow ${i + 1}`,
+      description: flow.description || '',
+      type: 'Campaign', // Type = Campaign for nurturing flows
+      campaign_id: campaignId, // Link to parent campaign
+      interaction_method: campaignData.value.interaction_method,
+      delay_minutes: flow.delay || 0,
+      step_order: i + 1,
+      status: 'DRAFT',
+      is_active: 1,
+      // Content fields
+      email_subject: flow.content?.email_subject || '',
+      email_content: flow.content?.email_content || '',
+      attachments: JSON.stringify(flow.content?.attachments || []),
+      blocks: JSON.stringify(flow.content?.blocks || []),
+      image_url: flow.content?.image_url || '',
+      message_content: flow.content?.message_content || '',
+      success_action: flow.content?.success_action || '',
+      failure_action: flow.content?.failure_action || '',
+    };
+
+    try {
+      console.log(`🔄 Creating flow ${i + 1}:`, flowPayload);
+      const result = await call('frappe.client.insert', {
+        doc: flowPayload
+      });
+      console.log(`✅ Flow ${i + 1} created:`, result);
+    } catch (error) {
+      console.error(`❌ Error creating flow ${i + 1}:`, error);
+      throw error;
+    }
+  }
+};
 
 const onSocialJobOpeningChange = async () => {
   console.log("Đã thay đổi job opening");
@@ -2142,6 +2184,7 @@ const finalizeCampaign = async () => {
         campaign_name: campaignData.value.campaign_name,
         description: campaignData.value.description,
         status: campaignData.value.status || "DRAFT",
+        interaction_method: campaignData.value.interaction_method || "",
         start_date: startISO,
         end_date: endISO,
         target_segment: campaignData.value.target_segment || null,
@@ -2334,6 +2377,7 @@ const finalizeCampaign = async () => {
       description: campaignData.value.description || draftCampaign.value.description,
       type: campaignData.value.type || draftCampaign.value.type,
       status: campaignData.value.status || draftCampaign.value.status || "DRAFT",
+      interaction_method: campaignData.value.interaction_method || draftCampaign.value.interaction_method || "",
       start_date: startISO,
       end_date: endISO,
       is_active: false,
@@ -2411,7 +2455,20 @@ const finalizeCampaign = async () => {
       }
     }
 
-    // 4) Done
+    // 4) Create nurturing flows if campaign type is NURTURING
+    if (props.campaignType === 'NURTURING' && nurturingFlows.value.length > 0) {
+      try {
+        console.log('🔄 Creating nurturing flows...', nurturingFlows.value);
+        await createNurturingFlows(draftCampaign.value.data.name);
+        console.log('✅ Nurturing flows created successfully');
+      } catch (flowError) {
+        console.error('❌ Error creating nurturing flows:', flowError);
+        toast.error(__('Failed to create nurturing flows: ') + flowError.message);
+        // Don't fail the entire process, just log the error
+      }
+    }
+
+    // 5) Done
     emit("success", { action: "create", data: campaignResult });
     closeWizard();
   } catch (error) {
@@ -2873,6 +2930,9 @@ const closeWizard = () => {
   pageSize.value = 20;
   totalRecords.value = 0;
   searchLoading.value = false;
+  
+  // Reset nurturing flows
+  nurturingFlows.value = [];
 };
 
 // Load data sources on component mount
@@ -2914,6 +2974,7 @@ const createDraftCampaign = async () => {
         campaignData.value.description || __("Draft campaign - to be configured"),
       type: campaignData.value.type || "NURTURING",
       status: campaignData.value.status || "DRAFT",
+      interaction_method: campaignData.value.interaction_method || "",
       start_date: startISO,
       end_date: endISO,
       is_active: false,
@@ -3315,6 +3376,12 @@ watch(show, async (newVal) => {
           }
         });
       }
+      // Set campaign type from props when creating new campaign (not edit mode)
+      if (!isEditMode.value && props.campaignType) {
+        campaignData.value.type = props.campaignType;
+        console.log('🎯 Set campaign type from route:', props.campaignType);
+      }
+      
       if (!campaignData.value.start_date) {
         const now = new Date();
         campaignData.value.start_date = toLocalDatetimeInput(now);

@@ -14,7 +14,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
               </svg>
             </template>
-            {{ __("Create Campaign") }}
+            {{ __('Create Campaign') }}
           </Button>
         </template>
       </LayoutHeader>
@@ -229,9 +229,22 @@
       </div>
 
       <!-- Dialogs -->
+      <!-- Creation Method Selection Modal -->
+      <CampaignCreationMethodModal
+        v-model="showMethodSelection"
+        @select="handleMethodSelection"
+      />
+
+      <!-- Template Selection Modal -->
+      <TemplateSelectionModal
+        v-model="showTemplateSelection"
+        @select="handleTemplateSelection"
+      />
+
       <!-- Wizard cho tạo mới -->
       <campaign-wizard
         v-model="showCreateWizard"
+        :campaign-type="props.campaignType"
         @success="handleCreateSuccess"
         @draft-created="handleDraftCreated"
       />
@@ -240,6 +253,7 @@
       <campaign-wizard
         v-model="showEditForm"
         :editing-campaign="selectedCampaign"
+        :campaign-type="props.campaignType"
         @success="handleEditSuccess"
         @draft-created="handleDraftCreated"
       />
@@ -306,8 +320,16 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { useCampaignList, useCampaignCRUD } from "../composables/useCampaign";
+
+// Props
+const props = defineProps({
+  campaignType: {
+    type: String,
+    default: null
+  }
+});
 import useToast from "@/composables/useToast";
 import {
   CampaignTable,
@@ -315,6 +337,8 @@ import {
   CampaignWizard,
   CampaignForm,
   CampaignView,
+  CampaignCreationMethodModal,
+  TemplateSelectionModal,
 } from "@/components/campaign";
 import { ToastContainer } from "@/components/shared";
 import { Button, Breadcrumbs, Select, Dialog } from "frappe-ui";
@@ -326,6 +350,7 @@ import { useCampaignStore } from "@/stores/campaign";
 
 // Router
 const router = useRouter();
+const route = useRoute();
 
 // Campaign store
 const campaignStore = useCampaignStore();
@@ -333,11 +358,29 @@ const campaignStore = useCampaignStore();
 // Automation stats store
 // const statsStore = useAutomationStatsStore();
 
-// Breadcrumbs
-const breadcrumbs = [{ label: __("Campaigns"), route: { name: "CampaignManagement" } }];
+// Breadcrumbs - dynamic based on campaign type
+const campaignTypeLabels = {
+  'ATTRACTION': 'Attraction Campaigns',
+  'NURTURING': 'Attract-Nurture Campaigns',
+  'RECRUITMENT': 'Recruitment Campaigns'
+};
+
+const breadcrumbs = computed(() => {
+  const label = props.campaignType ? campaignTypeLabels[props.campaignType] : 'All Campaigns';
+  return [{ label: __(label), route: { name: route.name } }];
+});
+
+// Create button label - dynamic based on campaign type
+const createButtonLabel = computed(() => {
+  if (!props.campaignType) return __('Create Campaign');
+  const typeLabel = campaignTypeLabels[props.campaignType]?.replace(' Campaigns', '');
+  return __(`Create ${typeLabel} Campaign`);
+});
 
 // Page state
 const viewMode = ref("list");
+const showMethodSelection = ref(false); // Modal chọn phương thức tạo
+const showTemplateSelection = ref(false); // Modal chọn template
 const showCreateWizard = ref(false); // Wizard cho tạo mới
 const showEditForm = ref(false); // Form cho chỉnh sửa
 const showViewDialog = ref(false);
@@ -356,11 +399,12 @@ const {
   campaigns,
   loading,
   pagination,
-  loadCampaigns,
   searchText,
   statusFilter,
   typeFilter,
   activeFilter,
+  loadCampaigns,
+  smartLoadCampaigns,
   goToPage,
   changeItemsPerPage,
   setSearchText,
@@ -406,6 +450,7 @@ const setTagFilter = (value) => {
 // Load campaigns with all filters
 const loadCampaignsWithFilters = async () => {
   const filters = {
+    type: props.campaignType, // Filter by campaign type from props
     status: statusFilter.value !== "all" ? statusFilter.value : undefined,
     tag: tagFilter.value !== "all" ? tagFilter.value : undefined,
     searchText: searchText.value && searchText.value.trim() ? searchText.value.trim() : undefined,
@@ -429,8 +474,8 @@ const debouncedSearch = (searchValue) => {
     try {
       // Prepare filters
       const filters = {
+        type: props.campaignType, // Filter by campaign type from props
         status: statusFilter.value !== "all" ? statusFilter.value : undefined,
-        type: typeFilter.value !== "all" ? typeFilter.value : undefined,
         isActive:
           activeFilter.value !== "all" ? activeFilter.value === "active" : undefined,
       };
@@ -465,7 +510,22 @@ watch(
 // Event handlers
 const openCreateDialog = () => {
   selectedCampaign.value = null;
-  showCreateWizard.value = true;
+  showMethodSelection.value = true; // Show method selection first
+};
+
+const handleMethodSelection = (method) => {
+  if (method === 'manual') {
+    // Open wizard for manual creation
+    showCreateWizard.value = true;
+  } else if (method === 'template') {
+    // Open template selection
+    showTemplateSelection.value = true;
+  }
+};
+
+const handleTemplateSelection = (template) => {
+  console.log('Selected template:', template);
+  // TODO: Implement template-based campaign creation when doctype is ready
 };
 
 const handleCreateFromSidebar = (section) => {
@@ -502,7 +562,7 @@ const handleCreateSuccess = async (event) => {
   selectedCampaign.value = null;
 
   // Reload data
-  await loadCampaigns();
+  await loadCampaignsWithFilters();
 
   // Refresh sidebar stats
   // statsStore.refreshStats();
@@ -517,7 +577,7 @@ const handleDraftCreated = async (draftCampaign) => {
   console.log("📄 Draft campaign created:", draftCampaign.name);
 
   // Reload campaign list to show the new draft
-  await loadCampaigns();
+  await loadCampaignsWithFilters();
 
   console.log("📋 Campaign list refreshed after draft creation");
 };
@@ -533,7 +593,7 @@ const handleEditSuccess = async (event) => {
   selectedCampaign.value = null;
 
   // Reload data
-  await loadCampaigns();
+  await loadCampaignsWithFilters();
 
   console.log("Campaigns after reload:", campaigns.value.length);
 
@@ -552,7 +612,7 @@ const handleClearSearch = () => {
 };
 
 const handleRefresh = async () => {
-  await loadCampaigns();
+  await loadCampaignsWithFilters();
 
   showToast(__("Data refreshed"), "info", 2000);
 };
@@ -562,8 +622,8 @@ const handleDelete = async (campaign) => {
     const successDelete = await deleteCampaign(campaign.name, campaign.campaign_name);
 
     if (successDelete) {
-      showToast(__(`Campaign "${campaign.campaign_name}" deleted`), "success");
-      loadCampaigns();
+      showToast(__("Campaign deleted"), "success");
+      loadCampaignsWithFilters();
       
       // Refresh sidebar stats
       // statsStore.refreshStats();
@@ -592,7 +652,7 @@ const confirmForceDelete = async () => {
       __("Campaign deleted successfully!"),
       "success"
     );
-    loadCampaigns();
+    loadCampaignsWithFilters();
     // statsStore.refreshStats();
     showDeleteConfirmDialog.value = false;
     campaignToDelete.value = null;
@@ -609,9 +669,38 @@ const cancelDelete = () => {
   linkedDocuments.value = [];
 };
 
+// Watch route changes to reload data when switching between campaign types
+watch(
+  () => route.name,
+  (newRoute, oldRoute) => {
+    // Only reload if route actually changed (not initial load)
+    if (oldRoute !== undefined && newRoute !== oldRoute) {
+      console.log('🔄 Route changed from', oldRoute, 'to', newRoute);
+      console.log('📍 Current campaignType prop:', props.campaignType);
+      // Reset filters when switching routes
+      statusFilter.value = "all";
+      tagFilter.value = "all";
+      searchText.value = "";
+      loadCampaignsWithFilters();
+    }
+  },
+  { immediate: false }
+);
+
+// Also watch campaignType prop changes (in case it changes without route change)
+watch(
+  () => props.campaignType,
+  (newType, oldType) => {
+    console.log('🎯 Campaign type prop changed:', { oldType, newType });
+    // Reload data whenever type changes (including initial load if oldType is undefined)
+    loadCampaignsWithFilters();
+  },
+  { immediate: false } // Don't run on mount since onMounted already loads data
+);
+
 // Initialize
 onMounted(() => {
-  loadCampaigns();
+  loadCampaignsWithFilters();
 });
 
 // Cleanup

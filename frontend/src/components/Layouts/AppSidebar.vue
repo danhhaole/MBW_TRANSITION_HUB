@@ -1,7 +1,7 @@
 <template>
 	<div
 		class="relative flex h-full flex-col justify-between transition-all duration-300 ease-in-out"
-		:class="isSidebarCollapsed ? 'w-12' : 'w-[230px]'"
+		:class="isSidebarCollapsed ? 'w-12' : 'w-[240px]'"
 	>
 		<div>
 			<UserDropdown class="p-2" :isCollapsed="isSidebarCollapsed" />
@@ -351,7 +351,7 @@ const links = [
 				to: { name: 'RecruitmentCampaign', query: { type: 'RECRUITMENT' } },
 			},
 			{
-				label: 'Flow Templates',
+				label: 'Campaign Templates',
 				icon: TaskIcon,
 				to: { name: 'FlowTemplateManagement' },
 			},

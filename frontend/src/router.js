@@ -76,9 +76,9 @@ const routes = [
 	{ path: '/applicant-pool', name: 'ApplicantPoolManagement', component: ()=>import('@/pages/ApplicantPoolManagement.vue') },
 
 	//Talent Campaigns
-	{ path: '/attraction', name: 'AttractionCampaign', component: ()=>import('@/pages/TalentCampaigns/Attraction.vue') },
-	{ path: '/nurture', name: 'NurtureCampaign', component: ()=>import('@/pages/TalentCampaigns/Nurture.vue') },
-	{ path: '/recruitment', name: 'RecruitmentCampaign', component: ()=>import('@/pages/TalentCampaigns/Recruitment.vue') },
+	{ path: '/attraction', name: 'AttractionCampaign', component: ()=>import('@/pages/CampaignManagement.vue'), props: route => ({ campaignType: route.query.type || 'ATTRACTION' }) },
+	{ path: '/nurture', name: 'NurtureCampaign', component: ()=>import('@/pages/CampaignManagement.vue'), props: route => ({ campaignType: route.query.type || 'NURTURING' }) },
+	{ path: '/recruitment', name: 'RecruitmentCampaign', component: ()=>import('@/pages/CampaignManagement.vue'), props: route => ({ campaignType: route.query.type || 'RECRUITMENT' }) },
 
 	// Mira Ladi Page Management
 	// { 
