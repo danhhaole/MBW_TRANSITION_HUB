@@ -1064,6 +1064,8 @@ const getStatusText = (segment) => {
 // Handle enrich data click
 const enrichData = (segment) => {
 	console.log('Enrich data for segment:', segment.name)
+	selectedPool.value = segment
+	showTalentPoolDialog.value = true
 	// TODO: Implement enrich data logic
 	// Can navigate to a form or show a modal for data enrichment
 }
