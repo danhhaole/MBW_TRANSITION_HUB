@@ -95,11 +95,20 @@
 								class="hover:shadow-md transition-shadow"
 							>
 								<!-- Card Header -->
-								<div class="flex items-start justify-between">
-									<div
-										class="w-6 h-6 bg-blue-50 rounded-lg flex items-center justify-center"
-									>
-										<FeatherIcon name="code" class="w-6 h-6 text-blue-600" />
+								<div class="flex items-start justify-between mb-2">
+									<div class="flex items-center gap-2">
+										<FeatherIcon name="code" class="w-5 h-5 text-gray-700" />
+										<h3 class="font-semibold text-gray-900 text-lg">
+											{{ segment.title }}
+										</h3>
+										<span
+											:class="[
+												'text-xs font-bold px-2 py-0.5 rounded',
+												getStatusClass(segment)
+											]"
+										>
+											{{ getStatusText(segment) }}
+										</span>
 									</div>
 									<Dropdown :options="poolActions(segment)">
 										<template #default="{ open }">
@@ -111,108 +120,130 @@
 										</template>
 									</Dropdown>
 								</div>
-								<h3 class="font-semibold text-gray-900 mt-1 mb-2">
-									{{ segment.title }}
-								</h3>
-								<div class="flex items-center gap-2 mb-3 text-xs text-gray-500">
-									<FeatherIcon name="clock" class="w-3 h-3" />
-									<span>Last updated: {{ segment.formatted_modified }}</span>
+
+								<!-- Last Updated -->
+								<div class="text-xs text-gray-500 mb-4">
+									Last updated: {{ segment.formatted_modified }}
 								</div>
 
-								<!-- Card Body -->
-								<div class="space-y-3">
-									<!-- 5 Metrics in One Row -->
-									<div class="grid grid-cols-5 gap-2">
-										<!-- Talents Count -->
-										<div class="text-center">
-											<div class="text-xs text-gray-500 mb-1">Talents</div>
-											<div class="text-xl font-bold text-gray-900">
-												{{ segment.candidate_count || 0 }}
-											</div>
+								<!-- Metrics Grid 3x2 -->
+								<div class="grid grid-cols-3 gap-x-4 gap-y-3 mb-4">
+									<!-- Row 1 -->
+									<div>
+										<div class="text-xs text-gray-500 mb-1">Talents</div>
+										<div class="text-lg font-bold text-gray-900">
+											{{ segment.candidate_count || 0 }}
 										</div>
-
-										<!-- New Talents -->
-										<div class="text-center">
-											<div class="text-xs text-gray-500 mb-1">New Talents</div>
-											<div class="text-lg font-semibold text-green-600">
-												{{ segment.active_candidates_count || 0 }}
-											</div>
+									</div>
+									<div>
+										<div class="text-xs text-gray-500 mb-1">New Talents</div>
+										<div class="text-lg font-bold text-gray-900">
+											{{ segment.active_candidates_count || 0 }}
 										</div>
-
-										<!-- Overall Potential Score -->
-										<div class="text-center">
-											<div class="text-xs text-gray-500 mb-1">Potential Score</div>
-											<div class="text-lg font-semibold text-gray-900">
-												{{ segment.overall_potential_score || 0 }}
-											</div>
-										</div>
-
-										<!-- High Hiring Readiness Rate -->
-										<div class="text-center">
-											<div class="text-xs text-gray-500 mb-1">High Rate</div>
-											<div class="text-lg font-semibold text-gray-900">
-												{{ segment.high_rate || 0 }}%
-											</div>
-										</div>
-
-										<!-- Quality Distribution -->
-										<div class="text-center">
-											<div class="text-xs text-gray-500 mb-1">Quality</div>
-											<div class="text-sm font-semibold text-gray-900">
-												{{ segment.quality_distribution || __("None") }}
-											</div>
+									</div>
+									<div>
+										<div class="text-xs text-gray-500 mb-1">Potential Score</div>
+										<div
+											:class="[
+												'text-lg font-bold',
+												(segment.overall_potential_score || 0) === 0 ? 'text-red-600' : 'text-gray-900'
+											]"
+										>
+											{{ segment.overall_potential_score || 0 }}
 										</div>
 									</div>
 
-									<!-- Engagement Rate -->
+									<!-- Row 2 -->
 									<div>
-										<div class="text-xs text-gray-500 mb-1">
-											{{__("Engagement Rate")}}
-										</div>
-										<div class="flex items-center gap-2">
-											<Progress
-												:value="segment.engagement_rate"
-												class="flex-1"
-											/>
-											<span class="text-sm font-semibold text-gray-900">
-												{{ segment.engagement_rate }}%
-											</span>
+										<div class="text-xs text-gray-500 mb-1">High Rate</div>
+										<div
+											:class="[
+												'text-lg font-bold',
+												(segment.high_rate || 0) === 0 ? 'text-red-600' : 'text-gray-900'
+											]"
+										>
+											{{ segment.high_rate || 0 }}%
 										</div>
 									</div>
-
-									<!-- Top Skills -->
 									<div>
-										<div class="text-xs text-gray-500 mb-1">Top Skills</div>
-										<div class="flex flex-wrap gap-2">
-											<template
-												v-if="parseCriteria(segment.criteria).length > 0"
-											>
-												<span
-													v-for="(skill, index) in parseCriteria(
-														segment.criteria,
-													)"
-													:key="index"
-													class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium"
-												>
-													{{ skill }}
-												</span>
-											</template>
-											<span v-else class="text-gray-500 text-sm px-3 py-1">
-												{{ __('No skill') }}
-											</span>
+										<div class="text-xs text-gray-500 mb-1">Quality</div>
+										<div
+											:class="[
+												'text-lg font-bold',
+												!segment.quality_distribution || segment.quality_distribution === 'None' ? 'text-red-600' : 'text-gray-900'
+											]"
+										>
+											{{ segment.quality_distribution || 'None' }}
 										</div>
+									</div>
+									<div></div>
+								</div>
+
+								<!-- Engagement Rate -->
+								<div class="mb-4">
+									<div class="flex justify-between items-center text-xs mb-1">
+										<span class="text-gray-700">Engagement Rate</span>
+										<span
+											:class="[
+												'font-bold',
+												(segment.engagement_rate || 0) < 20 ? 'text-red-600' : 'text-gray-900'
+											]"
+										>
+											{{ segment.engagement_rate || 0 }}%
+										</span>
+									</div>
+									<Progress
+										:value="segment.engagement_rate || 0"
+										class="h-2"
+									/>
+								</div>
+
+								<!-- Top Skills -->
+								<div v-if="parseCriteria(segment.criteria).length > 0" class="mb-4">
+									<div class="text-xs text-gray-500 mb-2">Top Skills</div>
+									<div class="flex flex-wrap gap-2">
+										<span
+											v-for="(skill, index) in parseCriteria(segment.criteria)"
+											:key="index"
+											class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium"
+										>
+											{{ skill }}
+										</span>
 									</div>
 								</div>
 
-								<!-- Card Footer -->
-								<div class="pt-3">
+								<!-- Skills Alert -->
+								<div
+									v-else
+									class="bg-yellow-50 border border-yellow-200 rounded px-3 py-2 mb-4 flex items-center justify-between"
+								>
+									<div class="flex items-center gap-2">
+										<FeatherIcon name="alert-triangle" class="w-4 h-4 text-yellow-600" />
+										<span class="text-xs text-yellow-800">⚠️ Lack of data skills.</span>
+									</div>
+									<button class="text-xs text-yellow-800 font-bold underline" @click="enrichData(segment)">
+										Fix Now
+									</button>
+								</div>
+
+								<!-- Card Footer Actions -->
+								<div class="flex justify-end gap-2 pt-3 border-t border-gray-100">
 									<Button
-										variant="ghost"
+										v-if="parseCriteria(segment.criteria).length === 0"
+										variant="solid"
 										theme="blue"
-										class="w-full justify-start"
+										size="sm"
+										@click="enrichData(segment)"
+									>
+										Enrich Data Now
+									</Button>
+									<Button
+										variant="outline"
+										theme="blue"
+										size="sm"
 										@click="GoDetails(segment)"
 									>
-										{{__("Manage Pool")}} →
+										Manage Pool →
 									</Button>
 								</div>
 							</Card>
@@ -993,6 +1024,48 @@ const handlePoolCreated = async () => {
 	await talentSegmentStore.fetchTalentSegments()
 	showTalentPoolDialog.value = false
 	selectedPool.value = null
+}
+
+// Get status badge class based on metrics
+const getStatusClass = (segment) => {
+	const highRate = segment.high_rate || 0
+	const potentialScore = segment.overall_potential_score || 0
+	
+	// Action Needed: both are 0
+	if (highRate === 0 && potentialScore === 0) {
+		return 'bg-red-100 text-red-800 border border-red-200'
+	}
+	
+	// Warning: both are around 50 or less
+	if (highRate <= 50 && potentialScore <= 50) {
+		return 'bg-yellow-100 text-yellow-800 border border-yellow-200'
+	}
+	
+	// Healthy: both are good
+	return 'bg-green-100 text-green-800 border border-green-200'
+}
+
+// Get status text
+const getStatusText = (segment) => {
+	const highRate = segment.high_rate || 0
+	const potentialScore = segment.overall_potential_score || 0
+	
+	if (highRate === 0 && potentialScore === 0) {
+		return 'Action Needed'
+	}
+	
+	if (highRate <= 50 && potentialScore <= 50) {
+		return 'Warning'
+	}
+	
+	return 'Healthy'
+}
+
+// Handle enrich data click
+const enrichData = (segment) => {
+	console.log('Enrich data for segment:', segment.name)
+	// TODO: Implement enrich data logic
+	// Can navigate to a form or show a modal for data enrichment
 }
 
 const GoDetails = (pool) => {
