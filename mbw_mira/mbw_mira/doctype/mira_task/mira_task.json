@@ -7,8 +7,10 @@
  "field_order": [
    "subject",
    "task_definition",
+   "task_id",
    "flow_action",
    "related_talent",
+   "action_type",
    "status",
    "scheduled_at",
    "executed_at",
@@ -33,11 +35,22 @@
      "options": "Mira Flow Action"
    },
    {
+    "fieldname": "task_id",
+    "label": "Mira Task",
+    "fieldtype": "Link",
+    "options": "Mira Task"
+  },
+   {
      "fieldname": "related_talent",
      "label": "Related Talent",
      "fieldtype": "Link",
      "options": "Mira Talent"
    },
+   {
+    "fieldname": "action_type",
+    "label": "Action Type",
+    "fieldtype": "Data"
+  },
    {
      "fieldname": "status",
      "label": "Status",

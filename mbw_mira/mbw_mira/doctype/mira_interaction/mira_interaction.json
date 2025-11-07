@@ -24,9 +24,8 @@
   {
    "description": "H\u00e0nh \u0111\u1ed9ng h\u1ec7 th\u1ed1ng \u0111\u00e3 th\u1ef1c hi\u1ec7n d\u1eabn \u0111\u1ebfn t\u01b0\u01a1ng t\u00e1c n\u00e0y",
    "fieldname": "action",
-   "fieldtype": "Link",
-   "label": "Source Action",
-   "options": "Mira Action"
+   "fieldtype": "Data",
+   "label": "Source Action"
   },
   {
    "description": "Li\u00ean k\u1ebft m\u00e0 \u1ee9ng vi\u00ean \u0111\u00e3 nh\u1ea5p v\u00e0o (n\u1ebfu c\u00f3)",

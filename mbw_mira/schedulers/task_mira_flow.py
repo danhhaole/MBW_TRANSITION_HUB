@@ -1,5 +1,6 @@
 import frappe
 from frappe.utils import now_datetime
+
 #Chay quét lấy danh sách action và trigger
 
 def enqueue_for_action(action_type, queue_name):
@@ -13,15 +14,17 @@ def enqueue_for_action(action_type, queue_name):
         fields=["name"],
         order_by="order_task asc"
     )
-
+    print("task",tasks)
+    from mbw_mira.workers.task_runner import process_task
     for t in tasks:
-        frappe.enqueue(
-            "mbw_mira.workers.task_runner.process_task",
-            job_id=queue_name,
-            queue="short",
-            #timeout=300,
-            task_id=t.name,
-        )
+        process_task(t.name)
+        # frappe.enqueue(
+        #     "mbw_mira.workers.task_runner.process_task",
+        #     job_id=queue_name,
+        #     queue="short",
+        #     #timeout=300,
+        #     task_id=t.name,
+        # )
 
 # ========================
 # SCHEDULERS

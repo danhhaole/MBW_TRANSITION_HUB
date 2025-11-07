@@ -12,12 +12,12 @@ def process_task(task_id):
     if task.scheduled_at and time_diff_in_seconds(now_datetime(), task.scheduled_at) < 0:
         return
     # Chỉ xử lý task Pending
-    if task.status != "Pending":
-        return
+    # if task.status != "Pending":
+    #     return
 
     # ===== Lấy runtime action =====
     task_def = frappe.get_doc("Mira Task Definition", task.task_definition)
-
+    
     runtime_action = None
     for a in task_def.task_actions:
         if a.task_id == task.name:
@@ -89,7 +89,7 @@ def handle_message(task, action): pass
 def handle_sms(task, action): pass
 
 def handle_email(task, action):
-    send_email_job(task)   # 
+    send_email_job(task,action)   # 
 
 def handle_zalo(task, action): pass
 def handle_zalo_care(task, action): pass

@@ -10,7 +10,7 @@ import ipaddress
 import csv
 
 
-def send_email_job(task_id):
+def send_email_job(task_id,action):
     from mbw_mira.utils.email import send_email
     """
     Gửi email cho ứng viên, hỗ trợ cả message raw hoặc template.
@@ -20,7 +20,6 @@ def send_email_job(task_id):
     task = frappe.get_doc("Mira Task", task_id)
     talentprofiles = frappe.get_cached_doc("Mira Talent", task.related_talent)
     
-    frappe.log_error(f"Vào đây")
     logger = frappe.logger("campaign")
     if not talentprofiles.email:
         frappe.throw("Talent does not have an email.")
@@ -33,16 +32,16 @@ def send_email_job(task_id):
         logger.error("Talent Email Invalid")
         return
 
-    context = (talentprofiles, task)
+    context = (talentprofiles, task,action)
     
     condition = {}
-    if hasattr(task, "condition"):
-        condition = json.loads(task.condition)
-
-    message = render_template(condition.template.get("email_content"), context)
+    if hasattr(action, "action_parameters"):
+        condition = json.loads(action.action_parameters)
+    temp = condition.get("template")
+    message = render_template(temp.get("email_content"), context)
     subject = "Thông báo"
-    if condition and hasattr(condition, "email_subject"):
-        subject = render_template(condition.get("email_subject"), context)
+    if condition and hasattr(temp, "email_subject"):
+        subject = render_template(temp.get("email_subject"), context)
     talent_email = talentprofiles.email
     template = None
     template_args = None
@@ -80,7 +79,7 @@ def send_email_job(task_id):
                 {
                     "talent_id": talentprofiles.name,
                     "interaction_type": "EMAIL_SENT",
-                    "source_action": task.name,
+                    "source_action": action.name,
                 }
             )
         else:
@@ -138,45 +137,45 @@ def render_template(template_str, context):
     from urllib.parse import urlencode
     if not template_str:
         return "Xin chào bạn"
-    talentprofiles, task = context
-    origin = frappe.request.headers.get("Origin")
-    protocol = frappe.request.scheme
-    host = frappe.request.host
-    base_url = f"{protocol}://{host}"
-    if origin:
-        base_url = origin
-    params = {
-        "candidate_id": talentprofiles.name,
-        "action": task.name,
-        "url": f"{base_url}/mbw_mira/ladi?campaign={task.campaign}",
-    }
+    talentprofiles, task,action = context
+    # origin = frappe.request.headers.get("Origin")
+    # protocol = frappe.request.scheme
+    # host = frappe.request.host
+    # base_url = f"{protocol}://{host}"
+    # if origin:
+    #     base_url = origin
+    # params = {
+    #     "candidate_id": talentprofiles.name,
+    #     "action": task.name,
+    #     "url": f"{base_url}/mbw_mira/ladi?campaign={task.flow}",
+    # }
 
     context_parse = {"candidate_name": talentprofiles.full_name}
 
-    sig = make_signature(params)
+    # sig = make_signature(params)
 
-    # dùng urllib để encode query string
-    query = urlencode({**params, "sig": sig})
+    # # dùng urllib để encode query string
+    # query = urlencode({**params, "sig": sig})
 
-    context_parse["tracking_pixel_url"] = (
-        f"{base_url}/api/method/mbw_mira.api.interaction.tracking_pixel?{query}"
-    )
-    context_parse["tracking_link"] = (
-        f"{base_url}/api/method/mbw_mira.api.interaction.click_redirect?{query}"
-    )
-    context_parse["unsubscribe_link"] = (
-        f"{base_url}/mbw_mira/unsubscribe?{query}"
-    )
+    # context_parse["tracking_pixel_url"] = (
+    #     f"{base_url}/api/method/mbw_mira.api.interaction.tracking_pixel?{query}"
+    # )
+    # context_parse["tracking_link"] = (
+    #     f"{base_url}/api/method/mbw_mira.api.interaction.click_redirect?{query}"
+    # )
+    # context_parse["unsubscribe_link"] = (
+    #     f"{base_url}/mbw_mira/unsubscribe?{query}"
+    # )
 
-    context_parse["register_link"] = (
-        f"{base_url}/mbw_mira/register?campaign={task.campaign}"
-    )
-    context_parse["ladi_link"] = (
-        f"{base_url}/mbw_mira/ladi?campaign={task.campaign}"
-    )
-    context_parse["apply_link"] = (
-        f"{base_url}/mbw_mira/application?campaign={task.campaign}&email={talentprofiles.email}&name={talentprofiles.full_name}"
-    )
+    # context_parse["register_link"] = (
+    #     f"{base_url}/mbw_mira/register?campaign={task.flow}"
+    # )
+    # context_parse["ladi_link"] = (
+    #     f"{base_url}/mbw_mira/ladi?campaign={task.flow}"
+    # )
+    # context_parse["apply_link"] = (
+    #     f"{base_url}/mbw_mira/application?campaign={task.flow}&email={talentprofiles.email}&name={talentprofiles.full_name}"
+    # )
     
 
     return frappe.render_template(template_str, context_parse)

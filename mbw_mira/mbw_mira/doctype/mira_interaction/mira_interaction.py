@@ -8,6 +8,7 @@ from mbw_mira.mbw_mira.doctype.mira_task_definition.mira_task_definition import 
 from mbw_mira.workers import resume_event
 
 
+
 class MiraInteraction(Document):
 	pass
 
@@ -81,7 +82,7 @@ class MiraInteraction(Document):
   
 		# create_task_definitions_from_event(
 		# 		event_trigger="ON_SEND_SUCCESS",
-		# 		target_type="Talent",
+		# 		target_type="Mira Talent",
 		# 		target_id=self.talent_id,
 		# 		event_payload={"talent_id": self.talent_id}
 		# 	)
@@ -101,7 +102,7 @@ class MiraInteraction(Document):
 		resume_event("email_open", self.talent_id)
 		# create_task_definitions_from_event(
 		# 	event_trigger="ON_LINK_CLICK",
-		# 	target_type="Talent",
+		# 	target_type="Mira Talent",
 		# 	target_id=self.talent_id,
 		# 	event_payload={"url": self.url}
 		# )

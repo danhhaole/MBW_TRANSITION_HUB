@@ -14,7 +14,7 @@ class MiraTalent(Document):
     def after_insert(doc, method):
         create_task_definitions_from_event(
             event_trigger="ON_CREATE",
-            target_type="Talent",
+            target_type="Mira Talent",
             target_id=doc.name,
             event_payload=doc.as_dict()
         )
@@ -30,7 +30,7 @@ class MiraTalent(Document):
     def on_talent_update(self):
         create_task_definitions_from_event(
                 event_trigger="ON_UPDATE",
-                target_type="Talent",
+                target_type="Mira Talent",
                 target_id=self.name,
                 event_payload=self.as_dict()
             )
@@ -38,14 +38,14 @@ class MiraTalent(Document):
     def on_tag_added(self):
         create_task_definitions_from_event(
             event_trigger="ON_TAG_ADDED",
-            target_type="Talent",
+            target_type="Mira Talent",
             target_id=self.name,
             event_payload={"tags": self.tags}
         )
     def on_status_changed(self,old_status, new_status):
         create_task_definitions_from_event(
             event_trigger="ON_STATUS_CHANGED",
-            target_type="Talent",
+            target_type="Mira Talent",
             target_id=self.name,
             event_payload={
                 "old_status": old_status,
