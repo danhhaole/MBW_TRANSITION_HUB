@@ -358,9 +358,9 @@ const links = [
 		]
 	},
 	{
-		label: 'Job Opening',
+		label: 'LadiPage',
 		icon: OrganizationsIcon,
-		to: 'JobOpeningManagement',
+		to:'https://hireos.fastwork.vn/cms/pages'
 	},
 	{
 		label: 'My Tasks',
