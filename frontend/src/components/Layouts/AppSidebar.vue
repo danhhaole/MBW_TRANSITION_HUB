@@ -338,54 +338,24 @@ const links = [
 			{
 				label: 'Attraction',
 				icon: Email2Icon,
-				to: { name: 'AttractionCampaign' },
+				to: { name: 'AttractionCampaign', query: { type: 'ATTRACTION' } },
 			},
 			{
 				label: 'Attract–Nurture',
 				icon: SequenceIcon,
-				to: { name: 'NurtureCampaign' },
+				to: { name: 'NurtureCampaign', query: { type: 'NURTURING' } },
 			},
 			{
 				label: 'Recruitment',
 				icon: "git",
-				to: { name: 'RecruitmentCampaign' },
-			},
-			]
-	},
-	{
-		label: 'Automation',
-		icon: OrganizationsIcon,
-		to: 'CampaignManagement',
-		relatedRoutes: [
-			'CampaignManagement',
-			'FlowManagement',
-			'SequenceManagement',
-			'FlowEditor',
-			'SequenceEditor',
-			'FlowTemplateManagement',
-		],
-		submenu: [
-			{
-				label: 'Campaigns',
-				icon: Email2Icon,
-				to: { name: 'CampaignManagement' },
-			},
-			{
-				label: 'Flows',
-				icon: SequenceIcon,
-				to: { name: 'FlowManagement' },
-			},
-			{
-				label: 'Sequences',
-				icon: NoteIcon,
-				to: { name: 'SequenceManagement' },
+				to: { name: 'RecruitmentCampaign', query: { type: 'RECRUITMENT' } },
 			},
 			{
 				label: 'Flow Templates',
 				icon: TaskIcon,
 				to: { name: 'FlowTemplateManagement' },
 			},
-		],
+		]
 	},
 	{
 		label: 'Job Opening',

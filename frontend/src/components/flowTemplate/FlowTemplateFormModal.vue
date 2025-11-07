@@ -96,7 +96,7 @@
           
           <div class="grid grid-cols-3 gap-4">
             <!-- Is Default Template -->
-            <div class="flex items-center space-x-2">
+            <!-- <div class="flex items-center space-x-2">
               <input
                 v-model="formData.is_default"
                 type="checkbox"
@@ -107,7 +107,7 @@
               <label class="text-sm text-gray-700">
                 {{ __('System Template') }}
               </label>
-            </div>
+            </div> -->
 
             <!-- Is Premium -->
             <div class="flex items-center space-x-2">
@@ -508,7 +508,7 @@ const formData = ref({
   thumbnail: '',
   type: 'FLOW',
   order_no: 999,
-  is_default: 0,
+  is_default: 1,
   is_premium: 0,
   is_suggestion: 0,
   scope_type: 'PRIVATE',
@@ -669,7 +669,7 @@ const loadTemplateData = () => {
       thumbnail: props.template.thumbnail || '',
       type: props.template.type || 'FLOW',
       order_no: props.template.order_no || 999,
-      is_default: props.template.is_default || 0,
+      is_default: props.template.is_default || 1,
       is_premium: props.template.is_premium || 0,
       is_suggestion: props.template.is_suggestion || 0,
       scope_type: props.template.scope_type || 'PRIVATE',
@@ -731,7 +731,7 @@ const resetForm = () => {
     thumbnail: '',
     type: 'FLOW',
     order_no: 999,
-    is_default: 0,
+    is_default: 1,
     is_premium: 0,
     is_suggestion: 0,
     scope_type: 'PRIVATE',
