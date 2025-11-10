@@ -11,12 +11,12 @@ from mbw_mira.mbw_mira.doctype.mira_task_definition.mira_task_definition import 
 
 class MiraTalent(Document):
 
-    def after_insert(doc, method):
+    def after_insert(self):
         create_task_definitions_from_event(
             event_trigger="ON_CREATE",
             target_type="Mira Talent",
-            target_id=doc.name,
-            event_payload=doc.as_dict()
+            target_id=self.name,
+            event_payload=self.as_dict()
         )
     def on_update(self):
         if not self.get("__islocal"):  # nghĩa là UPDATE, không phải INSERT
