@@ -724,7 +724,9 @@ def retry_connection(connection_id):
 @frappe.whitelist()
 def share_job_posting(
     connection_id: str,
-    job_id: str,
+    campaign_id: str,
+    ladipage_url:str,
+    image_url:str,
     message: str,
     schedule_type: str = "now",
     scheduled_time: str = None,
@@ -740,20 +742,21 @@ def share_job_posting(
             return {"status": "error", "message": "Connection is not active"}
 
         # Get job details
-        if not frappe.db.exists("Mira Job Opening", job_id):
-            return {"status": "error", "message": "Job not found"}
+        # if not frappe.db.exists("Mira Job Opening", job_id):
+        #     return {"status": "error", "message": "Job not found"}
 
-        job = frappe.get_doc("Mira Job Opening", job_id)
+        # job = frappe.get_doc("Mira Job Opening", job_id)
         share_data = json.dumps(kwargs)
         # Create sharing record
         share_doc = frappe.get_doc(
             {
                 "doctype": "Mira Job Share Log",
-                "job": job_id,
-                "job_title": job.jo_public_title,
+                "campaign": campaign_id,
                 "connection": connection_id,
                 "platform_type": connection.platform_type,
                 "message": message,
+                "ladipage_url":ladipage_url,
+                "image_url":image_url,
                 "schedule_type": schedule_type,
                 "scheduled_time": (
                     get_datetime(scheduled_time) if scheduled_time else None
@@ -832,6 +835,7 @@ def get_job_sharing_history(
                 "scheduled_time",
                 "external_post_id",
                 "external_url",
+                "ladipage_url",
                 "error_message",
                 "retry_count",
                 "engagement_data",
@@ -1208,7 +1212,7 @@ def _process_job_share(share_doc):
     """
     try:
         connection = frappe.get_doc("Mira External Connection", share_doc.connection)
-        job = frappe.get_doc("Mira Job Opening", share_doc.job)
+        # job = frappe.get_doc("Mira Job Opening", share_doc.job)
 
         # Parse share_data safely
         share_data = {}
@@ -1221,12 +1225,12 @@ def _process_job_share(share_doc):
         # Process based on platform type
         if connection.platform_type.lower() == "facebook":
 
-            result = _share_to_facebook(connection, job, share_doc, share_data)
+            result = _share_to_facebook(connection, share_doc, share_data)
 
         elif connection.platform_type.lower() == "zalo":
-            result = _share_to_zalo(connection, job, share_doc, share_data)
+            result = _share_to_zalo(connection, share_doc, share_data)
         elif connection.platform_type.lower() == "topcv":
-            result = _share_to_topcv(connection, job, share_doc, share_data)
+            result = _share_to_topcv(connection, share_doc, share_data)
         else:
             result = {
                 "success": False,
@@ -1264,12 +1268,12 @@ def _process_job_share(share_doc):
         return {"success": False, "error": str(e)}
 
 
-def _share_to_facebook(connection, job, share_doc, share_data):
+def _share_to_facebook(connection, share_doc, share_data):
     """Share job to Facebook via SocialHub API"""
     try:
         # Get Facebook page ID from share_data or connection accounts
         page_id = share_data.get("target_page_id")
-        print("page_id>>>>>>>>>>>:", page_id)
+        
         url_image = share_data.get("image_url")
         if url_image and "http" not in url_image:
             url_image = f"{get_url_without_port()}{url_image}"
@@ -1287,8 +1291,8 @@ def _share_to_facebook(connection, job, share_doc, share_data):
             return {"success": False, "error": "No Facebook page selected or available"}
 
         # Prepare post content
-        job_url = f"{get_url_without_port()}/mbw_mira/jobs/{job.job_url_cms}?utm_source=facebook&owner={job.jo_contact_email}"
-        message = f"{share_doc.message}\n\nApply here: {job_url}"
+        job_url = f"{share_doc.ladipage_url}?utm_source=facebook&owner="
+        message = f"{share_doc.message}\n\nClick here: {job_url}"
 
         # Prepare image URL if available
 
@@ -1355,13 +1359,13 @@ def _share_to_facebook(connection, job, share_doc, share_data):
         return {"success": False, "error": str(e)}
 
 
-def _share_to_zalo(connection, job, share_doc, share_data):
+def _share_to_zalo(connection, share_doc, share_data):
     """Share job to Zalo OA via SocialHub API"""
     try:
 
         # Get Zalo OA ID
         page_id = share_data.get("oa_id")
-        url_image = share_data.get("image_url")
+        url_image = share_doc.get("image_url")
         if url_image and "http" not in url_image:
             url_image = f"{get_url_without_port()}{url_image}"
         if not page_id:
@@ -1376,7 +1380,7 @@ def _share_to_zalo(connection, job, share_doc, share_data):
             return {"success": False, "error": "No Zalo OA ID configured or available"}
 
         # Prepare job content
-        job_url = f"{get_url_without_port()}/mbw_mira/jobs/{job.job_url_cms}?utm_source=zalo&owner={job.jo_contact_email}"
+        job_url = f"{share_doc.ladipage_url}?utm_source=zalo&owner="
 
         # Prepare image URL if available
         # photo_url = ""
@@ -1396,7 +1400,7 @@ def _share_to_zalo(connection, job, share_doc, share_data):
             "page_id": page_id,
             "tenant_name": connection.tenant_name,
             "email": connection.user_email,
-            "title": job.jo_public_title,
+            "title": "",
             "photo_url": url_image,
             "description": description,
             "content": f"{share_doc.message}\n\nỨng tuyển tại: {job_url}",

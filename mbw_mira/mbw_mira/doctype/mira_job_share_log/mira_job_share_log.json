@@ -9,14 +9,14 @@
  "engine": "InnoDB",
  "field_order": [
   "job_info_section",
-  "job",
-  "job_title",
+  "campaign",
   "column_break_3",
   "connection",
   "platform_type",
   "sharing_details_section",
   "message",
   "schedule_type",
+  "ladipage_url",
   "column_break_8",
   "scheduled_time",
   "shared_at",
@@ -46,20 +46,6 @@
    "fieldname": "job_info_section",
    "fieldtype": "Section Break",
    "label": "Job Information"
-  },
-  {
-   "fieldname": "job",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Job",
-   "options": "Mira Job Opening",
-   "reqd": 1
-  },
-  {
-   "fieldname": "job_title",
-   "fieldtype": "Data",
-   "label": "Job Title",
-   "read_only": 1
   },
   {
    "fieldname": "column_break_3",
@@ -228,11 +214,24 @@
    "fieldname": "image_url",
    "fieldtype": "Small Text",
    "label": "Image URL"
+  },
+  {
+   "fieldname": "campaign",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Campaign",
+   "options": "Mira Campaign",
+   "reqd": 1
+  },
+  {
+   "fieldname": "ladipage_url",
+   "fieldtype": "Small Text",
+   "label": "LadiPage URL"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-13 11:57:23.025769",
+ "modified": "2025-11-10 15:22:20.739170",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Job Share Log",
