@@ -959,6 +959,11 @@ const processImport = async (validationOnly = false) => {
         formData.append('file', selectedFile.value)
         formData.append('mapping', JSON.stringify(fieldMapping.value))
         formData.append('validate_only', validationOnly ? '1' : '0')
+        
+        // Add segment_id if selected
+        if (selectedJob.value) {
+            formData.append('segment_id', selectedJob.value)
+        }
 
         const response = await fetch('/api/method/mbw_mira.mbw_mira.doctype.mira_importsession.mira_importsession.import_with_mapping_talent', {
             method: 'POST',

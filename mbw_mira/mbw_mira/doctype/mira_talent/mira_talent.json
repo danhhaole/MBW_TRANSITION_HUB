@@ -231,7 +231,8 @@
   {
    "fieldname": "crm_status",
    "fieldtype": "Select",
-   "label": "CRM Status"
+   "label": "CRM Status",
+   "options": "New\nProfiling\nNurturing"
   },
   {
    "fieldname": "recruitment_readiness",
@@ -266,21 +267,21 @@
    "label": "Latest Title"
   },
   {
-    "default": "0",
-    "fieldname": "email_opt_out",
-    "fieldtype": "Int",
-    "label": "email_opt_out"
-   },
-   {
-    "default": "0",
-    "fieldname": "email_id_invalid",
-    "fieldtype": "Int",
-    "label": "Invalid Email"
-   }
+   "default": "0",
+   "fieldname": "email_opt_out",
+   "fieldtype": "Int",
+   "label": "email_opt_out"
+  },
+  {
+   "default": "0",
+   "fieldname": "email_id_invalid",
+   "fieldtype": "Int",
+   "label": "Invalid Email"
+  }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-05 08:19:59.008008",
+ "modified": "2025-11-10 14:34:04.906167",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Talent",

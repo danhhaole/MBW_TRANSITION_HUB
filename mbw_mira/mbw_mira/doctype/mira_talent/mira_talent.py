@@ -22,9 +22,9 @@ class MiraTalent(Document):
         if not self.get("__islocal"):  # nghĩa là UPDATE, không phải INSERT
             # self.on_talent_update()
             old_doc = self.get_doc_before_save()
-            if old_doc.crm_status != self.crm_status:
+            if old_doc and hasattr(old_doc, 'crm_status') and old_doc.crm_status != self.crm_status:
                 self.on_status_changed(old_doc.crm_status,self.crm_status)
-            if old_doc.tags != self.tags:
+            if old_doc and hasattr(old_doc, 'tags') and old_doc.tags != self.tags:
                 self.on_tag_added()
             
     def on_talent_update(self):

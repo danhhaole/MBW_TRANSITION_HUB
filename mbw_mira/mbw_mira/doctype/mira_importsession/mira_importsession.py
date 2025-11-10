@@ -967,7 +967,7 @@ def download_talent_template():
 		
 		# Define important fields in order
 		important_fields = [
-			'full_name', 'email', 'phone', 'skills', 'source'
+			'full_name', 'email', 'phone', 'skills', 'source', 'crm_status'
 		]
 		
 		template_fields = []
@@ -979,7 +979,7 @@ def download_talent_template():
 					'fieldname': field.fieldname,
 					'label': field.label,
 					'fieldtype': field.fieldtype,
-					'required': field.reqd or fieldname in ['full_name', 'email', 'phone', 'skills'],
+					'required': field.reqd or fieldname in ['full_name', 'email'],
 					'options': field.options
 				})
 		
@@ -1003,7 +1003,9 @@ def download_talent_template():
 			elif field['fieldname'] == 'skills':
 				sample_data[header] = 'Python, JavaScript, SQL'
 			elif field['fieldname'] == 'source':
-				sample_data[header] = 'Other'
+				sample_data[header] = 'NEW'
+			elif field['fieldname'] == 'crm_status':
+				sample_data[header] = 'New'
 			else:
 				sample_data[header] = ''
 		
@@ -1156,7 +1158,7 @@ def upload_and_preview_talent():
 
 @frappe.whitelist()
 def import_with_mapping_talent():
-	"""Enhanced import with mapping using Mira Importsession for tracking (Candidate)"""
+	"""Enhanced import with mapping using Mira Importsession for tracking"""
 	try:
 		print(">>>>>>>>>>>>>>>>>>> 1.")
 		# 1️⃣ Nhận dữ liệu từ form
@@ -1165,6 +1167,7 @@ def import_with_mapping_talent():
 		batch_size = int(frappe.form_dict.get('batch_size', 100))
 		validate_only = frappe.form_dict.get('validate_only', '0') == '1'
 		skip_duplicates = frappe.form_dict.get('skip_duplicates', '1') == '1'
+		segment_id = frappe.form_dict.get('segment_id')  # Get segment_id if provided
 
 		if not uploaded:
 			frappe.throw(_("No file uploaded"))
@@ -1220,7 +1223,7 @@ def import_with_mapping_talent():
 				results = validate_import_data_with_session_talent(df, normalized_mapping, session)
 			else:
 				print(">>>>>>>>>>>>>>>>>>> 9.")
-				results = process_import_data_with_session_talent(df, normalized_mapping, session, batch_size)
+				results = process_import_data_with_session_talent(df, normalized_mapping, session, batch_size, segment_id)
 
 			print(">>>>>>>>>>>>>>>>>>> 10.")
 			# 9️⃣ Cập nhật trạng thái session
@@ -1645,6 +1648,15 @@ def get_existing_emails() -> Set[str]:
 		)
 	])
 
+# check trùng của talent
+def get_existing_talent_emails() -> Set[str]:
+	"""Get all existing talent emails from Mira Talent to prevent duplicates"""
+	return set([
+		email[0].lower() for email in frappe.db.sql(
+			"SELECT email FROM `tabMira Talent` WHERE email IS NOT NULL AND email != ''"
+		)
+	])
+
 # của candidate 1
 def validate_and_process_candidate(candidate_data: Dict, existing_emails: Set = None) -> Dict:
 	"""Enhanced validation with better error messages and field processing"""
@@ -1729,9 +1741,13 @@ def validate_and_process_talent(talent_data: Dict, existing_emails: Set = None) 
 		if not value or not str(value).strip():
 			err_msg = f"Missing required field: {label}"
 			errors.append(err_msg)
+		elif field == "email":
+			# Email will be processed separately with lowercase and duplicate check
+			continue
 		else:
 			processed_value = str(value).strip()
 			processed[field] = processed_value
+	
 	# Email validation and duplicate check
 	email = str(talent_data.get("email", "")).strip().lower()
 	
@@ -1747,14 +1763,15 @@ def validate_and_process_talent(talent_data: Dict, existing_emails: Set = None) 
 			if existing_emails is not None:
 				existing_emails.add(email)
 	else:
-		print("- Email is empty or missing")
+		errors.append("Missing required field: Email")
 	
 	# Process other fields
 	field_processors = {
 		"full_name": lambda x: process_text_field(x, 140),
 		"phone": process_phone_number,
-		"source": lambda x: process_text_field(x, 140),
+		"source": process_talent_source,
 		"skills": lambda x: process_text_field(x, 1000),
+		"crm_status": process_talent_crm_status,
 	}
 	
 	for field, processor in field_processors.items():
@@ -1766,9 +1783,17 @@ def validate_and_process_talent(talent_data: Dict, existing_emails: Set = None) 
 			except Exception as e:
 				errors.append(_("Error processing {0}: {1}").format(field, str(e)))
 	
-	# Set default status if not provided
+	# Set default values if not provided
 	if "status" not in processed:
 		processed["status"] = "NEW"
+	
+	# Set default source to NEW if not provided
+	if "source" not in processed:
+		processed["source"] = "NEW"
+	
+	# Set default crm_status to New if not provided
+	if "crm_status" not in processed:
+		processed["crm_status"] = "New"
 	
 	if errors:
 		raise frappe.ValidationError("; ".join(errors))
@@ -1777,7 +1802,7 @@ def validate_and_process_talent(talent_data: Dict, existing_emails: Set = None) 
 
 #của talent 2
 def validate_import_data_with_session_talent(df: pd.DataFrame, mapping: Dict, session=None) -> Dict:
-	"""Validate candidate import data with session tracking
+	"""Validate talent import data with session tracking
 	"""   
 	results = {
 		"success": 0,
@@ -1785,8 +1810,8 @@ def validate_import_data_with_session_talent(df: pd.DataFrame, mapping: Dict, se
 		"total": len(df),
 		"logs": []
 	}
-	# Get existing emails using the helper function
-	existing_emails = get_existing_emails()
+	# Get existing emails using the helper function for Talent
+	existing_emails = get_existing_talent_emails()
 	seen_emails = set()  # Track emails in current import to catch duplicates
 	for idx, row in df.iterrows():
 		start_time = time.time()
@@ -2115,15 +2140,15 @@ def process_batch_with_session(df: pd.DataFrame, mapping: Dict, selected_job_ope
 	return batch_results
 
 #talent 3
-def process_import_data_with_session_talent(df: pd.DataFrame, mapping: Dict, session, batch_size: int = 100) -> Dict:
+def process_import_data_with_session_talent(df: pd.DataFrame, mapping: Dict, session, batch_size: int = 100, segment_id: str = None) -> Dict:
 	"""Process and insert talent import data with session tracking"""
 	results = {"success": 0, "failed": 0, "total": len(df), "logs": []}
-	existing_emails = get_existing_emails()
+	existing_emails = get_existing_talent_emails()
 	for start_idx in range(0, len(df), batch_size):
 		end_idx = min(start_idx + batch_size, len(df))
 		batch_df = df.iloc[start_idx:end_idx]
 		batch_results = process_batch_with_session_talent(
-			batch_df, mapping, existing_emails, start_idx, session
+			batch_df, mapping, existing_emails, start_idx, session, segment_id
 		)
 		
 		results["success"] += batch_results["success"]
@@ -2184,7 +2209,7 @@ def process_import_data_with_session_candidate(df: pd.DataFrame, mapping: Dict, 
 
 #talent 4
 def process_batch_with_session_talent(df: pd.DataFrame, mapping: Dict, 
-							  existing_emails: Set, start_offset: int = 0, session=None) -> Dict:
+							  existing_emails: Set, start_offset: int = 0, session=None, segment_id: str = None) -> Dict:
 	"""Process a single batch with session tracking for Mira Talent"""
 	batch_results = {
 		"success": 0,
@@ -2199,17 +2224,35 @@ def process_batch_with_session_talent(df: pd.DataFrame, mapping: Dict,
 		
 		try:
 			# Map fields
-			talent_data = map_row_data(row, mapping)
+			talent_data = map_row_data_talent(row, mapping)
 			
 			# Validate and process
 			processed_data = validate_and_process_talent(talent_data, existing_emails)
 			
-			# Create candidate document
+			# Create talent document
 			doc = frappe.get_doc({
 				"doctype": "Mira Talent",
 				**processed_data
 			})
 			doc.insert(ignore_permissions=True)
+			
+			# Create Mira Talent Pool record if segment_id is provided
+			if segment_id:
+				try:
+					pool_doc = frappe.get_doc({
+						"doctype": "Mira Talent Pool",
+						"talent_id": doc.name,
+						"segment_id": segment_id,
+						"added_at": frappe.utils.now_datetime(),
+						"added_by": frappe.session.user
+					})
+					pool_doc.insert(ignore_permissions=True)
+				except Exception as pool_error:
+					# Log error but don't fail the talent creation
+					frappe.log_error(
+						title="Talent Pool Creation Error",
+						message=f"Failed to add talent {doc.name} to segment {segment_id}: {str(pool_error)}"
+					)
 			
 			processing_time = time.time() - start_time
 			
@@ -2407,6 +2450,96 @@ def process_owner_id(owner: Any) -> Optional[str]:
 	if frappe.db.exists("User", owner_str):
 		return owner_str
 	return frappe.session.user
+
+
+def process_talent_source(source: Any) -> Optional[str]:
+	"""Validate and normalize talent source field
+	
+	Args:
+		source: The source value from import file
+		
+	Returns:
+		Valid source value or raises ValidationError
+		
+	Raises:
+		frappe.ValidationError: If source is not in allowed options
+	"""
+	if not source:
+		return None
+	
+	source_str = str(source).strip()
+	
+	# Get valid source options from Mira Talent doctype
+	meta = frappe.get_meta("Mira Talent")
+	source_field = meta.get_field("source")
+	
+	if not source_field or not source_field.options:
+		# If we can't get options, allow any value (fallback)
+		return source_str
+	
+	# Parse options (newline-separated string)
+	valid_sources = [opt.strip() for opt in source_field.options.split('\n') if opt.strip()]
+	
+	# Check if source value is in valid options (case-insensitive comparison)
+	source_lower = source_str.lower()
+	valid_sources_lower = {opt.lower(): opt for opt in valid_sources}
+	
+	if source_lower in valid_sources_lower:
+		# Return the correctly cased version from doctype
+		return valid_sources_lower[source_lower]
+	else:
+		# Source is not valid - raise error
+		valid_options_str = ", ".join([f"'{opt}'" for opt in valid_sources if opt])
+		raise frappe.ValidationError(
+			_("Invalid source value: '{0}'. Allowed values are: {1}").format(
+				source_str, valid_options_str
+			)
+		)
+
+
+def process_talent_crm_status(crm_status: Any) -> Optional[str]:
+	"""Validate and normalize talent crm_status field
+	
+	Args:
+		crm_status: The crm_status value from import file
+		
+	Returns:
+		Valid crm_status value or raises ValidationError
+		
+	Raises:
+		frappe.ValidationError: If crm_status is not in allowed options
+	"""
+	if not crm_status:
+		return None
+	
+	crm_status_str = str(crm_status).strip()
+	
+	# Get valid crm_status options from Mira Talent doctype
+	meta = frappe.get_meta("Mira Talent")
+	crm_status_field = meta.get_field("crm_status")
+	
+	if not crm_status_field or not crm_status_field.options:
+		# If we can't get options, allow any value (fallback)
+		return crm_status_str
+	
+	# Parse options (newline-separated string)
+	valid_statuses = [opt.strip() for opt in crm_status_field.options.split('\n') if opt.strip()]
+	
+	# Check if crm_status value is in valid options (case-insensitive comparison)
+	status_lower = crm_status_str.lower()
+	valid_statuses_lower = {opt.lower(): opt for opt in valid_statuses}
+	
+	if status_lower in valid_statuses_lower:
+		# Return the correctly cased version from doctype
+		return valid_statuses_lower[status_lower]
+	else:
+		# CRM Status is not valid - raise error
+		valid_options_str = ", ".join([f"'{opt}'" for opt in valid_statuses if opt])
+		raise frappe.ValidationError(
+			_("Invalid crm_status value: '{0}'. Allowed values are: {1}").format(
+				crm_status_str, valid_options_str
+			)
+		)
 
 #chung
 @frappe.whitelist()
