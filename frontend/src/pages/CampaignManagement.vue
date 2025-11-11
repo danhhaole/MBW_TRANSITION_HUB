@@ -241,21 +241,33 @@
         @select="handleTemplateSelection"
       />
 
-      <!-- Wizard cho tạo mới -->
-      <campaign-wizard
-        v-model="showCreateWizard"
+      <!-- New Wizards (Atomic Design) - Support both create and edit -->
+      <AttractionCampaignWizard
+        v-if="props.campaignType === 'ATTRACTION'"
+        :show="showCreateWizard || showEditWizard"
         :campaign-type="props.campaignType"
-        @success="handleCreateSuccess"
-        @draft-created="handleDraftCreated"
+        :edit-campaign-id="selectedCampaign?.name"
+        @close="handleWizardClose"
+        @success="handleWizardSuccess"
+        @campaign-created="handleCampaignCreated"
       />
 
-      <!-- Wizard cho chỉnh sửa -->
-      <campaign-wizard
-        v-model="showEditForm"
-        :editing-campaign="selectedCampaign"
+      <NurturingCampaignWizard
+        v-if="props.campaignType === 'NURTURING'"
+        :show="showCreateWizard || showEditWizard"
         :campaign-type="props.campaignType"
-        @success="handleEditSuccess"
-        @draft-created="handleDraftCreated"
+        :edit-campaign-id="selectedCampaign?.name"
+        @close="handleWizardClose"
+        @success="handleWizardSuccess"
+      />
+
+      <RecruitmentCampaignWizard
+        v-if="props.campaignType === 'RECRUITMENT'"
+        :show="showCreateWizard || showEditWizard"
+        :campaign-type="props.campaignType"
+        :edit-campaign-id="selectedCampaign?.name"
+        @close="handleWizardClose"
+        @success="handleWizardSuccess"
       />
 
       <!-- Toast notifications -->
@@ -345,6 +357,11 @@ import { Button, Breadcrumbs, Select, Dialog } from "frappe-ui";
 import LayoutHeader from "@/components/LayoutHeader.vue";
 import Loading from "@/components/Loading.vue";
 import { useCampaignStore } from "@/stores/campaign";
+
+// New Campaign Wizards (Atomic Design)
+import AttractionCampaignWizard from "@/pages/AttractionCampaignWizard.vue";
+import NurturingCampaignWizard from "@/pages/NurturingCampaignWizard.vue";
+import RecruitmentCampaignWizard from "@/pages/RecruitmentCampaignWizard.vue";
 // import AutomationSidebar from "@/components/AutomationSidebar.vue";
 // import { useAutomationStatsStore } from "@/stores/automationStats";
 
@@ -382,7 +399,7 @@ const viewMode = ref("list");
 const showMethodSelection = ref(false); // Modal chọn phương thức tạo
 const showTemplateSelection = ref(false); // Modal chọn template
 const showCreateWizard = ref(false); // Wizard cho tạo mới
-const showEditForm = ref(false); // Form cho chỉnh sửa
+const showEditWizard = ref(false); // Wizard cho edit
 const showViewDialog = ref(false);
 const selectedCampaign = ref(null);
 const refreshTrigger = ref(0);
@@ -515,7 +532,9 @@ const openCreateDialog = () => {
 
 const handleMethodSelection = (method) => {
   if (method === 'manual') {
-    // Open wizard for manual creation
+    // Close method selection modal
+    showMethodSelection.value = false;
+    // Open new wizard for manual creation
     showCreateWizard.value = true;
   } else if (method === 'template') {
     // Open template selection
@@ -538,7 +557,7 @@ const handleCreateFromSidebar = (section) => {
 
 const openEditDialog = (campaign) => {
   selectedCampaign.value = campaign;
-  showEditForm.value = true;
+  showEditWizard.value = true;
 };
 
 const openViewDialog = (campaign) => {
@@ -548,13 +567,11 @@ const openViewDialog = (campaign) => {
 
 const editFromView = () => {
   showViewDialog.value = false;
-  showEditForm.value = true;
+  showEditWizard.value = true;
 };
 
-const handleCreateSuccess = async (event) => {
-  const { action, data } = event;
-
-  console.log("Create wizard success:", { action, data });
+const handleCreateSuccess = async (campaign) => {
+  console.log("Create wizard success:", campaign);
   console.log("Campaigns before reload:", campaigns.value.length);
 
   // Close wizard
@@ -570,7 +587,8 @@ const handleCreateSuccess = async (event) => {
   console.log("Campaigns after reload:", campaigns.value.length);
 
   // Show success message
-  showToast(__(`Campaign "${data.campaign_name}" created successfully!`), "success");
+  const campaignName = campaign?.campaign_name || campaign?.name || 'Campaign';
+  showToast(__(`Campaign "${campaignName}" created successfully!`), "success");
 };
 
 const handleDraftCreated = async (draftCampaign) => {
@@ -582,28 +600,34 @@ const handleDraftCreated = async (draftCampaign) => {
   console.log("📋 Campaign list refreshed after draft creation");
 };
 
-const handleEditSuccess = async (event) => {
-  const { action, data } = event;
-
-  console.log("Edit form success:", { action, data });
-  console.log("Campaigns before reload:", campaigns.value.length);
-
-  // Close form
-  showEditForm.value = false;
+const handleWizardClose = () => {
+  showCreateWizard.value = false;
+  showEditWizard.value = false;
   selectedCampaign.value = null;
+};
+
+const handleWizardSuccess = async (campaign) => {
+  console.log("Wizard success:", campaign);
+  
+  const isEdit = showEditWizard.value;
+  
+  // Close wizard
+  handleWizardClose();
 
   // Reload data
   await loadCampaignsWithFilters();
 
-  console.log("Campaigns after reload:", campaigns.value.length);
-
   // Show success message
-  showToast(__(`Campaign "${data.campaign_name}" updated successfully!`), "success");
+  const campaignName = campaign?.campaign_name || campaign?.name || 'Campaign';
+  const action = isEdit ? 'updated' : 'created';
+  showToast(__(`Campaign "${campaignName}" ${action} successfully!`), "success");
 };
 
-const handleFormCancel = () => {
-  showEditForm.value = false;
-  selectedCampaign.value = null;
+const handleCampaignCreated = async (campaign) => {
+  console.log("Campaign created in Step 1:", campaign);
+  
+  // Reload campaign list to show new campaign
+  await loadCampaignsWithFilters();
 };
 
 const handleClearSearch = () => {

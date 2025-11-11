@@ -3,6 +3,7 @@
     <label class="block" :class="labelClasses" v-if="attrs.label">
       {{ __(attrs.label) }}
     </label>
+
     <Autocomplete
       ref="autocomplete"
       :options="options.data"
@@ -93,6 +94,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  searchfield: {
+    type: String,
+    default: '',
+  },
 })
 
 const emit = defineEmits(['update:modelValue', 'change'])
@@ -139,15 +144,18 @@ const options = createResource({
     txt: text.value,
     doctype: props.doctype,
     filters: props.filters,
+    searchfield: ''
   },
   transform: (data) => {
     let allData = data.map((option) => {
       return {
-        label: option.label || option.value,
+        label: option.description || option.label || option.value,
         value: option.value,
         description: option.description,
       }
     })
+
+    
     if (!props.hideMe && props.doctype == 'User') {
       allData.unshift({
         label: '@me',
@@ -155,6 +163,10 @@ const options = createResource({
       })
     }
     return allData
+  },
+
+  onSuccess: (data) => {
+    console.log(data)
   },
 })
 
@@ -172,6 +184,7 @@ function reload(val) {
       txt: val,
       doctype: props.doctype,
       filters: props.filters,
+      searchfield: props.searchfield
     },
   })
   options.reload()

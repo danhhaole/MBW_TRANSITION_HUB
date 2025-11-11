@@ -270,6 +270,24 @@ export const useCampaignStore = defineStore('campaign', {
       }
     },
 
+    // Fetch campaign by ID (alias for getCampaignDetails with standard return format)
+    async fetchCampaignById(campaignId) {
+      try {
+        const campaign = await this.getCampaignDetails(campaignId)
+        return {
+          success: true,
+          data: campaign,
+          error: null
+        }
+      } catch (error) {
+        return {
+          success: false,
+          data: null,
+          error: error.message || 'Failed to fetch campaign'
+        }
+      }
+    },
+
     // Create new campaign with validation
     async submitNewCampaign(formData) {
       try {

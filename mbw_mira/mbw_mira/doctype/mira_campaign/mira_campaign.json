@@ -8,7 +8,7 @@
   "campaign_name",
   "type",
   "status",
-  "target_segment",
+  "target_pool",
   "source_type",
   "source",
   "source_file",
@@ -53,13 +53,6 @@
    "fieldtype": "Select",
    "label": "Status",
    "options": "DRAFT\nACTIVE\nPAUSED\nARCHIVED"
-  },
-  {
-   "description": "(Foreign Key -> Mira Segment) Ph\u00e2n kh\u00fac m\u1ee5c ti\u00eau",
-   "fieldname": "target_segment",
-   "fieldtype": "Link",
-   "label": "Target Segment",
-   "options": "Mira Segment"
   },
   {
    "fieldname": "source_type",
@@ -201,11 +194,18 @@
    "fieldtype": "Select",
    "label": "Interaction Method",
    "options": "EMAIL\nZALO_ZNS\nZALO_CARE"
+  },
+  {
+   "description": "(Foreign Key -> Mira Segment) Ph\u00e2n kh\u00fac m\u1ee5c ti\u00eau",
+   "fieldname": "target_pool",
+   "fieldtype": "Link",
+   "label": "Target Segment",
+   "options": "Mira Segment"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-07 11:05:53.575310",
+ "modified": "2025-11-11 11:32:56.606763",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Campaign",

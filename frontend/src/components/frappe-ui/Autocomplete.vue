@@ -96,6 +96,7 @@
                 <div v-if="groups.length === 0 && !loading" class="px-3 py-2 text-sm text-gray-500">
                   Không có tùy chọn nào
                 </div>
+
                 <div
                   v-for="group in groups"
                   :key="group.key"
@@ -145,8 +146,8 @@
                           <span class="block text-gray-700 font-medium">
                             {{ option.value || '' }} <!-- Hiển thị value trên -->
                           </span>
-                          <span class="block text-xs text-gray-500" v-if="option.title">
-                            {{ option.title || '' }} <!-- Hiển thị title dưới -->
+                          <span class="block text-xs text-gray-500" v-if="option.title || option.label || option.description">
+                            {{ option.title || option.label || option.description || '' }} <!-- Hiển thị title dưới -->
                           </span>
                         </div>
                       </div>
@@ -369,7 +370,7 @@ const sanitizeOptions = (options) => {
   if (!options) return []
   return options.map((option) => {
     return typeof option === 'object' && option !== null
-      ? { label: option.title || option.label || '', value: option.value || option.name || '', title: option.title || '', ...option }
+      ? { label: option.description || option.title || option.label || '', value: option.value || option.name || '', title: option.title || '', ...option }
       : { label: option.toString(), value: option }
   })
 }

@@ -80,6 +80,11 @@ const routes = [
 	{ path: '/nurture', name: 'NurtureCampaign', component: ()=>import('@/pages/CampaignManagement.vue'), props: route => ({ campaignType: route.query.type || 'NURTURING' }) },
 	{ path: '/recruitment', name: 'RecruitmentCampaign', component: ()=>import('@/pages/CampaignManagement.vue'), props: route => ({ campaignType: route.query.type || 'RECRUITMENT' }) },
 
+	// New Campaign Wizards (Atomic Design)
+	{ path: '/attraction/new', name: 'AttractionCampaignWizard', component: ()=>import('@/pages/AttractionCampaignWizard.vue'), props: { campaignType: 'ATTRACTION' } },
+	{ path: '/nurture/new', name: 'NurtureCampaignWizard', component: ()=>import('@/pages/NurturingCampaignWizard.vue'), props: { campaignType: 'NURTURING' } },
+	{ path: '/recruitment/new', name: 'RecruitmentCampaignWizard', component: ()=>import('@/pages/RecruitmentCampaignWizard.vue'), props: { campaignType: 'RECRUITMENT' } },
+
 	// Mira Ladi Page Management
 	// { 
 	// 	path: '/ladi-pages', 
