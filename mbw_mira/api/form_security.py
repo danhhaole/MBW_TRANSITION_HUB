@@ -85,24 +85,16 @@ def submit_form():
     user_agent = frappe.local.request.headers.get("User-Agent", "")
 
     # Lấy URL form gửi lên
-    form_url = data.get("form_url", "")
 
-    # Tìm config theo URL
-    form_config = frappe.db.get_value(
-        "Mira Form Config",
-        {"domain_or_url": ["like", form_url.split("?")[0] + "%"], "is_active": 1},
-        ["form_id", "default_source_channel", "default_talent_pool"],
-        as_dict=True
-    ) or {}
 
     # Tạo document Mira Form Attraction
     doc = frappe.get_doc({
         "doctype": "Mira Form Attraction",
 
         # Form Identification
-        "form_id": form_config.get("form_id") or "unknown_form",
-        "source_channel": form_config.get("default_source_channel") or data.get("source_channel"),
-        "talent_pool": form_config.get("default_talent_pool") or data.get("talent_pool"),
+        "form_id": data.get("form_id") or "unknown_form",
+        "source_channel": data.get("source_channel"),
+        "talent_pool": data.get("talent_pool"),
 
         # User Data
         "full_name": data.get("full_name"),
