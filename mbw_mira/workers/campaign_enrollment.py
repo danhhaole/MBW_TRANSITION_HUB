@@ -10,6 +10,7 @@ def attraction_campaign(campaign_id):
     campaign = frappe.get_doc("Mira Campaign", campaign_id)
     #Lấy Mira campaign social
     campaign_socials = frappe.get_all("Mira Campaign Social",filters={"campaign_id":campaign_id,"status":"Pending"},fields=["*"])
+    print(campaign_socials)
     if campaign_socials:
         for cps in campaign_socials:
             if cps:

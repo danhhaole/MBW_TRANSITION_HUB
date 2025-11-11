@@ -1,6 +1,7 @@
 import frappe
 from datetime import datetime
 
+
 #Task quét chiến dich thu hút để post bài
 def run_attraction_campaign():
     """
@@ -21,7 +22,7 @@ def run_attraction_campaign():
     
     for c in campaigns:
         frappe.enqueue(
-            "mbw_mira.workers.task_campaign.attraction_campaign",
+            "mbw_mira.workers.campaign_enrollment.attraction_campaign",
             campaign_id=c.name,
             job_name=c.name,
             queue="default",
@@ -49,7 +50,7 @@ def run_nurture_campaign():
 
     for c in campaigns:
         frappe.enqueue(
-            "mbw_mira.workers.task_campaign.nurture_campaign",
+            "mbw_mira.workers.campaign_enrollment.nurture_campaign",
             campaign_id=c.name,
             job_name=c.name,
             queue="default",
@@ -77,7 +78,7 @@ def run_recruitment_campaign():
 
     for c in campaigns:
         frappe.enqueue(
-            "mbw_mira.workers.task_campaign.recruitment_campaign",
+            "mbw_mira.workers.campaign_enrollment.recruitment_campaign",
             campaign_id=c.name,
             job_name=c.name,
             queue="default",
