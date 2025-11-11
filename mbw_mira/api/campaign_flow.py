@@ -294,3 +294,90 @@ def create_or_update_flow(campaign_id, trigger):
             "success": False,
             "message": str(e)
         }
+
+
+@frappe.whitelist()
+def sync_campaign_flows(campaign_id, triggers):
+    """
+    Sync all flows for a campaign in one API call
+    - Create new flows for new triggers
+    - Update existing flows for changed triggers
+    - Delete flows that are no longer in triggers
+    
+    Args:
+        campaign_id: Mira Campaign ID
+        triggers: List of trigger configurations
+    
+    Returns:
+        {
+            "success": True,
+            "created": 2,
+            "updated": 1,
+            "deleted": 1
+        }
+    """
+    try:
+        # Parse triggers if string
+        if isinstance(triggers, str):
+            triggers = json.loads(triggers)
+        
+        # Map trigger types
+        trigger_type_map = {
+            "MESSAGE_RECEIVED": "ON_USER_RESPONSE",
+            "LINK_CLICKED": "ON_LINK_CLICK",
+            "COMMENT_RECEIVED": "ON_USER_RESPONSE"
+        }
+        
+        # Get existing flows
+        existing_flows = frappe.get_all(
+            "Mira Flow",
+            filters={"campaign_id": campaign_id},
+            fields=["name"]
+        )
+        
+        # Track current trigger types
+        current_trigger_types = set()
+        for trigger in triggers:
+            trigger_type = trigger.get('trigger_type')
+            if trigger_type:
+                flow_trigger_type = trigger_type_map.get(trigger_type, "CUSTOM_EVENT")
+                current_trigger_types.add(flow_trigger_type)
+        
+        # Delete flows that are no longer in triggers
+        deleted_count = 0
+        for flow_info in existing_flows:
+            flow = frappe.get_doc("Mira Flow", flow_info.name)
+            if flow.trigger_id and len(flow.trigger_id) > 0:
+                flow_trigger_type = flow.trigger_id[0].trigger_type
+                
+                if flow_trigger_type not in current_trigger_types:
+                    frappe.delete_doc("Mira Flow", flow.name, ignore_permissions=True)
+                    deleted_count += 1
+        
+        # Create/Update flows
+        created_count = 0
+        updated_count = 0
+        
+        for trigger in triggers:
+            result = create_or_update_flow(campaign_id, trigger)
+            if result.get("success"):
+                if result.get("action") == "created":
+                    created_count += 1
+                elif result.get("action") == "updated":
+                    updated_count += 1
+        
+        frappe.db.commit()
+        
+        return {
+            "success": True,
+            "created": created_count,
+            "updated": updated_count,
+            "deleted": deleted_count
+        }
+        
+    except Exception as e:
+        frappe.log_error(f"Error in sync_campaign_flows: {str(e)}")
+        return {
+            "success": False,
+            "message": str(e)
+        }

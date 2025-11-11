@@ -11,11 +11,17 @@
             {{ __('Campaign Settings') }}
           </h3>
           <p class="text-sm text-gray-500">
-            {{ __('Configure triggers and automated actions for your campaign') }}
+            {{ __('Configure schedule, triggers and automated actions for your campaign') }}
           </p>
         </div>
       </div>
     </div>
+
+    <!-- Campaign Schedule -->
+    <CampaignSchedule
+      :start-date="startDate"
+      @update:start-date="$emit('update:startDate', $event)"
+    />
 
     <!-- Triggers Section -->
     <div class="bg-white rounded-lg border border-gray-200 p-6">
@@ -143,7 +149,7 @@
                         {{ __('Add Action') }}
                       </Button>
                     </template>
-                    <template #body-main>
+                    <template #body-main="{ close }">
                       <div class="w-72 bg-white rounded-lg border border-gray-200">
                         <div class="p-3 border-b border-gray-200">
                           <h4 class="text-xs font-semibold text-gray-900">{{ __('Select Action Type') }}</h4>
@@ -152,7 +158,7 @@
                           <button
                             v-for="option in actionTypeOptions"
                             :key="option.value"
-                            @click="addActionToTrigger(index, option.value)"
+                            @click="close() ;addActionToTrigger(index, option.value)"
                             class="w-full text-left px-3 py-2 rounded hover:bg-gray-50 transition-colors group"
                           >
                             <div class="flex items-center space-x-2">
@@ -355,11 +361,16 @@ import { FeatherIcon, Button, FormControl, Dialog, TextEditor, Popover } from 'f
 import DelaySelector from '../molecules/DelaySelector.vue'
 import MessengerContentEditor from '../molecules/MessengerContentEditor.vue'
 import ZaloContentEditor from '../molecules/ZaloContentEditor.vue'
+import CampaignSchedule from '../molecules/CampaignSchedule.vue'
 
 const props = defineProps({
   triggers: {
     type: Array,
     default: () => []
+  },
+  startDate: {
+    type: String,
+    default: ''
   },
   showError: {
     type: Boolean,
@@ -367,7 +378,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['update:triggers'])
+const emit = defineEmits(['update:triggers', 'update:startDate'])
 
 // Local state with sorting
 const triggerOrder = ['MESSAGE_RECEIVED', 'LINK_CLICKED', 'COMMENT_RECEIVED']
