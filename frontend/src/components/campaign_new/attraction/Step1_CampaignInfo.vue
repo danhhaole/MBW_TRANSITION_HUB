@@ -10,7 +10,7 @@
         :objective="objective"
         :show-error="showError"
         @update:campaign-name="$emit('update:campaignName', $event)"
-        @update:objective="$emit('update:objective', $event)"
+        @update:objective="$emit('update:description', $event)"
       />
     </div>
 
@@ -77,10 +77,14 @@ defineProps({
   showError: {
     type: Boolean,
     default: false
+  },
+  description: {
+    type: String,
+    default: ''
   }
 })
 
-defineEmits(['update:campaignName', 'update:objective', 'update:targetPool'])
+defineEmits(['update:campaignName', 'update:objective', 'update:targetPool', 'update:description'])
 
 </script>
 

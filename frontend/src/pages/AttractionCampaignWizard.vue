@@ -63,8 +63,10 @@
         <CampaignStep3
           v-else-if="currentStep === 3"
           :triggers="campaignData.triggers"
+          :start-date="campaignData.start_date"
           :show-error="showValidationError"
           @update:triggers="campaignData.triggers = $event"
+          @update:start-date="campaignData.start_date = $event"
         />
       </div>
     </div>
@@ -113,6 +115,7 @@ const campaignData = ref({
   campaign_name: '',
   description: '',
   target_pool: '',
+  start_date: '',
   // Step 2: Content & Channels
   selected_channels: [],
   landing_page: '',
@@ -229,6 +232,7 @@ const saveDraft = async () => {
         campaign_name: campaignData.value.campaign_name,
         description: campaignData.value.description,
         target_pool: campaignData.value.target_pool,
+        start_date: campaignData.value.start_date,
         type: campaignData.value.type,
         status: 'DRAFT'
       })
@@ -252,7 +256,8 @@ const saveDraft = async () => {
           fieldname: {
             campaign_name: campaignData.value.campaign_name,
             description: campaignData.value.description,
-            target_pool: campaignData.value.target_pool
+            target_pool: campaignData.value.target_pool,
+            start_date: campaignData.value.start_date
           }
         })
         console.log('✅ Campaign info updated')
@@ -470,72 +475,31 @@ const finalizeCampaign = async () => {
 
     console.log('Campaign data:', campaignData.value)
 
-    // Step 2: Sync flows with triggers (create/update/delete)
+    // Step 2: Update campaign settings (start_date)
     try {
-      // Get existing flows
-      const existingFlows = await call('frappe.client.get_list', {
-        doctype: 'Mira Flow',
-        filters: { campaign_id: campaignData.value.name },
-        fields: ['name', 'title']
+      await call('frappe.client.set_value', {
+        doctype: 'Mira Campaign',
+        name: campaignData.value.name,
+        fieldname: {
+          start_date: campaignData.value.start_date
+        }
+      })
+      console.log('✅ Campaign start_date updated')
+    } catch (error) {
+      console.error('❌ Error updating campaign settings:', error)
+    }
+
+    // Step 3: Sync all flows with triggers in one API call
+    try {
+      console.log('🔄 Syncing flows with triggers...')
+      
+      const result = await call('mbw_mira.api.campaign_flow.sync_campaign_flows', {
+        campaign_id: campaignData.value.name,
+        triggers: campaignData.value.triggers || []
       })
       
-      const currentTriggerTypes = (campaignData.value.triggers || []).map(t => t.trigger_type)
-      const triggerTypeMap = {
-        "MESSAGE_RECEIVED": "ON_USER_RESPONSE",
-        "LINK_CLICKED": "ON_LINK_CLICK",
-        "COMMENT_RECEIVED": "ON_USER_RESPONSE"
-      }
-      
-      // Delete flows that are no longer in triggers
-      for (const flow of existingFlows) {
-        const flowDoc = await call('frappe.client.get', {
-          doctype: 'Mira Flow',
-          name: flow.name
-        })
-        
-        if (flowDoc.trigger_id && flowDoc.trigger_id.length > 0) {
-          const flowTriggerType = flowDoc.trigger_id[0].trigger_type
-          
-          // Find matching trigger type
-          let hasMatchingTrigger = false
-          for (const triggerType of currentTriggerTypes) {
-            if (triggerTypeMap[triggerType] === flowTriggerType) {
-              hasMatchingTrigger = true
-              break
-            }
-          }
-          
-          if (!hasMatchingTrigger) {
-            // Delete flow
-            console.log(`🗑️ Deleting flow ${flow.name} (no matching trigger)`)
-            await call('frappe.client.delete', {
-              doctype: 'Mira Flow',
-              name: flow.name
-            })
-          }
-        }
-      }
-      
-      // Create/Update flows from triggers
-      if (campaignData.value.triggers && campaignData.value.triggers.length > 0) {
-        console.log('🔄 Syncing flows with triggers...')
-        
-        for (const trigger of campaignData.value.triggers) {
-          try {
-            // Create or update flow for this trigger
-            const result = await call('mbw_mira.api.campaign_flow.create_or_update_flow', {
-              campaign_id: campaignData.value.name,
-              trigger: trigger
-            })
-            
-            if (result && result.flow_id) {
-              console.log(`✅ Flow ${result.flow_id} synced for ${trigger.trigger_type}`)
-            }
-          } catch (error) {
-            console.error('❌ Error syncing flow:', error)
-            // Continue with other flows
-          }
-        }
+      if (result && result.success) {
+        console.log(`✅ Flows synced: ${result.created || 0} created, ${result.updated || 0} updated, ${result.deleted || 0} deleted`)
       }
     } catch (error) {
       console.error('❌ Error syncing flows:', error)

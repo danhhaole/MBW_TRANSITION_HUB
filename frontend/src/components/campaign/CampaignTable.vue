@@ -87,9 +87,17 @@
 
               <!-- Trạng thái -->
               <td class="py-4 px-4">
-                <span :class="getStatusBadgeClass(campaign.status)" class="text-xs px-2 py-1 rounded-full">
-                  {{ getStatusText(campaign.status) }}
-                </span>
+                <select
+                  :value="campaign.status"
+                  @change="handleStatusChange(campaign, $event.target.value)"
+                  :class="getStatusSelectClass(campaign.status)"
+                  class="text-xs px-2 py-1 rounded-full border-0 font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-1"
+                >
+                  <option value="DRAFT">{{ __('Draft') }}</option>
+                  <option value="ACTIVE">{{ __('Active') }}</option>
+                  <option value="PAUSED">{{ __('Paused') }}</option>
+                  <option value="ARCHIVED">{{ __('Archived') }}</option>
+                </select>
               </td>
 
               <!-- Actions -->
@@ -251,12 +259,36 @@ const props = defineProps({
 
 // Emits
 const emit = defineEmits([
-  'edit', 'view', 'delete', 'page-change'
+  'edit', 'view', 'delete', 'page-change', 'status-change'
 ])
 
 // Refs
 const showQrDialog = ref(false)
 const qrData = ref({ url: '', image: '' })
+
+// Handle status change
+const handleStatusChange = async (campaign, newStatus) => {
+  try {
+    await call('frappe.client.set_value', {
+      doctype: 'Mira Campaign',
+      name: campaign.name,
+      fieldname: 'status',
+      value: newStatus
+    })
+    
+    // Update local data
+    campaign.status = newStatus
+    
+    // Emit event to parent
+    emit('status-change', { campaign, newStatus })
+    
+    console.log(`✅ Status updated to ${newStatus}`)
+  } catch (error) {
+    console.error('❌ Error updating status:', error)
+    // Revert on error
+    location.reload()
+  }
+}
 
 // Methods for UI
 const getStatusBadgeClass = (status) => {
@@ -269,6 +301,17 @@ const getStatusBadgeClass = (status) => {
     'CANCELLED': 'bg-orange-100 text-orange-800'
   }
   return classes[status] || 'bg-gray-100 text-gray-800'
+}
+
+// Status select styling
+const getStatusSelectClass = (status) => {
+  const classes = {
+    'DRAFT': 'bg-gray-100 text-gray-800 focus:ring-gray-500',
+    'ACTIVE': 'bg-blue-100 text-blue-800 focus:ring-blue-500',
+    'PAUSED': 'bg-yellow-100 text-yellow-800 focus:ring-yellow-500',
+    'ARCHIVED': 'bg-green-100 text-green-800 focus:ring-green-500'
+  }
+  return classes[status] || 'bg-gray-100 text-gray-800 focus:ring-gray-500'
 }
 
 const getStatusText = (status) => {
