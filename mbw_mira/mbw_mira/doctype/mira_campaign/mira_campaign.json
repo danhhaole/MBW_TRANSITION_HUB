@@ -15,6 +15,7 @@
   "source_target",
   "criteria",
   "description",
+  "ladipage_url",
   "column_break_kxph",
   "is_active",
   "owner_id",
@@ -140,11 +141,16 @@
    "fieldtype": "Link",
    "label": "Target Pool",
    "options": "Mira Segment"
+  },
+  {
+   "fieldname": "ladipage_url",
+   "fieldtype": "Small Text",
+   "label": "LadiPage Url"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-11 13:42:04.762280",
+ "modified": "2025-11-11 13:56:09.091670",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Campaign",

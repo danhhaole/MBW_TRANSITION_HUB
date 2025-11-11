@@ -10,7 +10,7 @@ def run_attraction_campaign():
     campaigns = frappe.get_all(
         "Mira Campaign",
         filters={
-            "is_active": 1,
+            # "is_active": 1,
             "status": "ACTIVE",
             "start_date": ("<=", today),
             # "scheduled_at": (">=", today),
@@ -18,7 +18,7 @@ def run_attraction_campaign():
         },
         fields=["name", "campaign_name"]
     )
-
+    
     for c in campaigns:
         frappe.enqueue(
             "mbw_mira.workers.task_campaign.attraction_campaign",
@@ -38,7 +38,7 @@ def run_nurture_campaign():
     campaigns = frappe.get_all(
         "Mira Campaign",
         filters={
-            "is_active": 1,
+            # "is_active": 1,
             "status": "ACTIVE",
             "start_date": ("<=", today),
             # "scheduled_at": (">=", today),
@@ -66,7 +66,7 @@ def run_recruitment_campaign():
     campaigns = frappe.get_all(
         "Mira Campaign",
         filters={
-            "is_active": 1,
+            # "is_active": 1,
             "status": "ACTIVE",
             "start_date": ("<=", today),
             # "scheduled_at": (">=", today),
