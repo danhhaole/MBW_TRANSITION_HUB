@@ -56,7 +56,7 @@ def retry_failed_files(session_name: str):
                 "mbw_mira.mbw_mira.doctype.mira_resumeuploadsession.mira_resumeuploadsession.process_resume_files",
                 session_name=session_name,
                 queue="default",
-                job_name=f"process retry_resume_{session_name}"
+                job_id=f"process_retry_resume_{session_name}"
             )
             retried += 1
 
@@ -110,7 +110,7 @@ def upload_resumes():
 
         files = frappe.request.files.getlist("file")
         note = frappe.request.form.get("note", "")
-        job_opening = frappe.request.form.get("job_opening", "")
+        segment = frappe.request.form.get("segment", "")
         
         # Validate all files are PDFs
         for file in files:
@@ -127,7 +127,7 @@ def upload_resumes():
         session.success_count = 0
         session.failed_count = 0
         session.duplicated_count = 0
-        session.job_opening = job_opening
+        session.segment = segment
         session.save(ignore_permissions=True)
 
         # Process each file
@@ -157,7 +157,7 @@ def upload_resumes():
         frappe.enqueue(
             "mbw_mira.mbw_mira.doctype.mira_resumeuploadsession.mira_resumeuploadsession.process_resume_files",
             queue="short",
-            job_name=f"process_resume_{session.name}",
+            job_id=f"process_resume_{session.name}",
             session_name=session.name
         )
 
@@ -179,7 +179,16 @@ def process_resume_files(session_name):
     try:
         print('========================= session_name 1: ', session_name, flush=True)
         session = frappe.get_doc("Mira ResumeUploadSession", session_name)
+        print(f'========================= session loaded - segment: {session.segment}', flush=True)
+        print(f'========================= session data: {session.as_dict()}', flush=True)
         session.status = "Processing"
+        
+        # Log session start
+        session.append("logs", {
+            "timestamp": now(),
+            "log_type": "Info",
+            "message": f"Started processing {len(session.files)} file(s)" + (f" for segment {session.segment}" if session.segment else "")
+        })
         session.save(ignore_permissions=True)
 
         for file in session.files:
@@ -198,8 +207,8 @@ def process_resume_files(session_name):
                     data = candidate_data.get("data")
                     email = data.get("personal_info", {}).get("can_email")
                     filters = {"email": email}
-                    # if session.job_opening:
-                    #     filters.update({"job_opening_id": session.job_opening})
+                    # if session.segment:
+                    #     filters.update({"segment_id": session.segment})
                     
                     existing = email and frappe.db.exists("Mira Talent", filters)
                     if existing:
@@ -214,14 +223,15 @@ def process_resume_files(session_name):
                         print('========================= data 1: ', data, flush=True)
                         print('========================= full_name: ', data.get("personal_info", {}).get("can_full_name"), flush=True)
                         candidate.full_name = data.get("personal_info", {}).get("can_full_name")
+                        candidate.email = data.get("personal_info", {}).get("can_email")
                         
                         # Add child tables
                         # for table in ["candidate_work_experience", "candidate_project", "candidate_skill",
                         #             "candidate_certification", "candidate_award", "candidate_course"]:
                         #     for row in data.get(table, []):
                         #         candidate.append(table, row)
-                        # if session.job_opening:
-                        #     candidate.job_opening_id= session.job_opening
+                        # if session.segment:
+                        #     candidate.segment_id= session.segment
                         candidate.insert(ignore_permissions=True)
                         frappe.db.commit()
                         
@@ -229,6 +239,43 @@ def process_resume_files(session_name):
                         file.talent_id = candidate.name
                         file.processed_at = now()
                         session.success_count += 1
+                        
+                        # Add talent to segment pool if segment is selected
+                        print(f'========================= session.segment: {session.segment}', flush=True)
+                        if session.segment:
+                            try:
+                                print(f'========================= Creating talent pool for {candidate.name} in segment {session.segment}', flush=True)
+                                talent_pool = frappe.new_doc("Mira Talent Pool")
+                                talent_pool.talent_id = candidate.name
+                                talent_pool.segment_id = session.segment
+                                talent_pool.added_at = now()
+                                talent_pool.added_by = session.upload_by
+                                print(f'========================= Inserting talent pool: {talent_pool.as_dict()}', flush=True)
+                                talent_pool.insert(ignore_permissions=True)
+                                frappe.db.commit()
+                                print(f'========================= Talent pool created successfully: {talent_pool.name}', flush=True)
+                                
+                                # Log the talent pool assignment
+                                session.append("logs", {
+                                    "timestamp": now(),
+                                    "log_type": "Success",
+                                    "message": f"Added talent {candidate.full_name} ({candidate.name}) to segment pool {session.segment}",
+                                    "talent_id": candidate.name,
+                                    "segment_id": session.segment
+                                })
+                            except Exception as pool_error:
+                                # Log the error but don't fail the entire process
+                                print(f'========================= ERROR creating talent pool: {str(pool_error)}', flush=True)
+                                import traceback
+                                print(f'========================= Traceback: {traceback.format_exc()}', flush=True)
+                                session.append("logs", {
+                                    "timestamp": now(),
+                                    "log_type": "Error",
+                                    "message": f"Failed to add talent {candidate.name} to segment pool: {str(pool_error)}",
+                                    "talent_id": candidate.name,
+                                    "segment_id": session.segment
+                                })
+                                frappe.log_error(message=str(pool_error), title=f"Talent Pool Assignment Error - {candidate.name}")
 
             except Exception as e:
                 file.status = "Error"
@@ -240,6 +287,13 @@ def process_resume_files(session_name):
             
         frappe.publish_realtime('resume_upload_update', {'session_name': session_name})
         session.status = "Completed"
+        
+        # Log session completion
+        session.append("logs", {
+            "timestamp": now(),
+            "log_type": "Success",
+            "message": f"Processing completed: {session.success_count} successful, {session.failed_count} failed, {session.duplicated_count} duplicates"
+        })
         session.save(ignore_permissions=True)
 
     except Exception as e:
@@ -255,7 +309,7 @@ def get_upload_history():
         "Mira ResumeUploadSession",
         fields=[
             "name", "upload_by", "upload_at", "status", "total_files",
-            "success_count", "failed_count", "duplicated_count", "note", "job_opening"
+            "success_count", "failed_count", "duplicated_count", "note", "segment"
         ],
         order_by="upload_at desc",
         limit=50

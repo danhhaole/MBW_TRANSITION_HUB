@@ -12,7 +12,7 @@
                 <div class="mb-4">
                     <h4 class="font-sm font-bold">{{ __("Select Segment (Optional)") }}</h4>
                     <div>
-                        <Link :doctype="'Mira Segment'" v-model="selected_segment" :placeholder="__('Select segment')" />
+                        <Link :doctype="'Mira Segment'" v-model="selected_segment" :searchfield="'description'" :placeholder="__('Select segment')" />
                     </div>
                 </div>
                 <!-- Dropzone and File Input -->
@@ -270,7 +270,7 @@ const uploadFiles = async () => {
         
         // Add other data
         formData.append('note', '');
-        formData.append('job_opening', selected_segment.value || '');
+        formData.append('segment', selected_segment.value || '');
 
         const response = await fetch('/api/method/mbw_mira.mbw_mira.doctype.mira_resumeuploadsession.mira_resumeuploadsession.upload_resumes', {
             method: 'POST',
@@ -285,6 +285,7 @@ const uploadFiles = async () => {
         if (result.message && result.message.status === 'success') {
             showSuccess(__('Upload session {0} started. Processing will run in the background.', [result.message.session_name]))
             selectedFiles.value = [];
+            selected_segment.value = null;
             fetchHistory();
         } else {
             throw new Error(result.message?.message || 'Unknown error');

@@ -146,7 +146,9 @@
 										<div
 											:class="[
 												'text-lg font-bold',
-												(segment.overall_potential_score || 0) === 0 ? 'text-red-600' : 'text-gray-900'
+												(segment.overall_potential_score || 0) === 0 ? 'text-red-600' : 
+												(segment.overall_potential_score || 0) >= 1 && (segment.overall_potential_score || 0) <= 50 ? 'text-yellow-600' : 
+												'text-green-600'
 											]"
 										>
 											{{ segment.overall_potential_score || 0 }}
@@ -159,7 +161,9 @@
 										<div
 											:class="[
 												'text-lg font-bold',
-												(segment.high_rate || 0) === 0 ? 'text-red-600' : 'text-gray-900'
+												(segment.high_rate || 0) === 0 ? 'text-red-600' : 
+												(segment.high_rate || 0) >= 1 && (segment.high_rate || 0) <= 50 ? 'text-yellow-600' : 
+												'text-green-600'
 											]"
 										>
 											{{ segment.high_rate || 0 }}%
@@ -170,7 +174,9 @@
 										<div
 											:class="[
 												'text-lg font-bold',
-												!segment.quality_distribution || segment.quality_distribution === 'None' ? 'text-red-600' : 'text-gray-900'
+												!segment.quality_distribution || segment.quality_distribution === 'None' ? 'text-red-600' : 
+												segment.quality_distribution === 'Low' ? 'text-yellow-600' : 
+												'text-green-600'
 											]"
 										>
 											{{ segment.quality_distribution || 'None' }}
@@ -219,7 +225,7 @@
 								>
 									<div class="flex items-center gap-2">
 										<FeatherIcon name="alert-triangle" class="w-4 h-4 text-yellow-600" />
-										<span class="text-xs text-yellow-800">⚠️ Lack of data skills.</span>
+										<span class="text-xs text-yellow-800">Lack of data skills.</span>
 									</div>
 									<button class="text-xs text-yellow-800 font-bold underline" @click="enrichData(segment)">
 										Fix Now

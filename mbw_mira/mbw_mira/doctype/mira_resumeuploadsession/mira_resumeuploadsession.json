@@ -15,7 +15,8 @@
   "duplicated_count",
   "note",
   "files",
-  "job_opening"
+  "segment",
+  "logs"
  ],
  "fields": [
   {
@@ -67,10 +68,16 @@
    "options": "Mira ResumeUploadFile"
   },
   {
-   "fieldname": "job_opening",
+   "fieldname": "segment",
    "fieldtype": "Link",
-   "label": "Job Opening",
+   "label": "Segment",
    "options": "Mira Segment"
+  },
+  {
+   "fieldname": "logs",
+   "fieldtype": "Table",
+   "label": "Processing Logs",
+   "options": "Mira ResumeUploadLog"
   }
  ],
  "grid_page_length": 50,
