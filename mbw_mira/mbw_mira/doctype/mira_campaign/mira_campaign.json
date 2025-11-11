@@ -23,17 +23,7 @@
   "interaction_method",
   "source_config",
   "total",
-  "current",
-  "select_pages",
-  "last_shared_at",
-  "section_break_social_media",
-  "social_page_id",
-  "social_page_name",
-  "post_schedule_time",
-  "template_content",
-  "social_media_images",
-  "mira_talent_campaign",
-  "column_break_social_media_end"
+  "current"
  ],
  "fields": [
   {
@@ -139,57 +129,6 @@
    "read_only": 1
   },
   {
-   "fieldname": "select_pages",
-   "fieldtype": "JSON",
-   "label": "Select Page"
-  },
-  {
-   "fieldname": "last_shared_at",
-   "fieldtype": "Datetime",
-   "label": "Last Shared At"
-  },
-  {
-   "collapsible": 1,
-   "fieldname": "section_break_social_media",
-   "fieldtype": "Section Break",
-   "label": "Social Media Settings"
-  },
-  {
-   "fieldname": "social_page_id",
-   "fieldtype": "Data",
-   "hidden": 1,
-   "label": "Social Page ID"
-  },
-  {
-   "fieldname": "social_page_name",
-   "fieldtype": "Data",
-   "label": "Social Media Page"
-  },
-  {
-   "fieldname": "post_schedule_time",
-   "fieldtype": "Datetime",
-   "label": "Scheduled Post Time"
-  },
-  {
-   "fieldname": "template_content",
-   "fieldtype": "Long Text",
-   "label": "Post Content"
-  },
-  {
-   "fieldname": "social_media_images",
-   "fieldtype": "Attach Image",
-   "label": "Post Images"
-  },
-  {
-   "fieldname": "mira_talent_campaign",
-   "fieldtype": "JSON",
-   "label": "Mira Talent Campaign"
-  },
-  {
-   "fieldname": "column_break_social_media_end",
-   "fieldtype": "Column Break"
-  },
-  {
    "fieldname": "interaction_method",
    "fieldtype": "Select",
    "label": "Interaction Method",
@@ -199,13 +138,13 @@
    "description": "(Foreign Key -> Mira Segment) Ph\u00e2n kh\u00fac m\u1ee5c ti\u00eau",
    "fieldname": "target_pool",
    "fieldtype": "Link",
-   "label": "Target Segment",
+   "label": "Target Pool",
    "options": "Mira Segment"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-11 11:32:56.606763",
+ "modified": "2025-11-11 13:42:04.762280",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Campaign",
