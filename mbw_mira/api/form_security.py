@@ -1,8 +1,9 @@
+import ipaddress
 import frappe
+from frappe.utils import now_datetime
 import io, random, string, base64, hashlib, hmac
 from PIL import Image, ImageDraw, ImageFont
 
-from mbw_mira.utils import get_real_ip
 
 SECRET_KEY = frappe.local.conf.get("form_secret", "MY_SUPER_SECRET_KEY")
 
@@ -53,28 +54,86 @@ def validate_submission(data):
     if data["form_hash"] != expected:
         frappe.throw("Form tampered.")
 
+
+def get_real_ip():
+    req = frappe.local.request
+    ip = (
+        req.headers.get("X-Forwarded-For")
+        or req.headers.get("X-Real-IP")
+        or req.remote_addr
+    )
+    # Lấy IP đầu tiên nếu có chuỗi danh sách
+    if "," in ip:
+        ip = ip.split(",")[0].strip()
+    try:
+        ipaddress.ip_address(ip)
+    except ValueError:
+        ip = "0.0.0.0"
+    return ip
+
 @frappe.whitelist(allow_guest=True)
 def submit_form():
     data = frappe.form_dict
     validate_submission(data)
-    # Kiểm tra CAPTCHA
-    if not data.get("captcha_input") or not frappe.cache().get_value("captcha_code"):
-        return {"message": "Sai mã CAPTCHA"}
-    valid_capcha = validate_captcha(data.get("captcha_input"))
-    if  not valid_capcha.get("valid"):
-        return {"message": "Sai mã CAPTCHA"}
-    real_ip =get_real_ip()
-    # Ghi log hoặc lưu form vào DocType
+
+    # Validate captcha
+    saved_code = frappe.cache().get_value("captcha_code")
+    if not data.get("captcha_input") or data.get("captcha_input").strip().upper() != saved_code:
+        frappe.throw("Sai mã CAPTCHA")
+
+    ip = get_real_ip()
+    user_agent = frappe.local.request.headers.get("User-Agent", "")
+
+    # Lấy URL form gửi lên
+    form_url = data.get("form_url", "")
+
+    # Tìm config theo URL
+    form_config = frappe.db.get_value(
+        "Mira Form Config",
+        {"domain_or_url": ["like", form_url.split("?")[0] + "%"], "is_active": 1},
+        ["form_id", "default_source_channel", "default_talent_pool"],
+        as_dict=True
+    ) or {}
+
+    # Tạo document Mira Form Attraction
     doc = frappe.get_doc({
-        "doctype": "Web Form Submission",
-        "form_name": "Contact Form",
-        "full_name": data.full_name,
-        "email": data.email,
-        "message": data.message,
-        "client_ip": real_ip,
-        "user_agent": data.user_agent,
-        "timestamp": data.timestamp,
+        "doctype": "Mira Form Attraction",
+
+        # Form Identification
+        "form_id": form_config.get("form_id") or "unknown_form",
+        "source_channel": form_config.get("default_source_channel") or data.get("source_channel"),
+        "talent_pool": form_config.get("default_talent_pool") or data.get("talent_pool"),
+
+        # User Data
+        "full_name": data.get("full_name"),
+        "email_id": data.get("email_id"),
+        "phone_number": data.get("phone_number"),
+        "desired_position": data.get("desired_position"),
+        "key_skills": data.get("key_skills"),
+        "linkedin_url": data.get("linkedin_url"),
+        "current_location": data.get("current_location"),
+        "candidate_cv": data.get("candidate_cv"),
+        "candidate_portfolio": data.get("candidate_portfolio"),
+        "candidate_photo": data.get("candidate_photo"),
+        "years_of_experience": data.get("years_of_experience"),
+        "highest_education": data.get("highest_education"),
+        "expected_salary": data.get("expected_salary"),
+
+        # UTM Parameters
+        "utm_source": data.get("utm_source"),
+        "utm_medium": data.get("utm_medium"),
+        "utm_campaign": data.get("utm_campaign"),
+        "utm_term": data.get("utm_term"),
+        "utm_content": data.get("utm_content"),
+
+        # Metadata Logging
+        "client_ip": ip,
+        "user_agent": user_agent,
+        "acquisition_date": now_datetime(),
+        "ladipage_form_name": data.get("ladipage_form_name"),
     })
+
     doc.insert(ignore_permissions=True)
+    frappe.db.commit()
 
     return {"message": "success"}

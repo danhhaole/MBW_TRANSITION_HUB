@@ -12,11 +12,11 @@ def run_attraction_campaign():
         filters={
             "is_active": 1,
             "status": "ACTIVE",
-            "scheduled_at": ("<=", today),
-            "scheduled_at": (">=", today),
+            "start_date": ("<=", today),
+            # "scheduled_at": (">=", today),
             "type":"ATTRACTION"
         },
-        fields=["name", "campaign_name", "target_segment"]
+        fields=["name", "campaign_name"]
     )
 
     for c in campaigns:
@@ -40,11 +40,11 @@ def run_nurture_campaign():
         filters={
             "is_active": 1,
             "status": "ACTIVE",
-            "scheduled_at": ("<=", today),
-            "scheduled_at": (">=", today),
+            "start_date": ("<=", today),
+            # "scheduled_at": (">=", today),
             "type":"NURTURE"
         },
-        fields=["name", "campaign_name", "target_segment"]
+        fields=["name", "campaign_name"]
     )
 
     for c in campaigns:
@@ -68,11 +68,11 @@ def run_recruitment_campaign():
         filters={
             "is_active": 1,
             "status": "ACTIVE",
-            "scheduled_at": ("<=", today),
-            "scheduled_at": (">=", today),
+            "start_date": ("<=", today),
+            # "scheduled_at": (">=", today),
             "type":"RECRUITMENT"
         },
-        fields=["name", "campaign_name", "target_segment"]
+        fields=["name", "campaign_name"]
     )
 
     for c in campaigns:

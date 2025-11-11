@@ -46,7 +46,7 @@
    "fieldtype": "Select",
    "in_standard_filter": 1,
    "label": "Type",
-   "options": "NURTURING\nATTRACTION\nREFERRAL\nRECRUITMENT\nGATHERING"
+   "options": "NURTURING\nATTRACTION\nRECRUITMENT"
   },
   {
    "fieldname": "status",

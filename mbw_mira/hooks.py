@@ -162,7 +162,6 @@ scheduler_events = {
             "mbw_mira.schedulers.auto_segment_talent_profiles.run",
         ],
         "0/2 * * * *": [
-            "mbw_mira.schedulers.enroll_talent_campaign.run",
             "mbw_mira.schedulers.task_mira_flow.schedule_message_tasks",
             "mbw_mira.schedulers.task_mira_flow.schedule_sms_tasks",
             "mbw_mira.schedulers.task_mira_flow.schedule_email_tasks",

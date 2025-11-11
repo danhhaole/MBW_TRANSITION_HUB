@@ -3,9 +3,10 @@ import frappe
 from frappe.utils import now
 import json
 
-from mbw_mira.utils import find_candidates_fuzzy
+
 
 def process_segment(segment_id: str):
+    from mbw_mira.utils import find_candidates_fuzzy
     """
     Process auto-segmentation for one Mira Segment
     """
