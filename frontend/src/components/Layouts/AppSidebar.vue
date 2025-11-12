@@ -357,11 +357,11 @@ const links = [
 			},
 		]
 	},
-	{
-		label: 'LadiPage',
-		icon: OrganizationsIcon,
-		to:'https://hireos.fastwork.vn/cms/pages'
-	},
+	// {
+	// 	label: 'LadiPage',
+	// 	icon: OrganizationsIcon,
+	// 	to:'https://hireos.fastwork.vn/cms/pages'
+	// },
 	{
 		label: 'My Tasks',
 		icon: TaskIcon,
