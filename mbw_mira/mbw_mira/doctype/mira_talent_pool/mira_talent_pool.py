@@ -49,10 +49,6 @@ def count_talentprofile_segment(segment_id):
     except Exception as e:
         pass
 
-def update_status_talent_profile(talent_id):
-    #Trạng thái đã được phân loại
-    frappe.db.set_value("Mira Prospect",talent_id,"status","CATEGORIZED")
-    frappe.db.commit()
 
 @frappe.whitelist()
 def bulk_insert_segments():
@@ -98,10 +94,6 @@ def bulk_insert_segments():
         if not isinstance(payload, list):
             frappe.throw(_(f"Input data must be a list of records. Got type: {type(payload).__name__}"))
         
-        # Log payload for debugging
-        frappe.logger().info(f"=== BULK INSERT START ===")
-        frappe.logger().info(f"Payload length: {len(payload)}")
-        frappe.logger().info(f"Payload content: {json.dumps(payload, indent=2)}")
 
         result = []
         inserted_count = 0
@@ -119,8 +111,6 @@ def bulk_insert_segments():
                     "segment_id": item.get("segment_id"),
                 }
                 
-                # Log for debugging
-                frappe.logger().debug(f"Processing item {idx + 1}/{len(payload)}: {filters}")
 
                 # Check if exists
                 existing = frappe.db.exists("Mira Talent Pool", filters)
@@ -141,17 +131,12 @@ def bulk_insert_segments():
                     inserted_count += 1
                     status_entry["status"] = "success"
                     status_entry["message"] = f"Inserted: {doc.name}"
-                    frappe.logger().debug(f"  → Inserted: {doc.name}")
             except Exception as e:
                 status_entry["status"] = "fail"
                 status_entry["message"] = str(e)
-                frappe.logger().error(f"  → Failed: {str(e)}")
                 frappe.log_error(frappe.get_traceback(), "Bulk Insert Error")
 
-            result.append(status_entry)
-        
-        frappe.logger().info(f"Bulk insert completed: {inserted_count} inserted out of {len(payload)} items")
-        
+            result.append(status_entry)        
         # Calculate summary
         summary = {
             "success": sum(1 for r in result if r["status"] == "success"),
@@ -170,7 +155,7 @@ def bulk_insert_segments():
         frappe.log_error(frappe.get_traceback(), "Bulk Insert API Error")
         frappe.throw(_("Failed to process bulk insert."))
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist()
 def get_talent_pool(segment_title=None):
     conditions = ""
     values = {}
