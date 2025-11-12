@@ -1,5 +1,5 @@
 <template>
-	<div class="flex h-screen bg-gray-50">
+	<div class="flex h-screen ">
 		<div class="flex-1 flex flex-col overflow-hidden">
 			<!-- Layout Header -->
 			<LayoutHeader>
@@ -92,7 +92,7 @@
 							<Card
 								v-for="segment in talentSegmentStore.talentSegments"
 								:key="segment.name"
-								class="hover:shadow-md transition-shadow"
+								style="box-shadow: 0 2px 6px rgba(0,0,0,0.1)"
 							>
 								<!-- Card Header -->
 								<div class="flex items-start justify-between mb-2">
