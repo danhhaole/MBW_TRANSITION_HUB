@@ -9,7 +9,7 @@ import '@vue-flow/minimap/dist/style.css'
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { createDialog } from './utils/dialogs'
-// import { initSocket } from './socket'
+import { initSocket } from './socket'
 import router from './router'
 import translationPlugin from './translation'
 import { posthogPlugin } from './telemetry'
@@ -66,14 +66,14 @@ if (import.meta.env.DEV) {
       for (let key in values) {
         window[key] = values[key]
       }
-      // socket = initSocket()
-      // app.config.globalProperties.$socket = socket
+      socket = initSocket()
+      app.config.globalProperties.$socket = socket
       app.mount('#app')
     },
   )
 }  else {
-  // socket = initSocket()
-  // app.config.globalProperties.$socket = socket
+  socket = initSocket()
+  app.config.globalProperties.$socket = socket
   app.mount('#app')
 }
 
