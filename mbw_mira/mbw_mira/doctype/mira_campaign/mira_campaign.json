@@ -23,6 +23,7 @@
   "end_date",
   "interaction_method",
   "source_config",
+  "condition_filter",
   "total",
   "current"
  ],
@@ -146,11 +147,16 @@
    "fieldname": "ladipage_url",
    "fieldtype": "Small Text",
    "label": "LadiPage Url"
+  },
+  {
+   "fieldname": "condition_filter",
+   "fieldtype": "JSON",
+   "label": "Condition Filter"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-11 13:56:09.091670",
+ "modified": "2025-11-12 13:47:54.353076",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Campaign",

@@ -2,12 +2,12 @@
   <div class="pool-config space-y-4">
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-2">
-        {{ __('Select a talent segment') }}
+        {{ __('Select a talent pool') }}
       </label>
       <Autocomplete
         v-model="data.selectedSegment"
         :options="segmentOptions"
-        :placeholder="__('Select a talent segment')"
+        :placeholder="__('Select a talent pool')"
         @change="handleSegmentChange"
       />
     </div>

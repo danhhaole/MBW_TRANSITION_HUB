@@ -140,11 +140,8 @@ const isLastStep = computed(() => currentStep.value === totalSteps.value)
 
 const canProceed = computed(() => {
   if (currentStep.value === 1) {
-    return (
-      campaignData.value.campaign_name?.trim() &&
-      campaignData.value.objective?.trim()
-      // config_data/conditions are optional
-    )
+    return campaignData.value.campaign_name?.trim()
+    // config_data/conditions are optional
   }
   
   if (currentStep.value === 2) {
@@ -286,11 +283,15 @@ const saveDraft = async () => {
     // Step 1: Save campaign
     if (!campaignData.value.name) {
       // Create new campaign
+      // Extract target_pool from config_data
+      console.log('Campaign config_data:', campaignData.value.config_data)
+      const targetPool = campaignData.value.config_data?.selectedSegment?.value || null
+      
       const result = await campaignStore.submitNewCampaign({
         campaign_name: campaignData.value.campaign_name,
         description: campaignData.value.objective,
-        config_data: campaignData.value.config_data,
-        conditions: campaignData.value.conditions,
+        target_pool: targetPool,
+        condition_filter: JSON.stringify(campaignData.value.conditions),
         type: campaignData.value.type,
         status: 'DRAFT'
       })
@@ -308,14 +309,18 @@ const saveDraft = async () => {
     } else if (currentStep.value === 1) {
       // Update existing campaign info (Step 1 fields)
       try {
+        // Extract target_pool from config_data
+        console.log('Campaign config_data:', campaignData.value.config_data)
+        const targetPool = campaignData.value.config_data?.selectedSegment || null
+        
         await call('frappe.client.set_value', {
           doctype: 'Mira Campaign',
           name: campaignData.value.name,
           fieldname: {
             campaign_name: campaignData.value.campaign_name,
             description: campaignData.value.objective,
-            config_data: JSON.stringify(campaignData.value.config_data),
-            conditions: JSON.stringify(campaignData.value.conditions)
+            target_pool: targetPool,
+            condition_filter: JSON.stringify(campaignData.value.conditions)
           }
         })
         console.log('✅ Campaign info updated')
@@ -375,8 +380,14 @@ const finalizeCampaign = async () => {
 
   finalizing.value = true
   try {
+    // Extract target_pool from config_data
+    const targetPool = campaignData.value.config_data?.selectedSegment?.value || null
+    
     const result = await campaignStore.updateCampaign(campaignData.value.name, {
-      ...campaignData.value,
+      campaign_name: campaignData.value.campaign_name,
+      description: campaignData.value.objective,
+      target_pool: targetPool,
+      condition_filter: JSON.stringify(campaignData.value.conditions),
       status: 'Active'
     })
 
@@ -406,9 +417,64 @@ const loadCampaignData = async (campaignId) => {
     })
     
     if (result) {
-      // Parse JSON fields
-      const configData = result.config_data ? JSON.parse(result.config_data) : {}
-      const conditions = result.conditions ? JSON.parse(result.conditions) : []
+      // Parse config data and conditions from separate fields
+      let configData = {}
+      let conditions = []
+      
+      // Build config_data from target_pool
+      if (result.target_pool) {
+        // Get segment details to rebuild config_data
+        try {
+          const segmentResult = await call('frappe.client.get', {
+            doctype: 'Mira Segment',
+            name: result.target_pool
+          })
+          
+          if (segmentResult) {
+            configData = {
+              selectedSegment: {
+                label: segmentResult.segment_name || segmentResult.name,
+                value: segmentResult.name
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error loading segment details:', error)
+          // Fallback: create basic config with just the ID
+          configData = {
+            selectedSegment: {
+              label: result.target_pool,
+              value: result.target_pool
+            }
+          }
+        }
+      } else {
+        // Fallback to old format
+        configData = result.config_data ? JSON.parse(result.config_data) : {}
+      }
+      
+      // Parse condition_filter for filter conditions
+      if (result.condition_filter) {
+        try {
+          conditions = JSON.parse(result.condition_filter)
+        } catch (error) {
+          console.error('Error parsing condition_filter:', error)
+          // Fallback to old format
+          conditions = result.conditions ? JSON.parse(result.conditions) : []
+        }
+      } else {
+        // Fallback to old format or source_config
+        if (result.conditions) {
+          conditions = JSON.parse(result.conditions)
+        } else if (result.source_config) {
+          try {
+            const sourceConfig = JSON.parse(result.source_config)
+            conditions = sourceConfig.conditions || []
+          } catch (error) {
+            conditions = []
+          }
+        }
+      }
       
       campaignData.value = {
         name: result.name,
