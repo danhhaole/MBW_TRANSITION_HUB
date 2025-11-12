@@ -218,9 +218,6 @@
 
                 <!-- Content Editor -->
                 <div class="space-y-2">
-                  <label class="block text-sm font-medium text-gray-700">
-                    {{ __("Message Content") }} <span class="text-red-500">*</span>
-                  </label>
                   
                   <!-- Email Editor -->
                   <EmailContentEditor

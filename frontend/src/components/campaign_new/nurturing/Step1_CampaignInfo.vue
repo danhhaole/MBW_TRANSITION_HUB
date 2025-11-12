@@ -26,12 +26,19 @@
       @validate="$emit('validate', $event)"
       @change="$emit('change', $event)"
     />
+
+    <!-- Campaign Schedule -->
+    <CampaignSchedule
+      :start-date="startDate"
+      @update:start-date="$emit('update:startDate', $event)"
+    />
   </div>
 </template>
 
 <script setup>
 import CampaignBasicInfo from '../molecules/CampaignBasicInfo.vue'
 import TargetSegmentSelector from '../molecules/TargetSegmentSelector.vue'
+import CampaignSchedule from '../molecules/CampaignSchedule.vue'
 
 defineProps({
   campaignName: String,
@@ -48,7 +55,8 @@ defineProps({
     type: Number,
     default: 0
   },
-  showError: Boolean
+  showError: Boolean,
+  startDate: String
 })
 
 defineEmits([
@@ -57,7 +65,8 @@ defineEmits([
   'update:configData',
   'update:conditions',
   'validate',
-  'change'
+  'change',
+  'update:startDate'
 ])
 
 const __ = (text) => text

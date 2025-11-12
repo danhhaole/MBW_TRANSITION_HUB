@@ -1,13 +1,6 @@
 <template>
   <div class="email-editor space-y-6">
-    <!-- Header -->
-    <div class="text-center py-4">
-      <div class="bg-blue-100 p-3 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-        <FeatherIcon name="mail" class="h-8 w-8 text-blue-600" />
-      </div>
-      <h3 class="text-xl font-bold text-gray-900 mb-2">{{ __("Email Campaign Editor") }}</h3>
-      <p class="text-gray-600">{{ __("Create engaging email content for your campaign") }}</p>
-    </div>
+
 
     <!-- Email Form -->
     <div class="space-y-6">

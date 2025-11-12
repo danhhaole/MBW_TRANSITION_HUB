@@ -12,7 +12,6 @@
           type="select"
           :model-value="pageId"
           :options="pageOptions"
-          :placeholder="__('Select a Facebook page...')"
           @update:model-value="$emit('update:pageId', $event)"
         />
       </div>

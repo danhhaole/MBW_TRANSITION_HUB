@@ -15,35 +15,34 @@
     </div>
 
     <!-- Target Segment Selection -->
-    <div class="bg-white rounded-lg border border-gray-200 p-6">
-      <TargetSegmentSelector
-        :title="__('Select Target Candidates')"
-        :description="__('Choose candidate segments or define custom criteria for recruitment')"
-        :selection-mode="selectionMode"
-        :config-data="configData"
-        :conditions="conditions"
-        :candidate-count="candidateCount"
-        @update:selection-mode="$emit('update:selectionMode', $event)"
-        @update:config-data="$emit('update:configData', $event)"
-        @update:conditions="$emit('update:conditions', $event)"
-        @validate="$emit('validate', $event)"
-        @change="$emit('change', $event)"
-      />
-    </div>
+    <TargetSegmentSelector
+      :title="__('Select Target Candidates')"
+      :description="__('Choose candidate segments or define custom criteria for recruitment')"
+      :config-data="configData"
+      :conditions="conditions"
+      :candidate-count="candidateCount"
+      @update:config-data="$emit('update:configData', $event)"
+      @update:conditions="$emit('update:conditions', $event)"
+      @validate="$emit('validate', $event)"
+      @change="$emit('change', $event)"
+    />
+
+    <!-- Campaign Schedule -->
+    <CampaignSchedule
+      :start-date="startDate"
+      @update:start-date="$emit('update:startDate', $event)"
+    />
   </div>
 </template>
 
 <script setup>
 import CampaignBasicInfo from '../molecules/CampaignBasicInfo.vue'
 import TargetSegmentSelector from '../molecules/TargetSegmentSelector.vue'
+import CampaignSchedule from '../molecules/CampaignSchedule.vue'
 
 defineProps({
   campaignName: String,
   objective: String,
-  selectionMode: {
-    type: String,
-    default: 'segment'
-  },
   configData: {
     type: Object,
     default: () => ({})
@@ -56,17 +55,18 @@ defineProps({
     type: Number,
     default: 0
   },
-  showError: Boolean
+  showError: Boolean,
+  startDate: String
 })
 
 defineEmits([
   'update:campaignName',
   'update:objective',
-  'update:selectionMode',
   'update:configData',
   'update:conditions',
   'validate',
-  'change'
+  'change',
+  'update:startDate'
 ])
 
 const __ = (text) => text

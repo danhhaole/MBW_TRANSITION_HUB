@@ -53,6 +53,12 @@
         </div>
       </div>
     </div>
+
+    <!-- Campaign Schedule -->
+    <CampaignSchedule
+      :start-date="startDate"
+      @update:start-date="$emit('update:startDate', $event)"
+    />
   </div>
 </template>
 
@@ -60,6 +66,7 @@
 import CampaignBasicInfo from '../molecules/CampaignBasicInfo.vue'
 import Link from '@/components/Controls/Link.vue'
 import { FeatherIcon } from 'frappe-ui'
+import CampaignSchedule from '../molecules/CampaignSchedule.vue'
 
 defineProps({
   campaignName: {
@@ -81,10 +88,14 @@ defineProps({
   description: {
     type: String,
     default: ''
+  },
+  startDate: {
+    type: String,
+    default: ''
   }
 })
 
-defineEmits(['update:campaignName', 'update:objective', 'update:targetPool', 'update:description'])
+defineEmits(['update:campaignName', 'update:objective', 'update:targetPool', 'update:description', 'update:startDate'])
 
 </script>
 

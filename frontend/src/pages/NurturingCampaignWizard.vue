@@ -32,7 +32,7 @@
     <!-- Content Area -->
     <div class="flex-1 overflow-y-auto bg-gray-50">
       <div class="max-w-7xl mx-auto px-6 py-8">
-        <!-- Step 1: Campaign Information & Target Segment -->
+        <!-- Step 1: Campaign Info -->
         <CampaignStep1
           v-if="currentStep === 1"
           :campaign-name="campaignData.campaign_name"
@@ -41,10 +41,12 @@
           :conditions="campaignData.conditions"
           :candidate-count="campaignData.candidate_count"
           :show-error="showValidationError"
+          :start-date="campaignData.start_date"
           @update:campaign-name="campaignData.campaign_name = $event"
           @update:objective="campaignData.objective = $event"
           @update:config-data="campaignData.config_data = $event"
           @update:conditions="campaignData.conditions = $event"
+          @update:start-date="campaignData.start_date = $event"
           @validate="handleValidate"
           @change="handleConditionsChange"
         />
@@ -55,6 +57,15 @@
           :triggers="campaignData.triggers"
           :campaign-name="campaignData.campaign_name"
           @update:triggers="campaignData.triggers = $event"
+        />
+
+        <!-- Step 3: Settings & Triggers -->
+        <CampaignStep3
+          v-else-if="currentStep === 3"
+          :start-date="campaignData.start_date"
+          :triggers="campaignData.step3_triggers"
+          @update:start-date="campaignData.start_date = $event"
+          @update:triggers="campaignData.step3_triggers = $event"
         />
 
         <!-- Placeholder steps -->
@@ -78,6 +89,7 @@ import CampaignWizardHeader from '@/components/campaign/CampaignWizardHeader.vue
 import CampaignWizardStepper from '@/components/campaign/CampaignWizardStepper.vue'
 import CampaignStep1 from '@/components/campaign_new/nurturing/Step1_CampaignInfo.vue'
 import CampaignStep2 from '@/components/campaign_new/nurturing/Step2_ContentTimeline.vue'
+import CampaignStep3 from '@/components/campaign_new/nurturing/Step3_Settings.vue'
 import { useCampaignStore } from '@/stores/campaign'
 import { useToast } from '@/composables/useToast'
 
@@ -116,13 +128,15 @@ const campaignData = ref({
   channel: '',
   type: props.campaignType, // 'NURTURING'
   status: 'Draft',
-  triggers: [] // Timeline triggers for nurturing
+  triggers: [], // Timeline triggers for nurturing (Step 2)
+  start_date: new Date().toISOString().slice(0, 16), // Default to now (YYYY-MM-DDTHH:MM)
+  step3_triggers: [] // Event triggers for Step 3
 })
 
 const steps = ref([
   { title: __('Campaign Info'), key: 'info' },
   { title: __('Content Design'), key: 'content' },
-  { title: __('Review'), key: 'review' }
+  { title: __('Settings & Actions'), key: 'settings' }
 ])
 
 const totalSteps = computed(() => steps.value.length)
@@ -197,6 +211,18 @@ const canProceed = computed(() => {
       
       return hasChannel && hasContent
     })
+  }
+  
+  if (currentStep.value === 3) {
+    // Step 3: Settings & Triggers - optional validation
+    // Triggers are optional, but if present, should be valid
+    if (campaignData.value.step3_triggers && campaignData.value.step3_triggers.length > 0) {
+      return campaignData.value.step3_triggers.every(trigger => {
+        // Basic validation: trigger must have type and at least one action
+        return !!(trigger.trigger_type && trigger.actions && trigger.actions.length > 0)
+      })
+    }
+    return true // Triggers are optional
   }
   
   return true
@@ -285,7 +311,7 @@ const saveDraft = async () => {
       // Create new campaign
       // Extract target_pool from config_data
       console.log('Campaign config_data:', campaignData.value.config_data)
-      const targetPool = campaignData.value.config_data?.selectedSegment?.value || null
+      const targetPool = campaignData.value.config_data?.selectedSegment || null
       
       const result = await campaignStore.submitNewCampaign({
         campaign_name: campaignData.value.campaign_name,
@@ -293,7 +319,8 @@ const saveDraft = async () => {
         target_pool: targetPool,
         condition_filter: JSON.stringify(campaignData.value.conditions),
         type: campaignData.value.type,
-        status: 'DRAFT'
+        status: 'DRAFT',
+        start_date: campaignData.value.start_date
       })
 
       if (result.success && result.data?.name) {
@@ -320,7 +347,8 @@ const saveDraft = async () => {
             campaign_name: campaignData.value.campaign_name,
             description: campaignData.value.objective,
             target_pool: targetPool,
-            condition_filter: JSON.stringify(campaignData.value.conditions)
+            condition_filter: JSON.stringify(campaignData.value.conditions),
+            start_date: campaignData.value.start_date
           }
         })
         console.log('✅ Campaign info updated')
@@ -362,6 +390,51 @@ const saveDraft = async () => {
       }
     }
 
+    // Step 3: Save settings & actions
+    if (currentStep.value === 3 && campaignData.value.name) {
+      try {
+        await call('frappe.client.set_value', {
+          doctype: 'Mira Campaign',
+          name: campaignData.value.name,
+          fieldname: {
+            start_date: campaignData.value.start_date
+          }
+        })
+        
+        // Save step3 triggers separately if needed
+        if (campaignData.value.step3_triggers && campaignData.value.step3_triggers.length > 0) {
+          console.log('💾 Saving Step3 triggers:', campaignData.value.step3_triggers)
+          
+          try {
+            // Use same API as timeline triggers but with different trigger types
+            const result = await call('mbw_mira.api.campaign_social.save_nurturing_campaign_triggers', {
+              campaign_id: campaignData.value.name,
+              triggers: campaignData.value.step3_triggers
+            })
+
+            if (result.success) {
+              console.log('✅ Step3 triggers saved:', result.data)
+              toast.success(__('Event triggers saved successfully'))
+            } else {
+              console.error('❌ Error saving step3 triggers:', result.message)
+              toast.error(result.message || __('Failed to save event triggers'))
+            }
+          } catch (error) {
+            console.error('❌ Error saving step3 triggers:', error)
+            toast.error(__('Failed to save event triggers'))
+          }
+        } else {
+          console.log('📝 No Step3 triggers to save')
+        }
+        
+        console.log('✅ Settings saved')
+      } catch (error) {
+        console.error('❌ Error saving settings:', error)
+        toast.error(__('Failed to save settings'))
+        return
+      }
+    }
+
     // Don't show toast for auto-save
   } catch (error) {
     console.error('Error saving draft:', error)
@@ -380,24 +453,69 @@ const finalizeCampaign = async () => {
 
   finalizing.value = true
   try {
-    // Extract target_pool from config_data
-    const targetPool = campaignData.value.config_data?.selectedSegment?.value || null
+    console.log('🚀 Finalizing campaign...')
     
-    const result = await campaignStore.updateCampaign(campaignData.value.name, {
-      campaign_name: campaignData.value.campaign_name,
-      description: campaignData.value.objective,
-      target_pool: targetPool,
-      condition_filter: JSON.stringify(campaignData.value.conditions),
-      status: 'Active'
-    })
-
-    if (result.success) {
-      toast.success(__('Campaign activated successfully!'))
-      emit('success', result.data)
-      emit('close')
-    } else {
-      toast.error(result.error || __('Failed to activate campaign'))
+    // Step 1: Ensure campaign is saved
+    if (!campaignData.value.name) {
+      toast.error(__('Campaign must be saved first'))
+      return
     }
+
+    console.log('Campaign data:', campaignData.value)
+    console.log('📊 Step 2 triggers:', campaignData.value.triggers)
+    console.log('📊 Step 3 triggers:', campaignData.value.step3_triggers)
+
+    // Step 2: Update campaign settings (start_date)
+    try {
+      await call('frappe.client.set_value', {
+        doctype: 'Mira Campaign',
+        name: campaignData.value.name,
+        fieldname: {
+          start_date: campaignData.value.start_date
+        }
+      })
+      console.log('✅ Campaign start_date updated')
+    } catch (error) {
+      console.error('❌ Error updating campaign settings:', error)
+    }
+
+    // Step 3: Sync all flows with triggers in one API call
+    try {
+      console.log('🔄 Syncing flows with triggers...')
+      
+      // Combine both timeline triggers (Step 2) and event triggers (Step 3)
+      const allTriggers = [
+        ...(campaignData.value.triggers || []),        // Step 2: Timeline triggers
+        ...(campaignData.value.step3_triggers || [])   // Step 3: Event triggers
+      ]
+      
+      console.log('📊 All triggers to sync:', allTriggers)
+      
+      const result = await call('mbw_mira.api.campaign_flow.sync_campaign_flows', {
+        campaign_id: campaignData.value.name,
+        triggers: allTriggers
+      })
+      
+      if (result && result.success) {
+        console.log(`✅ Flows synced: ${result.created || 0} created, ${result.updated || 0} updated, ${result.deleted || 0} deleted`)
+      }
+    } catch (error) {
+      console.error('❌ Error syncing flows:', error)
+    }
+
+    // Step 4: Reload campaign data to get updated flow status
+    await loadCampaignData(campaignData.value.name)
+    
+    // Step 5: Campaign finalized - Reset wizard
+    toast.success(__('Campaign saved successfully!'))
+    console.log('✅ Campaign finalized')
+    
+    // Reset wizard to step 1
+    currentStep.value = 1
+    resetCampaignData()
+    
+    emit('success', { name: campaignData.value.name })
+    emit('close')
   } catch (error) {
     console.error('Error activating campaign:', error)
     toast.error(__('An error occurred while activating campaign'))
@@ -485,7 +603,10 @@ const loadCampaignData = async (campaignId) => {
         candidate_count: result.candidate_count || 0,
         channel: result.channel || '',
         type: result.type || 'NURTURING',
-        status: result.status || 'DRAFT'
+        status: result.status || 'DRAFT',
+        start_date: result.start_date || null,
+        step3_triggers: [], // TODO: Load step3 triggers from backend
+        triggers: [] // Will be loaded separately in Step 2
       }
       
       console.log('✅ Campaign data loaded:', campaignData.value)
@@ -506,7 +627,10 @@ const resetCampaignData = () => {
     candidate_count: 0,
     channel: '',
     type: props.campaignType,
-    status: 'DRAFT'
+    status: 'DRAFT',
+    triggers: [],
+    start_date: new Date().toISOString().slice(0, 16), // Reset to current time
+    step3_triggers: []
   }
   currentStep.value = 1
 }

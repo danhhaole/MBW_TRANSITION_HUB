@@ -144,3 +144,12 @@ def get_zalo_oas():
             "data": [],
             "message": str(e)
         }
+
+
+@frappe.whitelist()
+def get_zalo_accounts():
+    """
+    Alias for get_zalo_oas() - Get all Zalo OA accounts
+    Returns list of connected Zalo Official Accounts
+    """
+    return get_zalo_oas()

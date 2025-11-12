@@ -39,9 +39,11 @@
           :description="campaignData.description"
           :target-pool="campaignData.target_pool"
           :show-error="showValidationError"
+          :start-date="campaignData.start_date"
           @update:campaign-name="campaignData.campaign_name = $event"
           @update:description="campaignData.description = $event"
           @update:target-pool="campaignData.target_pool = $event"
+          @update:start-date="campaignData.start_date = $event"
         />
 
         <!-- Step 2: Content & Channels -->
@@ -115,7 +117,7 @@ const campaignData = ref({
   campaign_name: '',
   description: '',
   target_pool: '',
-  start_date: '',
+  start_date: new Date().toISOString().slice(0, 16), // Default to now
   // Step 2: Content & Channels
   selected_channels: [],
   landing_page: '',
@@ -596,6 +598,7 @@ const resetCampaignData = () => {
     campaign_name: '',
     description: '',
     target_pool: '',
+    start_date: new Date().toISOString().slice(0, 16), // Reset to current time
     // Step 2: Content & Channels
     selected_channels: [],
     facebook_content: {
