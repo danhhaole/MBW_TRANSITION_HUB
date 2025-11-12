@@ -8,6 +8,7 @@
   "talent_id",
   "segment_id",
   "match_score",
+  "enroll_type",
   "added_at",
   "added_by"
  ],
@@ -39,12 +40,19 @@
    "fieldtype": "Link",
    "label": "Added By",
    "options": "User"
+  },
+  {
+   "description": "H\u00ecnh th\u1ee9c \u0111\u01b0a v\u00e0o :Th\u1ee7 c\u00f4ng hay t\u1ef1 \u0111\u1ed9ng",
+   "fieldname": "enroll_type",
+   "fieldtype": "Select",
+   "label": "Enroll Type",
+   "options": "Manual\nAutomatic"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-04 08:47:24.493789",
+ "modified": "2025-11-12 09:53:38.789226",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Talent Pool",

@@ -10,7 +10,7 @@ const MIRA_CONTACT_FIELDS = [
   { label: 'Date of Birth', fieldname: 'date_of_birth', fieldtype: 'Date' },
   { label: 'Experience Years', fieldname: 'experience_years', fieldtype: 'Int' },
   { label: 'Education Level', fieldname: 'education_level', fieldtype: 'Select', options: 'High School\nBachelor\nMaster\nPhD' },
-  { label: 'Current Position', fieldname: 'current_position', fieldtype: 'Data' },
+  { label: 'Position', fieldname: 'position', fieldtype: 'Data' },
   { label: 'Current Company', fieldname: 'current_company', fieldtype: 'Data' },
   
   // Special fields for Talent Pool filtering

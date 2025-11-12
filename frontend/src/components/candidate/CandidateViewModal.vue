@@ -45,7 +45,7 @@
                 {{ candidate.full_name }}
               </h2>
               <div class="text-gray-600">
-                {{ candidate.current_position || __('No position information available') }}
+                {{ candidate.position || __('No position information available') }}
               </div>
               <div class="mt-2 flex items-center space-x-4">
                 <span 

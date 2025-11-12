@@ -1142,7 +1142,7 @@ const getConditionLabel = (condition) => {
     'experience_years': __('Years of Experience'),
     'education_level': __('Education Level'),
     'skills': __('Skills'),
-    'current_position': __('Current Position'),
+    'position': __('Position'),
     'expected_salary': __('Expected Salary'),
     'created': __('Created Date'),
     'modified': __('Modified Date')
@@ -1170,7 +1170,7 @@ const conditionFields = computed(() => [
     { value: 'PhD', label: __('PhD') }
   ]},
   { value: 'skills', label: __('Skills'), type: 'text' },
-  { value: 'current_position', label: __('Current Position'), type: 'text' },
+  { value: 'position', label: __('Position'), type: 'text' },
   { value: 'expected_salary', label: __('Expected Salary'), type: 'number' },
   { value: 'created', label: __('Created Date'), type: 'date' },
   { value: 'modified', label: __('Modified Date'), type: 'date' }

@@ -50,11 +50,11 @@
         
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            {{ __('Current Position') }}
+            {{ __('Position') }}
           </label>
           <FormControl
             type="text"
-            v-model="formData.current_position"
+            v-model="formData.position"
             placeholder="VD: Senior Software Engineer"
           />
         </div>
@@ -213,7 +213,7 @@ const props = defineProps({
       full_name: '',
       email: '',
       phone: '',
-      current_position: '',
+      position: '',
       location: '',
       experience_years: '',
       source: '',
