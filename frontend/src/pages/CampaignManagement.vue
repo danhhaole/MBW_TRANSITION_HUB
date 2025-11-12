@@ -259,6 +259,7 @@
         :edit-campaign-id="selectedCampaign?.name"
         @close="handleWizardClose"
         @success="handleWizardSuccess"
+        @campaign-created="handleCampaignCreated"
       />
 
       <RecruitmentCampaignWizard

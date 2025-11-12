@@ -27,7 +27,7 @@
         <!-- Add Channel Dropdown (only show if there are available channels) -->
         <Dropdown v-if="availableChannelOptions.length > 0" :options="availableChannelOptions">
           <template v-slot="{ open }">
-            <Button variant="outline" size="sm">
+            <Button variant="solid" size="sm" :theme="'gray'">
               <template #prefix>
                 <FeatherIcon name="plus" class="h-4 w-4" />
               </template>

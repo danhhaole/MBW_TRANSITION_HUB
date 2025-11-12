@@ -735,3 +735,211 @@ def delete_sequence_with_links(sequence_name, force_delete=False):
             "status": "error",
             "message": f"Failed to delete sequence: {error_msg}"
         }
+
+
+@frappe.whitelist()
+def get_pool_candidate_count(config_data):
+    """
+    Get candidate count from pool/segment configuration
+    
+    Args:
+        config_data: Pool configuration object
+        
+    Returns:
+        {"count": 123}
+    """
+    try:
+        if isinstance(config_data, str):
+            config_data = json.loads(config_data)
+        
+        count = 0
+        
+        if config_data.get('segment_id'):
+            # Get count from Mira Talent Pool by segment_id
+            count = frappe.db.count('Mira Talent Pool', {
+                'segment_id': config_data.get('segment_id')
+            })
+        elif config_data.get('filters'):
+            # Apply custom filters to Mira Talent
+            filters = config_data.get('filters', {})
+            count = frappe.db.count('Mira Talent', filters)
+        else:
+            # Default: count all talents
+            count = frappe.db.count('Mira Talent')
+        
+        return {"count": count}
+        
+    except Exception as e:
+        frappe.log_error(f"Error getting pool candidate count: {str(e)}")
+        return {"count": 0, "error": str(e)}
+
+
+@frappe.whitelist()
+def get_conditions_candidate_count(doctype, conditions):
+    """
+    Get candidate count from filter conditions
+    
+    Args:
+        doctype: Target doctype (e.g., 'Mira Talent')
+        conditions: List of conditions in format [["field", "operator", "value"], ...]
+        
+    Returns:
+        {"count": 123}
+    """
+    try:
+        if isinstance(conditions, str):
+            conditions = json.loads(conditions)
+        
+        if not conditions or len(conditions) == 0:
+            # No conditions, return total count
+            count = frappe.db.count(doctype)
+            return {"count": count}
+        
+        # Build filters from conditions
+        filters = {}
+        
+        for condition in conditions:
+            # Handle both list format and dict format
+            if isinstance(condition, list) and len(condition) >= 3:
+                field = condition[0]
+                operator = condition[1]
+                value = condition[2]
+            elif isinstance(condition, dict):
+                field = condition.get('field')
+                operator = condition.get('operator', '=')
+                value = condition.get('value')
+            else:
+                continue
+            
+            if not field:
+                continue
+            
+            # Map operators to Frappe filter format
+            # Special handling for comma-separated fields (skills, tags, etc.)
+            if field in ['skills', 'tags', 'soft_skills'] and operator in ['=', '==']:
+                # Use LIKE for comma-separated fields
+                filters[field] = ['like', f'%{value}%']
+            elif operator in ['=', '==']:
+                filters[field] = value
+            elif operator in ['!=', '<>']:
+                filters[field] = ['!=', value]
+            elif operator == 'in':
+                filters[field] = ['in', value]
+            elif operator == 'not in':
+                filters[field] = ['not in', value]
+            elif operator in ['like', 'LIKE']:
+                filters[field] = ['like', f'%{value}%']
+            elif operator == '>':
+                filters[field] = ['>', value]
+            elif operator == '<':
+                filters[field] = ['<', value]
+            elif operator == '>=':
+                filters[field] = ['>=', value]
+            elif operator == '<=':
+                filters[field] = ['<=', value]
+            else:
+                filters[field] = value
+        
+        count = frappe.db.count(doctype, filters)
+        
+        return {"count": count}
+        
+    except Exception as e:
+        frappe.log_error(f"Error getting conditions candidate count: {str(e)}")
+        return {"count": 0, "error": str(e)}
+
+
+@frappe.whitelist()
+def get_combined_candidate_count(config_data, conditions):
+    """
+    Get candidate count combining both segment and conditions
+    
+    Args:
+        config_data: Pool/segment configuration (optional)
+        conditions: Filter conditions (optional)
+        
+    Returns:
+        {"count": 123}
+    """
+    try:
+        if isinstance(config_data, str):
+            config_data = json.loads(config_data) if config_data else {}
+        if isinstance(conditions, str):
+            conditions = json.loads(conditions) if conditions else []
+        
+        # Start with base filters
+        filters = {}
+        talent_ids = None
+        
+        # Step 1: Get talent IDs from segment if provided
+        if config_data and len(config_data) > 0:
+            if config_data.get('selectedSegment'):
+                # Get talents from Mira Talent Pool by segment_id
+                pool_records = frappe.get_all('Mira Talent Pool', 
+                    filters={'segment_id': config_data.get('selectedSegment')},
+                    pluck='talent_id'
+                )
+                talent_ids = set(pool_records)
+            elif config_data.get('filters'):
+                # Apply segment filters
+                segment_filters = config_data.get('filters', {})
+                filters.update(segment_filters)
+        
+        # Step 2: Add condition filters
+        # Conditions format: [["field", "operator", "value"], ...]
+        if conditions and len(conditions) > 0:
+            for condition in conditions:
+                # Handle both list format and dict format
+                if isinstance(condition, list) and len(condition) >= 3:
+                    field = condition[0]
+                    operator = condition[1]
+                    value = condition[2]
+                elif isinstance(condition, dict):
+                    field = condition.get('field')
+                    operator = condition.get('operator', '=')
+                    value = condition.get('value')
+                else:
+                    continue
+                
+                if not field:
+                    continue
+                
+                # Map operators to Frappe format
+                # Special handling for comma-separated fields (skills, tags, etc.)
+                if field in ['skills', 'tags', 'soft_skills'] and operator in ['=', '==']:
+                    # Use LIKE for comma-separated fields
+                    filters[field] = ['like', f'%{value}%']
+                elif operator in ['=', '==']:
+                    filters[field] = value
+                elif operator in ['!=', '<>']:
+                    filters[field] = ['!=', value]
+                elif operator == 'in':
+                    filters[field] = ['in', value]
+                elif operator == 'not in':
+                    filters[field] = ['not in', value]
+                elif operator in ['like', 'LIKE']:
+                    filters[field] = ['like', f'%{value}%']
+                elif operator == '>':
+                    filters[field] = ['>', value]
+                elif operator == '<':
+                    filters[field] = ['<', value]
+                elif operator == '>=':
+                    filters[field] = ['>=', value]
+                elif operator == '<=':
+                    filters[field] = ['<=', value]
+                else:
+                    filters[field] = value
+        
+        # Step 3: Combine segment IDs with condition filters
+        if talent_ids is not None:
+            # Filter by talent IDs from segment
+            filters['name'] = ['in', list(talent_ids)]
+        
+        # Step 4: Count
+        count = frappe.db.count('Mira Talent', filters)
+        
+        return {"count": count}
+        
+    except Exception as e:
+        frappe.log_error(f"Error getting combined candidate count: {str(e)}")
+        return {"count": 0, "error": str(e)}

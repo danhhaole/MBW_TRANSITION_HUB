@@ -15,21 +15,17 @@
     </div>
 
     <!-- Target Segment Selection -->
-    <div class="bg-white rounded-lg border border-gray-200 p-6">
-      <TargetSegmentSelector
-        :title="__('Select Audience to Nurture')"
-        :description="__('Choose existing contacts or define custom conditions for nurturing')"
-        :selection-mode="selectionMode"
-        :config-data="configData"
-        :conditions="conditions"
-        :candidate-count="candidateCount"
-        @update:selection-mode="$emit('update:selectionMode', $event)"
-        @update:config-data="$emit('update:configData', $event)"
-        @update:conditions="$emit('update:conditions', $event)"
-        @validate="$emit('validate', $event)"
-        @change="$emit('change', $event)"
-      />
-    </div>
+    <TargetSegmentSelector
+      :title="__('Select Audience to Nurture')"
+      :description="__('Choose a talent pool and/or add filter conditions')"
+      :config-data="configData"
+      :conditions="conditions"
+      :candidate-count="candidateCount"
+      @update:config-data="$emit('update:configData', $event)"
+      @update:conditions="$emit('update:conditions', $event)"
+      @validate="$emit('validate', $event)"
+      @change="$emit('change', $event)"
+    />
   </div>
 </template>
 
@@ -40,10 +36,6 @@ import TargetSegmentSelector from '../molecules/TargetSegmentSelector.vue'
 defineProps({
   campaignName: String,
   objective: String,
-  selectionMode: {
-    type: String,
-    default: 'segment'
-  },
   configData: {
     type: Object,
     default: () => ({})
@@ -62,7 +54,6 @@ defineProps({
 defineEmits([
   'update:campaignName',
   'update:objective',
-  'update:selectionMode',
   'update:configData',
   'update:conditions',
   'validate',

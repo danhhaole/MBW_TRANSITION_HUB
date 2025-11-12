@@ -1,133 +1,60 @@
 <template>
   <div v-if="show" class="fixed inset-0 bg-white z-[9] flex flex-col">
-    <!-- Header -->
-    <div class="border-b border-gray-200 bg-white px-6 py-4">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-4">
-          <button
-            @click="closeWizard"
-            class="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <FeatherIcon name="x" class="h-5 w-5" />
-          </button>
-          <div>
-            <h2 class="text-lg font-semibold text-gray-900">
-              {{ campaignData.campaign_name || __('New Nurturing Campaign') }}
-            </h2>
-            <p class="text-sm text-gray-500">
-              {{ __('Step') }} {{ currentStep }} {{ __('of') }} {{ totalSteps }}
-            </p>
-          </div>
-        </div>
+    <!-- Header - Reuse existing component -->
+    <CampaignWizardHeader
+      :campaign-name="campaignData.campaign_name || __('New Nurturing Campaign')"
+      :current-step="currentStep"
+      :total-steps="totalSteps"
+      :loading="false"
+      :saving="saving"
+      :finalizing="finalizing"
+      :auto-saving="false"
+      :save-success="false"
+      :can-save="true"
+      :can-proceed="canProceed"
+      :can-finalize="isLastStep"
+      :is-edit-mode="false"
+      @exit="closeWizard"
+      @back="prevStep"
+      @save="saveDraft"
+      @save-and-continue="nextStep"
+      @finalize="finalizeCampaign"
+      @update:campaign-name="campaignData.campaign_name = $event"
+    />
 
-        <div class="flex items-center space-x-3">
-          <Button
-            v-if="currentStep > 1"
-            @click="prevStep"
-            variant="outline"
-          >
-            <FeatherIcon name="arrow-left" class="h-4 w-4 mr-2" />
-            {{ __('Back') }}
-          </Button>
-
-          <Button
-            @click="saveDraft"
-            variant="outline"
-            :loading="saving"
-          >
-            <FeatherIcon name="save" class="h-4 w-4 mr-2" />
-            {{ __('Save Draft') }}
-          </Button>
-
-          <Button
-            v-if="currentStep < totalSteps"
-            @click="nextStep"
-            :disabled="!canProceed"
-          >
-            {{ __('Continue') }}
-            <FeatherIcon name="arrow-right" class="h-4 w-4 ml-2" />
-          </Button>
-
-          <Button
-            v-else
-            @click="finalizeCampaign"
-            :loading="finalizing"
-            variant="solid"
-          >
-            <FeatherIcon name="check" class="h-4 w-4 mr-2" />
-            {{ __('Activate Campaign') }}
-          </Button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Progress Stepper -->
-    <div class="border-b border-gray-200 bg-gray-50 px-6 py-4">
-      <div class="flex items-center justify-between max-w-4xl mx-auto">
-        <div
-          v-for="(step, index) in steps"
-          :key="index"
-          class="flex items-center"
-          :class="{ 'flex-1': index < steps.length - 1 }"
-        >
-          <div class="flex items-center">
-            <div
-              class="flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all"
-              :class="[
-                currentStep > index + 1
-                  ? 'bg-green-600 border-green-600 text-white'
-                  : currentStep === index + 1
-                  ? 'bg-white border-green-600 text-green-600'
-                  : 'bg-white border-gray-300 text-gray-400'
-              ]"
-            >
-              <FeatherIcon
-                v-if="currentStep > index + 1"
-                name="check"
-                class="h-4 w-4"
-              />
-              <span v-else class="text-sm font-medium">{{ index + 1 }}</span>
-            </div>
-            <span
-              class="ml-2 text-sm font-medium"
-              :class="
-                currentStep >= index + 1 ? 'text-gray-900' : 'text-gray-400'
-              "
-            >
-              {{ step.title }}
-            </span>
-          </div>
-          <div
-            v-if="index < steps.length - 1"
-            class="flex-1 h-0.5 mx-4"
-            :class="
-              currentStep > index + 1 ? 'bg-green-600' : 'bg-gray-300'
-            "
-          />
-        </div>
-      </div>
-    </div>
+    <!-- Stepper - Reuse existing component -->
+    <CampaignWizardStepper
+      :steps="formattedSteps"
+      :current-step="currentStep"
+      @step-click="handleStepClick"
+    />
 
     <!-- Content Area -->
     <div class="flex-1 overflow-y-auto bg-gray-50">
-      <div class="max-w-4xl mx-auto px-6 py-8">
+      <div class="max-w-7xl mx-auto px-6 py-8">
         <!-- Step 1: Campaign Information & Target Segment -->
         <CampaignStep1
           v-if="currentStep === 1"
           :campaign-name="campaignData.campaign_name"
           :objective="campaignData.objective"
-          :selection-mode="campaignData.selection_mode"
           :config-data="campaignData.config_data"
           :conditions="campaignData.conditions"
           :candidate-count="campaignData.candidate_count"
           :show-error="showValidationError"
           @update:campaign-name="campaignData.campaign_name = $event"
           @update:objective="campaignData.objective = $event"
-          @update:selection-mode="campaignData.selection_mode = $event"
           @update:config-data="campaignData.config_data = $event"
           @update:conditions="campaignData.conditions = $event"
           @validate="handleValidate"
           @change="handleConditionsChange"
+        />
+
+        <!-- Step 2: Content Timeline -->
+        <CampaignStep2
+          v-else-if="currentStep === 2"
+          :triggers="campaignData.triggers"
+          :campaign-name="campaignData.campaign_name"
+          @update:triggers="campaignData.triggers = $event"
         />
 
         <!-- Placeholder steps -->
@@ -146,8 +73,11 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { Button, FeatherIcon } from 'frappe-ui'
+import { call } from 'frappe-ui'
+import CampaignWizardHeader from '@/components/campaign/CampaignWizardHeader.vue'
+import CampaignWizardStepper from '@/components/campaign/CampaignWizardStepper.vue'
 import CampaignStep1 from '@/components/campaign_new/nurturing/Step1_CampaignInfo.vue'
+import CampaignStep2 from '@/components/campaign_new/nurturing/Step2_ContentTimeline.vue'
 import { useCampaignStore } from '@/stores/campaign'
 import { useToast } from '@/composables/useToast'
 
@@ -159,10 +89,14 @@ const props = defineProps({
   campaignType: {
     type: String,
     default: 'NURTURING'
+  },
+  editCampaignId: {
+    type: String,
+    default: null
   }
 })
 
-const emit = defineEmits(['close', 'success'])
+const emit = defineEmits(['close', 'success', 'campaign-created'])
 
 const campaignStore = useCampaignStore()
 const toast = useToast()
@@ -171,36 +105,103 @@ const currentStep = ref(1)
 const saving = ref(false)
 const finalizing = ref(false)
 const showValidationError = ref(false)
+const loadingTriggers = ref(false)
 
 const campaignData = ref({
   campaign_name: '',
   objective: '',
-  selection_mode: 'segment',
   config_data: {},
   conditions: [],
   candidate_count: 0,
   channel: '',
   type: props.campaignType, // 'NURTURING'
-  status: 'Draft'
+  status: 'Draft',
+  triggers: [] // Timeline triggers for nurturing
 })
 
 const steps = ref([
   { title: __('Campaign Info'), key: 'info' },
-  { title: __('Audience'), key: 'audience' },
-  { title: __('Content'), key: 'content' },
+  { title: __('Content Design'), key: 'content' },
   { title: __('Review'), key: 'review' }
 ])
 
 const totalSteps = computed(() => steps.value.length)
+
+const formattedSteps = computed(() => {
+  return steps.value.map((step, index) => ({
+    number: index + 1,
+    label: step.title,  // CampaignWizardStepper expects 'label' not 'title'
+    key: step.key,
+    status: currentStep.value > index + 1 ? 'completed' : currentStep.value === index + 1 ? 'active' : 'pending'
+  }))
+})
+
+const isLastStep = computed(() => currentStep.value === totalSteps.value)
 
 const canProceed = computed(() => {
   if (currentStep.value === 1) {
     return (
       campaignData.value.campaign_name?.trim() &&
       campaignData.value.objective?.trim()
-      // selection_mode and config_data/conditions are optional
+      // config_data/conditions are optional
     )
   }
+  
+  if (currentStep.value === 2) {
+    // Validate triggers
+    if (!campaignData.value.triggers || campaignData.value.triggers.length === 0) {
+      return false
+    }
+    
+    // Check each trigger has required fields
+    return campaignData.value.triggers.every(trigger => {
+      const hasChannel = !!trigger.channel
+      
+      // Sender account is optional now
+      
+      // Validate content based on channel
+      let hasContent = false
+      if (trigger.channel === 'email') {
+        // Email: must have subject and content
+        hasContent = !!(trigger.content?.email_subject?.trim() && trigger.content?.email_content?.trim())
+      } else if (trigger.channel === 'zalo') {
+        // Zalo: must have at least one block with content
+        if (trigger.content?.blocks && Array.isArray(trigger.content.blocks)) {
+          hasContent = trigger.content.blocks.some(block => {
+            if (block.type === 'text') {
+              return !!(block.text_content?.trim())
+            }
+            if (block.type === 'image') {
+              return !!(block.image)
+            }
+            return false
+          })
+        } else {
+          // Fallback for old format
+          hasContent = !!(trigger.content?.message?.trim())
+        }
+      } else if (trigger.channel === 'messenger') {
+        // Messenger: check for blocks structure or simple message
+        if (trigger.content?.blocks && Array.isArray(trigger.content.blocks)) {
+          hasContent = trigger.content.blocks.some(block => {
+            if (block.type === 'text') {
+              return !!(block.text_content?.trim())
+            }
+            if (block.type === 'image') {
+              return !!(block.image)
+            }
+            return false
+          })
+        } else {
+          // Simple message format
+          hasContent = !!(trigger.content?.message?.trim())
+        }
+      }
+      
+      return hasChannel && hasContent
+    })
+  }
+  
   return true
 })
 
@@ -211,6 +212,45 @@ const handleValidate = (isValid) => {
 const handleConditionsChange = (conditions) => {
   console.log('Conditions changed:', conditions)
 }
+
+const handleStepClick = (stepNumber) => {
+  // Allow clicking on previous steps only
+  if (stepNumber < currentStep.value) {
+    currentStep.value = stepNumber
+  }
+}
+
+// Load triggers when entering Step 2
+const loadTriggers = async () => {
+  if (!campaignData.value.name) {
+    return
+  }
+
+  loadingTriggers.value = true
+  try {
+    const result = await call('mbw_mira.api.campaign_social.get_nurturing_campaign_triggers', {
+      campaign_id: campaignData.value.name
+    })
+
+    if (result.success && result.data) {
+      campaignData.value.triggers = result.data
+      console.log('✅ Triggers loaded:', result.data)
+    } else {
+      console.error('❌ Error loading triggers:', result.message)
+    }
+  } catch (error) {
+    console.error('❌ Error loading triggers:', error)
+  } finally {
+    loadingTriggers.value = false
+  }
+}
+
+// Watch for step changes to load triggers
+watch(currentStep, async (newStep, oldStep) => {
+  if (newStep === 2 && oldStep !== 2 && campaignData.value.name) {
+    await loadTriggers()
+  }
+})
 
 const closeWizard = () => {
   if (confirm(__('Are you sure you want to close? Unsaved changes will be lost.'))) {
@@ -243,20 +283,81 @@ const nextStep = async () => {
 const saveDraft = async () => {
   saving.value = true
   try {
-    const result = await campaignStore.submitNewCampaign({
-      ...campaignData.value,
-      status: 'DRAFT'
-    })
+    // Step 1: Save campaign
+    if (!campaignData.value.name) {
+      // Create new campaign
+      const result = await campaignStore.submitNewCampaign({
+        campaign_name: campaignData.value.campaign_name,
+        description: campaignData.value.objective,
+        config_data: campaignData.value.config_data,
+        conditions: campaignData.value.conditions,
+        type: campaignData.value.type,
+        status: 'DRAFT'
+      })
 
-    if (result.success) {
-      toast.success(__('Draft saved successfully'))
-      // Update campaign ID if it's a new campaign
-      if (result.data?.name) {
+      if (result.success && result.data?.name) {
         campaignData.value.name = result.data.name
+        toast.success(__('Campaign created successfully'))
+        
+        // Emit event to refresh campaign list
+        emit('campaign-created', { name: result.data.name })
+      } else {
+        toast.error(result.error || __('Failed to create campaign'))
+        return
       }
-    } else {
-      toast.error(result.error || __('Failed to save draft'))
+    } else if (currentStep.value === 1) {
+      // Update existing campaign info (Step 1 fields)
+      try {
+        await call('frappe.client.set_value', {
+          doctype: 'Mira Campaign',
+          name: campaignData.value.name,
+          fieldname: {
+            campaign_name: campaignData.value.campaign_name,
+            description: campaignData.value.objective,
+            config_data: JSON.stringify(campaignData.value.config_data),
+            conditions: JSON.stringify(campaignData.value.conditions)
+          }
+        })
+        console.log('✅ Campaign info updated')
+      } catch (error) {
+        console.error('❌ Error updating campaign info:', error)
+        toast.error(__('Failed to update campaign info'))
+        return
+      }
     }
+
+    // Step 2: Save triggers (timeline messages)
+    if (currentStep.value === 2 && campaignData.value.name) {
+      try {
+        // Prepare triggers data - extract sender_account value
+        const triggersData = campaignData.value.triggers.map(trigger => ({
+          ...trigger,
+          sender_account: typeof trigger.sender_account === 'object' 
+            ? trigger.sender_account?.value 
+            : trigger.sender_account
+        }))
+
+        const result = await call('mbw_mira.api.campaign_social.save_nurturing_campaign_triggers', {
+          campaign_id: campaignData.value.name,
+          triggers: triggersData
+        })
+
+        if (result.success) {
+          console.log('✅ Triggers saved:', result.data)
+          toast.success(__('Timeline messages saved successfully'))
+        } else {
+          console.error('❌ Error saving triggers:', result.message)
+          toast.error(result.message || __('Failed to save timeline messages'))
+          return
+        }
+      } catch (error) {
+        console.error('❌ Error saving triggers:', error)
+        toast.error(__('Failed to save timeline messages'))
+        return
+      }
+    }
+
+    // Don't show toast for auto-save
   } catch (error) {
     console.error('Error saving draft:', error)
     toast.error(__('An error occurred while saving'))
@@ -293,6 +394,67 @@ const finalizeCampaign = async () => {
     finalizing.value = false
   }
 }
+
+// Load campaign data for editing
+const loadCampaignData = async (campaignId) => {
+  try {
+    console.log('📂 Loading nurturing campaign data:', campaignId)
+    
+    const result = await call('frappe.client.get', {
+      doctype: 'Mira Campaign',
+      name: campaignId
+    })
+    
+    if (result) {
+      // Parse JSON fields
+      const configData = result.config_data ? JSON.parse(result.config_data) : {}
+      const conditions = result.conditions ? JSON.parse(result.conditions) : []
+      
+      campaignData.value = {
+        name: result.name,
+        campaign_name: result.campaign_name || '',
+        objective: result.description || '',
+        config_data: configData,
+        conditions: conditions,
+        candidate_count: result.candidate_count || 0,
+        channel: result.channel || '',
+        type: result.type || 'NURTURING',
+        status: result.status || 'DRAFT'
+      }
+      
+      console.log('✅ Campaign data loaded:', campaignData.value)
+    }
+  } catch (error) {
+    console.error('❌ Error loading campaign:', error)
+    toast.error(__('Failed to load campaign data'))
+  }
+}
+
+// Reset campaign data
+const resetCampaignData = () => {
+  campaignData.value = {
+    campaign_name: '',
+    objective: '',
+    config_data: {},
+    conditions: [],
+    candidate_count: 0,
+    channel: '',
+    type: props.campaignType,
+    status: 'DRAFT'
+  }
+  currentStep.value = 1
+}
+
+// Watch for prop changes
+watch(() => props.show, (newVal) => {
+  if (newVal && props.editCampaignId) {
+    // Load existing campaign data
+    loadCampaignData(props.editCampaignId)
+  } else if (newVal) {
+    // Reset for new campaign
+    resetCampaignData()
+  }
+})
 </script>
 
 <style scoped>

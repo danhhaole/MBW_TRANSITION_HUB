@@ -3,98 +3,85 @@
     <!-- Header -->
     <div class="text-center mb-6">
       <h4 class="text-lg font-medium text-gray-900 mb-2">
-        {{ title || __("Target Segment") }}
+        {{ title || __("Target Pool") }}
       </h4>
       <p class="text-sm text-gray-600">
         {{ description || __("Choose candidates and configure targeting strategy") }}
       </p>
     </div>
 
-    <!-- Segment Selection -->
-    <div class="bg-gray-50 rounded-lg p-6">
-      <h5 class="text-md font-medium text-gray-900 mb-4">
-        {{ __("Select Candidates") }}
-      </h5>
-      <p class="text-sm text-gray-600 mb-4">
-        {{ __("Which candidates do you want to target in this campaign?") }}
-      </p>
+    <!-- Talent Segment Selection (Optional) -->
+    <div class="bg-white rounded-lg border border-gray-200 p-6">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h5 class="text-md font-medium text-gray-900">
+            {{ __("Talent Pool") }}
+            <span class="text-xs text-gray-500 font-normal ml-2">{{ __("(Optional)") }}</span>
+          </h5>
+          <p class="text-sm text-gray-600 mt-1">
+            {{ __("Start with an existing talent Pool as base") }}
+          </p>
+        </div>
+        <Button
+          v-if="hasSegment"
+          @click="clearSegment"
+          variant="solid"
+          :theme="'red'"
+          
+        >
+          {{ __('Clear Pool') }}
+        </Button>
+      </div>
       
-      <!-- Segment Options -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <!-- Choose Candidates (Segment) -->
-        <div 
-          class="border rounded-lg p-4 bg-white cursor-pointer transition-colors"
-          :class="localMode === 'segment' ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' : 'border-gray-200 hover:border-blue-300'"
-          @click="localMode = 'segment'"
-        >
-          <div class="text-center">
-            <div class="flex items-center justify-center w-12 h-12 rounded-full mx-auto mb-3"
-                 :class="localMode === 'segment' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'">
-              <FeatherIcon name="users" class="h-6 w-6" />
-            </div>
-            <h6 class="text-sm font-semibold mb-1"
-                :class="localMode === 'segment' ? 'text-blue-900' : 'text-gray-900'">
-              {{ __("Choose Candidates (Segment)") }}
-            </h6>
-            <p class="text-xs text-gray-600">
-              {{ __("Use existing candidate segments") }}
-            </p>
-          </div>
-        </div>
+      <!-- Segment Selection -->
+      <component 
+        :is="PoolConfig" 
+        v-model="localConfigData"
+        @update:model-value="handleSegmentChange"
+      />
+    </div>
 
-        <!-- Custom Conditions -->
-        <div 
-          class="border rounded-lg p-4 bg-white cursor-pointer transition-colors"
-          :class="localMode === 'conditions' ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' : 'border-gray-200 hover:border-blue-300'"
-          @click="localMode = 'conditions'"
-        >
-          <div class="text-center">
-            <div class="flex items-center justify-center w-12 h-12 rounded-full mx-auto mb-3"
-                 :class="localMode === 'conditions' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'">
-              <FeatherIcon name="filter" class="h-6 w-6" />
-            </div>
-            <h6 class="text-sm font-semibold mb-1"
-                :class="localMode === 'conditions' ? 'text-blue-900' : 'text-gray-900'">
-              {{ __("Custom Conditions") }}
-            </h6>
-            <p class="text-xs text-gray-600">
-              {{ __("Create custom filtering conditions") }}
-            </p>
-          </div>
-        </div>
-      </div>
+    <!-- Filter Conditions (Always Show) -->
+    <div class="bg-white rounded-lg border border-gray-200 p-6">
 
-      <!-- Segment Selection Content -->
-      <div v-if="localMode === 'segment'">
-        <!-- Use existing PoolConfig component for segment selection -->
-        <component :is="PoolConfig" v-model="localConfigData" />
-      </div>
-
-      <!-- Custom Conditions Content -->
-      <div v-else-if="localMode === 'conditions'" class="space-y-4">
-        <ConditionsBuilder
-          v-model="localConditions"
-          doctype="Mira Talent"
-          :title="__('Campaign Target Conditions')"
-          :description="__('Define conditions to filter candidates who will receive your campaign')"
-          :show-preview="false"
-          :validate-on-change="true"
-          @validate="handleConditionsValidate"
-          @change="handleConditionsChange"
-        />
-      </div>
+      
+      <ConditionsBuilder
+        v-model="localConditions"
+        doctype="Mira Talent"
+        :title="__('Campaign Target Conditions')"
+        :description="__('Define conditions to filter candidates who will receive your campaign')"
+        :show-preview="false"
+        :validate-on-change="true"
+        @validate="handleConditionsValidate"
+        @change="handleConditionsChange"
+      />
     </div>
 
     <!-- Candidate Count -->
     <div class="bg-blue-50 rounded-lg p-4">
-      <h5 class="text-md font-medium text-gray-900 mb-2">
-        {{ __("Candidate Count") }}
-      </h5>
-      <p class="text-sm text-gray-600 mb-2">
-        {{ __("This campaign will be sent to approximately") }}
-      </p>
-      <div class="text-2xl font-bold text-blue-600">
-        {{ candidateCount }} {{ __("candidates") }}
+      <div class="flex items-center justify-between">
+        <div>
+          <h5 class="text-md font-medium text-gray-900 mb-2">
+            {{ __("Talent Count") }}
+          </h5>
+          <p class="text-sm text-gray-600 mb-2">
+            {{ __("This campaign will be sent to approximately") }}
+          </p>
+          <div class="text-2xl font-bold text-blue-600">
+            {{ loadingCount ? '...' : localCandidateCount }} {{ __("talents") }}
+          </div>
+        </div>
+        <button
+          v-if="!loadingCount"
+          @click="refreshCount"
+          class="text-blue-600 hover:text-blue-700 p-2 rounded-md hover:bg-blue-100 transition-colors"
+          :title="__('Refresh count')"
+        >
+          <FeatherIcon name="refresh-cw" class="h-5 w-5" />
+        </button>
+        <div v-else class="p-2">
+          <FeatherIcon name="loader" class="h-5 w-5 text-blue-600 animate-spin" />
+        </div>
       </div>
     </div>
   </div>
@@ -102,7 +89,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { FeatherIcon } from 'frappe-ui'
+import { FeatherIcon, call, Button } from 'frappe-ui'
 import PoolConfig from '@/components/campaign/PoolConfig.vue'
 import ConditionsBuilder from '@/components/ConditionsFilter/ConditionsBuilder.vue'
 
@@ -114,10 +101,6 @@ const props = defineProps({
   description: {
     type: String,
     default: ''
-  },
-  selectionMode: {
-    type: String,
-    default: 'segment' // 'segment' or 'conditions'
   },
   configData: {
     type: Object,
@@ -134,7 +117,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits([
-  'update:selectionMode',
   'update:configData',
   'update:conditions',
   'validate',
@@ -142,10 +124,9 @@ const emit = defineEmits([
 ])
 
 // Local state
-const localMode = computed({
-  get: () => props.selectionMode,
-  set: (value) => emit('update:selectionMode', value)
-})
+const loadingCount = ref(false)
+const localCandidateCount = ref(props.candidateCount)
+let debounceTimer = null
 
 const localConfigData = computed({
   get: () => props.configData,
@@ -157,6 +138,63 @@ const localConditions = computed({
   set: (value) => emit('update:conditions', value)
 })
 
+// Check if segment is selected
+const hasSegment = computed(() => {
+  return localConfigData.value && Object.keys(localConfigData.value).length > 0
+})
+
+// Clear segment
+const clearSegment = () => {
+  emit('update:configData', {})
+  debouncedRefreshCount()
+}
+
+// Fetch candidate count (combining segment + conditions)
+const fetchCandidateCount = async () => {
+  loadingCount.value = true
+  try {
+    // Get count with both segment and conditions combined
+    const result = await call('mbw_mira.api.campaign.get_combined_candidate_count', {
+      config_data: localConfigData.value,
+      conditions: localConditions.value
+    })
+    
+    const count = result?.count || 0
+    localCandidateCount.value = count
+    console.log(`✅ Candidate count: ${count} (segment: ${hasSegment.value}, conditions: ${localConditions.value?.length || 0})`)
+  } catch (error) {
+    console.error('❌ Error fetching candidate count:', error)
+    localCandidateCount.value = 0
+  } finally {
+    loadingCount.value = false
+  }
+}
+
+// Debounced refresh to avoid multiple calls
+const debouncedRefreshCount = () => {
+  if (debounceTimer) {
+    clearTimeout(debounceTimer)
+  }
+  debounceTimer = setTimeout(() => {
+    fetchCandidateCount()
+  }, 500)
+}
+
+// Refresh count manually (immediate, no debounce)
+const refreshCount = () => {
+  if (debounceTimer) {
+    clearTimeout(debounceTimer)
+  }
+  fetchCandidateCount()
+}
+
+// Handle segment change
+const handleSegmentChange = (value) => {
+  emit('update:configData', value)
+  // Use debounced refresh
+  debouncedRefreshCount()
+}
+
 // Handlers
 const handleConditionsValidate = (isValid) => {
   emit('validate', isValid)
@@ -164,7 +202,19 @@ const handleConditionsValidate = (isValid) => {
 
 const handleConditionsChange = (conditions) => {
   emit('change', conditions)
+  // Use debounced refresh
+  debouncedRefreshCount()
 }
+
+// Watch for prop changes
+watch(() => props.candidateCount, (newVal) => {
+  localCandidateCount.value = newVal
+})
+
+// Watch for config/conditions changes and auto-refresh
+watch([localConfigData, localConditions], () => {
+  debouncedRefreshCount()
+}, { deep: true })
 
 // Translation helper
 const __ = (text) => text

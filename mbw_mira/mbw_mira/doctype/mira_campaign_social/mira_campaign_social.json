@@ -13,7 +13,10 @@
   "platform",
   "post_schedule_time",
   "template_content",
+  "subject",
   "social_media_images",
+  "post_file",
+  "attachments",
   "share_at",
   "status",
   "retry_count",
@@ -91,11 +94,27 @@
    "fieldname": "response_data",
    "fieldtype": "JSON",
    "label": "Platform Response Data"
+  },
+  {
+   "fieldname": "subject",
+   "fieldtype": "Small Text",
+   "label": "Subject"
+  },
+  {
+   "fieldname": "post_file",
+   "fieldtype": "Attach",
+   "label": "Post File"
+  },
+  {
+   "fieldname": "attachments",
+   "fieldtype": "Table",
+   "label": "Attachments",
+   "options": "Mira Campaign Social Attachment"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-10 08:02:40.381446",
+ "modified": "2025-11-12 09:35:53.872103",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Campaign Social",

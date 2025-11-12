@@ -91,6 +91,7 @@ const data = ref({
 
 const segments = ref([])
 const loadingSegments = ref(false)
+const isUpdatingFromParent = ref(false)
 
 // Computed options for select components
 const segmentOptions = computed(() => {
@@ -161,6 +162,11 @@ const levels = [
 
 // Watch for changes
 watch(data, (newData) => {
+  // Skip if updating from parent to prevent infinite loop
+  if (isUpdatingFromParent.value) {
+    return
+  }
+  
   // Find selected segment and get candidate count
   let candidateCount = 0
   if (newData.selectedSegment) {
@@ -183,6 +189,37 @@ watch(data, (newData) => {
     selectedSegment: newData.selectedSegment.value || newData.selectedSegment,
     candidateCount: candidateCount
   })
+}, { deep: true })
+
+// Watch for modelValue changes from parent (e.g., clear segment)
+watch(() => props.modelValue, (newValue) => {
+  isUpdatingFromParent.value = true
+  
+  // Reset data when parent clears
+  if (!newValue || Object.keys(newValue).length === 0) {
+    data.value = {
+      selectedSegment: '',
+      skills: '',
+      experience: '',
+      location: '',
+      level: ''
+    }
+  } else {
+    // Update data from parent
+    data.value = {
+      selectedSegment: '',
+      skills: '',
+      experience: '',
+      location: '',
+      level: '',
+      ...newValue
+    }
+  }
+  
+  // Reset flag after Vue's next tick
+  setTimeout(() => {
+    isUpdatingFromParent.value = false
+  }, 0)
 }, { deep: true })
 
 // Lifecycle
