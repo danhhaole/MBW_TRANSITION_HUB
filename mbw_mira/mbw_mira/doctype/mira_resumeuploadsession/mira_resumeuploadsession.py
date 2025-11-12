@@ -224,6 +224,8 @@ def process_resume_files(session_name):
                         print('========================= full_name: ', data.get("personal_info", {}).get("can_full_name"), flush=True)
                         candidate.full_name = data.get("personal_info", {}).get("can_full_name")
                         candidate.email = data.get("personal_info", {}).get("can_email")
+                        candidate.source = "Import CV"
+                        candidate.crm_status = "New"
                         
                         # Add child tables
                         # for table in ["candidate_work_experience", "candidate_project", "candidate_skill",

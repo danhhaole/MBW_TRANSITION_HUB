@@ -405,7 +405,7 @@ const handleRefresh = async () => {
 }
 
 const goBack = () => {
-  router.push({ name: 'TalentSegments' })
+  router.push({ name: 'TalentPool' })
 }
 
 

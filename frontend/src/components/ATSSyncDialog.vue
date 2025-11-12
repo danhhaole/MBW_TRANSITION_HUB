@@ -92,7 +92,7 @@
             <div class="text-sm text-gray-600">
               {{ __('Select an active ATS connection to sync positions from:') }}
             </div>
-            <Button
+            <!-- <Button
               variant="solid"
               theme="gray"
               size="sm"
@@ -102,7 +102,7 @@
                 <FeatherIcon name="plus" class="h-4 w-4" />
               </template>
               {{ __('Create Connection') }}
-            </Button>
+            </Button> -->
           </div>
           
           <!-- Loading State -->

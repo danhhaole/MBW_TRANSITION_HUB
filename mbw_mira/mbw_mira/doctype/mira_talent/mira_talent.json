@@ -142,7 +142,7 @@
    "fieldname": "source",
    "fieldtype": "Select",
    "label": "Source",
-   "options": "\nNEW\nLinkedIn\nReferral\nHeadhunter\nNurturing Interaction\nMBW ATS"
+   "options": "\nManually\nZalo\nFacebook\nLinkedIn\nReferral\nHeadhunter\nNurturing Interaction\nMBW ATS\nImport Excel\nImport CV"
   },
   {
    "fieldname": "email",
@@ -281,7 +281,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-10 14:34:04.906167",
+ "modified": "2025-11-12 09:13:37.952884",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Talent",

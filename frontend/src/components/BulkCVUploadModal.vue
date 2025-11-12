@@ -359,11 +359,11 @@ onMounted(() => {
         fetchHistory();
 
     }
-    // $socket.on('resume_upload_update', (data) => {
-    //     if (data.session_name) {
-    //         fetchHistory();
-    //     }
-    // });
+    $socket.on('resume_upload_update', (data) => {
+        if (data.session_name) {
+            fetchHistory();
+        }
+    });
 });
 </script>
 

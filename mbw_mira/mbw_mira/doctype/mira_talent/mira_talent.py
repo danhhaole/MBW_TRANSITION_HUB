@@ -193,10 +193,10 @@ def unlink_references(doc, meta):
                     ref_doc.flags.ignore_mandatory = True
                     ref_doc.save(ignore_permissions=False)
                     
-                    frappe.msgprint(
-                        _("Unlinked {0} from {1}").format(doc.name, ref_doc.name),
-                        alert=True
-                    )
+                    # frappe.msgprint(
+                    #     _("Unlinked {0} from {1}").format(doc.name, ref_doc.name),
+                    #     alert=True
+                    # )
                     
                 except Exception as e:
                     frappe.log_error(
@@ -358,7 +358,7 @@ def delete_multiple_talents(names=None):
     return info
 
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def check_talent_links(name=None):
     """
     Kiểm tra các link references của một talent    

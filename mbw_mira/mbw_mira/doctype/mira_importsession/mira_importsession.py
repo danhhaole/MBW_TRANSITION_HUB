@@ -1003,7 +1003,7 @@ def download_talent_template():
 			elif field['fieldname'] == 'skills':
 				sample_data[header] = 'Python, JavaScript, SQL'
 			elif field['fieldname'] == 'source':
-				sample_data[header] = 'NEW'
+				sample_data[header] = 'Import Excel'
 			elif field['fieldname'] == 'crm_status':
 				sample_data[header] = 'New'
 			else:

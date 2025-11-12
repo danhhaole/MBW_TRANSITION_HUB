@@ -12,6 +12,7 @@
   "criteria",
   "owner_id",
   "type",
+  "source",
   "candidate_count",
   "sync_id",
   "overall_potential_score",
@@ -48,7 +49,7 @@
    "fieldname": "type",
    "fieldtype": "Select",
    "label": "Type",
-   "options": "DYNAMIC\nMANUAL\nATS_SYNC"
+   "options": "DYNAMIC\nMANUAL"
   },
   {
    "description": "S\u1ed1 l\u01b0\u1ee3ng \u1ee9ng vi\u00ean hi\u1ec7n c\u00f3 trong ph\u00e2n kh\u00fac (d\u00f9ng \u0111\u1ec3 hi\u1ec3n th\u1ecb, \u0111\u01b0\u1ee3c c\u1eadp nh\u1eadt \u0111\u1ecbnh k\u1ef3).",
@@ -84,12 +85,18 @@
    "fieldname": "quality_distribution",
    "fieldtype": "Data",
    "label": " Quality Distribution"
+  },
+  {
+   "fieldname": "source",
+   "fieldtype": "Select",
+   "label": "Source",
+   "options": "Manual\nAI\nSYNC_ATS"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-06 08:57:01.942081",
+ "modified": "2025-11-12 10:00:39.661927",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Segment",

@@ -32,7 +32,7 @@
 				<div class="max-w-full mx-2 px-6 py-6">
 					<!-- Header -->
 					<div class="flex items-center justify-between mb-6">
-						<!-- Search -->
+						<!-- Search and Bulk Actions -->
 						<div class="flex items-center gap-2">
 							<Input 
 								type="text" 
@@ -52,6 +52,19 @@
 									<FeatherIcon name="filter" class="w-4 h-4" />
 								</template>
 								Filter
+							</Button>
+							<!-- Bulk Delete Button -->
+							<Button
+								v-if="selectedAllTalent.length > 0"
+								variant="solid"
+								theme="red"
+								@click="showBulkDeleteDialog = true"
+								class="flex items-center"
+							>
+								<template #prefix>
+									<FeatherIcon name="trash-2" class="w-4 h-4" />
+								</template>
+								{{ __('Delete') }} ({{ selectedAllTalent.length }})
 							</Button>
 							<!-- Refresh Button -->
 							<Button
@@ -123,6 +136,16 @@
 												Source
 											</th>
 											<th
+												class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+											>
+												Ngày cập nhật cuối
+											</th>
+											<th
+												class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+											>
+												Lần tương tác gần nhất
+											</th>
+											<th
 												class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
 											>
 												Actions
@@ -174,21 +197,24 @@
 											</td>
 											<td class="px-6 py-4 text-sm text-gray-900">
 												<div class="flex flex-wrap gap-1">
+													<template v-if="talent.skills && processSkills(talent.skills).length > 0">
+														<span
+															v-if="processSkills(talent.skills).length === 1"
+															class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 truncate"
+														>
+															{{ processSkills(talent.skills)[0] }}
+														</span>
+														<template v-else>
+															<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 truncate">
+																{{ processSkills(talent.skills)[0] }}
+															</span>
+															<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+																+{{ processSkills(talent.skills).length - 1 }}
+															</span>
+														</template>
+													</template>
 													<span
-														v-for="skill in processSkills(
-															talent.skills,
-														)"
-														:key="skill"
-														class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 truncate"
-													>
-														{{ skill }}
-													</span>
-													<span
-														v-if="
-															!talent.skills ||
-															processSkills(talent.skills).length ===
-																0
-														"
+														v-else
 														class="text-gray-400"
 														>-</span
 													>
@@ -209,6 +235,16 @@
 												>
 													{{ talent.source }}
 												</Badge>
+											</td>
+											<td class="px-6 py-4 whitespace-nowrap">
+												<div class="text-sm text-gray-900">
+													{{ talent.modified ? formatDate(talent.modified) : '-' }}
+												</div>
+											</td>
+											<td class="px-6 py-4 whitespace-nowrap">
+												<div class="text-sm text-gray-900">
+													{{ talent.last_interaction_date ? formatDate(talent.last_interaction_date) : '-' }}
+												</div>
 											</td>
 											<td class="px-6 py-4 whitespace-nowrap text-right">
 												<Button
@@ -890,6 +926,167 @@
 				v-model="showATSTalentSyncDialog"
 				@success="handleSyncSuccess"
 			/>
+
+			<!-- Delete Talent Confirmation Dialog -->
+			<Dialog
+				v-model="showDeleteDialog"
+				:options="{
+					title: '',
+					size: 'sm',
+				}"
+			>
+				<template #body-title>
+					<div class="flex items-center gap-3 mb-4">
+						<div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+							<FeatherIcon name="alert-triangle" class="w-6 h-6 text-red-600" />
+						</div>
+						<div>
+							<h3 class="text-lg font-semibold text-gray-900">
+								{{ __('Delete talent') }}
+							</h3>
+						</div>
+					</div>
+				</template>
+
+				<template #body-content>
+					<div class="space-y-4">
+						<p class="text-sm text-gray-600">
+							{{ __('Bạn có chắc chắn muốn xóa talent này không?') }}
+						</p>
+						
+						<div v-if="talentToDelete" class="bg-gray-50 rounded-lg p-4 space-y-2">
+							<div class="flex items-center gap-3">
+								<Avatar
+									:label="talentToDelete.full_name"
+									:image="talentToDelete.avatar"
+									size="md"
+								/>
+								<div>
+									<div class="font-medium text-gray-900">{{ talentToDelete.full_name }}</div>
+									<div class="text-sm text-gray-500">{{ talentToDelete.email }}</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+							<div class="flex gap-2">
+								<FeatherIcon name="alert-circle" class="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+								<p class="text-xs text-yellow-800">
+									{{ __('Hành động này không thể hoàn tác. Tất cả dữ liệu liên quan sẽ bị xóa.') }}
+								</p>
+							</div>
+						</div>
+					</div>
+				</template>
+
+				<template #actions>
+					<div class="flex justify-end gap-3 pt-4">
+						<Button
+							variant="outline"
+							theme="gray"
+							@click="showDeleteDialog = false"
+							class="px-4"
+						>
+							{{ __('Hủy') }}
+						</Button>
+						<Button
+							variant="solid"
+							theme="red"
+							@click="confirmDeleteTalent"
+							:loading="isDeleting"
+							class="px-4"
+						>
+							{{ __('Xóa') }}
+						</Button>
+					</div>
+				</template>
+			</Dialog>
+
+			<!-- Bulk Delete Confirmation Dialog -->
+			<Dialog
+				v-model="showBulkDeleteDialog"
+				:options="{
+					title: '',
+					size: 'md',
+				}"
+			>
+				<template #body-title>
+					<div class="flex items-center gap-3 mb-4">
+						<div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+							<FeatherIcon name="alert-triangle" class="w-6 h-6 text-red-600" />
+						</div>
+						<div>
+							<h3 class="text-lg font-semibold text-gray-900">
+								{{ __('Delete Multiple Talents') }}
+							</h3>
+						</div>
+					</div>
+				</template>
+
+				<template #body-content>
+					<div class="space-y-4">
+						<p class="text-sm text-gray-600">
+							{{ __('Bạn có chắc chắn muốn xóa {0} talent(s) đã chọn không?', [selectedAllTalent.length]) }}
+						</p>
+						
+						<div class="bg-gray-50 rounded-lg p-4 max-h-40 overflow-y-auto">
+							<div class="space-y-2">
+								<div 
+									v-for="talent in selectedAllTalent.slice(0, 5)" 
+									:key="talent.name"
+									class="flex items-center gap-3"
+								>
+									<Avatar
+										:label="talent.full_name"
+										:image="talent.avatar"
+										size="sm"
+									/>
+									<div>
+										<div class="font-medium text-sm text-gray-900">{{ talent.full_name }}</div>
+										<div class="text-xs text-gray-500">{{ talent.email }}</div>
+									</div>
+								</div>
+								<div v-if="selectedAllTalent.length > 5" class="text-xs text-gray-500 text-center pt-2">
+									{{ __('và {0} talent(s) khác...', [selectedAllTalent.length - 5]) }}
+								</div>
+							</div>
+						</div>
+
+						<div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+							<div class="flex gap-2">
+								<FeatherIcon name="alert-circle" class="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+								<div class="text-xs text-yellow-800">
+									<p class="font-medium">{{ __('Lưu ý quan trọng:') }}</p>
+									<p>{{ __('Việc xóa sẽ được đưa vào hàng đợi xử lý. Bạn sẽ nhận được thông báo khi quá trình hoàn tất.') }}</p>
+									<p>{{ __('Hành động này không thể hoàn tác.') }}</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</template>
+
+				<template #actions>
+					<div class="flex justify-end gap-3 pt-4">
+						<Button
+							variant="outline"
+							theme="gray"
+							@click="showBulkDeleteDialog = false"
+							class="px-4"
+						>
+							{{ __('Hủy') }}
+						</Button>
+						<Button
+							variant="solid"
+							theme="red"
+							@click="confirmBulkDelete"
+							:loading="isBulkDeleting"
+							class="px-4"
+						>
+							{{ __('Xóa {0} talent(s)', [selectedAllTalent.length]) }}
+						</Button>
+					</div>
+				</template>
+			</Dialog>
 		</div>
 	</div>
 </template>
@@ -905,11 +1102,14 @@ import {
 	Avatar,
 	FeatherIcon,
 	FileUploader,
+	Dialog,
+	call,
 } from 'frappe-ui'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import { useRouter } from 'vue-router'
 import { useToast } from '@/composables/useToast'
 import { useTalentStore } from '@/stores/talent'
+import { globalStore } from '@/stores/global';
 import UploadExcelTalentModal from '@/components/UploadExcelTalentModal.vue'
 import BulkCVUploadModal from '@/components/BulkCVUploadModal.vue'
 import ATSTalentSyncDialog from '@/components/ATSTalentSyncDialog.vue'
@@ -919,6 +1119,7 @@ const { showSuccess, showError } = useToast()
 const router = useRouter()
 //Store
 const talentPoolStore = useTalentStore()
+const { $socket } = globalStore();
 const openDialogTalentOption = ref(false) // 4 option dialog
 const showTalentForm = ref(false) //create talent dialog
 const newTalent = ref({
@@ -929,27 +1130,40 @@ const newTalent = ref({
 	latest_company: '',
 	total_years_of_experience: null,
 	desired_role: '',
-	source: 'NEW',
+	source: 'Manually',
 	// internal_rating: 0,
 	interaction_notes: '',
 	skills: [],
 	current_status: 'Active',
+	crm_status: 'New',
 	resume: null,
 })
 const sourceOptions = ref([
-	'NEW',
-	'Referral',
+	'Manually',
+	'Zalo',
+	'Facebook',
 	'LinkedIn',
-	'Job Board',
-	'Website',
-	'Agency',
-	'Campus',
-	'Other',
+	'Referral',
+	'Headhunter',
+	'Nurturing Interaction',
+	'Import Excel',
 ])
 const loading = computed(() => talentPoolStore.loading)
 const skillInput = ref('')
 const skillTags = ref([])
-const talents = computed(() => talentPoolStore.talents)
+// Force reactivity by creating a reactive reference
+const forceUpdate = ref(0)
+// Track deleted talents to prevent them from reappearing
+const deletedTalentIds = ref(new Set())
+
+const talents = computed(() => {
+	// Access forceUpdate to trigger reactivity
+	forceUpdate.value
+	// Filter out deleted talents
+	return talentPoolStore.talents.filter(talent => 
+		!deletedTalentIds.value.has(talent.name)
+	)
+})
 // Talent checkall
 const selectedAllTalent = ref([])
 const currentPageTalentIds = computed(() => talents.value.map((t) => t.name))
@@ -1087,16 +1301,28 @@ const handleSearchInput = (event) => {
 }
 
 const handleRefresh = async () => {
+	// Clear deleted tracking on manual refresh
+	deletedTalentIds.value.clear()
+	console.log('Manual refresh - cleared deleted talents tracking')
+	
 	await talentPoolStore.fetchTalents({
 		page: talentPoolStore.pagination.page,
 		limit: talentPoolStore.pagination.limit,
 	})
+	
+	forceUpdate.value++
 }
 
 const showUploadModal = ref(false)
 const showBulkUploadModal = ref(false)
 const showATSTalentSyncDialog = ref(false)
+const showDeleteDialog = ref(false)
+const talentToDelete = ref(null)
+const isDeleting = ref(false)
+const showBulkDeleteDialog = ref(false)
+const isBulkDeleting = ref(false)
 const searchTimeout = ref(null)
+const emailError = ref('')
 const isEmailValid = computed(() => {
 	const email = newTalent.value.email
 	if (!email) return true // Empty is valid until submit
@@ -1111,6 +1337,28 @@ const processSkills = (skills) => {
 		.split(',')
 		.map((skill) => decodeURIComponent(skill.trim()))
 		.filter(Boolean)
+}
+
+const formatDate = (dateString) => {
+	if (!dateString) return '-'
+	const date = new Date(dateString)
+	const now = new Date()
+	const diffTime = Math.abs(now - date)
+	const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+	
+	// If less than 1 day ago, show "Today"
+	if (diffDays === 0) return 'Hôm nay'
+	// If 1 day ago, show "Yesterday"
+	if (diffDays === 1) return 'Hôm qua'
+	// If less than 7 days, show "X days ago"
+	if (diffDays < 7) return `${diffDays} ngày trước`
+	
+	// Otherwise show formatted date
+	return date.toLocaleDateString('vi-VN', {
+		day: '2-digit',
+		month: '2-digit',
+		year: 'numeric'
+	})
 }
 
 const closeDialogOptions = () => {
@@ -1175,6 +1423,37 @@ const addSkill = () => {
 	})
 
 	skillInput.value = ''
+}
+
+const removeSkill = (index) => {
+	skillTags.value.splice(index, 1)
+}
+
+const checkEmail = async () => {
+	if (!newTalent.value.email) {
+		emailError.value = ''
+		return
+	}
+
+	// Validate email format first
+	const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+	if (!emailRegex.test(newTalent.value.email)) {
+		emailError.value = 'Please enter a valid email address'
+		return
+	}
+
+	// Check for duplicate email
+	try {
+		const emailExists = await talentPoolStore.checkEmailExists(newTalent.value.email)
+		if (emailExists) {
+			emailError.value = 'This email is already in use. Please use a different email address.'
+		} else {
+			emailError.value = ''
+		}
+	} catch (error) {
+		console.error('Error checking email:', error)
+		emailError.value = ''
+	}
 }
 
 // Handle talent submit talent (create talent)
@@ -1294,7 +1573,10 @@ const handleTalentSubmit = async () => {
 				resume: null,
 			}
 			// Refresh the talents list
-			await talentPoolStore.fetchTalents()
+			await talentPoolStore.fetchTalents({
+				page: talentPoolStore.pagination.page,
+				limit: talentPoolStore.pagination.limit,
+			})
 		} catch (error) {
 			console.error('Error creating talent:', error)
 			showError(error.message || __('Failed to create talent. Please try again.'))
@@ -1317,7 +1599,10 @@ const closeUploadModal = () => {
 
 const handleTalentCreated = async (result) => {
 	showSuccess(`Successfully created ${result.success} talent`)
-	await talentPoolStore.fetchTalents()
+	await talentPoolStore.fetchTalents({
+		page: talentPoolStore.pagination.page,
+		limit: talentPoolStore.pagination.limit,
+	})
 }
 
 const openUploadMany = () => {
@@ -1333,7 +1618,10 @@ const syncFromATS = () => {
 
 const handleSyncSuccess = async () => {
 	showSuccess(__('Talents synced successfully from ATS'))
-	await talentPoolStore.fetchTalents()
+	await talentPoolStore.fetchTalents({
+		page: talentPoolStore.pagination.page,
+		limit: talentPoolStore.pagination.limit,
+	})
 }
 
 const viewTalent = (talent) => {
@@ -1342,16 +1630,180 @@ const viewTalent = (talent) => {
 }
 
 const deleteTalent = (talent) => {
-	console.log('Delete talent', talent.name)
+	talentToDelete.value = talent
+	showDeleteDialog.value = true
+}
+
+const confirmDeleteTalent = async () => {
+	if (!talentToDelete.value) return
+	
+	isDeleting.value = true
+	try {
+		// Call API to delete talent
+		const response = await call('mbw_mira.mbw_mira.doctype.mira_talent.mira_talent.delete_talent', {
+			name: talentToDelete.value.name
+		})
+		
+		if (response.status === 'success') {
+			showSuccess(response.message || __('Talent deleted successfully'))
+			showDeleteDialog.value = false
+			talentToDelete.value = null
+			// Refresh the talents list
+			await talentPoolStore.fetchTalents({
+				page: talentPoolStore.pagination.page,
+				limit: talentPoolStore.pagination.limit,
+			})
+		} else {
+			showError(response.message || __('Failed to delete talent'))
+		}
+	} catch (error) {
+		console.error('Error deleting talent:', error)
+		showError(__('An error occurred while deleting the talent'))
+	} finally {
+		isDeleting.value = false
+	}
+}
+
+// Bulk delete function
+const confirmBulkDelete = async () => {
+	if (!selectedAllTalent.value.length) return
+	
+	isBulkDeleting.value = true
+	try {
+		// Extract talent names for the API call
+		const talentNames = selectedAllTalent.value.map(talent => talent.name)
+		
+		// Call API to delete multiple talents
+		const response = await call('mbw_mira.mbw_mira.doctype.mira_talent.mira_talent.delete_multiple_talents', {
+			names: talentNames
+		})
+		
+		if (response.status === 'success') {
+			showSuccess(response.message || __('Bulk delete request submitted successfully'))
+			showBulkDeleteDialog.value = false
+			// Clear selections
+			selectedAllTalent.value = []
+			// Refresh the talents list
+			await talentPoolStore.fetchTalents({
+				page: talentPoolStore.pagination.page,
+				limit: talentPoolStore.pagination.limit,
+			})
+		} else {
+			showError(response.message || __('Failed to submit bulk delete request'))
+		}
+	} catch (error) {
+		console.error('Error bulk deleting talents:', error)
+		showError(__('An error occurred while deleting the talents'))
+	} finally {
+		isBulkDeleting.value = false
+	}
+}
+
+// Socket listener for bulk delete completion
+const setupSocketListeners = () => {
+	$socket.on('bulk_remove_talent_complete', async (data) => {
+		console.log('Bulk delete completed:', data)
+		
+		if (data.status === 'success') {
+			if (data.queued > 0) {
+				console.log('Bulk delete success - removing talents optimistically')
+				console.log('Talents to remove:', data.queued_talents)
+				
+				// Add deleted talent IDs to global tracking
+				if (data.queued_talents && Array.isArray(data.queued_talents)) {
+					data.queued_talents.forEach(talentId => {
+						deletedTalentIds.value.add(talentId)
+						console.log(`Added talent ${talentId} to deleted list`)
+					})
+					
+					// Update pagination total
+					talentPoolStore.pagination.total -= data.queued_talents.length
+					
+					// Force UI update - computed property will automatically filter deleted talents
+					forceUpdate.value++
+					selectedAllTalent.value = []
+					
+					console.log('Optimistic update completed - deleted talents tracked')
+					showSuccess(`Successfully deleted ${data.queued} talent(s)`)
+				}
+				
+				// Polling mechanism to check if deletion is complete on server
+				let pollCount = 0
+				const maxPolls = 10 // Maximum 10 polls (30 seconds)
+				
+				const pollForDeletion = async () => {
+					pollCount++
+					console.log(`Polling attempt ${pollCount} to verify deletion...`)
+					
+					try {
+						// Fetch fresh data from server (this will update the store)
+						await talentPoolStore.fetchTalents({
+							page: talentPoolStore.pagination.page,
+							limit: talentPoolStore.pagination.limit,
+						})
+						
+						// Check which deleted talents no longer exist on server
+						const talentsStillOnServer = []
+						const talentsReallyDeleted = []
+						
+						data.queued_talents.forEach(talentId => {
+							const stillExists = talentPoolStore.talents.some(t => t.name === talentId)
+							if (stillExists) {
+								talentsStillOnServer.push(talentId)
+							} else {
+								talentsReallyDeleted.push(talentId)
+							}
+						})
+						
+						// Remove talents that are confirmed deleted from our tracking
+						talentsReallyDeleted.forEach(talentId => {
+							deletedTalentIds.value.delete(talentId)
+							console.log(`Talent ${talentId} confirmed deleted on server`)
+						})
+						
+						if (talentsStillOnServer.length > 0 && pollCount < maxPolls) {
+							console.log(`${talentsStillOnServer.length} talents still exist on server, polling again in 3 seconds...`)
+							setTimeout(pollForDeletion, 3000)
+						} else {
+							console.log('All deletions verified on server or max polls reached')
+							forceUpdate.value++
+						}
+					} catch (error) {
+						console.error('Error polling for deletion:', error)
+					}
+				}
+				
+				// Start polling after 5 seconds
+				setTimeout(pollForDeletion, 5000)
+			}
+			if (data.failed > 0) {
+				showError(`Failed to queue ${data.failed} talent(s) for deletion`)
+			}
+		} else {
+			showError(data.message || 'Bulk delete operation failed')
+		}
+	})
+}
+
+// Cleanup socket listeners
+const cleanupSocketListeners = () => {
+	if ($socket) {
+		$socket.off('bulk_remove_talent_complete')
+	}
 }
 
 onMounted(async () => {
-	await talentPoolStore.fetchTalents()
+	setupSocketListeners()
+	await talentPoolStore.fetchTalents({
+		page: talentPoolStore.pagination.page,
+		limit: talentPoolStore.pagination.limit,
+	})
 })
 
 onUnmounted(() => {
 	if (searchTimeout.value) {
 		clearTimeout(searchTimeout.value)
 	}
+	cleanupSocketListeners()
 })
 </script>

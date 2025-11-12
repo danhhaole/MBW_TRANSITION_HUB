@@ -93,10 +93,10 @@ export const useTalentStore = defineStore('talent', {
 						"*"
 					],
 					limit_page_length: options.limit || this.pagination.limit,
-					limit_start: options.page
-						? (options.page - 1) * (options.limit || this.pagination.limit)
-						: 0,
-					order_by: options.order_by || 'modified desc',
+					limit_start: ((options.page || this.pagination.page) - 1) * (options.limit || this.pagination.limit),
+					order_by: 'creation desc',
+					// Add cache busting parameter
+					_cache_bust: Date.now(),
 				}
 
 				// Add filters
