@@ -4,14 +4,17 @@ import hashlib
 import json
 from rapidfuzz import fuzz
 from frappe.utils import now_datetime
-from mbw_mira.mbw_mira.doctype.mira_interaction.mira_interaction import create_mira_interaction
+from mbw_mira.mbw_mira.doctype.mira_interaction.mira_interaction import (
+    create_mira_interaction,
+)
 from urllib.parse import unquote
 import ipaddress
 import csv
 
 
-def send_email_job(task_id,action):
+def send_email_job(task_id, action):
     from mbw_mira.utils.email import send_email
+
     """
     Gửi email cho ứng viên, hỗ trợ cả message raw hoặc template.
     """
@@ -19,7 +22,7 @@ def send_email_job(task_id,action):
     # Lấy thông tin candidate
     task = frappe.get_doc("Mira Task", task_id)
     talentprofiles = frappe.get_cached_doc("Mira Talent", task.related_talent)
-    
+
     logger = frappe.logger("campaign")
     if not talentprofiles.email:
         frappe.throw("Talent does not have an email.")
@@ -27,13 +30,13 @@ def send_email_job(task_id,action):
     if talentprofiles.email_opt_out:
         logger.error("Talent unsubcrible")
         return
-    #Nếu email không tồn tại
+    # Nếu email không tồn tại
     if talentprofiles.email_id_invalid:
         logger.error("Talent Email Invalid")
         return
 
-    context = (talentprofiles, task,action)
-    
+    context = (talentprofiles, task, action)
+
     condition = {}
     if hasattr(action, "action_parameters"):
         condition = json.loads(action.action_parameters)
@@ -68,7 +71,7 @@ def send_email_job(task_id,action):
             template=template,
             template_args=template_args,
         )
-        
+
         if result:
             task.status = "Completed"
             task.execution_result = {
@@ -135,9 +138,10 @@ def send_sms_job(talentprofile_id, action_id, step_id):
 
 def render_template(template_str, context):
     from urllib.parse import urlencode
+
     if not template_str:
         return "Xin chào bạn"
-    talentprofiles, task,action = context
+    talentprofiles, task, action = context
     # origin = frappe.request.headers.get("Origin")
     # protocol = frappe.request.scheme
     # host = frappe.request.host
@@ -176,7 +180,6 @@ def render_template(template_str, context):
     # context_parse["apply_link"] = (
     #     f"{base_url}/mbw_mira/application?campaign={task.flow}&email={talentprofiles.email}&name={talentprofiles.full_name}"
     # )
-    
 
     return frappe.render_template(template_str, context_parse)
 
@@ -198,7 +201,9 @@ def verify_signature(data, sig):
 
 
 # Tìm candidate khớp với talentsegment
-def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50, disenroll=False):
+def find_candidates_fuzzy(
+    criteria=None, segment_name=None, min_score=50, disenroll=False
+):
     """
     Tìm các ứng viên có mức độ khớp >= min_score (0–100) theo fuzzy matching
     giữa candidate và talent_segment conditions.
@@ -206,73 +211,104 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50, disenr
     try:
         # Convert min_score to float
         min_score = float(min_score) if min_score >= 0 else 50.0
-        
+
         # --- Load conditions từ segment ---
         conditions = []
         if segment_name:
-            conditions_str = frappe.db.get_value("Mira Segment", segment_name, "criteria")
+            conditions_str = frappe.db.get_value(
+                "Mira Segment", segment_name, "criteria"
+            )
             if conditions_str:
                 try:
                     conditions = json.loads(conditions_str or "[]")
                 except Exception as e:
                     frappe.log_error(f"Lỗi khi đọc conditions JSON: {e}")
                     return []
-        
+
         if not conditions or len(conditions) == 0:
-            frappe.throw(
-                f"Không tìm thấy điều kiện trong segment '{segment_name}'"
-            )
-        
+            frappe.throw(f"Không tìm thấy điều kiện trong segment '{segment_name}'")
+
         # --- Parse conditions thành criteria ---
         criteria_skills = []
         criteria_tags = []
         criteria_filters = {}
-        
+
         print(f"\n=== PARSING CONDITIONS ===")
         print(f"Total conditions: {len(conditions)}")
-        
+
         for condition in conditions:
             if len(condition) < 3:
                 continue
-                
+
             field, operator, value = condition[0], condition[1], condition[2]
             print(f"Condition: {field} {operator} {value}")
-            
+
             # Parse skills
             if field == "skills" and value:
                 if isinstance(value, str):
-                    criteria_skills = [unquote(s.strip().lower()) for s in value.split(",") if s.strip()]
+                    criteria_skills = [
+                        unquote(s.strip().lower())
+                        for s in value.split(",")
+                        if s.strip()
+                    ]
                 elif isinstance(value, list):
-                    criteria_skills = [unquote(s.strip().lower()) for s in value if s.strip()]
+                    criteria_skills = [
+                        unquote(s.strip().lower()) for s in value if s.strip()
+                    ]
                 print(f"  → Parsed skills: {criteria_skills}")
-            
+
             # Parse tags
             elif field == "tags" and value:
                 if isinstance(value, str):
-                    criteria_tags = [unquote(s.strip().lower()) for s in value.split(",") if s.strip()]
+                    criteria_tags = [
+                        unquote(s.strip().lower())
+                        for s in value.split(",")
+                        if s.strip()
+                    ]
                 elif isinstance(value, list):
-                    criteria_tags = [unquote(s.strip().lower()) for s in value if s.strip()]
+                    criteria_tags = [
+                        unquote(s.strip().lower()) for s in value if s.strip()
+                    ]
                 print(f"  → Parsed tags: {criteria_tags}")
-            
+
             # Parse other fields
             else:
                 criteria_filters[field] = {"operator": operator, "value": value}
                 print(f"  → Added filter: {field} {operator} {value}")
-        
+
         print(f"\n=== CRITERIA SUMMARY ===")
         print(f"Skills: {criteria_skills}")
         print(f"Tags: {criteria_tags}")
         print(f"Filters: {criteria_filters}")
-        
+
         if not criteria_skills and not criteria_tags and not criteria_filters:
             frappe.throw(
                 f"Không tìm thấy tiêu chí hợp lệ trong segment '{segment_name}'"
             )
 
-        
-        #--Lấy danh sách talent trong talent pool
+        # --Lấy danh sách talent trong talent pool
         if disenroll:
-            talent_profiles = frappe.get_all("Mira Talent Pool",filters={"segment_id": segment_name},fields=["talent_id.*"]) #, "enroll_type":"Automatic"
+            talent_profiles = frappe.db.get_all(
+                "Mira Talent Pool",
+                filters={"segment_id": segment_name},
+                fields=[
+                    "*",
+                    "talent_id.full_name",
+                    "talent_id.email",
+                    "talent_id.phone",
+                    "talent_id.skills",
+                    "talent_id.tags",
+                    "talent_id.source",
+                    "talent_id.desired_role",
+                    "talent_id.current_city",
+                    "talent_id.crm_status",
+                    "talent_id.total_years_of_experience",
+                    "talent_id.availability_date",
+                    "talent_id.internal_rating",
+                    "talent_id.soft_skills",
+                    "talent_id.cultural_fit",
+                ],
+            )  # , "enroll_type":"Automatic"
         else:
             # --- Lấy danh sách ứng viên ---
             talent_profiles = frappe.get_all(
@@ -282,18 +318,18 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50, disenr
             )
 
         results = []
-        
+        print("+++++++++++++++++++++", talent_profiles, segment_name)
         print(f"\n=== PROCESSING {len(talent_profiles)} CANDIDATES ===")
 
         for idx, c in enumerate(talent_profiles):
             talent_skills = c.get("skills")
             talent_tags = c.get("tags")
             talent_source = c.get("source")
-            candidate_skills =[]
-            candidate_tags =[]
-            
+            candidate_skills = []
+            candidate_tags = []
+
             print(f"\n--- Candidate {idx + 1}: {c.get('full_name')} ---")
-            
+
             # Chuyển skills thành list nếu là chuỗi
             if talent_skills:
                 if isinstance(talent_skills, str):
@@ -303,13 +339,25 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50, disenr
                         json_str = talent_skills.replace("'", '"')
                         parsed = json.loads(json_str)
                         if isinstance(parsed, list):
-                            candidate_skills = [unquote(str(s).strip().lower()) for s in parsed if s]
+                            candidate_skills = [
+                                unquote(str(s).strip().lower()) for s in parsed if s
+                            ]
                         else:
-                            candidate_skills = [unquote(s.strip().lower()) for s in talent_skills.split(",") if s.strip()]
+                            candidate_skills = [
+                                unquote(s.strip().lower())
+                                for s in talent_skills.split(",")
+                                if s.strip()
+                            ]
                     except Exception as e:
-                        print(f"  Error parsing skills JSON: {e}, trying comma-separated")
+                        print(
+                            f"  Error parsing skills JSON: {e}, trying comma-separated"
+                        )
                         # Not JSON, treat as comma-separated
-                        candidate_skills = [unquote(s.strip().lower()) for s in talent_skills.split(",") if s.strip()]
+                        candidate_skills = [
+                            unquote(s.strip().lower())
+                            for s in talent_skills.split(",")
+                            if s.strip()
+                        ]
                 elif isinstance(talent_skills, list):
                     # Clean each skill - remove brackets and quotes
                     cleaned_skills = []
@@ -321,7 +369,7 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50, disenr
                                 cleaned_skills.append(unquote(cleaned.lower()))
                     candidate_skills = cleaned_skills
                 print(f"Candidate skills: {candidate_skills}")
-            
+
             if talent_tags:
                 if isinstance(talent_tags, str):
                     # Try to parse as JSON first
@@ -330,13 +378,23 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50, disenr
                         json_str = talent_tags.replace("'", '"')
                         parsed = json.loads(json_str)
                         if isinstance(parsed, list):
-                            candidate_tags = [unquote(str(s).strip().lower()) for s in parsed if s]
+                            candidate_tags = [
+                                unquote(str(s).strip().lower()) for s in parsed if s
+                            ]
                         else:
-                            candidate_tags = [unquote(s.strip().lower()) for s in talent_tags.split(",") if s.strip()]
+                            candidate_tags = [
+                                unquote(s.strip().lower())
+                                for s in talent_tags.split(",")
+                                if s.strip()
+                            ]
                     except Exception as e:
                         print(f"  Error parsing tags JSON: {e}, trying comma-separated")
                         # Not JSON, treat as comma-separated
-                        candidate_tags = [unquote(s.strip().lower()) for s in talent_tags.split(",") if s.strip()]
+                        candidate_tags = [
+                            unquote(s.strip().lower())
+                            for s in talent_tags.split(",")
+                            if s.strip()
+                        ]
                 elif isinstance(talent_tags, list):
                     # Clean each tag - remove brackets and quotes
                     cleaned_tags = []
@@ -348,7 +406,7 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50, disenr
                                 cleaned_tags.append(unquote(cleaned.lower()))
                     candidate_tags = cleaned_tags
                 print(f"Candidate tags: {candidate_tags}")
-            
+
             # --- Tính điểm fuzzy ---
             total_score = 0
             score_breakdown = []
@@ -365,10 +423,12 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50, disenr
                         )
                         total_score += best_score
                         score_breakdown.append(f"Skill '{crit_skill}': {best_score}")
-                        print(f"  Skill '{crit_skill}' → best match score: {best_score}")
+                        print(
+                            f"  Skill '{crit_skill}' → best match score: {best_score}"
+                        )
                     except Exception as e:
                         print(f"  Error matching skill: {e}")
-            
+
             if criteria_tags:
                 print(f"Checking tags...")
                 for criteria_tag in criteria_tags:
@@ -382,7 +442,7 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50, disenr
                     total_score += best_score
                     score_breakdown.append(f"Tag '{criteria_tag}': {best_score}")
                     print(f"  Tag '{criteria_tag}' → best match score: {best_score}")
-                    
+
             # Check other filters
             if criteria_filters:
                 print(f"Checking filters...")
@@ -390,11 +450,11 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50, disenr
                     operator = filter_data.get("operator")
                     value = filter_data.get("value")
                     talent_value = c.get(field)
-                    
+
                     if not talent_value:
                         print(f"  Filter '{field}': No value in candidate")
                         continue
-                    
+
                     # Simple matching for now
                     matched = False
                     if operator in ["==", "equals"]:
@@ -405,21 +465,29 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50, disenr
                         if str(value).lower() in str(talent_value).lower():
                             total_score += 100
                             matched = True
-                    
-                    score_breakdown.append(f"Filter '{field}' {operator} '{value}': {100 if matched else 0}")
-                    print(f"  Filter '{field}' {operator} '{value}' → {'MATCH' if matched else 'NO MATCH'}")
-            
+
+                    score_breakdown.append(
+                        f"Filter '{field}' {operator} '{value}': {100 if matched else 0}"
+                    )
+                    print(
+                        f"  Filter '{field}' {operator} '{value}' → {'MATCH' if matched else 'NO MATCH'}"
+                    )
+
             # Calculate average score
-            total_criteria = len(criteria_skills) + len(criteria_tags) + len(criteria_filters)
+            total_criteria = (
+                len(criteria_skills) + len(criteria_tags) + len(criteria_filters)
+            )
             if total_criteria == 0:
                 continue
-                
+
             avg_score = total_score / total_criteria
-            
-            print(f"Total score: {total_score} / {total_criteria} criteria = {avg_score:.2f}")
+
+            print(
+                f"Total score: {total_score} / {total_criteria} criteria = {avg_score:.2f}"
+            )
             print(f"Min score required: {min_score}")
             print(f"Result: {'✓ PASS' if avg_score >= min_score else '✗ FAIL'}")
-            
+
             if avg_score >= min_score:
                 results.append(
                     {
@@ -436,36 +504,43 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50, disenr
 
         # Sắp xếp theo điểm giảm dần
         results.sort(key=lambda x: x["score"], reverse=True)
-        
+
         print(f"\n=== FINAL RESULTS ===")
         print(f"Total candidates matched: {len(results)}")
         for r in results[:5]:  # Show top 5
             print(f"  {r['full_name']}: {r['score']}")
-        
+
         return results
 
     except Exception as e:
         print(f"\n=== ERROR ===")
         print(f"Exception: {str(e)}")
         import traceback
+
         traceback.print_exc()
         return []
 
+
 def render_merge_tags(html: str, context: dict) -> str:
     import re
+
     def replacer(match):
         tag = match.group(1).strip()
         return context.get(tag, f"{{{{ {tag} }}}}")  # nếu không có thì giữ nguyên
 
     return re.sub(r"\{\{\s*(.*?)\s*\}\}", replacer, html)
+
+
 def convert_po_to_csv(po_path, csv_path):
     import polib
+
     po = polib.pofile(po_path)
-    with open(csv_path, 'w', newline='', encoding='utf-8') as f:
+    with open(csv_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         for entry in po:
             if entry.msgid:
                 writer.writerow([entry.msgid, entry.msgstr])
+
 
 # def translate_po_file(input_po_path, output_po_path):
 #     from deep_translator import GoogleTranslator
