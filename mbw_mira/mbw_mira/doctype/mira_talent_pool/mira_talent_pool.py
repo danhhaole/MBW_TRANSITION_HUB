@@ -54,7 +54,7 @@ def update_status_talent_profile(talent_id):
     frappe.db.set_value("Mira Prospect",talent_id,"status","CATEGORIZED")
     frappe.db.commit()
 
-@frappe.whitelist(allow_guest=False)
+@frappe.whitelist()
 def bulk_insert_segments():
     """
     Bulk insert Mira Talent Pool records directly (no queue).
@@ -132,6 +132,7 @@ def bulk_insert_segments():
                     # Insert new record
                     doc = frappe.new_doc("Mira Talent Pool")
                     doc.update(item)
+                    doc.update({"enroll_type":"Manual"})
                     doc.insert(ignore_permissions=True)
                     
                     # Commit immediately to prevent race condition

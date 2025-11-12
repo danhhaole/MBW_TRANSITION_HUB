@@ -198,14 +198,14 @@ def verify_signature(data, sig):
 
 
 # Tìm candidate khớp với talentsegment
-def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50):
+def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50, disenroll=False):
     """
     Tìm các ứng viên có mức độ khớp >= min_score (0–100) theo fuzzy matching
     giữa candidate và talent_segment conditions.
     """
     try:
         # Convert min_score to float
-        min_score = float(min_score) if min_score else 50.0
+        min_score = float(min_score) if min_score >= 0 else 50.0
         
         # --- Load conditions từ segment ---
         conditions = []
@@ -269,13 +269,17 @@ def find_candidates_fuzzy(criteria=None, segment_name=None, min_score=50):
                 f"Không tìm thấy tiêu chí hợp lệ trong segment '{segment_name}'"
             )
 
-        # --- Lấy danh sách ứng viên ---
-        talent_profiles = frappe.get_all(
-            "Mira Talent",
-            # filters={"status": "NEW"},
-            fields=["name", "email", "full_name", "skills","tags","source"],
-        )
         
+        #--Lấy danh sách talent trong talent pool
+        if disenroll:
+            talent_profiles = frappe.get_all("Mira Talent Pool",filters={"segment_id": segment_name},fields=["talent_id.*"]) #, "enroll_type":"Automatic"
+        else:
+            # --- Lấy danh sách ứng viên ---
+            talent_profiles = frappe.get_all(
+                "Mira Talent",
+                # filters={"status": "NEW"},
+                fields=["*"],
+            )
 
         results = []
         

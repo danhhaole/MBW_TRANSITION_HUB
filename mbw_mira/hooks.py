@@ -159,7 +159,8 @@ scheduler_events = {
             "mbw_mira.schedulers.task_campaign.run_attraction_campaign",
             "mbw_mira.schedulers.task_campaign.run_nurture_campaign",
             "mbw_mira.schedulers.task_campaign.run_recruitment_campaign",
-            "mbw_mira.schedulers.auto_segment_talent_profiles.run",
+            "mbw_mira.schedulers.auto_segment_talent_profiles.run_enroll_talent_pool",
+            "mbw_mira.schedulers.auto_segment_talent_profiles.run_disenroll_talent_pool",
         ],
         "0/2 * * * *": [
             "mbw_mira.schedulers.task_mira_flow.schedule_message_tasks",
