@@ -24,8 +24,9 @@
 						{{ __('Khoảng thời gian:') }}
 					</label>
 					<select
-						v-model="timeRange"
+						v-model="selectedTimeRange"
 						class="text-sm px-3 py-1.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-white"
+						@change="handleTimeRangeChange"
 					>
 						<option value="30d">{{ __('30 ngày') }}</option>
 						<option value="90d">{{ __('90 ngày') }}</option>
@@ -33,7 +34,7 @@
 						<option value="q4">{{ __('Quý 4/2025') }}</option>
 					</select>
 				</div>
-				<Button variant="ghost" size="sm" :loading="refreshLoading" @click="refreshData">
+				<Button variant="ghost" size="sm" :loading="loading" @click="refreshData">
 					<template #prefix>
 						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -44,10 +45,10 @@
 			</div>
 
 			<!-- KPI Cards -->
-			<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+			<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
 				<StatCard
 					:label="__('Tổng Hồ sơ')"
-					:value="FIXED_TOTAL_POOL"
+					:value="marketingMetrics.totalTalentPool"
 					value-format="number"
 					icon-bg-class="bg-blue-50"
 					icon-bg-hover-class="bg-blue-100"
@@ -62,10 +63,11 @@
 
 				<StatCard
 					:label="__('Hồ sơ mới')"
-					:value="`+${currentData.kpi.growth}`"
+					:value="`+${marketingMetrics.newTalents}`"
 					icon-bg-class="bg-emerald-50"
 					icon-bg-hover-class="bg-emerald-100"
 					icon-color-class="text-emerald-600"
+					:meta="__('Trong khoảng thời gian đã chọn')"
 				>
 					<template #icon>
 						<svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -76,11 +78,12 @@
 
 				<StatCard
 					:label="__('Talent Nóng (MQL)')"
-					:value="currentData.kpi.hot"
+					:value="marketingMetrics.hotTalents"
 					value-format="number"
 					icon-bg-class="bg-orange-50"
 					icon-bg-hover-class="bg-orange-100"
 					icon-color-class="text-orange-600"
+					:meta="__('Tương tác cao')"
 				>
 					<template #icon>
 						<svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -91,11 +94,12 @@
 
 				<StatCard
 					:label="__('Chuyển đổi (SQL)')"
-					:value="currentData.kpi.converted"
+					:value="marketingMetrics.convertedTalents"
 					value-format="number"
 					icon-bg-class="bg-green-50"
 					icon-bg-hover-class="bg-green-100"
 					icon-color-class="text-green-600"
+					:meta="__('Trong khoảng thời gian đã chọn')"
 				>
 					<template #icon>
 						<svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -104,9 +108,9 @@
 					</template>
 				</StatCard>
 
-				<!-- <StatCard
+				<StatCard
 					:label="__('Chi phí/Talent')"
-					:value="currentData.kpi.cpl"
+					:value="marketingMetrics.costPerLead"
 					value-format="currency"
 					icon-bg-class="bg-purple-50"
 					icon-bg-hover-class="bg-purple-100"
@@ -118,7 +122,7 @@
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 						</svg>
 					</template>
-				</StatCard> -->
+				</StatCard>
 			</div>
 
 			<!-- Charts Row -->
@@ -156,11 +160,11 @@
 				<DataTable
 					:title="__('Chuyển đổi Theo Kênh')"
 					:columns="conversionColumns"
-					:data="conversionTable"
+					:data="conversionBySource"
 					row-key="channel"
 				>
 					<template #cell-rate="{ value }">
-						<span :class="value >= 5 ? 'text-green-600 font-semibold' : 'text-gray-700 font-semibold'">
+						<span :class="parseFloat(value) >= 5 ? 'text-green-600 font-semibold' : 'text-gray-700 font-semibold'">
 							{{ value }}%
 						</span>
 					</template>
@@ -171,8 +175,11 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
 import { Button, Breadcrumbs } from 'frappe-ui'
+import { useDashboardStore } from '@/stores/dashboard'
+import { useToast } from '@/composables/useToast'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import FunnelChart from '@/components/charts/FunnelChart.vue'
 import SourcePieChart from '@/components/charts/SourcePieChart.vue'
@@ -181,11 +188,22 @@ import StatCard from '@/components/shared/StatCard.vue'
 import TaskList from '@/components/shared/TaskList.vue'
 import DataTable from '@/components/shared/DataTableInChart.vue'
 
-// Data
-const timeRange = ref('90d')
-const refreshLoading = ref(false)
-const FIXED_TOTAL_POOL = 20
-const CAMPAIGN_NAMES = ['LLM Focus Q4', 'React Devs Q1', 'Senior Arch.', 'New Grads Sep', 'Data Eng. Q3']
+// Store
+const dashboardStore = useDashboardStore()
+const toast = useToast()
+
+// Store refs
+const {
+	marketingMetrics,
+	funnelData,
+	sourceData,
+	campaignPerformance,
+	conversionBySource,
+	loading
+} = storeToRefs(dashboardStore)
+
+// Local state
+const selectedTimeRange = ref('90d')
 
 // Breadcrumbs
 const breadcrumbs = [
@@ -201,117 +219,103 @@ const conversionColumns = [
 	{ key: 'rate', label: __('Tỷ lệ'), align: 'right' }
 ]
 
-// Conversion table data
-const conversionTable = [
-	{ channel: 'Referral', total: 150, hired: 12, rate: 8.0 },
-	{ channel: 'LinkedIn Campaign', total: 450, hired: 15, rate: 3.3 },
-	{ channel: 'Career Page Organic', total: 700, hired: 20, rate: 2.8 }
-]
+// Computed - Task list data
+const taskListData = computed(() => {
+	// Mock data - replace with real data from store when available
+	return [
+		{ 
+			id: 1,
+			text: 'Chuyển giao cho Recruiter: Le Nguyen (Đã mở 5 lần)', 
+			status: 'bg-red-500',
+			assignee: 'John Doe',
+			dueDate: '2025-11-15'
+		},
+		{ 
+			id: 2,
+			text: 'Gửi Follow-up cá nhân cho 15 MQLs (Campaign "LLM Focus")', 
+			status: 'bg-orange-500',
+			assignee: 'Jane Smith',
+			dueDate: '2025-11-16'
+		},
+		{ 
+			id: 3,
+			text: 'Review Source: Events Q3 (Tỷ lệ chuyển đổi thấp)', 
+			status: 'bg-blue-500',
+			assignee: 'Mike Johnson',
+			dueDate: '2025-11-20'
+		},
+		{ 
+			id: 4,
+			text: 'Liên hệ lại: Nhan Ngo (Cần xác nhận nhu cầu)', 
+			status: 'bg-orange-500',
+			assignee: 'Sarah Lee',
+			dueDate: '2025-11-18'
+		}
+	]
+})
 
-// Data by time range
-const dataByTime = {
-	'30d': {
-		kpi: { growth: 0, hot: 0, converted: 0, cpl: 6.2 },
-		funnel: { counts: [200, 110, 35, 12, 5], totalSent: 200 },
-		source: { counts: [350, 200, 100, 50, 50] },
-		campaign: { clicks: [15, 10, 5, 20, 8], sents: [90, 80, 70, 250, 60] }
-	},
-	'90d': {
-		kpi: { growth: 0, hot: 0, converted: 0, cpl: 5.5 },
-		funnel: { counts: [500, 250, 80, 30, 15], totalSent: 500 },
-		source: { counts: [1000, 750, 400, 350, 350] },
-		campaign: { clicks: [45, 32, 18, 60, 25], sents: [243, 225, 178, 800, 190] }
-	},
-	'ytd': {
-		kpi: { growth: 0, hot: 0, converted: 0, cpl: 5.0 },
-		funnel: { counts: [1500, 750, 250, 100, 45], totalSent: 1500 },
-		source: { counts: [1200, 800, 500, 200, 150] },
-		campaign: { clicks: [100, 80, 50, 150, 60], sents: [500, 450, 350, 1800, 400] }
-	},
-	'q4': {
-		kpi: { growth: 0, hot: 0, converted: 0, cpl: 5.8 },
-		funnel: { counts: [350, 180, 60, 20, 10], totalSent: 350 },
-		source: { counts: [700, 400, 200, 150, 100] },
-		campaign: { clicks: [30, 20, 10, 40, 15], sents: [180, 150, 120, 500, 130] }
-	}
-}
-
-// Computed
-const currentData = computed(() => dataByTime[timeRange.value])
-
-// Task list data
-const taskListData = computed(() => [
-	{ 
-		id: 1,
-		text: 'Chuyển giao cho Recruiter: Tung Nguyen (Đã mở 5 lần)', 
-		status: 'bg-red-500',
-		assignee: 'John Doe',
-		dueDate: '2025-11-15'
-	},
-	{ 
-		id: 2,
-		text: 'Gửi Follow-up cá nhân cho 15 MQLs (Campaign "LLM Focus")', 
-		status: 'bg-orange-500',
-		assignee: 'Jane Smith',
-		dueDate: '2025-11-16'
-	},
-	{ 
-		id: 3,
-		text: 'Review Source: Events Q3 (Tỷ lệ chuyển đổi thấp)', 
-		status: 'bg-blue-500',
-		assignee: 'Mike Johnson',
-		dueDate: '2025-11-20'
-	},
-	{ 
-		id: 4,
-		text: 'Liên hệ lại: Nhan Ngo (Cần xác nhận nhu cầu)', 
-		status: 'bg-orange-500',
-		assignee: 'Sarah Lee',
-		dueDate: '2025-11-18'
-	}
-])
-
-// Chart data transformers
+// Computed - Funnel chart data
 const funnelChartData = computed(() => {
 	const labels = ['Đã Gửi', 'Mở Email', 'Click Link', 'MQL', 'SQL']
 	const colors = ['#e2e8f0', '#94a3b8', '#fbbf24', '#10b981', '#3b82f6']
+	const values = [
+		funnelData.value.sent,
+		funnelData.value.opened,
+		funnelData.value.clicked,
+		funnelData.value.mql,
+		funnelData.value.sql
+	]
 	
 	return labels.map((label, index) => ({
 		name: label,
-		value: currentData.value.funnel.counts[index],
+		value: values[index],
 		color: colors[index],
-		totalSent: currentData.value.funnel.totalSent
+		totalSent: funnelData.value.sent || 1
 	}))
 })
 
+// Computed - Source chart data
 const sourceChartData = computed(() => {
-	const labels = ['LinkedIn', 'Career Page', 'Events', 'Referrals', 'Job Boards']
 	const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
 	
-	return labels.map((label, index) => ({
-		name: label,
-		value: currentData.value.source.counts[index],
-		color: colors[index]
+	return sourceData.value.map((item, index) => ({
+		name: item.name,
+		value: item.value,
+		color: colors[index % colors.length]
 	}))
 })
 
+// Computed - Campaign chart data
 const campaignChartData = computed(() => {
-	const data = currentData.value.campaign
-	const ctrValues = calculateCTR(data.clicks, data.sents)
-	
-	return CAMPAIGN_NAMES.map((name, index) => ({
-		name: name,
-		value: ctrValues[index]
+	return campaignPerformance.value.map(item => ({
+		name: item.name,
+		value: item.ctr
 	}))
 })
 
 // Methods
-const calculateCTR = (clicks, sents) => {
-	return clicks.map((clickCount, index) => {
-		const sentCount = sents[index]
-		if (sentCount === 0) return 0
-		return parseFloat(((clickCount / sentCount) * 100).toFixed(2))
-	})
+const handleTimeRangeChange = async () => {
+	try {
+		await dashboardStore.refreshMarketingDashboard(selectedTimeRange.value)
+		toast.success(__('Dữ liệu đã được cập nhật'))
+	} catch (error) {
+		console.error('Error changing time range:', error)
+		toast.error(__('Không thể cập nhật dữ liệu'))
+	}
+}
+
+const refreshData = async () => {
+	try {
+		const result = await dashboardStore.refreshMarketingDashboard(selectedTimeRange.value)
+		if (result.success) {
+			toast.success(__('Dữ liệu đã được làm mới'))
+		} else {
+			toast.error(__('Không thể làm mới một số dữ liệu'))
+		}
+	} catch (error) {
+		console.error('Error refreshing data:', error)
+		toast.error(__('Lỗi khi làm mới dữ liệu'))
+	}
 }
 
 const handleTaskClick = (task) => {
@@ -319,18 +323,15 @@ const handleTaskClick = (task) => {
 	// Handle task click - open modal, navigate, etc.
 }
 
-// Refresh Data
-const refreshData = async () => {
-	refreshLoading.value = true
+// Lifecycle
+onMounted(async () => {
 	try {
-		await new Promise(resolve => setTimeout(resolve, 800))
-		// In real app, fetch data from API here
+		await dashboardStore.refreshMarketingDashboard(selectedTimeRange.value)
 	} catch (error) {
-		console.error('Error refreshing data:', error)
-	} finally {
-		refreshLoading.value = false
+		console.error('Error loading dashboard:', error)
+		toast.error(__('Không thể tải dữ liệu dashboard'))
 	}
-}
+})
 </script>
 
 <style scoped>

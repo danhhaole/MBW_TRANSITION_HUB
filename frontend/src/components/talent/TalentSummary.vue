@@ -9,7 +9,7 @@
           </div>
           <div class="ml-4">
             <p class="text-sm font-medium text-blue-600">Applications</p>
-            <p class="text-2xl font-bold text-blue-900">12</p>
+            <p class="text-2xl font-bold text-blue-900">0</p>
           </div>
         </div>
       </div>
@@ -21,7 +21,7 @@
           </div>
           <div class="ml-4">
             <p class="text-sm font-medium text-green-600">Interviews</p>
-            <p class="text-2xl font-bold text-green-900">5</p>
+            <p class="text-2xl font-bold text-green-900">0</p>
           </div>
         </div>
       </div>
@@ -33,7 +33,7 @@
           </div>
           <div class="ml-4">
             <p class="text-sm font-medium text-purple-600">Rating</p>
-            <p class="text-2xl font-bold text-purple-900">4.8</p>
+            <p class="text-2xl font-bold text-purple-900">0</p>
           </div>
         </div>
       </div>
@@ -45,7 +45,7 @@
           </div>
           <div class="ml-4">
             <p class="text-sm font-medium text-orange-600">Response Time</p>
-            <p class="text-2xl font-bold text-orange-900">2h</p>
+            <p class="text-2xl font-bold text-orange-900">0</p>
           </div>
         </div>
       </div>
@@ -65,7 +65,7 @@
     <!-- Recent Activity Summary -->
     <div class="bg-white rounded-lg border border-gray-200 p-6">
       <h3 class="text-lg font-medium text-gray-900 mb-4">Recent Activity</h3>
-      <div class="space-y-4">
+      <!-- <div class="space-y-4">
         <div class="flex items-center space-x-4">
           <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
           <div class="flex-1">
@@ -87,14 +87,14 @@
             <p class="text-xs text-gray-500">3 days ago</p>
           </div>
         </div>
-      </div>
+      </div> -->
     </div>
 
     <!-- Skills Assessment -->
     <div class="bg-white rounded-lg border border-gray-200 p-6">
       <h3 class="text-lg font-medium text-gray-900 mb-4">Skills Assessment</h3>
       <div class="space-y-4">
-        <div>
+        <!-- <div>
           <div class="flex justify-between text-sm mb-1">
             <span class="text-gray-700">JavaScript</span>
             <span class="text-gray-500">90%</span>
@@ -120,7 +120,7 @@
           <div class="w-full bg-gray-200 rounded-full h-2">
             <div class="bg-purple-600 h-2 rounded-full" style="width: 75%"></div>
           </div>
-        </div>
+        </div> -->
       </div>
     </div>
   </div>

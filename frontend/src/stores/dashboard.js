@@ -3,6 +3,7 @@ import { call } from 'frappe-ui'
 
 export const useDashboardStore = defineStore('dashboard', {
   state: () => ({
+    // Existing state
     tasks: [],
     activeCampaigns: [],
     completedCampaigns: [],
@@ -11,7 +12,47 @@ export const useDashboardStore = defineStore('dashboard', {
     campaignsLoading: false,
     completedLoading: false,
     error: null,
+    
+    // Marketing metrics state
+    marketingMetrics: {
+      totalTalentPool: 0,
+      newTalents: 0,
+      hotTalents: 0, // MQL
+      convertedTalents: 0, // SQL
+      costPerLead: 0,
+      loading: false
+    },
+    
+    // Funnel data
+    funnelData: {
+      sent: 0,
+      opened: 0,
+      clicked: 0,
+      mql: 0,
+      sql: 0,
+      loading: false
+    },
+    
+    // Source attribution
+    sourceData: [],
+    sourceLoading: false,
+    
+    // Campaign performance
+    campaignPerformance: [],
+    campaignPerformanceLoading: false,
+    
+    // Conversion by source
+    conversionBySource: [],
+    conversionLoading: false,
+    
+    // Time range for data
+    timeRange: '90d',
+    
     statistics: {
+      totalTalent: 0,
+      totalNewTalent: 0,
+      totalTalentHot: 0,
+      totalTalentConvert: 0,
       totalTasks: 0,
       urgentTasks: 0,
       activeCampaigns: 0,
@@ -26,10 +67,351 @@ export const useDashboardStore = defineStore('dashboard', {
           (task.dueDate === 'Hôm nay' || task.dueDate === 'Quá hạn') &&
           task.status === 'PENDING_MANUAL'
       )
+    },
+    
+    // Get date range based on timeRange
+    dateRange: (state) => {
+      const now = new Date()
+      const ranges = {
+        '30d': new Date(now.setDate(now.getDate() - 30)),
+        '90d': new Date(now.setDate(now.getDate() - 90)),
+        'ytd': new Date(now.getFullYear(), 0, 1),
+        'q4': new Date(now.getFullYear(), 9, 1) // Oct 1
+      }
+      return ranges[state.timeRange] || ranges['90d']
     }
   },
 
   actions: {
+    // ==================== MARKETING METRICS ====================
+    
+    /**
+     * Fetch KPI metrics for marketing dashboard
+     */
+    async fetchMarketingMetrics(timeRange = null) {
+      try {
+        this.marketingMetrics.loading = true
+        if (timeRange) this.timeRange = timeRange
+        
+        const fromDate = this.dateRange
+        
+        // Fetch total talent pool size
+        const totalResult = await call('mbw_mira.api.doc.get_list_data', {
+          doctype: 'Mira Talent',
+          filters: { is_active: 1 },
+          fields: ['name'],
+          limit_page_length: 0 // Get count only
+        })
+        
+        this.marketingMetrics.totalTalentPool = totalResult?.total_count || 0
+        this.statistics.totalTalent = this.marketingMetrics.totalTalentPool
+        
+        // Fetch new talents in time range
+        const newTalentsResult = await call('mbw_mira.api.doc.get_list_data', {
+          doctype: 'Mira Talent',
+          filters: {
+            is_active: 1,
+            creation: ['>=', fromDate.toISOString()]
+          },
+          fields: ['name'],
+          limit_page_length: 0
+        })
+        
+        this.marketingMetrics.newTalents = newTalentsResult?.total_count || 0
+        this.statistics.totalNewTalent = this.marketingMetrics.newTalents
+        
+        // Fetch hot talents (MQL) - talents with high engagement
+        const hotTalentsResult = await call('mbw_mira.api.doc.get_list_data', {
+          doctype: 'Mira Talent',
+          filters: {
+            is_active: 1,
+            talent_status: ['in', ['MQL', 'HOT', 'ENGAGED']]
+          },
+          fields: ['name'],
+          limit_page_length: 0
+        })
+        
+        this.marketingMetrics.hotTalents = hotTalentsResult?.total_count || 0
+        this.statistics.totalTalentHot = this.marketingMetrics.hotTalents
+        
+        // Fetch converted talents (SQL)
+        const convertedResult = await call('mbw_mira.api.doc.get_list_data', {
+          doctype: 'Mira Talent',
+          filters: {
+            is_active: 1,
+            talent_status: ['in', ['SQL', 'CONVERTED', 'QUALIFIED']],
+            modified: ['>=', fromDate.toISOString()]
+          },
+          fields: ['name'],
+          limit_page_length: 0
+        })
+        
+        this.marketingMetrics.convertedTalents = convertedResult?.total_count || 0
+        this.statistics.totalTalentConvert = this.marketingMetrics.convertedTalents
+        
+        // Calculate Cost Per Lead (mock calculation)
+        // In real implementation, fetch from campaign budget
+        const totalCost = 1000 // Mock total marketing cost
+        this.marketingMetrics.costPerLead = this.marketingMetrics.newTalents > 0
+          ? (totalCost / this.marketingMetrics.newTalents).toFixed(2)
+          : 0
+        
+        return { success: true, data: this.marketingMetrics }
+      } catch (error) {
+        console.error('Error fetching marketing metrics:', error)
+        this.error = this.parseError(error)
+        return { success: false, error: this.error }
+      } finally {
+        this.marketingMetrics.loading = false
+      }
+    },
+    
+    /**
+     * Fetch funnel data (email campaign funnel)
+     */
+    async fetchFunnelData(timeRange = null) {
+      try {
+        this.funnelData.loading = true
+        if (timeRange) this.timeRange = timeRange
+        
+        const fromDate = this.dateRange
+        
+        // Get email campaign actions
+        const actionsResult = await call('mbw_mira.api.doc.get_list_data', {
+          doctype: 'Mira Action',
+          filters: {
+            action_type: ['in', ['EMAIL', 'MESSAGE']],
+            created_at: ['>=', fromDate.toISOString()]
+          },
+          fields: ['name', 'status', 'action_type', 'metadata'],
+          limit_page_length: 0
+        })
+        
+        const actions = actionsResult?.data || []
+        
+        // Calculate funnel metrics
+        this.funnelData.sent = actions.length
+        
+        // Mock data for now - in real implementation, parse metadata
+        this.funnelData.opened = Math.floor(actions.length * 0.5)
+        this.funnelData.clicked = Math.floor(actions.length * 0.16)
+        this.funnelData.mql = this.marketingMetrics.hotTalents
+        this.funnelData.sql = this.marketingMetrics.convertedTalents
+        
+        return { success: true, data: this.funnelData }
+      } catch (error) {
+        console.error('Error fetching funnel data:', error)
+        this.error = this.parseError(error)
+        return { success: false, error: this.error }
+      } finally {
+        this.funnelData.loading = false
+      }
+    },
+    
+    /**
+     * Fetch source attribution data
+     */
+    async fetchSourceData(timeRange = null) {
+      try {
+        this.sourceLoading = true
+        if (timeRange) this.timeRange = timeRange
+        
+        const fromDate = this.dateRange
+        
+        // Get talents grouped by source
+        const talentsResult = await call('mbw_mira.api.doc.get_list_data', {
+          doctype: 'Mira Talent',
+          filters: {
+            is_active: 1,
+            creation: ['>=', fromDate.toISOString()]
+          },
+          fields: ['name', 'source'],
+          limit_page_length: 0
+        })
+        
+        const talents = talentsResult?.data || []
+        
+        // Group by source
+        const sourceMap = new Map()
+        talents.forEach(talent => {
+          const source = talent.source || 'Unknown'
+          sourceMap.set(source, (sourceMap.get(source) || 0) + 1)
+        })
+        
+        // Transform to array format
+        this.sourceData = Array.from(sourceMap.entries()).map(([name, value]) => ({
+          name,
+          value,
+          percentage: talents.length > 0 ? ((value / talents.length) * 100).toFixed(1) : 0
+        }))
+        
+        return { success: true, data: this.sourceData }
+      } catch (error) {
+        console.error('Error fetching source data:', error)
+        this.error = this.parseError(error)
+        return { success: false, error: this.error }
+      } finally {
+        this.sourceLoading = false
+      }
+    },
+    
+    /**
+     * Fetch campaign performance (CTR)
+     */
+    async fetchCampaignPerformance(timeRange = null) {
+      try {
+        this.campaignPerformanceLoading = true
+        if (timeRange) this.timeRange = timeRange
+        
+        const fromDate = this.dateRange
+        
+        // Get campaigns with action stats
+        const campaignsResult = await call('mbw_mira.api.doc.get_list_data', {
+          doctype: 'Mira Campaign',
+          filters: {
+            is_active: 1,
+            start_date: ['>=', fromDate.toISOString()]
+          },
+          fields: ['name', 'campaign_name', 'status'],
+          limit_page_length: 5
+        })
+        
+        const campaigns = campaignsResult?.data || []
+        
+        // For each campaign, get action stats
+        this.campaignPerformance = await Promise.all(
+          campaigns.map(async (campaign) => {
+            // Get total sent actions for this campaign
+            const sentResult = await call('mbw_mira.api.doc.get_list_data', {
+              doctype: 'Mira Action',
+              filters: {
+                campaign_id: campaign.name,
+                action_type: ['in', ['EMAIL', 'MESSAGE']]
+              },
+              fields: ['name'],
+              limit_page_length: 0
+            })
+            
+            const totalSent = sentResult?.total_count || 0
+            
+            // Mock click data - in real implementation, get from metadata
+            const clicks = Math.floor(totalSent * (Math.random() * 0.15 + 0.05))
+            const ctr = totalSent > 0 ? ((clicks / totalSent) * 100).toFixed(2) : 0
+            
+            return {
+              name: campaign.campaign_name,
+              campaignId: campaign.name,
+              sent: totalSent,
+              clicks,
+              ctr: parseFloat(ctr)
+            }
+          })
+        )
+        
+        // Sort by CTR descending
+        this.campaignPerformance.sort((a, b) => b.ctr - a.ctr)
+        
+        return { success: true, data: this.campaignPerformance }
+      } catch (error) {
+        console.error('Error fetching campaign performance:', error)
+        this.error = this.parseError(error)
+        return { success: false, error: this.error }
+      } finally {
+        this.campaignPerformanceLoading = false
+      }
+    },
+    
+    /**
+     * Fetch conversion rates by source
+     */
+    async fetchConversionBySource(timeRange = null) {
+      try {
+        this.conversionLoading = true
+        if (timeRange) this.timeRange = timeRange
+        
+        const fromDate = this.dateRange
+        
+        // Get all talents with source
+        const talentsResult = await call('mbw_mira.api.doc.get_list_data', {
+          doctype: 'Mira Talent',
+          filters: {
+            is_active: 1,
+            creation: ['>=', fromDate.toISOString()]
+          },
+          fields: ['name', 'source', 'talent_status'],
+          limit_page_length: 0
+        })
+        
+        const talents = talentsResult?.data || []
+        
+        // Group by source
+        const sourceMap = new Map()
+        talents.forEach(talent => {
+          const source = talent.source || 'Unknown'
+          if (!sourceMap.has(source)) {
+            sourceMap.set(source, { total: 0, converted: 0 })
+          }
+          const stats = sourceMap.get(source)
+          stats.total++
+          if (['SQL', 'CONVERTED', 'QUALIFIED', 'HIRED'].includes(talent.talent_status)) {
+            stats.converted++
+          }
+        })
+        
+        // Transform to array format
+        this.conversionBySource = Array.from(sourceMap.entries())
+          .map(([source, stats]) => ({
+            channel: source,
+            total: stats.total,
+            hired: stats.converted,
+            rate: stats.total > 0 ? ((stats.converted / stats.total) * 100).toFixed(1) : 0
+          }))
+          .sort((a, b) => parseFloat(b.rate) - parseFloat(a.rate))
+        
+        return { success: true, data: this.conversionBySource }
+      } catch (error) {
+        console.error('Error fetching conversion by source:', error)
+        this.error = this.parseError(error)
+        return { success: false, error: this.error }
+      } finally {
+        this.conversionLoading = false
+      }
+    },
+    
+    /**
+     * Refresh all marketing dashboard data
+     */
+    async refreshMarketingDashboard(timeRange = null) {
+      try {
+        this.loading = true
+        this.error = null
+        
+        const results = await Promise.allSettled([
+          this.fetchMarketingMetrics(timeRange),
+          this.fetchFunnelData(timeRange),
+          this.fetchSourceData(timeRange),
+          this.fetchCampaignPerformance(timeRange),
+          this.fetchConversionBySource(timeRange)
+        ])
+        
+        // Check if any failed
+        const failures = results.filter(result => result.status === 'rejected')
+        if (failures.length > 0) {
+          console.warn('Some marketing data failed to load:', failures)
+        }
+        
+        return { success: true }
+      } catch (error) {
+        console.error('Error refreshing marketing dashboard:', error)
+        this.error = this.parseError(error)
+        return { success: false, error: this.error }
+      } finally {
+        this.loading = false
+      }
+    },
+    
+    // ==================== EXISTING ACTIONS ====================
+    
     // Load Tasks from Action doctype
     async fetchTasks() {
       try {

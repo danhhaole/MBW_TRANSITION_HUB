@@ -9,7 +9,7 @@
           </div>
           <div class="ml-4">
             <p class="text-sm font-medium text-blue-600">Total Applications</p>
-            <p class="text-2xl font-bold text-blue-900">12</p>
+            <p class="text-2xl font-bold text-blue-900">0</p>
           </div>
         </div>
       </div>
@@ -21,7 +21,7 @@
           </div>
           <div class="ml-4">
             <p class="text-sm font-medium text-green-600">Accepted</p>
-            <p class="text-2xl font-bold text-green-900">3</p>
+            <p class="text-2xl font-bold text-green-900">0</p>
           </div>
         </div>
       </div>
@@ -33,7 +33,7 @@
           </div>
           <div class="ml-4">
             <p class="text-sm font-medium text-orange-600">Pending</p>
-            <p class="text-2xl font-bold text-orange-900">5</p>
+            <p class="text-2xl font-bold text-orange-900">0</p>
           </div>
         </div>
       </div>
@@ -57,7 +57,7 @@
         <h3 class="text-lg font-medium text-gray-900">Recent Applications</h3>
       </div>
       <div class="divide-y divide-gray-200">
-        <div class="p-6">
+        <!-- <div class="p-6">
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-4">
               <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -151,7 +151,7 @@
               </Button>
             </div>
           </div>
-        </div>
+        </div> -->
       </div>
     </div>
 
@@ -160,7 +160,7 @@
       <h3 class="text-lg font-medium text-gray-900 mb-4">Application Timeline</h3>
       <div class="relative">
         <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
-        <div class="space-y-6">
+        <!-- <div class="space-y-6">
           <div class="relative flex items-start space-x-4">
             <div class="relative z-10 flex items-center justify-center w-8 h-8 bg-green-500 rounded-full">
               <FeatherIcon name="check" class="w-4 h-4 text-white" />
@@ -193,7 +193,7 @@
               <p class="text-xs text-gray-400">2 weeks ago</p>
             </div>
           </div>
-        </div>
+        </div> -->
       </div>
     </div>
   </div>

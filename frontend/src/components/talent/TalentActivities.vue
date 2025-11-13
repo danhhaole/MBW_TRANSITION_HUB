@@ -6,7 +6,7 @@
         <h3 class="text-lg font-medium text-gray-900">Recent Activities</h3>
       </div>
       <div class="divide-y divide-gray-200">
-        <div v-for="activity in activities" :key="activity.id" class="p-6">
+        <!-- <div v-for="activity in activities" :key="activity.id" class="p-6">
           <div class="flex items-start space-x-4">
             <div class="flex-shrink-0">
               <div 
@@ -29,14 +29,14 @@
               </div>
             </div>
           </div>
-        </div>
+        </div> -->
       </div>
     </div>
 
     <!-- Activity Timeline -->
     <div class="bg-white rounded-lg border border-gray-200 p-6">
       <h3 class="text-lg font-medium text-gray-900 mb-4">Activity Timeline</h3>
-      <div class="relative">
+      <!-- <div class="relative">
         <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
         <div class="space-y-6">
           <div class="relative flex items-start space-x-4">
@@ -105,11 +105,11 @@
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
     </div>
 
     <!-- Activity Stats -->
-    <div class="bg-white rounded-lg border border-gray-200 p-6">
+    <!-- <div class="bg-white rounded-lg border border-gray-200 p-6">
       <h3 class="text-lg font-medium text-gray-900 mb-4">Activity Statistics</h3>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div class="text-center p-4 bg-blue-50 rounded-lg">
@@ -144,7 +144,7 @@
           <p class="text-2xl font-bold text-orange-600">{{ getActivityCount('meeting') }}</p>
         </div>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 

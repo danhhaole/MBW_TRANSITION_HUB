@@ -9,7 +9,7 @@
           </div>
           <div class="ml-4">
             <p class="text-sm font-medium text-blue-600">Total Flows</p>
-            <p class="text-2xl font-bold text-blue-900">8</p>
+            <p class="text-2xl font-bold text-blue-900">0</p>
           </div>
         </div>
       </div>
@@ -21,7 +21,7 @@
           </div>
           <div class="ml-4">
             <p class="text-sm font-medium text-green-600">Campaigns</p>
-            <p class="text-2xl font-bold text-green-900">3</p>
+            <p class="text-2xl font-bold text-green-900">0</p>
           </div>
         </div>
       </div>
@@ -33,7 +33,7 @@
           </div>
           <div class="ml-4">
             <p class="text-sm font-medium text-purple-600">Sequences</p>
-            <p class="text-2xl font-bold text-purple-900">5</p>
+            <p class="text-2xl font-bold text-purple-900">0</p>
           </div>
         </div>
       </div>
@@ -43,7 +43,7 @@
     <div class="bg-white rounded-lg border border-gray-200 p-6">
       <h3 class="text-lg font-medium text-gray-900 mb-4">Flow Participation</h3>
       <div class="space-y-4">
-        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+        <!-- <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
           <div class="flex items-center space-x-3">
             <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
             <div>
@@ -83,7 +83,7 @@
             <Badge theme="orange" variant="subtle">Paused</Badge>
             <span class="text-sm text-gray-500">2/4</span>
           </div>
-        </div>
+        </div> -->
       </div>
     </div>
 
@@ -91,7 +91,7 @@
     <div class="bg-white rounded-lg border border-gray-200 p-6">
       <h3 class="text-lg font-medium text-gray-900 mb-4">Campaign History</h3>
       <div class="space-y-4">
-        <div class="border-l-4 border-blue-500 pl-4">
+        <!-- <div class="border-l-4 border-blue-500 pl-4">
           <div class="flex items-center justify-between">
             <div>
               <p class="font-medium text-gray-900">Email Campaign - Tech Talent Pool</p>
@@ -128,7 +128,7 @@
               <p class="text-xs text-gray-500">Read: Yes</p>
             </div>
           </div>
-        </div>
+        </div> -->
       </div>
     </div>
 
@@ -136,7 +136,7 @@
     <div class="bg-white rounded-lg border border-gray-200 p-6">
       <h3 class="text-lg font-medium text-gray-900 mb-4">Interaction Timeline</h3>
       <div class="relative">
-        <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+        <!-- <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
         <div class="space-y-6">
           <div class="relative flex items-start space-x-4">
             <div class="relative z-10 flex items-center justify-center w-8 h-8 bg-blue-500 rounded-full">
@@ -167,7 +167,7 @@
               <p class="text-xs text-gray-500">2 weeks ago</p>
             </div>
           </div>
-        </div>
+        </div> -->
       </div>
     </div>
   </div>
