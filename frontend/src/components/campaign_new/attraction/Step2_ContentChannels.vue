@@ -12,8 +12,13 @@
 
     <!-- Landing Page Selector (Section 2.1) -->
     <LandingPageSelector
-      :landing-page="localLandingPage"
-      @update:landing-page="updateLandingPage"
+      v-model:landing-page="localLandingPage"
+      v-model:page-data="localPageData"
+      v-model:ladipage-url="localLadipageUrl"
+      :campaign-id="props.name"
+      :campaign-name="campaignName"
+      :company-info="companyInfo"
+      :job-info="jobInfo"
     />
 
 
@@ -220,6 +225,10 @@ const props = defineProps({
     type: Array,
     default: () => []
   },
+  name: {
+    type: String,
+    default: ''
+  },
   facebookContent: {
     type: Object,
     default: () => ({
@@ -239,9 +248,29 @@ const props = defineProps({
     type: String,
     default: ''
   },
+  pageData: {
+    type: Object,
+    default: null
+  },
+  ladipageUrl: {
+    type: String,
+    default: ''
+  },
+  campaignId: {
+    type: String,
+    default: ''
+  },
   campaignName: {
     type: String,
     default: ''
+  },
+  companyInfo: {
+    type: Object,
+    default: () => ({})
+  },
+  jobInfo: {
+    type: Object,
+    default: () => ({})
   },
   showError: {
     type: Boolean,
@@ -249,11 +278,15 @@ const props = defineProps({
   }
 })
 
+console.log('✅ Props:', props)
+
 const emit = defineEmits([
   'update:selectedChannels',
   'update:facebookContent',
   'update:zaloContent',
-  'update:landingPage'
+  'update:landingPage',
+  'update:pageData',
+  'update:ladipageUrl'
 ])
 
 // Local state
@@ -275,6 +308,16 @@ const localZaloContent = computed({
 const localLandingPage = computed({
   get: () => props.landingPage,
   set: (value) => emit('update:landingPage', value)
+})
+
+const localPageData = computed({
+  get: () => props.pageData,
+  set: (value) => emit('update:pageData', value)
+})
+
+const localLadipageUrl = computed({
+  get: () => props.ladipageUrl,
+  set: (value) => emit('update:ladipageUrl', value)
 })
 
 // Computed

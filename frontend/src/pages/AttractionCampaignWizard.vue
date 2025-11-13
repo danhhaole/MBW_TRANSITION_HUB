@@ -33,6 +33,7 @@
     <div class="flex-1 overflow-y-auto bg-gray-50">
       <div class="max-w-7xl mx-auto px-6 py-8">
         <!-- Step 1: Campaign Info -->
+        {{ campaignData }}
         <CampaignStep1
           v-if="currentStep === 1"
           :campaign-name="campaignData.campaign_name"
@@ -53,12 +54,17 @@
           :facebook-content="campaignData.facebook_content"
           :zalo-content="campaignData.zalo_content"
           :landing-page="campaignData.landing_page"
+          :page-data="campaignData.page_data"
+          :ladipage-url="campaignData.ladipage_url"
           :campaign-name="campaignData.campaign_name"
+          :name="campaignData.name"
           :show-error="showValidationError"
           @update:selected-channels="campaignData.selected_channels = $event"
           @update:facebook-content="campaignData.facebook_content = $event"
           @update:zalo-content="campaignData.zalo_content = $event"
           @update:landing-page="campaignData.landing_page = $event"
+          @update:page-data="campaignData.page_data = $event"
+          @update:ladipage-url="campaignData.ladipage_url = $event"
         />
 
         <!-- Step 3: Settings -->
@@ -122,6 +128,8 @@ const campaignData = ref({
   // Step 2: Content & Channels
   selected_channels: [],
   landing_page: '',
+  page_data: null,
+  ladipage_url: '',
   facebook_content: {
     content: '',
     image: null,
@@ -578,7 +586,8 @@ const loadCampaignData = async (campaignId) => {
         type: campaign.type || props.campaignType,
         status: campaign.status || 'Draft',
         start_date: campaign.start_date ? moment(campaign.start_date).format('YYYY-MM-DDTHH:mm') : null,
-        flow_id: campaign.flow_id || null
+        flow_id: campaign.flow_id || null,
+        ladipage_url: campaign.ladipage_url || '',
       }
       
       console.log('✅ Campaign data loaded:', campaignData.value)
