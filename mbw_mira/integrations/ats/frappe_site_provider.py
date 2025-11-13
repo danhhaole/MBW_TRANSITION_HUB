@@ -19,10 +19,9 @@ class FrappeSiteProvider:
     + CRUD + sync_direction
     """
 
-    def __init__(self, source_name, timeout=120, max_retries=3, api_key_extent=None,api_sercret_extent=None,api_base_url_extent=None ):
+    def __init__(self, source_name, timeout=120, max_retries=3):
         self.source_doc = frappe.get_doc("Mira Data Source", source_name)
-        if api_key_extent and api_sercret_extent and api_base_url_extent:
-            self.source_doc = {"api_key":api_key_extent,"api_sercret":api_sercret_extent,"source_type":"ATS","same_site":0,"api_base_url":api_base_url_extent}
+        
         self.timeout = timeout
         self.max_retries = max_retries
 

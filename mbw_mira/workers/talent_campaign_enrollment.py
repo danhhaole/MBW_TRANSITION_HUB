@@ -4,7 +4,7 @@ from frappe.utils import now_datetime,add_days
 
 def enroll_talent_for_campaign(campaign_id):
     """
-    Worker: tìm ứng viên từ Mira Prospect theo campaign và tạo Mira Talent Campaign.
+    Worker: tìm ứng viên từ Mira Talent theo campaign và tạo Mira Talent Campaign.
     """
     talent_profiles = get_talents_segment_for_campaign(campaign_id)
 

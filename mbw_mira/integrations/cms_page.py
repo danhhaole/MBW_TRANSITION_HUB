@@ -61,27 +61,27 @@ def example_usage():
 
     # 1. Lấy template
     templates = cms.get_templates()
-    frappe.logger().info(templates)
+    print(templates)
 
-    # 2. Tạo page từ template
-    page = cms.create_page_by_template(
-        template_id="TPL001",
-        page_title="Trang tuyển dụng Dev",
-        company_name="MBW Corp",
-        job_title="Developer"
-    )
-    page_id = page["data"]["page_id"]
+    # # 2. Tạo page từ template
+    # page = cms.create_page_by_template(
+    #     template_id="TPL001",
+    #     page_title="Trang tuyển dụng Dev",
+    #     company_name="MBW Corp",
+    #     job_title="Developer"
+    # )
+    # page_id = page["data"]["page_id"]
 
-    # 3. Publish page
-    cms.publish_page(page_id)
+    # # 3. Publish page
+    # cms.publish_page(page_id)
 
-    # 4. Update recruitment info
-    cms.update_recruitment_page(page_id, salary="15M-20M")
+    # # 4. Update recruitment info
+    # cms.update_recruitment_page(page_id, salary="15M-20M")
 
-    # 5. Lấy chi tiết page
-    details = cms.get_page_details(page_id)
-    frappe.logger().info(details)
+    # # 5. Lấy chi tiết page
+    # details = cms.get_page_details(page_id)
+    # frappe.logger().info(details)
 
-    # 6. Unpublish và xóa page
-    cms.unpublish_page(page_id)
-    cms.delete_page(page_id)
+    # # 6. Unpublish và xóa page
+    # cms.unpublish_page(page_id)
+    # cms.delete_page(page_id)

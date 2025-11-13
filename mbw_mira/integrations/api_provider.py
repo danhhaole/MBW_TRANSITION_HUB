@@ -11,6 +11,7 @@ class APIProvider:
 
         # Lấy config từ site_config hoặc frappe conf
         provider_config = frappe.get_conf()
+        print(provider_config.get("base_url"))
         if not provider_config:
             frappe.throw(f"No config found for provider ")
 
@@ -33,7 +34,7 @@ class APIProvider:
     def _make_url(self, endpoint):
         base = self.base_url.rstrip("/")
         endpoint = endpoint.lstrip("/")
-        return f"{base}/{endpoint}"
+        return f"{base}/api/method/{endpoint}"
 
     def get(self, endpoint, params=None):
         res = requests.get(self._make_url(endpoint), headers=self._get_headers(), params=params)
