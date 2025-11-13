@@ -7,25 +7,39 @@ def create_action_for_talent_campaign(talent_campaign_id):
     Worker: Tạo Action cho Mira Talent Campaign ở bước hiện tại.
     """
     try:
-        tc = frappe.db.get_value("Mira Talent Campaign", talent_campaign_id,["name","campaign_id","current_step_order"],as_dict=1)
+        tc = frappe.db.get_value("Mira Talent Campaign", talent_campaign_id,["name","campaign_social"],as_dict=1)
 
         # lấy CampaignStep hiện tại
-        step = get_campaign_step(tc.campaign_id, tc.current_step_order)
+        step = get_campaign_social(tc.campaign_social)
 
         if not step:
             return
 
-        status_action = (
-                    "SCHEDULED"
-                    if step.action_type in ["SEND_EMAIL", "SEND_SMS", "SEND_NOTIFICATION"]
-                    else "PENDING_MANUAL"
-                )
+        status_action = "SCHEDULED"
+        # (
+        #             "SCHEDULED"
+        #             if step.action_type in ["SEND_EMAIL", "SEND_SMS", "SEND_NOTIFICATION"]
+        #             else "PENDING_MANUAL"
+        #         )
         # tạo Action
-        if not check_exists(tc.name,step.name):
+        action_type = ""
+        if step.action_type == 'Email':
+            action_type = "SEND_EMAIL"
+        elif step.action_type == 'Facebook':
+            action_type = 'POST_FACEBOOK'
+        elif step.action_type == 'Zalo':
+            action_type == 'SEND_ZALO'
+        elif step.action_type == 'Linkedin':
+            action_type = 'SEND_LINKEDIN'
+        elif step.action_type == 'TopCV':
+            action_type = 'POST_TOPCV'
+            
+        if not check_exists(tc.name,step.name) and action_type in ["SEND_EMAIL","SEND_ZALO"]:
             action = frappe.get_doc({
                 "doctype": "Mira Action",
                 "talent_campaign_id": tc.name,
-                "campaign_step": step.name,
+                "campaign_social": step.name,
+                "action_type":action_type,
                 "status": status_action,
                 "scheduled_at": now_datetime(),
                 "executed_at": None,
@@ -52,16 +66,13 @@ def check_exists(talent_campaign_id,campaign_step):
         return False
 
 
-def get_campaign_step(campaign_id, step_order):
+def get_campaign_social(campaign_social):
     """
-    Lấy CampaignStep theo campaign + step_order
+    Lấy CampaignStep theo campaign + campaign_social
     """
     step = frappe.db.get_value(
-        "Mira Campaign Step",
-        {
-            "campaign": campaign_id,
-            "step_order": step_order
-        },
-        ["name", "step_order", "action_type", "template", "delay_in_days", "action_config"], as_dict=1
+        "Mira Campaign Social",
+        campaign_social,
+        ["*"], as_dict=1
     )
     return step

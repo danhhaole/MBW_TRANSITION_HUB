@@ -7,7 +7,8 @@
  "engine": "InnoDB",
  "field_order": [
   "talent_campaign_id",
-  "campaign_step",
+  "campaign_social",
+  "action_type",
   "status",
   "scheduled_at",
   "executed_at",
@@ -15,13 +16,6 @@
   "assignee_id"
  ],
  "fields": [
-  {
-   "description": "(Foreign Key -> CampaignStep) B\u01b0\u1edbc \u0111\u00e3 t\u1ea1o ra h\u00e0nh \u0111\u1ed9ng n\u00e0y.",
-   "fieldname": "campaign_step",
-   "fieldtype": "Link",
-   "label": "Campaign Step",
-   "options": "Mira Campaign Step"
-  },
   {
    "fieldname": "status",
    "fieldtype": "Select",
@@ -55,12 +49,25 @@
    "fieldtype": "Link",
    "label": "TalentProfile Campaign",
    "options": "Mira Talent Campaign"
+  },
+  {
+   "description": "(Foreign Key -> CampaignSocail) B\u01b0\u1edbc \u0111\u00e3 t\u1ea1o ra h\u00e0nh \u0111\u1ed9ng n\u00e0y.",
+   "fieldname": "campaign_social",
+   "fieldtype": "Link",
+   "label": "Campaign Social",
+   "options": "Mira Campaign Social"
+  },
+  {
+   "fieldname": "action_type",
+   "fieldtype": "Select",
+   "label": "Action Type",
+   "options": "SEND_EMAIL\nSEND_ZALO\nPOST_FACEBOOK\nPOST_TOPCV\nPOST_LINKEDIN"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-13 11:55:57.702060",
+ "modified": "2025-11-13 15:01:19.086841",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Action",

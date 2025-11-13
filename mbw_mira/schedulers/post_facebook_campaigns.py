@@ -14,15 +14,18 @@ def run():
         "Mira Campaign Social",
         filters={
             "status":"Pending",
+            
             "post_schedule_time":["between", [before_60s, after_60s]]
         },
-        fields=["name", "campaign_name", "post_schedule_time","social_page_name","social_page_id","template_content"]
+        fields=["*"]
     )
     for c in campaigns:
-        if c.social_page_id and c.social_page_name and c.post_schedule_time:           
+        if c.social_page_id and c.social_page_name and c.post_schedule_time:         
+           
             frappe.enqueue(
-                "mbw_mira.workers.social.fetch_facebook_data.post_to_facebook",
-                share_name=c.name,
+                "mbw_mira.workers.process_action.process_facebook_action",
+                social=c,
+                campaign_id=c.campaign_id,                
                 queue="short"
             )
     return True

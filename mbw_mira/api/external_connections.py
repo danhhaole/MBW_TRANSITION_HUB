@@ -744,7 +744,7 @@ def share_job_posting(
         # Get job details
         # if not frappe.db.exists("Mira Job Opening", job_id):
         #     return {"status": "error", "message": "Job not found"}
-
+        
         # job = frappe.get_doc("Mira Job Opening", job_id)
         share_data = json.dumps(kwargs)
         # Create sharing record

@@ -8,6 +8,7 @@
  "field_order": [
   "campaign_id",
   "talent_id",
+  "campaign_social",
   "status",
   "enrolled_at",
   "current_step_order",
@@ -51,12 +52,18 @@
    "fieldtype": "Link",
    "label": "Talent",
    "options": "Mira Talent"
+  },
+  {
+   "fieldname": "campaign_social",
+   "fieldtype": "Link",
+   "label": "Campaign Social",
+   "options": "Mira Campaign Social"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-01 16:08:38.653950",
+ "modified": "2025-11-13 14:36:37.503950",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Talent Campaign",

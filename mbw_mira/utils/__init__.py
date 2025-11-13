@@ -11,7 +11,7 @@ from urllib.parse import unquote
 import ipaddress
 import csv
 
-
+#Send email chạy trigger 
 def send_email_job(task_id, action):
     from mbw_mira.utils.email import send_email
 
@@ -98,6 +98,87 @@ def send_email_job(task_id, action):
         task.status = "Failed"
         task.execution_result = {"error": str(e), "traceback": frappe.get_traceback()}
         task.save(ignore_permissions=True)
+        frappe.db.commit()
+        raise
+
+#Sử dụng send email khi chạy campaign thông quan action
+def send_email_action(talentprofile_id, action_id):
+    from mbw_mira.utils.email import send_email
+    """
+    Gửi email cho ứng viên, hỗ trợ cả message raw hoặc template.
+    """
+
+    # Lấy thông tin candidate
+    talentprofiles = frappe.get_cached_doc("Mira Talent", talentprofile_id)
+    action = frappe.get_doc("Mira Action", action_id)
+    step = frappe.get_cached_doc("Mira Campaign Social", action.campaign_social)
+    if not talentprofiles.email:
+        frappe.throw("Candidate does not have an email.")
+    # Nếu ứng viên đã unsubcrible
+    if talentprofiles.email_opt_out:
+        return
+
+    context = (talentprofiles, action, step)
+    message = render_template(step.template, context)
+
+    config_step = {}
+    if step and hasattr(step, "config"):
+        config_step = json.loads(step.config)
+    subject = "Thông báo"
+    if config_step and hasattr(config_step, "subject"):
+        subject = render_template(config_step.get("subject"), context)
+    talent_email = talentprofiles.email
+    template = None
+    template_args = None
+    if not talent_email:
+        logger.error("[EMAIL ERROR] Missing candidate_email")
+        return
+
+    if not subject:
+        logger.error(f"[EMAIL ERROR] Missing subject for {talent_email}")
+        return
+
+    if not message:
+        logger.error(
+            f"[EMAIL ERROR] Neither message nor template provided for {talent_email}"
+        )
+        return
+
+    action.executed_at = now_datetime()
+    try:
+        result = send_email(
+            recipients=[talent_email],
+            subject=subject,
+            content=message if not template else None,
+            template=template,
+            template_args=template_args,
+        )
+        create_mira_interaction(
+            {
+                "talent_id": talentprofile_id,
+                "interaction_type": "EMAIL_SENT",
+                "source_action": action.name,
+            }
+        )
+        if result:
+            action.status = "EXECUTED"
+            action.result = {
+                "status": "Success",
+                "message": f"[EMAIL] Sent to {talentprofile_id} — step: {step} — candidate: {talentprofile_id}",
+            }
+        else:
+            action.status = "FAILED"
+            action.result = {
+                "error": f"[EMAIL] Error Sent to {talent_email} — step: {step} — candidate: {talentprofile_id}",
+                "traceback": frappe.get_traceback(),
+            }
+        action.save(ignore_permissions=True)
+        frappe.db.commit()
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "[EMAIL ERROR] send_email_job")
+        action.status = "FAILED"
+        action.result = {"error": str(e), "traceback": frappe.get_traceback()}
+        action.save(ignore_permissions=True)
         frappe.db.commit()
         raise
 
@@ -530,6 +611,43 @@ def render_merge_tags(html: str, context: dict) -> str:
 
     return re.sub(r"\{\{\s*(.*?)\s*\}\}", replacer, html)
 
+OPERATOR_MAP = {
+    "==": "=",
+    "!=": "!=",
+    ">": ">",
+    "<": "<",
+    ">=": ">=",
+    "<=": "<="
+}
+
+def _normalize_condition(cond):
+    """
+    Chuyển condition từ campaign sang dạng filters Frappe.
+    Hỗ trợ AND/OR lồng nhau.
+    Ví dụ:
+        [["tags","==","Webinar"],"and",["skills","==","Python"]]
+    """
+    if isinstance(cond, str):
+        # parse JSON string
+        cond = json.loads(cond)
+
+    if not isinstance(cond, list):
+        frappe.throw(f"Invalid condition format: {cond}")
+
+    # Nếu list có 3 phần: [left, 'and/or', right]
+    if len(cond) == 3 and cond[1].lower() in ("and", "or"):
+        left = _normalize_condition(cond[0])
+        op = cond[1].lower()
+        right = _normalize_condition(cond[2])
+        return [left, op, right]
+
+    # Nếu là điều kiện đơn: [field, operator, value]
+    if len(cond) == 3:
+        field, operator, value = cond
+        operator = OPERATOR_MAP.get(operator, operator)
+        return [field, operator, value]
+
+    frappe.throw(f"Invalid condition format: {cond}")
 
 def convert_po_to_csv(po_path, csv_path):
     import polib
