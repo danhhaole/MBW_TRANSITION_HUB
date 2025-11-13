@@ -19,7 +19,7 @@
       </button>
     </div>
 
-    <!-- Show selection cards only on first time or after reset -->
+    <!-- Show selection cards when not in schedule mode -->
     <div v-if="!hasBeenSet" class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <!-- Start Now -->
       <div 
@@ -41,6 +41,8 @@
           </p>
         </div>
       </div>
+
+     
 
       <!-- Schedule Start -->
       <div 
@@ -64,8 +66,8 @@
       </div>
     </div>
 
-    <!-- Show DateTimePicker after selection -->
-    <div v-else>
+    <!-- Show DateTimePicker for scheduled mode -->
+    <div v-else-if="sendingStrategy === 'scheduled'">
       <DateTimePicker
         :model-value="startDate"
         @update:model-value="$emit('update:startDate', $event)"
@@ -77,11 +79,28 @@
         {{ __("Campaign will automatically start at the scheduled time") }}
       </p>
     </div>
+
+    <!-- Show confirmation for Send Now -->
+    <div v-else-if="sendingStrategy === 'now' && startDate === 'SEND_NOW'" class="bg-green-50 border border-green-200 rounded-lg p-4">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+          <FeatherIcon name="zap" class="h-5 w-5 text-green-600" />
+        </div>
+        <div>
+          <h4 class="text-sm font-semibold text-green-900">
+            {{ __('Ready to Start Immediately') }}
+          </h4>
+          <p class="text-xs text-green-700 mt-1">
+            {{ __('Campaign will start as soon as you click Continue') }}
+          </p>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { FeatherIcon, DateTimePicker } from 'frappe-ui'
 import moment from 'moment'
 
@@ -94,23 +113,23 @@ const props = defineProps({
 
 const emit = defineEmits(['update:startDate'])
 
-// Track if user has made a selection
-const hasBeenSet = ref(!!props.startDate)
+// Track if user has made a selection (only true if user actually selected something)
+const hasBeenSet = ref(false)
 
-// Initialize sendingStrategy based on existing start_date
-const sendingStrategy = ref(props.startDate ? 'scheduled' : 'now')
+// Initialize sendingStrategy - default to 'now' but don't auto-set
+const sendingStrategy = ref('now')
 
 // Select strategy and mark as set
 const selectStrategy = (strategy) => {
   sendingStrategy.value = strategy
-  hasBeenSet.value = true
   
   if (strategy === 'now') {
-    // Set to current datetime
-    const formattedNow = moment().format('YYYY-MM-DD HH:mm:ss')
-    emit('update:startDate', formattedNow)
+    // Just mark strategy, don't set datetime yet
+    // Will be set when user clicks Continue
+    emit('update:startDate', 'SEND_NOW')
   } else {
-    // Clear for user to select custom date
+    // Schedule mode - show datetime picker
+    hasBeenSet.value = true
     emit('update:startDate', '')
   }
 }
@@ -119,11 +138,20 @@ const selectStrategy = (strategy) => {
 const resetSelection = () => {
   hasBeenSet.value = false
   sendingStrategy.value = 'now'
+  // Clear the start date when resetting
+  emit('update:startDate', '')
 }
 
-// Set default start_date if not exists (only on first load)
-if (!props.startDate) {
-  const formattedNow = moment().format('YYYY-MM-DD HH:mm:ss')
-  emit('update:startDate', formattedNow)
-}
+// If props.startDate exists (from editing existing campaign), mark as set
+
+
+watch(() => props.startDate, () => {
+  if (props.startDate && props.startDate !== 'SEND_NOW') {
+    hasBeenSet.value = true
+    sendingStrategy.value = 'scheduled'
+  } else if (props.startDate === 'SEND_NOW') {
+    hasBeenSet.value = false
+    sendingStrategy.value = 'now'
+  }
+})
 </script>

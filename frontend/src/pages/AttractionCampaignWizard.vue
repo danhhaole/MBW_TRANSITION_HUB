@@ -85,6 +85,7 @@ import CampaignStep2 from '@/components/campaign_new/attraction/Step2_ContentCha
 import CampaignStep3 from '@/components/campaign_new/attraction/Step3_Settings.vue'
 import { useCampaignStore } from '@/stores/campaign'
 import { useToast } from '@/composables/useToast'
+import moment from 'moment'
 
 const props = defineProps({
   show: {
@@ -117,7 +118,7 @@ const campaignData = ref({
   campaign_name: '',
   description: '',
   target_pool: '',
-  start_date: new Date().toISOString().slice(0, 16), // Default to now
+  start_date: '', // Let CampaignSchedule handle default behavior
   // Step 2: Content & Channels
   selected_channels: [],
   landing_page: '',
@@ -234,7 +235,7 @@ const saveDraft = async () => {
         campaign_name: campaignData.value.campaign_name,
         description: campaignData.value.description,
         target_pool: campaignData.value.target_pool,
-        start_date: campaignData.value.start_date,
+        start_date: campaignData.value.start_date === 'SEND_NOW' ? moment().format('YYYY-MM-DDTHH:mm') : (campaignData.value.start_date || moment().format('YYYY-MM-DDTHH:mm')),
         type: campaignData.value.type,
         status: 'DRAFT'
       })
@@ -259,7 +260,7 @@ const saveDraft = async () => {
             campaign_name: campaignData.value.campaign_name,
             description: campaignData.value.description,
             target_pool: campaignData.value.target_pool,
-            start_date: campaignData.value.start_date
+            start_date: campaignData.value.start_date === 'SEND_NOW' ? moment().format('YYYY-MM-DDTHH:mm') : (campaignData.value.start_date || moment().format('YYYY-MM-DDTHH:mm'))
           }
         })
         console.log('✅ Campaign info updated')
@@ -576,6 +577,7 @@ const loadCampaignData = async (campaignId) => {
         // Meta
         type: campaign.type || props.campaignType,
         status: campaign.status || 'Draft',
+        start_date: campaign.start_date ? moment(campaign.start_date).format('YYYY-MM-DDTHH:mm') : null,
         flow_id: campaign.flow_id || null
       }
       
@@ -598,7 +600,7 @@ const resetCampaignData = () => {
     campaign_name: '',
     description: '',
     target_pool: '',
-    start_date: new Date().toISOString().slice(0, 16), // Reset to current time
+    start_date: '', // Let CampaignSchedule handle default behavior
     // Step 2: Content & Channels
     selected_channels: [],
     facebook_content: {

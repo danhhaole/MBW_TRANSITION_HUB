@@ -85,8 +85,9 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
-import { call } from 'frappe-ui'
+import { ref, computed, watch, onMounted } from 'vue'
+import { FeatherIcon, Button, call } from 'frappe-ui'
+import moment from 'moment'
 import CampaignWizardHeader from '@/components/campaign/CampaignWizardHeader.vue'
 import CampaignWizardStepper from '@/components/campaign/CampaignWizardStepper.vue'
 import CampaignStep1 from '@/components/campaign_new/recruitment/Step1_CampaignInfo.vue'
@@ -132,7 +133,7 @@ const campaignData = ref({
   channel: '',
   type: props.campaignType, // 'RECRUITMENT'
   status: 'Draft',
-  start_date: new Date().toISOString().slice(0, 16), // Default to now (YYYY-MM-DDTHH:MM)
+  start_date: null, // null = new campaign, datetime = edit mode
   // Step 2: Content & Channels (like Attraction)
   selected_channels: [],
   email_content: {
@@ -282,7 +283,7 @@ const saveDraft = async () => {
         condition_filter: JSON.stringify(campaignData.value.conditions),
         type: campaignData.value.type,
         status: 'DRAFT',
-        start_date: campaignData.value.start_date
+        start_date: campaignData.value.start_date === 'SEND_NOW' ? moment().format('YYYY-MM-DDTHH:mm') : (campaignData.value.start_date || moment().format('YYYY-MM-DDTHH:mm'))
       })
 
       if (result.success && result.data?.name) {
@@ -310,7 +311,7 @@ const saveDraft = async () => {
             description: campaignData.value.objective,
             target_pool: targetPool,
             condition_filter: JSON.stringify(campaignData.value.conditions),
-            start_date: campaignData.value.start_date
+            start_date: campaignData.value.start_date === 'SEND_NOW' ? moment().format('YYYY-MM-DDTHH:mm') : (campaignData.value.start_date || moment().format('YYYY-MM-DDTHH:mm'))
           }
         })
         console.log('✅ Campaign info updated')
@@ -329,13 +330,7 @@ const saveDraft = async () => {
     // Step 3: Save settings & actions
     if (currentStep.value === 3 && campaignData.value.name) {
       try {
-        await call('frappe.client.set_value', {
-          doctype: 'Mira Campaign',
-          name: campaignData.value.name,
-          fieldname: {
-            start_date: campaignData.value.start_date
-          }
-        })
+
         
         // Save step3 triggers separately if needed
         if (campaignData.value.triggers && campaignData.value.triggers.length > 0) {
@@ -402,18 +397,7 @@ const finalizeCampaign = async () => {
     console.log('📊 Step 3 triggers:', campaignData.value.triggers)
 
     // Step 2: Update campaign settings (start_date)
-    try {
-      await call('frappe.client.set_value', {
-        doctype: 'Mira Campaign',
-        name: campaignData.value.name,
-        fieldname: {
-          start_date: campaignData.value.start_date
-        }
-      })
-      console.log('✅ Campaign start_date updated')
-    } catch (error) {
-      console.error('❌ Error updating campaign settings:', error)
-    }
+
 
     // Step 3: Sync flows with event triggers (Step 3 only)
     try {
@@ -494,6 +478,8 @@ const loadCampaignData = async (campaignId) => {
         console.warn('Failed to parse condition_filter:', e)
         conditions = []
       }
+
+      console.log('Campaign data loaded:', result)
       
       // Update campaign data
       campaignData.value = {
@@ -506,7 +492,7 @@ const loadCampaignData = async (campaignId) => {
         channel: result.channel || '',
         type: result.type || 'RECRUITMENT',
         status: result.status || 'DRAFT',
-        start_date: result.start_date || null,
+        start_date: result.start_date ? moment(result.start_date).format('YYYY-MM-DDTHH:mm') : null,
         // Step 2: Content & Channels (will be loaded from social posts)
         selected_channels: [],
         email_content: {
@@ -732,7 +718,7 @@ const resetCampaignData = () => {
     channel: '',
     type: props.campaignType,
     status: 'DRAFT',
-    start_date: new Date().toISOString().slice(0, 16), // Reset to current time
+    start_date: null, // null = new campaign, datetime = edit mode
     // Step 2: Content & Channels
     selected_channels: [],
     email_content: {

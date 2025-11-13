@@ -92,6 +92,7 @@ import CampaignStep2 from '@/components/campaign_new/nurturing/Step2_ContentTime
 import CampaignStep3 from '@/components/campaign_new/nurturing/Step3_Settings.vue'
 import { useCampaignStore } from '@/stores/campaign'
 import { useToast } from '@/composables/useToast'
+import moment from 'moment'
 
 const props = defineProps({
   show: {
@@ -320,7 +321,7 @@ const saveDraft = async () => {
         condition_filter: JSON.stringify(campaignData.value.conditions),
         type: campaignData.value.type,
         status: 'DRAFT',
-        start_date: campaignData.value.start_date
+        start_date: campaignData.value.start_date === 'SEND_NOW' ? moment().format('YYYY-MM-DDTHH:mm') : (campaignData.value.start_date || moment().format('YYYY-MM-DDTHH:mm')),
       })
 
       if (result.success && result.data?.name) {

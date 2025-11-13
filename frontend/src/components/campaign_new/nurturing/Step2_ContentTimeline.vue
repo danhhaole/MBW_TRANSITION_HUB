@@ -186,7 +186,7 @@
                 </div>
 
                 <!-- Channel Display (Read-only) -->
-                <div class="space-y-2">
+                <!-- <div class="space-y-2">
                   <label class="block text-sm font-medium text-gray-700">
                     {{ __("Channel") }}
                   </label>
@@ -199,7 +199,7 @@
                   <p class="text-xs text-gray-500">
                     {{ __("Channel is set when creating the message") }}
                   </p>
-                </div>
+                </div> -->
 
                 <!-- Sender Account Selection -->
                 <div class="space-y-2">
