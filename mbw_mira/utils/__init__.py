@@ -119,29 +119,19 @@ def send_email_action(talentprofile_id, action_id):
         return
 
     context = (talentprofiles, action, step)
-    message = render_template(step.template, context)
+    message = render_template(step.template_content, context)
 
-    config_step = {}
-    if step and hasattr(step, "config"):
-        config_step = json.loads(step.config)
-    subject = "Thông báo"
-    if config_step and hasattr(config_step, "subject"):
-        subject = render_template(config_step.get("subject"), context)
+    subject = render_template(step.subject, context)
     talent_email = talentprofiles.email
     template = None
     template_args = None
     if not talent_email:
-        logger.error("[EMAIL ERROR] Missing candidate_email")
         return
 
     if not subject:
-        logger.error(f"[EMAIL ERROR] Missing subject for {talent_email}")
         return
 
     if not message:
-        logger.error(
-            f"[EMAIL ERROR] Neither message nor template provided for {talent_email}"
-        )
         return
 
     action.executed_at = now_datetime()
