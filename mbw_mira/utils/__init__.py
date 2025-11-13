@@ -611,16 +611,17 @@ def render_merge_tags(html: str, context: dict) -> str:
 
     return re.sub(r"\{\{\s*(.*?)\s*\}\}", replacer, html)
 
-OPERATOR_MAP = {
-    "==": "=",
-    "!=": "!=",
-    ">": ">",
-    "<": "<",
-    ">=": ">=",
-    "<=": "<="
-}
+
 
 def _normalize_condition(cond):
+    OPERATOR_MAP = {
+        "==": "=",
+        "!=": "!=",
+        ">": ">",
+        "<": "<",
+        ">=": ">=",
+        "<=": "<="
+    }
     """
     Chuyển condition từ campaign sang dạng filters Frappe.
     Hỗ trợ AND/OR lồng nhau.
