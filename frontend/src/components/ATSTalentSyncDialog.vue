@@ -51,7 +51,7 @@
           </div>
           
           <!-- Connector 1 -->
-          <div class="flex-1 pt-6 px-8">
+          <div class="flex-1 pt-6 px-4">
             <div
               :class="[
                 'h-0.5 w-full transition-all duration-300',
@@ -79,20 +79,20 @@
                 currentStep >= 2 ? 'text-gray-900' : 'text-gray-400'
               ]"
             >
-              {{ __('Filter Conditions') }}
+              {{ __('Filter & Sync') }}
             </span>
           </div>
           
         </div>
       </div>
-      <div class="min-h-[400px]">
+      <div class="h-auto">
         <!-- Step 1: Select ATS Connection -->
         <div v-if="currentStep === 1 && !showConnectionForm" class="space-y-4">
           <div class="flex items-center justify-between mb-4">
             <div class="text-sm text-gray-600">
               {{ __('Select an active ATS connection to sync candidates from:') }}
             </div>
-            <Button
+            <!-- <Button
               variant="solid"
               theme="gray"
               size="sm"
@@ -102,7 +102,7 @@
                 <FeatherIcon name="plus" class="h-4 w-4" />
               </template>
               {{ __('Create Connection') }}
-            </Button>
+            </Button> -->
           </div>
           
           <!-- Loading State -->
@@ -169,93 +169,6 @@
             </Button>
           </div>
           
-          <!-- Sync History Section -->
-          <div v-if="selectedConnection" class="mt-6 border-t pt-6">
-            <div class="flex items-center justify-between mb-4">
-              <h4 class="font-medium text-gray-900">{{ __('Sync History') }}</h4>
-              <Button
-                variant="outline"
-                size="sm"
-                @click="fetchSyncLogs"
-                :loading="loadingSyncLogs"
-              >
-                <template #prefix>
-                  <FeatherIcon name="refresh-cw" class="h-4 w-4" />
-                </template>
-                {{ __('Refresh') }}
-              </Button>
-            </div>
-            
-            <!-- Loading State -->
-            <div v-if="loadingSyncLogs" class="flex items-center justify-center py-12">
-              <LoadingIndicator class="w-8 h-8" />
-              <span class="ml-3 text-gray-600">{{ __('Loading sync logs...') }}</span>
-            </div>
-            
-            <!-- Sync Logs Table -->
-            <div v-else-if="syncLogs.length > 0" class="border rounded-lg overflow-hidden overflow-x-auto">
-              <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                  <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {{ __('Status') }}
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {{ __('Records') }}
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {{ __('Start Time') }}
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {{ __('End Time') }}
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {{ __('Details') }}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                  <tr v-for="log in syncLogs" :key="log.name" class="hover:bg-gray-50">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <span
-                        :class="[
-                          'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                          getStatusClass(log.status)
-                        ]"
-                      >
-                        {{ log.status }}
-                      </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <div class="flex items-center gap-2">
-                        <span class="text-green-600 font-medium">{{ log.success_count || 0 }}</span>
-                        <span class="text-gray-400">/</span>
-                        <span class="text-gray-600">{{ log.total_records || 0 }}</span>
-                        <span v-if="log.failed_count > 0" class="text-red-600">({{ log.failed_count }} failed)</span>
-                      </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {{ formatDateTime(log.start_time) }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {{ log.end_time ? formatDateTime(log.end_time) : '-' }}
-                    </td>
-                    <td class="px-6 py-4 text-sm text-gray-500 truncate">
-                      <div class="max-w-xs truncate" :title="log.details">
-                        {{ log.details || '-' }}
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            
-            <!-- Empty State -->
-            <div v-else class="text-center py-12 border rounded-lg bg-gray-50">
-              <FeatherIcon name="clock" class="w-12 h-12 mx-auto mb-4 text-gray-300" />
-              <p class="text-gray-500">{{ __('No sync history found') }}</p>
-            </div>
-          </div>
         </div>
 
         <!-- Create Connection Form -->
@@ -386,7 +299,7 @@
           </div>
         </div>
 
-        <!-- Step 2: Filter Conditions -->
+        <!-- Step 2: Filter Conditions & Sync -->
         <div v-if="currentStep === 2" class="space-y-4">
           <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
             <div class="flex items-start">
@@ -451,7 +364,7 @@
           
           <!-- Show Next button for Step 1 (not in form) -->
           <Button
-            v-else-if="currentStep < 2"
+            v-else-if="currentStep === 1"
             variant="solid"
             theme="gray"
             @click="nextStep"
@@ -463,15 +376,17 @@
             </template>
           </Button>
           
-          <!-- Show Start Sync button for Step 2 -->
+          <!-- Show Sync button for Step 2 -->
           <Button
-            v-else
+            v-else-if="currentStep === 2"
             variant="solid"
             theme="gray"
             @click="startSync"
-            :disabled="!canProceed"
             :loading="syncing"
           >
+            <template #prefix v-if="!syncing">
+              <FeatherIcon name="play" class="h-4 w-4" />
+            </template>
             {{ __('Start Sync') }}
           </Button>
         </div>
@@ -511,6 +426,9 @@ const syncLogs = ref([])
 const conditionsBuilderRef = ref(null)
 const showConnectionForm = ref(false)
 const creating = ref(false)
+const currentPage = ref(1)
+const pageSize = ref(5)
+const totalRecords = ref(0)
 const formData = ref({
   source_title: '',
   source_type: 'ATS',
@@ -538,13 +456,16 @@ const canProceed = computed(() => {
 watch(() => props.modelValue, (newValue) => {
   isOpen.value = newValue
   if (newValue) {
-    resetDialog()
     fetchATSConnections()
   }
 })
 
 watch(isOpen, (newValue) => {
   emit('update:modelValue', newValue)
+  if (!newValue) {
+    // Reset dialog when it's closed
+    resetDialog()
+  }
 })
 
 // Methods
@@ -555,6 +476,8 @@ const resetDialog = () => {
   syncLogs.value = []
   syncing.value = false
   showConnectionForm.value = false
+  currentPage.value = 1
+  totalRecords.value = 0
   resetFormData()
 }
 
@@ -619,8 +542,6 @@ const handleCreateConnection = async () => {
       await fetchATSConnections()
       // Auto-select the newly created connection
       selectedConnection.value = response
-      // Load sync logs for this connection
-      fetchSyncLogs()
       resetFormData()
     }
   } catch (error) {
@@ -638,8 +559,6 @@ const closeDialog = () => {
 
 const selectConnection = (connection) => {
   selectedConnection.value = connection
-  // Load sync logs for this connection
-  fetchSyncLogs()
 }
 
 const previousStep = () => {
@@ -650,7 +569,7 @@ const previousStep = () => {
 
 const nextStep = async () => {
   if (currentStep.value === 1) {
-    // Move to filter conditions
+    // Move to filter conditions & sync
     currentStep.value = 2
   }
 }
@@ -693,11 +612,8 @@ const startSync = async () => {
     if (response.status === 'success') {
       showSuccess(response.message || __('Sync started successfully. The process is running in the background.'))
       emit('success')
-      // Reset all selections and go back to step 1
-      selectedConnection.value = null
-      filterConditions.value = []
-      syncLogs.value = []
-      currentStep.value = 1
+      // Close dialog after successful sync start
+      closeDialog()
     } else {
       showError(response.message || __('Sync failed'))
     }
@@ -709,9 +625,10 @@ const startSync = async () => {
   }
 }
 
-const fetchSyncLogs = async () => {
+const fetchSyncLogs = async (page = 1) => {
   if (!selectedConnection.value) return
   
+  currentPage.value = page
   loadingSyncLogs.value = true
   try {
     const response = await call('frappe.client.get_list', {
@@ -731,10 +648,22 @@ const fetchSyncLogs = async () => {
         'details'
       ],
       order_by: 'start_time desc',
-      limit_page_length: 10
+      limit_page_length: pageSize.value,
+      limit_start: (page - 1) * pageSize.value
     })
     
     syncLogs.value = response || []
+    
+    // Get total count for pagination
+    const countResponse = await call('frappe.client.get_count', {
+      doctype: 'Mira ATS Sync Log',
+      filters: {
+        connection: selectedConnection.value.name,
+        sync_type: 'Candidate to Talent'
+      }
+    })
+    
+    totalRecords.value = countResponse || 0
   } catch (error) {
     console.error('Error fetching sync logs:', error)
     showError(__('Failed to load sync history'))
@@ -764,5 +693,27 @@ const formatDateTime = (dateTime) => {
     minute: '2-digit',
     second: '2-digit'
   })
+}
+
+const getVisiblePages = () => {
+  const totalPages = Math.ceil(totalRecords.value / pageSize.value)
+  const current = currentPage.value
+  const pages = []
+  
+  // Show max 5 pages at a time
+  const maxVisible = 5
+  let start = Math.max(1, current - Math.floor(maxVisible / 2))
+  let end = Math.min(totalPages, start + maxVisible - 1)
+  
+  // Adjust start if we're near the end
+  if (end - start + 1 < maxVisible) {
+    start = Math.max(1, end - maxVisible + 1)
+  }
+  
+  for (let i = start; i <= end; i++) {
+    pages.push(i)
+  }
+  
+  return pages
 }
 </script>

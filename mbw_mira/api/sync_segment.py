@@ -52,16 +52,14 @@ def sync_positions(data_source_name):
 @frappe.whitelist(allow_guest=True)
 def sync_candidates(data_source_name):
     """
-    Sync candidates from ATS to Mira Talents
+    Queue candidates sync from ATS to Mira Talents
     
     Args:
         data_source_name (str): Name of Mira Data Source document
         
     Returns:
-        dict: Status and message
+        dict: Status and message with sync_log_name
     """
-    from mbw_mira.workers.ats.fetch_mbw_ats_data import sync_data_source_candidates
-    
     # Validate data source exists
     if not frappe.db.exists("Mira Data Source", data_source_name):
         frappe.throw(f"Data Source {data_source_name} not found")
@@ -84,16 +82,89 @@ def sync_candidates(data_source_name):
     if data_source.sync_direction not in ("Pull", "Both"):
         frappe.throw(f"Sync direction is {data_source.sync_direction}. Must be 'Pull' or 'Both' to sync from ATS.")
     
-    # Perform sync
+    # Create sync log for queue processing
     try:
-        sync_data_source_candidates(data_source)
+        # Create sync log with Pending status
+        sync_log = frappe.get_doc({
+            "doctype": "Mira ATS Sync Log",
+            "connection": data_source.name,
+            "sync_type": "Candidate to Talent",
+            "status": "Pending",
+            "details": f"Sync queued for {data_source.source_title} ({data_source.source_name})"
+        })
+        sync_log.insert(ignore_permissions=True)
+        frappe.db.commit()
+        
         return {
             "status": "success",
-            "message": "Candidate sync started successfully. Check Mira ATS Sync Log for details."
+            "message": "Candidate sync has been queued successfully. Check sync history for progress.",
+            "sync_log_name": sync_log.name
         }
     except Exception as e:
-        frappe.log_error(f"Candidate sync failed for {data_source_name}: {str(e)}", "Sync Candidates Error")
+        frappe.log_error(f"Failed to queue candidate sync for {data_source_name}: {str(e)}", "Queue Sync Error")
         return {
             "status": "error",
-            "message": f"Candidate sync failed: {str(e)}"
+            "message": f"Failed to queue sync: {str(e)}"
+        }
+
+@frappe.whitelist()
+def cancel_sync(sync_log_name):
+    """
+    Cancel a pending or in-progress sync job
+    
+    Args:
+        sync_log_name (str): Name of Mira ATS Sync Log document
+        
+    Returns:
+        dict: Status and message
+    """
+    try:
+        from mbw_mira.schedulers.sync_candidates_queue import cancel_sync_job
+        
+        if cancel_sync_job(sync_log_name):
+            return {
+                "status": "success",
+                "message": "Sync job cancelled successfully."
+            }
+        else:
+            return {
+                "status": "error",
+                "message": "Cannot cancel sync job. It may already be completed or failed."
+            }
+    except Exception as e:
+        frappe.log_error(f"Failed to cancel sync {sync_log_name}: {str(e)}", "Cancel Sync Error")
+        return {
+            "status": "error",
+            "message": f"Failed to cancel sync: {str(e)}"
+        }
+
+@frappe.whitelist()
+def retry_sync(sync_log_name):
+    """
+    Retry a failed sync job
+    
+    Args:
+        sync_log_name (str): Name of Mira ATS Sync Log document
+        
+    Returns:
+        dict: Status and message
+    """
+    try:
+        from mbw_mira.schedulers.sync_candidates_queue import retry_failed_sync
+        
+        if retry_failed_sync(sync_log_name):
+            return {
+                "status": "success",
+                "message": "Sync job queued for retry successfully."
+            }
+        else:
+            return {
+                "status": "error",
+                "message": "Cannot retry sync job. It may not be in failed or partially completed state."
+            }
+    except Exception as e:
+        frappe.log_error(f"Failed to retry sync {sync_log_name}: {str(e)}", "Retry Sync Error")
+        return {
+            "status": "error",
+            "message": f"Failed to retry sync: {str(e)}"
         }

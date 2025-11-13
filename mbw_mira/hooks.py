@@ -156,6 +156,7 @@ scheduler_events = {
     "cron": {
         "0/1 * * * *": [
             "mbw_mira.schedulers.fetch_ats_mbw_campaigns.run",
+            "mbw_mira.schedulers.sync_candidates_queue.run",
             "mbw_mira.schedulers.task_campaign.run_attraction_campaign",
             "mbw_mira.schedulers.task_campaign.run_nurture_campaign",
             "mbw_mira.schedulers.task_campaign.run_recruitment_campaign",

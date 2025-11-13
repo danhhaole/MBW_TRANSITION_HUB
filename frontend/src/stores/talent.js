@@ -9,7 +9,7 @@ export const useTalentStore = defineStore('talent', {
 		error: null,
 		pagination: {
 			page: 1,
-			limit: 20,
+			limit: 10,
 			total: 0,
 			has_next: false,
 			has_prev: false,
@@ -21,6 +21,8 @@ export const useTalentStore = defineStore('talent', {
 			current_status: '',
 			skills: '',
 			experience_years: '',
+			source: '',
+			crm_status: '',
 		},
 		statistics: {
 			total: 0,
@@ -104,19 +106,55 @@ export const useTalentStore = defineStore('talent', {
 					params.filters = options.filters
 				}
 
+				// Initialize or_filters array
 				if (this.filters.search) {
-					params.or_filters = [
+					if (!params.or_filters) {
+						params.or_filters = []
+					}
+					params.or_filters.push(
 						['full_name', 'like', `%${this.filters.search}%`],
 						['email', 'like', `%${this.filters.search}%`],
-						['phone', 'like', `%${this.filters.search}%`],
-						['skills', 'like', `%${this.filters.search}%`],
-					]
+						['phone', 'like', `%${this.filters.search}%`]
+					)
 				}
 
 				if (this.filters.current_status) {
 					params.filters = {
 						...params.filters,
 						current_status: this.filters.current_status,
+					}
+				}
+
+				if (this.filters.source) {
+					params.filters = {
+						...params.filters,
+						source: this.filters.source,
+					}
+				}
+
+				if (this.filters.crm_status) {
+					params.filters = {
+						...params.filters,
+						crm_status: this.filters.crm_status,
+					}
+				}
+
+				if (this.filters.skills) {
+					// Split skills by comma and create individual OR search conditions
+					const skillsList = this.filters.skills
+						.split(',')
+						.map(skill => skill.trim())
+						.filter(skill => skill !== '')
+					
+					if (skillsList.length > 0) {
+						// Always use OR filters for skills search (even for single skill)
+						if (!params.or_filters) {
+							params.or_filters = []
+						}
+						// Add OR conditions for each skill
+						skillsList.forEach(skill => {
+							params.or_filters.push(['skills', 'like', `%${skill}%`])
+						})
 					}
 				}
 
@@ -592,12 +630,42 @@ export const useTalentStore = defineStore('talent', {
 			this.filters.experience_years = experience
 		},
 
+		setSourceFilter(source) {
+			this.filters.source = source
+		},
+
+		setCrmStatusFilter(crmStatus) {
+			this.filters.crm_status = crmStatus
+		},
+
+		setFilters(filterObj) {
+			Object.keys(filterObj).forEach(key => {
+				if (this.filters.hasOwnProperty(key)) {
+					// Handle array format for skills filter (from old logic)
+					if (key === 'skills' && Array.isArray(filterObj[key])) {
+						// Check if it's the old 'like' format
+						if (filterObj[key][0] === 'like' && typeof filterObj[key][1] === 'string') {
+							// Old format: ['like', '%python%']
+							this.filters[key] = filterObj[key][1].replace(/%/g, '')
+						} else {
+							this.filters[key] = filterObj[key]
+						}
+					} else {
+						// Direct assignment for string values
+						this.filters[key] = filterObj[key]
+					}
+				}
+			})
+		},
+
 		clearFilters() {
 			this.filters = {
 				search: '',
 				current_status: '',
 				skills: '',
 				experience_years: '',
+				source: '',
+				crm_status: '',
 			}
 		},
 	},

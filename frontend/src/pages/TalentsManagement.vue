@@ -47,11 +47,22 @@
 							</Input>
 						</div>
 						<div class="flex items-center gap-2">
-							<Button variant="outline">
+							<Button variant="outline" @click="toggleFilters">
 								<template #prefix>
 									<FeatherIcon name="filter" class="w-4 h-4" />
 								</template>
 								Filter
+								<template #suffix v-if="hasActiveFilters">
+									<span class="ml-1 bg-blue-500 text-white rounded-full text-xs px-1.5 py-0.5">
+										{{ activeFilterCount }}
+									</span>
+								</template>
+							</Button>
+							<Button variant="outline" @click="showSyncHistoryModal = true">
+								<template #prefix>
+									<FeatherIcon name="clock" class="w-4 h-4" />
+								</template>
+								{{ __('View History') }}
 							</Button>
 							<!-- Bulk Delete Button -->
 							<Button
@@ -95,217 +106,251 @@
 							</Button>
 						</div>
 					</div>
+					
+					<!-- Filter Panel -->
+					<div v-if="showFilters" class="bg-white rounded-lg border border-gray-200 mb-4 p-4">
+						<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+							<!-- Skills Filter -->
+							<div>
+								<label class="block text-sm font-medium text-gray-700 mb-2">
+									{{ __('Skills') }}
+								</label>
+								<Input
+									v-model="filters.skills"
+									type="text"
+									:placeholder="__('e.g. Python, JavaScript, React')"
+									class="!h-[32px] text-sm"
+								>
+									<template #prefix>
+										<FeatherIcon name="code" class="w-4 h-4 text-gray-400" />
+									</template>
+								</Input>
+							</div>
+							
+							<!-- Source Filter -->
+							<div>
+								<label class="block text-sm font-medium text-gray-700 mb-2">
+									{{ __('Source') }}
+								</label>
+								<select
+									v-model="filters.source"
+									class="w-full h-8 px-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+								>
+									<option value="">{{ __('All Sources') }}</option>
+									<option v-for="source in sourceOptions" :key="source" :value="source">
+										{{ source }}
+									</option>
+								</select>
+							</div>
+							
+							<!-- CRM Status Filter -->
+							<div>
+								<label class="block text-sm font-medium text-gray-700 mb-2">
+									{{ __('CRM Status') }}
+								</label>
+								<select
+									v-model="filters.crm_status"
+									class="w-full h-8 px-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+								>
+									<option value="">{{ __('All Statuses') }}</option>
+									<option v-for="status in crmStatusOptions" :key="status" :value="status">
+										{{ status }}
+									</option>
+								</select>
+							</div>
+						</div>
+						
+						<!-- Filter Actions -->
+						<div class="flex items-center justify-end mt-4 pt-4 border-t border-gray-200">
+							<div class="flex gap-2">
+								<Button
+									variant="outline"
+									size="sm"
+									@click="clearFilters"
+									:disabled="!hasActiveFilters"
+								>
+									{{ __('Clear All') }}
+								</Button>
+								<Button
+									variant="solid"
+									theme="gray"
+									size="sm"
+									@click="applyFilters"
+								>
+									{{ __('Apply Filters') }}
+								</Button>
+							</div>
+						</div>
+					</div>
+					
 					<!-- Main Content -->
 					<div class="bg-white rounded-lg border border-gray-200">
-						<Card>
-							<div v-if="talents.length > 0" class="overflow-x-auto">
-								<table class="w-full">
-									<thead class="bg-gray-50 border-b border-gray-200">
-										<tr>
-											<th class="w-12 p-3">
-												<input
-													class="rounded border-gray-300"
-													type="checkbox"
-													:checked="isAllCurrentPageSelected"
-													@change="toggleSelectAllTalent"
-												/>
-											</th>
-											<th
-												class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-											>
-												Name
-											</th>
-											<!-- <th
-										class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+						<div v-if="talents.length > 0" class="overflow-x-auto">
+							<table class="min-w-full bg-white rounded-lg overflow-hidden">
+								<thead class="bg-gray-100">
+									<tr>
+										<th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+											<input
+												class="rounded border-gray-300"
+												type="checkbox"
+												:checked="isAllCurrentPageSelected"
+												@change="toggleSelectAllTalent"
+											/>
+										</th>
+										<th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+											{{ __('Name') }}
+										</th>
+										<th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+											{{ __('Contact') }}
+										</th>
+										<th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+											{{ __('Skills') }}
+										</th>
+										<th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+											{{ __('Source') }}
+										</th>
+										<th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+											{{ __('Last Updated') }}
+										</th>
+										<th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+											{{ __('Last Interaction') }}
+										</th>
+										<th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+											{{ __('Actions') }}
+										</th>
+									</tr>
+								</thead>
+								<tbody class="divide-y divide-gray-200">
+									<tr
+										v-for="talent in talents"
+										:key="talent.name"
+										class="hover:bg-gray-50"
 									>
-										Pool
-									</th> -->
-											<th
-												class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-											>
-												Contact
-											</th>
-											<th
-												class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-											>
-												Skills
-											</th>
-											<th
-												class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-											>
-												Source
-											</th>
-											<th
-												class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-											>
-												Ngày cập nhật cuối
-											</th>
-											<th
-												class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-											>
-												Lần tương tác gần nhất
-											</th>
-											<th
-												class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-											>
-												Actions
-											</th>
-										</tr>
-									</thead>
-									<tbody class="divide-y divide-gray-200">
-										<tr
-											v-for="talent in talents"
-											:key="talent.name"
-											class="hover:bg-gray-50 transition-colors"
-										>
-											<td class="p-3 text-center">
-												<input
-													class="rounded border-gray-300"
-													type="checkbox"
-													:checked="
-														selectedAllTalent.some(
-															(t) => t.name === talent.name,
-														)
-													"
-													@change="toggleSelectTalent(talent)"
+										<td class="py-4 px-4">
+											<input
+												class="rounded border-gray-300"
+												type="checkbox"
+												:checked="
+													selectedAllTalent.some(
+														(t) => t.name === talent.name,
+													)
+												"
+												@change="toggleSelectTalent(talent)"
+											/>
+										</td>
+										<td class="py-4 px-4">
+											<div class="flex items-center">
+												<Avatar
+													:label="talent.full_name"
+													:image="talent.avatar"
+													size="md"
+													class="mr-3"
 												/>
-											</td>
-											<td class="px-6 py-4 whitespace-nowrap">
-												<div class="flex items-center gap-3">
-													<Avatar
-														:label="talent.full_name"
-														:image="talent.avatar"
-														size="md"
-													/>
-													<div>
-														<div class="font-medium text-base text-gray-900">
-															{{ talent.full_name }}
-														</div>
+												<div>
+													<div class="font-medium text-base text-gray-800">
+														{{ talent.full_name }}
 													</div>
 												</div>
-											</td>
-											<!-- <td class="px-6 py-4 whitespace-nowrap">
-										<div class="text-sm text-gray-900">{{ talent.pool }}</div>
-									</td> -->
-											<td class="px-6 py-4 whitespace-nowrap">
-												<div class="text-sm text-gray-900">
-													{{ talent.email }}
-												</div>
-												<div class="text-sm text-gray-500">
-													{{ talent.phone }}
-												</div>
-											</td>
-											<td class="px-6 py-4 text-sm text-gray-900">
-												<div class="flex flex-wrap gap-1">
-													<template v-if="talent.skills && processSkills(talent.skills).length > 0">
-														<span
-															v-if="processSkills(talent.skills).length === 1"
-															class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 truncate"
-														>
+											</div>
+										</td>
+										<td class="py-4 px-4 text-sm text-gray-700">
+											<div>{{ talent.email }}</div>
+											<div class="text-gray-500">{{ talent.phone }}</div>
+										</td>
+										<td class="py-4 px-4 text-sm text-gray-700">
+											<div class="flex flex-wrap gap-1">
+												<template v-if="talent.skills && processSkills(talent.skills).length > 0">
+													<span
+														v-if="processSkills(talent.skills).length === 1"
+														class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 truncate"
+													>
+														{{ processSkills(talent.skills)[0] }}
+													</span>
+													<template v-else>
+														<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 truncate">
 															{{ processSkills(talent.skills)[0] }}
 														</span>
-														<template v-else>
-															<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 truncate">
-																{{ processSkills(talent.skills)[0] }}
-															</span>
-															<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
-																+{{ processSkills(talent.skills).length - 1 }}
-															</span>
-														</template>
+														<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+															+{{ processSkills(talent.skills).length - 1 }}
+														</span>
 													</template>
-													<span
-														v-else
-														class="text-gray-400"
-														>-</span
-													>
-												</div>
-											</td>
-											<td class="px-6 py-4 whitespace-nowrap">
-												<Badge
-													:variant="
-														talent.status === 'Active'
-															? 'subtle'
-															: 'outline'
-													"
-													:theme="
-														talent.status === 'Active'
-															? 'green'
-															: 'gray'
-													"
+												</template>
+												<span
+													v-else
+													class="text-gray-400"
+													>-</span
 												>
-													{{ talent.source }}
-												</Badge>
-											</td>
-											<td class="px-6 py-4 whitespace-nowrap">
-												<div class="text-sm text-gray-900">
-													{{ talent.modified ? formatDate(talent.modified) : '-' }}
-												</div>
-											</td>
-											<td class="px-6 py-4 whitespace-nowrap">
-												<div class="text-sm text-gray-900">
-													{{ talent.last_interaction_date ? formatDate(talent.last_interaction_date) : '-' }}
-												</div>
-											</td>
-											<td class="px-6 py-4 whitespace-nowrap text-right">
-												<Button
-													variant="ghost"
-													theme="blue"
-													size="sm"
+											</div>
+										</td>
+										<td class="py-4 px-4 text-sm text-gray-700">
+											<Badge
+												:variant="
+													talent.status === 'Active'
+														? 'subtle'
+														: 'outline'
+												"
+												:theme="
+													talent.status === 'Active'
+														? 'green'
+														: 'gray'
+												"
+											>
+												{{ talent.source }}
+											</Badge>
+										</td>
+										<td class="py-4 px-4 text-sm text-gray-700">
+											{{ talent.modified ? formatDate(talent.modified) : '-' }}
+										</td>
+										<td class="py-4 px-4 text-sm text-gray-700">
+											{{ talent.last_interaction_date ? formatDate(talent.last_interaction_date) : '-' }}
+										</td>
+										<td class="py-4 px-4">
+											<div class="flex items-center space-x-2">
+												<button 
 													@click="viewTalent(talent)"
+													class="text-gray-600 hover:text-blue-600 p-2 rounded-md hover:bg-blue-50 transition-colors"
+													:title="__('View Details')"
 												>
 													<FeatherIcon name="eye" class="h-4 w-4" />
-												</Button>
-												<Button
-													variant="ghost"
-													theme="gray"
-													size="sm"
+												</button>
+												<button 
 													@click="deleteTalent(talent)"
+													class="text-gray-600 hover:text-red-600 p-2 rounded-md hover:bg-red-50 transition-colors"
+													:title="__('Delete')"
 												>
-													<FeatherIcon name="trash" class="h-4 w-4" />
-												</Button>
-											</td>
-										</tr>
-									</tbody>
-								</table>
-							</div>
+													<FeatherIcon name="trash-2" class="h-4 w-4" />
+												</button>
+											</div>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
 
-							<!-- Empty State -->
-							<div v-else class="text-center py-12">
-								<div class="text-gray-500">
-									<FeatherIcon
-										name="users"
-										class="w-12 h-12 mx-auto mb-4 text-gray-300"
-									/>
-									<p class="text-lg font-medium text-gray-500">
-										{{ __('No talents found') }}
-									</p>
-									<p
-										class="text-sm text-gray-400 my-1"
-										v-if="talentPoolStore.filters.search"
-									>
-										{{ __('No results for') }} "{{
-											talentPoolStore.filters.search
-										}}"
-									</p>
-									<Button
-										variant="solid"
-										theme="gray"
-										class="mt-4"
-										@click="openDialogTalentOption = true"
-									>
-										<template #prefix>
-											<FeatherIcon name="plus" class="w-4 h-4" />
-										</template>
-										{{ __('Create Talent') }}
-									</Button>
-								</div>
+						<!-- Empty State -->
+						<div v-else class="text-center py-12">
+							<div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+								<FeatherIcon name="users" class="h-8 w-8 text-gray-400" />
 							</div>
-
-							<!-- Pagination Talent-->
-							<div
-								v-if="visiblePageNumbersTalent.length > 1 || talentPoolStore.pagination.total > talentPoolStore.pagination.limit"
-								class="px-6 py-4 border-t border-gray-200 flex items-center justify-between"
+							<h3 class="text-lg font-medium text-gray-900 mb-2">{{ __('No talents found') }}</h3>
+							<p class="text-gray-500 mb-4" v-if="talentPoolStore.filters.search">
+								{{ __('No results for') }} "{{ talentPoolStore.filters.search }}"
+							</p>
+							<Button
+								@click="openDialogTalentOption = true"
+								theme="gray"
+								variant="solid"
+								class="text-sm font-medium"
 							>
+								{{ __('Create Talent') }}
+							</Button>
+						</div>
+
+						<!-- Pagination Talent-->
+						<div
+							v-if="visiblePageNumbersTalent.length > 1 || talentPoolStore.pagination.total > talentPoolStore.pagination.limit"
+							class="flex items-center justify-between mt-6 p-6 border-t border-gray-200"
+						>
 								<div class="flex-1 flex justify-between sm:hidden">
 									<Button
 										variant="outline"
@@ -326,100 +371,45 @@
 										{{ __('Next') }}
 									</Button>
 								</div>
-								<div
-									class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between"
-								>
-									<div>
-										<p class="text-sm text-gray-700">
-											{{ __('Showing') }}
-											<span class="font-medium">{{
-												talentPoolStore.pagination.showing_from || 0
-											}}</span>
-											{{ __('to') }}
-											<span class="font-medium">{{
-												talentPoolStore.pagination.showing_to || 0
-											}}</span>
-											{{ __('of') }}
-											<span class="font-medium">{{
-												talentPoolStore.pagination.total || 0
-											}}</span>
-											{{ __('results') }}
-										</p>
-									</div>
-									<div>
-										<nav
-											class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-											aria-label="Pagination"
-										>
-											<Button
-												variant="outline"
-												theme="gray"
-												size="sm"
-												:disabled="talentPoolStore.pagination.page === 1"
-												@click="previousPageTalent"
-												class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-											>
-												<span class="sr-only">{{ __('Previous') }}</span>
-												<FeatherIcon name="chevron-left" class="h-5 w-5" />
-											</Button>
-
-											<!-- Page numbers -->
-											<template
-												v-for="pageNumber in visiblePageNumbersTalent"
-												:key="pageNumber"
-											>
-												<Button
-													v-if="pageNumber === '...'"
-													variant="ghost"
-													theme="gray"
-													size="sm"
-													disabled
-													class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700"
-												>
-													{{ pageNumber }}
-												</Button>
-												<Button
-													v-else
-													variant="outline"
-													:theme="
-														talentPoolStore.pagination.page ===
-														pageNumber
-															? 'blue'
-															: 'gray'
-													"
-													size="sm"
-													@click="goToPageTalent(pageNumber)"
-													class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium"
-													:class="
-														talentPoolStore.pagination.page ===
-														pageNumber
-															? 'bg-blue-50 text-blue-600 z-10'
-															: 'bg-white text-gray-500 hover:bg-gray-50'
-													"
-												>
-													{{ pageNumber }}
-												</Button>
-											</template>
-
-											<Button
-												variant="outline"
-												theme="gray"
-												size="sm"
-												:disabled="!talentPoolStore.pagination.has_next"
-												@click="nextPageTalent"
-												class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-											>
-												<span class="sr-only">{{ __('Next') }}</span>
-												<FeatherIcon
-													name="chevron-right"
-													class="h-5 w-5"
-												/>
-											</Button>
-										</nav>
-									</div>
-								</div>
+							<div class="text-sm text-gray-600">
+								{{ __('Display') }} {{ talentPoolStore.pagination.showing_from || 1 }}-{{ talentPoolStore.pagination.showing_to || talents.length }} {{ __('of') }} {{ talentPoolStore.pagination.total || talents.length }} {{ __('talents') }}
 							</div>
-						</Card>
+							<div class="flex space-x-1">
+								<button 
+									@click="goToPageTalent(1)"
+									:disabled="talentPoolStore.pagination.page === 1"
+									class="px-3 py-1 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+								>
+									<FeatherIcon name="chevron-left" class="h-5 w-5" />
+								</button>
+								
+								<template v-for="page in visiblePageNumbersTalent" :key="page">
+									<button
+										v-if="page === '...'"
+										class="px-3 py-1 text-gray-500"
+										disabled
+									>
+										...
+									</button>
+									<button
+										v-else
+										@click="goToPageTalent(page)"
+										:class="talentPoolStore.pagination.page === page ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+										class="px-3 py-1 rounded-md"
+									>
+										{{ page }}
+									</button>
+								</template>
+								
+								<button 
+									@click="goToPageTalent(talentPoolStore.pagination.page + 1)"
+									:disabled="!talentPoolStore.pagination.has_next"
+									class="px-3 py-1 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+								>
+									<FeatherIcon name="chevron-right" class="h-5 w-5" />
+								</button>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -603,281 +593,275 @@
 			>
 				<template #body-content>
 					<form @submit.prevent="handleTalentSubmit" class="space-y-4">
-						<!-- Full Name -->
-						<div>
-							<label class="block text-sm font-medium text-gray-700"
-								>Full Name <span class="text-red-500">*</span></label
-							>
-							<input
-								v-model="newTalent.full_name"
-								type="text"
-								required
-								class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-							/>
-						</div>
-
-						<!-- Email Input -->
-						<div>
-							<label class="block text-sm font-medium text-gray-700">
-								Email <span class="text-red-500">*</span>
-							</label>
-							<input
-								v-model="newTalent.email"
-								type="email"
-								required
-								@blur="checkEmail"
-								:class="[
-									'mt-1 block w-full rounded-md shadow-sm sm:text-sm',
-									emailError
-										? 'border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:outline-none focus:ring-red-500'
-										: 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',
-								]"
-								aria-invalid="true"
-								aria-describedby="email-error"
-							/>
-							<p
-								v-if="emailError"
-								class="mt-1 text-sm text-red-600"
-								id="email-error"
-							>
-								{{ emailError }}
-							</p>
-						</div>
-
-						<!-- Phone -->
-						<div>
-							<label class="block text-sm font-medium text-gray-700">Phone</label>
-							<input
-								v-model="newTalent.phone"
-								type="tel"
-								class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-							/>
-						</div>
-
-						<!-- LinkedIn Profile -->
-						<div>
-							<label class="block text-sm font-medium text-gray-700"
-								>LinkedIn Profile <span class="text-red-500">*</span></label
-							>
-							<div class="mt-1 flex rounded-md shadow-sm">
+						<!-- Essential Information Section -->
+						<div class="space-y-4">
+							<h4 class="text-sm font-medium text-gray-900 border-b border-gray-200 pb-2">
+								{{ __('Essential Information') }}
+							</h4>
+							
+							<!-- Full Name -->
+							<div>
+								<label class="block text-sm font-medium text-gray-700"
+									>Full Name <span class="text-red-500">*</span></label
+								>
 								<input
-									v-model="newTalent.linkedin_profile"
+									v-model="newTalent.full_name"
 									type="text"
 									required
-									class="block w-full min-w-0 flex-1 rounded-none rounded-r-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-									placeholder="https://linkedin.com/in/username"
+									class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
 								/>
 							</div>
-							<p class="mt-1 text-xs text-gray-500">
-								https://linkedin.com/in/username
-							</p>
-						</div>
 
-						<!-- Skills Input -->
-						<div>
-							<label class="block text-sm font-medium text-gray-700">Skills</label>
-							<div class="mt-1">
-								<div class="flex flex-wrap gap-2 mb-2">
-									<span
-										v-for="(skill, index) in skillTags"
-										:key="index"
-										class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-									>
-										{{ skill }}
-										<button
-											type="button"
-											@click="removeSkill(index)"
-											class="ml-1.5 inline-flex text-blue-400 hover:text-blue-600 focus:outline-none"
-										>
-											<span class="sr-only">Remove skill</span>
-											<svg
-												class="h-3.5 w-3.5"
-												fill="currentColor"
-												viewBox="0 0 20 20"
-											>
-												<path
-													fill-rule="evenodd"
-													d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-													clip-rule="evenodd"
-												/>
-											</svg>
-										</button>
-									</span>
-								</div>
+							<!-- Email Input -->
+							<div>
+								<label class="block text-sm font-medium text-gray-700">
+									Email <span class="text-red-500">*</span>
+								</label>
 								<input
-									v-model="skillInput"
-									type="text"
-									placeholder="Type a skill and press Enter or Tab"
-									@keydown.enter.prevent="addSkill"
-									@blur="addSkill"
-									class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+									v-model="newTalent.email"
+									type="email"
+									required
+									@blur="checkEmail"
+									:class="[
+										'mt-1 block w-full rounded-md shadow-sm sm:text-sm',
+										emailError
+											? 'border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:outline-none focus:ring-red-500'
+											: 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',
+									]"
+									aria-invalid="true"
+									aria-describedby="email-error"
 								/>
-								<p class="mt-1 text-xs text-gray-500">
-									Separate skills with commas or press Enter
+								<p
+									v-if="emailError"
+									class="mt-1 text-sm text-red-600"
+									id="email-error"
+								>
+									{{ emailError }}
 								</p>
 							</div>
+
+							<!-- Phone -->
+							<div>
+								<label class="block text-sm font-medium text-gray-700">Phone</label>
+								<input
+									v-model="newTalent.phone"
+									type="tel"
+									class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+								/>
+							</div>
 						</div>
 
-						<!-- Source (Hidden) -->
-						<input type="hidden" v-model="newTalent.source" />
-
-						<!-- Latest Company -->
-						<div>
-							<label class="block text-sm font-medium text-gray-700"
-								>Latest Company</label
+						<!-- Additional Information Section (Collapsible) -->
+						<div class="border-t border-gray-200 pt-4">
+							<button
+								type="button"
+								@click="showAdditionalInfo = !showAdditionalInfo"
+								class="flex items-center justify-between w-full text-left text-sm font-medium text-gray-700 hover:text-gray-900 focus:outline-none"
 							>
-							<input
-								v-model="newTalent.latest_company"
-								type="text"
-								class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-							/>
-						</div>
+								<span>{{ __('Additional Information') }}</span>
+								<FeatherIcon 
+									:name="showAdditionalInfo ? 'chevron-up' : 'chevron-down'" 
+									class="h-4 w-4 transition-transform duration-200"
+								/>
+							</button>
+							
+							<div v-show="showAdditionalInfo" class="mt-4 space-y-4">
+								<!-- LinkedIn Profile -->
+								<div>
+									<label class="block text-sm font-medium text-gray-700"
+										>LinkedIn Profile</label
+									>
+									<input
+										v-model="newTalent.linkedin_profile"
+										type="text"
+										class="mt-1 block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+										placeholder="https://linkedin.com/in/username"
+									/>
+									<p class="mt-1 text-xs text-gray-500">
+										https://linkedin.com/in/username
+									</p>
+								</div>
 
-						<!-- Total Years of Experience -->
-						<div>
-							<label class="block text-sm font-medium text-gray-700"
-								>Total Years of Experience
-								<span class="text-red-500">*</span></label
-							>
-							<input
-								v-model.number="newTalent.total_years_of_experience"
-								type="number"
-								min="0"
-								step="0.5"
-								required
-								class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-							/>
-						</div>
-
-						<!-- Desired Role -->
-						<!-- Resume Upload -->
-						<div>
-							<label class="block text-sm font-medium text-gray-700 mb-1"
-								>Resume</label
-							>
-							<div v-if="newTalent.resume">
-								<!-- Show file preview when a file is uploaded -->
-								<div
-									class="flex items-center justify-between p-3 border border-gray-200 rounded-md bg-gray-50"
-								>
-									<div class="flex items-center">
-										<FeatherIcon
-											name="file-text"
-											class="h-5 w-5 text-gray-500 mr-2"
+								<!-- Skills Input -->
+								<div>
+									<label class="block text-sm font-medium text-gray-700">Skills</label>
+									<div class="mt-1">
+										<div class="flex flex-wrap gap-2 mb-2" v-if="skillTags.length > 0">
+											<span
+												v-for="(skill, index) in skillTags"
+												:key="index"
+												class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+											>
+												{{ skill }}
+												<button
+													type="button"
+													@click="removeSkill(index)"
+													class="ml-1.5 inline-flex text-blue-400 hover:text-blue-600 focus:outline-none"
+												>
+													<FeatherIcon name="x" class="h-3 w-3" />
+												</button>
+											</span>
+										</div>
+										<input
+											v-model="skillInput"
+											type="text"
+											placeholder="Type a skill and press Enter"
+											@keydown.enter.prevent="addSkill"
+											@blur="addSkill"
+											class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
 										/>
-										<span
-											class="text-sm font-medium text-gray-900 truncate max-w-xs"
-										>
-											{{ newTalent.resume }}
-										</span>
-									</div>
-									<div class="flex space-x-2">
-										<a
-											:href="'/files/' + newTalent.resume"
-											target="_blank"
-											class="p-1 text-gray-500 hover:text-blue-600"
-											title="View file"
-										>
-											<FeatherIcon name="eye" class="h-4 w-4" />
-										</a>
-										<button
-											@click="removeResume"
-											class="p-1 text-gray-500 hover:text-red-600"
-											title="Remove file"
-										>
-											<FeatherIcon name="x" class="h-4 w-4" />
-										</button>
 									</div>
 								</div>
-							</div>
-							<FileUploader
-								v-else
-								:fileTypes="['.pdf', '.doc', '.docx']"
-								:upload-args="{
-									doctype: 'Mira Talent',
-									docname: 'temp',
-									private: false,
-								}"
-								@success="handleFileUploadSuccess"
-								@error="handleFileUploadError"
-							>
-								<template v-slot="{ openFileSelector, uploading, progress }">
-									<div
-										class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:border-blue-500 transition-colors"
-										@click="openFileSelector"
-									>
-										<div class="space-y-1 text-center">
-											<FeatherIcon
-												name="upload"
-												class="mx-auto h-12 w-12 text-gray-400"
-											/>
-											<div class="flex text-sm text-gray-600">
-												<span
-													class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500"
-												>
-													Upload a file
-												</span>
-												<p class="pl-1">or drag and drop</p>
-											</div>
-											<p class="text-xs text-gray-500">
-												PDF, DOC, DOCX up to 10MB
-											</p>
-											<div
-												v-if="uploading"
-												class="w-full bg-gray-200 rounded-full h-2.5"
+
+								<!-- Two Column Layout for Company and Experience -->
+								<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+									<!-- Latest Company -->
+									<div>
+										<label class="block text-sm font-medium text-gray-700"
+											>Latest Company</label
+										>
+										<input
+											v-model="newTalent.latest_company"
+											type="text"
+											class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+											placeholder="Company name"
+										/>
+									</div>
+
+									<!-- Total Years of Experience -->
+									<div>
+										<label class="block text-sm font-medium text-gray-700"
+											>Years of Experience</label
+										>
+										<input
+											v-model.number="newTalent.total_years_of_experience"
+											type="number"
+											min="0"
+											step="0.5"
+											class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+											placeholder="0"
+										/>
+									</div>
+								</div>
+
+								<!-- Two Column Layout for Role and Source -->
+								<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+									<!-- Desired Role -->
+									<div>
+										<label class="block text-sm font-medium text-gray-700"
+											>Desired Role</label
+										>
+										<input
+											v-model="newTalent.desired_role"
+											type="text"
+											class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+											placeholder="Enter desired role"
+										/>
+									</div>
+
+									<!-- Source -->
+									<div>
+										<label class="block text-sm font-medium text-gray-700">Source</label>
+										<select
+											v-model="newTalent.source"
+											class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+										>
+											<option
+												v-for="source in sourceOptions"
+												:key="source"
+												:value="source"
 											>
-												<div
-													class="bg-blue-600 h-2.5 rounded-full"
-													:style="`width: ${progress}%`"
-												></div>
+												{{ source }}
+											</option>
+										</select>
+									</div>
+								</div>
+
+								<!-- Resume Upload - Compact Version -->
+								<div>
+									<label class="block text-sm font-medium text-gray-700 mb-2"
+										>Resume</label
+									>
+									<div v-if="newTalent.resume">
+										<!-- Compact file preview -->
+										<div class="flex items-center justify-between p-2 border border-gray-200 rounded-md bg-gray-50">
+											<div class="flex items-center">
+												<FeatherIcon name="file-text" class="h-4 w-4 text-gray-500 mr-2" />
+												<span class="text-sm text-gray-900 truncate max-w-xs">
+													{{ newTalent.resume }}
+												</span>
+											</div>
+											<div class="flex space-x-1">
+												<a
+													:href="'/files/' + newTalent.resume"
+													target="_blank"
+													class="p-1 text-gray-500 hover:text-blue-600"
+													title="View file"
+												>
+													<FeatherIcon name="eye" class="h-3 w-3" />
+												</a>
+												<button
+													@click="removeResume"
+													class="p-1 text-gray-500 hover:text-red-600"
+													title="Remove file"
+												>
+													<FeatherIcon name="x" class="h-3 w-3" />
+												</button>
 											</div>
 										</div>
 									</div>
-								</template>
-							</FileUploader>
-						</div>
+									<FileUploader
+										v-else
+										:fileTypes="['.pdf', '.doc', '.docx']"
+										:upload-args="{
+											doctype: 'Mira Talent',
+											docname: 'temp',
+											private: false,
+										}"
+										@success="handleFileUploadSuccess"
+										@error="handleFileUploadError"
+									>
+										<template v-slot="{ openFileSelector, uploading, progress }">
+											<div
+												class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:border-blue-500 transition-colors"
+												@click="openFileSelector"
+											>
+												<div class="flex items-center space-x-2">
+													<FeatherIcon name="upload" class="h-5 w-5 text-gray-400" />
+													<div class="text-sm text-gray-600">
+														<span class="font-medium text-blue-600 hover:text-blue-500">
+															Upload a file
+														</span>
+														<span class="text-gray-500"> or drag and drop</span>
+													</div>
+												</div>
+												<div
+													v-if="uploading"
+													class="ml-4 w-20 bg-gray-200 rounded-full h-2"
+												>
+													<div
+														class="bg-blue-600 h-2 rounded-full"
+														:style="`width: ${progress}%`"
+													></div>
+												</div>
+											</div>
+										</template>
+									</FileUploader>
+								</div>
 
-						<!-- Desired Role -->
-						<div>
-							<label class="block text-sm font-medium text-gray-700"
-								>Desired Role</label
-							>
-							<input
-								v-model="newTalent.desired_role"
-								type="text"
-								class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-								placeholder="Enter desired role"
-							/>
-						</div>
-
-						<!-- Source -->
-						<div>
-							<label class="block text-sm font-medium text-gray-700">Source</label>
-							<select
-								v-model="newTalent.source"
-								class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-							>
-								<option
-									v-for="source in sourceOptions"
-									:key="source"
-									:value="source"
-								>
-									{{ source }}
-								</option>
-							</select>
-						</div>
-
-						<!-- Interaction Notes -->
-						<div>
-							<label class="block text-sm font-medium text-gray-700"
-								>Interaction Notes</label
-							>
-							<textarea
-								v-model="newTalent.interaction_notes"
-								rows="3"
-								class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-								placeholder="Add any notes from your interaction with this talent"
-							></textarea>
+								<!-- Interaction Notes -->
+								<div>
+									<label class="block text-sm font-medium text-gray-700"
+										>Interaction Notes</label
+									>
+									<textarea
+										v-model="newTalent.interaction_notes"
+										rows="2"
+										class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+										placeholder="Add any notes from your interaction with this talent"
+									></textarea>
+								</div>
+							</div>
 						</div>
 					</form>
 				</template>
@@ -898,9 +882,7 @@
 								!!emailError ||
 								!newTalent.full_name ||
 								!newTalent.email ||
-								!isEmailValid ||
-								!newTalent.linkedin_profile ||
-								newTalent.total_years_of_experience === null
+								!isEmailValid
 									? 'bg-gray-300 cursor-not-allowed'
 									: 'bg-gray-700 hover:bg-gray-700 focus:ring-gray-500',
 							]"
@@ -926,6 +908,9 @@
 				v-model="showATSTalentSyncDialog"
 				@success="handleSyncSuccess"
 			/>
+
+			<!-- Sync History Modal -->
+			<SyncHistoryModal v-model="showSyncHistoryModal" />
 
 			<!-- Delete Talent Confirmation Dialog -->
 			<Dialog
@@ -1113,6 +1098,7 @@ import { globalStore } from '@/stores/global';
 import UploadExcelTalentModal from '@/components/UploadExcelTalentModal.vue'
 import BulkCVUploadModal from '@/components/BulkCVUploadModal.vue'
 import ATSTalentSyncDialog from '@/components/ATSTalentSyncDialog.vue'
+import SyncHistoryModal from '@/components/SyncHistoryModal.vue'
 // Breadcrumbs
 const breadcrumbs = [{ label: __('Talent Profiles'), route: { name: 'TalentPool' } }]
 const { showSuccess, showError } = useToast()
@@ -1122,6 +1108,7 @@ const talentPoolStore = useTalentStore()
 const { $socket } = globalStore();
 const openDialogTalentOption = ref(false) // 4 option dialog
 const showTalentForm = ref(false) //create talent dialog
+const showAdditionalInfo = ref(false) // control additional info section visibility
 const newTalent = ref({
 	full_name: '',
 	email: '',
@@ -1148,6 +1135,26 @@ const sourceOptions = ref([
 	'Nurturing Interaction',
 	'Import Excel',
 ])
+
+const crmStatusOptions = ref([
+	'New',
+	'Contacted',
+	'Qualified',
+	'Proposal',
+	'Negotiation',
+	'Closed Won',
+	'Closed Lost',
+	'On Hold'
+])
+
+// Filter state
+const showFilters = ref(false)
+const filters = ref({
+	skills: '',
+	source: '',
+	crm_status: ''
+})
+
 const loading = computed(() => talentPoolStore.loading)
 const skillInput = ref('')
 const skillTags = ref([])
@@ -1313,9 +1320,78 @@ const handleRefresh = async () => {
 	forceUpdate.value++
 }
 
+// Filter functions
+const toggleFilters = () => {
+	showFilters.value = !showFilters.value
+}
+
+// Skills input handler removed - filters now only apply when Apply Filters button is clicked
+
+
+const applyFilters = async () => {
+	// Reset to first page when applying filters
+	talentPoolStore.pagination.page = 1
+	
+	// Clear all filters first to avoid keeping old values
+	talentPoolStore.clearFilters()
+	
+	// Build filter object for the store
+	const filterParams = {}
+	
+	// Only add skills filter if it has a value
+	if (filters.value.skills && filters.value.skills.trim()) {
+		filterParams.skills = filters.value.skills.trim()
+	}
+	
+	// Only add source filter if it has a value
+	if (filters.value.source && filters.value.source !== '') {
+		filterParams.source = filters.value.source
+	}
+	
+	// Only add crm_status filter if it has a value
+	if (filters.value.crm_status && filters.value.crm_status !== '') {
+		filterParams.crm_status = filters.value.crm_status
+	}
+	
+	// Apply filters to the store
+	talentPoolStore.setFilters(filterParams)
+	
+	// Separate skills from other filters (skills will be handled via or_filters in store)
+	const { skills, ...otherFilters } = filterParams
+	
+	// Fetch talents with new filters (exclude skills from filters, it will be handled in store)
+	await talentPoolStore.fetchTalents({
+		page: 1,
+		limit: talentPoolStore.pagination.limit,
+		filters: otherFilters
+	})
+}
+
+const clearFilters = async () => {
+	// Reset filter values
+	filters.value = {
+		skills: '',
+		source: '',
+		crm_status: ''
+	}
+	
+	// Clear filters in store
+	talentPoolStore.clearFilters()
+	
+	// Reset to first page
+	talentPoolStore.pagination.page = 1
+	
+	// Fetch talents without filters
+	await talentPoolStore.fetchTalents({
+		page: 1,
+		limit: talentPoolStore.pagination.limit
+	})
+}
+
 const showUploadModal = ref(false)
 const showBulkUploadModal = ref(false)
 const showATSTalentSyncDialog = ref(false)
+const showSyncHistoryModal = ref(false)
 const showDeleteDialog = ref(false)
 const talentToDelete = ref(null)
 const isDeleting = ref(false)
@@ -1330,6 +1406,19 @@ const isEmailValid = computed(() => {
 	return emailRegex.test(email)
 })
 
+// Filter computed properties
+const hasActiveFilters = computed(() => {
+	return filters.value.skills || filters.value.source || filters.value.crm_status
+})
+
+const activeFilterCount = computed(() => {
+	let count = 0
+	if (filters.value.skills) count++
+	if (filters.value.source) count++
+	if (filters.value.crm_status) count++
+	return count
+})
+
 const processSkills = (skills) => {
 	if (!skills) return []
 	if (Array.isArray(skills)) return skills.join(',')
@@ -1341,17 +1430,24 @@ const processSkills = (skills) => {
 
 const formatDate = (dateString) => {
 	if (!dateString) return '-'
+	
 	const date = new Date(dateString)
 	const now = new Date()
-	const diffTime = Math.abs(now - date)
-	const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 	
-	// If less than 1 day ago, show "Today"
+	// Get date parts without time for accurate comparison
+	const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+	const nowOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+	
+	// Calculate difference in days
+	const diffTime = nowOnly.getTime() - dateOnly.getTime()
+	const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+	
+	// If same date, show "Today"
 	if (diffDays === 0) return 'Hôm nay'
-	// If 1 day ago, show "Yesterday"
+	// If 1 day ago, show "Yesterday"  
 	if (diffDays === 1) return 'Hôm qua'
 	// If less than 7 days, show "X days ago"
-	if (diffDays < 7) return `${diffDays} ngày trước`
+	if (diffDays > 0 && diffDays < 7) return `${diffDays} ngày trước`
 	
 	// Otherwise show formatted date
 	return date.toLocaleDateString('vi-VN', {
@@ -1367,6 +1463,7 @@ const closeDialogOptions = () => {
 
 const openTalentForm = () => {
 	showTalentForm.value = true
+	showAdditionalInfo.value = false // Reset additional info section to closed
 	openDialogTalentOption.value = false
 }
 
@@ -1484,34 +1581,22 @@ const handleTalentSubmit = async () => {
 			return
 		}
 
-		// Validate required fields
-		if (!newTalent.value.linkedin_profile) {
-			showError(__('LinkedIn profile is required'))
-			return
-		}
-
-		// Validate LinkedIn URL format
-		try {
-			const url = new URL(newTalent.value.linkedin_profile)
-			if (!url.hostname.includes('linkedin.com')) {
-				showError(
-					__(
-						'Please enter a valid LinkedIn profile URL (e.g., https://linkedin.com/in/username)',
-					),
-				)
+		// Validate LinkedIn URL format if provided
+		if (newTalent.value.linkedin_profile && newTalent.value.linkedin_profile.trim()) {
+			try {
+				const url = new URL(newTalent.value.linkedin_profile)
+				if (!url.hostname.includes('linkedin.com')) {
+					showError(
+						__(
+							'Please enter a valid LinkedIn profile URL (e.g., https://linkedin.com/in/username)',
+						),
+					)
+					return
+				}
+			} catch (e) {
+				showError(__('Please enter a valid URL for LinkedIn profile'))
 				return
 			}
-		} catch (e) {
-			showError(__('Please enter a valid URL for LinkedIn profile'))
-			return
-		}
-
-		if (
-			newTalent.value.total_years_of_experience === null ||
-			newTalent.value.total_years_of_experience === ''
-		) {
-			showError(__('Total years of experience is required'))
-			return
 		}
 
 		try {
@@ -1617,11 +1702,7 @@ const syncFromATS = () => {
 }
 
 const handleSyncSuccess = async () => {
-	showSuccess(__('Talents synced successfully from ATS'))
-	await talentPoolStore.fetchTalents({
-		page: talentPoolStore.pagination.page,
-		limit: talentPoolStore.pagination.limit,
-	})
+	showSuccess(__('Sync started successfully. You will be notified when the process completes.'))
 }
 
 const viewTalent = (talent) => {
@@ -1699,7 +1780,7 @@ const confirmBulkDelete = async () => {
 	}
 }
 
-// Socket listener for bulk delete completion
+// Socket listener for bulk delete completion and sync completion
 const setupSocketListeners = () => {
 	$socket.on('bulk_remove_talent_complete', async (data) => {
 		console.log('Bulk delete completed:', data)
@@ -1783,12 +1864,38 @@ const setupSocketListeners = () => {
 			showError(data.message || 'Bulk delete operation failed')
 		}
 	})
+	
+	// Socket listener for sync completion
+	$socket.on('candidate_sync_complete', async (data) => {
+		console.log('Candidate sync completed:', data)
+		
+		if (data.sync_type === 'Candidate to Talent') {
+			// Refresh talents list
+			await talentPoolStore.fetchTalents({
+				page: talentPoolStore.pagination.page,
+				limit: talentPoolStore.pagination.limit,
+			})
+			
+			// Force UI update to ensure reactivity
+			forceUpdate.value++
+			
+			// Show notification based on status
+			if (data.status === 'Completed') {
+				showSuccess(`Đồng bộ hoàn tất! Đã xử lý ${data.success_count || 0} bản ghi thành công.`)
+			} else if (data.status === 'Partially Completed') {
+				showSuccess(`Đồng bộ hoàn tất một phần! Thành công: ${data.success_count || 0}, Thất bại: ${data.failed_count || 0}`)
+			} else if (data.status === 'Failed') {
+				showError(`Đồng bộ thất bại: ${data.details || 'Lỗi không xác định'}`)
+			}
+		}
+	})
 }
 
 // Cleanup socket listeners
 const cleanupSocketListeners = () => {
 	if ($socket) {
 		$socket.off('bulk_remove_talent_complete')
+		$socket.off('candidate_sync_complete')
 	}
 }
 
