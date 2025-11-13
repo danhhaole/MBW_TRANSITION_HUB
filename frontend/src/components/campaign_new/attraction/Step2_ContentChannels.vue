@@ -201,6 +201,49 @@
           />
         </div>
       </div>
+      
+      <!-- QR Code Editor (Collapsible) -->
+      <div v-if="isQrSelected" class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div class="px-6 py-4 flex items-center justify-between border-b border-gray-200">
+          <button
+            @click="toggleEditor('qr_code')"
+            class="flex items-center flex-1 hover:opacity-80 transition-opacity"
+          >
+            <div class="w-10 h-10 rounded-lg bg-gray-500 text-white flex items-center justify-center mr-3">
+              <FeatherIcon name="qr-code" class="h-5 w-5" />
+            </div>
+            <div class="text-left flex-1">
+              <h4 class="text-sm font-semibold text-gray-900">
+                {{ __('QR Code') }}
+              </h4>
+              <p class="text-xs text-gray-500">
+                {{ localQrContent.qr_data ? __('QR Code generated') : __('Click to generate QR code') }}
+              </p>
+            </div>
+            <FeatherIcon 
+              :name="expandedEditors.qr_code ? 'chevron-up' : 'chevron-down'" 
+              class="h-5 w-5 text-gray-400 mr-3"
+            />
+          </button>
+          <button
+            @click="removeChannel('qr_code')"
+            class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+            :title="__('Remove channel')"
+          >
+            <FeatherIcon name="x" class="h-4 w-4" />
+          </button>
+        </div>
+        
+        <div v-show="expandedEditors.qr_code" class="p-6 space-y-4">
+          <!-- Content Editor -->
+          <QRCodeContentEditor
+            :content="localQrContent"
+            :landing-page-url="localPageData?.builder_page || localLadipageUrl"
+            :campaign-id="props.name"
+            @update:content="updateQrContent($event)"
+          />
+        </div>
+      </div>
     </div>
 
     <!-- Channel Content Customizer -->
@@ -216,6 +259,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { FeatherIcon, Button, Dropdown, FormControl, call } from 'frappe-ui'
 import FacebookContentEditor from '../molecules/FacebookContentEditor.vue'
 import ZaloContentEditor from '../molecules/ZaloContentEditor.vue'
+import QRCodeContentEditor from '../molecules/QRCodeContentEditor.vue'
 import LandingPageSelector from '../molecules/LandingPageSelector.vue'
 import ChannelContentCustomizer from '../molecules/ChannelContentCustomizer.vue'
 import { getAvailableChannels } from '@/data/mockChannels'
@@ -242,6 +286,15 @@ const props = defineProps({
     default: () => ({
       content: '',
       image: null
+    })
+  },
+  qrContent: {
+    type: Object,
+    default: () => ({
+      utm_campaign: '',
+      utm_source: 'qr_code',
+      utm_medium: 'qr',
+      qr_data: null
     })
   },
   landingPage: {
@@ -284,6 +337,7 @@ const emit = defineEmits([
   'update:selectedChannels',
   'update:facebookContent',
   'update:zaloContent',
+  'update:qrContent',
   'update:landingPage',
   'update:pageData',
   'update:ladipageUrl'
@@ -305,6 +359,11 @@ const localZaloContent = computed({
   set: (value) => emit('update:zaloContent', value)
 })
 
+const localQrContent = computed({
+  get: () => props.qrContent,
+  set: (value) => emit('update:qrContent', value)
+})
+
 const localLandingPage = computed({
   get: () => props.landingPage,
   set: (value) => emit('update:landingPage', value)
@@ -323,11 +382,13 @@ const localLadipageUrl = computed({
 // Computed
 const isFacebookSelected = computed(() => localSelectedChannels.value.includes('facebook'))
 const isZaloSelected = computed(() => localSelectedChannels.value.includes('zalo'))
+const isQrSelected = computed(() => localSelectedChannels.value.includes('qr_code'))
 
 // Expanded editors state
 const expandedEditors = ref({
   facebook: false,
-  zalo: false
+  zalo: false,
+  qr_code: false
 })
 
 // Available channels for dropdown (from mock data)
@@ -410,6 +471,13 @@ const updateZaloScheduleTime = (value) => {
   localZaloContent.value = {
     ...localZaloContent.value,
     schedule_time: value
+  }
+}
+
+const updateQrContent = (value) => {
+  localQrContent.value = {
+    ...localQrContent.value,
+    ...value
   }
 }
 

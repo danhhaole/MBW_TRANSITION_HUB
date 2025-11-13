@@ -33,7 +33,7 @@
     <div class="flex-1 overflow-y-auto bg-gray-50">
       <div class="max-w-7xl mx-auto px-6 py-8">
         <!-- Step 1: Campaign Info -->
-        {{ campaignData }}
+        
         <CampaignStep1
           v-if="currentStep === 1"
           :campaign-name="campaignData.campaign_name"
@@ -53,6 +53,7 @@
           :selected-channels="campaignData.selected_channels"
           :facebook-content="campaignData.facebook_content"
           :zalo-content="campaignData.zalo_content"
+          :qr-content="campaignData.qr_content"
           :landing-page="campaignData.landing_page"
           :page-data="campaignData.page_data"
           :ladipage-url="campaignData.ladipage_url"
@@ -62,6 +63,7 @@
           @update:selected-channels="campaignData.selected_channels = $event"
           @update:facebook-content="campaignData.facebook_content = $event"
           @update:zalo-content="campaignData.zalo_content = $event"
+          @update:qr-content="campaignData.qr_content = $event"
           @update:landing-page="campaignData.landing_page = $event"
           @update:page-data="campaignData.page_data = $event"
           @update:ladipage-url="campaignData.ladipage_url = $event"
@@ -146,6 +148,12 @@ const campaignData = ref({
     ],
     schedule_time: null
   },
+  qr_content: {
+    utm_campaign: '',
+    utm_source: 'qr_code',
+    utm_medium: 'qr',
+    qr_data: null
+  },
   // Step 3: Settings
   triggers: [],
   // Meta
@@ -180,7 +188,9 @@ const canProceed = computed(() => {
     return campaignData.value.campaign_name?.trim()
   }
   if (currentStep.value === 2) {
-    return campaignData.value.selected_channels?.length > 0
+    const result = campaignData.value.selected_channels?.length > 0
+    console.log('🔍 canProceed step 2:', result, 'channels:', campaignData.value.selected_channels)
+    return result
   }
   return true
 })
@@ -210,12 +220,27 @@ const nextStep = async () => {
   
   // Check if posts changed before saving (only on step 2)
   if (currentStep.value === 2) {
-    const currentPosts = {
-      facebook: campaignData.value.facebook_content,
-      zalo: campaignData.value.zalo_content
+    // Only include content for selected channels
+    const currentPosts = {}
+    const selectedChannels = campaignData.value.selected_channels || []
+    
+    if (selectedChannels.includes('facebook')) {
+      currentPosts.facebook = campaignData.value.facebook_content
+    }
+    if (selectedChannels.includes('zalo')) {
+      currentPosts.zalo = campaignData.value.zalo_content
+    }
+    if (selectedChannels.includes('qr_code')) {
+      currentPosts.qr_code = campaignData.value.qr_content
     }
     
+    console.log('🔍 Change detection:')
+    console.log('  Selected channels:', selectedChannels)
+    console.log('  Current posts:', currentPosts)
+    console.log('  Original posts:', originalPosts.value)
+    
     const hasChanges = JSON.stringify(currentPosts) !== JSON.stringify(originalPosts.value)
+    console.log('  Has changes:', hasChanges)
     
     if (hasChanges) {
       console.log('📝 Posts changed, saving...')
@@ -296,6 +321,27 @@ const saveDraft = async () => {
 // Track original posts to detect changes
 const originalPosts = ref({})
 
+// Watch selected channels and update original posts accordingly
+watch(() => campaignData.value.selected_channels, (newChannels) => {
+  console.log('🔄 Selected channels changed:', newChannels)
+  
+  // Update original posts to only include selected channels
+  const newOriginalPosts = {}
+  
+  if (newChannels.includes('facebook')) {
+    newOriginalPosts.facebook = originalPosts.value.facebook || campaignData.value.facebook_content
+  }
+  if (newChannels.includes('zalo')) {
+    newOriginalPosts.zalo = originalPosts.value.zalo || campaignData.value.zalo_content
+  }
+  if (newChannels.includes('qr_code')) {
+    newOriginalPosts.qr_code = originalPosts.value.qr_code || campaignData.value.qr_content
+  }
+  
+  originalPosts.value = newOriginalPosts
+  console.log('📝 Updated original posts:', originalPosts.value)
+}, { deep: true })
+
 const saveSocialPosts = async () => {
   try {
     console.log('🔄 Saving Social Posts...')
@@ -332,6 +378,23 @@ const saveSocialPosts = async () => {
       })
     }
     
+    // QR Code post
+    if (campaignData.value.selected_channels.includes('qr_code')) {
+      const qrContent = campaignData.value.qr_content
+      
+      socialPosts.push({
+        platform: 'QR',
+        template_content: JSON.stringify({
+          utm_campaign: qrContent.utm_campaign,
+          utm_source: qrContent.utm_source,
+          utm_medium: qrContent.utm_medium,
+          qr_data: qrContent.qr_data
+        }),
+        status: 'Pending',
+        post_schedule_time: null // QR codes don't have schedule time
+      })
+    }
+    
     console.log('📋 Social posts to save:', socialPosts)
 
     // Call API to save posts
@@ -347,7 +410,8 @@ const saveSocialPosts = async () => {
       // Update original posts after successful save
       originalPosts.value = {
         facebook: campaignData.value.facebook_content,
-        zalo: campaignData.value.zalo_content
+        zalo: campaignData.value.zalo_content,
+        qr_code: campaignData.value.qr_content
       }
       
       return result.data
@@ -412,7 +476,8 @@ const loadSocialPosts = async (campaignId) => {
     // Store original posts for change detection
     originalPosts.value = {
       facebook: campaignData.value.facebook_content,
-      zalo: campaignData.value.zalo_content
+      zalo: campaignData.value.zalo_content,
+      qr_code: campaignData.value.qr_content
     }
     
     // Map posts back to campaign data
@@ -455,6 +520,26 @@ const loadSocialPosts = async (campaignId) => {
         if (!campaignData.value.selected_channels.includes('zalo')) {
           campaignData.value.selected_channels.push('zalo')
         }
+      } else if (post.platform === 'QR') {
+        try {
+          const content = JSON.parse(post.template_content || '{}')
+          campaignData.value.qr_content = {
+            utm_campaign: content.utm_campaign || '',
+            utm_source: content.utm_source || 'qr_code',
+            utm_medium: content.utm_medium || 'qr',
+            qr_data: content.qr_data || null
+          }
+        } catch (e) {
+          campaignData.value.qr_content = {
+            utm_campaign: '',
+            utm_source: 'qr_code',
+            utm_medium: 'qr',
+            qr_data: null
+          }
+        }
+        if (!campaignData.value.selected_channels.includes('qr_code')) {
+          campaignData.value.selected_channels.push('qr_code')
+        }
       }
     }
     
@@ -462,6 +547,7 @@ const loadSocialPosts = async (campaignId) => {
     console.log('📊 Selected channels:', campaignData.value.selected_channels)
     console.log('📘 Facebook content:', campaignData.value.facebook_content)
     console.log('💬 Zalo content:', campaignData.value.zalo_content)
+    console.log('📱 QR content:', campaignData.value.qr_content)
   } catch (error) {
     console.error('❌ Error loading social posts:', error)
   }

@@ -282,6 +282,72 @@ def get_campaign_qrcode():
         "image": f"data:image/png;base64,{img_base64}"
     }
 
+@frappe.whitelist()
+def create_landing_page_qrcode():
+    """
+    Tạo QR code cho landing page URL với UTM parameters
+    """
+    data = frappe.local.form_dict or frappe.request.json
+    landing_page_url = data.get("landing_page_url")
+    campaign_id = data.get("campaign_id")
+    utm_source = data.get("utm_source", "qr_code")
+    utm_medium = data.get("utm_medium", "qr")
+    utm_campaign = data.get("utm_campaign", "")
+    
+    if not landing_page_url:
+        frappe.throw("Missing landing_page_url")
+    
+    if not campaign_id:
+        frappe.throw("Missing campaign_id")
+    
+    # Build URL with UTM parameters
+    utm_params = []
+    if utm_source:
+        utm_params.append(f"utm_source={utm_source}")
+    if utm_medium:
+        utm_params.append(f"utm_medium={utm_medium}")
+    if utm_campaign:
+        utm_params.append(f"utm_campaign={utm_campaign}")
+    
+    # Add campaign ID as UTM parameter
+    utm_params.append(f"utm_content={campaign_id}")
+    
+    # Construct final URL
+    separator = "&" if "?" in landing_page_url else "?"
+    final_url = f"{landing_page_url}{separator}{'&'.join(utm_params)}"
+    
+    # Tạo QR code
+    qr = qrcode.QRCode(
+        version=2,
+        error_correction=ERROR_CORRECT_H,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(final_url)
+    qr.make(fit=True)
+    
+    qr_img = qr.make_image(fill_color="black", back_color="white").convert("RGB")
+    
+    # Encode base64
+    buffer = io.BytesIO()
+    qr_img.save(buffer, format="PNG")
+    img_base64 = base64.b64encode(buffer.getvalue()).decode()
+    
+    return {
+        "status": "success",
+        "data": {
+            "url": final_url,
+            "base_url": landing_page_url,
+            "utm_params": {
+                "utm_source": utm_source,
+                "utm_medium": utm_medium,
+                "utm_campaign": utm_campaign,
+                "utm_content": campaign_id
+            },
+            "qr_image": f"data:image/png;base64,{img_base64}"
+        }
+    }
+
 @frappe.whitelist(allow_guest=True)
 def submit_talent_profile():
 

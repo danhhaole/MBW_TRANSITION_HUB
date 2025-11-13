@@ -53,6 +53,9 @@ def save_campaign_social_posts(campaign_id, posts):
         # Create a map of existing posts by platform
         existing_map = {post["platform"]: post["name"] for post in existing_posts}
         
+        # Track which platforms are being saved
+        platforms_in_request = {post_data.get("platform") for post_data in posts if post_data.get("platform")}
+        
         results = []
         
         for post_data in posts:
@@ -102,6 +105,28 @@ def save_campaign_social_posts(campaign_id, posts):
                 })
                 
                 frappe.logger().info(f"Created social post {doc.name} for platform {platform}")
+        
+        # Delete posts for platforms that are no longer in the request
+        posts_to_delete = []
+        for existing_platform, existing_name in existing_map.items():
+            if existing_platform not in platforms_in_request:
+                posts_to_delete.append((existing_name, existing_platform))
+        
+        # Delete obsolete posts
+        for post_name, platform in posts_to_delete:
+            try:
+                frappe.delete_doc("Mira Campaign Social", post_name, ignore_permissions=True)
+                results.append({
+                    "name": post_name,
+                    "platform": platform,
+                    "action": "deleted"
+                })
+                frappe.logger().info(f"Deleted obsolete social post {post_name} for platform {platform}")
+            except Exception as e:
+                frappe.log_error(
+                    message=f"Failed to delete post {post_name}: {str(e)}",
+                    title="Save Campaign Social Posts - Delete Error"
+                )
         
         frappe.db.commit()
         

@@ -32,6 +32,19 @@ export const mockChannels = [
     enabled: true
   },
   {
+    id: 'qr_code',
+    label: 'QR Code',
+    icon: 'qr-code',
+    description: 'Generate QR code for landing page',
+    color: 'gray',
+    features: {
+      presentation: 'QR Code image with UTM tracking',
+      tracking: 'Auto-track scans from QR code',
+      utm_source: 'qr_code'
+    },
+    enabled: true
+  },
+  {
     id: 'linkedin',
     label: 'LinkedIn',
     icon: 'linkedin',
