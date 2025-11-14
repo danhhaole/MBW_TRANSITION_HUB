@@ -54,6 +54,24 @@
       </div>
     </div>
 
+    <!-- Campaign Tags -->
+    <div class="bg-white rounded-lg border border-gray-200 p-6">
+      <div class="mb-4">
+        <h3 class="text-base font-semibold text-gray-900">
+          {{ __('Campaign Tags') }}
+        </h3>
+        <p class="text-sm text-gray-600 mt-1">
+          {{ __('Add tags to categorize and organize this campaign') }}
+        </p>
+      </div>
+
+      <CampaignTagPicker
+        :campaign-id="campaignId"
+        :model-value="campaignTags"
+        @update:model-value="$emit('update:campaignTags', $event)"
+      />
+    </div>
+
     <!-- Campaign Schedule -->
     <CampaignSchedule
       :start-date="startDate"
@@ -64,6 +82,7 @@
 
 <script setup>
 import CampaignBasicInfo from '../molecules/CampaignBasicInfo.vue'
+import CampaignTagPicker from '../molecules/CampaignTagPicker.vue'
 import Link from '@/components/Controls/Link.vue'
 import { FeatherIcon } from 'frappe-ui'
 import CampaignSchedule from '../molecules/CampaignSchedule.vue'
@@ -81,6 +100,14 @@ defineProps({
     type: String,
     default: ''
   },
+  campaignId: {
+    type: String,
+    default: ''
+  },
+  campaignTags: {
+    type: Array,
+    default: () => []
+  },
   showError: {
     type: Boolean,
     default: false
@@ -95,7 +122,7 @@ defineProps({
   }
 })
 
-defineEmits(['update:campaignName', 'update:objective', 'update:targetPool', 'update:description', 'update:startDate'])
+defineEmits(['update:campaignName', 'update:objective', 'update:targetPool', 'update:campaignTags', 'update:description', 'update:startDate'])
 
 </script>
 

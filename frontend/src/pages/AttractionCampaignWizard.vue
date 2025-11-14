@@ -39,11 +39,14 @@
           :campaign-name="campaignData.campaign_name"
           :description="campaignData.description"
           :target-pool="campaignData.target_pool"
-          :show-error="showValidationError"
+          :campaign-id="campaignData.name"
+          :campaign-tags="campaignData.campaign_tags"
           :start-date="campaignData.start_date"
+          :show-error="showValidationError"
           @update:campaign-name="campaignData.campaign_name = $event"
           @update:description="campaignData.description = $event"
           @update:target-pool="campaignData.target_pool = $event"
+          @update:campaign-tags="campaignData.campaign_tags = $event"
           @update:start-date="campaignData.start_date = $event"
         />
 
@@ -54,9 +57,9 @@
           :facebook-content="campaignData.facebook_content"
           :zalo-content="campaignData.zalo_content"
           :qr-content="campaignData.qr_content"
-          :landing-page="campaignData.landing_page"
-          :page-data="campaignData.page_data"
           :ladipage-url="campaignData.ladipage_url"
+          :ladipage-id="campaignData.ladipage_id"
+          :page-data="campaignData.page_data"
           :campaign-name="campaignData.campaign_name"
           :name="campaignData.name"
           :show-error="showValidationError"
@@ -67,6 +70,7 @@
           @update:landing-page="campaignData.landing_page = $event"
           @update:page-data="campaignData.page_data = $event"
           @update:ladipage-url="campaignData.ladipage_url = $event"
+          @update:ladipage-id="campaignData.ladipage_id = $event"
         />
 
         <!-- Step 3: Settings -->
@@ -126,12 +130,14 @@ const campaignData = ref({
   campaign_name: '',
   description: '',
   target_pool: '',
+  campaign_tags: [],
   start_date: '', // Let CampaignSchedule handle default behavior
   // Step 2: Content & Channels
   selected_channels: [],
   landing_page: '',
   page_data: null,
   ladipage_url: '',
+  ladipage_id: '',
   facebook_content: {
     content: '',
     image: null,
@@ -455,6 +461,48 @@ const loadCampaignFlows = async (campaignId) => {
   }
 }
 
+const loadCampaignTags = async (campaignId) => {
+  try {
+    console.log('🏷️ Loading campaign tags:', campaignId)
+    
+    // Get tags from Frappe's tag system
+    const response = await call('frappe.desk.doctype.tag.tag.get_tags', {
+      dt: 'Mira Campaign',
+      dn: campaignId
+    })
+    
+    if (response && Array.isArray(response)) {
+      // Get tag colors from Mira Tag doctype
+      const tagTitles = response.map(tag => tag.tag || tag)
+      const colorResponse = await call('frappe.client.get_list', {
+        doctype: 'Mira Tag',
+        fields: ['title', 'color'],
+        filters: [['title', 'in', tagTitles]]
+      })
+      
+      const colorMap = {}
+      for (const tag of colorResponse || []) {
+        colorMap[tag.title] = tag.color
+      }
+      
+      // Map tags with colors
+      campaignData.value.campaign_tags = response.map(tag => {
+        const tagTitle = tag.tag || tag
+        return {
+          label: tagTitle,
+          value: tagTitle,
+          color: colorMap[tagTitle] || '#6B7280'
+        }
+      })
+      
+      console.log('✅ Campaign tags loaded:', campaignData.value.campaign_tags)
+    }
+  } catch (error) {
+    console.error('❌ Error loading campaign tags:', error)
+    // Don't show error toast as tags are optional
+  }
+}
+
 // Load existing social posts when editing campaign
 const loadSocialPosts = async (campaignId) => {
   try {
@@ -649,6 +697,7 @@ const loadCampaignData = async (campaignId) => {
         campaign_name: campaign.campaign_name || '',
         description: campaign.description || '',
         target_pool: campaign.target_pool || '',
+        campaign_tags: [], // Will be loaded from tags
         // Step 2: Content & Channels (will be loaded from social posts)
         selected_channels: [],
         landing_page: '',
@@ -674,9 +723,13 @@ const loadCampaignData = async (campaignId) => {
         start_date: campaign.start_date ? moment(campaign.start_date).format('YYYY-MM-DDTHH:mm') : null,
         flow_id: campaign.flow_id || null,
         ladipage_url: campaign.ladipage_url || '',
+        ladipage_id: campaign.ladipage_id || '',
       }
       
       console.log('✅ Campaign data loaded:', campaignData.value)
+      
+      // Load campaign tags
+      await loadCampaignTags(campaignId)
       
       // Load social posts
       await loadSocialPosts(campaignId)
@@ -695,9 +748,12 @@ const resetCampaignData = () => {
     campaign_name: '',
     description: '',
     target_pool: '',
+    campaign_tags: [],
     start_date: '', // Let CampaignSchedule handle default behavior
     // Step 2: Content & Channels
     selected_channels: [],
+    ladipage_url: '',
+    ladipage_id: '',
     facebook_content: {
       content: '',
       image: null,

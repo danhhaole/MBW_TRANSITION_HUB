@@ -57,7 +57,7 @@ class CMSAPI:
 
     # --- 8. Get page details ---
     def get_page_public(self,query="published=1"):
-        return self.provider.get(f"mbw_cms.api.page_api.get_page_details?{query}")
+        return self.provider.get(f"mbw_cms.api.page_api.get_pages?{query}")
 
 
 def example_usage():
@@ -234,4 +234,15 @@ def get_page_details(page_id):
         return cms.get_page_details(page_id)
     except Exception as e:
         frappe.log_error(f"Error getting page details: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+
+@frappe.whitelist(allow_guest=True)
+def get_page_public(query="published=1"):
+    """Lấy page public"""
+    try:
+        cms = CMSAPI()
+        return cms.get_page_public(query)
+    except Exception as e:
+        frappe.log_error(f"Error getting page public: {str(e)}")
         return {"status": "error", "message": str(e)}

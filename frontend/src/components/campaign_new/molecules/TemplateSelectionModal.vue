@@ -167,6 +167,7 @@ const emit = defineEmits(['close', 'select', 'retry', 'update:modelValue'])
 
 const isOpen = ref(props.show)
 const selectedTemplate = ref(props.modelValue)
+const dataSelectedTemplate = ref(null)
 
 // Watch show prop to sync with isOpen
 watch(() => props.show, (newVal) => {
@@ -182,6 +183,7 @@ watch(isOpen, (newVal) => {
 
 const selectTemplate = (template) => {
   selectedTemplate.value = template.name
+  dataSelectedTemplate.value = template
 }
 
 const closeDialog = () => {
@@ -191,7 +193,7 @@ const closeDialog = () => {
 const confirmSelection = () => {
   if (selectedTemplate.value) {
     emit('update:modelValue', selectedTemplate.value)
-    emit('select', selectedTemplate.value)
+    emit('select', selectedTemplate.value, dataSelectedTemplate.value)
     closeDialog()
   }
 }

@@ -12,9 +12,8 @@
 
     <!-- Landing Page Selector (Section 2.1) -->
     <LandingPageSelector
-      v-model:landing-page="localLandingPage"
-      v-model:page-data="localPageData"
       v-model:ladipage-url="localLadipageUrl"
+      v-model:ladipage-id="localLadipageId"
       :campaign-id="props.name"
       :campaign-name="campaignName"
       :company-info="companyInfo"
@@ -139,6 +138,25 @@
             @update:image="updateFacebookContent('image', $event)"
             @update:page-id="updateFacebookContent('page_id', $event)"
           />
+
+          <!-- Test Share Job Posting Button -->
+          <div class="mt-4 pt-4 border-t border-gray-200">
+            <Button
+              @click="testShareJobPosting"
+              :loading="testingShare"
+              variant="outline"
+              size="sm"
+              class="w-full"
+            >
+              <template #prefix>
+                <FeatherIcon name="send" class="h-4 w-4" />
+              </template>
+              {{ __('Test Share Job to Facebook') }}
+            </Button>
+            <p class="text-xs text-gray-500 mt-2 text-center">
+              {{ __('This will post the current content to your selected Facebook page') }}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -263,6 +281,9 @@ import QRCodeContentEditor from '../molecules/QRCodeContentEditor.vue'
 import LandingPageSelector from '../molecules/LandingPageSelector.vue'
 import ChannelContentCustomizer from '../molecules/ChannelContentCustomizer.vue'
 import { getAvailableChannels } from '@/data/mockChannels'
+import { useToast } from '@/composables/useToast'
+
+const toast = useToast()
 
 const props = defineProps({
   selectedChannels: {
@@ -309,6 +330,10 @@ const props = defineProps({
     type: String,
     default: ''
   },
+  ladipageId: {
+    type: String,
+    default: ''
+  },
   campaignId: {
     type: String,
     default: ''
@@ -340,7 +365,8 @@ const emit = defineEmits([
   'update:qrContent',
   'update:landingPage',
   'update:pageData',
-  'update:ladipageUrl'
+  'update:ladipageUrl',
+  'update:ladipageId'
 ])
 
 // Local state
@@ -379,6 +405,11 @@ const localLadipageUrl = computed({
   set: (value) => emit('update:ladipageUrl', value)
 })
 
+const localLadipageId = computed({
+  get: () => props.ladipageId,
+  set: (value) => emit('update:ladipageId', value)
+})
+
 // Computed
 const isFacebookSelected = computed(() => localSelectedChannels.value.includes('facebook'))
 const isZaloSelected = computed(() => localSelectedChannels.value.includes('zalo'))
@@ -397,6 +428,7 @@ const availableChannels = getAvailableChannels()
 // Facebook pages from Mira External Connection
 const facebookPages = ref([])
 const loadingPages = ref(false)
+const testingShare = ref(false)
 
 // Load Facebook pages
 const loadFacebookPages = async () => {
@@ -407,7 +439,8 @@ const loadFacebookPages = async () => {
     if (result.success && result.data) {
       facebookPages.value = result.data.map(page => ({
         label: page.page_name,
-        value: page.page_id
+        value: page.page_id,
+        connection_id: page.connection_id // Add connection_id for sharing
       }))
       console.log('✅ Loaded Facebook pages:', facebookPages.value)
     }
@@ -478,6 +511,53 @@ const updateQrContent = (value) => {
   localQrContent.value = {
     ...localQrContent.value,
     ...value
+  }
+}
+
+// Test share job posting to Facebook
+const testShareJobPosting = async () => {
+  if (!localFacebookContent.value.page_id) {
+    toast.error(__('Please select a Facebook page first'))
+    return
+  }
+
+  if (!localFacebookContent.value.content) {
+    toast.error(__('Please add content to your Facebook post'))
+    return
+  }
+
+  testingShare.value = true
+  
+  try {
+    // Find the connection ID for the selected Facebook page
+    const selectedPage = facebookPages.value.find(page => page.value === localFacebookContent.value.page_id)
+    if (!selectedPage) {
+      throw new Error('Selected Facebook page not found')
+    }
+
+    if (!selectedPage.connection_id) {
+      throw new Error('Facebook page connection ID not found. Please reconnect your Facebook account.')
+    }
+
+    const result = await call('mbw_ats.api.external_connections.share_job_posting', {
+      connection_id: selectedPage.connection_id,
+      job_id: props.campaignId || 'test_job_id',
+      message: localFacebookContent.value.content,
+      schedule_type: 'now',
+      image_url: localFacebookContent.value.image || null
+    })
+
+    if (result.status === 'success') {
+      toast.success(__('Job posted to Facebook successfully!'))
+      console.log('✅ Facebook post result:', result)
+    } else {
+      throw new Error(result.message || 'Failed to post to Facebook')
+    }
+  } catch (error) {
+    console.error('❌ Error sharing job to Facebook:', error)
+    toast.error(error.message || __('Failed to share job to Facebook'))
+  } finally {
+    testingShare.value = false
   }
 }
 

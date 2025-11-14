@@ -16,6 +16,7 @@
   "criteria",
   "description",
   "ladipage_url",
+  "ladipage_id",
   "column_break_kxph",
   "is_active",
   "owner_id",
@@ -152,11 +153,16 @@
    "fieldname": "condition_filter",
    "fieldtype": "JSON",
    "label": "Condition Filter"
+  },
+  {
+   "fieldname": "ladipage_id",
+   "fieldtype": "Data",
+   "label": "Ladipage Id"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-12 13:47:54.353076",
+ "modified": "2025-11-14 09:01:49.459399",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Campaign",

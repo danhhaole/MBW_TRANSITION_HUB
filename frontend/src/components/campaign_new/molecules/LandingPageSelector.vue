@@ -15,163 +15,177 @@
     </div>
 
     <div class="space-y-4">
-      <!-- Landing Page Selection -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">
+      <!-- Mode Selection -->
+      <div v-if="!selectedPage && !creatingPage && !createError">
+        <label class="block text-sm font-medium text-gray-700 mb-3">
           {{ __('Choose Landing Page') }}
           <span class="text-red-500">*</span>
         </label>
         
-        <!-- Creating Page Loading -->
-        <div v-if="creatingPage" class="mb-3">
-          <div class="border border-blue-200 rounded-lg p-4 bg-blue-50">
-            <div class="flex items-center">
-              <FeatherIcon name="loader" class="h-5 w-5 text-blue-600 animate-spin mr-3" />
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Select Existing Page -->
+          <div 
+            @click="loadPublishedPages"
+            class="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-purple-400 hover:bg-purple-50 cursor-pointer transition-colors"
+          >
+            <div class="text-center">
+              <FeatherIcon name="folder" class="h-8 w-8 text-gray-400 mx-auto mb-2" />
+              <h3 class="text-sm font-medium text-gray-900 mb-1">
+                {{ __('Select Existing Page') }}
+              </h3>
+              <p class="text-xs text-gray-500">
+                {{ __('Choose from published landing pages') }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Create New Page -->
+          <div 
+            @click="openCreateModal"
+            class="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-purple-400 hover:bg-purple-50 cursor-pointer transition-colors"
+          >
+            <div class="text-center">
+              <FeatherIcon name="plus-circle" class="h-8 w-8 text-gray-400 mx-auto mb-2" />
+              <h3 class="text-sm font-medium text-gray-900 mb-1">
+                {{ __('Create New Page') }}
+              </h3>
+              <p class="text-xs text-gray-500">
+                {{ __('Build a new landing page from template') }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Published Pages Selection Modal -->
+      <PublishedPageSelectionModal
+        :show="showPublishedPagesModal"
+        :pages="publishedPages"
+        :loading="loadingPages"
+        :error="publishedPagesError"
+        @close="showPublishedPagesModal = false"
+        @select="selectPublishedPage"
+        @retry="loadPublishedPages"
+      />
+
+      <!-- Creating Page Loading -->
+      <div v-if="creatingPage" class="mb-3">
+        <div class="border border-blue-200 rounded-lg p-4 bg-blue-50">
+          <div class="flex items-center">
+            <FeatherIcon name="loader" class="h-5 w-5 text-blue-600 animate-spin mr-3" />
+            <div>
+              <p class="text-sm font-medium text-blue-900">
+                {{ __('Creating landing page...') }}
+              </p>
+              <p class="text-xs text-blue-700">
+                {{ __('Please wait while we set up your page') }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Create Error -->
+      <div v-if="createError" class="mb-3">
+        <div class="border border-red-200 rounded-lg p-4 bg-red-50">
+          <div class="flex items-start justify-between">
+            <div class="flex items-start flex-1">
+              <FeatherIcon name="alert-circle" class="h-5 w-5 text-red-600 mr-3 mt-0.5" />
               <div>
-                <p class="text-sm font-medium text-blue-900">
-                  {{ __('Creating landing page...') }}
+                <p class="text-sm font-medium text-red-900">
+                  {{ __('Failed to create page') }}
                 </p>
-                <p class="text-xs text-blue-700">
-                  {{ __('Please wait while we set up your page') }}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Create Error -->
-        <div v-else-if="createError" class="mb-3">
-          <div class="border border-red-200 rounded-lg p-4 bg-red-50">
-            <div class="flex items-start justify-between">
-              <div class="flex items-start flex-1">
-                <FeatherIcon name="alert-circle" class="h-5 w-5 text-red-600 mr-3 mt-0.5" />
-                <div>
-                  <p class="text-sm font-medium text-red-900">
-                    {{ __('Failed to create page') }}
-                  </p>
-                  <p class="text-xs text-red-700">
-                    {{ createError }}
-                  </p>
-                </div>
-              </div>
-              <Button
-                @click="showModal = true"
-                variant="ghost"
-                size="sm"
-              >
-                {{ __('Retry') }}
-              </Button>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Page Created Successfully or Edit Mode -->
-        <div v-else-if="(landingPage && pageData) || ladipageUrl" class="mb-3">
-          <!-- Debug info -->
-        
-          <div class="border border-green-200 rounded-lg p-4 bg-green-50">
-            <div class="flex items-start justify-between mb-3">
-              <div class="flex-1">
-                <div class="flex items-center mb-2">
-                  <FeatherIcon name="check-circle" class="h-5 w-5 text-green-600 mr-2" />
-                  <span class="text-sm font-medium text-green-900">
-                    {{ pageData ? __('Landing Page Created Successfully') : __('Landing Page Configured') }}
-                  </span>
-                  <span v-if="pageData?.published" class="ml-2 px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">
-                    {{ __('Published') }}
-                  </span>
-                  <span v-else-if="pageData" class="ml-2 px-2 py-0.5 bg-yellow-100 text-yellow-700 text-xs rounded-full">
-                    {{ __('Draft') }}
-                  </span>
-                  <span v-else class="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">
-                    {{ __('Configured') }}
-                  </span>
-                </div>
-                <p v-if="pageData?.page_title" class="text-sm font-medium text-green-900 mb-1">
-                  {{ pageData.page_title }}
-                </p>
-                <p class="text-xs text-green-700 mb-2 font-mono break-all">
-                  {{ pageData?.builder_page || ladipageUrl }}
-                </p>
-                <p v-if="pageData?.page_id" class="text-xs text-green-600">
-                  Page ID: {{ pageData.page_id }}
+                <p class="text-xs text-red-700">
+                  {{ createError }}
                 </p>
               </div>
             </div>
-            
-            <!-- Page Actions -->
-            <div class="flex gap-2 pt-3 border-t border-green-200">
-              <Button
-                @click="openBuilder"
-                variant="solid"
-                size="sm"
-                class="bg-green-600 hover:bg-green-700"
-              >
-                <template #prefix>
-                  <FeatherIcon name="edit-2" class="h-3 w-3" />
-                </template>
-                {{ __('Edit in Builder') }}
-              </Button>
-              <Button
-                @click="copyToClipboard(pageData?.builder_page || ladipageUrl)"
-                variant="ghost"
-                size="sm"
-              >
-                <template #prefix>
-                  <FeatherIcon name="copy" class="h-3 w-3" />
-                </template>
-                {{ __('Copy URL') }}
-              </Button>
-              <Button
-                v-if="pageData && !pageData.published"
-                @click="publishPage"
-                variant="ghost"
-                size="sm"
-              >
-                <template #prefix>
-                  <FeatherIcon name="upload-cloud" class="h-3 w-3" />
-                </template>
-                {{ __('Publish') }}
-              </Button>
-              <Button
-                v-else-if="pageData && pageData.published"
-                @click="unpublishPage"
-                variant="ghost"
-                size="sm"
-              >
-                <template #prefix>
-                  <FeatherIcon name="download-cloud" class="h-3 w-3" />
-                </template>
-                {{ __('Unpublish') }}
-              </Button>
-            </div>
+            <Button
+              @click="resetSelection"
+              variant="ghost"
+              size="sm"
+            >
+              {{ __('Back') }}
+            </Button>
           </div>
         </div>
-        
-        <!-- Select Button -->
-        <button
-          v-else
-          @click="showModal = true"
-          class="w-full border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-blue-500 hover:bg-blue-50 transition-all group"
-        >
-          <!-- Debug info -->
+      </div>
+      
+      <!-- Selected Page Display -->
+      <div v-if="selectedPage">
+        <div class="border border-green-200 rounded-lg p-4 bg-green-50">
+          <div class="flex items-start justify-between mb-3">
+            <div class="flex-1">
+              <div class="flex items-center mb-2">
+                <FeatherIcon name="check-circle" class="h-5 w-5 text-green-600 mr-2" />
+                <span class="text-sm font-medium text-green-900">
+                  {{ selectedPage.isPublished ? __('Published Page Selected') : __('Draft Page Selected') }}
+                </span>
+                <span v-if="selectedPage.isPublished" class="ml-2 px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">
+                  {{ __('Published') }}
+                </span>
+                <span v-else class="ml-2 px-2 py-0.5 bg-yellow-100 text-yellow-700 text-xs rounded-full">
+                  {{ __('Draft') }}
+                </span>
+              </div>
+              <p class="text-sm font-medium text-green-900 mb-1">
+                {{ selectedPage.title }}
+              </p>
+              <p class="text-xs text-green-700 mb-2 font-mono break-all">
+                {{ selectedPage.url }}
+              </p>
+              <p class="text-xs text-green-600">
+                Page ID: {{ selectedPage.id }}
+              </p>
+            </div>
+          </div>
           
-          <div class="flex flex-col items-center">
-            <div class="w-12 h-12 rounded-full bg-gray-100 group-hover:bg-blue-100 flex items-center justify-center mb-3 transition-colors">
-              <FeatherIcon name="layout" class="h-6 w-6 text-gray-400 group-hover:text-blue-600 transition-colors" />
-            </div>
-            <p class="text-sm font-medium text-gray-900 mb-1">
-              {{ __('Select Landing Page Template') }}
-            </p>
-            <p class="text-xs text-gray-500">
-              {{ __('Click to browse available templates') }}
-            </p>
+          <!-- Page Actions -->
+          <div class="flex gap-2 pt-3 border-t border-green-200">
+            <Button
+              @click="openBuilder"
+              variant="solid"
+              size="sm"
+              class="bg-green-600 hover:bg-green-700"
+            >
+              <template #prefix>
+                <FeatherIcon name="edit-2" class="h-3 w-3" />
+              </template>
+              {{ __('Edit in Builder') }}
+            </Button>
+            <Button
+              @click="copyToClipboard(selectedPage.url)"
+              variant="ghost"
+              size="sm"
+            >
+              <template #prefix>
+                <FeatherIcon name="copy" class="h-3 w-3" />
+              </template>
+              {{ __('Copy URL') }}
+            </Button>
+            <Button
+              v-if="!selectedPage.isPublished"
+              @click="publishPage"
+              variant="ghost"
+              size="sm"
+            >
+              <template #prefix>
+                <FeatherIcon name="upload-cloud" class="h-3 w-3" />
+              </template>
+              {{ __('Publish') }}
+            </Button>
+            <Button
+              @click="resetSelection"
+              variant="ghost"
+              size="sm"
+            >
+              <template #prefix>
+                <FeatherIcon name="x" class="h-3 w-3" />
+              </template>
+              {{ __('Change') }}
+            </Button>
           </div>
-        </button>
-        
-        <p class="text-xs text-gray-500 mt-2">
-          {{ __('Ensure the form on the landing page is connected to sync Lead data to CRM') }}
-        </p>
+        </div>
       </div>
       
       <!-- Template Selection Modal -->
@@ -180,77 +194,29 @@
         :templates="templates"
         :loading="loading"
         :error="error"
-        :model-value="landingPage"
-        @update:model-value="handleTemplateSelect"
         @close="showModal = false"
-        @select="handleTemplateSelect"
+        @select="(template, data) => handleTemplateSelect(template, data)"
         @retry="fetchTemplates"
       />
 
-      <!-- CTA Link Configuration - Only show when page is created -->
-      <div v-if="landingPage && pageData" class="border border-gray-200 rounded-lg p-4 bg-gray-50">
-        <div class="flex items-start mb-3">
-          <FeatherIcon name="info" class="h-4 w-4 text-blue-600 mt-0.5 mr-2 flex-shrink-0" />
-          <div class="text-xs text-gray-600">
-            {{ __('The form on the landing page must be connected to automatically sync Lead data to the system') }}
-          </div>
-        </div>
-
-        <!-- Preview Landing Page URL -->
-        <div class="bg-white border border-gray-200 rounded p-3">
-          <div class="flex items-center justify-between">
-            <div class="flex-1 mr-3">
-              <div class="text-xs text-gray-500 mb-1">{{ __('Landing Page Builder URL') }}</div>
-              <div class="text-sm text-gray-900 font-mono break-all">
-                {{ pageData?.builder_page || getLandingPageUrl(landingPage) }}
-              </div>
-            </div>
-            <button
-              @click="copyToClipboard(pageData?.builder_page || getLandingPageUrl(landingPage))"
-              class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
-              :title="__('Copy URL')"
-            >
-              <FeatherIcon name="copy" class="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Form Structure Info - Only show when page is created -->
-      <div v-if="landingPage && pageData" class="border-l-4 border-yellow-400 bg-yellow-50 p-4 rounded">
-        <div class="flex items-start">
-          <FeatherIcon name="alert-triangle" class="h-5 w-5 text-yellow-600 mt-0.5 mr-3 flex-shrink-0" />
-          <div>
-            <h5 class="text-sm font-semibold text-yellow-900 mb-1">
-              {{ __('Form Structure Requirements') }}
-            </h5>
-            <p class="text-xs text-yellow-800">
-              {{ __('Ensure the form on the landing page is properly connected to sync data to CRM. Contact your administrator if you need help setting this up.') }}
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { FeatherIcon, FormControl, Button, call } from 'frappe-ui'
+import { FeatherIcon, Button, call, toast } from 'frappe-ui'
 import TemplateSelectionModal from './TemplateSelectionModal.vue'
+import PublishedPageSelectionModal from './PublishedPageSelectionModal.vue'
 
 const props = defineProps({
-  landingPage: {
-    type: String,
-    default: ''
-  },
   ladipageUrl: {
     type: String,
     default: ''
   },
-  pageData: {
-    type: Object,
-    default: null
+  ladipageId: {
+    type: String,
+    default: ''
   },
   campaignName: {
     type: String,
@@ -270,51 +236,149 @@ const props = defineProps({
   },
 })
 
-console.log('🚀 props:', props)
+const emit = defineEmits(['update:ladipageUrl', 'update:ladipageId'])
 
-const emit = defineEmits(['update:landingPage', 'update:pageData', 'update:ladipageUrl'])
-
-// Debug: Watch props changes
-watch(() => props.landingPage, (newVal) => {
-  console.log('🔍 landingPage changed:', newVal)
-}, { immediate: true })
-
-watch(() => props.pageData, (newVal) => {
-  console.log('🔍 pageData changed:', newVal)
-}, { immediate: true })
+// Helper function to build builder URL
+const buildBuilderUrl = (pageBuilderIdOrPath) => {
+  if (!pageBuilderIdOrPath) return ''
+  
+  // If it's already a full URL, return as is
+  if (pageBuilderIdOrPath.startsWith('http')) {
+    return pageBuilderIdOrPath
+  }
+  
+  // If it's just the page builder ID, build the URL
+  if (pageBuilderIdOrPath.startsWith('page-')) {
+    return `https://hireos.fastwork.vn/builder/${pageBuilderIdOrPath}`
+  }
+  
+  // If it's a path starting with /builder, prepend domain
+  if (pageBuilderIdOrPath.startsWith('/builder')) {
+    return `https://hireos.fastwork.vn${pageBuilderIdOrPath}`
+  }
+  
+  // Default case
+  return `https://hireos.fastwork.vn/builder/${pageBuilderIdOrPath}`
+}
 
 // State
+const mode = ref('') // 'select' or 'create'
+const selectedPage = ref(null)
+const publishedPages = ref([])
+const loadingPages = ref(false)
+const publishedPagesError = ref(null)
+const showPublishedPagesModal = ref(false)
+const showModal = ref(false)
 const templates = ref([])
 const loading = ref(false)
 const error = ref(null)
-const showModal = ref(false)
 const creatingPage = ref(false)
 const createError = ref(null)
 
-// Debug computed
-const shouldShowSuccess = computed(() => {
-  const result = !!((props.landingPage && props.pageData) || props.ladipageUrl)
-  console.log('🔍 shouldShowSuccess:', result, {
-    landingPage: props.landingPage,
-    pageData: props.pageData,
-    ladipageUrl: props.ladipageUrl,
-    creatingPage: creatingPage.value,
-    createError: createError.value
-  })
-  return result
-})
+// Load page details for edit mode
+const loadPageDetails = async (pageId) => {
+  try {
+    const response = await call('mbw_mira.integrations.cms_page.get_page_details', {
+      page_id: pageId
+    })
+    
+    if (response?.message?.status === 'success' && response?.message?.data) {
+      const page = response.message.data
+      selectedPage.value = {
+        id: pageId,
+        title: page.page_title || '',
+        url: props.ladipageUrl,
+        isPublished: page.published || false,
+        builderUrl: buildBuilderUrl(page.builder_page)
+      }
+    }
+  } catch (error) {
+    console.error('❌ Error loading page details:', error)
+  }
+}
 
-// Fetch templates from CMS API
+// Load published pages
+const loadPublishedPages = async () => {
+  loadingPages.value = true
+  publishedPagesError.value = null
+  showPublishedPagesModal.value = true
+  
+  try {
+    const response = await call('mbw_mira.integrations.cms_page.get_page_public')
+    
+    if (response?.message?.status === 'success' && response?.message?.data) {
+      publishedPages.value = response.message.data
+    } else {
+      publishedPagesError.value = 'Failed to load published pages'
+    }
+  } catch (error) {
+    console.error('❌ Error loading published pages:', error)
+    publishedPagesError.value = error.message || 'Failed to load published pages'
+  } finally {
+    loadingPages.value = false
+  }
+}
+
+// Select published page
+const selectPublishedPage = async (page) => {
+  selectedPage.value = {
+    id: page.name,
+    title: page.title,
+    url: page.router,
+    isPublished: true,
+    builderUrl: buildBuilderUrl(page.page_builder_id)
+  }
+  
+  // Emit updates
+  emit('update:ladipageUrl', page.router)
+  emit('update:ladipageId', page.name)
+  
+  // Save to campaign database if campaignId is provided
+  if (props.campaignId) {
+    try {
+      await call('frappe.client.set_value', {
+        doctype: 'Mira Campaign',
+        name: props.campaignId,
+        fieldname: {
+          ladipage_url: page.router,
+          ladipage_id: page.name
+        }
+      })
+      console.log('✅ Saved published page to campaign:', props.campaignId)
+    } catch (error) {
+      console.error('❌ Error saving to campaign:', error)
+      // Don't show error toast as this is not critical for UX
+    }
+  }
+  
+  toast.success(__('Published page selected'))
+}
+
+// Reset selection
+const resetSelection = () => {
+  mode.value = ''
+  selectedPage.value = null
+  publishedPages.value = []
+  publishedPagesError.value = null
+  showPublishedPagesModal.value = false
+  createError.value = null
+  showModal.value = false
+}
+
+// Open create modal and load templates
+const openCreateModal = async () => {
+  showModal.value = true
+  await fetchTemplates()
+}
+
+// Load templates for create mode
 const fetchTemplates = async () => {
   loading.value = true
   error.value = null
   try {
     const response = await call('mbw_mira.integrations.cms_page.get_templates')
     
-    if (response?.status === 'success' && response?.data) {
-      templates.value = response.data
-    } else if (response?.message?.status === 'success' && response?.message?.data) {
-      // Handle nested response structure
+    if (response?.message?.status === 'success' && response?.message?.data) {
       templates.value = response.message.data
     } else {
       error.value = 'Failed to load templates'
@@ -328,203 +392,149 @@ const fetchTemplates = async () => {
   }
 }
 
-// Map templates to dropdown options
-const landingPageOptions = computed(() => {
-  if (!templates.value || templates.value.length === 0) {
-    return []
-  }
-  
-  return templates.value.map(template => ({
-    label: template.page_title || template.name,
-    value: template.name,
-    description: template.route
-  }))
-})
-
-// Get landing page URL by ID
-const getLandingPageUrl = (pageId) => {
-  if (!pageId) return ''
-  
-  const template = templates.value.find(t => t.name === pageId)
-  return template?.route || ''
-}
-
-// Copy to clipboard
-const copyToClipboard = (text) => {
-  navigator.clipboard.writeText(text).then(() => {
-    console.log('✅ Copied to clipboard:', text)
-  })
-}
-
-// Get selected template name
-const getSelectedTemplateName = () => {
-  if (!landingPage.value) return ''
-  const template = templates.value.find(t => t.name === landingPage.value)
-  return template?.page_title || landingPage.value
-}
-
-// Handle template selection from modal
-const handleTemplateSelect = async (templateId) => {
-  // Prevent duplicate calls
-  if (creatingPage.value) {
-    console.log('⚠️ Already creating page, skipping...')
-    return
-  }
-  
-  const template = templates.value.find(t => t.name === templateId)
+// Handle template selection and create page
+const handleTemplateSelect = async (template, data) => {
   if (!template) return
-  
-  // Create page from template
-  await createPageFromTemplate(template)
-}
 
-// Create page from template
-const createPageFromTemplate = async (template) => {
+  console.log('Selected template:', template)
+  console.log('Selected template data:', data)
+  
   creatingPage.value = true
   createError.value = null
+  showModal.value = false
   
   try {
-    // Prepare data for page creation
-    const pageData = {
-      template_id: template.name,
-      page_title: props.campaignName || template.page_title || 'Campaign Landing Page',
-      // Company info (optional)
-      ...props.companyInfo,
-      // Job info (optional)
-      ...props.jobInfo
-    }
+    const response = await call('mbw_mira.integrations.cms_page.create_page_by_template', {
+      template_id: template,
+      page_title: data.page_title ,
+      campaign_name: props.campaignName,
+      campaign_id: props.campaignId,
+      company_info: props.companyInfo,
+      job_info: props.jobInfo,
+      published: 1
+    })
     
-    const response = await call('mbw_mira.integrations.cms_page.create_page_by_template', pageData)
-
-    console.log('✅ Page created:', response)
-    
-    // Extract page data from nested response
-    let pageInfo = null
-    if (response?.message?.message?.data) {
-      // Triple nested: {message: {message: {data: {...}}}}
-      pageInfo = response.message.message.data
-    } else if (response?.message?.data) {
-      // Double nested: {message: {data: {...}}}
-      pageInfo = response.message.data
-    } else if (response?.data) {
-      // Single nested: {data: {...}}
-      pageInfo = response.data
-    }
-    
-    if (pageInfo && pageInfo.page_id) {
-      // Build full builder URL
-      const builderUrl = `https://builder.mbwcloud.com${pageInfo.builder_page}`
+    if (response?.message?.status === 'success' && response?.message?.data) {
+      const page = response?.message?.data
       
-      // Update page info with full URL
-      const fullPageData = {
-        ...pageInfo,
-        builder_page: builderUrl,
-        published: 0  // Newly created page is unpublished
+      // Check if page is published (has url_public_page)
+      const publicUrl = page.url_public_page || ''
+      
+      selectedPage.value = {
+        id: page.page_id,
+        title: page.page_title,
+        url: publicUrl,
+        isPublished: true,
+        builderUrl: buildBuilderUrl(page.builder_page)
       }
       
-      // Emit both template ID and page data
-      emit('update:landingPage', template.name)
-      emit('update:pageData', fullPageData)
+      // Emit updates based on publish status
+      emit('update:ladipageUrl', publicUrl) // URL if published, empty if draft
+      emit('update:ladipageId', page.page_id)
       
-      // Emit builder URL to save in campaign
-      emit('update:ladipageUrl', builderUrl)
-      
-      // Save to database if campaignId is provided
+      // Save to campaign database
       if (props.campaignId) {
-        await saveLadipageUrlToDatabase(builderUrl)
+        try {
+          await call('frappe.client.set_value', {
+            doctype: 'Mira Campaign',
+            name: props.campaignId,
+            fieldname: {
+              ladipage_url: publicUrl, // URL if published, empty if draft
+              ladipage_id: page.page_id
+            }
+          })
+          console.log('✅ Saved page to campaign:', props.campaignId, { 
+            published: isPublished, 
+            url: publicUrl 
+          })
+        } catch (error) {
+          console.error('❌ Error saving page to campaign:', error)
+          // Don't show error toast as this is not critical for UX
+        }
       }
       
-      showModal.value = false
-      console.log('✅ Page created:', fullPageData)
+      toast.success(__('Page created successfully'))
     } else {
-      createError.value = 'Failed to create page from template'
-      console.error('❌ Invalid response:', response)
+      throw new Error(response?.message || 'Failed to create page')
     }
-  } catch (err) {
-    createError.value = err.message || 'Failed to create page'
-    console.error('❌ Error creating page:', err)
+  } catch (error) {
+    console.error('❌ Error creating page:', error)
+    createError.value = error.message || 'Failed to create page'
   } finally {
     creatingPage.value = false
   }
 }
 
-// Open page builder
+// Open builder
 const openBuilder = () => {
-  const builderUrl = props.pageData?.builder_page || props.ladipageUrl
-  if (builderUrl) {
-    window.open(builderUrl, '_blank', 'noopener,noreferrer')
+  if (selectedPage.value?.builderUrl) {
+    window.open(selectedPage.value.builderUrl, '_blank')
+  }
+}
+
+// Copy to clipboard
+const copyToClipboard = async (text) => {
+  try {
+    await navigator.clipboard.writeText(text)
+    toast.success(__('URL copied to clipboard'))
+  } catch (error) {
+    console.error('❌ Error copying to clipboard:', error)
+    toast.error(__('Failed to copy URL'))
   }
 }
 
 // Publish page
 const publishPage = async () => {
-  if (!props.pageData?.page_id) return
+  if (!selectedPage.value?.id) return
   
   try {
     const response = await call('mbw_mira.integrations.cms_page.publish_page', {
-      page_id: props.pageData.page_id
+      page_id: selectedPage.value.id
     })
     
-    if (response?.status === 'success' || response?.message?.status === 'success') {
-      // Update page data with published status
-      emit('update:pageData', {
-        ...props.pageData,
-        published: 1
-      })
-      console.log('✅ Page published successfully')
+    if (response?.message?.status === 'success') {
+      selectedPage.value.isPublished = true
+      
+      // Get public URL from response (prioritize url_public_page over router)
+      const publicUrl = response?.message?.data?.url_public_page || response?.message?.data?.router || ''
+      
+      if (publicUrl) {
+        selectedPage.value.url = publicUrl
+        emit('update:ladipageUrl', publicUrl)
+        
+        // Save to campaign database
+        if (props.campaignId) {
+          try {
+            await call('frappe.client.set_value', {
+              doctype: 'Mira Campaign',
+              name: props.campaignId,
+              fieldname: {
+                ladipage_url: publicUrl,
+                ladipage_id: selectedPage.value.id
+              }
+            })
+            console.log('✅ Updated campaign with published URL:', publicUrl)
+          } catch (error) {
+            console.error('❌ Error updating campaign URL:', error)
+          }
+        }
+      }
+      
+      toast.success(__('Page published successfully'))
+    } else {
+      throw new Error(response?.message || 'Failed to publish page')
     }
-  } catch (err) {
-    console.error('❌ Error publishing page:', err)
+  } catch (error) {
+    console.error('❌ Error publishing page:', error)
+    toast.error(__('Failed to publish page'))
   }
 }
 
-// Unpublish page
-const unpublishPage = async () => {
-  if (!props.pageData?.page_id) return
-  
-  try {
-    const response = await call('mbw_mira.integrations.cms_page.unpublish_page', {
-      page_id: props.pageData.page_id
-    })
-    
-    if (response?.status === 'success' || response?.message?.status === 'success') {
-      // Update page data with unpublished status
-      emit('update:pageData', {
-        ...props.pageData,
-        published: 0
-      })
-      console.log('✅ Page unpublished successfully')
-    }
-  } catch (err) {
-    console.error('❌ Error unpublishing page:', err)
+// Initialize from props - watch after function definitions
+watch(() => [props.ladipageUrl, props.ladipageId], ([url, id]) => {
+  if (id) {
+    // Load page details if we have both URL and ID
+    loadPageDetails(id)
   }
-}
-
-// Save ladipage URL to database
-const saveLadipageUrlToDatabase = async (builderUrl) => {
-  try {
-    console.log(`💾 Saving ladipage_url to campaign ${props.campaignId}:`, builderUrl)
-    
-    await call('frappe.client.set_value', {
-      doctype: 'Mira Campaign',
-      name: props.campaignId,
-      fieldname: 'ladipage_url',
-      value: builderUrl
-    })
-    
-    console.log('✅ Successfully saved ladipage_url to database')
-  } catch (err) {
-    console.error('❌ Error saving ladipage_url to database:', err)
-    // Don't throw error - this is not critical for the flow
-  }
-}
-
-// Fetch templates on mount
-onMounted(() => {
-  fetchTemplates()
-})
+}, { immediate: true })
 </script>
-
-<style scoped>
-/* Add any custom styles here */
-</style>
