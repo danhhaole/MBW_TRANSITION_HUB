@@ -17,7 +17,6 @@
       </div>
     </div>
 
-
     <!-- Triggers Section -->
     <div class="bg-white rounded-lg border border-gray-200 p-6">
       <div class="flex items-center justify-between mb-4">
@@ -57,7 +56,7 @@
                 >
                   <div class="flex items-start space-x-3">
                     <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-200 transition-colors">
-                      <FeatherIcon name="zap" class="h-4 w-4 text-blue-600" />
+                      <FeatherIcon :name="getTriggerIcon(option.value)" class="h-4 w-4 text-blue-600" />
                     </div>
                     <div class="flex-1 min-w-0">
                       <p class="text-sm font-medium text-gray-900">{{ option.label }}</p>
@@ -87,7 +86,7 @@
           <div class="flex items-start justify-between mb-4">
             <div class="flex items-start space-x-3 flex-1">
               <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-                <FeatherIcon name="zap" class="h-5 w-5 text-blue-600" />
+                <FeatherIcon :name="getTriggerIcon(trigger.trigger_type)" class="h-5 w-5 text-blue-600" />
               </div>
               <div class="flex-1">
                 <div class="flex items-center justify-between mb-1">
@@ -125,130 +124,130 @@
 
           <!-- Trigger Actions -->
           <div class="ml-10 mt-3">
-                  <div class="flex items-center justify-between mb-3">
-                    <p class="text-xs font-medium text-gray-700">
-                      {{ __('Actions') }} ({{ trigger.actions?.length || 0 }})
-                    </p>
-                  
-                  <!-- Add Action Button with Popover -->
-                  <Popover placement="bottom-end">
-                    <template #target="{ togglePopover }">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        @click="togglePopover()"
-                      >
-                        <template #prefix>
-                          <FeatherIcon name="plus" class="h-3 w-3" />
-                        </template>
-                        {{ __('Add Action') }}
-                      </Button>
-                    </template>
-                    <template #body-main="{ close }">
-                      <div class="w-72 bg-white rounded-lg border border-gray-200">
-                        <div class="p-3 border-b border-gray-200">
-                          <h4 class="text-xs font-semibold text-gray-900">{{ __('Select Action Type') }}</h4>
-                        </div>
-                        <div class="p-2 max-h-64 overflow-y-auto">
-                          <button
-                            v-for="option in actionTypeOptions"
-                            :key="option.value"
-                            @click="close() ;addActionToTrigger(index, option.value)"
-                            class="w-full text-left px-3 py-2 rounded hover:bg-gray-50 transition-colors group"
-                          >
-                            <div class="flex items-center space-x-2">
-                              <div class="w-6 h-6 rounded bg-gray-100 flex items-center justify-center flex-shrink-0 group-hover:bg-gray-200">
-                                <FeatherIcon :name="getActionIcon(option.value)" class="h-3 w-3 text-gray-600" />
-                              </div>
-                              <div class="flex-1 min-w-0">
-                                <p class="text-xs font-medium text-gray-900">{{ option.label }}</p>
-                              </div>
-                            </div>
-                          </button>
-                        </div>
-                      </div>
-                    </template>
-                  </Popover>
-                </div>
-                
-                <div v-if="trigger.actions && trigger.actions.length > 0">
-                <div class="space-y-0">
-                  <template
-                    v-for="(action, actionIndex) in trigger.actions"
-                    :key="actionIndex"
+            <div class="flex items-center justify-between mb-3">
+              <p class="text-xs font-medium text-gray-700">
+                {{ __('Actions') }} ({{ trigger.actions?.length || 0 }})
+              </p>
+            
+              <!-- Add Action Button with Popover -->
+              <Popover placement="bottom-end">
+                <template #target="{ togglePopover }">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    @click="togglePopover()"
                   >
-                    <!-- Delay Arrow (before action) -->
-                    <div v-if="action.delay_minutes > 0" class="flex items-center py-2">
-                      <div class="flex-1 flex items-center">
-                        <div class="h-px bg-gray-300 flex-1"></div>
-                        <div class="mx-2 flex items-center space-x-1 text-xs text-gray-500 bg-blue-50 border border-blue-200 px-2 py-1 rounded">
-                          <FeatherIcon name="clock" class="h-3 w-3 text-blue-600" />
-                          <span class="font-medium text-blue-700">{{ formatDelayLong(action.delay_minutes) }}</span>
-                        </div>
-                        <div class="h-px bg-gray-300 flex-1"></div>
-                      </div>
+                    <template #prefix>
+                      <FeatherIcon name="plus" class="h-3 w-3" />
+                    </template>
+                    {{ __('Add Action') }}
+                  </Button>
+                </template>
+                <template #body-main="{ close }">
+                  <div class="w-72 bg-white rounded-lg border border-gray-200">
+                    <div class="p-3 border-b border-gray-200">
+                      <h4 class="text-xs font-semibold text-gray-900">{{ __('Select Action Type') }}</h4>
                     </div>
-                    
-                    <!-- Immediate indicator (if no delay and not first action) -->
-                    <div v-else-if="actionIndex > 0" class="flex items-center py-1">
-                      <div class="flex-1 flex items-center">
-                        <div class="h-px bg-gray-300 flex-1"></div>
-                        <div class="mx-2 flex items-center space-x-1 text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded">
-                          <FeatherIcon name="zap" class="h-3 w-3" />
-                          <span class="font-medium">{{ __('Immediate') }}</span>
+                    <div class="p-2 max-h-64 overflow-y-auto">
+                      <button
+                        v-for="option in actionTypeOptions"
+                        :key="option.value"
+                        @click="close(); addActionToTrigger(index, option.value)"
+                        class="w-full text-left px-3 py-2 rounded hover:bg-gray-50 transition-colors group"
+                      >
+                        <div class="flex items-center space-x-2">
+                          <div class="w-6 h-6 rounded bg-gray-100 flex items-center justify-center flex-shrink-0 group-hover:bg-gray-200">
+                            <FeatherIcon :name="getActionIcon(option.value)" class="h-3 w-3 text-gray-600" />
+                          </div>
+                          <div class="flex-1 min-w-0">
+                            <p class="text-xs font-medium text-gray-900">{{ option.label }}</p>
+                          </div>
                         </div>
-                        <div class="h-px bg-gray-300 flex-1"></div>
-                      </div>
+                      </button>
                     </div>
+                  </div>
+                </template>
+              </Popover>
+            </div>
+            
+            <div v-if="trigger.actions && trigger.actions.length > 0">
+              <div class="space-y-0">
+                <template
+                  v-for="(action, actionIndex) in trigger.actions"
+                  :key="actionIndex"
+                >
+                  <!-- Delay Arrow (before action) -->
+                  <div v-if="action.delay_minutes > 0" class="flex items-center py-2">
+                    <div class="flex-1 flex items-center">
+                      <div class="h-px bg-gray-300 flex-1"></div>
+                      <div class="mx-2 flex items-center space-x-1 text-xs text-gray-500 bg-blue-50 border border-blue-200 px-2 py-1 rounded">
+                        <FeatherIcon name="clock" class="h-3 w-3 text-blue-600" />
+                        <span class="font-medium text-blue-700">{{ formatDelayLong(action.delay_minutes) }}</span>
+                      </div>
+                      <div class="h-px bg-gray-300 flex-1"></div>
+                    </div>
+                  </div>
+                  
+                  <!-- Immediate indicator (if no delay and not first action) -->
+                  <div v-else-if="actionIndex > 0" class="flex items-center py-1">
+                    <div class="flex-1 flex items-center">
+                      <div class="h-px bg-gray-300 flex-1"></div>
+                      <div class="mx-2 flex items-center space-x-1 text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded">
+                        <FeatherIcon name="zap" class="h-3 w-3" />
+                        <span class="font-medium">{{ __('Immediate') }}</span>
+                      </div>
+                      <div class="h-px bg-gray-300 flex-1"></div>
+                    </div>
+                  </div>
 
-                    <!-- Action Card -->
-                    <div class="bg-gray-50 rounded-lg px-3 py-2 border border-gray-200 hover:border-blue-300 transition-colors group">
-                      <div class="flex items-center justify-between mb-1">
-                        <div class="flex items-center space-x-2 text-xs text-gray-600">
-                          <FeatherIcon :name="getActionIcon(action.action_type)" class="h-3 w-3" />
-                          <span class="font-medium">{{ getActionLabel(action.action_type) }}</span>
-                        </div>
-                        <div class="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            @click="editAction(index, actionIndex)"
-                            class="p-1 hover:bg-white rounded transition-colors"
-                            :title="__('Edit action')"
-                          >
-                            <FeatherIcon name="edit" class="h-3 w-3 text-gray-500" />
-                          </button>
-                          <button
-                            @click="removeActionFromTrigger(index, actionIndex)"
-                            class="p-1 hover:bg-white rounded transition-colors"
-                            :title="__('Delete action')"
-                          >
-                            <FeatherIcon name="trash-2" class="h-3 w-3 text-red-500" />
-                          </button>
-                        </div>
+                  <!-- Action Card -->
+                  <div class="bg-gray-50 rounded-lg px-3 py-2 border border-gray-200 hover:border-blue-300 transition-colors group">
+                    <div class="flex items-center justify-between mb-1">
+                      <div class="flex items-center space-x-2 text-xs text-gray-600">
+                        <FeatherIcon :name="getActionIcon(action.action_type)" class="h-3 w-3" />
+                        <span class="font-medium">{{ getActionLabel(action.action_type) }}</span>
                       </div>
-                      <!-- Show content preview -->
-                      <div v-if="getActionPreview(action)" class="text-xs text-gray-500 mt-1 line-clamp-2">
-                        <span class="italic">"{{ getActionPreview(action) }}"</span>
-                      </div>
-                      <div v-else class="text-xs text-gray-400 italic mt-1">
-                        {{ __('No content yet') }}
+                      <div class="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          @click="editAction(index, actionIndex)"
+                          class="p-1 hover:bg-white rounded transition-colors"
+                          :title="__('Edit action')"
+                        >
+                          <FeatherIcon name="edit" class="h-3 w-3 text-gray-500" />
+                        </button>
+                        <button
+                          @click="removeActionFromTrigger(index, actionIndex)"
+                          class="p-1 hover:bg-white rounded transition-colors"
+                          :title="__('Delete action')"
+                        >
+                          <FeatherIcon name="trash-2" class="h-3 w-3 text-red-500" />
+                        </button>
                       </div>
                     </div>
+                    <!-- Show content preview -->
+                    <div v-if="getActionPreview(action)" class="text-xs text-gray-500 mt-1 line-clamp-2">
+                      <span class="italic">"{{ getActionPreview(action) }}"</span>
+                    </div>
+                    <div v-else class="text-xs text-gray-400 italic mt-1">
+                      {{ __('No content yet') }}
+                    </div>
+                  </div>
 
-                    <!-- Arrow pointing down (between actions) -->
-                    <div v-if="actionIndex < trigger.actions.length - 1" class="flex justify-center py-1">
-                      <FeatherIcon name="arrow-down" class="h-4 w-4 text-gray-400" />
-                    </div>
-                  </template>
-                </div>
-                </div>
-                
-                <!-- Empty state -->
-                <div v-else class="text-center py-6 bg-gray-50 rounded border-2 border-dashed border-gray-300">
-                  <p class="text-xs text-gray-500">
-                    {{ __('No actions added yet. Click "Add Action" to get started.') }}
-                  </p>
-                </div>
+                  <!-- Arrow pointing down (between actions) -->
+                  <div v-if="actionIndex < trigger.actions.length - 1" class="flex justify-center py-1">
+                    <FeatherIcon name="arrow-down" class="h-4 w-4 text-gray-400" />
+                  </div>
+                </template>
               </div>
+            </div>
+            
+            <!-- Empty state -->
+            <div v-else class="text-center py-6 bg-gray-50 rounded border-2 border-dashed border-gray-300">
+              <p class="text-xs text-gray-500">
+                {{ __('No actions added yet. Click "Add Action" to get started.') }}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -264,98 +263,20 @@
       </div>
     </div>
 
-    <!-- Edit Action Modal -->
-    <Dialog
-      v-model="showEditAction"
-      :options="{
-        title: __('Edit Action'),
-        size: '4xl'
-      }"
-    >
-      <template #body-content>
-        <div v-if="editingAction" class="space-y-6">
-          <!-- Action Type Header -->
-          <div class="flex items-center space-x-3 pb-4 border-b border-gray-200">
-            <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-              <FeatherIcon :name="getActionIcon(editingAction.action_type)" class="h-5 w-5 text-blue-600" />
-            </div>
-            <div>
-              <h3 class="text-base font-semibold text-gray-900">{{ getActionLabel(editingAction.action_type) }}</h3>
-              <p class="text-xs text-gray-500">{{ getActionDescription(editingAction.action_type) }}</p>
-            </div>
-          </div>
-
-          <!-- Messenger Content Editor -->
-          <div v-if="editingAction.action_type === 'FACEBOOK'">
-            <MessengerContentEditor
-              :content="editingAction.content || { blocks: [] }"
-              @update:content="editingAction.content = $event"
-            />
-          </div>
-
-          <!-- Zalo Content Editor -->
-          <div v-if="editingAction.action_type === 'ZALO'">
-            <ZaloContentEditor
-              :content="editingAction.content || { blocks: [] }"
-              @update:content="editingAction.content = $event"
-            />
-          </div>
-
-          <!-- SMS Content Editor -->
-          <div v-if="editingAction.action_type === 'SMS'">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                {{ __('SMS Message') }}
-                <span class="text-red-500">*</span>
-              </label>
-              <textarea
-                v-model="editingAction.content"
-                :placeholder="__('Enter your SMS message...')"
-                rows="4"
-                class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-              />
-              <div class="flex justify-between items-center mt-2">
-                <p class="text-xs text-gray-500">
-                  {{ __('Keep it short and clear (max 160 characters)') }}
-                </p>
-                <span class="text-xs text-gray-500">
-                  {{ (editingAction.content?.length || 0) }}/160
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Delay -->
-          <div class="pt-4 border-t border-gray-200">
-            <DelaySelector
-              v-model="editingAction.delay_minutes"
-              :label="__('Delay')"
-              :optional="true"
-            />
-          </div>
-        </div>
-      </template>
-
-      <template #actions>
-        <div class="flex justify-end space-x-2">
-          <Button variant="outline" @click="showEditAction = false">
-            {{ __('Cancel') }}
-          </Button>
-          <Button variant="solid" theme="blue" @click="saveAction">
-            {{ __('Save') }}
-          </Button>
-        </div>
-      </template>
-    </Dialog>
+    <!-- Action Editor -->
+    <ActionEditor
+      v-model:show="showEditAction"
+      :action="editingAction"
+      @save="handleActionSave"
+      @cancel="handleActionCancel"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
 import { FeatherIcon, Button, FormControl, Dialog, TextEditor, Popover } from 'frappe-ui'
-import DelaySelector from '../molecules/DelaySelector.vue'
-import MessengerContentEditor from '../molecules/MessengerContentEditor.vue'
-import ZaloContentEditor from '../molecules/ZaloContentEditor.vue'
+import ActionEditor from '../molecules/ActionEditor.vue'
 
 const props = defineProps({
   triggers: {
@@ -395,11 +316,21 @@ const editingAction = ref(null)
 const editingTriggerIndex = ref(null)
 const editingActionIndex = ref(null)
 
-// Options - Simplified for Attraction Campaign
+// Trigger types - From images and doctype
 const triggerTypeOptions = [
-  { label: __('Message Received'), value: 'MESSAGE_RECEIVED' },
-  { label: __('Link Clicked'), value: 'LINK_CLICKED' },
-  { label: __('Comment on Post'), value: 'COMMENT_RECEIVED' }
+  // From images - I. TRIGGERS (Event triggers)
+  { label: __('Form Submission'), value: 'ON_CREATE' },
+  { label: __('Link Click'), value: 'ON_LINK_CLICK' },
+  { label: __('Email Open'), value: 'ON_EMAIL_OPEN' },
+  { label: __('Job Application'), value: 'ON_USER_RESPONSE' },
+  { label: __('Unsubscribe'), value: 'ON_UNSUBSCRIBE' },
+  { label: __('Tag Added'), value: 'ON_TAG_ADDED' },
+  { label: __('Tag Removed'), value: 'ON_TAG_REMOVED' },
+  { label: __('Status Change'), value: 'ON_STATUS_CHANGED' },
+  { label: __('Score Threshold Reached'), value: 'ON_SCORE_REACHED' },
+  { label: __('Email Bounce'), value: 'ON_EMAIL_BOUNCE' },
+  { label: __('Inactivity Timeout'), value: 'ON_INACTIVITY_TIMEOUT' },
+  { label: __('Flow Step Completed'), value: 'ON_SEQUENCE_COMPLETED' }
 ]
 
 // Filter out already added trigger types
@@ -408,10 +339,20 @@ const availableTriggerTypes = computed(() => {
   return triggerTypeOptions.filter(option => !existingTypes.includes(option.value))
 })
 
+// Action types - From images and doctype
 const actionTypeOptions = [
-  { label: __('Send Facebook Message'), value: 'FACEBOOK' },
-  { label: __('Send Zalo Message'), value: 'ZALO' },
-  { label: __('Send SMS'), value: 'SMS' }
+  // From images - II. ACTIONS (Automated actions)
+  { label: __('Send Email'), value: 'EMAIL' },
+  { label: __('Send Zalo/SMS Message'), value: 'MESSAGE' },
+  { label: __('Update Field Value'), value: 'ADD_CUSTOM_FIELD' },
+  { label: __('Add/Remove Tag'), value: 'ADD_TAG' },
+  { label: __('Change Status'), value: 'REMOVE_TAG' },
+  { label: __('Stop Tracking'), value: 'UNSUBSCRIBE' },
+  { label: __('Start Flow'), value: 'START_FLOW' },
+  { label: __('Stop Flow'), value: 'STOP_FLOW' },
+  { label: __('Create Task'), value: 'SENT_NOTIFICATION' },
+  { label: __('Send Internal Notification'), value: 'EXTERNAL_REQUEST' },
+  { label: __('Handoff to ATS'), value: 'AI_CALL' }
 ]
 
 const statusOptions = [
@@ -485,6 +426,111 @@ const handleActionTypeChange = (action) => {
   }
 }
 
+// Helper functions
+const getTriggerIcon = (triggerType) => {
+  const iconMap = {
+    'ON_CREATE': 'user-plus',
+    'ON_LINK_CLICK': 'mouse-pointer',
+    'ON_EMAIL_OPEN': 'mail-open',
+    'ON_USER_RESPONSE': 'message-square',
+    'ON_UNSUBSCRIBE': 'user-minus',
+    'ON_TAG_ADDED': 'tag',
+    'ON_TAG_REMOVED': 'tag',
+    'ON_STATUS_CHANGED': 'refresh-cw',
+    'ON_SCORE_REACHED': 'trending-up',
+    'ON_EMAIL_BOUNCE': 'mail-x',
+    'ON_INACTIVITY_TIMEOUT': 'clock',
+    'ON_SEQUENCE_COMPLETED': 'check-circle'
+  }
+  return iconMap[triggerType] || 'zap'
+}
+
+const getTriggerLabel = (triggerType) => {
+  const trigger = triggerTypeOptions.find(t => t.value === triggerType)
+  return trigger ? trigger.label : triggerType
+}
+
+const getTriggerDescription = (triggerType) => {
+  const descriptions = {
+    'ON_CREATE': __('Talent fills out form or submits application'),
+    'ON_LINK_CLICK': __('Talent clicks on a link in email or message'),
+    'ON_EMAIL_OPEN': __('Talent opens an email from the campaign'),
+    'ON_USER_RESPONSE': __('Talent responds or applies to job posting'),
+    'ON_UNSUBSCRIBE': __('Talent unsubscribes from campaign'),
+    'ON_TAG_ADDED': __('A specific tag is added to talent'),
+    'ON_TAG_REMOVED': __('A specific tag is removed from talent'),
+    'ON_STATUS_CHANGED': __('Talent status changes (e.g., recruited, rejected)'),
+    'ON_SCORE_REACHED': __('Talent engagement score reaches threshold'),
+    'ON_EMAIL_BOUNCE': __('Email bounces (invalid email address)'),
+    'ON_INACTIVITY_TIMEOUT': __('Talent shows no activity for set period'),
+    'ON_SEQUENCE_COMPLETED': __('Previous flow step is completed')
+  }
+  return descriptions[triggerType] || ''
+}
+
+const getActionIcon = (actionType) => {
+  const iconMap = {
+    'EMAIL': 'mail',
+    'MESSAGE': 'message-circle',
+    'ADD_CUSTOM_FIELD': 'edit',
+    'ADD_TAG': 'tag',
+    'REMOVE_TAG': 'tag',
+    'UNSUBSCRIBE': 'user-x',
+    'START_FLOW': 'play',
+    'STOP_FLOW': 'stop-circle',
+    'SENT_NOTIFICATION': 'bell',
+    'EXTERNAL_REQUEST': 'external-link',
+    'AI_CALL': 'phone'
+  }
+  return iconMap[actionType] || 'zap'
+}
+
+const getActionLabel = (actionType) => {
+  const action = actionTypeOptions.find(a => a.value === actionType)
+  return action ? action.label : actionType
+}
+
+const getActionDescription = (type) => {
+  const descriptions = {
+    'EMAIL': __('Send automated email to talent'),
+    'MESSAGE': __('Send Zalo/SMS message to talent'),
+    'ADD_CUSTOM_FIELD': __('Update custom field data'),
+    'ADD_TAG': __('Add tag to talent profile'),
+    'REMOVE_TAG': __('Remove tag from talent profile'),
+    'UNSUBSCRIBE': __('Stop tracking talent'),
+    'START_FLOW': __('Start another automation flow'),
+    'STOP_FLOW': __('Stop current automation flow'),
+    'SENT_NOTIFICATION': __('Create task or notification'),
+    'EXTERNAL_REQUEST': __('Send internal notification to team'),
+    'AI_CALL': __('Handoff talent to ATS system')
+  }
+  return descriptions[type] || ''
+}
+
+const stripHtml = (html) => {
+  if (!html) return ''
+  const div = document.createElement('div')
+  div.innerHTML = html
+  return div.textContent || div.innerText || ''
+}
+
+const getActionPreview = (action) => {
+  if (!action.content) return ''
+  
+  // For Facebook and Zalo (content is object with blocks)
+  if ((action.action_type === 'FACEBOOK' || action.action_type === 'ZALO') && typeof action.content === 'object') {
+    const blocks = action.content.blocks || []
+    const textBlocks = blocks.filter(b => b.type === 'text' && b.text_content)
+    if (textBlocks.length > 0) {
+      return textBlocks[0].text_content
+    }
+    return ''
+  }
+  
+  // For SMS (content is string)
+  return stripHtml(action.content)
+}
+
 // Methods
 // Create new trigger
 const createTrigger = (triggerType) => {
@@ -532,8 +578,8 @@ const editAction = (triggerIndex, actionIndex) => {
   showEditAction.value = true
 }
 
-// Save action
-const saveAction = () => {
+// Action Editor handlers
+const handleActionSave = (updatedAction) => {
   // Get the trigger from sorted array
   const sortedTrigger = localTriggers.value[editingTriggerIndex.value]
   
@@ -542,10 +588,15 @@ const saveAction = () => {
   const originalIndex = triggers.findIndex(t => t.trigger_type === sortedTrigger.trigger_type)
   
   if (originalIndex !== -1) {
-    triggers[originalIndex].actions[editingActionIndex.value] = { ...editingAction.value }
+    triggers[originalIndex].actions[editingActionIndex.value] = { ...updatedAction }
     emit('update:triggers', triggers)
   }
   
+  showEditAction.value = false
+  editingAction.value = null
+}
+
+const handleActionCancel = () => {
   showEditAction.value = false
   editingAction.value = null
 }
@@ -605,68 +656,6 @@ const getStatusClass = (status) => {
     'draft': 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'
   }
   return classes[status] || classes.active
-}
-
-// Helper functions
-const getTriggerLabel = (type) => {
-  const option = triggerTypeOptions.find(o => o.value === type)
-  return option ? option.label : type
-}
-
-const getTriggerDescription = (type) => {
-  const descriptions = {
-    'MESSAGE_RECEIVED': __('When candidate sends a message or replies to your post'),
-    'LINK_CLICKED': __('When candidate clicks a link in the campaign post'),
-    'COMMENT_RECEIVED': __('When candidate comments on your Facebook/Zalo post')
-  }
-  return descriptions[type] || ''
-}
-
-const getActionLabel = (type) => {
-  const option = actionTypeOptions.find(o => o.value === type)
-  return option ? option.label : type
-}
-
-const getActionDescription = (type) => {
-  const descriptions = {
-    'FACEBOOK': __('Send a message via Facebook Messenger'),
-    'ZALO': __('Send a message via Zalo OA'),
-    'SMS': __('Send an SMS text message')
-  }
-  return descriptions[type] || ''
-}
-
-const getActionIcon = (type) => {
-  const icons = {
-    'FACEBOOK': 'facebook',
-    'ZALO': 'message-square',
-    'SMS': 'smartphone'
-  }
-  return icons[type] || 'message-circle'
-}
-
-const stripHtml = (html) => {
-  if (!html) return ''
-  const div = document.createElement('div')
-  div.innerHTML = html
-  return div.textContent || div.innerText || ''
-}
-
-const getActionPreview = (action) => {
-  if (!action.content) return ''
-  
-  // For Facebook and Zalo (content is object with blocks)
-  if ((action.action_type === 'FACEBOOK' || action.action_type === 'ZALO') && typeof action.content === 'object') {
-    const blocks = action.content.blocks || []
-    const textBlocks = blocks.filter(b => b.type === 'text' && b.text_content)
-    if (textBlocks.length > 0) {
-      return textBlocks[0].text_content
-    }
-    return ''
-  }
-  
-  // For SMS (content is string)
-  return stripHtml(action.content)
 }
 
 const formatDelayShort = (minutes) => {
