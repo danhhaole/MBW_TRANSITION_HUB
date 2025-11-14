@@ -190,7 +190,7 @@
 								<th
 									class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase"
 								>
-									{{ __('Customer') }}
+									{{ __('Talent') }}
 								</th>
 								<th
 									class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase"
@@ -241,13 +241,13 @@ const props = defineProps({
 
 // Mock data - replace with actual API calls
 const stats = ref({
-	sent: 39,
-	delivered: 38,
-	deliveredPercent: '97.44%',
-	openRate: '50.00%',
-	openCount: 19,
-	clickRate: '10.53%',
-	clickCount: 4,
+	sent: 0,
+	delivered: 0,
+	deliveredPercent: '0%',
+	openRate: '0%',
+	openCount: 0,
+	clickRate: '0%',
+	clickCount: 0,
 	unsubscribeRate: '0%',
 	unsubscribeCount: 0,
 	errorRate: '0%',
@@ -257,19 +257,19 @@ const stats = ref({
 })
 
 const linkClicks = ref([
-	{
-		url: 'https://youtu.be/MuQvbKr1IIttm-cc0?si=haRZ25TcvU',
-		clicks: 2,
-	},
+	// {
+	// 	url: 'https://youtu.be/MuQvbKr1IIttm-cc0?si=haRZ25TcvU',
+	// 	clicks: 2,
+	// },
 ])
 
 const topTalents = ref([
-	{
-		id: 1,
-		name: 'thao.nguyen@mbwconsulting.com',
-		email: 'thao.nguyen@mbwconsulting.com',
-		clicks: 1,
-	},
+	// {
+	// 	id: 1,
+	// 	name: 'thao.nguyen@mbwconsulting.com',
+	// 	email: 'thao.nguyen@mbwconsulting.com',
+	// 	clicks: 1,
+	// },
 ])
 
 // TODO: Replace with actual API calls

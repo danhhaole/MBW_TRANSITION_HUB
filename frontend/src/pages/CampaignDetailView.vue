@@ -920,10 +920,10 @@ const loadingInteractions = ref(false)
 // Talent filter states
 const talentFilter = ref('sent') // Default filter
 const filterCounts = ref({
-	sent: 38,
-	delivered: 38,
-	opened: 19,
-	clicked: 4,
+	sent: 0,
+	delivered: 0,
+	opened: 0,
+	clicked: 0,
 	failed: 0,
 	bounced: 0,
 	spam: 0,
