@@ -115,8 +115,23 @@
 										>
 											{{ getStatusText(segment) }}
 										</span>
-										<!-- Active Status Icon -->
-										<div class="flex items-center">
+									</div>
+									<Dropdown :options="poolActions(segment)">
+										<template #default="{ open }">
+											<Button
+												variant="ghost"
+												icon="more-vertical"
+												@click="open"
+											/>
+										</template>
+									</Dropdown>
+								</div>
+
+								<!-- Last Updated -->
+								<div class="flex text-xs text-gray-500 mb-4">
+									Last updated: {{ segment.formatted_modified }}
+									<!-- Active Status Icon -->
+										<div class="flex items-center ml-2">
 											<div 
 												:class="[
 													'w-2 h-2 rounded-full mr-1',
@@ -132,23 +147,8 @@
 												{{ segment.is_active ? __('Hoạt động') : __('Không hoạt động') }}
 											</span>
 										</div>
-										
-									</div>
-									<Dropdown :options="poolActions(segment)">
-										<template #default="{ open }">
-											<Button
-												variant="ghost"
-												icon="more-vertical"
-												@click="open"
-											/>
-										</template>
-									</Dropdown>
 								</div>
-
-								<!-- Last Updated -->
-								<div class="text-xs text-gray-500 mb-4">
-									Last updated: {{ segment.formatted_modified }}
-								</div>
+								
 
 								<!-- Metrics Grid 3x2 -->
 								<div class="grid grid-cols-3 gap-x-4 gap-y-3 mb-4">
