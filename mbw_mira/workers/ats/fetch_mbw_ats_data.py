@@ -745,3 +745,193 @@ def sync_data_source_candidates_background(data_source_name, sync_log_name):
         frappe.log_error(error_message, error_title)
     finally:
         frappe.db.commit()
+
+def sync_data_source_positions_background(data_source_name, sync_log_name):
+    """
+    Background version of sync_data_source_positions that works with existing sync log
+    
+    Args:
+        data_source_name: Name of Mira Data Source document
+        sync_log_name: Name of existing Mira ATS Sync Log document
+    """
+    try:
+        # Get existing sync log
+        sync_log = frappe.get_doc("Mira ATS Sync Log", sync_log_name)
+        
+        # Check if sync was cancelled
+        if sync_log.status == "Cancelled":
+            return
+        
+        # Update status to In Progress and set start time
+        sync_log.status = "In Progress"
+        sync_log.start_time = frappe.utils.now()
+        sync_log.save(ignore_permissions=True)
+        frappe.db.commit()
+        
+        # Get data source document
+        data_source = frappe.get_doc("Mira Data Source", data_source_name)
+        
+        with FrappeSiteProvider(data_source.name) as provider:
+            if provider.sync_direction not in ("Pull", "Both"):
+                sync_log.status = "Failed"
+                sync_log.details = "Sync direction not set to Pull or Both"
+                sync_log.end_time = frappe.utils.now()
+                sync_log.save(ignore_permissions=True)
+                frappe.db.commit()
+                return
+
+            # Fetch positions from ATS
+            positions = provider.get_list(
+                "ATS_Position",
+                filters={"cat_status": "Active"},
+                fields=["name", "position_name", "position_description", "required_skills"]
+            )
+
+            # Update total records
+            sync_log.total_records = len(positions)
+            sync_log.save(ignore_permissions=True)
+            frappe.db.commit()
+            
+            success_count = 0
+            failed_count = 0
+            error_log = []
+
+            for i, position in enumerate(positions):
+                try:
+                    # Check if sync was cancelled during processing
+                    sync_log.reload()
+                    if sync_log.status == "Cancelled":
+                        sync_log.details = f"Position sync cancelled after processing {success_count} records"
+                        sync_log.save(ignore_permissions=True)
+                        frappe.db.commit()
+                        return
+                    
+                    # Check if segment already exists
+                    position_id = position.get("name")
+                    segment_name = f"ATS-{position_id}"
+                    segment = frappe.db.get_value(
+                        "Mira Segment",
+                        {"sync_id": position_id, "type": "DYNAMIC"},
+                        "name"
+                    )
+
+                    # Prepare segment data
+                    # Parse HTML description to plain text
+                    description_html = position.get("position_description") or ""
+                    description_text = parse_html_to_text(description_html)
+                    
+                    # Extract skills and convert to criteria format
+                    skills = extract_skills(position.get("required_skills")) if position.get("required_skills") else []
+                    criteria = build_criteria_from_skills(skills)
+                    
+                    segment_data = {
+                        "doctype": "Mira Segment",
+                        "title": position.get("position_name"),
+                        "description": description_text,
+                        "type": "DYNAMIC",
+                        "source": "SYNC_ATS",
+                        "sync_id": position_id,  # Keep to avoid duplicates and allow updates
+                        "criteria": json.dumps(criteria)
+                    }
+
+                    if segment:
+                        # Update existing segment
+                        segment_doc = frappe.get_doc("Mira Segment", segment)
+                        segment_doc.update(segment_data)
+                        segment_doc.save(ignore_permissions=True)
+                        action = "updated"
+                    else:
+                        # Create new segment
+                        segment_doc = frappe.get_doc(segment_data)
+                        segment_doc.insert(ignore_permissions=True)
+                        action = "created"
+
+                    success_count += 1
+                    
+                    # Commit after each successful segment to avoid conflicts
+                    frappe.db.commit()
+                    
+                    # Update progress every 5 records
+                    if (i + 1) % 5 == 0:
+                        sync_log.reload()
+                        sync_log.success_count = success_count
+                        sync_log.failed_count = failed_count
+                        sync_log.details = f"Processing... {success_count + failed_count}/{len(positions)} completed"
+                        sync_log.save(ignore_permissions=True)
+                        frappe.db.commit()
+
+                except Exception as e:
+                    failed_count += 1
+                    error_log.append({
+                        "position": position.get("name"),
+                        "error": str(e)[:200]  # Limit error message length
+                    })
+                    
+                    # Rollback failed transaction
+                    frappe.db.rollback()
+
+            # Final update sync log
+            sync_log.reload()
+            sync_log.status = "Completed" if failed_count == 0 else "Partially Completed"
+            sync_log.success_count = success_count
+            sync_log.failed_count = failed_count
+            sync_log.error_log = json.dumps(error_log, indent=2)
+            sync_log.end_time = frappe.utils.now()
+            sync_log.details = f"Position sync completed. Success: {success_count}, Failed: {failed_count}"
+            sync_log.save(ignore_permissions=True)
+            
+            # Emit socket event for real-time updates
+            try:
+                frappe.publish_realtime(
+                    event='position_sync_complete',
+                    message={
+                        'sync_log_name': sync_log_name,
+                        'sync_type': 'Position to Segment',
+                        'status': sync_log.status,
+                        'success_count': success_count,
+                        'failed_count': failed_count,
+                        'total_records': len(positions),
+                        'details': sync_log.details
+                    }
+                    # Broadcast to all users since background job doesn't have session context
+                )
+            except Exception as socket_error:
+                # Don't fail the sync if socket emit fails
+                frappe.log_error(f"Failed to emit socket event: {str(socket_error)}", "Socket Emit Error")
+
+    except Exception as e:
+        try:
+            sync_log.reload()
+            sync_log.status = "Failed"
+            sync_log.error_log = str(e)[:500]
+            sync_log.end_time = frappe.utils.now()
+            sync_log.details = f"Position sync failed: {str(e)[:200]}"
+            sync_log.save(ignore_permissions=True)
+            
+            # Emit socket event for failed sync
+            try:
+                frappe.publish_realtime(
+                    event='position_sync_complete',
+                    message={
+                        'sync_log_name': sync_log_name,
+                        'sync_type': 'Position to Segment',
+                        'status': 'Failed',
+                        'success_count': 0,
+                        'failed_count': 0,
+                        'total_records': 0,
+                        'details': sync_log.details
+                    }
+                    # Broadcast to all users since background job doesn't have session context
+                )
+            except Exception as socket_error:
+                # Don't fail the sync if socket emit fails
+                frappe.log_error(f"Failed to emit socket event for failed sync: {str(socket_error)}", "Socket Emit Error")
+        except Exception as save_error:
+            pass
+        
+        # Log error with short title
+        error_title = f"ATS Position Sync BG: {data_source_name[:25]}"
+        error_message = f"Background position sync failed for {data_source_name}\n\nError: {str(e)}"
+        frappe.log_error(error_message, error_title)
+    finally:
+        frappe.db.commit()

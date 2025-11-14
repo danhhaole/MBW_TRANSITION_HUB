@@ -85,7 +85,7 @@
           
         </div>
       </div>
-      <div class="min-h-[400px]">
+      <div>
         <!-- Step 1: Select ATS Connection -->
         <div v-if="currentStep === 1 && !showConnectionForm" class="space-y-4">
           <div class="flex items-center justify-between mb-4">
@@ -169,93 +169,6 @@
             </Button>
           </div>
           
-          <!-- Sync History Section -->
-          <div v-if="selectedConnection" class="mt-6 border-t pt-6">
-            <div class="flex items-center justify-between mb-4">
-              <h4 class="font-medium text-gray-900">{{ __('Sync History') }}</h4>
-              <Button
-                variant="outline"
-                size="sm"
-                @click="fetchSyncLogs"
-                :loading="loadingSyncLogs"
-              >
-                <template #prefix>
-                  <FeatherIcon name="refresh-cw" class="h-4 w-4" />
-                </template>
-                {{ __('Refresh') }}
-              </Button>
-            </div>
-            
-            <!-- Loading State -->
-            <div v-if="loadingSyncLogs" class="flex items-center justify-center py-12">
-              <LoadingIndicator class="w-8 h-8" />
-              <span class="ml-3 text-gray-600">{{ __('Loading sync logs...') }}</span>
-            </div>
-            
-            <!-- Sync Logs Table -->
-            <div v-else-if="syncLogs.length > 0" class="border rounded-lg overflow-hidden overflow-x-auto">
-              <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                  <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {{ __('Status') }}
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {{ __('Records') }}
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {{ __('Start Time') }}
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {{ __('End Time') }}
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {{ __('Details') }}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                  <tr v-for="log in syncLogs" :key="log.name" class="hover:bg-gray-50">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <span
-                        :class="[
-                          'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                          getStatusClass(log.status)
-                        ]"
-                      >
-                        {{ log.status }}
-                      </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <div class="flex items-center gap-2">
-                        <span class="text-green-600 font-medium">{{ log.success_count || 0 }}</span>
-                        <span class="text-gray-400">/</span>
-                        <span class="text-gray-600">{{ log.total_records || 0 }}</span>
-                        <span v-if="log.failed_count > 0" class="text-red-600">({{ log.failed_count }} failed)</span>
-                      </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {{ formatDateTime(log.start_time) }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {{ log.end_time ? formatDateTime(log.end_time) : '-' }}
-                    </td>
-                    <td class="px-6 py-4 text-sm text-gray-500 truncate">
-                      <div class="max-w-xs truncate" :title="log.details">
-                        {{ log.details || '-' }}
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            
-            <!-- Empty State -->
-            <div v-else class="text-center py-12 border rounded-lg bg-gray-50">
-              <FeatherIcon name="clock" class="w-12 h-12 mx-auto mb-4 text-gray-300" />
-              <p class="text-gray-500">{{ __('No sync history found') }}</p>
-            </div>
-          </div>
         </div>
 
         <!-- Create Connection Form -->
@@ -386,7 +299,7 @@
           </div>
         </div>
 
-        <!-- Step 2: Filter Conditions -->
+        <!-- Step 2: Filter Conditions & Sync -->
         <div v-if="currentStep === 2" class="space-y-4">
           <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
             <div class="flex items-start">
@@ -403,7 +316,7 @@
           <ConditionsBuilder
             ref="conditionsBuilderRef"
             v-model="filterConditions"
-            doctype="Mira Talent"
+            doctype="Mira Segment"
             :title="__('Filter Conditions')"
             :description="__('Add conditions to filter which positions to sync. Leave empty to sync all active positions.')"
             :show-preview="false"
@@ -465,13 +378,15 @@
           
           <!-- Show Start Sync button for Step 2 -->
           <Button
-            v-else
+            v-else-if="currentStep === 2"
             variant="solid"
             theme="gray"
             @click="startSync"
-            :disabled="!canProceed"
             :loading="syncing"
           >
+            <template #prefix v-if="!syncing">
+              <FeatherIcon name="play" class="h-4 w-4" />
+            </template>
             {{ __('Start Sync') }}
           </Button>
         </div>
@@ -486,6 +401,7 @@ import { Dialog, Button, FeatherIcon, LoadingIndicator } from 'frappe-ui'
 import ConditionsBuilder from '@/components/ConditionsFilter/ConditionsBuilder.vue'
 import { useToast } from '@/composables/useToast'
 import { call } from 'frappe-ui'
+import { globalStore } from '@/stores/global'
 
 const props = defineProps({
   modelValue: {
@@ -502,12 +418,10 @@ const { showSuccess, showError } = useToast()
 const currentStep = ref(1)
 const isOpen = ref(props.modelValue)
 const loadingConnections = ref(false)
-const loadingSyncLogs = ref(false)
 const syncing = ref(false)
 const atsConnections = ref([])
 const selectedConnection = ref(null)
 const filterConditions = ref([])
-const syncLogs = ref([])
 const conditionsBuilderRef = ref(null)
 const showConnectionForm = ref(false)
 const creating = ref(false)
@@ -552,7 +466,6 @@ const resetDialog = () => {
   currentStep.value = 1
   selectedConnection.value = null
   filterConditions.value = []
-  syncLogs.value = []
   syncing.value = false
   showConnectionForm.value = false
   resetFormData()
@@ -619,8 +532,6 @@ const handleCreateConnection = async () => {
       await fetchATSConnections()
       // Auto-select the newly created connection
       selectedConnection.value = response
-      // Load sync logs for this connection
-      fetchSyncLogs()
       resetFormData()
     }
   } catch (error) {
@@ -638,8 +549,6 @@ const closeDialog = () => {
 
 const selectConnection = (connection) => {
   selectedConnection.value = connection
-  // Load sync logs for this connection
-  fetchSyncLogs()
 }
 
 const previousStep = () => {
@@ -693,11 +602,8 @@ const startSync = async () => {
     if (response.status === 'success') {
       showSuccess(response.message || __('Sync started successfully. The process is running in the background.'))
       emit('success')
-      // Reset all selections and go back to step 1
-      selectedConnection.value = null
-      filterConditions.value = []
-      syncLogs.value = []
-      currentStep.value = 1
+      // Close dialog after successful sync start
+      closeDialog()
     } else {
       showError(response.message || __('Sync failed'))
     }
@@ -709,60 +615,20 @@ const startSync = async () => {
   }
 }
 
-const fetchSyncLogs = async () => {
-  if (!selectedConnection.value) return
-  
-  loadingSyncLogs.value = true
-  try {
-    const response = await call('frappe.client.get_list', {
-      doctype: 'Mira ATS Sync Log',
-      filters: {
-        connection: selectedConnection.value.name,
-        sync_type: 'Position to Segment'
-      },
-      fields: [
-        'name',
-        'status',
-        'start_time',
-        'end_time',
-        'total_records',
-        'success_count',
-        'failed_count',
-        'details'
-      ],
-      order_by: 'start_time desc',
-      limit_page_length: 10
-    })
-    
-    syncLogs.value = response || []
-  } catch (error) {
-    console.error('Error fetching sync logs:', error)
-    showError(__('Failed to load sync history'))
-  } finally {
-    loadingSyncLogs.value = false
-  }
-}
-
-const getStatusClass = (status) => {
-  const statusMap = {
-    'In Progress': 'bg-blue-100 text-blue-800',
-    'Completed': 'bg-green-100 text-green-800',
-    'Partially Completed': 'bg-yellow-100 text-yellow-800',
-    'Failed': 'bg-red-100 text-red-800'
-  }
-  return statusMap[status] || 'bg-gray-100 text-gray-800'
-}
-
-const formatDateTime = (dateTime) => {
-  if (!dateTime) return '-'
-  const date = new Date(dateTime)
-  return date.toLocaleString('vi-VN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
+// Setup socket listener for position sync completion
+const { $socket } = globalStore()
+if ($socket) {
+  $socket.on('position_sync_complete', (data) => {
+    if (data.sync_type === 'Position to Segment') {
+      // Show completion notification
+      if (data.status === 'Completed') {
+        showSuccess(__('Position sync completed successfully'))
+      } else if (data.status === 'Failed') {
+        showError(__('Position sync failed'))
+      } else if (data.status === 'Partially Completed') {
+        showSuccess(__('Position sync partially completed with some errors'))
+      }
+    }
   })
 }
 </script>

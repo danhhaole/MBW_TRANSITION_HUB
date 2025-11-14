@@ -54,6 +54,12 @@
 								</template>
 								{{__("Filter")}}
 							</Button> -->
+							<Button variant="outline" @click="showPositionSyncHistoryModal = true">
+								<template #prefix>
+									<FeatherIcon name="clock" class="w-4 h-4" />
+								</template>
+								{{ __('View History') }}
+							</Button>
 							<!-- Refresh Button -->
 							<Button
 								variant="outline"
@@ -557,6 +563,9 @@
 					@success="handleSyncSuccess"
 				/>
 
+				<!-- Position Sync History Modal -->
+				<PositionSyncHistoryModal v-model="showPositionSyncHistoryModal" />
+
 				<!-- AI Suggestion Modal -->
 				<Dialog
 					v-model="showAISuggestionModal"
@@ -765,10 +774,12 @@ import {
 } from 'frappe-ui'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import ATSSyncDialog from '@/components/ATSSyncDialog.vue'
+import PositionSyncHistoryModal from '@/components/PositionSyncHistoryModal.vue'
 import TalentPoolDialog from '@/components/talent-segment/TalentPoolDialog.vue'
 import { useRouter } from 'vue-router'
 import { useToast } from '@/composables/useToast'
 import { useTalentSegmentStore } from '@/stores/talentSegment'
+import { globalStore } from '@/stores/global'
 // Breadcrumbs
 const breadcrumbs = [{ label: __('Pools'), route: { name: 'SegmentPool' } }]
 const { showSuccess, showError } = useToast()
@@ -787,6 +798,7 @@ const isFetchingPositions = ref(false)
 const aiPositions = ref([])
 const selectedPositions = ref([])
 const showATSSyncDialog = ref(false)
+const showPositionSyncHistoryModal = ref(false)
 const loading = computed(() => talentSegmentStore.loading)
 
 // Mock data for positions - replace with actual API call
@@ -1128,6 +1140,32 @@ const handleSearchInput = (event) => {
 			searchText: event, // Pass search text directly to the API
 		})
 	}, 500)
+}
+
+// Setup socket listeners
+const { $socket } = globalStore()
+if ($socket) {
+	// Socket listener for position sync completion
+	$socket.on('position_sync_complete', async (data) => {
+		console.log('Position sync completed:', data)
+		
+		if (data.sync_type === 'Position to Segment') {
+			// Refresh segments list
+			await talentSegmentStore.fetchTalentSegments({
+				page: talentSegmentStore.pagination.page,
+				limit: talentSegmentStore.pagination.limit,
+			})
+			
+			// Show notification based on status
+			if (data.status === 'Completed') {
+				showSuccess(`Đồng bộ position hoàn tất! Đã xử lý ${data.success_count || 0} bản ghi thành công.`)
+			} else if (data.status === 'Partially Completed') {
+				showSuccess(`Đồng bộ position hoàn tất một phần! Thành công: ${data.success_count || 0}, Thất bại: ${data.failed_count || 0}`)
+			} else if (data.status === 'Failed') {
+				showError(`Đồng bộ position thất bại: ${data.details || 'Lỗi không xác định'}`)
+			}
+		}
+	})
 }
 
 onMounted(async () => {
