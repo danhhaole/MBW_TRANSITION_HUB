@@ -440,7 +440,7 @@ const loadFacebookPages = async () => {
       facebookPages.value = result.data.map(page => ({
         label: page.page_name,
         value: page.page_id,
-        connection_id: page.connection_id // Add connection_id for sharing
+        connection_id: page.connection_name // Use connection_name as connection_id
       }))
       console.log('✅ Loaded Facebook pages:', facebookPages.value)
     }
@@ -528,9 +528,11 @@ const testShareJobPosting = async () => {
 
   testingShare.value = true
   
+  
   try {
     // Find the connection ID for the selected Facebook page
     const selectedPage = facebookPages.value.find(page => page.value === localFacebookContent.value.page_id)
+    console.log('Selected Facebook page:', selectedPage)
     if (!selectedPage) {
       throw new Error('Selected Facebook page not found')
     }
@@ -539,12 +541,14 @@ const testShareJobPosting = async () => {
       throw new Error('Facebook page connection ID not found. Please reconnect your Facebook account.')
     }
 
-    const result = await call('mbw_ats.api.external_connections.share_job_posting', {
+    const result = await call('mbw_mira.api.external_connections.share_job_posting', {
       connection_id: selectedPage.connection_id,
       job_id: props.campaignId || 'test_job_id',
       message: localFacebookContent.value.content,
       schedule_type: 'now',
-      image_url: localFacebookContent.value.image || null
+      image_url: localFacebookContent.value.image || '',
+      campaign_id: props.campaignId,
+      ladipage_url: props.ladipageUrl,
     })
 
     if (result.status === 'success') {

@@ -467,8 +467,8 @@ const loadCampaignTags = async (campaignId) => {
     
     // Get tags from Frappe's tag system
     const response = await call('frappe.desk.doctype.tag.tag.get_tags', {
-      dt: 'Mira Campaign',
-      dn: campaignId
+      doctype: 'Mira Campaign',
+      txt: campaignId
     })
     
     if (response && Array.isArray(response)) {
