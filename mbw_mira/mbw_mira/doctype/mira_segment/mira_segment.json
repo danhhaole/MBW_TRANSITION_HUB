@@ -18,6 +18,7 @@
   "overall_potential_score",
   "high_rate",
   "quality_distribution",
+  "budget",
   "is_active"
  ],
  "fields": [
@@ -95,16 +96,21 @@
   },
   {
    "default": "1",
-   "description": "Trạng thái hoạt động của segment. 1 = Hoạt động, 0 = Không hoạt động",
+   "description": "Tr\u1ea1ng th\u00e1i ho\u1ea1t \u0111\u1ed9ng c\u1ee7a segment. 1 = Ho\u1ea1t \u0111\u1ed9ng, 0 = Kh\u00f4ng ho\u1ea1t \u0111\u1ed9ng",
    "fieldname": "is_active",
    "fieldtype": "Check",
    "label": "Is Active"
+  },
+  {
+   "fieldname": "budget",
+   "fieldtype": "Currency",
+   "label": "Budget"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-12 10:00:39.661927",
+ "modified": "2025-11-14 13:43:20.947627",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Segment",
