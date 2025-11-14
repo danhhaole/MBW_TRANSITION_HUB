@@ -70,9 +70,9 @@
               <div class="space-y-4">
                 <h3 class="text-sm font-medium text-gray-900 uppercase tracking-wide">Contact Information</h3>
                 
-                <div v-if="talent.mobile_no" class="flex items-center space-x-3">
+                <div v-if="talent.phone" class="flex items-center space-x-3">
                   <FeatherIcon name="phone" class="w-4 h-4 text-gray-400" />
-                  <span class="text-sm text-gray-700">{{ talent.mobile_no }}</span>
+                  <span class="text-sm text-gray-700">{{ talent.phone }}</span>
                 </div>
                 
                 <div v-if="talent.email" class="flex items-center space-x-3">
@@ -186,6 +186,22 @@
                   <div class="flex justify-between">
                     <span class="text-gray-600">Created:</span>
                     <span class="font-medium">{{ formatDate(talent.creation) }}</span>
+                  </div>
+                  <div v-if="talent.recruitment_readiness" class="flex justify-between">
+                    <span class="text-gray-600">Recruitment readiness:</span>
+                    <span class="font-medium">{{ talent.recruitment_readiness }}</span>
+                  </div>
+                  <div v-if="talent.expected_salary" class="flex justify-between">
+                    <span class="text-gray-600">Expected salary:</span>
+                    <span class="font-medium">{{ talent.expected_salary }}</span>
+                  </div>
+                  <div v-if="talent.preferred_work_model" class="flex justify-between">
+                    <span class="text-gray-600">Preferred work:</span>
+                    <span class="font-medium">{{ talent.preferred_work_model }}</span>
+                  </div>
+                  <div v-if="talent.availability_date" class="flex justify-between">
+                    <span class="text-gray-600">Availability date:</span>
+                    <span class="font-medium">{{ formatDate(talent.availability_date) }}</span>
                   </div>
                 </div>
               </div>
