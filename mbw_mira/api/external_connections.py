@@ -7,6 +7,8 @@ import secrets
 import requests
 from typing import Dict, List, Optional, Any
 
+from mbw_mira.utils import make_signature
+
 host = frappe.conf.get("socialhub") or "https://socialhub.mbwcloud.com"
 
 
@@ -230,7 +232,7 @@ def get_account_details(connection_id: str, account_id: str = None) -> Dict[str,
         return {"status": "error", "message": str(e)}
 
 
-from urllib.parse import urlparse
+from urllib.parse import urlencode, urlparse
 
 
 def get_url_without_port():
@@ -1267,6 +1269,23 @@ def _process_job_share(share_doc):
         frappe.log_error(f"Error processing job share: {str(e)}")
         return {"success": False, "error": str(e)}
 
+def _create_tracking(campaign,ladipge_url) -> str:
+    origin = frappe.request.headers.get("Origin")
+    protocol = frappe.request.scheme
+    host = frappe.request.host
+    base_url = f"{protocol}://{host}"
+    if origin:
+        base_url = origin
+
+    params = {
+        "campaign_id": campaign,
+        "action": "PAGE_VISITED",
+        "url": ladipge_url,
+    }
+    sig = make_signature(params)
+    # # dùng urllib để encode query string
+    query = urlencode({**params, "sig": sig})
+    return f"{base_url}/api/method/mbw_mira.api.interaction.page_visited?{query}"
 
 def _share_to_facebook(connection, share_doc, share_data):
     """Share job to Facebook via SocialHub API"""
@@ -1274,7 +1293,7 @@ def _share_to_facebook(connection, share_doc, share_data):
         # Get Facebook page ID from share_data or connection accounts
         page_id = share_data.get("target_page_id")
         
-        url_image = share_data.get("image_url")
+        url_image = share_doc.get("image_url")
         if url_image and "http" not in url_image:
             url_image = f"{get_url_without_port()}{url_image}"
         if not page_id:
@@ -1291,8 +1310,8 @@ def _share_to_facebook(connection, share_doc, share_data):
             return {"success": False, "error": "No Facebook page selected or available"}
 
         # Prepare post content
-        job_url = f"{share_doc.ladipage_url}?utm_source=facebook&owner="
-        message = f"{share_doc.message}\n\nClick here: {job_url}"
+        tracking_url = _create_tracking(share_doc.campaign,share_doc.ladipage_url) or ''
+        message = f"{share_doc.message} \n\n {tracking_url}"
 
         # Prepare image URL if available
 
@@ -1380,7 +1399,7 @@ def _share_to_zalo(connection, share_doc, share_data):
             return {"success": False, "error": "No Zalo OA ID configured or available"}
 
         # Prepare job content
-        job_url = f"{share_doc.ladipage_url}?utm_source=zalo&owner="
+        tracking_url = _create_tracking(share_doc.campaign,share_doc.ladipage_url) or ''
 
         # Prepare image URL if available
         # photo_url = ""
@@ -1403,7 +1422,7 @@ def _share_to_zalo(connection, share_doc, share_data):
             "title": "",
             "photo_url": url_image,
             "description": description,
-            "content": f"{share_doc.message}\n\nỨng tuyển tại: {job_url}",
+            "content": f"{share_doc.message}\n\n{tracking_url}",
         }
 
         response = requests.post(socialhub_url, json=post_data, timeout=1000)

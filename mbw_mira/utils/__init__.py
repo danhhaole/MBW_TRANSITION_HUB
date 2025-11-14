@@ -212,29 +212,30 @@ def render_template(template_str, context):
 
     if not template_str:
         return "Xin chào bạn"
-    talentprofiles, task, action = context
-    # origin = frappe.request.headers.get("Origin")
-    # protocol = frappe.request.scheme
-    # host = frappe.request.host
-    # base_url = f"{protocol}://{host}"
-    # if origin:
-    #     base_url = origin
-    # params = {
-    #     "candidate_id": talentprofiles.name,
-    #     "action": task.name,
-    #     "url": f"{base_url}/mbw_mira/ladi?campaign={task.flow}",
-    # }
+    talentprofiles, action,step = context
+    origin = frappe.request.headers.get("Origin")
+    protocol = frappe.request.scheme
+    host = frappe.request.host
+    base_url = f"{protocol}://{host}"
+    if origin:
+        base_url = origin
+    campaign = frappe.get_doc("Mira Campaign",action.campaign_id)
+    params = {
+        "talent_id": talentprofiles.name,
+        "action": action.name,
+        "url": campaign.ladipge_url,
+    }
 
     context_parse = {"candidate_name": talentprofiles.full_name}
 
-    # sig = make_signature(params)
+    sig = make_signature(params)
 
     # # dùng urllib để encode query string
-    # query = urlencode({**params, "sig": sig})
+    query = urlencode({**params, "sig": sig})
 
-    # context_parse["tracking_pixel_url"] = (
-    #     f"{base_url}/api/method/mbw_mira.api.interaction.tracking_pixel?{query}"
-    # )
+    context_parse["tracking_pixel_url"] = (
+        f"{base_url}/api/method/mbw_mira.api.interaction.tracking_pixel?{query}"
+    )
     # context_parse["tracking_link"] = (
     #     f"{base_url}/api/method/mbw_mira.api.interaction.click_redirect?{query}"
     # )
