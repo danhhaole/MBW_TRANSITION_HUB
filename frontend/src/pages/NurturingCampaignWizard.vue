@@ -312,7 +312,7 @@ const saveDraft = async () => {
       // Create new campaign
       // Extract target_pool from config_data
       console.log('Campaign config_data:', campaignData.value.config_data)
-      const targetPool = campaignData.value.config_data?.selectedSegment.value || null
+      const targetPool = campaignData.value.config_data?.selectedSegment || null
       
       const result = await campaignStore.submitNewCampaign({
         campaign_name: campaignData.value.campaign_name,
@@ -339,7 +339,7 @@ const saveDraft = async () => {
       try {
         // Extract target_pool from config_data
         console.log('Campaign config_data:', campaignData.value.config_data)
-        const targetPool = campaignData.value.config_data?.selectedSegment.value || null
+        const targetPool = campaignData.value.config_data?.selectedSegment || null
         
         await call('frappe.client.set_value', {
           doctype: 'Mira Campaign',
