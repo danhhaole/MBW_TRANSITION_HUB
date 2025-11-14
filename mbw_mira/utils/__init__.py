@@ -282,8 +282,8 @@ def find_candidates_fuzzy(
     """
     try:
         # Convert min_score to float
-        min_score = float(min_score) if min_score >= 0 else 50.0
-
+        min_score = float(min_score) if float(min_score) >= 0 else 50.0
+        print(min_score)
         # --- Load conditions từ segment ---
         conditions = []
         if segment_name:
