@@ -42,10 +42,8 @@ def validate_unique_candidate_segment(doc):
 def count_talentprofile_segment(segment_id):
     try:
         total_candidate = frappe.db.count("Mira Talent Pool",filters={"segment_id":segment_id})
-        print("===========total_candidate==============",total_candidate)
-        if total_candidate and total_candidate > 0:
-            frappe.db.set_value("Mira Segment",segment_id,"candidate_count",total_candidate)
-            frappe.db.commit()
+        frappe.db.set_value("Mira Segment",segment_id,"candidate_count",total_candidate)
+        frappe.db.commit()
     except Exception as e:
         pass
 

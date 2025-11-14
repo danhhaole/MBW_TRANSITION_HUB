@@ -53,6 +53,15 @@ class MiraTalent(Document):
                 "new_status": new_status
             }
         )
+
+    def after_delete(self):
+        try:
+            frappe.delete_doc("Mira Talent Pool",filters={"talent_id":self.name})
+            frappe.db.commit()
+
+        except Exception as e:
+            pass
+    
     def after_save(self):
         pass
         #Tạo Talent Campaign
