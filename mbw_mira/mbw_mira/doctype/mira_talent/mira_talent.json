@@ -10,6 +10,7 @@
   "date_of_birth",
   "email",
   "phone",
+  "position",
   "linkedin_profile",
   "facebook_profile",
   "zalo_profile",
@@ -277,11 +278,16 @@
    "fieldname": "email_id_invalid",
    "fieldtype": "Int",
    "label": "Invalid Email"
+  },
+  {
+   "fieldname": "position",
+   "fieldtype": "Data",
+   "label": "Position"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-12 09:13:37.952884",
+ "modified": "2025-11-14 12:00:02.060017",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Talent",
