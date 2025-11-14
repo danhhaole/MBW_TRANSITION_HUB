@@ -11,6 +11,16 @@
       </p>
     </div>
 
+    <!-- Landing Page Selector (Section 2.1) -->
+    <LandingPageSelector
+      v-model:ladipage-url="localLadipageUrl"
+      v-model:ladipage-id="localLadipageId"
+      :campaign-id="props.name"
+      :campaign-name="campaignName"
+      :company-info="companyInfo"
+      :job-info="jobInfo"
+    />
+
     <!-- Channel Selection with Add Button -->
     <div class="bg-white rounded-lg border border-gray-200 p-6">
       <div class="flex items-center justify-between mb-4">
@@ -261,6 +271,7 @@ import { FeatherIcon, Button, Dropdown, FormControl, call } from 'frappe-ui'
 import EmailContentEditor from '../molecules/EmailContentEditor.vue'
 import FacebookContentEditor from '../molecules/FacebookContentEditor.vue'
 import ZaloContentEditor from '../molecules/ZaloContentEditor.vue'
+import LandingPageSelector from '../molecules/LandingPageSelector.vue'
 
 const props = defineProps({
   selectedChannels: {
@@ -283,6 +294,26 @@ const props = defineProps({
     type: String,
     default: ''
   },
+  name: {
+    type: String,
+    default: ''
+  },
+  ladipageUrl: {
+    type: String,
+    default: ''
+  },
+  ladipageId: {
+    type: String,
+    default: ''
+  },
+  companyInfo: {
+    type: Object,
+    default: () => ({})
+  },
+  jobInfo: {
+    type: Object,
+    default: () => ({})
+  },
   showError: {
     type: Boolean,
     default: false
@@ -293,7 +324,9 @@ const emit = defineEmits([
   'update:selectedChannels',
   'update:emailContent',
   'update:facebookContent',
-  'update:zaloContent'
+  'update:zaloContent',
+  'update:ladipageUrl',
+  'update:ladipageId'
 ])
 
 // Local computed properties for two-way binding
@@ -315,6 +348,16 @@ const localFacebookContent = computed({
 const localZaloContent = computed({
   get: () => props.zaloContent,
   set: (value) => emit('update:zaloContent', value)
+})
+
+const localLadipageUrl = computed({
+  get: () => props.ladipageUrl,
+  set: (value) => emit('update:ladipageUrl', value)
+})
+
+const localLadipageId = computed({
+  get: () => props.ladipageId,
+  set: (value) => emit('update:ladipageId', value)
 })
 
 // Editor expansion state

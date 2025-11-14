@@ -27,6 +27,24 @@
       @change="$emit('change', $event)"
     />
 
+    <!-- Campaign Tags -->
+    <div class="bg-white rounded-lg border border-gray-200 p-6">
+      <div class="mb-4">
+        <h3 class="text-base font-semibold text-gray-900">
+          {{ __('Campaign Tags') }}
+        </h3>
+        <p class="text-sm text-gray-600 mt-1">
+          {{ __('Add tags to categorize and organize this nurturing campaign') }}
+        </p>
+      </div>
+
+      <CampaignTagPicker
+        :campaign-id="campaignId"
+        :model-value="campaignTags"
+        @update:model-value="$emit('update:campaignTags', $event)"
+      />
+    </div>
+
     <!-- Campaign Schedule -->
     <CampaignSchedule
       :start-date="startDate"
@@ -37,12 +55,21 @@
 
 <script setup>
 import CampaignBasicInfo from '../molecules/CampaignBasicInfo.vue'
+import CampaignTagPicker from '../molecules/CampaignTagPicker.vue'
 import TargetSegmentSelector from '../molecules/TargetSegmentSelector.vue'
 import CampaignSchedule from '../molecules/CampaignSchedule.vue'
 
 defineProps({
   campaignName: String,
   objective: String,
+  campaignId: {
+    type: String,
+    default: ''
+  },
+  campaignTags: {
+    type: Array,
+    default: () => []
+  },
   configData: {
     type: Object,
     default: () => ({})
@@ -62,6 +89,7 @@ defineProps({
 defineEmits([
   'update:campaignName',
   'update:objective',
+  'update:campaignTags',
   'update:configData',
   'update:conditions',
   'validate',

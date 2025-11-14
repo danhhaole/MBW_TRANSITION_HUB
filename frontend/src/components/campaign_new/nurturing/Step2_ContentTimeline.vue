@@ -1,5 +1,15 @@
 <template>
   <div class="space-y-6">
+    <!-- Landing Page Selector (Section 2.1) -->
+    <LandingPageSelector
+      v-model:ladipage-url="localLadipageUrl"
+      v-model:ladipage-id="localLadipageId"
+      :campaign-id="props.name"
+      :campaign-name="campaignName"
+      :company-info="companyInfo"
+      :job-info="jobInfo"
+    />
+
     <!-- Header - Sticky -->
     <div class="sticky top-0 z-10 bg-gray-50 pb-4 -mx-6 px-6 pt-2">
       <div class="flex items-center justify-between">
@@ -350,6 +360,7 @@ import { FeatherIcon, Button, FormControl, Autocomplete, Dropdown, Dialog, call 
 import DelaySelector from '../molecules/DelaySelector.vue'
 import EmailContentEditor from '../molecules/EmailContentEditor.vue'
 import ZaloContentEditor from '../molecules/ZaloContentEditor.vue'
+import LandingPageSelector from '../molecules/LandingPageSelector.vue'
 
 const props = defineProps({
   triggers: {
@@ -359,10 +370,29 @@ const props = defineProps({
   campaignName: {
     type: String,
     default: ''
-  }
+  },
+  ladipageUrl: {
+    type: String,
+    default: ''
+  },
+  ladipageId: {
+    type: String,
+    default: ''
+  },
+  companyInfo: {
+    type: Object,
+    default: () => ({})
+  },
+  jobInfo: {
+    type: Object,
+    default: () => ({})
+  },
+  name: {
+    type: String,
+    default: ''
+  },
 })
-
-const emit = defineEmits(['update:triggers'])
+const emit = defineEmits(['update:triggers', 'update:ladipageUrl', 'update:ladipageId'])
 
 // Available channels for nurturing (no Facebook posts)
 const availableChannels = [
@@ -382,6 +412,17 @@ const channelDropdownOptions = computed(() => {
 
 // Local triggers state
 const localTriggers = ref([])
+
+// Landing page computed properties
+const localLadipageUrl = computed({
+  get: () => props.ladipageUrl,
+  set: (value) => emit('update:ladipageUrl', value)
+})
+
+const localLadipageId = computed({
+  get: () => props.ladipageId,
+  set: (value) => emit('update:ladipageId', value)
+})
 
 // Delay editor state
 const showDelayEditor = ref(false)

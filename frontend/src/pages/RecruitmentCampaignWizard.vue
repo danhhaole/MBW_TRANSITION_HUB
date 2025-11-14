@@ -32,6 +32,8 @@
           v-if="currentStep === 1"
           :campaign-name="campaignData.campaign_name"
           :objective="campaignData.objective"
+          :campaign-id="campaignData.name"
+          :campaign-tags="campaignData.campaign_tags"
           :config-data="campaignData.config_data"
           :conditions="campaignData.conditions"
           :candidate-count="campaignData.candidate_count"
@@ -39,6 +41,7 @@
           :start-date="campaignData.start_date"
           @update:campaign-name="campaignData.campaign_name = $event"
           @update:objective="campaignData.objective = $event"
+          @update:campaign-tags="campaignData.campaign_tags = $event"
           @update:config-data="campaignData.config_data = $event"
           @update:conditions="campaignData.conditions = $event"
           @update:start-date="campaignData.start_date = $event"
@@ -54,11 +57,18 @@
           :facebook-content="campaignData.facebook_content"
           :zalo-content="campaignData.zalo_content"
           :campaign-name="campaignData.campaign_name"
+          :name="campaignData.name"
+          :ladipage-url="campaignData.ladipage_url"
+          :ladipage-id="campaignData.ladipage_id"
+          :company-info="campaignData.company_info"
+          :job-info="campaignData.job_info"
           :show-error="showValidationError"
           @update:selected-channels="campaignData.selected_channels = $event"
           @update:email-content="campaignData.email_content = $event"
           @update:facebook-content="campaignData.facebook_content = $event"
           @update:zalo-content="campaignData.zalo_content = $event"
+          @update:ladipage-url="campaignData.ladipage_url = $event"
+          @update:ladipage-id="campaignData.ladipage_id = $event"
         />
 
         <!-- Step 3: Settings & Triggers -->
@@ -127,6 +137,7 @@ const loadingTriggers = ref(false)
 const campaignData = ref({
   campaign_name: '',
   objective: '',
+  campaign_tags: [],
   config_data: {},
   conditions: [],
   candidate_count: 0,
@@ -134,6 +145,11 @@ const campaignData = ref({
   type: props.campaignType, // 'RECRUITMENT'
   status: 'Draft',
   start_date: null, // null = new campaign, datetime = edit mode
+  // Landing page data
+  ladipage_url: '',
+  ladipage_id: '',
+  company_info: {},
+  job_info: {},
   // Step 2: Content & Channels (like Attraction)
   selected_channels: [],
   email_content: {
@@ -232,6 +248,48 @@ const prevStep = () => {
   }
 }
 
+const loadCampaignTags = async (campaignId) => {
+  try {
+    console.log('🏷️ Loading campaign tags:', campaignId)
+    
+    // Get tags from Frappe's tag system
+    const response = await call('frappe.desk.doctype.tag.tag.get_tags', {
+      doctype: 'Mira Campaign',
+      txt: campaignId
+    })
+    
+    if (response && Array.isArray(response)) {
+      // Get tag colors from Mira Tag doctype
+      const tagTitles = response.map(tag => tag.tag || tag)
+      const colorResponse = await call('frappe.client.get_list', {
+        doctype: 'Mira Tag',
+        fields: ['title', 'color'],
+        filters: [['title', 'in', tagTitles]]
+      })
+      
+      const colorMap = {}
+      for (const tag of colorResponse || []) {
+        colorMap[tag.title] = tag.color
+      }
+      
+      // Map tags with colors
+      campaignData.value.campaign_tags = response.map(tag => {
+        const tagTitle = tag.tag || tag
+        return {
+          label: tagTitle,
+          value: tagTitle,
+          color: colorMap[tagTitle] || '#6B7280'
+        }
+      })
+      
+      console.log('✅ Campaign tags loaded:', campaignData.value.campaign_tags)
+    }
+  } catch (error) {
+    console.error('❌ Error loading campaign tags:', error)
+    // Don't show error toast as tags are optional
+  }
+}
+
 const nextStep = async () => {
   if (!canProceed.value) {
     showValidationError.value = true
@@ -274,7 +332,7 @@ const saveDraft = async () => {
       // Create new campaign
       // Extract target_pool from config_data
       console.log('Campaign config_data:', campaignData.value.config_data)
-      const targetPool = campaignData.value.config_data?.selectedSegment || null
+const targetPool = campaignData.value.config_data?.selectedSegment?.value || campaignData.value.config_data?.selectedSegment || null
       
       const result = await campaignStore.submitNewCampaign({
         campaign_name: campaignData.value.campaign_name,
@@ -301,7 +359,7 @@ const saveDraft = async () => {
       try {
         // Extract target_pool from config_data
         console.log('Campaign config_data:', campaignData.value.config_data)
-        const targetPool = campaignData.value.config_data?.selectedSegment || null
+const targetPool = campaignData.value.config_data?.selectedSegment?.value || campaignData.value.config_data?.selectedSegment || null
         
         await call('frappe.client.set_value', {
           doctype: 'Mira Campaign',
@@ -486,6 +544,7 @@ const loadCampaignData = async (campaignId) => {
         name: result.name,
         campaign_name: result.campaign_name || '',
         objective: result.description || '',
+        campaign_tags: [], // Will be loaded separately
         config_data: configData,
         conditions: conditions,
         candidate_count: result.candidate_count || 0,
@@ -493,6 +552,11 @@ const loadCampaignData = async (campaignId) => {
         type: result.type || 'RECRUITMENT',
         status: result.status || 'DRAFT',
         start_date: result.start_date ? moment(result.start_date).format('YYYY-MM-DDTHH:mm') : null,
+        // Landing page data
+        ladipage_url: result.ladipage_url || '',
+        ladipage_id: result.ladipage_id || '',
+        company_info: result.company_info ? JSON.parse(result.company_info) : {},
+        job_info: result.job_info ? JSON.parse(result.job_info) : {},
         // Step 2: Content & Channels (will be loaded from social posts)
         selected_channels: [],
         email_content: {
@@ -519,6 +583,9 @@ const loadCampaignData = async (campaignId) => {
         },
         step3_triggers: [], // TODO: Load step3 triggers from backend
       }
+      
+      // Load campaign tags
+      await loadCampaignTags(campaignId)
       
       // Load social posts
       await loadSocialPosts(campaignData.value.name)

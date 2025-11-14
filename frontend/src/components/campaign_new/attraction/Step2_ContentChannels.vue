@@ -549,6 +549,8 @@ const testShareJobPosting = async () => {
       image_url: localFacebookContent.value.image || '',
       campaign_id: props.campaignId,
       ladipage_url: props.ladipageUrl,
+      platform_type: selectedPage.platform_type || 'facebook',
+      scheduled_time: localFacebookContent.value.schedule_time
     })
 
     if (result.status === 'success') {
