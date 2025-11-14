@@ -204,6 +204,12 @@
 											{{ __('Contact') }}
 										</th>
 										<th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+											{{ __('Position') }}
+										</th>
+										<th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+											{{ __('City') }}
+										</th>
+										<th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
 											{{ __('Skills') }}
 										</th>
 										<th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
@@ -256,6 +262,12 @@
 										<td class="py-4 px-4 text-sm text-gray-700">
 											<div>{{ talent.email }}</div>
 											<div class="text-gray-500">{{ talent.phone }}</div>
+										</td>
+										<td class="py-4 px-4 text-sm text-gray-700">
+											{{ talent.position || '-' }}
+										</td>
+										<td class="py-4 px-4 text-sm text-gray-700">
+											{{ talent.current_city || '-' }}
 										</td>
 										<td class="py-4 px-4 text-sm text-gray-700">
 											<div class="flex flex-wrap gap-1">
@@ -851,6 +863,35 @@
 									</div>
 								</div>
 
+								<!-- Two Column Layout for Position and Current City -->
+								<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+									<!-- Position -->
+									<div>
+										<label class="block text-sm font-medium text-gray-700 mb-1">
+											Position
+										</label>
+										<input
+											v-model="newTalent.position"
+											type="text"
+											class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
+											placeholder="Enter current position"
+										/>
+									</div>
+
+									<!-- Current City -->
+									<div>
+										<label class="block text-sm font-medium text-gray-700 mb-1">
+											Current City
+										</label>
+										<input
+											v-model="newTalent.current_city"
+											type="text"
+											class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
+											placeholder="Enter current city/address"
+										/>
+									</div>
+								</div>
+
 								<!-- Resume Upload - Compact Version -->
 								<div>
 									<label class="block text-sm font-medium text-gray-700 mb-2"
@@ -1195,6 +1236,8 @@ const newTalent = ref({
 	total_years_of_experience: null,
 	desired_role: '',
 	source: 'Manually',
+	position: '',
+	current_city: '',
 	// internal_rating: 0,
 	interaction_notes: '',
 	skills: [],
@@ -1689,19 +1732,25 @@ const handleTalentSubmit = async () => {
 
 			// Manually append each field to ensure they're included
 			formData.append('full_name', newTalent.value.full_name || '')
+			formData.append('gender', newTalent.value.gender || '')
 			formData.append('email', newTalent.value.email || '')
 			formData.append('phone', newTalent.value.phone || '')
 			formData.append('linkedin_profile', newTalent.value.linkedin_profile || '')
+			formData.append('facebook_profile', newTalent.value.facebook_profile || '')
+			formData.append('zalo_profile', newTalent.value.zalo_profile || '')
 			formData.append('latest_company', newTalent.value.latest_company || '')
 			formData.append(
 				'total_years_of_experience',
 				newTalent.value.total_years_of_experience || '',
 			)
 			formData.append('desired_role', newTalent.value.desired_role || '')
-			formData.append('source', newTalent.value.source || 'NEW')
+			formData.append('source', newTalent.value.source || 'Manually')
+			formData.append('position', newTalent.value.position || '')
+			formData.append('current_city', newTalent.value.current_city || '')
 			formData.append('interaction_notes', newTalent.value.interaction_notes || '')
 			formData.append('skills', skillTags.value.join(', '))
 			formData.append('current_status', newTalent.value.current_status || 'Active')
+			formData.append('crm_status', newTalent.value.crm_status || 'New')
 
 			// Add the resume file if it exists
 			if (resumeFile) {
@@ -1724,16 +1773,22 @@ const handleTalentSubmit = async () => {
 			//Reset form
 			newTalent.value = {
 				full_name: '',
+				gender: '',
 				email: '',
 				phone: '',
 				linkedin_profile: '',
+				facebook_profile: '',
+				zalo_profile: '',
 				latest_company: '',
 				total_years_of_experience: null,
 				desired_role: '',
-				source: 'NEW',
+				source: 'Manually',
+				position: '',
+				current_city: '',
 				interaction_notes: '',
 				skills: [],
 				current_status: 'Active',
+				crm_status: 'New',
 				resume: null,
 			}
 			// Refresh the talents list

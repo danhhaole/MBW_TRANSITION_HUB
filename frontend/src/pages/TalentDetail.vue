@@ -103,8 +103,13 @@
                   </a>
                 </div>
                 
-                <div v-if="talent.current_city" class="flex items-center space-x-3">
+                <div v-if="talent.position" class="flex items-center space-x-3">
                   <FeatherIcon name="briefcase" class="w-4 h-4 text-gray-400" />
+                  <span class="text-sm text-gray-700">{{ talent.position }}</span>
+                </div>
+                
+                <div v-if="talent.current_city" class="flex items-center space-x-3">
+                  <FeatherIcon name="map-pin" class="w-4 h-4 text-gray-400" />
                   <span class="text-sm text-gray-700">{{ talent.current_city }}</span>
                 </div>
                 
@@ -573,6 +578,35 @@
               </div>
             </div>
 
+            <!-- Two Column Layout for Position and Current City -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <!-- Position -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Position
+                </label>
+                <input
+                  v-model="editForm.position"
+                  type="text"
+                  class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
+                  placeholder="Enter current position"
+                />
+              </div>
+
+              <!-- Current City -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Current City
+                </label>
+                <input
+                  v-model="editForm.current_city"
+                  type="text"
+                  class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
+                  placeholder="Enter current city/address"
+                />
+              </div>
+            </div>
+
             <!-- Status Fields -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
               <!-- Current Status -->
@@ -713,6 +747,8 @@ const editForm = ref({
   total_years_of_experience: null,
   desired_role: '',
   source: 'Manually',
+  position: '',
+  current_city: '',
   interaction_notes: '',
   skills: [],
   current_status: 'Active',
@@ -809,6 +845,8 @@ const editTalent = () => {
   if (talent.value) {
     // Debug log to see what data we have
     console.log('Current talent data:', talent.value)
+    console.log('Talent position:', talent.value.position)
+    console.log('Talent current_city:', talent.value.current_city)
     
     // Populate form with current talent data - handle all possible field names
     editForm.value = {
@@ -823,6 +861,8 @@ const editTalent = () => {
       total_years_of_experience: talent.value.total_years_of_experience || talent.value.experience_years || null,
       desired_role: talent.value.desired_role || talent.value.role || '',
       source: talent.value.source || talent.value.talent_source || 'Manually',
+      position: talent.value.position || '',
+      current_city: talent.value.current_city || '',
       interaction_notes: talent.value.interaction_notes || talent.value.notes || '',
       skills: (() => {
         console.log('Raw skills data:', talent.value.skills)

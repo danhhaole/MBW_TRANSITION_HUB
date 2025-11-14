@@ -63,7 +63,7 @@
                 </select>
               </div>
 
-              <div>
+              <!-- <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   {{ __('Manager') }}
                 </label>
@@ -76,7 +76,7 @@
                     {{ user.full_name }}
                   </option>
                 </select>
-              </div>
+              </div> -->
             </div>
 
             <!-- Filter Conditions Section -->

@@ -752,6 +752,7 @@ import { useCandidateStore } from '@/stores/candidate'
 import { useTalentSegmentStore } from '@/stores/talentSegment'
 import { useMiraTalentPoolStore } from '@/stores/miraTalentPool'
 import { usersStore } from '@/stores/users'
+import { useToast } from '@/composables/useToast'
 import { Button, Dialog, Breadcrumbs, FeatherIcon, Dropdown } from 'frappe-ui'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import CampaignWizard from '@/components/campaign/CampaignWizard.vue'
@@ -773,8 +774,12 @@ const candidateStore = useCandidateStore()
 const talentSegmentStore = useTalentSegmentStore()
 const miraTalentPoolStore = useMiraTalentPoolStore()
 const { getUser } = usersStore()
+const { showSuccess, showError } = useToast()
 const route = useRoute()
 const router = useRouter()
+
+// Helper for internationalization
+const __ = (text) => text
 
 // Breadcrumbs
 const breadcrumbs = computed(() => {
@@ -819,9 +824,16 @@ const updateSegmentStatus = async (isActive) => {
 			value: isActive ? 1 : 0
 		})
 		
+		// Show success message
+		showSuccess(__(isActive ? __('Pool active') : __('Pool unactive')))
+		
 		console.log('Segment status updated to:', isActive ? 'active' : 'inactive')
 	} catch (error) {
 		console.error('Error updating segment status:', error)
+		
+		// Show error message
+		showError(error.message || __('Không thể cập nhật trạng thái pool'))
+		
 		// Revert local state on error
 		talentSegment.is_active = !isActive
 	}

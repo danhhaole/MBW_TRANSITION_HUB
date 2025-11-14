@@ -296,6 +296,8 @@ export const useTalentStore = defineStore('talent', {
 				const preparedData = this.prepareTalentForSave(talentData)
 
 				console.log('Prepared Data>>>>:', preparedData);
+				console.log('Position:', preparedData.position);
+				console.log('Current City:', preparedData.current_city);
 				
 				const result = await call('frappe.client.insert', {
 					doc: {
@@ -331,6 +333,10 @@ export const useTalentStore = defineStore('talent', {
 				}
 
 				const preparedData = this.prepareTalentForSave(talentData)
+
+				console.log('Update - Prepared Data>>>>:', preparedData);
+				console.log('Update - Position:', preparedData.position);
+				console.log('Update - Current City:', preparedData.current_city);
 
 				const result = await call('frappe.client.set_value', {
 					doctype: 'Mira Talent',
@@ -522,6 +528,8 @@ export const useTalentStore = defineStore('talent', {
 				linkedin_profile: talentData.linkedin_profile?.trim(),
 				facebook_profile: talentData.facebook_profile?.trim(),
 				zalo_profile: talentData.zalo_profile?.trim(),
+				position: talentData.position?.trim(),
+				current_city: talentData.current_city?.trim(),
 				current_location: talentData.current_location?.trim(),
 				preferred_location: talentData.preferred_location?.trim(),
 				skills: talentData.skills?.trim(),
@@ -539,6 +547,7 @@ export const useTalentStore = defineStore('talent', {
 				total_years_of_experience: parseFloat(talentData.total_years_of_experience) || 0,
 				desired_role: talentData.desired_role?.trim(),
 				interaction_notes: talentData.interaction_notes?.trim(),
+				crm_status: talentData.crm_status || 'New',
 			}
 		},
 
