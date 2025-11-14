@@ -49,7 +49,8 @@ APPLICATION_SUBMITTED,Application_submited
 ARCHIVED,Lưu trữ
 ATS,ATS
 ATS Import,Nhập khẩu ATS
-ATTRACTION,SỰ THU HÚT
+ATTRACTION,THU HÚT
+
 Access Token,Mã thông báo truy cập
 Access Token hiện tại (OAuth2),Truy cập Mã thông báo Hiện Tại (OAuth2)
 Action,Hoạt động
@@ -810,7 +811,8 @@ My Tasks,Nhiệm vụ của tôi
 "Mô tả chi tiết về tiêu chí, mục đích của phân khúc này.","Mô tả Chi Tiết Về TiÊU Chí, Mục Đích Của Phân Khúc Nào."
 "Mảng các kỹ năng được chuẩn hóa. VD: [""react"", ""nodejs"", ""aws""]","Mảng các kỹ năng Được Chuẩn Hùaa. VD: [""React"", ""Nodejs"", ""AWS""]"
 NEW,MỚI
-NURTURING,Nuôi dưỡng
+NURTURING,Nuôi dưỡng,
+Attract–Nurture, Nuôi dưỡng
 Name,Tên
 Need help? Contact us via email or hotline,Cần giúp đỡ? Liên hệ với chúng tôi qua email hoặc đường dây nóng
 "Network connection error, please try again","Lỗi kết nối mạng, vui lòng thử lại"
