@@ -62,30 +62,42 @@
       </h4>
       
       <div class="space-y-3">
-        <!-- UTM Campaign -->
-
+        <!-- UTM Campaign (readonly) -->
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">
+            {{ __('UTM Campaign') }}
+          </label>
+          <FormControl
+            :model-value="campaignId"
+            :placeholder="__('Campaign ID will be used automatically')"
+            disabled
+          />
+          <p class="text-xs text-gray-500 mt-1">
+            {{ __('Automatically set to current campaign ID') }}
+          </p>
+        </div>
         
-        <!-- UTM Source (readonly) -->
+        <!-- UTM Source -->
         <div>
           <label class="block text-xs font-medium text-gray-700 mb-1">
             {{ __('UTM Source') }}
           </label>
           <FormControl
             :model-value="localContent.utm_source"
-            :placeholder="__('qr_code')"
-            disabled
+            @update:model-value="updateUtmSource"
+            :placeholder="__('e.g., qr_code, poster, flyer')"
           />
         </div>
         
-        <!-- UTM Medium (readonly) -->
+        <!-- UTM Medium -->
         <div>
           <label class="block text-xs font-medium text-gray-700 mb-1">
             {{ __('UTM Medium') }}
           </label>
           <FormControl
             :model-value="localContent.utm_medium"
-            :placeholder="__('qr')"
-            disabled
+            @update:model-value="updateUtmMedium"
+            :placeholder="__('e.g., qr, print, offline')"
           />
         </div>
       </div>
@@ -183,7 +195,7 @@ const generateQR = async () => {
       campaign_id: props.campaignId,
       utm_source: localContent.value.utm_source,
       utm_medium: localContent.value.utm_medium,
-      utm_campaign: localContent.value.utm_campaign || props.campaignId
+      utm_campaign: props.campaignId
     })
     
     if (response?.status === 'success' && response?.data) {
@@ -220,6 +232,21 @@ const downloadQR = () => {
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
+}
+
+// Update UTM parameters
+const updateUtmSource = (value) => {
+  localContent.value = {
+    ...localContent.value,
+    utm_source: value
+  }
+}
+
+const updateUtmMedium = (value) => {
+  localContent.value = {
+    ...localContent.value,
+    utm_medium: value
+  }
 }
 
 // Update content when local changes
