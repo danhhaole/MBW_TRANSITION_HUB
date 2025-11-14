@@ -106,7 +106,7 @@
                 </StatCard>
 
                 <StatCard
-                    :label="__('Cost/Lead')"
+                    :label="__('Cost/Talent')"
                     :value="marketingMetrics.costPerLead"
                     value-format="currency"
                     icon-bg-class="bg-purple-50"
@@ -192,6 +192,7 @@ const {
     sourceData,
     campaignPerformance,
     conversionBySource,
+	taskListData,
     loading
 } = storeToRefs(dashboardStore)
 
@@ -212,41 +213,6 @@ const conversionColumns = [
     { key: 'rate', label: __('Rate'), align: 'right' }
 ]
 
-// Computed - Task list data
-const taskListData = computed(() => {
-    // Mock data - replace with real data from store when available
-    // Cần xem xét dịch các chuỗi dưới đây nếu chúng là static text
-    return [
-        { 
-            id: 1,
-            text: __('Hand over to Recruiter: Le Nguyen (Opened 5 times)'), 
-            status: 'bg-red-500',
-            assignee: 'John Doe',
-            dueDate: '2025-11-15'
-        },
-        { 
-            id: 2,
-            text: __('Send personalized follow-up to 15 MQLs (Campaign "LLM Focus")'), 
-            status: 'bg-orange-500',
-            assignee: 'Jane Smith',
-            dueDate: '2025-11-16'
-        },
-        { 
-            id: 3,
-            text: __('Review Source: Events Q3 (Low Conversion Rate)'), 
-            status: 'bg-blue-500',
-            assignee: 'Mike Johnson',
-            dueDate: '2025-11-20'
-        },
-        { 
-            id: 4,
-            text: __('Re-contact: Nhan Ngo (Need requirement confirmation)'), 
-            status: 'bg-orange-500',
-            assignee: 'Sarah Lee',
-            dueDate: '2025-11-18'
-        }
-    ]
-})
 
 // Computed - Funnel chart data
 const funnelChartData = computed(() => {

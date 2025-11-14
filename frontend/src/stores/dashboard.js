@@ -45,6 +45,9 @@ export const useDashboardStore = defineStore('dashboard', {
     conversionBySource: [],
     conversionLoading: false,
     
+    //Task
+    taskListData =[],
+
     // Time range for data
     timeRange: '90d',
     
@@ -56,7 +59,8 @@ export const useDashboardStore = defineStore('dashboard', {
       totalTasks: 0,
       urgentTasks: 0,
       activeCampaigns: 0,
-      completedToday: 0
+      completedToday: 0,
+      
     }
   }),
 
@@ -139,7 +143,7 @@ export const useDashboardStore = defineStore('dashboard', {
         
         // Calculate Cost Per Lead (mock calculation)
         // In real implementation, fetch from campaign budget
-        const totalCost = 1000 // Mock total marketing cost
+        const totalCost = 0 // Mock total marketing cost
         this.marketingMetrics.costPerLead = this.marketingMetrics.newTalents > 0
           ? (totalCost / this.marketingMetrics.newTalents).toFixed(2)
           : 0
@@ -169,7 +173,7 @@ export const useDashboardStore = defineStore('dashboard', {
           doctype: 'Mira Action',
           filters: {
             action_type: ['in', ['EMAIL', 'MESSAGE']],
-            created_at: ['>=', fromDate.toISOString()]
+            creation: ['>=', fromDate.toISOString()]
           },
           fields: ['name', 'status', 'action_type'],
           limit_page_length: 0
