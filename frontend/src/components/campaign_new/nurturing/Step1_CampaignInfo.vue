@@ -28,7 +28,7 @@
     />
 
     <!-- Campaign Tags -->
-    <div class="bg-white rounded-lg border border-gray-200 p-6">
+    <!-- <div class="bg-white rounded-lg border border-gray-200 p-6">
       <div class="mb-4">
         <h3 class="text-base font-semibold text-gray-900">
           {{ __('Campaign Tags') }}
@@ -43,7 +43,7 @@
         :model-value="campaignTags"
         @update:model-value="$emit('update:campaignTags', $event)"
       />
-    </div>
+    </div> -->
 
     <!-- Campaign Schedule -->
     <CampaignSchedule
