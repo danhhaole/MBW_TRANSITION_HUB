@@ -115,6 +115,24 @@
 										>
 											{{ getStatusText(segment) }}
 										</span>
+										<!-- Active Status Icon -->
+										<div class="flex items-center">
+											<div 
+												:class="[
+													'w-2 h-2 rounded-full mr-1',
+													segment.is_active ? 'bg-green-500' : 'bg-red-500'
+												]"
+											></div>
+											<span 
+												:class="[
+													'text-xs font-medium',
+													segment.is_active ? 'text-green-700' : 'text-red-700'
+												]"
+											>
+												{{ segment.is_active ? __('Hoạt động') : __('Không hoạt động') }}
+											</span>
+										</div>
+										
 									</div>
 									<Dropdown :options="poolActions(segment)">
 										<template #default="{ open }">

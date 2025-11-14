@@ -63,11 +63,14 @@
 					<template #default="{ open }">
 						<Button variant="outline" theme="gray" @click="open">
 							<template #prefix>
-								<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-								</svg>
+								<div 
+									:class="[
+										'w-2 h-2 rounded-full mr-1',
+										talentSegment.is_active ? 'bg-green-500' : 'bg-red-500'
+									]"
+								></div>
 							</template>
-							{{ segmentStatus === 'active' ? __('Hoạt động') : __('Không hoạt động') }}
+							{{ talentSegment.is_active ? __('Hoạt động') : __('Không hoạt động') }}
 							<template #suffix>
 								<FeatherIcon name="chevron-down" class="h-4 w-4 ml-1" />
 							</template>
@@ -221,7 +224,7 @@
 						</div>
 						<div class="ml-4">
 							<div class="text-2xl font-bold text-teal-900">
-								92/100
+								{{ talentSegment.overall_potential_score || '0' }}/100
 							</div>
 							<!-- <div class="text-sm text-teal-700">{{ __('Overall Potential Score') }}</div> -->
 							<div class="text-xs text-teal-600 mt-1">{{ __('Higher than overall score 85/100') }}</div>
@@ -241,7 +244,7 @@
 						</div>
 						<div class="ml-4">
 							<div class="text-2xl font-bold text-indigo-900">
-								45%
+								{{ talentSegment.high_rate || 0 }}%
 							</div>
 							<div class="text-sm text-indigo-700">{{ __('High hiring readiness rate') }}</div>
 						</div>
@@ -788,35 +791,39 @@ const loading = ref(false)
 const loadingCandidates = ref(false)
 const loadingCampaigns = ref(false)
 
-// Segment Status
-const segmentStatus = ref('active') // 'active' or 'inactive'
-
 // Status Dropdown Options
 const statusOptions = computed(() => [
 	{
 		label: __('Hoạt động'),
 		icon: 'check-circle',
-		onClick: () => updateSegmentStatus('active')
+		onClick: () => updateSegmentStatus(true)
 	},
 	{
 		label: __('Không hoạt động'),
 		icon: 'x-circle',
-		onClick: () => updateSegmentStatus('inactive')
+		onClick: () => updateSegmentStatus(false)
 	}
 ])
 
 // Update segment status
-const updateSegmentStatus = async (status) => {
+const updateSegmentStatus = async (isActive) => {
 	try {
-		segmentStatus.value = status
-		// TODO: Call API to update segment status in backend
-		// await call('your.api.method', {
-		//   segment_id: route.params.id,
-		//   status: status
-		// })
-		console.log('Segment status updated to:', status)
+		// Update local state
+		talentSegment.is_active = isActive
+		
+		// Call API to update segment status in backend
+		await call('frappe.client.set_value', {
+			doctype: 'Mira Segment',
+			name: route.params.id,
+			fieldname: 'is_active',
+			value: isActive ? 1 : 0
+		})
+		
+		console.log('Segment status updated to:', isActive ? 'active' : 'inactive')
 	} catch (error) {
 		console.error('Error updating segment status:', error)
+		// Revert local state on error
+		talentSegment.is_active = !isActive
 	}
 }
 

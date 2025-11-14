@@ -588,115 +588,189 @@
 				v-model="showTalentForm"
 				:options="{
 					title: 'Add New Talent',
-					size: '2xl',
+					size: '3xl',
 				}"
 			>
 				<template #body-content>
 					<form @submit.prevent="handleTalentSubmit" class="space-y-4">
 						<!-- Essential Information Section -->
-						<div class="space-y-4">
-							<h4 class="text-sm font-medium text-gray-900 border-b border-gray-200 pb-2">
+						<div class="space-y-6">
+							<h4 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-3">
 								{{ __('Essential Information') }}
 							</h4>
 							
-							<!-- Full Name -->
-							<div>
-								<label class="block text-sm font-medium text-gray-700"
-									>Full Name <span class="text-red-500">*</span></label
-								>
-								<input
-									v-model="newTalent.full_name"
-									type="text"
-									required
-									class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-								/>
+							<!-- Row 1: Full Name and Gender -->
+							<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+								<!-- Full Name -->
+								<div>
+									<label class="block text-sm font-medium text-gray-700 mb-1">
+										Full Name <span class="text-red-500">*</span>
+									</label>
+									<input
+										v-model="newTalent.full_name"
+										type="text"
+										required
+										class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
+										placeholder="Enter full name"
+									/>
+								</div>
+
+								<!-- Gender -->
+								<div>
+									<label class="block text-sm font-medium text-gray-700 mb-1">
+										Gender
+									</label>
+									<select
+										v-model="newTalent.gender"
+										class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
+									>
+										<option value="">Select gender</option>
+										<option value="Male">Male</option>
+										<option value="Female">Female</option>
+										<option value="Other">Other</option>
+										<option value="Unknown">Prefer not to say</option>
+									</select>
+								</div>
 							</div>
 
-							<!-- Email Input -->
-							<div>
-								<label class="block text-sm font-medium text-gray-700">
-									Email <span class="text-red-500">*</span>
-								</label>
-								<input
-									v-model="newTalent.email"
-									type="email"
-									required
-									@blur="checkEmail"
-									:class="[
-										'mt-1 block w-full rounded-md shadow-sm sm:text-sm',
-										emailError
-											? 'border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:outline-none focus:ring-red-500'
-											: 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',
-									]"
-									aria-invalid="true"
-									aria-describedby="email-error"
-								/>
-								<p
-									v-if="emailError"
-									class="mt-1 text-sm text-red-600"
-									id="email-error"
-								>
-									{{ emailError }}
-								</p>
-							</div>
+							<!-- Row 2: Email and Phone -->
+							<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+								<!-- Email Input -->
+								<div>
+									<label class="block text-sm font-medium text-gray-700 mb-1">
+										Email <span class="text-red-500">*</span>
+									</label>
+									<input
+										v-model="newTalent.email"
+										type="email"
+										required
+										@blur="checkEmail"
+										:class="[
+											'block w-full rounded-md shadow-sm text-sm px-3 py-2',
+											emailError
+												? 'border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:outline-none focus:ring-red-500'
+												: 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',
+										]"
+										placeholder="Enter email address"
+										aria-invalid="true"
+										aria-describedby="email-error"
+									/>
+									<p
+										v-if="emailError"
+										class="mt-1 text-xs text-red-600"
+										id="email-error"
+									>
+										{{ emailError }}
+									</p>
+								</div>
 
-							<!-- Phone -->
-							<div>
-								<label class="block text-sm font-medium text-gray-700">Phone</label>
-								<input
-									v-model="newTalent.phone"
-									type="tel"
-									class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-								/>
+								<!-- Phone -->
+								<div>
+									<label class="block text-sm font-medium text-gray-700 mb-1">
+										Phone
+									</label>
+									<input
+										v-model="newTalent.phone"
+										type="tel"
+										class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
+										placeholder="Enter phone number"
+									/>
+								</div>
 							</div>
 						</div>
 
 						<!-- Additional Information Section (Collapsible) -->
-						<div class="border-t border-gray-200 pt-4">
+						<div class="border-t border-gray-200 pt-6">
 							<button
 								type="button"
 								@click="showAdditionalInfo = !showAdditionalInfo"
-								class="flex items-center justify-between w-full text-left text-sm font-medium text-gray-700 hover:text-gray-900 focus:outline-none"
+								class="flex items-center justify-between w-full text-left text-lg font-semibold text-gray-900 hover:text-gray-700 focus:outline-none pb-3"
 							>
 								<span>{{ __('Additional Information') }}</span>
 								<FeatherIcon 
 									:name="showAdditionalInfo ? 'chevron-up' : 'chevron-down'" 
-									class="h-4 w-4 transition-transform duration-200"
+									class="h-5 w-5 transition-transform duration-200"
 								/>
 							</button>
 							
-							<div v-show="showAdditionalInfo" class="mt-4 space-y-4">
-								<!-- LinkedIn Profile -->
-								<div>
-									<label class="block text-sm font-medium text-gray-700"
-										>LinkedIn Profile</label
-									>
-									<input
-										v-model="newTalent.linkedin_profile"
-										type="text"
-										class="mt-1 block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-										placeholder="https://linkedin.com/in/username"
-									/>
-									<p class="mt-1 text-xs text-gray-500">
-										https://linkedin.com/in/username
-									</p>
+							<div v-show="showAdditionalInfo" class="mt-6 space-y-6">
+								<!-- Social Media Profiles Section -->
+								<div class="bg-gray-50 rounded-md p-3 space-y-3">
+									<h5 class="text-sm font-medium text-gray-900 mb-2">Social Media Profiles</h5>
+									
+									<!-- LinkedIn and Facebook Row -->
+									<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+										<!-- LinkedIn Profile -->
+										<div>
+											<label class="block text-sm font-medium text-gray-700 mb-1">
+												<div class="flex items-center">
+													<svg class="w-3 h-3 mr-1.5 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+														<path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+													</svg>
+													LinkedIn
+												</div>
+											</label>
+											<input
+												v-model="newTalent.linkedin_profile"
+												type="url"
+												class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
+												placeholder="https://linkedin.com/in/username"
+											/>
+										</div>
+
+										<!-- Facebook Profile -->
+										<div>
+											<label class="block text-sm font-medium text-gray-700 mb-1">
+												<div class="flex items-center">
+													<svg class="w-3 h-3 mr-1.5 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+														<path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+													</svg>
+													Facebook
+												</div>
+											</label>
+											<input
+												v-model="newTalent.facebook_profile"
+												type="url"
+												class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
+												placeholder="https://facebook.com/username"
+											/>
+										</div>
+									</div>
+
+									<!-- Zalo Profile -->
+									<div>
+										<label class="block text-sm font-medium text-gray-700 mb-1">
+											<div class="flex items-center">
+												<svg class="w-3 h-3 mr-1.5 text-blue-500" fill="currentColor" viewBox="0 0 24 24">
+													<path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.568 8.16c-.169-.224-.487-.32-.75-.32-.487 0-.881.394-.881.881 0 .487.394.881.881.881.263 0 .581-.096.75-.32l.169-.224c.056-.075.094-.169.094-.263 0-.169-.075-.32-.169-.431-.056-.056-.094-.131-.094-.204zM12 18.72c-3.722 0-6.72-3.018-6.72-6.72S8.278 5.28 12 5.28s6.72 3.018 6.72 6.72-2.998 6.72-6.72 6.72z"/>
+												</svg>
+												Zalo
+											</div>
+										</label>
+										<input
+											v-model="newTalent.zalo_profile"
+											type="text"
+											class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
+											placeholder="Zalo username or phone number"
+										/>
+									</div>
 								</div>
 
 								<!-- Skills Input -->
 								<div>
-									<label class="block text-sm font-medium text-gray-700">Skills</label>
-									<div class="mt-1">
-										<div class="flex flex-wrap gap-2 mb-2" v-if="skillTags.length > 0">
+									<label class="block text-sm font-medium text-gray-700 mb-1">Skills</label>
+									<div>
+										<div class="flex flex-wrap gap-1 mb-2" v-if="skillTags.length > 0">
 											<span
 												v-for="(skill, index) in skillTags"
 												:key="index"
-												class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+												class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
 											>
 												{{ skill }}
 												<button
 													type="button"
 													@click="removeSkill(index)"
-													class="ml-1.5 inline-flex text-blue-400 hover:text-blue-600 focus:outline-none"
+													class="ml-1 inline-flex text-blue-400 hover:text-blue-600 focus:outline-none"
 												>
 													<FeatherIcon name="x" class="h-3 w-3" />
 												</button>
@@ -708,63 +782,63 @@
 											placeholder="Type a skill and press Enter"
 											@keydown.enter.prevent="addSkill"
 											@blur="addSkill"
-											class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+											class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
 										/>
 									</div>
 								</div>
 
 								<!-- Two Column Layout for Company and Experience -->
-								<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+								<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
 									<!-- Latest Company -->
 									<div>
-										<label class="block text-sm font-medium text-gray-700"
-											>Latest Company</label
-										>
+										<label class="block text-sm font-medium text-gray-700 mb-1">
+											Latest Company
+										</label>
 										<input
 											v-model="newTalent.latest_company"
 											type="text"
-											class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+											class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
 											placeholder="Company name"
 										/>
 									</div>
 
 									<!-- Total Years of Experience -->
 									<div>
-										<label class="block text-sm font-medium text-gray-700"
-											>Years of Experience</label
-										>
+										<label class="block text-sm font-medium text-gray-700 mb-1">
+											Years of Experience
+										</label>
 										<input
 											v-model.number="newTalent.total_years_of_experience"
 											type="number"
 											min="0"
 											step="0.5"
-											class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+											class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
 											placeholder="0"
 										/>
 									</div>
 								</div>
 
 								<!-- Two Column Layout for Role and Source -->
-								<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+								<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
 									<!-- Desired Role -->
 									<div>
-										<label class="block text-sm font-medium text-gray-700"
-											>Desired Role</label
-										>
+										<label class="block text-sm font-medium text-gray-700 mb-1">
+											Desired Role
+										</label>
 										<input
 											v-model="newTalent.desired_role"
 											type="text"
-											class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+											class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
 											placeholder="Enter desired role"
 										/>
 									</div>
 
 									<!-- Source -->
 									<div>
-										<label class="block text-sm font-medium text-gray-700">Source</label>
+										<label class="block text-sm font-medium text-gray-700 mb-1">Source</label>
 										<select
 											v-model="newTalent.source"
-											class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+											class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
 										>
 											<option
 												v-for="source in sourceOptions"
@@ -851,13 +925,13 @@
 
 								<!-- Interaction Notes -->
 								<div>
-									<label class="block text-sm font-medium text-gray-700"
-										>Interaction Notes</label
-									>
+									<label class="block text-sm font-medium text-gray-700 mb-1">
+										Interaction Notes
+									</label>
 									<textarea
 										v-model="newTalent.interaction_notes"
 										rows="2"
-										class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+										class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
 										placeholder="Add any notes from your interaction with this talent"
 									></textarea>
 								</div>
@@ -1111,9 +1185,12 @@ const showTalentForm = ref(false) //create talent dialog
 const showAdditionalInfo = ref(false) // control additional info section visibility
 const newTalent = ref({
 	full_name: '',
+	gender: '',
 	email: '',
 	phone: '',
 	linkedin_profile: '',
+	facebook_profile: '',
+	zalo_profile: '',
 	latest_company: '',
 	total_years_of_experience: null,
 	desired_role: '',
@@ -1134,6 +1211,8 @@ const sourceOptions = ref([
 	'Headhunter',
 	'Nurturing Interaction',
 	'Import Excel',
+	'Import CV',
+	'MBW ATS'
 ])
 
 const crmStatusOptions = ref([

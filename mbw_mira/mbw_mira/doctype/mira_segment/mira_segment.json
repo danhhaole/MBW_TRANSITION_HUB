@@ -17,7 +17,8 @@
   "sync_id",
   "overall_potential_score",
   "high_rate",
-  "quality_distribution"
+  "quality_distribution",
+  "is_active"
  ],
  "fields": [
   {
@@ -91,6 +92,13 @@
    "fieldtype": "Select",
    "label": "Source",
    "options": "Manual\nAI\nSYNC_ATS"
+  },
+  {
+   "default": "1",
+   "description": "Trạng thái hoạt động của segment. 1 = Hoạt động, 0 = Không hoạt động",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "label": "Is Active"
   }
  ],
  "grid_page_length": 50,
