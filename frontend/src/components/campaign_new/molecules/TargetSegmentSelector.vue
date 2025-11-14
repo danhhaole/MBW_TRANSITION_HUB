@@ -156,7 +156,7 @@ const fetchCandidateCount = async () => {
     // Get count with both segment and conditions combined
     const result = await call('mbw_mira.api.campaign.get_combined_candidate_count', {
       config_data: localConfigData.value,
-      conditions: localConditions.value
+      conditions: localConditions.value?.value || localConditions.value
     })
     
     const count = result?.count || 0
