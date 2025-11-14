@@ -51,19 +51,10 @@ def _process_job_share(share_doc):
     """
     try:
         connection = frappe.get_doc("Mira External Connection", share_doc.external_connection)
-        job = frappe.get_doc("Mira Job Opening", share_doc.job)
-
-        # Parse share_data safely
-        share_data = {}
-        if share_doc.share_data:
-            try:
-                share_data = json.loads(share_doc.share_data)
-            except (json.JSONDecodeError, TypeError):
-                share_data = {}
 
         # Process based on platform type
 
-        result = _share_to_facebook(connection, job, share_doc, share_data)
+        result = _share_to_facebook(connection, share_doc)
 
         # Update share record with results
         share_doc.status = "Success" if result.get("success") else "Failed"
@@ -117,8 +108,7 @@ def _share_to_facebook(connection, job, share_doc, share_data):
             return {"success": False, "error": "No Facebook page selected or available"}
 
         # Prepare post content
-        job_url = f"{get_url_without_port()}/mbw_mira/jobs/{job.job_url_cms}?utm_source=facebook&owner={job.jo_contact_email}"
-        message = f"{share_doc.message}\n\nApply here: {job_url}"
+        message = share_doc.message
 
         # Prepare image URL if available
 

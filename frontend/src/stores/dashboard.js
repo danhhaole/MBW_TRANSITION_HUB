@@ -46,7 +46,7 @@ export const useDashboardStore = defineStore('dashboard', {
     conversionLoading: false,
     
     //Task
-    taskListData =[],
+    taskListData :[],
 
     // Time range for data
     timeRange: '90d',
