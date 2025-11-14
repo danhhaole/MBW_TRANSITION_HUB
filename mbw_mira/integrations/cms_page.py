@@ -55,6 +55,10 @@ class CMSAPI:
     def get_page_details(self, page_id):
         return self.provider.get("mbw_cms.api.page_api.get_page_details", params={"page_id": page_id})
 
+    # --- 8. Get page details ---
+    def get_page_public(self,query="published=1"):
+        return self.provider.get(f"mbw_cms.api.page_api.get_page_details?{query}")
+
 
 def example_usage():
     cms = CMSAPI()

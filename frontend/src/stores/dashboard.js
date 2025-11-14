@@ -96,57 +96,45 @@ export const useDashboardStore = defineStore('dashboard', {
         const fromDate = this.dateRange
         
         // Fetch total talent pool size
-        const totalResult = await call('mbw_mira.api.doc.get_list_data', {
-          doctype: 'Mira Talent',
-          filters: { is_active: 1 },
-          fields: ['name'],
-          limit_page_length: 0 // Get count only
+        const totalResult = await call('frappe.client.get_count', {
+          doctype: 'Mira Talent'          
         })
         
-        this.marketingMetrics.totalTalentPool = totalResult?.total_count || 0
+        this.marketingMetrics.totalTalentPool = totalResult || 0
         this.statistics.totalTalent = this.marketingMetrics.totalTalentPool
         
         // Fetch new talents in time range
-        const newTalentsResult = await call('mbw_mira.api.doc.get_list_data', {
+        const newTalentsResult = await call('frappe.client.get_count', {
           doctype: 'Mira Talent',
           filters: {
-            is_active: 1,
             creation: ['>=', fromDate.toISOString()]
-          },
-          fields: ['name'],
-          limit_page_length: 0
+          }
         })
         
-        this.marketingMetrics.newTalents = newTalentsResult?.total_count || 0
+        this.marketingMetrics.newTalents = newTalentsResult || 0
         this.statistics.totalNewTalent = this.marketingMetrics.newTalents
         
         // Fetch hot talents (MQL) - talents with high engagement
-        const hotTalentsResult = await call('mbw_mira.api.doc.get_list_data', {
+        const hotTalentsResult = await call('frappe.client.get_count', {
           doctype: 'Mira Talent',
           filters: {
-            is_active: 1,
-            talent_status: ['in', ['MQL', 'HOT', 'ENGAGED']]
-          },
-          fields: ['name'],
-          limit_page_length: 0
+            crm_status: ['in', ['MQL', 'HOT', 'ENGAGED']]
+          }
         })
         
-        this.marketingMetrics.hotTalents = hotTalentsResult?.total_count || 0
+        this.marketingMetrics.hotTalents = hotTalentsResult || 0
         this.statistics.totalTalentHot = this.marketingMetrics.hotTalents
         
         // Fetch converted talents (SQL)
-        const convertedResult = await call('mbw_mira.api.doc.get_list_data', {
+        const convertedResult = await call('frappe.client.get_count', {
           doctype: 'Mira Talent',
           filters: {
-            is_active: 1,
-            talent_status: ['in', ['SQL', 'CONVERTED', 'QUALIFIED']],
+            crm_status: ['in', ['SQL', 'CONVERTED', 'QUALIFIED']],
             modified: ['>=', fromDate.toISOString()]
-          },
-          fields: ['name'],
-          limit_page_length: 0
+          }
         })
         
-        this.marketingMetrics.convertedTalents = convertedResult?.total_count || 0
+        this.marketingMetrics.convertedTalents = convertedResult || 0
         this.statistics.totalTalentConvert = this.marketingMetrics.convertedTalents
         
         // Calculate Cost Per Lead (mock calculation)
@@ -177,13 +165,13 @@ export const useDashboardStore = defineStore('dashboard', {
         const fromDate = this.dateRange
         
         // Get email campaign actions
-        const actionsResult = await call('mbw_mira.api.doc.get_list_data', {
+        const actionsResult = await call('frappe.client.get_list', {
           doctype: 'Mira Action',
           filters: {
             action_type: ['in', ['EMAIL', 'MESSAGE']],
             created_at: ['>=', fromDate.toISOString()]
           },
-          fields: ['name', 'status', 'action_type', 'metadata'],
+          fields: ['name', 'status', 'action_type'],
           limit_page_length: 0
         })
         
@@ -222,7 +210,6 @@ export const useDashboardStore = defineStore('dashboard', {
         const talentsResult = await call('mbw_mira.api.doc.get_list_data', {
           doctype: 'Mira Talent',
           filters: {
-            is_active: 1,
             creation: ['>=', fromDate.toISOString()]
           },
           fields: ['name', 'source'],
@@ -270,7 +257,8 @@ export const useDashboardStore = defineStore('dashboard', {
           doctype: 'Mira Campaign',
           filters: {
             is_active: 1,
-            start_date: ['>=', fromDate.toISOString()]
+            status:"ACTIVE",
+            start_date: ['<=', fromDate.toISOString()]
           },
           fields: ['name', 'campaign_name', 'status'],
           limit_page_length: 5
@@ -335,10 +323,9 @@ export const useDashboardStore = defineStore('dashboard', {
         const talentsResult = await call('mbw_mira.api.doc.get_list_data', {
           doctype: 'Mira Talent',
           filters: {
-            is_active: 1,
             creation: ['>=', fromDate.toISOString()]
           },
-          fields: ['name', 'source', 'talent_status'],
+          fields: ['name', 'source', 'crm_status'],
           limit_page_length: 0
         })
         
@@ -353,7 +340,7 @@ export const useDashboardStore = defineStore('dashboard', {
           }
           const stats = sourceMap.get(source)
           stats.total++
-          if (['SQL', 'CONVERTED', 'QUALIFIED', 'HIRED'].includes(talent.talent_status)) {
+          if (['SQL', 'CONVERTED', 'QUALIFIED', 'HIRED'].includes(talent.crm_status)) {
             stats.converted++
           }
         })
@@ -432,7 +419,7 @@ export const useDashboardStore = defineStore('dashboard', {
               'scheduled_at',
               'executed_at',
               'talent_campaign_id',
-              'campaign_step',
+              'campaign_social',
               'assignee_id',
             ],
             order_by: 'scheduled_at asc',
@@ -457,7 +444,7 @@ export const useDashboardStore = defineStore('dashboard', {
               'scheduled_at',
               'executed_at',
               'talent_campaign_id',
-              'campaign_step',
+              'campaign_social',
               'assignee_id',
             ],
             order_by: 'scheduled_at asc',
@@ -479,7 +466,7 @@ export const useDashboardStore = defineStore('dashboard', {
             status: action.status,
             dueDate: this.formatDueDate(action.scheduled_at),
             candidate: action.talent_campaign_id ? 'Loading...' : 'No candidate',
-            campaign: action.campaign_step || 'Unknown',
+            campaign: action.campaign_social || 'Unknown',
             assignee: action.assignee_id || 'Unassigned',
             scheduledAt: action.scheduled_at,
             executedAt: action.executed_at,
