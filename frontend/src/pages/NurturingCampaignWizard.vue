@@ -285,10 +285,36 @@ const loadTriggers = async () => {
   }
 }
 
+// Load campaign flows and convert to triggers for Step 3
+const loadCampaignFlows = async (campaignId) => {
+  try {
+    console.log('🔀 Loading flows for campaign:', campaignId)
+    
+    const result = await call('mbw_mira.api.campaign_flow.get_campaign_flows', {
+      campaign_id: campaignId
+    })
+    
+    if (result.success && result.data) {
+      campaignData.value.step3_triggers = result.data
+      console.log('✅ Loaded step3 triggers from flows:', result.data)
+      console.log('📊 Step3 Triggers detail:', JSON.stringify(result.data, null, 2))
+    } else {
+      console.log('ℹ️ No flows found for campaign')
+      campaignData.value.step3_triggers = []
+    }
+  } catch (error) {
+    console.error('❌ Error loading flows:', error)
+    campaignData.value.step3_triggers = []
+  }
+}
+
 // Watch for step changes to load triggers
 watch(currentStep, async (newStep, oldStep) => {
   if (newStep === 2 && oldStep !== 2 && campaignData.value.name) {
     await loadTriggers()
+  }
+  if (newStep === 3 && oldStep !== 3 && campaignData.value.name) {
+    await loadCampaignFlows(campaignData.value.name)
   }
 })
 

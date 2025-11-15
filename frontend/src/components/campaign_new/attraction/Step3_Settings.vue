@@ -515,20 +515,77 @@ const stripHtml = (html) => {
 }
 
 const getActionPreview = (action) => {
-  if (!action.content) return ''
-  
-  // For Facebook and Zalo (content is object with blocks)
-  if ((action.action_type === 'FACEBOOK' || action.action_type === 'ZALO') && typeof action.content === 'object') {
-    const blocks = action.content.blocks || []
-    const textBlocks = blocks.filter(b => b.type === 'text' && b.text_content)
-    if (textBlocks.length > 0) {
-      return textBlocks[0].text_content
+  // Parse action_parameters if available
+  let params = {}
+  if (action.action_parameters) {
+    try {
+      params = typeof action.action_parameters === 'string' 
+        ? JSON.parse(action.action_parameters) 
+        : action.action_parameters
+    } catch (e) {
+      // Ignore parse errors
     }
-    return ''
   }
   
-  // For SMS (content is string)
-  return stripHtml(action.content)
+  // Generate preview based on action type
+  switch (action.action_type) {
+    case 'EMAIL':
+      return params.email_subject || action.email_subject || __('Email message')
+      
+    case 'MESSAGE':
+      if (params.content || action.content) {
+        const content = params.content || action.content
+        // For Facebook and Zalo (content is object with blocks)
+        if (typeof content === 'object' && content.blocks) {
+          const blocks = content.blocks || []
+          const textBlocks = blocks.filter(b => b.type === 'text' && b.text_content)
+          if (textBlocks.length > 0) {
+            return textBlocks[0].text_content
+          }
+        }
+        // For SMS (content is string)
+        return stripHtml(content)
+      }
+      return __('Message content')
+      
+    case 'ADD_TAG':
+      return `${__('Add tag')}: ${params.tag_name || action.tag_name || '...'}`
+      
+    case 'REMOVE_TAG':
+      return `${__('Remove tag')}: ${params.tag_name || action.tag_name || '...'}`
+      
+    case 'ADD_CUSTOM_FIELD':
+      return `${__('Update')} ${params.field_label || params.field_name || action.field_name || '...'} = ${params.field_value || action.field_value || '...'}`
+      
+    case 'START_FLOW':
+      return `${__('Start flow')}: ${params.flow_title || action.flow_title || params.flow_id || action.flow_id || '...'}`
+      
+    case 'STOP_FLOW':
+      return `${__('Stop flow')}: ${params.flow_title || action.flow_title || params.flow_id || action.flow_id || '...'}`
+      
+    case 'SENT_NOTIFICATION':
+      return `${__('Create task')}: ${params.task_subject || action.task_subject || '...'} → ${params.assignee_name || action.assignee_name || params.assignee || action.assignee || '...'}`
+      
+    case 'EXTERNAL_REQUEST':
+      const recipientCount = params.recipient_count || action.recipient_count
+      if (recipientCount) {
+        return `${params.notification_title || action.notification_title || __('Notification')} → ${recipientCount} ${__('users')}`
+      }
+      return `${params.notification_title || action.notification_title || __('Notification')}`
+      
+    case 'AI_CALL':
+      return `${__('Handoff to')} ${params.ats_system || action.ats_system || 'ATS'}`
+      
+    case 'UNSUBSCRIBE':
+      return __('Unsubscribe talent')
+      
+    default:
+      // Fallback to old content field
+      if (action.content) {
+        return stripHtml(action.content)
+      }
+      return ''
+  }
 }
 
 // Methods
@@ -574,12 +631,115 @@ const addActionToTrigger = (triggerIndex, actionType) => {
 const editAction = (triggerIndex, actionIndex) => {
   editingTriggerIndex.value = triggerIndex
   editingActionIndex.value = actionIndex
-  editingAction.value = { ...localTriggers.value[triggerIndex].actions[actionIndex] }
+  
+  const action = { ...localTriggers.value[triggerIndex].actions[actionIndex] }
+  
+  console.log('📝 Editing action:', action)
+  console.log('📦 action_parameters type:', typeof action.action_parameters)
+  console.log('📦 action_parameters value:', action.action_parameters)
+  
+  // Parse and spread action_parameters based on action type
+  let params = {}
+  
+  if (action.action_parameters) {
+    // Parse if string, use if object
+    if (typeof action.action_parameters === 'string') {
+      try {
+        params = JSON.parse(action.action_parameters)
+        console.log('✅ Parsed params from string:', params)
+      } catch (e) {
+        console.error('❌ Error parsing action_parameters:', e)
+      }
+    } else if (typeof action.action_parameters === 'object') {
+      params = { ...action.action_parameters }
+      console.log('✅ Using params from object:', params)
+    }
+  }
+  
+  // Spread all parameters into action for form binding
+  Object.assign(action, params)
+  
+  // Special handling for specific action types to ensure correct field mapping
+  switch (action.action_type) {
+    case 'ADD_TAG':
+    case 'REMOVE_TAG':
+      // Ensure tag fields are available: tag_id, tag_name, tag_color
+      console.log('🏷️ Tag action fields:', { 
+        tag_id: action.tag_id, 
+        tag_name: action.tag_name, 
+        tag_color: action.tag_color 
+      })
+      break
+      
+    case 'ADD_CUSTOM_FIELD':
+      // Ensure field update fields are available: field_name, field_value, field_type, field_label
+      console.log('📝 Field update action:', { 
+        field_name: action.field_name, 
+        field_value: action.field_value,
+        field_type: action.field_type,
+        field_label: action.field_label
+      })
+      break
+      
+    case 'START_FLOW':
+    case 'STOP_FLOW':
+      // Ensure flow fields are available: flow_id, flow_title, flow_type, flow_status
+      console.log('🔄 Flow action:', { 
+        flow_id: action.flow_id,
+        flow_title: action.flow_title,
+        flow_type: action.flow_type,
+        flow_status: action.flow_status
+      })
+      break
+      
+    case 'SENT_NOTIFICATION':
+      // Ensure task fields are available: task_subject, task_description, assignee, priority, due_date
+      console.log('📋 Task action:', { 
+        task_subject: action.task_subject,
+        task_description: action.task_description,
+        assignee: action.assignee,
+        task_priority: action.task_priority,
+        task_due_date: action.task_due_date
+      })
+      break
+      
+    case 'EXTERNAL_REQUEST':
+      // Ensure notification fields are available: notification_title, notification_message, recipients
+      console.log('🔔 Notification action:', { 
+        notification_title: action.notification_title,
+        notification_message: action.notification_message,
+        recipients: action.recipients
+      })
+      break
+      
+    case 'EMAIL':
+      // Ensure email fields are available: email_subject, email_content, attachments, sender_account
+      console.log('📧 Email action:', { 
+        email_subject: action.email_subject,
+        email_content: action.email_content,
+        attachments: action.attachments,
+        sender_account: action.sender_account
+      })
+      break
+      
+    case 'MESSAGE':
+      // Ensure message fields are available: channel, content
+      console.log('💬 Message action:', { 
+        channel: action.channel,
+        content: action.content
+      })
+      break
+  }
+  
+  console.log('🎯 Final action for editing:', action)
+  editingAction.value = action
   showEditAction.value = true
 }
 
 // Action Editor handlers
 const handleActionSave = (updatedAction) => {
+  console.log('💾 Saving action:', updatedAction)
+  
   // Get the trigger from sorted array
   const sortedTrigger = localTriggers.value[editingTriggerIndex.value]
   
@@ -589,6 +749,7 @@ const handleActionSave = (updatedAction) => {
   
   if (originalIndex !== -1) {
     triggers[originalIndex].actions[editingActionIndex.value] = { ...updatedAction }
+    console.log('✅ Updated triggers:', triggers)
     emit('update:triggers', triggers)
   }
   

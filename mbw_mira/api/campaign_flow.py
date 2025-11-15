@@ -37,11 +37,27 @@ def create_flow_from_trigger(campaign_id, trigger):
         # Get campaign
         campaign = frappe.get_doc("Mira Campaign", campaign_id)
         
-        # Map trigger type
+        # Map trigger type - Support both old format and new direct format
+        # Old format (Attraction campaign legacy): MESSAGE_RECEIVED, LINK_CLICKED, COMMENT_RECEIVED
+        # New format (All campaigns): ON_CREATE, ON_LINK_CLICK, ON_EMAIL_OPEN, etc.
         trigger_type_map = {
+            # Legacy mapping for old attraction campaigns
             "MESSAGE_RECEIVED": "ON_USER_RESPONSE",
             "LINK_CLICKED": "ON_LINK_CLICK",
-            "COMMENT_RECEIVED": "ON_USER_RESPONSE"
+            "COMMENT_RECEIVED": "ON_USER_RESPONSE",
+            # New trigger types - pass through as-is
+            "ON_CREATE": "ON_CREATE",
+            "ON_LINK_CLICK": "ON_LINK_CLICK",
+            "ON_EMAIL_OPEN": "ON_EMAIL_OPEN",
+            "ON_USER_RESPONSE": "ON_USER_RESPONSE",
+            "ON_UNSUBSCRIBE": "ON_UNSUBSCRIBE",
+            "ON_TAG_ADDED": "ON_TAG_ADDED",
+            "ON_TAG_REMOVED": "ON_TAG_REMOVED",
+            "ON_STATUS_CHANGED": "ON_STATUS_CHANGED",
+            "ON_SCORE_REACHED": "ON_SCORE_REACHED",
+            "ON_EMAIL_BOUNCE": "ON_EMAIL_BOUNCE",
+            "ON_INACTIVITY_TIMEOUT": "ON_INACTIVITY_TIMEOUT",
+            "ON_SEQUENCE_COMPLETED": "ON_SEQUENCE_COMPLETED"
         }
         
         # Create Flow
@@ -63,16 +79,20 @@ def create_flow_from_trigger(campaign_id, trigger):
         for idx, action in enumerate(trigger.get("actions", []), start=1):
             action_type = action.get("action_type")
             
-            # Store content in action_parameters as JSON
-            action_parameters = {
-                "content": action.get("content", ""),
-                "template_id": None
-            }
+            # Use action_parameters from action if provided, otherwise build from action fields
+            if action.get("action_parameters"):
+                action_parameters = action.get("action_parameters")
+            else:
+                # Fallback: build from individual fields for backward compatibility
+                action_parameters = {
+                    "content": action.get("content", ""),
+                    "template_id": None
+                }
             
             flow.append("action_id", {
-                "action_type": action_type,  # FACEBOOK, ZALO, SMS
+                "action_type": action_type,  # EMAIL, MESSAGE, ADD_TAG, etc.
                 "channel_type": action.get("channel_type"),
-                "action_parameters": json.dumps(action_parameters),
+                "action_parameters": json.dumps(action_parameters) if isinstance(action_parameters, dict) else action_parameters,
                 "delay_minutes": action.get("delay_minutes", 0),
                 "order": idx
             })
@@ -97,11 +117,25 @@ def create_flow_from_trigger(campaign_id, trigger):
 def get_trigger_label(trigger_type):
     """Get human-readable label for trigger type"""
     labels = {
+        # Legacy trigger types
         "MESSAGE_RECEIVED": "Message Received",
         "LINK_CLICKED": "Link Clicked",
-        "COMMENT_RECEIVED": "Comment on Post"
+        "COMMENT_RECEIVED": "Comment on Post",
+        # New trigger types
+        "ON_CREATE": "Form Submission",
+        "ON_LINK_CLICK": "Link Click",
+        "ON_EMAIL_OPEN": "Email Open",
+        "ON_USER_RESPONSE": "Job Application",
+        "ON_UNSUBSCRIBE": "Unsubscribe",
+        "ON_TAG_ADDED": "Tag Added",
+        "ON_TAG_REMOVED": "Tag Removed",
+        "ON_STATUS_CHANGED": "Status Change",
+        "ON_SCORE_REACHED": "Score Threshold Reached",
+        "ON_EMAIL_BOUNCE": "Email Bounce",
+        "ON_INACTIVITY_TIMEOUT": "Inactivity Timeout",
+        "ON_SEQUENCE_COMPLETED": "Flow Step Completed"
     }
-    return labels.get(trigger_type, trigger_type)
+    return labels.get(trigger_type, trigger_type.replace("_", " ").title())
 
 
 @frappe.whitelist()
@@ -142,11 +176,15 @@ def get_campaign_flows(campaign_id):
             if flow.trigger_id and len(flow.trigger_id) > 0:
                 flow_trigger = flow.trigger_id[0]
                 # Map back to frontend trigger type
-                trigger_type_map = {
-                    "ON_USER_RESPONSE": "MESSAGE_RECEIVED",
-                    "ON_LINK_CLICK": "LINK_CLICKED"
+                # For new trigger types, pass through as-is
+                # For legacy, map back to old format only if needed
+                trigger_type_reverse_map = {
+                    # Only map back for old attraction campaigns that used old format
+                    # "ON_USER_RESPONSE": "MESSAGE_RECEIVED",
+                    # "ON_LINK_CLICK": "LINK_CLICKED"
                 }
-                trigger_type = trigger_type_map.get(flow_trigger.trigger_type, "MESSAGE_RECEIVED")
+                # Default: use the flow trigger type directly (new format)
+                trigger_type = trigger_type_reverse_map.get(flow_trigger.trigger_type, flow_trigger.trigger_type)
             
             # Get actions
             actions = []
@@ -160,12 +198,19 @@ def get_campaign_flows(campaign_id):
                         except:
                             action_params = {}
                     
-                    actions.append({
+                    # Build action dict with all fields
+                    action_dict = {
                         "action_type": action.action_type,
                         "channel_type": action.channel_type,
-                        "content": action_params.get("content", ""),
+                        "action_parameters": action_params,  # Include full parameters
                         "delay_minutes": action.delay_minutes or 0
-                    })
+                    }
+                    
+                    # For backward compatibility, also include content at root level
+                    if "content" in action_params:
+                        action_dict["content"] = action_params["content"]
+                    
+                    actions.append(action_dict)
             
             if trigger_type:
                 triggers.append({
@@ -216,12 +261,27 @@ def create_or_update_flow(campaign_id, trigger):
             return {'success': False, 'message': 'trigger_type is required'}
         
         # Map trigger type to flow trigger type
+        # Map trigger type - Support both old format and new direct format
         trigger_type_map = {
+            # Legacy mapping for old attraction campaigns
             "MESSAGE_RECEIVED": "ON_USER_RESPONSE",
             "LINK_CLICKED": "ON_LINK_CLICK",
-            "COMMENT_RECEIVED": "ON_USER_RESPONSE"
+            "COMMENT_RECEIVED": "ON_USER_RESPONSE",
+            # New trigger types - pass through as-is
+            "ON_CREATE": "ON_CREATE",
+            "ON_LINK_CLICK": "ON_LINK_CLICK",
+            "ON_EMAIL_OPEN": "ON_EMAIL_OPEN",
+            "ON_USER_RESPONSE": "ON_USER_RESPONSE",
+            "ON_UNSUBSCRIBE": "ON_UNSUBSCRIBE",
+            "ON_TAG_ADDED": "ON_TAG_ADDED",
+            "ON_TAG_REMOVED": "ON_TAG_REMOVED",
+            "ON_STATUS_CHANGED": "ON_STATUS_CHANGED",
+            "ON_SCORE_REACHED": "ON_SCORE_REACHED",
+            "ON_EMAIL_BOUNCE": "ON_EMAIL_BOUNCE",
+            "ON_INACTIVITY_TIMEOUT": "ON_INACTIVITY_TIMEOUT",
+            "ON_SEQUENCE_COMPLETED": "ON_SEQUENCE_COMPLETED"
         }
-        flow_trigger_type = trigger_type_map.get(trigger_type, "CUSTOM_EVENT")
+        flow_trigger_type = trigger_type_map.get(trigger_type, trigger_type)
         
         # Find existing flow for this campaign and trigger type
         existing_flows = frappe.get_all(
@@ -242,21 +302,29 @@ def create_or_update_flow(campaign_id, trigger):
             # Update existing flow
             flow = frappe.get_doc("Mira Flow", existing_flow_id)
             
+            # Update flow title to reflect trigger
+            flow.title = f"{frappe.get_value('Mira Campaign', campaign_id, 'campaign_name')} - {get_trigger_label(trigger_type)}"
+            
             # Update status
             flow.status = trigger.get('status', 'active').capitalize()
             
             # Clear and rebuild actions
             flow.action_id = []
             for idx, action in enumerate(trigger.get("actions", []), start=1):
-                action_parameters = {
-                    "content": action.get("content", ""),
-                    "template_id": None
-                }
+                # Use action_parameters from action if provided, otherwise build from action fields
+                if action.get("action_parameters"):
+                    action_parameters = action.get("action_parameters")
+                else:
+                    # Fallback: build from individual fields
+                    action_parameters = {
+                        "content": action.get("content", ""),
+                        "template_id": None
+                    }
                 
                 flow.append("action_id", {
                     "action_type": action.get("action_type"),
                     "channel_type": action.get("channel_type"),
-                    "action_parameters": json.dumps(action_parameters),
+                    "action_parameters": json.dumps(action_parameters) if isinstance(action_parameters, dict) else action_parameters,
                     "delay_minutes": action.get("delay_minutes", 0),
                     "order": idx
                 })
@@ -321,11 +389,25 @@ def sync_campaign_flows(campaign_id, triggers):
         if isinstance(triggers, str):
             triggers = json.loads(triggers)
         
-        # Map trigger types
+        # Map trigger types - Support both old format and new direct format
         trigger_type_map = {
+            # Legacy mapping for old attraction campaigns
             "MESSAGE_RECEIVED": "ON_USER_RESPONSE",
             "LINK_CLICKED": "ON_LINK_CLICK",
-            "COMMENT_RECEIVED": "ON_USER_RESPONSE"
+            "COMMENT_RECEIVED": "ON_USER_RESPONSE",
+            # New trigger types - pass through as-is
+            "ON_CREATE": "ON_CREATE",
+            "ON_LINK_CLICK": "ON_LINK_CLICK",
+            "ON_EMAIL_OPEN": "ON_EMAIL_OPEN",
+            "ON_USER_RESPONSE": "ON_USER_RESPONSE",
+            "ON_UNSUBSCRIBE": "ON_UNSUBSCRIBE",
+            "ON_TAG_ADDED": "ON_TAG_ADDED",
+            "ON_TAG_REMOVED": "ON_TAG_REMOVED",
+            "ON_STATUS_CHANGED": "ON_STATUS_CHANGED",
+            "ON_SCORE_REACHED": "ON_SCORE_REACHED",
+            "ON_EMAIL_BOUNCE": "ON_EMAIL_BOUNCE",
+            "ON_INACTIVITY_TIMEOUT": "ON_INACTIVITY_TIMEOUT",
+            "ON_SEQUENCE_COMPLETED": "ON_SEQUENCE_COMPLETED"
         }
         
         # Get existing flows
@@ -340,7 +422,8 @@ def sync_campaign_flows(campaign_id, triggers):
         for trigger in triggers:
             trigger_type = trigger.get('trigger_type')
             if trigger_type:
-                flow_trigger_type = trigger_type_map.get(trigger_type, "CUSTOM_EVENT")
+                # Use trigger_type directly if not in map (instead of CUSTOM_EVENT)
+                flow_trigger_type = trigger_type_map.get(trigger_type, trigger_type)
                 current_trigger_types.add(flow_trigger_type)
         
         # Delete flows that are no longer in triggers

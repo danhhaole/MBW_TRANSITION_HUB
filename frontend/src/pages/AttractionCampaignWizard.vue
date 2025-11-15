@@ -451,6 +451,7 @@ const loadCampaignFlows = async (campaignId) => {
     if (result.success && result.data) {
       campaignData.value.triggers = result.data
       console.log('✅ Loaded triggers from flows:', result.data)
+      console.log('📊 Triggers detail:', JSON.stringify(result.data, null, 2))
     } else {
       console.log('ℹ️ No flows found for campaign')
       campaignData.value.triggers = []
@@ -637,6 +638,7 @@ const finalizeCampaign = async () => {
     // Step 3: Sync all flows with triggers in one API call
     try {
       console.log('🔄 Syncing flows with triggers...')
+      console.log('📊 Triggers data:', JSON.stringify(campaignData.value.triggers, null, 2))
       
       const result = await call('mbw_mira.api.campaign_flow.sync_campaign_flows', {
         campaign_id: campaignData.value.name,

@@ -846,6 +846,7 @@ const loadCampaignFlows = async (campaignId) => {
     if (result.success && result.data) {
       campaignData.value.triggers = result.data
       console.log('✅ Loaded triggers from flows:', result.data)
+      console.log('📊 Triggers detail:', JSON.stringify(result.data, null, 2))
     } else {
       console.log('ℹ️ No flows found for campaign')
       campaignData.value.triggers = []
@@ -855,6 +856,13 @@ const loadCampaignFlows = async (campaignId) => {
     campaignData.value.triggers = []
   }
 }
+
+// Watch for step changes to load flows
+watch(currentStep, async (newStep, oldStep) => {
+  if (newStep === 3 && oldStep !== 3 && campaignData.value.name) {
+    await loadCampaignFlows(campaignData.value.name)
+  }
+})
 
 </script>
 
