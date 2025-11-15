@@ -319,10 +319,10 @@ const editingActionIndex = ref(null)
 // Trigger types - From images and doctype
 const triggerTypeOptions = [
   // From images - I. TRIGGERS (Event triggers)
-  { label: __('Form Submission'), value: 'ON_CREATE' },
+  { label: __('Form Submission'), value: 'ON_FORM_SUBMISSION' },
   { label: __('Link Click'), value: 'ON_LINK_CLICK' },
   { label: __('Email Open'), value: 'ON_EMAIL_OPEN' },
-  { label: __('Job Application'), value: 'ON_USER_RESPONSE' },
+  { label: __('Job Application'), value: 'ON_JOB_APPLICATION' },
   { label: __('Unsubscribe'), value: 'ON_UNSUBSCRIBE' },
   { label: __('Tag Added'), value: 'ON_TAG_ADDED' },
   { label: __('Tag Removed'), value: 'ON_TAG_REMOVED' },

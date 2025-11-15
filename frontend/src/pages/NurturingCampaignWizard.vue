@@ -134,20 +134,28 @@ const campaignData = ref({
   campaign_name: '',
   objective: '',
   campaign_tags: [],
-  config_data: {},
+  config_data: {
+    selectedSegment: null
+  },
   conditions: [],
   candidate_count: 0,
-  channel: '',
-  type: props.campaignType, // 'NURTURING'
-  status: 'Draft',
-  // Landing page data
+  triggers: [],
+  start_date: '',
+  step3_triggers: [],
   ladipage_url: '',
   ladipage_id: '',
-  company_info: {},
-  job_info: {},
-  triggers: [], // Timeline triggers for nurturing (Step 2)
-  start_date: new Date().toISOString().slice(0, 16), // Default to now (YYYY-MM-DDTHH:MM)
-  step3_triggers: [] // Event triggers for Step 3
+  company_info: '',
+  job_info: '',
+  name: null
+})
+
+const initialCampaignData = ref(null)
+
+const hasUnsavedChanges = computed(() => {
+  if (!initialCampaignData.value) return false
+  
+  // Deep compare the two objects
+  return JSON.stringify(campaignData.value) !== JSON.stringify(initialCampaignData.value)
 })
 
 const steps = ref([
@@ -361,7 +369,13 @@ const loadCampaignTags = async (campaignId) => {
 }
 
 const closeWizard = () => {
-  if (confirm(__('Are you sure you want to close? Unsaved changes will be lost.'))) {
+  // Only show confirmation if there are unsaved changes
+  if (hasUnsavedChanges.value) {
+    if (confirm(__('Are you sure you want to close? Unsaved changes will be lost.'))) {
+      emit('close')
+    }
+  } else {
+    // No changes, close directly
     emit('close')
   }
 }
@@ -381,10 +395,19 @@ const nextStep = async () => {
   }
 
   showValidationError.value = false
-  await saveDraft()
+  
+  // Only save if there are actual changes
+  if (hasUnsavedChanges.value) {
+    console.log('📝 Changes detected, saving before next step...')
+    await saveDraft()
+  } else {
+    console.log('⏭️ No changes detected, skipping save')
+  }
   
   if (currentStep.value < totalSteps.value) {
     currentStep.value++
+    // Update initial state after moving to next step
+    initialCampaignData.value = JSON.parse(JSON.stringify(campaignData.value))
   }
 }
 
@@ -521,6 +544,9 @@ const targetPool = campaignData.value.config_data?.selectedSegment?.value || cam
     }
 
     // Don't show toast for auto-save
+    
+    // Update initial state after successful save
+    initialCampaignData.value = JSON.parse(JSON.stringify(campaignData.value))
   } catch (error) {
     console.error('Error saving draft:', error)
     toast.error(__('An error occurred while saving'))
@@ -598,6 +624,9 @@ const finalizeCampaign = async () => {
     // Reset wizard to step 1
     currentStep.value = 1
     resetCampaignData()
+    
+    // Clear unsaved changes flag before closing
+    initialCampaignData.value = JSON.parse(JSON.stringify(campaignData.value))
     
     emit('success', { name: campaignData.value.name })
     emit('close')
@@ -704,6 +733,9 @@ const loadCampaignData = async (campaignId) => {
       
       // Load campaign tags
       await loadCampaignTags(campaignId)
+      
+      // Save initial state after loading
+      initialCampaignData.value = JSON.parse(JSON.stringify(campaignData.value))
     }
   } catch (error) {
     console.error('❌ Error loading campaign:', error)
@@ -737,6 +769,8 @@ watch(() => props.show, (newVal) => {
   } else if (newVal) {
     // Reset for new campaign
     resetCampaignData()
+    // Save initial state for change detection
+    initialCampaignData.value = JSON.parse(JSON.stringify(campaignData.value))
   }
 })
 </script>

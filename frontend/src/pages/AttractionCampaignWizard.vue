@@ -130,19 +130,16 @@ const campaignData = ref({
   campaign_name: '',
   description: '',
   target_pool: '',
-  campaign_tags: [],
-  start_date: '', // Let CampaignSchedule handle default behavior
-  // Step 2: Content & Channels
+  name: null,
   selected_channels: [],
-  landing_page: '',
-  page_data: null,
-  ladipage_url: '',
-  ladipage_id: '',
+  email_content: {
+    email_subject: '',
+    email_content: '',
+    attachments: [],
+    sender_account: ''
+  },
   facebook_content: {
-    content: '',
-    image: null,
-    page_id: null,
-    schedule_time: null
+    blocks: []
   },
   zalo_content: {
     blocks: [
@@ -166,6 +163,17 @@ const campaignData = ref({
   type: props.campaignType, // 'ATTRACTION'
   status: 'Draft',
   flow_id: null // Will be set after creating Mira Flow
+})
+
+// Track initial state to detect changes
+const initialCampaignData = ref(null)
+
+// Helper function to check if data has changed
+const hasUnsavedChanges = computed(() => {
+  if (!initialCampaignData.value) return false
+  
+  // Deep compare the two objects
+  return JSON.stringify(campaignData.value) !== JSON.stringify(initialCampaignData.value)
 })
 
 // Steps configuration
@@ -203,7 +211,13 @@ const canProceed = computed(() => {
 
 // Methods
 const closeWizard = () => {
-  if (confirm(__('Are you sure you want to close? Unsaved changes will be lost.'))) {
+  // Only show confirmation if there are unsaved changes
+  if (hasUnsavedChanges.value) {
+    if (confirm(__('Are you sure you want to close? Unsaved changes will be lost.'))) {
+      emit('close')
+    }
+  } else {
+    // No changes, close directly
     emit('close')
   }
 }
@@ -224,43 +238,18 @@ const nextStep = async () => {
 
   showValidationError.value = false
   
-  // Check if posts changed before saving (only on step 2)
-  if (currentStep.value === 2) {
-    // Only include content for selected channels
-    const currentPosts = {}
-    const selectedChannels = campaignData.value.selected_channels || []
-    
-    if (selectedChannels.includes('facebook')) {
-      currentPosts.facebook = campaignData.value.facebook_content
-    }
-    if (selectedChannels.includes('zalo')) {
-      currentPosts.zalo = campaignData.value.zalo_content
-    }
-    if (selectedChannels.includes('qr_code')) {
-      currentPosts.qr_code = campaignData.value.qr_content
-    }
-    
-    console.log('🔍 Change detection:')
-    console.log('  Selected channels:', selectedChannels)
-    console.log('  Current posts:', currentPosts)
-    console.log('  Original posts:', originalPosts.value)
-    
-    const hasChanges = JSON.stringify(currentPosts) !== JSON.stringify(originalPosts.value)
-    console.log('  Has changes:', hasChanges)
-    
-    if (hasChanges) {
-      console.log('📝 Posts changed, saving...')
-      await saveDraft()
-    } else {
-      console.log('⏭️ No changes in posts, skipping save')
-    }
-  } else {
-    // Save draft for other steps
+  // Only save if there are actual changes
+  if (hasUnsavedChanges.value) {
+    console.log('📝 Changes detected, saving before next step...')
     await saveDraft()
+  } else {
+    console.log('⏭️ No changes detected, skipping save')
   }
   
   if (currentStep.value < totalSteps.value) {
     currentStep.value++
+    // Update initial state after moving to next step
+    initialCampaignData.value = JSON.parse(JSON.stringify(campaignData.value))
   }
 }
 
@@ -316,6 +305,9 @@ const saveDraft = async () => {
     }
 
     // Don't show toast for auto-save
+    
+    // Update initial state after successful save
+    initialCampaignData.value = JSON.parse(JSON.stringify(campaignData.value))
   } catch (error) {
     console.error('Error saving draft:', error)
     toast.error(__('An error occurred while saving'))
@@ -663,6 +655,9 @@ const finalizeCampaign = async () => {
     currentStep.value = 1
     resetCampaignData()
     
+    // Clear unsaved changes flag before closing
+    initialCampaignData.value = JSON.parse(JSON.stringify(campaignData.value))
+    
     emit('success', { name: campaignData.value.name })
     emit('close')
   } catch (error) {
@@ -681,6 +676,8 @@ watch(() => props.show, (newVal) => {
   } else if (newVal) {
     // Reset for new campaign
     resetCampaignData()
+    // Save initial state for change detection
+    initialCampaignData.value = JSON.parse(JSON.stringify(campaignData.value))
   }
 })
 
@@ -739,6 +736,9 @@ const loadCampaignData = async (campaignId) => {
       // Load flows (triggers)
       await loadCampaignFlows(campaignId)
     }
+    
+    // Save initial state after loading
+    initialCampaignData.value = JSON.parse(JSON.stringify(campaignData.value))
   } catch (error) {
     console.error('❌ Error loading campaign:', error)
     toast.error(__('Failed to load campaign data'))
