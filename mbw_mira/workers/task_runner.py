@@ -127,15 +127,10 @@ ACTION_HANDLER_MAP = {
     "EMAIL": handle_email,
 
     "ZALO": handle_zalo,
-    "ZALO_CARE": handle_zalo_care,
-    "ZALO_ZNS": handle_zalo_zns,
 
     "START_FLOW": handle_start_flow,
-    "SUBSCRIBE_TO_SEQUENCE": handle_subscribe_to_sequence,
-    "UN_SUBSCRIBE_TO_SEQUENCE": handle_unsubscribe_to_sequence,
 
     "SMART_DELAY": handle_smart_delay,
-    "AI_CALL": handle_ai_call,
 
     "ADD_TAG": handle_add_tag,
     "REMOVE_TAG": handle_remove_tag,
@@ -146,8 +141,6 @@ ACTION_HANDLER_MAP = {
     "LEAD_SCORE": handle_lead_score,
     "EXTERNAL_REQUEST": handle_external_request,
 
-    "EMAIL_AI": handle_email_ai,
-    "CONTENT_AI": handle_content_ai,
 
     "SENT_NOTIFICATION": handle_sent_notification,
     "UNSUBSCRIBE": handle_unsubscribe,
