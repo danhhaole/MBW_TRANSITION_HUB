@@ -55,56 +55,56 @@ def send_email_action_campaign():
             
 #     return True
 
-# def post_facebook_action_campaign():
-#     """
-#     Process scheduled POST_FACEBOOK actions:
-#     - Find actions with status=SCHEDULED, scheduled_at<=now
-#     - action_type='POST_FACEBOOK'
-#     - Enqueue worker job
-#     """
-#     now = datetime.now()
-#     actions = frappe.get_all(
-#         "Mira Action",
-#         filters={
-#             "status": "SCHEDULED",
-#             "action_type":"POST_FACEBOOK",
-#             "scheduled_at": ["<=", now],
-#         },
-#         fields=["name"]
-#     )
+def post_facebook_action_campaign():
+    """
+    Process scheduled POST_FACEBOOK actions:
+    - Find actions with status=SCHEDULED, scheduled_at<=now
+    - action_type='POST_FACEBOOK'
+    - Enqueue worker job
+    """
+    now = datetime.now()
+    actions = frappe.get_all(
+        "Mira Action",
+        filters={
+            "status": "SCHEDULED",
+            "action_type":"POST_FACEBOOK",
+            "scheduled_at": ["<=", now],
+        },
+        fields=["name"]
+    )
 
-#     for a in actions:
-#         frappe.enqueue(
-#                 "mbw_mira.workers.process_action.process_facebook_action",
-#                 queue="short",
-#                 action_name=a.name
-#             )
+    for a in actions:
+        frappe.enqueue(
+                "mbw_mira.workers.process_action.process_facebook_action",
+                queue="short",
+                action_name=a.name
+            )
             
-#     return True
+    return True
 
-# def post_topcv_action_campaign():
-#     """
-#     Process scheduled POST_TOPCV actions:
-#     - Find actions with status=SCHEDULED, scheduled_at<=now
-#     - action_type='POST_TOPCV'
-#     - Enqueue worker job
-#     """
-#     now = datetime.now()
-#     actions = frappe.get_all(
-#         "Mira Action",
-#         filters={
-#             "status": "SCHEDULED",
-#             "action_type":"POST_TOPCV",
-#             "scheduled_at": ["<=", now],
-#         },
-#         fields=["name"]
-#     )
+def post_topcv_action_campaign():
+    """
+    Process scheduled POST_TOPCV actions:
+    - Find actions with status=SCHEDULED, scheduled_at<=now
+    - action_type='POST_TOPCV'
+    - Enqueue worker job
+    """
+    now = datetime.now()
+    actions = frappe.get_all(
+        "Mira Action",
+        filters={
+            "status": "SCHEDULED",
+            "action_type":"POST_TOPCV",
+            "scheduled_at": ["<=", now],
+        },
+        fields=["name"]
+    )
 
-#     for a in actions:
-#         frappe.enqueue(
-#                 "mbw_mira.workers.process_action.process_topcv_action",
-#                 queue="short",
-#                 action_name=a.name
-#             )
+    for a in actions:
+        frappe.enqueue(
+                "mbw_mira.workers.process_action.process_topcv_action",
+                queue="short",
+                action_name=a.name
+            )
             
-#     return True
+    return True
