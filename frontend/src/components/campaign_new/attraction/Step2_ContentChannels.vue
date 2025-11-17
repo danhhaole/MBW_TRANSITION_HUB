@@ -514,6 +514,40 @@ const updateQrContent = (value) => {
   }
 }
 
+// Helper function to strip HTML tags and convert to plain text with line breaks
+const stripHtmlTags = (html) => {
+  if (!html) return ''
+  
+  // Replace block-level HTML elements with newlines BEFORE stripping tags
+  let text = html
+    // Replace closing block tags with double newline (paragraph breaks)
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<\/div>/gi, '\n\n')
+    .replace(/<\/li>/gi, '\n')
+    .replace(/<\/h[1-6]>/gi, '\n\n')
+    // Replace BR tags with single newline
+    .replace(/<br\s*\/?>/gi, '\n')
+    // Replace list items with bullet points
+    .replace(/<li[^>]*>/gi, '\n• ')
+  
+  // Now strip all remaining HTML tags
+  const tmp = document.createElement('div')
+  tmp.innerHTML = text
+  text = tmp.textContent || tmp.innerText || ''
+  
+  // Clean up excessive newlines (more than 2 consecutive)
+  text = text.replace(/\n{3,}/g, '\n\n')
+  
+  // Trim each line but preserve the newlines
+  text = text
+    .split('\n')
+    .map(line => line.trim())
+    .join('\n')
+  
+  // Remove leading/trailing whitespace from the entire text
+  return text.trim()
+}
+
 // Test share job posting to Facebook
 const testShareJobPosting = async () => {
   if (!localFacebookContent.value.page_id) {
@@ -541,13 +575,18 @@ const testShareJobPosting = async () => {
       throw new Error('Facebook page connection ID not found. Please reconnect your Facebook account.')
     }
 
+    // Strip HTML tags from content before sending to Facebook
+    const cleanMessage = stripHtmlTags(localFacebookContent.value.content)
+    console.log('Original content:', localFacebookContent.value.content)
+    console.log('Clean message:', cleanMessage)
+
     const result = await call('mbw_mira.api.external_connections.share_job_posting', {
       connection_id: selectedPage.connection_id,
       job_id: props.name || 'test_job_id',
-      message: localFacebookContent.value.content,
+      message: cleanMessage,  // ← Sửa: Dùng cleanMessage thay vì raw HTML
       schedule_type: 'now',
       image_url: localFacebookContent.value.image || '',
-      campaign_id: props.name,  // ← Sửa: Dùng props.name thay vì props.campaignId
+      campaign_id: props.name,
       ladipage_url: props.ladipageUrl,
       platform_type: selectedPage.platform_type || 'facebook',
       scheduled_time: localFacebookContent.value.schedule_time
