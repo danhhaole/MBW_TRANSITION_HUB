@@ -272,6 +272,24 @@ const saveDraft = async () => {
         campaignData.value.name = result.data.name
         toast.success(__('Campaign created successfully'))
         
+        // Add tags if any were selected before campaign was created
+        if (campaignData.value.campaign_tags && campaignData.value.campaign_tags.length > 0) {
+          console.log('🏷️ Adding tags to newly created campaign:', campaignData.value.campaign_tags)
+          try {
+            for (const tag of campaignData.value.campaign_tags) {
+              await call('frappe.desk.doctype.tag.tag.add_tag', {
+                tag: tag.value,
+                dt: 'Mira Campaign',
+                dn: campaignData.value.name
+              })
+            }
+            console.log('✅ Tags added to campaign')
+          } catch (error) {
+            console.error('❌ Error adding tags to campaign:', error)
+            // Don't fail the whole process if tags fail
+          }
+        }
+        
         // Emit event to refresh campaign list
         emit('campaign-created', { name: result.data.name })
       } else {
@@ -376,22 +394,8 @@ const saveSocialPosts = async () => {
       })
     }
     
-    // QR Code post
-    if (campaignData.value.selected_channels.includes('qr_code')) {
-      const qrContent = campaignData.value.qr_content
-      
-      socialPosts.push({
-        platform: 'QR',
-        template_content: JSON.stringify({
-          utm_campaign: qrContent.utm_campaign,
-          utm_source: qrContent.utm_source,
-          utm_medium: qrContent.utm_medium,
-          qr_data: qrContent.qr_data
-        }),
-        status: 'Pending',
-        post_schedule_time: null // QR codes don't have schedule time
-      })
-    }
+    // QR Code is now managed separately in Mira Campaign QR doctype
+    // QR codes are handled by QRCodeContentEditor component with campaignQR store
     
     console.log('📋 Social posts to save:', socialPosts)
 
@@ -408,8 +412,8 @@ const saveSocialPosts = async () => {
       // Update original posts after successful save
       originalPosts.value = {
         facebook: campaignData.value.facebook_content,
-        zalo: campaignData.value.zalo_content,
-        qr_code: campaignData.value.qr_content
+        zalo: campaignData.value.zalo_content
+        // qr_code removed - managed separately in Mira Campaign QR
       }
       
       return result.data
@@ -458,40 +462,54 @@ const loadCampaignTags = async (campaignId) => {
   try {
     console.log('🏷️ Loading campaign tags:', campaignId)
     
-    // Get tags from Frappe's tag system
-    const response = await call('frappe.desk.doctype.tag.tag.get_tags', {
+    // Get campaign document with _user_tags field
+    const campaign = await call('frappe.client.get', {
       doctype: 'Mira Campaign',
-      txt: campaignId
+      name: campaignId,
+      fields: ['_user_tags']
     })
     
-    if (response && Array.isArray(response)) {
-      // Get tag colors from Mira Tag doctype
-      const tagTitles = response.map(tag => tag.tag || tag)
-      const colorResponse = await call('frappe.client.get_list', {
-        doctype: 'Mira Tag',
-        fields: ['title', 'color'],
-        filters: [['title', 'in', tagTitles]]
-      })
+    if (campaign && campaign._user_tags) {
+      // Parse _user_tags string format: ",test,abc" -> ["test", "abc"]
+      const tagTitles = campaign._user_tags
+        .split(',')
+        .map(tag => tag.trim())
+        .filter(tag => tag.length > 0) // Remove empty strings
       
-      const colorMap = {}
-      for (const tag of colorResponse || []) {
-        colorMap[tag.title] = tag.color
-      }
+      console.log('📋 Parsed tags from _user_tags:', tagTitles)
       
-      // Map tags with colors
-      campaignData.value.campaign_tags = response.map(tag => {
-        const tagTitle = tag.tag || tag
-        return {
+      if (tagTitles.length > 0) {
+        // Get tag colors from Mira Tag doctype
+        const colorResponse = await call('frappe.client.get_list', {
+          doctype: 'Mira Tag',
+          fields: ['title', 'color'],
+          filters: [['title', 'in', tagTitles]]
+        })
+        
+        const colorMap = {}
+        for (const tag of colorResponse || []) {
+          colorMap[tag.title] = tag.color
+        }
+        
+        // Map tags with colors
+        campaignData.value.campaign_tags = tagTitles.map(tagTitle => ({
           label: tagTitle,
           value: tagTitle,
           color: colorMap[tagTitle] || '#6B7280'
-        }
-      })
-      
-      console.log('✅ Campaign tags loaded:', campaignData.value.campaign_tags)
+        }))
+        
+        console.log('✅ Campaign tags loaded:', campaignData.value.campaign_tags)
+      } else {
+        campaignData.value.campaign_tags = []
+        console.log('ℹ️ No tags found for campaign')
+      }
+    } else {
+      campaignData.value.campaign_tags = []
+      console.log('ℹ️ No _user_tags field or empty')
     }
   } catch (error) {
     console.error('❌ Error loading campaign tags:', error)
+    campaignData.value.campaign_tags = []
     // Don't show error toast as tags are optional
   }
 }
@@ -561,27 +579,9 @@ const loadSocialPosts = async (campaignId) => {
         if (!campaignData.value.selected_channels.includes('zalo')) {
           campaignData.value.selected_channels.push('zalo')
         }
-      } else if (post.platform === 'QR') {
-        try {
-          const content = JSON.parse(post.template_content || '{}')
-          campaignData.value.qr_content = {
-            utm_campaign: content.utm_campaign || '',
-            utm_source: content.utm_source || 'qr_code',
-            utm_medium: content.utm_medium || 'qr',
-            qr_data: content.qr_data || null
-          }
-        } catch (e) {
-          campaignData.value.qr_content = {
-            utm_campaign: '',
-            utm_source: 'qr_code',
-            utm_medium: 'qr',
-            qr_data: null
-          }
-        }
-        if (!campaignData.value.selected_channels.includes('qr_code')) {
-          campaignData.value.selected_channels.push('qr_code')
-        }
       }
+      // QR Code is now managed separately in Mira Campaign QR doctype
+      // Skip loading QR from Campaign Social
     }
     
     console.log('✅ Social posts loaded into campaign data')
@@ -591,6 +591,35 @@ const loadSocialPosts = async (campaignId) => {
     console.log('📱 QR content:', campaignData.value.qr_content)
   } catch (error) {
     console.error('❌ Error loading social posts:', error)
+  }
+}
+
+// Load existing QR codes when editing campaign
+const loadCampaignQRCodes = async (campaignId) => {
+  try {
+    console.log('📱 Loading QR codes for campaign:', campaignId)
+    
+    // Call API to get QR codes
+    const result = await call('frappe.client.get_list', {
+      doctype: 'Mira Campaign QR',
+      filters: { campaign_id: campaignId },
+      fields: ['name', 'qr_name'],
+      order_by: 'creation desc'
+    })
+    
+    if (result && result.length > 0) {
+      console.log(`✅ Found ${result.length} QR code(s):`, result)
+      
+      // Add qr_code channel if not already added
+      if (!campaignData.value.selected_channels.includes('qr_code')) {
+        campaignData.value.selected_channels.push('qr_code')
+        console.log('✅ Added QR code channel to selected channels')
+      }
+    } else {
+      console.log('ℹ️ No QR codes found for campaign')
+    }
+  } catch (error) {
+    console.error('❌ Error loading QR codes:', error)
   }
 }
 
@@ -732,6 +761,9 @@ const loadCampaignData = async (campaignId) => {
       
       // Load social posts
       await loadSocialPosts(campaignId)
+      
+      // Load QR codes and add channel if QR codes exist
+      await loadCampaignQRCodes(campaignId)
       
       // Load flows (triggers)
       await loadCampaignFlows(campaignId)

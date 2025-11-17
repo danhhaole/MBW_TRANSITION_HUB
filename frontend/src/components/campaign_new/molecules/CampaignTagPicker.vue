@@ -182,7 +182,7 @@ import { FeatherIcon, Button, Dialog, Autocomplete, FormControl, call, toast } f
 const props = defineProps({
   campaignId: {
     type: String,
-    required: true
+    default: '' // Not required - can be empty for new campaigns
   },
   modelValue: {
     type: Array,
@@ -240,11 +240,17 @@ const fetchSuggestions = async () => {
       limit_page_length: 100
     })
 
-    suggestions.value = (response || []).map(tag => ({
-      label: tag.title,
-      value: tag.title,
-      color: tag.color || '#6B7280'
-    }))
+    // Filter out tags that are already added
+    const existingTagValues = tags.value.map(t => t.value)
+    suggestions.value = (response || [])
+      .filter(tag => !existingTagValues.includes(tag.title))
+      .map(tag => ({
+        label: tag.title,
+        value: tag.title,
+        color: tag.color || '#6B7280'
+      }))
+    
+    console.log('📋 Available tags (excluding added):', suggestions.value.length, 'tags')
   } catch (error) {
     console.error('❌ Error fetching tag suggestions:', error)
     toast.error(__('Failed to load tags'))
@@ -328,13 +334,19 @@ const applyTags = async () => {
       return
     }
 
-    // Add tags to campaign using Frappe's tag system
-    for (const tag of newTags) {
-      await call('frappe.desk.doctype.tag.tag.add_tag', {
-        tag: tag.value,
-        dt: 'Mira Campaign',
-        dn: props.campaignId
-      })
+    // If campaign exists, add tags to Frappe's tag system
+    // Otherwise, just update local state - wizard will add tags after campaign is created
+    if (props.campaignId) {
+      for (const tag of newTags) {
+        await call('frappe.desk.doctype.tag.tag.add_tag', {
+          tag: tag.value,
+          dt: 'Mira Campaign',
+          dn: props.campaignId
+        })
+      }
+      console.log('✅ Tags added to existing campaign')
+    } else {
+      console.log('ℹ️ Campaign not yet created - tags will be added after campaign creation')
     }
 
     // Update local tags
@@ -354,11 +366,17 @@ const applyTags = async () => {
 // Remove tag
 const removeTag = async (tag) => {
   try {
-    await call('frappe.desk.doctype.tag.tag.remove_tag', {
-      tag: tag.value,
-      dt: 'Mira Campaign',
-      dn: props.campaignId
-    })
+    // If campaign exists, remove from Frappe's tag system
+    if (props.campaignId) {
+      await call('frappe.desk.doctype.tag.tag.remove_tag', {
+        tag: tag.value,
+        dt: 'Mira Campaign',
+        dn: props.campaignId
+      })
+      console.log('✅ Tag removed from campaign')
+    } else {
+      console.log('ℹ️ Campaign not yet created - removing from local state only')
+    }
 
     tags.value = tags.value.filter(t => t.value !== tag.value)
     emit('update:modelValue', [...tags.value])

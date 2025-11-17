@@ -243,40 +243,54 @@ const loadCampaignTags = async (campaignId) => {
   try {
     console.log('🏷️ Loading campaign tags:', campaignId)
     
-    // Get tags from Frappe's tag system
-    const response = await call('frappe.desk.doctype.tag.tag.get_tags', {
+    // Get campaign document with _user_tags field
+    const campaign = await call('frappe.client.get', {
       doctype: 'Mira Campaign',
-      txt: campaignId
+      name: campaignId,
+      fields: ['_user_tags']
     })
     
-    if (response && Array.isArray(response)) {
-      // Get tag colors from Mira Tag doctype
-      const tagTitles = response.map(tag => tag.tag || tag)
-      const colorResponse = await call('frappe.client.get_list', {
-        doctype: 'Mira Tag',
-        fields: ['title', 'color'],
-        filters: [['title', 'in', tagTitles]]
-      })
+    if (campaign && campaign._user_tags) {
+      // Parse _user_tags string format: ",test,abc" -> ["test", "abc"]
+      const tagTitles = campaign._user_tags
+        .split(',')
+        .map(tag => tag.trim())
+        .filter(tag => tag.length > 0) // Remove empty strings
       
-      const colorMap = {}
-      for (const tag of colorResponse || []) {
-        colorMap[tag.title] = tag.color
-      }
+      console.log('📋 Parsed tags from _user_tags:', tagTitles)
       
-      // Map tags with colors
-      campaignData.value.campaign_tags = response.map(tag => {
-        const tagTitle = tag.tag || tag
-        return {
+      if (tagTitles.length > 0) {
+        // Get tag colors from Mira Tag doctype
+        const colorResponse = await call('frappe.client.get_list', {
+          doctype: 'Mira Tag',
+          fields: ['title', 'color'],
+          filters: [['title', 'in', tagTitles]]
+        })
+        
+        const colorMap = {}
+        for (const tag of colorResponse || []) {
+          colorMap[tag.title] = tag.color
+        }
+        
+        // Map tags with colors
+        campaignData.value.campaign_tags = tagTitles.map(tagTitle => ({
           label: tagTitle,
           value: tagTitle,
           color: colorMap[tagTitle] || '#6B7280'
-        }
-      })
-      
-      console.log('✅ Campaign tags loaded:', campaignData.value.campaign_tags)
+        }))
+        
+        console.log('✅ Campaign tags loaded:', campaignData.value.campaign_tags)
+      } else {
+        campaignData.value.campaign_tags = []
+        console.log('ℹ️ No tags found for campaign')
+      }
+    } else {
+      campaignData.value.campaign_tags = []
+      console.log('ℹ️ No _user_tags field or empty')
     }
   } catch (error) {
     console.error('❌ Error loading campaign tags:', error)
+    campaignData.value.campaign_tags = []
     // Don't show error toast as tags are optional
   }
 }
@@ -328,6 +342,24 @@ const targetPool = campaignData.value.config_data?.selectedSegment?.value || cam
       if (result.success && result.data?.name) {
         campaignData.value.name = result.data.name
         toast.success(__('Campaign created successfully'))
+        
+        // Add tags if any were selected before campaign was created
+        if (campaignData.value.campaign_tags && campaignData.value.campaign_tags.length > 0) {
+          console.log('🏷️ Adding tags to newly created campaign:', campaignData.value.campaign_tags)
+          try {
+            for (const tag of campaignData.value.campaign_tags) {
+              await call('frappe.desk.doctype.tag.tag.add_tag', {
+                tag: tag.value,
+                dt: 'Mira Campaign',
+                dn: campaignData.value.name
+              })
+            }
+            console.log('✅ Tags added to campaign')
+          } catch (error) {
+            console.error('❌ Error adding tags to campaign:', error)
+            // Don't fail the whole process if tags fail
+          }
+        }
         
         // Emit event to refresh campaign list
         emit('campaign-created', { name: result.data.name })
