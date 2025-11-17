@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "format:TL-{YY}{MM}{DD}-{#####}",
  "creation": "2025-07-16 16:45:02.606218",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -287,10 +288,11 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-14 12:00:02.060017",
+ "modified": "2025-11-17 14:20:56.429897",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Talent",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {

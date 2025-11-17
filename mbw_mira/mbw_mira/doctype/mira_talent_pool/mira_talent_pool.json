@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "format:TLP-{YY}{MM}{DD}-{#####}",
  "creation": "2025-10-04 08:44:37.770359",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -52,10 +53,11 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-12 09:53:38.789226",
+ "modified": "2025-11-17 14:21:18.316556",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Talent Pool",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {
