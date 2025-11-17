@@ -543,11 +543,11 @@ const testShareJobPosting = async () => {
 
     const result = await call('mbw_mira.api.external_connections.share_job_posting', {
       connection_id: selectedPage.connection_id,
-      job_id: props.campaignId || 'test_job_id',
+      job_id: props.name || 'test_job_id',
       message: localFacebookContent.value.content,
       schedule_type: 'now',
       image_url: localFacebookContent.value.image || '',
-      campaign_id: props.campaignId,
+      campaign_id: props.name,  // ← Sửa: Dùng props.name thay vì props.campaignId
       ladipage_url: props.ladipageUrl,
       platform_type: selectedPage.platform_type || 'facebook',
       scheduled_time: localFacebookContent.value.schedule_time
