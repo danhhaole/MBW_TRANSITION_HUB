@@ -277,6 +277,24 @@
 import { ref, computed } from 'vue'
 import { FeatherIcon, Button, FormControl, Dialog, TextEditor, Popover } from 'frappe-ui'
 import ActionEditor from '../molecules/ActionEditor.vue'
+import { 
+  CAMPAIGN_TYPES,
+  getTriggerTypes, 
+  getActionTypes,
+  getTriggerIcon as getCampaignTriggerIcon, 
+  getTriggerLabel as getCampaignTriggerLabel, 
+  getTriggerDescription as getCampaignTriggerDescription,
+  getActionIcon as getCampaignActionIcon, 
+  getActionLabel as getCampaignActionLabel, 
+  getActionDescription as getCampaignActionDescription
+} from '../../../config/campaigns'
+
+// Campaign type for this component
+const CAMPAIGN_TYPE = CAMPAIGN_TYPES.NURTURING
+
+// Get campaign-specific trigger and action types
+const triggerTypeOptions = getTriggerTypes(CAMPAIGN_TYPE)
+const actionTypeOptions = getActionTypes(CAMPAIGN_TYPE)
 
 const props = defineProps({
   triggers: {
@@ -316,44 +334,11 @@ const editingAction = ref(null)
 const editingTriggerIndex = ref(null)
 const editingActionIndex = ref(null)
 
-// Trigger types - From images and doctype
-const triggerTypeOptions = [
-  // From images - I. TRIGGERS (Event triggers)
-  { label: __('Form Submission'), value: 'ON_FORM_SUBMISSION' },
-  { label: __('Link Click'), value: 'ON_LINK_CLICK' },
-  { label: __('Email Open'), value: 'ON_EMAIL_OPEN' },
-  { label: __('Job Application'), value: 'ON_JOB_APPLICATION' },
-  { label: __('Unsubscribe'), value: 'ON_UNSUBSCRIBE' },
-  { label: __('Tag Added'), value: 'ON_TAG_ADDED' },
-  { label: __('Tag Removed'), value: 'ON_TAG_REMOVED' },
-  { label: __('Status Change'), value: 'ON_STATUS_CHANGED' },
-  { label: __('Score Threshold Reached'), value: 'ON_SCORE_REACHED' },
-  { label: __('Email Bounce'), value: 'ON_EMAIL_BOUNCE' },
-  { label: __('Inactivity Timeout'), value: 'ON_INACTIVITY_TIMEOUT' },
-  { label: __('Flow Step Completed'), value: 'ON_SEQUENCE_COMPLETED' }
-]
-
 // Filter out already added trigger types
 const availableTriggerTypes = computed(() => {
   const existingTypes = localTriggers.value.map(t => t.trigger_type)
   return triggerTypeOptions.filter(option => !existingTypes.includes(option.value))
 })
-
-// Action types - From images and doctype
-const actionTypeOptions = [
-  // From images - II. ACTIONS (Automated actions)
-  { label: __('Send Email'), value: 'EMAIL' },
-  { label: __('Send Zalo/SMS Message'), value: 'MESSAGE' },
-  { label: __('Update Field Value'), value: 'ADD_CUSTOM_FIELD' },
-  { label: __('Add/Remove Tag'), value: 'ADD_TAG' },
-  { label: __('Change Status'), value: 'REMOVE_TAG' },
-  { label: __('Stop Tracking'), value: 'UNSUBSCRIBE' },
-  { label: __('Start Flow'), value: 'START_FLOW' },
-  { label: __('Stop Flow'), value: 'STOP_FLOW' },
-  { label: __('Create Task'), value: 'SENT_NOTIFICATION' },
-  { label: __('Send Internal Notification'), value: 'EXTERNAL_REQUEST' },
-  { label: __('Handoff to ATS'), value: 'AI_CALL' }
-]
 
 const statusOptions = [
   { 
@@ -426,86 +411,13 @@ const handleActionTypeChange = (action) => {
   }
 }
 
-// Helper functions
-const getTriggerIcon = (triggerType) => {
-  const iconMap = {
-    'ON_CREATE': 'user-plus',
-    'ON_LINK_CLICK': 'mouse-pointer',
-    'ON_EMAIL_OPEN': 'mail-open',
-    'ON_USER_RESPONSE': 'message-square',
-    'ON_UNSUBSCRIBE': 'user-minus',
-    'ON_TAG_ADDED': 'tag',
-    'ON_TAG_REMOVED': 'tag',
-    'ON_STATUS_CHANGED': 'refresh-cw',
-    'ON_SCORE_REACHED': 'trending-up',
-    'ON_EMAIL_BOUNCE': 'mail-x',
-    'ON_INACTIVITY_TIMEOUT': 'clock',
-    'ON_SEQUENCE_COMPLETED': 'check-circle'
-  }
-  return iconMap[triggerType] || 'zap'
-}
-
-const getTriggerLabel = (triggerType) => {
-  const trigger = triggerTypeOptions.find(t => t.value === triggerType)
-  return trigger ? trigger.label : triggerType
-}
-
-const getTriggerDescription = (triggerType) => {
-  const descriptions = {
-    'ON_CREATE': __('Talent fills out form or submits application'),
-    'ON_LINK_CLICK': __('Talent clicks on a link in email or message'),
-    'ON_EMAIL_OPEN': __('Talent opens an email from the campaign'),
-    'ON_USER_RESPONSE': __('Talent responds or applies to job posting'),
-    'ON_UNSUBSCRIBE': __('Talent unsubscribes from campaign'),
-    'ON_TAG_ADDED': __('A specific tag is added to talent'),
-    'ON_TAG_REMOVED': __('A specific tag is removed from talent'),
-    'ON_STATUS_CHANGED': __('Talent status changes (e.g., recruited, rejected)'),
-    'ON_SCORE_REACHED': __('Talent engagement score reaches threshold'),
-    'ON_EMAIL_BOUNCE': __('Email bounces (invalid email address)'),
-    'ON_INACTIVITY_TIMEOUT': __('Talent shows no activity for set period'),
-    'ON_SEQUENCE_COMPLETED': __('Previous flow step is completed')
-  }
-  return descriptions[triggerType] || ''
-}
-
-const getActionIcon = (actionType) => {
-  const iconMap = {
-    'EMAIL': 'mail',
-    'MESSAGE': 'message-circle',
-    'ADD_CUSTOM_FIELD': 'edit',
-    'ADD_TAG': 'tag',
-    'REMOVE_TAG': 'tag',
-    'UNSUBSCRIBE': 'user-x',
-    'START_FLOW': 'play',
-    'STOP_FLOW': 'stop-circle',
-    'SENT_NOTIFICATION': 'bell',
-    'EXTERNAL_REQUEST': 'external-link',
-    'AI_CALL': 'phone'
-  }
-  return iconMap[actionType] || 'zap'
-}
-
-const getActionLabel = (actionType) => {
-  const action = actionTypeOptions.find(a => a.value === actionType)
-  return action ? action.label : actionType
-}
-
-const getActionDescription = (type) => {
-  const descriptions = {
-    'EMAIL': __('Send automated email to talent'),
-    'MESSAGE': __('Send Zalo/SMS message to talent'),
-    'ADD_CUSTOM_FIELD': __('Update custom field data'),
-    'ADD_TAG': __('Add tag to talent profile'),
-    'REMOVE_TAG': __('Remove tag from talent profile'),
-    'UNSUBSCRIBE': __('Stop tracking talent'),
-    'START_FLOW': __('Start another automation flow'),
-    'STOP_FLOW': __('Stop current automation flow'),
-    'SENT_NOTIFICATION': __('Create task or notification'),
-    'EXTERNAL_REQUEST': __('Send internal notification to team'),
-    'AI_CALL': __('Handoff talent to ATS system')
-  }
-  return descriptions[type] || ''
-}
+// Wrapper functions for campaign-specific helpers (keep same names for template compatibility)
+const getTriggerIcon = (triggerType) => getCampaignTriggerIcon(triggerType, CAMPAIGN_TYPE)
+const getTriggerLabel = (triggerType) => getCampaignTriggerLabel(triggerType, CAMPAIGN_TYPE)
+const getTriggerDescription = (triggerType) => getCampaignTriggerDescription(triggerType, CAMPAIGN_TYPE)
+const getActionIcon = (actionType) => getCampaignActionIcon(actionType, CAMPAIGN_TYPE)
+const getActionLabel = (actionType) => getCampaignActionLabel(actionType, CAMPAIGN_TYPE)
+const getActionDescription = (actionType) => getCampaignActionDescription(actionType, CAMPAIGN_TYPE)
 
 const stripHtml = (html) => {
   if (!html) return ''
@@ -578,6 +490,23 @@ const getActionPreview = (action) => {
       
     case 'UNSUBSCRIBE':
       return __('Unsubscribe talent')
+      
+    case 'UPDATE_FIELD_VALUE':
+      return `${__('Update')} ${params.field_label || params.field_name || action.field_name || '...'} = ${params.field_value || action.field_value || '...'}`
+      
+    case 'CHANGE_STATUS':
+      return `${__('Change to')}: ${params.new_status || action.new_status || '...'}`
+      
+    case 'STOP_TRACKING':
+      const stop_reason = params.stop_reason || action.stop_reason
+      return stop_reason ? `${__('Stop tracking')}: ${stop_reason}` : __('Stop tracking this talent')
+      
+    case 'INTERNAL_NOTIFICATION':
+      return `${params.notification_title || action.notification_title || __('Notification')}`
+      
+    case 'HANDOFF_TO_ATS':
+      const notes = params.transfer_notes || action.transfer_notes
+      return notes ? `${__('Handoff to')} ${params.ats_system || action.ats_system || 'ATS'}: ${notes}` : `${__('Handoff to')} ${params.ats_system || action.ats_system || 'ATS'}`
       
     default:
       // Fallback to old content field

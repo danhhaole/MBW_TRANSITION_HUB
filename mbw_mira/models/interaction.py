@@ -1,4 +1,4 @@
-class Mira Interaction:
+class MiraInteraction:
     def __init__(self, candidate_id, interaction_type, interaction_date):
         self.candidate_id = candidate_id
         self.interaction_type = interaction_type

@@ -621,7 +621,7 @@ const handleWizardSuccess = async (campaign) => {
   // Show success message
   const campaignName = campaign?.campaign_name || campaign?.name || 'Campaign';
   const action = isEdit ? 'updated' : 'created';
-  showToast(__(`Campaign "${campaignName}" ${action} successfully!`), "success");
+  // showToast(__(`Campaign "${campaignName}" ${action} successfully!`), "success");
 };
 
 const handleCampaignCreated = async (campaign) => {

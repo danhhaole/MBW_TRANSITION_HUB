@@ -1,4 +1,4 @@
-class Mira Segment:
+class MiraSegment:
     def __init__(self, segment_name, criteria):
         self.segment_name = segment_name
         self.criteria = criteria

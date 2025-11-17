@@ -39,6 +39,30 @@
         </div>
 
         <!-- Content Editors based on Action Type -->
+        <!-- 
+          NOTE: Based on documentation, only 8 action types are active:
+          1. EMAIL ✅
+          2. MESSAGE ✅
+          3. UPDATE_FIELD_VALUE ✅
+          4. ADD_TAG ✅
+          5. REMOVE_TAG ✅
+          6. CHANGE_STATUS ✅
+          7. STOP_TRACKING ✅
+          8. INTERNAL_NOTIFICATION ✅
+          9. HANDOFF_TO_ATS ✅
+          
+          The following action types are kept for future use but NOT in actionTypeOptions:
+          - ADD_CUSTOM_FIELD
+          - EXTERNAL_REQUEST
+          - AI_CALL
+          - FACEBOOK
+          - SMS
+          - ZALO
+          - SMART_DELAY
+          - REMOVE_CUSTOM_FIELD
+          - SENT_NOTIFICATION
+          - UNSUBSCRIBE
+        -->
         <div class="space-y-4">
           <!-- EMAIL Action -->
           <div v-if="localAction.action_type === 'EMAIL'" class="space-y-4">
@@ -60,6 +84,22 @@
               :content="emailContent"
               @update:content="handleEmailContentUpdate"
             />
+            
+            <!-- Sender Account Selection -->
+            <div>
+              <label class="block text-xs font-medium text-gray-700 mb-1">
+                {{ __('Sender Account') }}
+                <span class="text-red-500">*</span>
+              </label>
+              <Autocomplete
+                v-model="selectedSenderAccount"
+                :options="emailAccountOptions"
+                :placeholder="__('Select email account...')"
+              />
+              <p class="text-xs text-gray-500 mt-1">
+                {{ __('Select the email account to send from') }}
+              </p>
+            </div>
           </div>
 
           <!-- MESSAGE Action (Zalo/SMS) -->
@@ -312,197 +352,6 @@
             </div>
           </div>
 
-          <!-- START_FLOW Action -->
-          <div v-else-if="localAction.action_type === 'START_FLOW'" class="space-y-4">
-            <div class="bg-teal-50 border border-teal-200 rounded-lg p-3 mb-4">
-              <div class="flex items-start">
-                <FeatherIcon name="play-circle" class="h-4 w-4 text-teal-600 mt-0.5 mr-2" />
-                <div>
-                  <p class="text-sm font-medium text-teal-900">
-                    {{ __('Start Another Flow') }}
-                  </p>
-                  <p class="text-xs text-teal-700">
-                    {{ __('This action will trigger another automation flow when executed') }}
-                  </p>
-                </div>
-              </div>
-            </div>
-            
-            <div>
-              <label class="block text-xs font-medium text-gray-700 mb-1">
-                {{ __('Select Flow to Start') }}
-                <span class="text-red-500">*</span>
-              </label>
-              <Autocomplete
-                v-model="selectedFlowId"
-                :options="flowOptions"
-                :placeholder="__('Search and select flow...')"
-              />
-              <p class="text-xs text-gray-500 mt-1">
-                {{ __('Choose which flow to start when this action triggers') }}
-              </p>
-            </div>
-            
-            <!-- Show selected flow info -->
-            <div v-if="selectedFlow" class="bg-gray-50 border border-gray-200 rounded-lg p-3">
-              <div class="space-y-2">
-                <div class="flex items-center justify-between">
-                  <span class="text-xs font-medium text-gray-700">{{ selectedFlow.title }}</span>
-                  <span class="text-xs px-2 py-0.5 rounded" :class="{
-                    'bg-green-100 text-green-700': selectedFlow.status === 'Active',
-                    'bg-yellow-100 text-yellow-700': selectedFlow.status === 'Paused',
-                    'bg-gray-100 text-gray-700': selectedFlow.status === 'Draft'
-                  }">
-                    {{ selectedFlow.status }}
-                  </span>
-                </div>
-                <div class="text-xs text-gray-600">
-                  {{ selectedFlow.description || __('No description') }}
-                </div>
-                <div class="flex items-center space-x-2 text-xs text-gray-500">
-                  <span>{{ __('Type') }}: {{ selectedFlow.type }}</span>
-                  <span>•</span>
-                  <span>{{ selectedFlow.name }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- STOP_FLOW Action -->
-          <div v-else-if="localAction.action_type === 'STOP_FLOW'" class="space-y-4">
-            <div class="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-4">
-              <div class="flex items-start">
-                <FeatherIcon name="stop-circle" class="h-4 w-4 text-orange-600 mt-0.5 mr-2" />
-                <div>
-                  <p class="text-sm font-medium text-orange-900">
-                    {{ __('Stop a Flow') }}
-                  </p>
-                  <p class="text-xs text-orange-700">
-                    {{ __('This action will stop a running automation flow') }}
-                  </p>
-                </div>
-              </div>
-            </div>
-            
-            <div>
-              <label class="block text-xs font-medium text-gray-700 mb-1">
-                {{ __('Select Flow to Stop') }}
-                <span class="text-red-500">*</span>
-              </label>
-              <Autocomplete
-                v-model="selectedFlowId"
-                :options="flowOptions"
-                :placeholder="__('Search and select flow...')"
-              />
-              <p class="text-xs text-gray-500 mt-1">
-                {{ __('Choose which flow to stop when this action triggers') }}
-              </p>
-            </div>
-            
-            <!-- Show selected flow info -->
-            <div v-if="selectedFlow" class="bg-gray-50 border border-gray-200 rounded-lg p-3">
-              <div class="space-y-2">
-                <div class="flex items-center justify-between">
-                  <span class="text-xs font-medium text-gray-700">{{ selectedFlow.title }}</span>
-                  <span class="text-xs px-2 py-0.5 rounded" :class="{
-                    'bg-green-100 text-green-700': selectedFlow.status === 'Active',
-                    'bg-yellow-100 text-yellow-700': selectedFlow.status === 'Paused',
-                    'bg-gray-100 text-gray-700': selectedFlow.status === 'Draft'
-                  }">
-                    {{ selectedFlow.status }}
-                  </span>
-                </div>
-                <div class="text-xs text-gray-600">
-                  {{ selectedFlow.description || __('No description') }}
-                </div>
-                <div class="flex items-center space-x-2 text-xs text-gray-500">
-                  <span>{{ __('Type') }}: {{ selectedFlow.type }}</span>
-                  <span>•</span>
-                  <span>{{ selectedFlow.name }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- SENT_NOTIFICATION Action -->
-          <div v-else-if="localAction.action_type === 'SENT_NOTIFICATION'" class="space-y-4">
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-              <div class="flex items-start">
-                <FeatherIcon name="check-square" class="h-4 w-4 text-blue-600 mt-0.5 mr-2" />
-                <div>
-                  <p class="text-sm font-medium text-blue-900">
-                    {{ __('Create Task') }}
-                  </p>
-                  <p class="text-xs text-blue-700">
-                    {{ __('This action will create a task and assign it to a team member') }}
-                  </p>
-                </div>
-              </div>
-            </div>
-            
-            <FormControl
-              type="text"
-              :label="__('Task Subject')"
-              v-model="localAction.task_subject"
-              :placeholder="__('Enter task subject...')"
-              required
-            />
-            
-            <FormControl
-              type="textarea"
-              :label="__('Task Description')"
-              v-model="localAction.task_description"
-              :placeholder="__('Describe what needs to be done...')"
-              rows="3"
-            />
-            
-            <div>
-              <label class="block text-xs font-medium text-gray-700 mb-1">
-                {{ __('Assign To') }}
-              </label>
-              <Autocomplete
-                v-model="selectedAssignee"
-                :options="userOptions"
-                :placeholder="__('Search and select user...')"
-              />
-              <p class="text-xs text-gray-500 mt-1">
-                {{ __('Select who should complete this task') }}
-              </p>
-            </div>
-            
-            <div v-if="selectedAssigneeUser" class="bg-gray-50 border border-gray-200 rounded-lg p-3">
-              <div class="flex items-center space-x-2">
-                <div class="h-8 w-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-medium">
-                  {{ selectedAssigneeUser.full_name?.charAt(0) || 'U' }}
-                </div>
-                <div>
-                  <p class="text-xs font-medium text-gray-900">{{ selectedAssigneeUser.full_name }}</p>
-                  <p class="text-xs text-gray-500">{{ selectedAssigneeUser.name }}</p>
-                </div>
-              </div>
-            </div>
-            
-            <div class="grid grid-cols-2 gap-3">
-              <FormControl
-                type="select"
-                :label="__('Priority')"
-                v-model="localAction.task_priority"
-                :options="[
-                  { label: __('Low'), value: 'Low' },
-                  { label: __('Medium'), value: 'Medium' },
-                  { label: __('High'), value: 'High' },
-                  { label: __('Urgent'), value: 'Urgent' }
-                ]"
-              />
-              
-              <FormControl
-                type="date"
-                :label="__('Due Date')"
-                v-model="localAction.task_due_date"
-              />
-            </div>
-          </div>
-
           <!-- EXTERNAL_REQUEST Action -->
           <div v-else-if="localAction.action_type === 'EXTERNAL_REQUEST'" class="space-y-4">
             <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-3 mb-4">
@@ -586,8 +435,418 @@
             />
           </div>
 
+          <!-- FACEBOOK Action -->
+          <div v-else-if="localAction.action_type === 'FACEBOOK'" class="space-y-4">
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+              <div class="flex items-start">
+                <FeatherIcon name="facebook" class="h-4 w-4 text-blue-600 mt-0.5 mr-2" />
+                <div>
+                  <p class="text-sm font-medium text-blue-900">
+                    {{ __('Send Facebook Message') }}
+                  </p>
+                  <p class="text-xs text-blue-700">
+                    {{ __('This action will send a message via Facebook Messenger') }}
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <MessengerContentEditor
+              :content="localAction.content || { blocks: [] }"
+              @update:content="localAction.content = $event"
+            />
+          </div>
+
+          <!-- SMS Action -->
+          <div v-else-if="localAction.action_type === 'SMS'" class="space-y-4">
+            <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+              <div class="flex items-start">
+                <FeatherIcon name="smartphone" class="h-4 w-4 text-green-600 mt-0.5 mr-2" />
+                <div>
+                  <p class="text-sm font-medium text-green-900">
+                    {{ __('Send SMS') }}
+                  </p>
+                  <p class="text-xs text-green-700">
+                    {{ __('This action will send an SMS message to talent') }}
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <FormControl
+              type="textarea"
+              :label="__('SMS Message')"
+              v-model="localAction.content"
+              :placeholder="__('Enter SMS message...')"
+              rows="4"
+              :maxlength="160"
+              required
+            />
+            <div class="flex justify-between items-center mt-2">
+              <p class="text-xs text-gray-500">
+                {{ __('Keep it short and clear (max 160 characters)') }}
+              </p>
+              <span class="text-xs text-gray-500">
+                {{ (localAction.content?.length || 0) }}/160
+              </span>
+            </div>
+          </div>
+
+          <!-- ZALO Action -->
+          <div v-else-if="localAction.action_type === 'ZALO'" class="space-y-4">
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+              <div class="flex items-start">
+                <FeatherIcon name="message-square" class="h-4 w-4 text-blue-600 mt-0.5 mr-2" />
+                <div>
+                  <p class="text-sm font-medium text-blue-900">
+                    {{ __('Send Zalo Message') }}
+                  </p>
+                  <p class="text-xs text-blue-700">
+                    {{ __('This action will send a message via Zalo') }}
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <ZaloContentEditor
+              :content="localAction.content || { blocks: [] }"
+              @update:content="localAction.content = $event"
+            />
+          </div>
+
+          <!-- INTERNAL_NOTIFICATION Action -->
+          <div v-else-if="localAction.action_type === 'INTERNAL_NOTIFICATION'" class="space-y-4">
+            <div class="bg-purple-50 border border-purple-200 rounded-lg p-3 mb-4">
+              <div class="flex items-start">
+                <FeatherIcon name="bell-ring" class="h-4 w-4 text-purple-600 mt-0.5 mr-2" />
+                <div>
+                  <p class="text-sm font-medium text-purple-900">
+                    {{ __('Send Internal Notification') }}
+                  </p>
+                  <p class="text-xs text-purple-700">
+                    {{ __('This action will send a notification to team members') }}
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <FormControl
+              type="text"
+              :label="__('Notification Title')"
+              v-model="localAction.notification_title"
+              :placeholder="__('Enter notification title...')"
+              required
+            />
+            
+            <FormControl
+              type="textarea"
+              :label="__('Notification Message')"
+              v-model="localAction.notification_message"
+              :placeholder="__('Enter the message...')"
+              rows="4"
+              required
+            />
+            
+            <div>
+              <label class="block text-xs font-medium text-gray-700 mb-1">
+                {{ __('Recipients') }}
+                <span class="text-red-500">*</span>
+              </label>
+              <Autocomplete
+                v-model="selectedRecipients"
+                :options="userOptions"
+                :placeholder="__('Search and select users...')"
+                multiple
+              />
+              <p class="text-xs text-gray-500 mt-1">
+                {{ __('Select one or more users to receive this notification') }}
+              </p>
+            </div>
+            
+            <div v-if="recipientUsers.length > 0" class="bg-gray-50 border border-gray-200 rounded-lg p-3">
+              <p class="text-xs font-medium text-gray-700 mb-2">
+                {{ __('Selected Recipients') }} ({{ recipientUsers.length }})
+              </p>
+              <div class="flex flex-wrap gap-2">
+                <div v-for="user in recipientUsers" :key="user.name" 
+                     class="flex items-center space-x-1 bg-white border border-gray-300 rounded-full px-2 py-1">
+                  <div class="h-5 w-5 rounded-full bg-purple-500 text-white flex items-center justify-center text-xs">
+                    {{ user.full_name?.charAt(0) || 'U' }}
+                  </div>
+                  <span class="text-xs text-gray-900">{{ user.full_name || user.name }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SMART_DELAY Action -->
+          <div v-else-if="localAction.action_type === 'SMART_DELAY'" class="space-y-4">
+            <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-3 mb-4">
+              <div class="flex items-start">
+                <FeatherIcon name="clock" class="h-4 w-4 text-indigo-600 mt-0.5 mr-2" />
+                <div>
+                  <p class="text-sm font-medium text-indigo-900">
+                    {{ __('Smart Delay') }}
+                  </p>
+                  <p class="text-xs text-indigo-700">
+                    {{ __('Intelligently delay next action based on talent behavior') }}
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <FormControl
+              type="number"
+              :label="__('Delay Duration (minutes)')"
+              v-model="localAction.delay_duration"
+              :placeholder="__('Enter delay in minutes...')"
+              required
+            />
+            
+            <FormControl
+              type="select"
+              :label="__('Delay Type')"
+              v-model="localAction.delay_type"
+              :options="[
+                { label: __('Fixed Delay'), value: 'fixed' },
+                { label: __('Smart Delay'), value: 'smart' },
+                { label: __('Wait Until Time'), value: 'wait_until' }
+              ]"
+            />
+          </div>
+
+          <!-- REMOVE_CUSTOM_FIELD Action -->
+          <div v-else-if="localAction.action_type === 'REMOVE_CUSTOM_FIELD'" class="space-y-4">
+            <div class="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-4">
+              <div class="flex items-start">
+                <FeatherIcon name="minus-square" class="h-4 w-4 text-orange-600 mt-0.5 mr-2" />
+                <div>
+                  <p class="text-sm font-medium text-orange-900">
+                    {{ __('Remove Custom Field') }}
+                  </p>
+                  <p class="text-xs text-orange-700">
+                    {{ __('Remove a custom field from talent profile') }}
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-xs font-medium text-gray-700 mb-1">
+                {{ __('Select Field to Remove') }}
+                <span class="text-red-500">*</span>
+              </label>
+              <Autocomplete
+                v-model="selectedFieldName"
+                :options="talentFieldOptions"
+                :placeholder="__('Search and select field...')"
+              />
+              <p class="text-xs text-gray-500 mt-1">
+                {{ __('Choose which field to remove from talent profile') }}
+              </p>
+            </div>
+          </div>
+
+          <!-- SENT_NOTIFICATION Action -->
+          <div v-else-if="localAction.action_type === 'SENT_NOTIFICATION'" class="space-y-4">
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+              <div class="flex items-start">
+                <FeatherIcon name="bell" class="h-4 w-4 text-blue-600 mt-0.5 mr-2" />
+                <div>
+                  <p class="text-sm font-medium text-blue-900">
+                    {{ __('Send Notification') }}
+                  </p>
+                  <p class="text-xs text-blue-700">
+                    {{ __('Send a notification to users or talent') }}
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <FormControl
+              type="text"
+              :label="__('Notification Title')"
+              v-model="localAction.notification_title"
+              :placeholder="__('Enter notification title...')"
+              required
+            />
+            
+            <FormControl
+              type="textarea"
+              :label="__('Notification Message')"
+              v-model="localAction.notification_message"
+              :placeholder="__('Enter notification message...')"
+              rows="4"
+              required
+            />
+          </div>
+
+          <!-- UPDATE_FIELD_VALUE Action -->
+          <div v-else-if="localAction.action_type === 'UPDATE_FIELD_VALUE'" class="space-y-4">
+            <div class="bg-purple-50 border border-purple-200 rounded-lg p-3 mb-4">
+              <div class="flex items-start">
+                <FeatherIcon name="edit" class="h-4 w-4 text-purple-600 mt-0.5 mr-2" />
+                <div>
+                  <p class="text-sm font-medium text-purple-900">
+                    {{ __('Update Field Value') }}
+                  </p>
+                  <p class="text-xs text-purple-700">
+                    {{ __('Update a specific field value in talent profile') }}
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-xs font-medium text-gray-700 mb-1">
+                {{ __('Select Field') }}
+                <span class="text-red-500">*</span>
+              </label>
+              <Autocomplete
+                v-model="selectedFieldName"
+                :options="talentFieldOptions"
+                :placeholder="__('Search and select field...')"
+              />
+            </div>
+            
+            <FormControl
+              type="text"
+              :label="__('New Value')"
+              v-model="localAction.field_value"
+              :placeholder="__('Enter new value...')"
+              required
+            />
+          </div>
+
+          <!-- CHANGE_STATUS Action -->
+          <div v-else-if="localAction.action_type === 'CHANGE_STATUS'" class="space-y-4">
+            <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+              <div class="flex items-start">
+                <FeatherIcon name="toggle-right" class="h-4 w-4 text-green-600 mt-0.5 mr-2" />
+                <div>
+                  <p class="text-sm font-medium text-green-900">
+                    {{ __('Change Status') }}
+                  </p>
+                  <p class="text-xs text-green-700">
+                    {{ __('Change talent status (Active, Paused, Completed, Cancelled)') }}
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <FormControl
+              type="select"
+              :label="__('New Status')"
+              v-model="localAction.new_status"
+              :options="[
+                { label: __('Active'), value: 'ACTIVE' },
+                { label: __('Paused'), value: 'PAUSED' },
+                { label: __('Completed'), value: 'COMPLETED' },
+                { label: __('Cancelled'), value: 'CANCELLED' }
+              ]"
+              required
+            />
+            
+            <FormControl
+              type="textarea"
+              :label="__('Reason (Optional)')"
+              v-model="localAction.status_reason"
+              :placeholder="__('Enter reason for status change...')"
+              rows="2"
+            />
+          </div>
+
+          <!-- STOP_TRACKING Action -->
+          <div v-else-if="localAction.action_type === 'STOP_TRACKING'" class="space-y-4">
+            <div class="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+              <div class="flex items-start">
+                <FeatherIcon name="user-minus" class="h-4 w-4 text-red-600 mt-0.5 mr-2" />
+                <div>
+                  <p class="text-sm font-medium text-red-900">
+                    {{ __('Stop Tracking') }}
+                  </p>
+                  <p class="text-xs text-red-700">
+                    {{ __('Stop tracking this talent in the system') }}
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <FormControl
+              type="textarea"
+              :label="__('Reason (Optional)')"
+              v-model="localAction.stop_reason"
+              :placeholder="__('Enter reason for stopping tracking...')"
+              rows="2"
+            />
+            
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+              <div class="flex items-start">
+                <FeatherIcon name="alert-triangle" class="h-4 w-4 text-yellow-600 mt-0.5 mr-2" />
+                <p class="text-xs text-yellow-800">
+                  {{ __('Warning: This will permanently stop tracking this talent. This action cannot be undone.') }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- HANDOFF_TO_ATS Action -->
+          <div v-else-if="localAction.action_type === 'HANDOFF_TO_ATS'" class="space-y-4">
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+              <div class="flex items-start">
+                <FeatherIcon name="send" class="h-4 w-4 text-blue-600 mt-0.5 mr-2" />
+                <div>
+                  <p class="text-sm font-medium text-blue-900">
+                    {{ __('Handoff to ATS') }}
+                  </p>
+                  <p class="text-xs text-blue-700">
+                    {{ __('Transfer talent to ATS system for recruitment process') }}
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <FormControl
+              type="text"
+              :label="__('ATS System')"
+              v-model="localAction.ats_system"
+              :placeholder="__('Enter ATS system name...')"
+              required
+            />
+            
+            <FormControl
+              type="textarea"
+              :label="__('Transfer Notes')"
+              v-model="localAction.transfer_notes"
+              :placeholder="__('Enter notes for ATS team...')"
+              rows="3"
+            />
+            
+            <FormControl
+              type="textarea"
+              :label="__('Handoff Data (JSON)')"
+              v-model="localAction.handoff_data"
+              :placeholder="__('Enter additional data as JSON...')"
+              rows="4"
+            />
+          </div>
+
           <!-- UNSUBSCRIBE Action -->
           <div v-else-if="localAction.action_type === 'UNSUBSCRIBE'" class="space-y-4">
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-4">
+              <div class="flex items-start">
+                <FeatherIcon name="user-x" class="h-4 w-4 text-gray-600 mt-0.5 mr-2" />
+                <div>
+                  <p class="text-sm font-medium text-gray-900">
+                    {{ __('Unsubscribe') }}
+                  </p>
+                  <p class="text-xs text-gray-700">
+                    {{ __('Unsubscribe talent from campaign communications') }}
+                  </p>
+                </div>
+              </div>
+            </div>
+            
             <FormControl
               type="textarea"
               :label="__('Unsubscribe Reason (Optional)')"
@@ -595,6 +854,15 @@
               :placeholder="__('Enter unsubscribe reason...')"
               rows="2"
             />
+          </div>
+
+          <!-- Default fallback for other action types -->
+          <div v-else class="space-y-4">
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
+              <p class="text-sm text-gray-700">
+                {{ __('Configuration for this action type will be available soon.') }}
+              </p>
+            </div>
           </div>
         </div>
 
@@ -627,7 +895,9 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { FeatherIcon, Button, FormControl, Dialog, Autocomplete, call } from 'frappe-ui'
 import DelaySelector from './DelaySelector.vue'
 import ZaloContentEditor from './ZaloContentEditor.vue'
+import MessengerContentEditor from './MessengerContentEditor.vue'
 import EmailContentEditor from './EmailContentEditor.vue'
+import { allActionTypes, actionIcons, actionDescriptions } from '../../../config/campaigns/commonConfig'
 
 const props = defineProps({
   show: {
@@ -665,6 +935,10 @@ const loadingFlows = ref(false)
 // Users state
 const users = ref([])
 const loadingUsers = ref(false)
+
+// Email Accounts state
+const emailAccounts = ref([])
+const loadingEmailAccounts = ref(false)
 
 // Computed tag options for Autocomplete
 const tagOptions = computed(() => {
@@ -808,6 +1082,25 @@ const userOptions = computed(() => {
     full_name: user.full_name,
     email: user.email
   }))
+})
+
+// Computed email account options for Autocomplete
+const emailAccountOptions = computed(() => {
+  return emailAccounts.value.map(account => ({
+    label: account.email_account_name || account.name,
+    value: account.name,
+    description: account.email_id || account.name
+  }))
+})
+
+// Selected sender account for EMAIL action
+const selectedSenderAccount = computed({
+  get: () => localAction.value.sender_account,
+  set: (value) => {
+    const accountId = typeof value === 'object' ? value.value : value
+    localAction.value.sender_account = accountId
+    console.log('📧 Sender account selected:', accountId)
+  }
 })
 
 // Selected assignee for SENT_NOTIFICATION (single user)
@@ -972,12 +1265,36 @@ const loadUsers = async () => {
   }
 }
 
+// Load email accounts from API
+const loadEmailAccounts = async () => {
+  try {
+    loadingEmailAccounts.value = true
+    const result = await call('frappe.client.get_list', {
+      doctype: 'Email Account',
+      fields: ['name', 'email_account_name', 'email_id', 'enable_outgoing'],
+      filters: [['enable_outgoing', '=', 1]],
+      order_by: 'email_account_name asc',
+      limit_page_length: 0
+    })
+    
+    if (result) {
+      emailAccounts.value = result
+      console.log('✅ Loaded email accounts:', emailAccounts.value.length)
+    }
+  } catch (error) {
+    console.error('❌ Error loading email accounts:', error)
+  } finally {
+    loadingEmailAccounts.value = false
+  }
+}
+
 // Load tags on mount
 onMounted(() => {
   loadTags()
   loadTalentFields()
   loadFlows()
   loadUsers()
+  loadEmailAccounts()
 })
 
 // Watch for action changes
@@ -985,6 +1302,19 @@ watch(() => props.action, (newAction) => {
   console.log('👀 ActionEditor received action prop:', newAction)
   if (newAction) {
     localAction.value = { ...newAction }
+    
+    // Unpack action_parameters into top-level fields for form binding
+    if (newAction.action_parameters) {
+      const params = typeof newAction.action_parameters === 'string'
+        ? JSON.parse(newAction.action_parameters)
+        : newAction.action_parameters
+      
+      // Merge parameters into localAction for easier form binding
+      Object.assign(localAction.value, params)
+      
+      console.log('📦 Unpacked action_parameters:', params)
+    }
+    
     console.log('📝 ActionEditor localAction set to:', localAction.value)
     
     // Log tag-specific fields for debugging
@@ -998,20 +1328,8 @@ watch(() => props.action, (newAction) => {
   }
 }, { immediate: true, deep: true })
 
-// Action type options
-const actionTypeOptions = [
-  { label: __('Send Email'), value: 'EMAIL' },
-  { label: __('Send Zalo/SMS Message'), value: 'MESSAGE' },
-  { label: __('Update Field Value'), value: 'ADD_CUSTOM_FIELD' },
-  { label: __('Add Tag'), value: 'ADD_TAG' },
-  { label: __('Remove Tag'), value: 'REMOVE_TAG' },
-  { label: __('Stop Tracking'), value: 'UNSUBSCRIBE' },
-  { label: __('Start Flow'), value: 'START_FLOW' },
-  { label: __('Stop Flow'), value: 'STOP_FLOW' },
-  { label: __('Create Task'), value: 'SENT_NOTIFICATION' },
-  { label: __('Send Internal Notification'), value: 'EXTERNAL_REQUEST' },
-  { label: __('Handoff to ATS'), value: 'AI_CALL' }
-]
+// Action type options - Imported from commonConfig (9 action types based on documentation)
+const actionTypeOptions = allActionTypes
 
 const channelOptions = [
   { label: __('Email'), value: 'Email' },
@@ -1025,22 +1343,9 @@ const messageChannelOptions = [
   { label: __('SMS'), value: 'SMS' }
 ]
 
-// Helper functions
+// Helper functions - Using imported config from commonConfig
 const getActionIcon = (actionType) => {
-  const iconMap = {
-    'EMAIL': 'mail',
-    'MESSAGE': 'message-circle',
-    'ADD_CUSTOM_FIELD': 'edit',
-    'ADD_TAG': 'tag',
-    'REMOVE_TAG': 'tag',
-    'UNSUBSCRIBE': 'user-x',
-    'START_FLOW': 'play',
-    'STOP_FLOW': 'stop-circle',
-    'SENT_NOTIFICATION': 'bell',
-    'EXTERNAL_REQUEST': 'external-link',
-    'AI_CALL': 'phone'
-  }
-  return iconMap[actionType] || 'zap'
+  return actionIcons[actionType] || 'zap'
 }
 
 const getActionLabel = (actionType) => {
@@ -1049,20 +1354,7 @@ const getActionLabel = (actionType) => {
 }
 
 const getActionDescription = (actionType) => {
-  const descriptions = {
-    'EMAIL': __('Send automated email to talent'),
-    'MESSAGE': __('Send Zalo/SMS message to talent'),
-    'ADD_CUSTOM_FIELD': __('Update custom field data'),
-    'ADD_TAG': __('Add tag to talent profile'),
-    'REMOVE_TAG': __('Remove tag from talent profile'),
-    'UNSUBSCRIBE': __('Stop tracking talent'),
-    'START_FLOW': __('Start another automation flow'),
-    'STOP_FLOW': __('Stop current automation flow'),
-    'SENT_NOTIFICATION': __('Create task or notification'),
-    'EXTERNAL_REQUEST': __('Send internal notification to team'),
-    'AI_CALL': __('Handoff talent to ATS system')
-  }
-  return descriptions[actionType] || ''
+  return actionDescriptions[actionType] || ''
 }
 
 const needsChannelForAction = (actionType) => {
@@ -1126,8 +1418,6 @@ const save = () => {
       actionParams.email_content = localAction.value.email_content
       actionParams.attachments = localAction.value.attachments || []
       actionParams.sender_account = localAction.value.sender_account || null
-      // Keep 'content' for backward compatibility
-      actionParams.content = localAction.value.email_content
       break
     case 'MESSAGE':
       actionParams.channel = localAction.value.channel_type
@@ -1186,6 +1476,37 @@ const save = () => {
       break
     case 'UNSUBSCRIBE':
       actionParams.unsubscribe_reason = localAction.value.unsubscribe_reason
+      break
+    case 'UPDATE_FIELD_VALUE':
+      actionParams.field_name = localAction.value.field_name
+      actionParams.field_value = localAction.value.field_value
+      // Include field type and label for backend validation
+      if (selectedField.value) {
+        actionParams.field_type = selectedField.value.fieldtype
+        actionParams.field_label = selectedField.value.label
+      }
+      break
+    case 'CHANGE_STATUS':
+      actionParams.new_status = localAction.value.new_status
+      actionParams.status_reason = localAction.value.status_reason
+      break
+    case 'STOP_TRACKING':
+      actionParams.stop_reason = localAction.value.stop_reason
+      break
+    case 'INTERNAL_NOTIFICATION':
+      actionParams.notification_title = localAction.value.notification_title
+      actionParams.notification_message = localAction.value.notification_message
+      actionParams.recipients = localAction.value.recipients || selectedRecipients.value
+      // Include recipients metadata for display
+      if (recipientUsers.value && recipientUsers.value.length > 0) {
+        actionParams.recipient_names = recipientUsers.value.map(u => u.full_name || u.name).join(', ')
+        actionParams.recipient_count = recipientUsers.value.length
+      }
+      break
+    case 'HANDOFF_TO_ATS':
+      actionParams.ats_system = localAction.value.ats_system
+      actionParams.transfer_notes = localAction.value.transfer_notes
+      actionParams.handoff_data = localAction.value.handoff_data
       break
   }
   

@@ -30,7 +30,7 @@
    "fieldname": "action_type",
    "fieldtype": "Select",
    "label": "Action Type",
-   "options": "MESSAGE\nFACEBOOK\nSMS\nEMAIL\nZALO\nSTART_FLOW\nSMART_DELAY\nAI_CALL\nADD_TAG\nREMOVE_TAG\nADD_CUSTOM_FIELD\nREMOVE_CUSTOM_FIELD\nEXTERNAL_REQUEST\nSENT_NOTIFICATION\nUNSUBSCRIBE"
+   "options": "MESSAGE\nFACEBOOK\nSMS\nEMAIL\nZALO\nSTART_FLOW\nSTOP_FLOW\nSMART_DELAY\nAI_CALL\nADD_TAG\nREMOVE_TAG\nADD_CUSTOM_FIELD\nREMOVE_CUSTOM_FIELD\nEXTERNAL_REQUEST\nSENT_NOTIFICATION\nUNSUBSCRIBE\nCREATE_TASK\nUPDATE_FIELD_VALUE\nCHANGE_STATUS\nSTOP_TRACKING\nINTERNAL_NOTIFICATION\nHANDOFF_TO_ATS"
   },
   {
    "fieldname": "channel_type",
@@ -93,7 +93,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-11-11 08:38:23.484758",
+ "modified": "2025-11-17 09:02:48.660710",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Flow Action",
