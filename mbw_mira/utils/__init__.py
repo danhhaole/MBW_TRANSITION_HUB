@@ -40,7 +40,7 @@ def send_email_job(task_id, action):
     condition = {}
     if hasattr(action, "action_parameters"):
         condition = json.loads(action.action_parameters)
-    temp = condition.get("template")
+    temp = condition
     message = render_template(temp.get("email_content"), context)
     subject = "Thông báo"
     if condition and hasattr(temp, "email_subject"):
@@ -48,6 +48,7 @@ def send_email_job(task_id, action):
     talent_email = talentprofiles.email
     template = None
     template_args = None
+    sender = temp.get("sender_account")
     if not talent_email:
         logger.error("[EMAIL ERROR] Missing candidate_email")
         return
@@ -70,6 +71,7 @@ def send_email_job(task_id, action):
             content=message if not template else None,
             template=template,
             template_args=template_args,
+            sender=sender
         )
 
         if result:
@@ -104,34 +106,53 @@ def send_email_job(task_id, action):
 #Sử dụng send email khi chạy campaign thông quan action
 def send_email_action(talentprofile_id, action_id):
     from mbw_mira.utils.email import send_email
+
     """
     Gửi email cho ứng viên, hỗ trợ cả message raw hoặc template.
     """
 
     # Lấy thông tin candidate
-    talentprofiles = frappe.get_cached_doc("Mira Talent", talentprofile_id)
     action = frappe.get_doc("Mira Action", action_id)
-    step = frappe.get_cached_doc("Mira Campaign Social", action.campaign_social)
+    talentprofiles = frappe.get_cached_doc("Mira Talent", talentprofile_id)
+
+    logger = frappe.logger("campaign")
     if not talentprofiles.email:
-        frappe.throw("Candidate does not have an email.")
+        frappe.throw("Talent does not have an email.")
     # Nếu ứng viên đã unsubcrible
     if talentprofiles.email_opt_out:
+        logger.error("Talent unsubcrible")
+        return
+    # Nếu email không tồn tại
+    if talentprofiles.email_id_invalid:
+        logger.error("Talent Email Invalid")
         return
 
-    context = (talentprofiles, action, step)
-    message = render_template(step.template_content, context)
+    context = (talentprofiles, action)
 
-    subject = render_template(step.subject, context)
+    condition = {}
+    if hasattr(action, "action_parameters"):
+        condition = json.loads(action.action_parameters)
+    temp = condition
+    message = render_template(temp.get("email_content"), context)
+    subject = "Thông báo"
+    if condition and hasattr(temp, "email_subject"):
+        subject = render_template(temp.get("email_subject"), context)
     talent_email = talentprofiles.email
     template = None
     template_args = None
+    sender = temp.get("sender_account")
     if not talent_email:
+        logger.error("[EMAIL ERROR] Missing candidate_email")
         return
 
     if not subject:
+        logger.error(f"[EMAIL ERROR] Missing subject for {talent_email}")
         return
 
     if not message:
+        logger.error(
+            f"[EMAIL ERROR] Neither message nor template provided for {talent_email}"
+        )
         return
 
     action.executed_at = now_datetime()
@@ -142,32 +163,34 @@ def send_email_action(talentprofile_id, action_id):
             content=message if not template else None,
             template=template,
             template_args=template_args,
+            sender=sender
         )
-        create_mira_interaction(
-            {
-                "talent_id": talentprofile_id,
-                "interaction_type": "EMAIL_SENT",
-                "source_action": action.name,
-            }
-        )
+
         if result:
-            action.status = "EXECUTED"
-            action.result = {
+            action.status = "Completed"
+            action.execution_result = {
                 "status": "Success",
-                "message": f"[EMAIL] Sent to {talentprofile_id} — step: {step} — candidate: {talentprofile_id}",
+                "message": f"[EMAIL] Sent to {talentprofiles.name} — task: {action.name}",
             }
+            create_mira_interaction(
+                {
+                    "talent_id": talentprofiles.name,
+                    "interaction_type": "EMAIL_SENT",
+                    "source_action": action.name,
+                }
+            )
         else:
-            action.status = "FAILED"
-            action.result = {
-                "error": f"[EMAIL] Error Sent to {talent_email} — step: {step} — candidate: {talentprofile_id}",
+            action.status = "Failed"
+            action.execution_result = {
+                "error": f"[EMAIL] Error Sent to {talent_email} — step: {action.name}",
                 "traceback": frappe.get_traceback(),
             }
         action.save(ignore_permissions=True)
         frappe.db.commit()
     except Exception as e:
         frappe.log_error(frappe.get_traceback(), "[EMAIL ERROR] send_email_job")
-        action.status = "FAILED"
-        action.result = {"error": str(e), "traceback": frappe.get_traceback()}
+        action.status = "Failed"
+        action.execution_result = {"error": str(e), "traceback": frappe.get_traceback()}
         action.save(ignore_permissions=True)
         frappe.db.commit()
         raise

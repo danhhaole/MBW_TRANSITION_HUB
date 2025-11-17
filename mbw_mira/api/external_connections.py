@@ -7,6 +7,7 @@ import secrets
 import requests
 from typing import Dict, List, Optional, Any
 
+from mbw_mira.helpers.html_parse import convert_html_for_facebook
 from mbw_mira.utils import make_signature
 
 host = frappe.conf.get("socialhub") or "https://socialhub.mbwcloud.com"
@@ -746,7 +747,8 @@ def share_job_posting(
         # Get job details
         # if not frappe.db.exists("Mira Job Opening", job_id):
         #     return {"status": "error", "message": "Job not found"}
-        
+        if message:
+            message = convert_html_for_facebook(message)
         # job = frappe.get_doc("Mira Job Opening", job_id)
         share_data = json.dumps(kwargs)
         # Create sharing record
