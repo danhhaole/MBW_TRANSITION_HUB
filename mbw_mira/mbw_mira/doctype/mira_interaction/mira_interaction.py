@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 
 import frappe
-from frappe.utils import nowdate
+from frappe.utils import nowdate,now_datetime
 from frappe.model.document import Document
 from mbw_mira.mbw_mira.doctype.mira_task_definition.mira_task_definition import create_task_definitions_from_event
 from mbw_mira.workers import resume_event
@@ -10,13 +10,9 @@ from mbw_mira.workers import resume_event
 
 
 class MiraInteraction(Document):
-	pass
 
-	# def on_update(self):
-	# 	#Nếu có tương tác thì update trạng thái trong ứng viên
-	# 	if self.interaction_type == 'EMAIL_CLICKED':
-	# 		frappe.db.set_value("Mira Prospect",self.talent_id,"status","ENGAGED")
-	# 		frappe.db.commit()
+	def before_save(self):
+		self.auto_tracking()
 
 	def on_update(self):
 		"""Tự động xử lý logic tương ứng với interaction_type"""
@@ -26,6 +22,85 @@ class MiraInteraction(Document):
 			return
 
 		# Ánh xạ interaction_type → hàm xử lý
+		self.interaction_handle()
+
+
+	# AUTO TRACKING
+	def auto_tracking(self):
+		INTERACTION_SCORE = {
+			"EMAIL_OPENED": 2,
+			"ON_LINK_CLICK": 5,
+			"EMAIL_REPLIED": 10,
+			"PAGE_VISITED": 1,
+			"FORM_SUBMITTED": 15,
+			"APPLICATION_SUBMITTED": 30,
+			"TEST_COMPLETED": 20,
+			"INTERVIEW_CONFIRMED": 25,
+			"FB_MESSAGE": 5,
+			"FB_COMMENT": 3,
+			"FB_REACTION": 1,
+			"ZALO_MESSAGE": 5,
+			"ZALO_CLICK": 3,
+			"ZALO_FORM_SUBMITTED": 15,
+			"CALL_COMPLETED": 10,
+			"SMS_REPLIED": 4
+		}
+		now = now_datetime()
+
+		# --- 1) Lần tương tác đầu tiên của Talent ---
+		first_interaction = frappe.db.get_value(
+			"Mira Interaction",
+			{"talent_id": self.talent_id},
+			"creation",
+			order_by="creation asc"
+		)
+
+		# Nếu chưa có tương tác nào => đây là lần đầu
+		if not first_interaction:
+			self.first_interaction_at = now
+		else:
+			self.first_interaction_at = first_interaction
+
+		# --- 2) Lấy tương tác trước đó để tính interval ---
+		previous = frappe.db.get_value(
+			"Mira Interaction",
+			{
+				"talent_id": self.talent_id,
+				"name": ["!=", self.name]
+			},
+			"creation",
+			order_by="creation desc"
+		)
+
+		if previous:
+			self.previous_interaction_at = previous
+		else:
+			self.previous_interaction_at = self.first_interaction_at
+
+		# --- 3) Tính Engagement Timeline (Days) ---
+		timeline_days = (now - self.first_interaction_at).days
+		self.engagement_timeline = timeline_days
+
+		# --- 4) Gán điểm tương tác ---
+		self.interaction_weight = INTERACTION_SCORE.get(self.interaction_type, 1)
+
+		# --- 5) Tính tổng score tích lũy của Talent ---
+		total_score = frappe.db.sql(
+			"""
+			SELECT SUM(interaction_weight)
+			FROM `tabMira Interaction`
+			WHERE talent_id = %s
+			""",
+			self.talent_id
+		)[0][0] or 0
+
+		self.engagement_score = total_score + self.interaction_weight
+
+	# ==========================================================
+	# ============== EMAIL HANDLERS =============================
+	# ==========================================================
+
+	def interaction_handler(self):
 		HANDLER_MAP = {
 			# === EMAIL related ===
 			"EMAIL_SENT": self.handle_email_sent,
@@ -71,11 +146,7 @@ class MiraInteraction(Document):
 			handler()
 		else:
 			frappe.logger().info(f"[Mira Interaction] No handler found for {self.interaction_type}")
-
-	# ==========================================================
-	# ============== EMAIL HANDLERS =============================
-	# ==========================================================
-
+ 
 	def handle_email_sent(self):
 		"""Ghi nhận khi gửi email thành công."""
 		resume_event("email_sent", self.talent_id)
@@ -243,3 +314,4 @@ def create_mira_interaction(args):
 		}
 	).insert(ignore_permissions=True)
 	frappe.db.commit()
+
