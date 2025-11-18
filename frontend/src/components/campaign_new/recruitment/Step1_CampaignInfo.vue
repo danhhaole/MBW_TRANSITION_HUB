@@ -23,6 +23,7 @@
       :candidate-count="candidateCount"
       @update:config-data="$emit('update:configData', $event)"
       @update:conditions="$emit('update:conditions', $event)"
+      @update:candidate-count="$emit('update:candidateCount', $event)"
       @validate="$emit('validate', $event)"
       @change="$emit('change', $event)"
     />
@@ -92,6 +93,7 @@ defineEmits([
   'update:campaignTags',
   'update:configData',
   'update:conditions',
+  'update:candidateCount',
   'validate',
   'change',
   'update:startDate'

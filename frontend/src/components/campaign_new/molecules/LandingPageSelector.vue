@@ -560,8 +560,8 @@ const handleCompanyInfoSubmit = async (companyInfo) => {
       
       console.log('📥 Create response:', response)
       
-      if (response?.status === 'success' && response?.data) {
-        const page = response.data
+      if (response?.message?.status === 'success' && response?.message?.data) {
+        const page = response.message.data
         
         // Check if page is published (has url_public_page)
         const publicUrl = page.url_public_page || ''

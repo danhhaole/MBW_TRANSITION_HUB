@@ -119,6 +119,7 @@ const props = defineProps({
 const emit = defineEmits([
   'update:configData',
   'update:conditions',
+  'update:candidateCount',
   'validate',
   'change'
 ])
@@ -161,6 +162,8 @@ const fetchCandidateCount = async () => {
     
     const count = result?.count || 0
     localCandidateCount.value = count
+    // Emit to parent to persist the count
+    emit('update:candidateCount', count)
     console.log(`✅ Candidate count: ${count} (segment: ${hasSegment.value}, conditions: ${localConditions.value?.length || 0})`)
   } catch (error) {
     console.error('❌ Error fetching candidate count:', error)

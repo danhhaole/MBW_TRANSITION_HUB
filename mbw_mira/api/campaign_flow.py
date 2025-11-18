@@ -77,11 +77,23 @@ def create_flow_from_trigger(campaign_id, trigger):
         flow.campaign_id = campaign_id
         
         # Add trigger to trigger_id child table
-        flow.append("trigger_id", {
+        trigger_data = {
             "trigger_type": trigger_type_map.get(trigger.get("trigger_type"), "CUSTOM_EVENT"),
             "status": "ACTIVE",
             "target_type": "Campaign"
-        })
+        }
+        
+        # Add conditions if present (for triggers like ON_TAG_ADDED, ON_TAG_REMOVED)
+        if trigger.get("conditions"):
+            # If conditions is already a string (JSON), use it directly
+            # If it's a dict, convert to JSON string
+            conditions = trigger.get("conditions")
+            if isinstance(conditions, dict):
+                trigger_data["conditions"] = json.dumps(conditions, indent=2)
+            else:
+                trigger_data["conditions"] = conditions
+        
+        flow.append("trigger_id", trigger_data)
         
         # Add actions to action_id child table
         for idx, action in enumerate(trigger.get("actions", []), start=1):
@@ -187,8 +199,9 @@ def get_campaign_flows(campaign_id):
             # Get full flow doc
             flow = frappe.get_doc("Mira Flow", flow_info.name)
             
-            # Get trigger type from flow
+            # Get trigger type and conditions from flow
             trigger_type = None
+            trigger_conditions = None
             if flow.trigger_id and len(flow.trigger_id) > 0:
                 flow_trigger = flow.trigger_id[0]
                 # Map back to frontend trigger type
@@ -201,6 +214,10 @@ def get_campaign_flows(campaign_id):
                 }
                 # Default: use the flow trigger type directly (new format)
                 trigger_type = trigger_type_reverse_map.get(flow_trigger.trigger_type, flow_trigger.trigger_type)
+                
+                # Get conditions if present
+                if flow_trigger.conditions:
+                    trigger_conditions = flow_trigger.conditions
             
             # Get actions
             actions = []
@@ -225,11 +242,17 @@ def get_campaign_flows(campaign_id):
                     actions.append(action_dict)
             
             if trigger_type:
-                triggers.append({
+                trigger_dict = {
                     "trigger_type": trigger_type,
                     "status": flow.status.lower() if flow.status else "active",
                     "actions": actions
-                })
+                }
+                
+                # Add conditions if present
+                if trigger_conditions:
+                    trigger_dict["conditions"] = trigger_conditions
+                
+                triggers.append(trigger_dict)
         
         return {
             "success": True,
@@ -327,6 +350,15 @@ def create_or_update_flow(campaign_id, trigger):
             
             # Update status
             flow.status = trigger.get('status', 'active').capitalize()
+            
+            # Update trigger conditions if present
+            if flow.trigger_id and len(flow.trigger_id) > 0:
+                if trigger.get("conditions"):
+                    conditions = trigger.get("conditions")
+                    if isinstance(conditions, dict):
+                        flow.trigger_id[0].conditions = json.dumps(conditions, indent=2)
+                    else:
+                        flow.trigger_id[0].conditions = conditions
             
             # Clear and rebuild actions
             flow.action_id = []

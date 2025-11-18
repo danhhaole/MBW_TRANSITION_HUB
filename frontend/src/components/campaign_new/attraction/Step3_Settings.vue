@@ -122,6 +122,43 @@
             </div>
           </div>
 
+          <!-- Tag Selection for ON_TAG_ADDED/ON_TAG_REMOVED triggers -->
+          <div 
+            v-if="['ON_TAG_ADDED', 'ON_TAG_REMOVED'].includes(trigger.trigger_type)" 
+            class="ml-10 mt-3 mb-4"
+          >
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <div class="flex items-start space-x-2">
+                <FeatherIcon name="info" class="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                <div class="flex-1">
+                  <p class="text-xs font-medium text-blue-900 mb-2">
+                    {{ trigger.trigger_type === 'ON_TAG_ADDED' ? __('When which tag is added?') : __('When which tag is removed?') }}
+                  </p>
+                  
+                  <!-- Tag selector -->
+                  <div class="mb-2">
+                    <Autocomplete
+                      :modelValue="getTriggerTagId(trigger)"
+                      @update:modelValue="(value) => handleTriggerTagSelect(index, value)"
+                      :options="tagOptions"
+                      :placeholder="__('Select tag...')"
+                    />
+                  </div>
+                  
+                  <!-- Show selected tag -->
+                  <div v-if="getTriggerTag(trigger)" class="flex items-center space-x-2 bg-white border border-blue-200 rounded px-2 py-1.5">
+                    <div 
+                      class="w-3 h-3 rounded"
+                      :style="{ backgroundColor: getTriggerTag(trigger).color || '#6B7280' }"
+                    ></div>
+                    <span class="text-xs font-medium text-gray-900">{{ getTriggerTag(trigger).title }}</span>
+                    <span class="text-xs text-gray-500">({{ getTriggerTag(trigger).name }})</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Trigger Actions -->
           <div class="ml-10 mt-3">
             <div class="flex items-center justify-between mb-3">
@@ -274,8 +311,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { FeatherIcon, Button, FormControl, Dialog, TextEditor, Popover } from 'frappe-ui'
+import { ref, computed, onMounted } from 'vue'
+import { FeatherIcon, Button, FormControl, Dialog, TextEditor, Popover, Autocomplete, call } from 'frappe-ui'
 import ActionEditor from '../molecules/ActionEditor.vue'
 import { 
   CAMPAIGN_TYPES,
@@ -334,6 +371,10 @@ const editingAction = ref(null)
 const editingTriggerIndex = ref(null)
 const editingActionIndex = ref(null)
 
+// Tags state
+const tags = ref([])
+const loadingTags = ref(false)
+
 // triggerTypeOptions imported from utils/triggerUtils.js
 
 // Filter out already added trigger types
@@ -379,6 +420,95 @@ const channelTypeOptions = [
   { label: __('Zalo'), value: 'Zalo' },
   { label: __('Messenger'), value: 'Messenger' }
 ]
+
+// Computed tag options for Autocomplete
+const tagOptions = computed(() => {
+  return tags.value.map(tag => ({
+    label: tag.title,
+    value: tag.name,
+    description: tag.name,
+    color: tag.color
+  }))
+})
+
+// Load tags from API
+const loadTags = async () => {
+  try {
+    loadingTags.value = true
+    const result = await call('frappe.client.get_list', {
+      doctype: 'Mira Tag',
+      fields: ['name', 'title', 'color', 'order'],
+      order_by: '`order` asc',
+      limit_page_length: 0
+    })
+    
+    if (result) {
+      tags.value = result
+      console.log('✅ Loaded tags for triggers:', tags.value.length)
+    }
+  } catch (error) {
+    console.error('❌ Error loading tags:', error)
+  } finally {
+    loadingTags.value = false
+  }
+}
+
+// Helper methods to get/set tag in trigger conditions
+const getTriggerTagId = (trigger) => {
+  if (!trigger.conditions) return null
+  
+  try {
+    const conditions = typeof trigger.conditions === 'string' 
+      ? JSON.parse(trigger.conditions) 
+      : trigger.conditions
+    return conditions?.tag_id || null
+  } catch (e) {
+    return null
+  }
+}
+
+const getTriggerTag = (trigger) => {
+  const tagId = getTriggerTagId(trigger)
+  if (!tagId) return null
+  return tags.value.find(tag => tag.name === tagId)
+}
+
+const handleTriggerTagSelect = (triggerIndex, selectedValue) => {
+  console.log('🏷️ Trigger tag selected:', selectedValue, 'for trigger index:', triggerIndex)
+  
+  // Get the tag ID from selected value
+  const tagId = typeof selectedValue === 'object' ? selectedValue.value : selectedValue
+  
+  // Find tag details
+  const tag = tags.value.find(t => t.name === tagId)
+  if (!tag) return
+  
+  // Get the trigger from sorted array
+  const sortedTrigger = localTriggers.value[triggerIndex]
+  
+  // Find it in the original props.triggers array
+  const triggers = [...props.triggers]
+  const originalIndex = triggers.findIndex(t => t.trigger_type === sortedTrigger.trigger_type)
+  
+  if (originalIndex !== -1) {
+    // Store tag info in conditions field as formatted JSON (for Code field)
+    const conditions = {
+      tag_id: tag.name,
+      tag_name: tag.title,
+      tag_color: tag.color
+    }
+    
+    // Format with indent for better readability in Code editor
+    triggers[originalIndex].conditions = JSON.stringify(conditions, null, 2)
+    console.log('✅ Trigger conditions updated:', triggers[originalIndex].conditions)
+    emit('update:triggers', triggers)
+  }
+}
+
+// Load tags on mount
+onMounted(() => {
+  loadTags()
+})
 
 // Helper methods
 const needsContent = (actionType) => {

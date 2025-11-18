@@ -49,6 +49,7 @@
           @update:campaign-tags="campaignData.campaign_tags = $event"
           @update:config-data="campaignData.config_data = $event"
           @update:conditions="campaignData.conditions = $event"
+          @update:candidate-count="campaignData.candidate_count = $event"
           @update:start-date="campaignData.start_date = $event"
           @validate="handleValidate"
           @change="handleConditionsChange"
