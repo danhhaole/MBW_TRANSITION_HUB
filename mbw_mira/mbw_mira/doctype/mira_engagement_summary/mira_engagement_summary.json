@@ -1,0 +1,156 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-11-19 03:59:42.416548",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "talent_id",
+  "total_interactions",
+  "total_score",
+  "readiness_level",
+  "first_interaction_at",
+  "last_interaction_at",
+  "engagement_timeline",
+  "top_channel",
+  "click_count",
+  "open_count",
+  "reply_count",
+  "visit_count",
+  "conversion_count",
+  "avg_days_between_interactions",
+  "recent_7d_score",
+  "recent_30d_score",
+  "bounce_rate"
+ ],
+ "fields": [
+  {
+   "fieldname": "talent_id",
+   "fieldtype": "Link",
+   "label": "Talent Profile",
+   "options": "Mira Talent"
+  },
+  {
+   "description": "T\u1ed5ng s\u1ed1 l\u1ea7n t\u01b0\u01a1ng t\u00e1c",
+   "fieldname": "total_interactions",
+   "fieldtype": "Int",
+   "label": "Total Interactions"
+  },
+  {
+   "description": "T\u1ed5ng \u0111i\u1ec3m",
+   "fieldname": "total_score",
+   "fieldtype": "Int",
+   "label": "Total score"
+  },
+  {
+   "fieldname": "readiness_level",
+   "fieldtype": "Select",
+   "label": "Readiness Level",
+   "options": "Low\nMedium\nHigh"
+  },
+  {
+   "description": "L\u1ea7n \u0111\u1ea7u t\u01b0\u01a1ng t\u00e1c",
+   "fieldname": "first_interaction_at",
+   "fieldtype": "Datetime",
+   "label": "First Interaction"
+  },
+  {
+   "description": "L\u1ea7n g\u1ea7n nh\u1ea5t t\u01b0\u01a1ng t\u00e1c",
+   "fieldname": "last_interaction_at",
+   "fieldtype": "Datetime",
+   "label": "Last Interaction"
+  },
+  {
+   "description": "S\u1ed1 ng\u00e0y t\u1eeb first -> now",
+   "fieldname": "engagement_timeline",
+   "fieldtype": "Int",
+   "label": "Engagement Timeline"
+  },
+  {
+   "description": "K\u00eanh t\u01b0\u01a1ng t\u00e1c nhi\u1ec1u nh\u1ea5t",
+   "fieldname": "top_channel",
+   "fieldtype": "Select",
+   "label": "Top channel"
+  },
+  {
+   "description": "S\u1ed1 l\u1ea7n click",
+   "fieldname": "click_count",
+   "fieldtype": "Int",
+   "label": "Click count"
+  },
+  {
+   "description": "S\u1ed1 l\u1ea7n m\u1edf",
+   "fieldname": "open_count",
+   "fieldtype": "Int",
+   "label": "Open Count"
+  },
+  {
+   "description": "S\u1ed1 l\u1ea7n tr\u1ea3 l\u1eddi",
+   "fieldname": "reply_count",
+   "fieldtype": "Int",
+   "label": "Reply Count"
+  },
+  {
+   "description": "Page view",
+   "fieldname": "visit_count",
+   "fieldtype": "Int",
+   "label": "Visit Count"
+  },
+  {
+   "description": "Submit form/apply",
+   "fieldname": "conversion_count",
+   "fieldtype": "Int",
+   "label": "Conversion count"
+  },
+  {
+   "description": "Kho\u1ea3ng c\u00e1ch trung b\u00ecnh",
+   "fieldname": "avg_days_between_interactions",
+   "fieldtype": "Float",
+   "label": "avg_days_between_interactions"
+  },
+  {
+   "description": "\u0110i\u1ec3m trong 7 ng\u00e0y qua",
+   "fieldname": "recent_7d_score",
+   "fieldtype": "Int",
+   "label": "recent_7d_score"
+  },
+  {
+   "description": "\u0110i\u1ec3m trong 30 ng\u00e0y",
+   "fieldname": "recent_30d_score",
+   "fieldtype": "Int",
+   "label": "recent_30d_score"
+  },
+  {
+   "description": "T\u1ef7 l\u1ec7 b\u1ecf k\u1ebft n\u1ed1i",
+   "fieldname": "bounce_rate",
+   "fieldtype": "Float",
+   "label": "Bounce Rate"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-11-19 04:11:35.155678",
+ "modified_by": "Administrator",
+ "module": "MBW Mira",
+ "name": "Mira Engagement Summary",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -23,6 +23,7 @@ def attraction_campaign(campaign_id):
                     if cps.post_schedule_time:#Kiểm tra thời gian post nếu cầu hình delay
                         if cps.post_schedule_time >=before_60s and cps.post_schedule_time <= after_60s:
                             share_job_posting(cps.external_connection,campaign_id,campaign.ladipage_url, cps.social_media_images,cps.template_content)
+                            
                     else:
                         share_job_posting(cps.external_connection,campaign_id,campaign.ladipage_url, cps.social_media_images,cps.template_content)
                     

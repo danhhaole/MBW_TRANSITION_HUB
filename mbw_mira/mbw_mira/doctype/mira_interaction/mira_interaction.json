@@ -8,37 +8,23 @@
  "field_order": [
   "talent_id",
   "campaign_id",
+  "channel",
   "interaction_type",
   "action",
   "url",
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "ip_address",
+  "user_agent",
+  "engagement_score",
+  "interaction_weight",
+  "first_interaction_at",
+  "previous_interaction_at",
+  "engagement_timeline",
   "description"
  ],
  "fields": [
-  {
-   "description": "Lo\u1ea1i h\u00e0nh vi c\u1ee7a \u1ee9ng vi\u00ean \u0111\u01b0\u1ee3c h\u1ec7 th\u1ed1ng ghi nh\u1eadn",
-   "fieldname": "interaction_type",
-   "fieldtype": "Select",
-   "label": "Mira Interaction Type",
-   "options": "EMAIL_SENT\nEMAIL_DELIVERED\nEMAIL_BOUNCED\nEMAIL_OPENED\nON_LINK_CLICK\nEMAIL_UNSUBSCRIBED\nEMAIL_REPLIED\nPAGE_VISITED\nFORM_SUBMITTED\nDOWNLOAD_TRIGGERED\nCHAT_STARTED\nCHAT_MESSAGE_SENT\nCHAT_COMPLETED\nCALL_MISSED\nCALL_COMPLETED\nSMS_SENT\nSMS_DELIVERED\nSMS_REPLIED\nAPPLICATION_SUBMITTED\nDOCUMENT_UPLOADED\nTEST_STARTED\nTEST_COMPLETED\nINTERVIEW_CONFIRMED\nINTERVIEW_RESCHEDULED"
-  },
-  {
-   "description": "H\u00e0nh \u0111\u1ed9ng h\u1ec7 th\u1ed1ng \u0111\u00e3 th\u1ef1c hi\u1ec7n d\u1eabn \u0111\u1ebfn t\u01b0\u01a1ng t\u00e1c n\u00e0y",
-   "fieldname": "action",
-   "fieldtype": "Data",
-   "label": "Source Action"
-  },
-  {
-   "description": "Li\u00ean k\u1ebft m\u00e0 \u1ee9ng vi\u00ean \u0111\u00e3 nh\u1ea5p v\u00e0o (n\u1ebfu c\u00f3)",
-   "fieldname": "url",
-   "fieldtype": "Data",
-   "label": "URL (if any)"
-  },
-  {
-   "description": "Th\u00f4ng tin b\u1ed5 sung ho\u1eb7c n\u1ed9i dung li\u00ean quan",
-   "fieldname": "description",
-   "fieldtype": "Text",
-   "label": "Description"
-  },
   {
    "fieldname": "talent_id",
    "fieldtype": "Link",
@@ -50,6 +36,87 @@
    "fieldtype": "Link",
    "label": "Mira Campaign",
    "options": "Mira Campaign"
+  },
+  {
+   "fieldname": "channel",
+   "fieldtype": "Select",
+   "label": "Channel",
+   "options": "Email\nFacebook\nZalo\nSMS\nCall\nLanding Page\nWebsite\nTiktok\nLinkedIn\nChatbot\nForm\nOther"
+  },
+  {
+   "fieldname": "interaction_type",
+   "fieldtype": "Select",
+   "label": "Interaction Type",
+   "options": "EMAIL_SENT\nEMAIL_DELIVERED\nEMAIL_BOUNCED\nEMAIL_OPENED\nON_LINK_CLICK\nEMAIL_UNSUBSCRIBED\nEMAIL_REPLIED\nPAGE_VISITED\nFORM_SUBMITTED\nDOWNLOAD_TRIGGERED\nCHAT_STARTED\nCHAT_MESSAGE_SENT\nCHAT_COMPLETED\nCALL_MISSED\nCALL_COMPLETED\nSMS_SENT\nSMS_DELIVERED\nSMS_REPLIED\nAPPLICATION_SUBMITTED\nDOCUMENT_UPLOADED\nTEST_STARTED\nTEST_COMPLETED\nINTERVIEW_CONFIRMED\nINTERVIEW_RESCHEDULED\nFB_MESSAGE\nFB_COMMENT\nFB_REACTION\nZALO_MESSAGE\nZALO_CLICK\nZALO_FORM_SUBMITTED"
+  },
+  {
+   "fieldname": "action",
+   "fieldtype": "Data",
+   "label": "Source Action"
+  },
+  {
+   "fieldname": "url",
+   "fieldtype": "Data",
+   "label": "URL (if any)"
+  },
+  {
+   "fieldname": "utm_source",
+   "fieldtype": "Data",
+   "label": "UTM Source"
+  },
+  {
+   "fieldname": "utm_medium",
+   "fieldtype": "Data",
+   "label": "UTM Medium"
+  },
+  {
+   "fieldname": "utm_campaign",
+   "fieldtype": "Data",
+   "label": "UTM Campaign"
+  },
+  {
+   "fieldname": "ip_address",
+   "fieldtype": "Data",
+   "label": "IP Address"
+  },
+  {
+   "fieldname": "user_agent",
+   "fieldtype": "Small Text",
+   "label": "User Agent"
+  },
+  {
+   "fieldname": "engagement_score",
+   "fieldtype": "Int",
+   "label": "Engagement Score"
+  },
+  {
+   "fieldname": "interaction_weight",
+   "fieldtype": "Float",
+   "label": "Interaction Weight"
+  },
+  {
+   "fieldname": "first_interaction_at",
+   "fieldtype": "Datetime",
+   "label": "First Interaction Datetime",
+   "read_only": 1
+  },
+  {
+   "fieldname": "previous_interaction_at",
+   "fieldtype": "Datetime",
+   "label": "Previous Interaction Datetime",
+   "read_only": 1
+  },
+  {
+   "fieldname": "engagement_timeline",
+   "fieldtype": "Int",
+   "label": "Engagement Timeline (Days)",
+   "description": "Số ngày tính từ lần tương tác đầu tiên đến tương tác hiện tại",
+   "read_only": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text",
+   "label": "Description"
   }
  ],
  "grid_page_length": 50,
