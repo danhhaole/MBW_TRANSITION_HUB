@@ -57,9 +57,8 @@
                   class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 >
                   <option value="">{{ __('Select pool type') }}</option>
-                  <option value="STATIC">{{ __('Static') }}</option>
+                  <option value="MANUAL">{{ __('MANUAL') }}</option>
                   <option value="DYNAMIC">{{ __('Dynamic') }}</option>
-                  <option value="ATS_SYNC">{{ __('ATS Sync') }}</option>
                 </select>
               </div>
 
@@ -77,6 +76,33 @@
                   </option>
                 </select>
               </div> -->
+            </div>
+
+            <!-- Budget Range -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  {{ __('Min Budget') }}
+                </label>
+                <input 
+                  v-model="formattedMinBudget" 
+                  type="text" 
+                  :placeholder="__('Enter minimum budget...')"
+                  class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  {{ __('Max Budget') }}
+                </label>
+                <input 
+                  v-model="formattedMaxBudget" 
+                  type="text" 
+                  :placeholder="__('Enter maximum budget...')"
+                  class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
             </div>
 
             <!-- Filter Conditions Section -->
@@ -161,6 +187,8 @@ const formData = ref({
   description: '',
   type: 'DYNAMIC',
   owner_id: '',
+  min_budget: null,
+  max_budget: null,
   conditions: []
 })
 
@@ -202,6 +230,44 @@ const isFormValid = computed(() => {
          conditionsValid.value
 })
 
+// Formatted Min Budget with getter/setter
+const formattedMinBudget = computed({
+  get() {
+    const val = Number(formData.value.min_budget)
+    if (!val) return ''
+    return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+  },
+  set(v) {
+    if (v == null || v === '') { 
+      formData.value.min_budget = null
+      return 
+    }
+    // Loại bỏ tất cả ký tự không phải số
+    let s = String(v).replace(/[^\d]/g, '')
+    const num = parseInt(s, 10)
+    formData.value.min_budget = isNaN(num) ? null : num
+  },
+})
+
+// Formatted Max Budget with getter/setter
+const formattedMaxBudget = computed({
+  get() {
+    const val = Number(formData.value.max_budget)
+    if (!val) return ''
+    return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+  },
+  set(v) {
+    if (v == null || v === '') { 
+      formData.value.max_budget = null
+      return 
+    }
+    // Loại bỏ tất cả ký tự không phải số
+    let s = String(v).replace(/[^\d]/g, '')
+    const num = parseInt(s, 10)
+    formData.value.max_budget = isNaN(num) ? null : num
+  },
+})
+
 // Methods
 const loadUserOptions = async () => {
   try {
@@ -230,6 +296,8 @@ const resetForm = () => {
     description: '',
     type: 'DYNAMIC',
     owner_id: '',
+    min_budget: null,
+    max_budget: null,
     conditions: []
   }
   errors.value = {}
@@ -261,6 +329,8 @@ const loadSegmentData = () => {
       description: props.segment.description || '',
       type: props.segment.type || 'DYNAMIC',
       owner_id: props.segment.owner_id || '',
+      min_budget: props.segment.min_budget || null,
+      max_budget: props.segment.max_budget || null,
       conditions: parsedConditions
     }
   } else {
@@ -290,6 +360,8 @@ const handleSubmit = async () => {
       description: formData.value.description,
       type: formData.value.type,
       owner_id: formData.value.owner_id,
+      min_budget: formData.value.min_budget,
+      max_budget: formData.value.max_budget,
       criteria: JSON.stringify(formData.value.conditions)
     }
 

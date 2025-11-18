@@ -179,7 +179,7 @@ export const useTalentSegmentStore = defineStore('talentSegment', {
         
         let queryOptions = {
           filters,
-          fields: ['name', 'title', 'description', 'type', 'candidate_count', 'owner_id', 'creation', 'modified', 'criteria', 'overall_potential_score', 'high_rate', 'quality_distribution', 'is_active'],
+          fields: ['name', 'title', 'description', 'type', 'candidate_count', 'owner_id', 'creation', 'modified', 'criteria', 'overall_potential_score', 'high_rate', 'quality_distribution', 'is_active', 'max_budget', 'min_budget'],
           order_by: orderBy,
           limit_start: start,
           limit_page_length: limit

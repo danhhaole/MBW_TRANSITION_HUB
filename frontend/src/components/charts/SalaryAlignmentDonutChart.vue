@@ -39,20 +39,21 @@ const initChart = () => {
 		},
 		legend: {
 			orient: 'vertical',
-			right: '10%',
-			top: 'center',
+			right: '5%',
+			bottom: '10%',
 			textStyle: {
 				color: '#4B5563',
-				fontSize: 13
+				fontSize: 12
 			},
-			itemWidth: 14,
-			itemHeight: 14
+			itemWidth: 12,
+			itemHeight: 12,
+			itemGap: 12
 		},
 		series: [
 			{
 				type: 'pie',
-				radius: ['45%', '70%'],
-				center: ['35%', '50%'],
+				radius: ['40%', '65%'],
+				center: ['45%', '50%'],
 				avoidLabelOverlap: true,
 				itemStyle: {
 					borderRadius: 8,
@@ -63,14 +64,16 @@ const initChart = () => {
 					show: true,
 					position: 'outside',
 					formatter: '{d}%',
-					fontSize: 13,
+					fontSize: 11,
 					fontWeight: 'bold',
-					color: '#374151'
+					color: '#374151',
+					distanceToLabelLine: 8,
+					minMargin: 5
 				},
 				emphasis: {
 					label: {
 						show: true,
-						fontSize: 16,
+						fontSize: 13,
 						fontWeight: 'bold'
 					},
 					itemStyle: {
@@ -81,11 +84,12 @@ const initChart = () => {
 				},
 				labelLine: {
 					show: true,
-					length: 15,
-					length2: 10,
+					length: 25,
+					length2: 20,
 					lineStyle: {
 						width: 1.5
-					}
+					},
+					smooth: true
 				},
 				data: props.data.map(item => ({
 					value: item.value,

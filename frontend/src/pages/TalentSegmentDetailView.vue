@@ -263,17 +263,29 @@
 				<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 					<!-- Skill Deep Dive Chart -->
 					<SkillRadarChart 
+						v-if="skillsData && skillsData.length > 0"
 						:title="__('Skill Deep Dive')"
 						:data="skillsData"
 						chartHeight="450px"
 					/>
+					<div v-else class="bg-gray-50 rounded-lg border border-gray-200 p-8 flex items-center justify-center h-[450px]">
+						<div class="text-center">
+							<div class="text-gray-400 mb-2">{{ __('Loading skills data...') }}</div>
+						</div>
+					</div>
 					
 					<!-- Experience Distribution Chart -->
 					<ExperienceDistributionChart 
+						v-if="experienceData && experienceData.length > 0"
 						:title="__('Experience vs. Seniority')"
 						:data="experienceData"
 						chartHeight="450px"
 					/>
+					<div v-else class="bg-gray-50 rounded-lg border border-gray-200 p-8 flex items-center justify-center h-[450px]">
+						<div class="text-center">
+							<div class="text-gray-400 mb-2">{{ __('Loading experience data...') }}</div>
+						</div>
+					</div>
 				</div>
 			</div>
 
@@ -294,10 +306,16 @@
 					
 					<!-- Salary Alignment -->
 					<SalaryAlignmentDonutChart 
+						v-if="salaryAlignmentData && salaryAlignmentData.length > 0"
 						:title="__('Salary Alignment')"
 						:data="salaryAlignmentData"
 						chartHeight="450px"
 					/>
+					<div v-else class="bg-gray-50 rounded-lg border border-gray-200 p-8 flex items-center justify-center h-[450px]">
+						<div class="text-center">
+							<div class="text-gray-400 mb-2">{{ __('Loading salary alignment data...') }}</div>
+						</div>
+					</div>
 				</div>
 			</div>
 
@@ -311,19 +329,31 @@
 				<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 					<!-- Talent Requiring Update -->
 					<TalentUpdateTable 
+						v-if="talentUpdateData && talentUpdateData.length > 0"
 						:title="__('Talent Requiring Update')"
 						:subtitle="__('Talents needing re-engagement (6+ months inactive)')"
 						:data="talentUpdateData"
 						tableHeight="450px"
 						@contact-talent="handleContactTalent"
 					/>
+					<div v-else class="bg-gray-50 rounded-lg border border-gray-200 p-8 flex items-center justify-center h-[450px]">
+						<div class="text-center">
+							<div class="text-gray-400 mb-2">{{ __('Loading talent update data...') }}</div>
+						</div>
+					</div>
 					
 					<!-- Quality Source Analysis -->
 					<QualitySourceBarChart 
+						v-if="qualitySourceData && qualitySourceData.length > 0"
 						:title="__('Quality Source Analysis')"
 						:data="qualitySourceData"
 						chartHeight="450px"
 					/>
+					<div v-else class="bg-gray-50 rounded-lg border border-gray-200 p-8 flex items-center justify-center h-[450px]">
+						<div class="text-center">
+							<div class="text-gray-400 mb-2">{{ __('Loading quality source data...') }}</div>
+						</div>
+					</div>
 				</div>
 			</div>
 
@@ -844,25 +874,9 @@ const talentSegment = reactive({})
 const candidates = ref([])
 const relatedCampaigns = ref([])
 
-// Chart data - Fake data for demonstration
-const skillsData = ref([
-	{ name: 'Python', value: 85 },
-	{ name: 'Machine Learning', value: 72 },
-	{ name: 'Data Analysis', value: 90 },
-	{ name: 'SQL', value: 78 },
-	{ name: 'Deep Learning', value: 65 },
-	{ name: 'NLP', value: 58 },
-	{ name: 'TensorFlow', value: 70 },
-	{ name: 'PyTorch', value: 62 }
-])
-
-const experienceData = ref([
-	{ name: '0-2 years', value: 15 },
-	{ name: '3-5 years', value: 28 },
-	{ name: '6-10 years', value: 35 },
-	{ name: '11-15 years', value: 18 },
-	{ name: '15+ years', value: 12 }
-])
+// Chart data - Initialize with empty arrays, will be populated from API
+const skillsData = ref([])
+const experienceData = ref([])
 
 // Recruitment Priority Matrix data - Bubble Chart
 const recruitmentPriorityData = ref([
@@ -910,115 +924,10 @@ const recruitmentPriorityData = ref([
 	}
 ])
 
-// Salary Alignment data - Donut Chart
-const salaryAlignmentData = ref([
-	{ 
-		name: 'In-Budget', 
-		value: 58,
-		color: '#10B981' // Green - phù hợp ngân sách
-	},
-	{ 
-		name: 'Slightly Over-Budget', 
-		value: 28,
-		color: '#FBBF24' // Yellow - vượt ngân sách một chút
-	},
-	{ 
-		name: 'Under-Budget', 
-		value: 14,
-		color: '#3B82F6' // Blue - dưới ngân sách
-	}
-])
-
-// Talent Requiring Update data - Table
-const talentUpdateData = ref([
-	{
-		name: 'Nguyen Van A',
-		title: 'Senior Data Scientist',
-		lastInteraction: '2023-12-15',
-		daysSince: 328,
-		status: 'Passive',
-		source: 'LinkedIn'
-	},
-	{
-		name: 'Tran Thi B',
-		title: 'ML Engineer',
-		lastInteraction: '2024-01-20',
-		daysSince: 292,
-		status: 'Interested',
-		source: 'Referral'
-	},
-	{
-		name: 'Le Van C',
-		title: 'Data Analyst',
-		lastInteraction: '2023-11-10',
-		daysSince: 363,
-		status: 'Considering',
-		source: 'Headhunter'
-	},
-	{
-		name: 'Pham Thi D',
-		title: 'Python Developer',
-		lastInteraction: '2024-02-05',
-		daysSince: 276,
-		status: 'Passive',
-		source: 'LinkedIn'
-	},
-	{
-		name: 'Hoang Van E',
-		title: 'AI Engineer',
-		lastInteraction: '2023-10-25',
-		daysSince: 379,
-		status: 'Inactive',
-		source: 'Career Fair'
-	},
-	{
-		name: 'Vu Thi F',
-		title: 'Data Engineer',
-		lastInteraction: '2024-01-08',
-		daysSince: 304,
-		status: 'Passive',
-		source: 'LinkedIn'
-	}
-])
-
-// Quality Source Analysis data - Bar Chart
-const qualitySourceData = ref([
-	{
-		name: 'Referral',
-		value: 78,
-		totalTalents: 45,
-		color: '#10B981',
-		colorEnd: '#34D399'
-	},
-	{
-		name: 'Headhunter',
-		value: 65,
-		totalTalents: 38,
-		color: '#3B82F6',
-		colorEnd: '#60A5FA'
-	},
-	{
-		name: 'LinkedIn',
-		value: 52,
-		totalTalents: 67,
-		color: '#8B5CF6',
-		colorEnd: '#A78BFA'
-	},
-	{
-		name: 'Career Fair',
-		value: 45,
-		totalTalents: 28,
-		color: '#F59E0B',
-		colorEnd: '#FBBF24'
-	},
-	{
-		name: 'Job Board',
-		value: 38,
-		totalTalents: 52,
-		color: '#EF4444',
-		colorEnd: '#F87171'
-	}
-])
+// Initialize with empty arrays, will be populated from API
+const salaryAlignmentData = ref([])
+const talentUpdateData = ref([])
+const qualitySourceData = ref([])
 
 // Modals
 const showAddCandidateModal = ref(false)
@@ -1341,6 +1250,56 @@ const loadRelatedCampaigns = async () => {
 	}
 }
 
+const loadDashboardData = async () => {
+	try {
+		console.log('Loading dashboard data for segment:', route.params.id)
+		const result = await call('mbw_mira.api.dashboard.get_segment_dashboard_data', {
+			segment_id: route.params.id
+		})
+
+		if (result) {
+			console.log('Dashboard data loaded:', result)
+			
+			// Update skills data
+			if (result.skills && result.skills.length > 0) {
+				skillsData.value = result.skills
+			}
+			
+			// Update experience distribution data
+			if (result.experience && result.experience.length > 0) {
+				experienceData.value = result.experience
+			}
+			
+			// Update salary alignment data
+			if (result.salary_alignment && result.salary_alignment.length > 0) {
+				salaryAlignmentData.value = result.salary_alignment
+			}
+			
+			// Update quality source data
+			if (result.quality_source && result.quality_source.length > 0) {
+				qualitySourceData.value = result.quality_source
+			}
+			
+			// Update talents requiring update data
+			if (result.talents_requiring_update && result.talents_requiring_update.length > 0) {
+				talentUpdateData.value = result.talents_requiring_update
+			}
+			
+			// Update recruitment priority data
+			// if (result.recruitment_priority && result.recruitment_priority.length > 0) {
+			// 	recruitmentPriorityData.value = result.recruitment_priority
+			// }
+			
+			console.log('Dashboard data updated successfully')
+		} else {
+			console.error('No dashboard data returned from API')
+		}
+	} catch (error) {
+		console.error('Error loading dashboard data:', error)
+		// Keep fake data if API fails
+	}
+}
+
 
 
 const closeAddCandidateModal = () => {
@@ -1429,6 +1388,8 @@ onMounted(async () => {
 		await loadCandidates()
 		console.log('Loading related campaigns...')
 		await loadRelatedCampaigns()
+		console.log('Loading dashboard data...')
+		await loadDashboardData()
 		console.log('=== All data loaded successfully ===')
 	} catch (error) {
 		console.error('Error in onMounted:', error)

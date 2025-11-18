@@ -35,7 +35,7 @@
 					</tr>
 				</thead>
 				<tbody class="bg-white divide-y divide-gray-200">
-					<tr v-for="(talent, index) in data" :key="index" class="hover:bg-gray-50 transition-colors">
+					<tr v-for="(talent, index) in paginatedData" :key="index" class="hover:bg-gray-50 transition-colors">
 						<td class="px-4 py-3 whitespace-nowrap">
 							<div class="flex items-center">
 								<div class="flex-shrink-0 h-8 w-8 bg-blue-500 rounded-full flex items-center justify-center">
@@ -82,10 +82,52 @@
 				<p class="text-sm">{{ __('All talents are up to date!') }}</p>
 			</div>
 		</div>
+		
+		<!-- Pagination -->
+		<div v-if="totalPages > 1" class="flex items-center justify-between px-4 py-3 border-t border-gray-200">
+			<div class="flex items-center text-sm text-gray-700">
+				<span>{{ __('Showing') }} {{ startIndex + 1 }} {{ __('to') }} {{ endIndex }} {{ __('of') }} {{ data.length }} {{ __('talents') }}</span>
+			</div>
+			<div class="flex items-center space-x-2">
+				<button 
+					@click="previousPage" 
+					:disabled="currentPage === 1"
+					class="px-3 py-1 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+				>
+					{{ __('Previous') }}
+				</button>
+				
+				<div class="flex items-center space-x-1">
+					<button 
+						v-for="page in visiblePages" 
+						:key="page"
+						@click="goToPage(page)"
+						:class="[
+							'px-3 py-1 text-sm font-medium rounded-md',
+							currentPage === page 
+								? 'bg-blue-600 text-white' 
+								: 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50'
+						]"
+					>
+						{{ page }}
+					</button>
+				</div>
+				
+				<button 
+					@click="nextPage" 
+					:disabled="currentPage === totalPages"
+					class="px-3 py-1 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+				>
+					{{ __('Next') }}
+				</button>
+			</div>
+		</div>
 	</div>
 </template>
 
 <script setup>
+import { ref, computed, watch } from 'vue'
+
 const props = defineProps({
 	title: {
 		type: String,
@@ -106,6 +148,86 @@ const props = defineProps({
 })
 
 defineEmits(['contact-talent'])
+
+// Pagination
+const currentPage = ref(1)
+const itemsPerPage = 8
+
+// Reset to first page when data changes
+watch(() => props.data, () => {
+	currentPage.value = 1
+})
+
+// Computed properties for pagination
+const totalPages = computed(() => {
+	return Math.ceil(props.data.length / itemsPerPage)
+})
+
+const startIndex = computed(() => {
+	return (currentPage.value - 1) * itemsPerPage
+})
+
+const endIndex = computed(() => {
+	return Math.min(startIndex.value + itemsPerPage, props.data.length)
+})
+
+const paginatedData = computed(() => {
+	return props.data.slice(startIndex.value, endIndex.value)
+})
+
+const visiblePages = computed(() => {
+	const pages = []
+	const maxVisible = 5
+	const total = totalPages.value
+	const current = currentPage.value
+	
+	if (total <= maxVisible) {
+		// Show all pages if total is small
+		for (let i = 1; i <= total; i++) {
+			pages.push(i)
+		}
+	} else {
+		// Show pages around current page
+		let start = Math.max(1, current - 2)
+		let end = Math.min(total, current + 2)
+		
+		// Adjust if we're near the beginning or end
+		if (current <= 3) {
+			end = Math.min(total, 5)
+		}
+		if (current >= total - 2) {
+			start = Math.max(1, total - 4)
+		}
+		
+		for (let i = start; i <= end; i++) {
+			pages.push(i)
+		}
+	}
+	
+	return pages
+})
+
+// Pagination methods
+const goToPage = (page) => {
+	if (page >= 1 && page <= totalPages.value) {
+		currentPage.value = page
+	}
+}
+
+const previousPage = () => {
+	if (currentPage.value > 1) {
+		currentPage.value--
+	}
+}
+
+const nextPage = () => {
+	if (currentPage.value < totalPages.value) {
+		currentPage.value++
+	}
+}
+
+// Helper for internationalization
+const __ = (text) => text
 
 const getInitials = (name) => {
 	if (!name) return '?'

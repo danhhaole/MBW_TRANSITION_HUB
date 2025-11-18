@@ -18,7 +18,8 @@
   "overall_potential_score",
   "high_rate",
   "quality_distribution",
-  "budget",
+  "max_budget",
+  "min_budget",
   "is_active"
  ],
  "fields": [
@@ -102,15 +103,20 @@
    "label": "Is Active"
   },
   {
-   "fieldname": "budget",
+   "fieldname": "max_budget",
    "fieldtype": "Currency",
-   "label": "Budget"
+   "label": "Max Budget"
+  },
+  {
+   "fieldname": "min_budget",
+   "fieldtype": "Currency",
+   "label": "Min Budget"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-14 13:43:20.947627",
+ "modified": "2025-11-18 09:59:50.533117",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Segment",
