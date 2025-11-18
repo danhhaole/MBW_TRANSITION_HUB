@@ -1,6 +1,8 @@
 import frappe
 from datetime import datetime
 
+from mbw_mira.workers.campaign_enrollment import attraction_campaign, nurture_campaign
+
 
 #Task quét chiến dich thu hút để post bài
 def run_attraction_campaign():
@@ -43,7 +45,7 @@ def run_nurture_campaign():
             "status": "ACTIVE",
             "start_date": ("<=", today),
             # "scheduled_at": (">=", today),
-            "type":"NURTURE"
+            "type":"NURTURING"
         },
         fields=["name", "campaign_name"]
     )

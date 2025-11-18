@@ -60,7 +60,7 @@ def click_redirect():
     if not verify_signature(params, sig):
         frappe.throw("Invalid signature")
 
-    track(talent_id=talent_id, action=action, type="EMAIL_CLICKED", url=url)
+    track(talent_id=talent_id, action=action, type="ON_LINK_CLICK", url=url)
 
     frappe.local.response["type"] = "redirect"
     frappe.local.response["location"] = url

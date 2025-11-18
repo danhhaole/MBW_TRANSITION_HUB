@@ -1,5 +1,6 @@
 import frappe
 from frappe.utils import now_datetime
+from mbw_mira.workers.create_action_for_talent import create_action_for_talent_campaign
 
 
 def run():
@@ -18,12 +19,12 @@ def run():
     )
 
     for tc in campaigns:
+        create_action_for_talent_campaign(tc.name)
         frappe.enqueue(
             "mbw_mira.workers.create_action_for_talent.create_action_for_talent_campaign",
             talent_campaign_id=tc.name,
             job_name=tc.name,
-            queue="default",
-            timeout=300
+            queue="default"
         )
 
     return True

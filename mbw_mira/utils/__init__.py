@@ -75,7 +75,7 @@ def send_email_job(task_id, action):
         )
 
         if result:
-            task.status = "Completed"
+            task.status = "EXECUTED"
             task.execution_result = {
                 "status": "Success",
                 "message": f"[EMAIL] Sent to {talentprofiles.name} — task: {task.name}",
@@ -88,7 +88,7 @@ def send_email_job(task_id, action):
                 }
             )
         else:
-            task.status = "Failed"
+            task.status = "FAILED"
             task.execution_result = {
                 "error": f"[EMAIL] Error Sent to {talent_email} — step: {task.name}",
                 "traceback": frappe.get_traceback(),
@@ -97,7 +97,7 @@ def send_email_job(task_id, action):
         frappe.db.commit()
     except Exception as e:
         frappe.log_error(frappe.get_traceback(), "[EMAIL ERROR] send_email_job")
-        task.status = "Failed"
+        task.status = "FAILED"
         task.execution_result = {"error": str(e), "traceback": frappe.get_traceback()}
         task.save(ignore_permissions=True)
         frappe.db.commit()
@@ -113,7 +113,8 @@ def send_email_action(talentprofile_id, action_id):
 
     # Lấy thông tin candidate
     action = frappe.get_doc("Mira Action", action_id)
-    talentprofiles = frappe.get_cached_doc("Mira Talent", talentprofile_id)
+    social = frappe.get_doc("Mira Campaign Social",action.campaign_social)
+    talentprofiles = frappe.get_doc("Mira Talent", talentprofile_id)
 
     logger = frappe.logger("campaign")
     if not talentprofiles.email:
@@ -167,8 +168,13 @@ def send_email_action(talentprofile_id, action_id):
         )
 
         if result:
-            action.status = "Completed"
+            action.status = "EXECUTED"
+            social.status = "Success"
             action.execution_result = {
+                "status": "Success",
+                "message": f"[EMAIL] Sent to {talentprofiles.name} — task: {action.name}",
+            }
+            social.response_data = {
                 "status": "Success",
                 "message": f"[EMAIL] Sent to {talentprofiles.name} — task: {action.name}",
             }
@@ -180,18 +186,27 @@ def send_email_action(talentprofile_id, action_id):
                 }
             )
         else:
-            action.status = "Failed"
+            action.status = "FAILED"
+            social.status = "Failed"
             action.execution_result = {
                 "error": f"[EMAIL] Error Sent to {talent_email} — step: {action.name}",
                 "traceback": frappe.get_traceback(),
             }
+            social.response_data = {
+                "error": f"[EMAIL] Error Sent to {talent_email} — step: {action.name}",
+                "traceback": frappe.get_traceback(),
+            }
         action.save(ignore_permissions=True)
+        social.save(ignore_permissions=True)
         frappe.db.commit()
     except Exception as e:
         frappe.log_error(frappe.get_traceback(), "[EMAIL ERROR] send_email_job")
-        action.status = "Failed"
+        action.status = "FAILED"
+        social.status = "Failed"
         action.execution_result = {"error": str(e), "traceback": frappe.get_traceback()}
+        social.response_data = {"error": str(e), "traceback": frappe.get_traceback()}
         action.save(ignore_permissions=True)
+        social.save(ignore_permissions=True)
         frappe.db.commit()
         raise
 

@@ -16,8 +16,9 @@ def process_email_action(action_name):
         # frappe.sendmail(recipients=..., subject=..., message=...)
         #Lấy talentprofile 
         talent_id = frappe.db.get_value("Mira Talent Campaign", action.talent_campaign_id,"talent_id")
-        send_email_action(talent_id,action_name)
-        frappe.publish_realtime('action_executed', message={'talent_campaign': action.talent_campaign_id, "action":action_name})
+        if talent_id:
+            send_email_action(talent_id,action_name)
+            frappe.publish_realtime('action_executed', message={'talent_campaign': action.talent_campaign_id, "action":action_name})
         return True
 
     except Exception as e:

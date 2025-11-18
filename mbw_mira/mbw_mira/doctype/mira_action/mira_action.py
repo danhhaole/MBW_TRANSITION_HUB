@@ -20,34 +20,34 @@ class MiraAction(Document):
 
 
 def update_step_result_talent_campaign(doc):
-	"""Update trạng thái Mira Talent Campaign khi mira_action đã thực hiện
+    """Update trạng thái Mira Talent Campaign khi mira_action đã thực hiện
 
-	Args:
-		doc (dict): _description_
-	""" 
-	#MiraAction có 2 trạng thái này thì update Mira Talent Campaign
-	talent_campaign = frappe.get_doc("Mira Talent Campaign", doc.talent_campaign_id)
-	if talent_campaign.status != "ACTIVE":
-		return
+    Args:
+        doc (dict): _description_
+    """ 
+    #MiraAction có 2 trạng thái này thì update Mira Talent Campaign
+    talent_campaign = frappe.get_doc("Mira Talent Campaign", doc.talent_campaign_id)
+    if talent_campaign.status != "ACTIVE":
+        return
+    talent_campaign.status = "COMPLETED"
+    talent_campaign.next_mira_action_at = None
+    talent_campaign.save()
+	# current_order = talent_campaign.current_step_order
+	# next_step = frappe.get_all(
+	# 	"Mira Campaign Social",
+	# 	talent_campaign.campaign_social,
+	# 	limit=1,
+	# )
 
-	current_order = talent_campaign.current_step_order
-	next_step = frappe.get_all(
-		"Mira Campaign Step",
-		filters={"campaign": talent_campaign.campaign_id, "step_order": current_order + 1},
-		fields=["name", "step_order", "delay_in_days"],
-		limit=1,
-	)
+	# if not next_step:
+	# 	talent_campaign.status = "COMPLETED"
+	# 	talent_campaign.next_mira_action_at = None
+	# else:
+	# 	step_info = next_step[0]
+	# 	talent_campaign.current_step_order = step_info.step_order
+	# 	talent_campaign.next_mira_action_at = add_days(now_datetime(), step_info.delay_in_days or 0)
 
-	if not next_step:
-		talent_campaign.status = "COMPLETED"
-		talent_campaign.next_mira_action_at = None
-	else:
-		step_info = next_step[0]
-		talent_campaign.current_step_order = step_info.step_order
-		talent_campaign.next_mira_action_at = add_days(now_datetime(), step_info.delay_in_days or 0)
-
-	talent_campaign.save()
-	return True
+    
 
 
 def update_current_campaign(self):
@@ -73,7 +73,7 @@ def get_mira_action_worker(step):
 	#Duyệt danh sách mira_actions, tìm step nào có mira_action_type là gửi email
 	mira_actions_name =[]
 	for mira_action in mira_actions:
-		step_exists = frappe.db.exists("Mira Campaign Step",{"name":mira_action.campaign_step, "mira_action_type":step})
+		step_exists = frappe.db.exists("Mira Campaign Step",{"name":mira_action.campaign_social, "mira_action_type":step})
 		if step_exists:
 			mira_actions_name.append(mira_action)
 	return mira_actions_name
@@ -81,7 +81,7 @@ def get_mira_action_worker(step):
 def check_duplicate_mira_action(doc):
     filters = {
         "talent_campaign_id": doc.talent_campaign_id,
-        "campaign_step": doc.campaign_step,
+        "campaign_social": doc.campaign_social,
     }
 
     existing = frappe.db.exists("MiraAction", filters)
@@ -92,7 +92,7 @@ def check_duplicate_mira_action(doc):
                 "An MiraAction with Candidate Campaign <b>{0}</b> and Campaign Step <b>{1}</b> already exists: <a href='/app/mira_action/{2}'>{2}</a>"
             ).format(
                 doc.talent_campaign_id,
-                doc.campaign_step,
+                doc.campaign_social,
                 existing
             ),
             title=frappe._("Duplicate MiraAction")
@@ -106,7 +106,7 @@ def _map_by(items, key):
 
 
 def _get_enriched_mira_actions(mira_action_rows):
-    step_names = [row.get("campaign_step") for row in mira_action_rows if row.get("campaign_step")]
+    step_names = [row.get("campaign_social") for row in mira_action_rows if row.get("campaign_social")]
     user_ids = list({row.get("assignee_id") for row in mira_action_rows if row.get("assignee_id")})
 
     steps = frappe.get_all(

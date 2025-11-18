@@ -8,10 +8,10 @@ def create_action_for_talent_campaign(talent_campaign_id):
     """
     try:
         tc = frappe.db.get_value("Mira Talent Campaign", talent_campaign_id,["name","campaign_social"],as_dict=1)
-
+        
         # lấy CampaignStep hiện tại
         step = get_campaign_social(tc.campaign_social)
-
+        
         if not step:
             return
 
@@ -23,17 +23,18 @@ def create_action_for_talent_campaign(talent_campaign_id):
         #         )
         # tạo Action
         action_type = ""
-        if step.action_type == 'Email':
+        if step.platform == 'Email':
             action_type = "SEND_EMAIL"
-        elif step.action_type == 'Facebook':
+        elif step.platform == 'Facebook':
             action_type = 'POST_FACEBOOK'
-        elif step.action_type == 'Zalo':
+        elif step.platform == 'Zalo':
             action_type == 'SEND_ZALO'
-        elif step.action_type == 'Linkedin':
+        elif step.platform == 'Linkedin':
             action_type = 'SEND_LINKEDIN'
-        elif step.action_type == 'TopCV':
+        elif step.platform == 'TopCV':
             action_type = 'POST_TOPCV'
-            
+        
+        
         if not check_exists(tc.name,step.name) and action_type in ["SEND_EMAIL","SEND_ZALO"]:
             action = frappe.get_doc({
                 "doctype": "Mira Action",
@@ -48,8 +49,8 @@ def create_action_for_talent_campaign(talent_campaign_id):
             })
             action.insert(ignore_permissions=True)
             frappe.db.commit()
-
-            frappe.publish_realtime('action_created', message={'talent_campaign': talent_campaign_id})
+            
+            #frappe.publish_realtime('action_created', message={'talent_campaign': talent_campaign_id})
             return action.name
         else:
             return None
@@ -58,8 +59,8 @@ def create_action_for_talent_campaign(talent_campaign_id):
         frappe.log_error(str(e))
         return None
 
-def check_exists(talent_campaign_id,campaign_step):
-    action_exists = frappe.db.exists("Mira Action",{"talent_campaign_id":talent_campaign_id,"campaign_step":campaign_step})
+def check_exists(talent_campaign_id,campaign_social):
+    action_exists = frappe.db.exists("Mira Action",{"talent_campaign_id":talent_campaign_id,"campaign_social":campaign_social})
     if action_exists:
         return True
     else:

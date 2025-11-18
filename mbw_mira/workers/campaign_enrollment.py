@@ -1,3 +1,4 @@
+import json
 import frappe
 from frappe.utils import now_datetime,add_days,add_to_date
 from mbw_mira.api.external_connections import share_job_posting
@@ -34,6 +35,7 @@ def nurture_campaign(campaign_id):
     Chiến dịch nuôi dưỡng sẽ chỉ tiếp cận qua các kênh:Email, ZaloOA
     """
     campaign = frappe.get_doc("Mira Campaign", campaign_id)
+    
     #Lấy Mira campaign social
     #Tạo talent campaign
     _enroll_talent_for_campaign(campaign)
@@ -85,20 +87,22 @@ def _enroll_talent_for_campaign(campaign):
     """
     Worker: tìm ứng viên từ Mira Talent theo campaign và tạo Mira Talent Campaign.
     """
-    talent_profiles = _get_talents_segment_for_campaign(campaign)
-
+    talent_profiles = get_combined_talent(campaign)
+    
     if not talent_profiles:
         return
-
+    
     # tìm bước đầu tiên trong CampaignStep (nếu có)
     first_step = _get_first_campaign_step(campaign)
+    
 
     count = 0
     try:
-        
+        print("count",len(talent_profiles))
         if first_step and talent_profiles:
-            for profile in talent_profiles:
+            for profile in talent_profiles:                
                 _create_talent_campaign(campaign, profile, first_step)
+                
                 count += 1
         #frappe.publish_realtime('enroll_talent_campaign', message={'campaign': campaign})
         return count
@@ -107,33 +111,81 @@ def _enroll_talent_for_campaign(campaign):
         return count
 
 
-
-def _get_talents_segment_for_campaign(campaign):
-    """
-    Lấy danh sách talent từ Campaign (Mira Talent Pool)
-    Áp dụng segment_id + condition nâng cao nếu có.
-    """
-    base_filter = [["segment_id", "=", campaign.talent_pool]]
-
-    # Kiểm tra condition
-    if getattr(campaign, "condition", None):
-        try:
-            normalized_condition = _normalize_condition(campaign.condition)
-            combined_filter = [base_filter[0], "and", normalized_condition]
-        except Exception as e:
-            frappe.log_error(f"Error parsing campaign condition: {str(e)}")
-            combined_filter = base_filter
-    else:
-        combined_filter = base_filter
-
-    # Lấy danh sách talent
-    talent_profiles = frappe.get_all(
-        "Mira Talent Pool",
-        filters=combined_filter,
-        fields=["talent_id"]
-    )
-
-    return talent_profiles
+def get_combined_talent(campaign):
+    try:
+        if isinstance(campaign.condition_filter, str):
+            conditions = json.loads(campaign.condition_filter) if campaign.condition_filter else []
+        
+        # Start with base filters
+        filters = {}
+        talent_ids = None
+        
+        # Step 1: Get talent IDs from segment if provided
+        if campaign.target_pool:
+            # Get talents from Mira Talent Pool by segment_id
+            pool_records = frappe.get_all('Mira Talent Pool', 
+                filters={'segment_id': campaign.target_pool},
+                pluck='talent_id'
+            )
+            talent_ids = set(pool_records)
+        
+        # Step 2: Add condition filters
+        # Conditions format: [["field", "operator", "value"], ...]
+        if conditions and len(conditions) > 0:
+            for condition in conditions:
+                # Handle both list format and dict format
+                if isinstance(condition, list) and len(condition) >= 3:
+                    field = condition[0]
+                    operator = condition[1]
+                    value = condition[2]
+                elif isinstance(condition, dict):
+                    field = condition.get('field')
+                    operator = condition.get('operator', '=')
+                    value = condition.get('value')
+                else:
+                    continue
+                
+                if not field:
+                    continue
+                
+                # Map operators to Frappe format
+                # Special handling for comma-separated fields (skills, tags, etc.)
+                if field in ['skills', 'tags', 'soft_skills'] and operator in ['=', '==']:
+                    # Use LIKE for comma-separated fields
+                    filters[field] = ['like', f'%{value}%']
+                elif operator in ['=', '==']:
+                    filters[field] = value
+                elif operator in ['!=', '<>']:
+                    filters[field] = ['!=', value]
+                elif operator == 'in':
+                    filters[field] = ['in', value]
+                elif operator == 'not in':
+                    filters[field] = ['not in', value]
+                elif operator in ['like', 'LIKE']:
+                    filters[field] = ['like', f'%{value}%']
+                elif operator == '>':
+                    filters[field] = ['>', value]
+                elif operator == '<':
+                    filters[field] = ['<', value]
+                elif operator == '>=':
+                    filters[field] = ['>=', value]
+                elif operator == '<=':
+                    filters[field] = ['<=', value]
+                else:
+                    filters[field] = value
+        
+        # Step 3: Combine segment IDs with condition filters
+        if talent_ids is not None:
+            # Filter by talent IDs from segment
+            filters['name'] = ['in', list(talent_ids)]
+        
+        # Step 4: Count
+        talents = frappe.db.get_list('Mira Talent', filters=filters,fields=["*"])
+        
+        return talents
+    except Exception as e:
+        print(str(e))
+        return []
 
 
 def _get_first_campaign_step(campaign):
@@ -156,14 +208,17 @@ def _create_talent_campaign(campaign, profile, first_step):
     """
     Tạo mới Mira Talent Campaign, chỉ set current_step_order nếu có
     """
-    try:
-        next_action_at = add_days(first_step.post_schedule_time, 0)
-        if not _check_exists(campaign.name,profile.get("talent_id")):
+    try:        
+        if first_step.post_schedule_time:
+            next_action_at = add_days(first_step.post_schedule_time, 0)
+        else:
+            next_action_at = campaign.start_date
+        if not _check_exists(campaign.name,profile.name) and profile.name:
             doc = frappe.get_doc(
                 {
                     "doctype": "Mira Talent Campaign",
                     "campaign_id": campaign.name,
-                    "talent_id": profile.get("talent_id"),
+                    "talent_id": profile.name,
                     "campaign_social":first_step.name,
                     "status": "ACTIVE",
                     "enrolled_at": now_datetime(),
@@ -177,7 +232,7 @@ def _create_talent_campaign(campaign, profile, first_step):
         else:
             return None
     except Exception as e:
-        #frappe.log_error(f"talent_profiles {e}")
+        frappe.log_error(f"talent_profiles {e}")
         return None
 
 def _check_exists(campaign_id,talent_id):
