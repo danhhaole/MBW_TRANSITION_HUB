@@ -15,8 +15,14 @@ class CMSAPI:
 
     # --- 2. Page từ template ---
     def create_page_by_template(self, template_id, page_title, **kwargs):
+        # Filter out Frappe internal fields
+        frappe_internal_fields = ['cmd', 'doctype', 'name', 'owner', 'modified_by']
+        filtered_kwargs = {k: v for k, v in kwargs.items() if k not in frappe_internal_fields}
+        
         data = {"template_id": template_id, "page_title": page_title}
-        data.update(kwargs)
+        data.update(filtered_kwargs)
+        
+        print("🚀 Create page data:", data)
         return self.provider.post("mbw_cms.api.page_api.create_page_by_template", data=data)
 
     # --- 3. Publish / Unpublish ---
@@ -28,8 +34,16 @@ class CMSAPI:
 
     # --- 4. Update recruitment page ---
     def update_recruitment_page(self, page_id, **kwargs):
+        # Filter out Frappe internal fields
+        frappe_internal_fields = ['cmd', 'doctype', 'name', 'owner', 'modified_by']
+        filtered_kwargs = {k: v for k, v in kwargs.items() if k not in frappe_internal_fields}
+        
         data = {"page_id": page_id}
-        data.update(kwargs)
+        data.update(filtered_kwargs)
+        
+        print("🚀 Final data to send:", data)
+        print("🚀 Filtered out fields:", [k for k in kwargs.keys() if k in frappe_internal_fields])
+        
         return self.provider.put("mbw_cms.api.page_api.update_recruitment_page_details", data=data)
 
     # --- 5. Create / Update page từ blocks ---

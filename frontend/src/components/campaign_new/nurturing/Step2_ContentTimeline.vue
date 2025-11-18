@@ -6,8 +6,6 @@
       v-model:ladipage-id="localLadipageId"
       :campaign-id="props.name"
       :campaign-name="campaignName"
-      :company-info="companyInfo"
-      :job-info="jobInfo"
     />
 
     <!-- Header - Sticky -->
@@ -378,14 +376,6 @@ const props = defineProps({
   ladipageId: {
     type: String,
     default: ''
-  },
-  companyInfo: {
-    type: Object,
-    default: () => ({})
-  },
-  jobInfo: {
-    type: Object,
-    default: () => ({})
   },
   name: {
     type: String,

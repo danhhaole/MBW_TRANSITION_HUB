@@ -142,17 +142,36 @@
           
           <!-- Page Actions -->
           <div class="flex gap-2 pt-3 border-t border-green-200">
-            <Button
-              @click="openBuilder"
-              variant="solid"
-              size="sm"
-              class="bg-green-600 hover:bg-green-700"
-            >
-              <template #prefix>
-                <FeatherIcon name="edit-2" class="h-3 w-3" />
-              </template>
-              {{ __('Edit in Builder') }}
-            </Button>
+            <div class="flex gap-2">
+              <Button
+                v-if="selectedPage.url"
+                @click="openPreview"
+                variant="solid"
+              >
+                <template #prefix>
+                  <FeatherIcon name="eye" class="h-4 w-4" />
+                </template>
+                {{ __('Preview') }}
+              </Button>
+              <Button
+                @click="handleEditPageInfo"
+                variant="outline"
+              >
+                <template #prefix>
+                  <FeatherIcon name="settings" class="h-4 w-4" />
+                </template>
+                {{ __('Edit Page Info') }}
+              </Button>
+              <Button
+                @click="openBuilder"
+                variant="outline"
+              >
+                <template #prefix>
+                  <FeatherIcon name="edit" class="h-4 w-4" />
+                </template>
+                {{ __('Edit in Builder') }}
+              </Button>
+            </div>
             <Button
               @click="copyToClipboard(selectedPage.url)"
               variant="ghost"
@@ -198,6 +217,19 @@
         @select="(template, data) => handleTemplateSelect(template, data)"
         @retry="fetchTemplates"
       />
+      
+      <!-- Company Info Modal -->
+      <CompanyInfoModal
+        :show="showCompanyInfoModal"
+        :selected-template="selectedTemplateData"
+        :campaign-name="campaignName"
+        :loading="creatingPage"
+        :error="createError"
+        :is-edit-mode="isEditMode"
+        :initial-data="editingPageData"
+        @close="handleCompanyInfoModalClose"
+        @submit="handleCompanyInfoSubmit"
+      />
 
     </div>
   </div>
@@ -205,9 +237,11 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { FeatherIcon, Button, call, toast } from 'frappe-ui'
+import { FeatherIcon, Button, call } from 'frappe-ui'
+import { useToast } from '@/composables/useToast'
 import TemplateSelectionModal from './TemplateSelectionModal.vue'
 import PublishedPageSelectionModal from './PublishedPageSelectionModal.vue'
+import CompanyInfoModal from './CompanyInfoModal.vue'
 
 const props = defineProps({
   ladipageUrl: {
@@ -226,39 +260,39 @@ const props = defineProps({
     type: String,
     default: ''
   },
-  companyInfo: {
-    type: Object,
-    default: () => ({})
-  },
-  jobInfo: {
-    type: Object,
-    default: () => ({})
-  },
 })
 
 const emit = defineEmits(['update:ladipageUrl', 'update:ladipageId'])
 
+// Toast
+const toast = useToast()
+
 // Helper function to build builder URL
 const buildBuilderUrl = (pageBuilderIdOrPath) => {
-  if (!pageBuilderIdOrPath) return ''
+  if (!pageBuilderIdOrPath) {
+    console.warn('⚠️ No page builder ID provided')
+    return ''
+  }
+  
+  console.log('🔗 Building builder URL from:', pageBuilderIdOrPath)
   
   // If it's already a full URL, return as is
-  if (pageBuilderIdOrPath.startsWith('http')) {
+  if (pageBuilderIdOrPath.startsWith('http://') || pageBuilderIdOrPath.startsWith('https://')) {
+    console.log('✅ Already full URL:', pageBuilderIdOrPath)
     return pageBuilderIdOrPath
   }
   
-  // If it's just the page builder ID, build the URL
-  if (pageBuilderIdOrPath.startsWith('page-')) {
-    return `https://hireos.fastwork.vn/builder/${pageBuilderIdOrPath}`
-  }
-  
   // If it's a path starting with /builder, prepend domain
-  if (pageBuilderIdOrPath.startsWith('/builder')) {
-    return `https://hireos.fastwork.vn${pageBuilderIdOrPath}`
+  if (pageBuilderIdOrPath.startsWith('/builder/')) {
+    const url = `https://hireos.fastwork.vn${pageBuilderIdOrPath}`
+    console.log('✅ Built URL from path:', url)
+    return url
   }
   
-  // Default case
-  return `https://hireos.fastwork.vn/builder/${pageBuilderIdOrPath}`
+  // If it's just the page builder ID (e.g., 'page-123' or just '123'), build the URL
+  const url = `https://hireos.fastwork.vn/builder/page/${pageBuilderIdOrPath}`
+  console.log('✅ Built URL from ID:', url)
+  return url
 }
 
 // State
@@ -274,23 +308,36 @@ const loading = ref(false)
 const error = ref(null)
 const creatingPage = ref(false)
 const createError = ref(null)
+const showCompanyInfoModal = ref(false)
+const selectedTemplateData = ref(null)
+const isEditMode = ref(false)
+const editingPageData = ref(null)
 
 // Load page details for edit mode
 const loadPageDetails = async (pageId) => {
   try {
+    console.log('📄 Loading page details for:', pageId)
     const response = await call('mbw_mira.integrations.cms_page.get_page_details', {
       page_id: pageId
     })
     
+    console.log('📦 Page details response:', response)
+    
     if (response?.message?.status === 'success' && response?.message?.data) {
       const page = response.message.data
+      const builderPage = page.page_builder_id || page.builder_page || page.builder_url || ''
+      
+      console.log('🏗️ Builder page value:', builderPage)
+      
       selectedPage.value = {
         id: pageId,
-        title: page.page_title || '',
+        title: page.page_title || page.title || '',
         url: props.ladipageUrl,
         isPublished: page.published || false,
-        builderUrl: buildBuilderUrl(page.builder_page)
+        builderUrl: buildBuilderUrl(builderPage)
       }
+      
+      console.log('✅ Selected page:', selectedPage.value)
     }
   } catch (error) {
     console.error('❌ Error loading page details:', error)
@@ -321,13 +368,19 @@ const loadPublishedPages = async () => {
 
 // Select published page
 const selectPublishedPage = async (page) => {
+  console.log('📄 Selecting published page:', page)
+  const builderPage = page.page_builder_id || page.builder_page || page.builder_url || ''
+  console.log('🏗️ Builder page from published:', builderPage)
+  
   selectedPage.value = {
     id: page.name,
     title: page.title,
     url: page.router,
     isPublished: true,
-    builderUrl: buildBuilderUrl(page.page_builder_id)
+    builderUrl: buildBuilderUrl(builderPage)
   }
+  
+  console.log('✅ Selected published page:', selectedPage.value)
   
   // Emit updates
   emit('update:ladipageUrl', page.router)
@@ -349,6 +402,23 @@ const selectPublishedPage = async (page) => {
       console.error('❌ Error saving to campaign:', error)
       // Don't show error toast as this is not critical for UX
     }
+  }
+  
+  // Save to builder page storage (DocType) - minimal info for published page
+  try {
+    console.log('💾 Saving published page to builder storage...')
+    await call('mbw_mira.integrations.cms_page_storage.save_builder_page_data', {
+      page_id: page.name,
+      campaign_id: props.campaignId,
+      created_from: 'Published Page',
+      page_title: page.title,
+      url_public_page: page.router,
+      page_builder_id: builderPage
+    })
+    console.log('✅ Saved published page to builder storage')
+  } catch (error) {
+    console.error('❌ Error saving to builder storage:', error)
+    // Don't fail the whole process if storage save fails
   }
   
   toast.success(__('Published page selected'))
@@ -392,83 +462,272 @@ const fetchTemplates = async () => {
   }
 }
 
-// Handle template selection and create page
+// Handle template selection - show company info modal
 const handleTemplateSelect = async (template, data) => {
   if (!template) return
 
   console.log('Selected template:', template)
   console.log('Selected template data:', data)
   
+  // Store template data and show company info modal
+  selectedTemplateData.value = {
+    template_id: template,
+    template_data: data
+  }
+  showCompanyInfoModal.value = true
+}
+
+// Handle company info submission - both create and update
+const handleCompanyInfoSubmit = async (companyInfo) => {
   creatingPage.value = true
   createError.value = null
-  showModal.value = false
   
   try {
-    const response = await call('mbw_mira.integrations.cms_page.create_page_by_template', {
-      template_id: template,
-      page_title: data.page_title ,
-      campaign_name: props.campaignName,
-      campaign_id: props.campaignId,
-      company_info: props.companyInfo,
-      job_info: props.jobInfo,
-      published: 1
-    })
-    
-    if (response?.message?.status === 'success' && response?.message?.data) {
-      const page = response?.message?.data
+    if (isEditMode.value) {
+      // Update existing page
+      if (!selectedPage.value?.id) return
       
-      // Check if page is published (has url_public_page)
-      const publicUrl = page.url_public_page || ''
+      console.log('✏️ Updating page:', selectedPage.value.id)
+      console.log('📝 Update data:', companyInfo)
       
-      selectedPage.value = {
-        id: page.page_id,
-        title: page.page_title,
-        url: publicUrl,
-        isPublished: true,
-        builderUrl: buildBuilderUrl(page.builder_page)
+      const payload = {
+        page_id: selectedPage.value.id,
+        ...companyInfo
       }
       
-      // Emit updates based on publish status
-      emit('update:ladipageUrl', publicUrl) // URL if published, empty if draft
-      emit('update:ladipageId', page.page_id)
+      console.log('📤 Sending update payload to API:', payload)
+      console.log('🕐 Timestamp:', new Date().toISOString())
       
-      // Save to campaign database
-      if (props.campaignId) {
+      const response = await call('mbw_mira.integrations.cms_page.update_recruitment_page', payload)
+      
+      console.log('📥 Update response:', response)
+      console.log('📥 Response type:', typeof response)
+      console.log('📥 Response keys:', response ? Object.keys(response) : 'null')
+      console.log('🕐 Response received at:', new Date().toISOString())
+      
+      // Check both direct and nested response structures
+      const status = response?.status || response?.message?.status
+      const responseMessage = response?.message?.message || response?.message || 'No message'
+      
+      console.log('✅ Parsed status:', status)
+      console.log('📝 Parsed message:', responseMessage)
+      
+      if (status === 'success') {
+        // Update local selected page data
+        selectedPage.value.title = companyInfo.page_title || selectedPage.value.title
+        
+        // Update builder page storage (DocType)
         try {
-          await call('frappe.client.set_value', {
-            doctype: 'Mira Campaign',
-            name: props.campaignId,
-            fieldname: {
-              ladipage_url: publicUrl, // URL if published, empty if draft
-              ladipage_id: page.page_id
-            }
+          console.log('💾 Updating builder page storage...')
+          await call('mbw_mira.integrations.cms_page_storage.save_builder_page_data', {
+            page_id: selectedPage.value.id,
+            campaign_id: props.campaignId,
+            ...companyInfo
           })
-          console.log('✅ Saved page to campaign:', props.campaignId, { 
-            published: isPublished, 
-            url: publicUrl 
-          })
+          console.log('✅ Updated builder page storage')
         } catch (error) {
-          console.error('❌ Error saving page to campaign:', error)
-          // Don't show error toast as this is not critical for UX
+          console.error('❌ Error updating builder page storage:', error)
+          // Don't fail the whole process if storage update fails
         }
+        
+        console.log('✅ Page updated successfully')
+        toast.success(__('Page updated successfully'))
+        
+        // Close modal and reset state on success
+        showCompanyInfoModal.value = false
+        isEditMode.value = false
+        editingPageData.value = null
+      } else {
+        throw new Error(response?.message || 'Failed to update page')
+      }
+    } else {
+      // Create new page
+      if (!selectedTemplateData.value) return
+      
+      console.log('📝 Creating new page')
+      console.log('📝 Company info:', companyInfo)
+      console.log('📋 Template data:', selectedTemplateData.value)
+      
+      const payload = {
+        template_id: selectedTemplateData.value.template_id,
+        published: 1,
+        ...companyInfo
       }
       
-      toast.success(__('Page created successfully'))
-    } else {
-      throw new Error(response?.message || 'Failed to create page')
+      console.log('📤 Sending create payload to API:', payload)
+      
+      const response = await call('mbw_mira.integrations.cms_page.create_page_by_template', payload)
+      
+      console.log('📥 Create response:', response)
+      
+      if (response?.status === 'success' && response?.data) {
+        const page = response.data
+        
+        // Check if page is published (has url_public_page)
+        const publicUrl = page.url_public_page || ''
+        const builderPage = page.page_builder_id || page.builder_page || page.builder_url || ''
+        
+        console.log('🏗️ Builder page from response:', builderPage)
+        
+        selectedPage.value = {
+          id: page.page_id,
+          title: page.page_title || companyInfo.page_title,
+          url: publicUrl,
+          isPublished: !!publicUrl,
+          builderUrl: buildBuilderUrl(builderPage)
+        }
+        
+        console.log('✅ Page created:', selectedPage.value)
+        
+        // Emit updates based on publish status
+        emit('update:ladipageUrl', publicUrl)
+        emit('update:ladipageId', page.page_id)
+        
+        // Save to campaign database
+        if (props.campaignId) {
+          try {
+            await call('frappe.client.set_value', {
+              doctype: 'Mira Campaign',
+              name: props.campaignId,
+              fieldname: {
+                ladipage_url: publicUrl,
+                ladipage_id: page.page_id
+              }
+            })
+            console.log('✅ Saved page to campaign:', props.campaignId)
+          } catch (error) {
+            console.error('❌ Error saving page to campaign:', error)
+          }
+        }
+        
+        // Save to builder page storage (DocType)
+        try {
+          console.log('💾 Saving to builder page storage...')
+          await call('mbw_mira.integrations.cms_page_storage.save_builder_page_data', {
+            page_id: page.page_id,
+            campaign_id: props.campaignId,
+            template_id: selectedTemplateData.value.template_id,
+            created_from: 'Template',
+            url_public_page: publicUrl,
+            page_builder_id: builderPage,
+            ...companyInfo
+          })
+          console.log('✅ Saved to builder page storage')
+        } catch (error) {
+          console.error('❌ Error saving to builder page storage:', error)
+          // Don't fail the whole process if storage save fails
+        }
+        
+        toast.success(__('Page created successfully'))
+        
+        // Close modal and reset state on success
+        showCompanyInfoModal.value = false
+        showModal.value = false
+        selectedTemplateData.value = null
+      } else {
+        throw new Error(response?.message || 'Failed to create page')
+      }
     }
   } catch (error) {
-    console.error('❌ Error creating page:', error)
-    createError.value = error.message || 'Failed to create page'
+    console.error('❌ Error:', error)
+    createError.value = error.message || (isEditMode.value ? 'Failed to update page' : 'Failed to create page')
+    // Don't close modal on error - keep it open to show error
   } finally {
     creatingPage.value = false
   }
 }
 
+// Handle company info modal close
+const handleCompanyInfoModalClose = () => {
+  showCompanyInfoModal.value = false
+  createError.value = null
+  selectedTemplateData.value = null
+  isEditMode.value = false
+  editingPageData.value = null
+}
+
+// Handle edit page info
+const handleEditPageInfo = async () => {
+  if (!selectedPage.value?.id) return
+  
+  console.log('✏️ Loading page details for editing:', selectedPage.value.id)
+  
+  try {
+    // Load from local DocType storage first
+    const response = await call('mbw_mira.integrations.cms_page_storage.get_builder_page_data', {
+      page_id: selectedPage.value.id
+    })
+    
+    console.log('📥 Builder page data response:', response)
+    
+    if (response?.status === 'success' && response?.data) {
+      const pageData = response.data
+      
+      // Map API response to form data format
+      editingPageData.value = {
+        page_title: pageData.page_title || '',
+        company_name: pageData.company_name || '',
+        company_logo: pageData.company_logo || '',
+        company_slogan: pageData.company_slogan || '',
+        company_short_description: pageData.company_short_description || '',
+        company_vision: pageData.company_vision || '',
+        company_mission: pageData.company_mission || '',
+        web_favicon: pageData.web_favicon || '',
+        job_title: pageData.job_title || '',
+        work_address: pageData.work_address || '',
+        employment_type: pageData.employment_type || '',
+        salary: pageData.salary || '',
+        hiring_quantity: pageData.hiring_quantity || '',
+        application_deadline: pageData.application_deadline || '',
+        published_date: pageData.published_date || '',
+        job_description: pageData.job_description || '',
+        job_requirements: pageData.job_requirements || '',
+        job_benefits: pageData.job_benefits || '',
+        company_number_one: pageData.company_number_one || '',
+        company_number_two: pageData.company_number_two || '',
+        company_email_one: pageData.company_email_one || '',
+        company_email_two: pageData.company_email_two || '',
+        head_office: pageData.head_office || '',
+        company_website: pageData.company_website || '',
+        company_fb: pageData.company_fb || '',
+        company_linkedin: pageData.company_linkedin || '',
+        company_youtube: pageData.company_youtube || '',
+        company_zalo_oa: pageData.company_zalo_oa || '',
+        company_tiktok: pageData.company_tiktok || ''
+      }
+      
+      isEditMode.value = true
+      showCompanyInfoModal.value = true
+    } else {
+      throw new Error(response?.message || 'Failed to load page details')
+    }
+  } catch (error) {
+    console.error('❌ Error loading page details:', error)
+    toast.error(__('Failed to load page details: ') + (error.message || ''))
+  }
+}
+
+// Open preview
+const openPreview = () => {
+  console.log('👁️ Opening preview for page:', selectedPage.value)
+  if (selectedPage.value?.url) {
+    console.log('🔗 Page URL:', selectedPage.value.url)
+    window.open(selectedPage.value.url, '_blank', 'noopener,noreferrer')
+  } else {
+    console.error('❌ No page URL available')
+    toast.error(__('Page URL not available'))
+  }
+}
+
 // Open builder
 const openBuilder = () => {
+  console.log('🚀 Opening builder for page:', selectedPage.value)
   if (selectedPage.value?.builderUrl) {
-    window.open(selectedPage.value.builderUrl, '_blank')
+    console.log('🔗 Builder URL:', selectedPage.value.builderUrl)
+    window.open(selectedPage.value.builderUrl, '_blank', 'noopener,noreferrer')
+  } else {
+    console.error('❌ No builder URL available')
+    toast.error(__('Builder URL not available'))
   }
 }
 

@@ -41,15 +41,43 @@ class APIProvider:
         self._check_response(res)
         return res.json()
 
-    def post(self, endpoint, data=None):
-        res = requests.post(self._make_url(endpoint), headers=self._get_headers(), json=data)
-        self._check_response(res)
-        return res.json()
+    def post(self, endpoint, data=None, timeout=30):
+        url = self._make_url(endpoint)
+        frappe.logger().info(f"POST request to: {url}")
+        frappe.logger().info(f"POST data: {data}")
+        
+        try:
+            res = requests.post(url, headers=self._get_headers(), json=data, timeout=timeout)
+            frappe.logger().info(f"POST response status: {res.status_code}")
+            frappe.logger().info(f"POST response body: {res.text[:500]}")  # Log first 500 chars
+            
+            self._check_response(res)
+            return res.json()
+        except requests.exceptions.Timeout:
+            frappe.logger().error(f"POST request timeout after {timeout}s to: {url}")
+            frappe.throw(f"Request timeout after {timeout} seconds")
+        except Exception as e:
+            frappe.logger().error(f"POST request error: {str(e)}")
+            raise
 
-    def put(self, endpoint, data=None):
-        res = requests.put(self._make_url(endpoint), headers=self._get_headers(), json=data)
-        self._check_response(res)
-        return res.json()
+    def put(self, endpoint, data=None, timeout=30):
+        url = self._make_url(endpoint)
+        frappe.logger().info(f"PUT request to: {url}")
+        frappe.logger().info(f"PUT data: {data}")
+        
+        try:
+            res = requests.put(url, headers=self._get_headers(), json=data, timeout=timeout)
+            frappe.logger().info(f"PUT response status: {res.status_code}")
+            frappe.logger().info(f"PUT response body: {res.text[:500]}")  # Log first 500 chars
+            
+            self._check_response(res)
+            return res.json()
+        except requests.exceptions.Timeout:
+            frappe.logger().error(f"PUT request timeout after {timeout}s to: {url}")
+            frappe.throw(f"Request timeout after {timeout} seconds")
+        except Exception as e:
+            frappe.logger().error(f"PUT request error: {str(e)}")
+            raise
 
     def delete(self, endpoint, data=None):
         res = requests.delete(self._make_url(endpoint), headers=self._get_headers(), json=data)

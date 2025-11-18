@@ -62,8 +62,6 @@
            :name="campaignData.name"
           :ladipage-url="campaignData.ladipage_url"
           :ladipage-id="campaignData.ladipage_id"
-          :company-info="campaignData.company_info"
-          :job-info="campaignData.job_info"
           @update:triggers="campaignData.triggers = $event"
           @update:ladipage-url="campaignData.ladipage_url = $event"
           @update:ladipage-id="campaignData.ladipage_id = $event"
@@ -144,8 +142,6 @@ const campaignData = ref({
   step3_triggers: [],
   ladipage_url: '',
   ladipage_id: '',
-  company_info: '',
-  job_info: '',
   name: null
 })
 
@@ -755,8 +751,6 @@ const loadCampaignData = async (campaignId) => {
         // Landing page data
         ladipage_url: result.ladipage_url || '',
         ladipage_id: result.ladipage_id || '',
-        company_info: result.company_info ? JSON.parse(result.company_info) : {},
-        job_info: result.job_info ? JSON.parse(result.job_info) : {},
         step3_triggers: [], // TODO: Load step3 triggers from backend
         triggers: [] // Will be loaded separately in Step 2
       }
