@@ -796,7 +796,7 @@ def share_job_posting(
             frappe.enqueue(
                 _process_scheduled_share,
                 queue="short",
-                timeout=300,
+                timeout=12000,
                 share_id=share_doc.name,
                 eta=get_datetime(scheduled_time),
             )
@@ -937,7 +937,7 @@ def _get_facebook_login_url(connection_doc) -> str:
         response = requests.get(
             f"{host}/api/method/mbw_socialhub.api.facebook.get_facebook_login_url",
             params=params,
-            timeout=30,
+            timeout=1200,
         )
 
         if response.status_code == 200:
@@ -965,7 +965,7 @@ def _get_zalo_login_url(connection_doc) -> str:
         response = requests.get(
             f"{host}/api/method/mbw_socialhub.api.zalo.get_zalo_login_url",
             params=params,
-            timeout=30,
+            timeout=1200,
         )
 
         if response.status_code == 200:
@@ -1004,7 +1004,7 @@ def _fetch_facebook_accounts(connection_doc) -> Dict[str, Any]:
         response = requests.get(
             f"{host}/api/method/mbw_socialhub.api.facebook.get_page_list",
             params=params,
-            timeout=30,
+            timeout=1200,
         )
         
         print("response>>>>>>>>>>>>>>>>>>:",response)
@@ -1034,7 +1034,7 @@ def _fetch_facebook_accounts(connection_doc) -> Dict[str, Any]:
                     user_response = requests.get(
                         f"{host}/api/method/mbw_socialhub.api.facebook.get_user_account_by_email",
                         params=params,
-                        timeout=30,
+                        timeout=1200,
                     )
                     
                     if user_response.status_code == 200:
@@ -1086,7 +1086,7 @@ def _fetch_zalo_accounts(connection_doc) -> Dict[str, Any]:
         response = requests.get(
             f"{host}/api/method/mbw_socialhub.api.zalo.get_oa_info",
             params=params,
-            timeout=30,
+            timeout=1200,
         )
 
         if response.status_code == 200:
@@ -1136,7 +1136,7 @@ def _disconnect_facebook(connection_doc):
         requests.get(
             f"{host}/api/method/mbw_socialhub.api.facebook.disconnected_account",
             params=params,
-            timeout=30,
+            timeout=1200,
         )
     except requests.RequestException as e:
         frappe.log_error(f"Facebook disconnect request failed: {str(e)}")
@@ -1154,7 +1154,7 @@ def _disconnect_zalo(connection_doc):
         requests.get(
             f"{host}/api/method/mbw_socialhub.api.zalo.disconnected_account",
             params=params,
-            timeout=30,
+            timeout=1200,
         )
     except requests.RequestException as e:
         frappe.log_error(f"Facebook disconnect request failed: {str(e)}")
@@ -1342,7 +1342,7 @@ def _share_to_facebook(connection, share_doc, share_data):
                 permalink_response = requests.get(
                     f"{host}/api/method/mbw_socialhub.api.facebook.get_permalink_post",
                     params={"page_id": page_id, "post_id": post_id},
-                    timeout=30,
+                    timeout=1200,
                 )
 
                 post_url = ""
@@ -1805,7 +1805,7 @@ def _test_zalo_connection(connection_doc) -> Dict[str, Any]:
                 "tenant_name": connection_doc.tenant_name,
                 "user_email": connection_doc.user_email,
             },
-            timeout=30,
+            timeout=1200,
         )
 
         if response.status_code == 200:
@@ -1844,7 +1844,7 @@ def _get_topcv_login_url(connection_doc) -> Optional[str]:
                 "secret_key": connection_doc.client_secret,
                 "hook_url": hook_url,
             },
-            timeout=30,
+            timeout=1200,
         )
         if response.status_code == 200:
             data = response.json()
@@ -1870,7 +1870,7 @@ def _fetch_topcv_accounts(connection_doc) -> Dict[str, Any]:
                 "api_key": connection_doc.api_key,
                 "secret_key": connection_doc.client_secret,
             },
-            timeout=30,
+            timeout=1200,
         )
 
         if response.status_code == 200:
@@ -1915,7 +1915,7 @@ def _share_to_topcv(connection, job, share_doc, share_data):
         check_response = requests.post(
             f"{host}/api/method/mbw_socialhub.api.topcv.check_connection",
             json={"tenant_name": connection.tenant_name},
-            timeout=30,
+            timeout=1200,
         )
 
         if check_response.status_code != 200:
@@ -2037,7 +2037,7 @@ def _test_topcv_connection(connection_doc) -> Dict[str, Any]:
         response = requests.post(
             f"{host}/api/method/mbw_socialhub.api.topcv.check_connection",
             json={"tenant_name": connection_doc.tenant_name},
-            timeout=30,
+            timeout=1200,
         )
 
         if response.status_code == 200:
@@ -2078,7 +2078,7 @@ def _disconnect_topcv(connection_doc):
                 "api_key": connection_doc.api_key,
                 "secret_key": connection_doc.client_secret,
             },
-            timeout=30,
+            timeout=1200,
         )
 
         if response.status_code == 200:
@@ -2108,7 +2108,7 @@ def get_topcv_metadata(connection_id: str, metadata_type: str) -> Dict[str, Any]
                 "type": metadata_type,
                 "token_key": connection_doc.secret_token,
             },
-            timeout=30,
+            timeout=1200,
         )
 
         if response.status_code == 200:

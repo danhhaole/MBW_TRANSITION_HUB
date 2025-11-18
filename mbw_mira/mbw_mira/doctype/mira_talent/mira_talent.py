@@ -7,7 +7,9 @@ from frappe.utils import cstr, cint, flt, add_days, nowdate, get_datetime,now_da
 from mbw_mira.api.common import get_filter_options, get_form_data, get_list_data
 import json
 from frappe import _
-
+import requests
+from frappe.utils.file_manager import save_file
+import os
 from mbw_mira.mbw_mira.doctype.mira_task_definition.mira_task_definition import create_task_definitions_from_event
 
 class MiraTalent(Document):
@@ -539,3 +541,142 @@ def submit_job_application():
             "error": "Có lỗi xảy ra khi gửi đơn ứng tuyển. Vui lòng thử lại sau."
         }
 
+
+def process_tracking_to_talent(tracking_doc_name):
+    """
+    Hàm xử lý nghiệp vụ: chuyển dữ liệu từ DocType Tracking sang DocType Mira Talent.
+    """
+    try:
+        # Lấy dữ liệu từ DocType Mira Talent Tracking đã lưu
+        tracking_doc = frappe.get_doc("Mira Talent Tracking", tracking_doc_name)
+        data = tracking_doc.as_dict() # Lấy toàn bộ fields
+        
+        # 1. Kiểm tra các trường bắt buộc (đã kiểm tra ở bước trước nhưng kiểm tra lại)
+        email = data.get("email")
+        phone = data.get("phone")
+        if not tracking_doc.notes:
+                tracking_doc.notes = ''
+        if not data.get("full_name") or (not email and not phone):
+            # Cập nhật trạng thái lỗi và dừng xử lý
+            tracking_doc.db_set("processing_status", "Failed")
+            tracking_doc.db_set("notes", tracking_doc.notes + "\nThiếu thông tin bắt buộc (Full Name, Email/Phone).")
+            frappe.db.commit()
+            return {"status": "error", "message": "Thông tin thiếu."}
+        
+        # 2. Tìm kiếm Talent hiện có
+        talent = None
+        # ... (Logic tìm kiếm Talent hiện có bằng Email/Phone giữ nguyên như phần trước)
+        if email:
+            talent_list = frappe.get_all("Mira Talent", filters={"email": email}, limit=1)
+            if talent_list:
+                talent = frappe.get_doc("Mira Talent", talent_list[0].name)
+        
+        if not talent and phone:
+            talent_list = frappe.get_all("Mira Talent", filters={"phone": phone}, limit=1)
+            if talent_list:
+                talent = frappe.get_doc("Mira Talent", talent_list[0].name)
+
+        # 3. Tạo mới hoặc Cập nhật Talent Doc
+        is_new_talent = talent is None
+        is_cv_apply = data.get("source") in ["MBW ATS", "Apply Form"]
+        
+        # (Phần logic tạo mới/cập nhật TalentDoc và thiết lập các trường mặc định)
+        if is_new_talent:
+            new_talent_doc = frappe.new_doc("Mira Talent")
+            new_talent_doc.crm_status = "New"
+            new_talent_doc.source = data.get("source", "Nurturing Interaction")
+            if is_cv_apply:
+                new_talent_doc.recruitment_readiness = "High"
+                new_talent_doc.priority_level = "High"
+        else:
+            new_talent_doc = talent
+            if is_cv_apply:
+                new_talent_doc.crm_status = "Profiling"
+                new_talent_doc.recruitment_readiness = "High"
+                new_talent_doc.priority_level = "High"
+                new_talent_doc.source = data.get("source")
+
+
+        # 4. Mapping Dữ liệu và Xử lý Resume URL
+        valid_fieldnames = [
+            f.fieldname 
+            for f in new_talent_doc.meta.fields 
+            if f.fieldname not in ['docstatus', 'name', 'creation', 'modified', 'owner', 'idx', 'parent']
+        ]
+
+        for field_name in valid_fieldnames:
+            if field_name in data and field_name not in ['resume'] and data.get(field_name): # resume được xử lý riêng
+                # Thiết lập giá trị cho trường nếu có trong dữ liệu Tracking
+                new_talent_doc.set(field_name, data.get(field_name))
+
+        # Xử lý Resume URL
+        resume_url = data.get("resume")
+        if resume_url and (resume_url.startswith("http") or resume_url.startswith("/files/")):
+            try:
+                # Nếu là URL bên ngoài (http/https)
+                if resume_url.startswith("http"):
+                    response = requests.get(resume_url, stream=True, timeout=30)
+                    response.raise_for_status() 
+                    content = response.content
+                    
+                    filename = os.path.basename(resume_url).split('?')[0]
+                    if not filename or '.' not in filename:
+                        filename = f"CV_{new_talent_doc.full_name.replace(' ', '_')}_{now_datetime()}.pdf"
+                
+                # Nếu là đường dẫn tệp Frappe (/files/...)
+                elif resume_url.startswith("/files/"):
+                    # Tệp đã có sẵn trong Frappe, chỉ cần cập nhật trường Attach
+                    new_talent_doc.resume = resume_url
+                    content = None # Đã có sẵn, không cần tải/lưu
+                    filename = None
+                
+                if content:
+                    file_doc = save_file(
+                        fname=filename, 
+                        content=content, 
+                        doctype="Mira Talent", 
+                        docname=new_talent_doc.name, 
+                        is_private=1 
+                    )
+                    new_talent_doc.resume = file_doc.file_url 
+
+            except requests.exceptions.RequestException as req_err:
+                note = f"\n[Lỗi] Không thể tải CV từ URL: {resume_url}. Error: {req_err}"
+                new_talent_doc.interaction_notes = (new_talent_doc.interaction_notes or "") + note
+                frappe.log_error(note, "Resume Download Failed")
+            except Exception as save_err:
+                note = f"\n[Lỗi] Lỗi khi lưu file CV: {save_err}"
+                new_talent_doc.interaction_notes = (new_talent_doc.interaction_notes or "") + note
+                frappe.log_error(note, "Resume Save Failed")
+        else:
+            # Nếu không phải URL, giả sử là tên file đã có sẵn hoặc trống
+            new_talent_doc.resume = resume_url
+
+        # 5. Cập nhật các trường cuối và Lưu Doc
+        new_talent_doc.last_interaction_date = nowdate()
+        new_talent_doc.interaction_notes = (new_talent_doc.interaction_notes or "") + \
+            f"\n--- Dữ liệu tracking từ {tracking_doc.name}"
+
+        new_talent_doc.save(ignore_permissions=True) 
+        frappe.db.commit()
+
+        # Cập nhật trạng thái thành công cho Doc Tracking
+        tracking_doc.db_set("processing_status", "Success")
+        tracking_doc.db_set("notes", f"Đã chuyển thành công sang Talent: {new_talent_doc.name}")
+        frappe.db.commit()
+
+        return {
+            "status": "success",
+            "message": f"Hồ sơ Talent {new_talent_doc.name} được tạo/cập nhật thành công.",
+            "talent_id": new_talent_doc.name
+        }
+
+    except Exception as e:
+        # Cập nhật trạng thái lỗi nếu logic nghiệp vụ thất bại
+        frappe.log_error(frappe.get_traceback(), f"Talent Processing Failed for {tracking_doc_name}")
+        if 'tracking_doc' in locals():
+            tracking_doc.db_set("processing_status", "Failed")
+            tracking_doc.db_set("notes", tracking_doc.notes + f"\n[Lỗi Xử lý] {e}")
+            frappe.db.commit()
+
+        return {"status": "error", "message": f"Lỗi xử lý nghiệp vụ: {e}"}

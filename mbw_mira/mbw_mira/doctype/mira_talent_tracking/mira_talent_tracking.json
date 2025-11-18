@@ -1,8 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "format:TL-{YY}{MM}{DD}-{#####}",
- "creation": "2025-07-16 16:45:02.606218",
+ "creation": "2025-11-18 10:15:14.258288",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
@@ -52,7 +51,8 @@
   "utm_medium",
   "utm_campaign",
   "utm_term",
-  "utm_content"
+  "utm_content",
+  "processing_status"
  ],
  "fields": [
   {
@@ -319,15 +319,21 @@
    "fieldname": "utm_content",
    "fieldtype": "Data",
    "label": "UTM Content"
+  },
+  {
+   "fieldname": "processing_status",
+   "fieldtype": "Select",
+   "label": "Processing Status",
+   "options": "Pending\nSuccess\nFailed"
   }
  ],
+ "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-18 09:35:50.964845",
+ "modified": "2025-11-18 11:15:09.574658",
  "modified_by": "Administrator",
  "module": "MBW Mira",
- "name": "Mira Talent",
- "naming_rule": "Expression",
+ "name": "Mira Talent Tracking",
  "owner": "Administrator",
  "permissions": [
   {

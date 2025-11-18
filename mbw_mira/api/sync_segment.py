@@ -1,6 +1,6 @@
 import frappe
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist()
 def sync_positions(data_source_name):
     """
     Queue positions sync from ATS to Mira Segments
@@ -58,7 +58,7 @@ def sync_positions(data_source_name):
             "message": f"Failed to queue sync: {str(e)}"
         }
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist()
 def sync_candidates(data_source_name):
     """
     Queue candidates sync from ATS to Mira Talents

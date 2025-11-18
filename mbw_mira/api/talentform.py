@@ -1,5 +1,6 @@
 import frappe
 import json
+from frappe.exceptions import ValidationError
 from mbw_mira.mbw_mira.doctype.mira_access_token.mira_access_token import validate_test_token, get_token_from_header
 
 @frappe.whitelist(allow_guest=True)
@@ -96,3 +97,55 @@ def form_event():
         "updated_values": updated_fields,
         "talent_id": talent.name,
     }
+
+
+# Hàm API để nhận dữ liệu từ form và lưu vào Mira Talent
+@frappe.whitelist(allow_guest=True)
+def submit_tracking_data():
+    """
+    Hàm API công khai: Nhận dữ liệu thô và lưu vào DocType Mira Talent Tracking.
+    Sau đó, gọi process_tracking_to_talent() để xử lý.
+    """
+    try:
+        data = frappe.form_dict
+        
+        # 1. Kiểm tra tối thiểu
+        if not data.get("full_name") or (not data.get("email") and not data.get("phone")):
+            frappe.throw("Full Name và Email hoặc Phone là bắt buộc.", title="Dữ liệu Thiếu")
+
+        # 2. Tạo DocType Tracking
+        tracking_doc = frappe.new_doc("Mira Talent Tracking")
+        # Mapping tất cả các trường từ Request vào DocType Tracking
+        
+        for field in tracking_doc.meta.fields:
+            
+            if field.fieldname in data:                
+                tracking_doc.set(field.fieldname, data.get(field.fieldname))
+
+        # Thiết lập trạng thái ban đầu
+        tracking_doc.processing_status = "Pending"
+        tracking_doc.save(ignore_permissions=True)
+        frappe.db.commit()
+        
+        tracking_doc_name = tracking_doc.name
+
+        # 3. Kích hoạt Hàm Xử lý sau khi lưu Tracking Doc thành công
+        # Sử dụng frappe.enqueue để xử lý bất đồng bộ (giúp API phản hồi nhanh hơn)
+        frappe.enqueue(
+            "mbw_mira.mbw_mira.doctype.mira_talent.mira_talent.process_tracking_to_talent",
+            tracking_doc_name=tracking_doc_name,
+            queue='default', # Có thể chọn queue khác nếu cần
+        )
+        
+        return {
+            "status": "success",
+            "message": "Dữ liệu tracking đã được ghi nhận và đang chờ xử lý.",
+            "tracking_id": tracking_doc_name
+        }
+
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "Public Tracking API Failed")
+        return {
+            "status": "error",
+            "message": f"Có lỗi xảy ra: {e}"
+        }
