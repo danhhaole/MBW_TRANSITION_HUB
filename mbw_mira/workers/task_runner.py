@@ -92,14 +92,11 @@ def handle_email(task, action):
     send_email_job(task,action)   # 
 
 def handle_zalo(task, action): pass
-def handle_zalo_care(task, action): pass
-def handle_zalo_zns(task, action): pass
 
 def handle_subscribe_to_sequence(task, action): pass
 def handle_unsubscribe_to_sequence(task, action): pass
 
 def handle_smart_delay(task, action): pass
-def handle_ai_call(task, action): pass
 
 def handle_add_tag(task, action): pass
 def handle_remove_tag(task, action): pass

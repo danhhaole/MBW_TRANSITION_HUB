@@ -1,7 +1,7 @@
 <template>
   <div class="flex h-full flex-col gap-6 p-8 text-ink-gray-8">
     <!-- Header -->
-    <div class="flex justify-between">
+    <div class="flex justify-between" v-show="!isFullscreen">
       <div class="flex gap-1 -ml-4 w-9/12">
         <Button
           variant="ghost"
@@ -27,15 +27,15 @@
           :label="__('Update')"
           icon-left="check"
           variant="solid"
-          :disabled="!dirty"
+          
           :loading="templates.setValue.loading"
           @click="updateTemplate"
         />
       </div>
     </div>
 
-    <!-- Fields -->
-    <div class="flex flex-1 flex-col gap-4 overflow-y-auto">
+    <!-- Form Fields - Hidden in Fullscreen -->
+    <div class="space-y-4" v-show="!isFullscreen">
       <div class="flex sm:flex-row flex-col gap-4">
         <div class="flex-1">
           <FormControl
@@ -53,24 +53,11 @@
             v-model="template.template_type"
             :label="__('Template Type')"
             :options="[
-              {
-                label: __('Confirm Email'),
-                value: 'confirm-email',
-              },
-              {
-                label: __('Invited Email'),
-                value: 'invited-email',
-              },
-              {
-                label: __('Reject Email'),
-                value: 'reject-email',
-              },
-              {
-                label: __('Other Email'),
-                value: 'other-email',
-              },
+              { label: 'Other Email', value: 'other-email' },
+              { label: 'Invite Email', value: 'invite-email' },
+              { label: 'Rejection Email', value: 'rejection-email' },
             ]"
-            :placeholder="__('Select Type')"
+            required
           />
         </div>
       </div>
@@ -121,46 +108,48 @@
           <span class="text-sm text-ink-gray-7">{{ __('Auto Send') }}</span>
         </div>
       </div>
-      <div>
-        <div class="mb-1.5 flex items-center justify-between">
-          <label class="text-base text-ink-gray-5">
-            {{ __('Message') }}
-            <span class="text-ink-red-3">*</span>
-          </label>
+    </div>
+
+    <!-- Email Editor Section -->
+    <div>
+      <div class="mb-1.5 flex items-center justify-between">
+        <label class="text-base text-ink-gray-5">
+          {{ __('Email Design') }}
+          <span class="text-ink-red-3">*</span>
+        </label>
+        <div class="flex items-center gap-2">
+          <!-- Merge Tags Autocomplete -->
           <Autocomplete
-            v-model="selectedMessageField"
-            :options="subjectFieldAutocompleteOptions"
-            :placeholder="__('Search fields...')"
-            class="w-48"
+            :options="mergeTagsAutocompleteOptions"
+            v-model="selectedMergeTag"
+            placeholder="Insert merge tag..."
+            :class="isFullscreen ? 'w-80' : 'w-64'"
           >
-            <template #target="{ togglePopover }">
-              <Button
-                :label="__('Insert')"
-                icon-left="plus-circle"
-                variant="outline"
-                size="sm"
-                @click="togglePopover"
-              />
+            <template #prefix>
+              <FeatherIcon name="code" class="h-4 w-4 text-gray-500" />
             </template>
           </Autocomplete>
+          
+          <!-- Fullscreen Toggle Button -->
+          <Button
+            :label="isFullscreen ? __('Exit Fullscreen') : __('Fullscreen')"
+            :icon-left="isFullscreen ? 'minimize-2' : 'maximize-2'"
+            variant="outline"
+            size="sm"
+            @click="isFullscreen = !isFullscreen"
+          />
         </div>
-        <TextEditor
-          ref="content"
-          editor-class="!prose-sm max-w-full overflow-auto min-h-[180px] max-h-80 py-1.5 px-2 rounded border border-[--surface-gray-2] bg-surface-gray-2 placeholder-ink-gray-4 hover:border-outline-gray-modals hover:bg-surface-gray-3 hover:shadow-sm focus:bg-surface-white focus:border-outline-gray-4 focus:shadow-sm focus:ring-0 focus-visible:ring-2 focus-visible:ring-outline-gray-3 text-ink-gray-8 transition-colors"
-          :bubbleMenu="true"
-          :fixed-menu="true"
-          :content="template.message"
-          @change="(val) => (template.message = val)"
-          :placeholder="
-            __(
-              'Dear {{ full_name }}, \n\nWelcome to our platform! \n\nBest regards, \nThe Team',
-            )
-          "
-        />
-        <p class="text-xs text-ink-gray-4 mt-1">
-          {{ __('Click insert to insert talent fields') }}
-        </p>
       </div>
+      <!-- Unlayer Email Editor -->
+      <UnlayerEmailEditor
+        ref="unlayerEditorRef"
+        v-model="emailDesignJson"
+        :min-height="isFullscreen ? 'calc(100vh - 250px)' : '385px'"
+        @ready="onUnlayerReady"
+      />
+      <p class="text-xs text-ink-gray-4 mt-2" v-show="!isFullscreen">
+        {{ __('Drag blocks from the sidebar to design your email. Click merge tags above to copy and paste into content.') }}
+      </p>
     </div>
     
     <!-- Email Preview Dialog -->
@@ -195,7 +184,9 @@ import {
 } from 'frappe-ui'
 import { computed, inject, onMounted, ref, watch } from 'vue'
 import EmailPreview from './EmailPreview.vue'
+import UnlayerEmailEditor from './UnlayerEmailEditor.vue'
 import { useToast } from '@/composables/useToast'
+import { createUnlayerDesignFromHtml } from './unlayerHelper'
 
 const props = defineProps({
   templateData: {
@@ -210,11 +201,14 @@ const toast = useToast()
 
 const templates = inject('templates')
 const template = ref({})
-const content = ref(null)
 const subjectRef = ref(null)
 const showPreview = ref(false)
+const isFullscreen = ref(false)
 const selectedField = ref(null)
-const selectedMessageField = ref(null)
+const selectedMergeTag = ref(null)
+const unlayerEditorRef = ref(null)
+const emailDesignJson = ref(null)
+const editorHasChanges = ref(false) // Track unsaved Unlayer changes
 
 // Mira Talent & Campaign fields for insertion - grouped for better UX
 const talentFieldsGrouped = [
@@ -272,6 +266,17 @@ const talentFieldsGrouped = [
   },
 ]
 
+// Merge tags autocomplete options - grouped for better organization
+const mergeTagsAutocompleteOptions = computed(() => {
+  return talentFieldsGrouped.map(group => ({
+    group: group.group,
+    items: group.items.map(field => ({
+      label: field.label,
+      value: field.fieldname,
+    }))
+  }))
+})
+
 // Flatten for badge display
 const talentFields = ref(
   talentFieldsGrouped.flatMap(group => group.items)
@@ -300,16 +305,53 @@ watch(selectedField, (newValue) => {
   }
 })
 
-// Watch for message field selection
-watch(selectedMessageField, (newValue) => {
+// Watch for merge tag selection - copy to clipboard
+watch(selectedMergeTag, (newValue) => {
   if (newValue) {
-    insertFieldToMessage(newValue)
-    // Reset selection after insert
-    setTimeout(() => {
-      selectedMessageField.value = null
-    }, 100)
+    const tag = `{{ ${newValue.value} }}`
+    navigator.clipboard.writeText(tag).then(() => {
+      toast.success(`Copied: ${tag}`)
+      // Reset selection after copy
+      setTimeout(() => {
+        selectedMergeTag.value = null
+      }, 100)
+    }).catch(() => {
+      toast.error('Failed to copy merge tag')
+    })
   }
 })
+
+const onUnlayerReady = (editor) => {
+  console.log('🎉 [Parent] Unlayer editor ready callback')
+  console.log('   Template message:', template.value.message?.substring(0, 50))
+  console.log('   Email design JSON:', emailDesignJson.value ? 'exists' : 'null')
+  
+  // Listen to design changes to mark dirty
+  if (editor && editor.addEventListener) {
+    editor.addEventListener('design:updated', () => {
+      console.log('📝 [Unlayer] Design updated - marking as changed')
+      editorHasChanges.value = true
+    })
+  }
+  
+  // If switching to advanced editor with existing HTML but no design JSON
+  if (template.value.message && !emailDesignJson.value) {
+    console.log('🔄 [Parent] Converting HTML to Unlayer design...')
+    const basicDesign = createUnlayerDesignFromHtml(template.value.message)
+    console.log('📋 [Parent] Basic design created:', basicDesign)
+    console.log('⏳ [Parent] Calling editor.loadDesign()...')
+    
+    // Deep clone to remove any Vue reactivity
+    const plainDesign = JSON.parse(JSON.stringify(basicDesign))
+    editor.loadDesign(plainDesign)
+    
+    toast.info('Converted HTML content to Advanced editor')
+  } else if (emailDesignJson.value) {
+    console.log('✅ [Parent] Design JSON already exists, should be loaded by component')
+  } else {
+    console.log('ℹ️ [Parent] No content to load')
+  }
+}
 
 const updateTemplate = async () => {
   errorMessage.value = ''
@@ -321,6 +363,27 @@ const updateTemplate = async () => {
     errorMessage.value = __('Subject is required')
     return
   }
+  
+  // Save design from Unlayer editor
+  if (!unlayerEditorRef.value) {
+    errorMessage.value = __('Email editor not ready')
+    return
+  }
+  
+  try {
+    const design = await unlayerEditorRef.value.saveDesign()
+    const { html } = await unlayerEditorRef.value.exportHtml()
+    
+    // Store design JSON and HTML
+    emailDesignJson.value = design
+    template.value.message = html
+    template.value.email_design_json = JSON.stringify(design)
+  } catch (error) {
+    console.error('Error saving design:', error)
+    errorMessage.value = __('Failed to save email design')
+    return
+  }
+  
   if (!template.value.message) {
     errorMessage.value = __('Message is required')
     return
@@ -332,6 +395,7 @@ const updateTemplate = async () => {
     template_type: template.value.template_type,
     subject: template.value.subject,
     message: template.value.message,
+    email_design_json: template.value.email_design_json || null,
     is_active: template.value.is_active ? 1 : 0,
     default_template: template.value.default_template ? 1 : 0,
     auto_send: template.value.auto_send ? 1 : 0,
@@ -339,6 +403,9 @@ const updateTemplate = async () => {
 
   templates.setValue.submit(values, {
     onSuccess: () => {
+      // Reset editor changes flag after successful save
+      editorHasChanges.value = false
+      
       emit('updateStep', 'template-list')
       toast.success('Template updated successfully')
     },
@@ -388,7 +455,8 @@ function insertFieldToMessage(option) {
 }
 
 const dirty = computed(() => {
-  return (
+  // Check basic fields
+  const basicFieldsChanged = (
     template.value.template_name !== props.templateData.template_name ||
     template.value.template_type !== props.templateData.template_type ||
     template.value.subject !== props.templateData.subject ||
@@ -397,13 +465,50 @@ const dirty = computed(() => {
     Boolean(template.value.default_template) !== Boolean(props.templateData.default_template) ||
     Boolean(template.value.auto_send) !== Boolean(props.templateData.auto_send)
   )
+  
+  // Check if Unlayer design changed
+  let designChanged = false
+  if (emailDesignJson.value) {
+    const currentDesign = JSON.stringify(emailDesignJson.value)
+    const originalDesign = props.templateData.email_design_json || ''
+    designChanged = currentDesign !== originalDesign
+  }
+  
+  // Also check if editor has unsaved changes (user is actively editing)
+  return basicFieldsChanged || designChanged || editorHasChanges.value
 })
 
 onMounted(() => {
+  console.log('🚀 [EditTemplate] Component mounted')
+  console.log('   Template data:', props.templateData)
+  
   template.value = { ...props.templateData }
   // Convert to boolean for switches
   template.value.is_active = Boolean(template.value.is_active)
   template.value.default_template = Boolean(template.value.default_template)
   template.value.auto_send = Boolean(template.value.auto_send)
+  
+  // Load existing design if available
+  if (template.value.email_design_json) {
+    console.log('📦 [EditTemplate] Found email_design_json in template')
+    console.log('   Raw JSON:', template.value.email_design_json?.substring(0, 100))
+    
+    try {
+      emailDesignJson.value = typeof template.value.email_design_json === 'string'
+        ? JSON.parse(template.value.email_design_json)
+        : template.value.email_design_json
+      
+      console.log('✅ [EditTemplate] Parsed design JSON:', emailDesignJson.value)
+    } catch (error) {
+      console.error('❌ [EditTemplate] Error parsing email design JSON:', error)
+    }
+  } else if (template.value.message) {
+    // Convert existing HTML message to Unlayer format
+    console.log('🔄 [EditTemplate] Converting existing HTML to Unlayer design')
+    const basicDesign = createUnlayerDesignFromHtml(template.value.message)
+    emailDesignJson.value = basicDesign
+  } else {
+    console.log('ℹ️ [EditTemplate] No existing content, starting with blank canvas')
+  }
 })
 </script>

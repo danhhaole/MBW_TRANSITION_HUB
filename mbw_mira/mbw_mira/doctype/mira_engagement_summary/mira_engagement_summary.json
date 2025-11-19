@@ -21,7 +21,8 @@
   "avg_days_between_interactions",
   "recent_7d_score",
   "recent_30d_score",
-  "bounce_rate"
+  "bounce_rate",
+  "total_weight"
  ],
  "fields": [
   {
@@ -125,12 +126,17 @@
    "fieldname": "bounce_rate",
    "fieldtype": "Float",
    "label": "Bounce Rate"
+  },
+  {
+   "fieldname": "total_weight",
+   "fieldtype": "Float",
+   "label": "Total Weight"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-19 04:11:35.155678",
+ "modified": "2025-11-19 09:56:15.090798",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Engagement Summary",

@@ -38,9 +38,10 @@ def resume_event(event_type, talent_id, payload=None):
         td.save(ignore_permissions=True)
 
         # Tạo task mới từ action
-        task = create_task_for_action(td.name, waiting_action)
-        task.scheduled_at = now_datetime()
-        task.save(ignore_permissions=True)
+        if waiting_action:
+            task = create_task_for_action(td.name, waiting_action)
+            task.scheduled_at = now_datetime()
+            task.save(ignore_permissions=True)
 
         frappe.db.commit()
 

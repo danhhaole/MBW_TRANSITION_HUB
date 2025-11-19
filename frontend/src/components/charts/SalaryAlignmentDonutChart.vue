@@ -35,7 +35,11 @@ const initChart = () => {
 	const option = {
 		tooltip: {
 			trigger: 'item',
-			formatter: '{b}: {c} talents ({d}%)'
+			formatter: (params) => {
+				const dataItem = props.data.find(item => item.name === params.name)
+				const talentCount = dataItem ? dataItem.count : params.value
+				return `${params.name}: ${talentCount} talents (${params.percent}%)`
+			}
 		},
 		legend: {
 			orient: 'vertical',

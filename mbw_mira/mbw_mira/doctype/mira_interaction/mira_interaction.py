@@ -1,34 +1,16 @@
 # Copyright (c) 2025, MBWCloud Co. and contributors
 # For license information, please see license.txt
 
+from datetime import datetime
+from typing import Counter
 import frappe
-from frappe.utils import nowdate,now_datetime
+from frappe.utils import nowdate,now_datetime, date_diff, get_datetime
 from frappe.model.document import Document
 from mbw_mira.mbw_mira.doctype.mira_task_definition.mira_task_definition import create_task_definitions_from_event
 from mbw_mira.workers import resume_event
 
-
-
-class MiraInteraction(Document):
-
-	def before_save(self):
-		self.auto_tracking()
-
-	def on_update(self):
-		"""Tự động xử lý logic tương ứng với interaction_type"""
-
-		if not self.talent_id:
-			frappe.logger().warning(f"[Mira Interaction] Missing talent_id for {self.name}")
-			return
-
-		# Ánh xạ interaction_type → hàm xử lý
-		self.interaction_handle()
-
-
-	# AUTO TRACKING
-	def auto_tracking(self):
-		INTERACTION_SCORE = {
-			"EMAIL_OPENED": 2,
+INTERACTION_SCORE = {
+			"EMAIL_SENT": 2,
 			"ON_LINK_CLICK": 5,
 			"EMAIL_REPLIED": 10,
 			"PAGE_VISITED": 1,
@@ -45,6 +27,30 @@ class MiraInteraction(Document):
 			"CALL_COMPLETED": 10,
 			"SMS_REPLIED": 4
 		}
+
+class MiraInteraction(Document):
+
+	def before_save(self):
+		self.auto_tracking()
+
+	def on_update(self):
+		"""Tự động xử lý logic tương ứng với interaction_type"""
+
+		if not self.talent_id:
+			frappe.logger().warning(f"[Mira Interaction] Missing talent_id for {self.name}")
+			return
+
+		# Ánh xạ interaction_type → hàm xử lý
+		self.interaction_handler()
+
+	def after_insert(self):
+		#Tính vào summary khi có tương tác
+		if self.talent_id:
+			summarize_engagement_for_talent(self.talent_id)
+	
+	# AUTO TRACKING
+	def auto_tracking(self):
+		
 		now = now_datetime()
 
 		# --- 1) Lần tương tác đầu tiên của Talent ---
@@ -315,3 +321,128 @@ def create_mira_interaction(args):
 	).insert(ignore_permissions=True)
 	frappe.db.commit()
 
+
+def summarize_engagement_for_talent(talent_id):
+    interactions = frappe.get_all(
+        "Mira Interaction",
+        filters={"talent_id": talent_id},
+        fields=[
+            "interaction_type",
+            "channel",
+            "engagement_score",
+            "first_interaction_at",
+            "previous_interaction_at",
+            "creation"
+        ]
+    )
+    
+	
+    if not interactions:
+        return None
+
+    total_interactions = len(interactions)
+    total_score = sum(i.get("engagement_score",0) for i in interactions)
+
+    first_interaction_at = min(
+        [i.get("first_interaction_at") or i.get("creation") for i in interactions]
+    )
+    last_interaction_at = max(
+        [i.get("previous_interaction_at") or i.get("creation") for i in interactions]
+    )
+    engagement_timeline = (last_interaction_at - first_interaction_at).days if first_interaction_at and last_interaction_at else 0
+
+    # Top channel
+    channels = [i["channel"] for i in interactions if i.get("channel")]
+    top_channel = Counter(channels).most_common(1)[0][0] if channels else None
+
+    # Interaction type counts
+    click_count = sum(1 for i in interactions if i["interaction_type"]=="ON_LINK_CLICK")
+    open_count = sum(1 for i in interactions if i["interaction_type"]=="EMAIL_OPENED")
+    reply_count = sum(1 for i in interactions if i["interaction_type"] in ["EMAIL_REPLIED","SMS_REPLIED","CHAT_MESSAGE_SENT"])
+    visit_count = sum(1 for i in interactions if i["interaction_type"]=="PAGE_VISITED")
+    conversion_count = sum(1 for i in interactions if i["interaction_type"] in ["FORM_SUBMITTED","APPLICATION_SUBMITTED"])
+    bounce_count = sum(1 for i in interactions if i["interaction_type"]=="EMAIL_BOUNCED")
+
+    avg_days_between_interactions = engagement_timeline / total_interactions if total_interactions else 0
+
+    now = datetime.now()
+    recent_7d_score = sum(i.get("engagement_score",0) for i in interactions if i.get("previous_interaction_at") and (now - i["previous_interaction_at"]).days <= 7)
+    recent_30d_score = sum(i.get("engagement_score",0) for i in interactions if i.get("previous_interaction_at") and (now - i["previous_interaction_at"]).days <= 30)
+    bounce_rate = bounce_count / total_interactions if total_interactions else 0
+
+    # Readiness level (sử dụng hàm đã định nghĩa)
+    readiness_level = calculate_readiness(
+        total_score=total_score,
+        recent_30d_score=recent_30d_score,
+        conversion_count=conversion_count,
+        bounce_rate=bounce_rate,
+        avg_days_between_interactions=avg_days_between_interactions
+    )
+
+    summary_data = {
+        "talent_id": talent_id,
+        "total_interactions": total_interactions,
+        "total_score": total_score,
+        "readiness_level": readiness_level,
+        "first_interaction_at": first_interaction_at,
+        "last_interaction_at": last_interaction_at,
+        "engagement_timeline": engagement_timeline,
+        "top_channel": top_channel,
+        "click_count": click_count,
+        "open_count": open_count,
+        "reply_count": reply_count,
+        "visit_count": visit_count,
+        "conversion_count": conversion_count,
+        "avg_days_between_interactions": avg_days_between_interactions,
+        "recent_7d_score": recent_7d_score,
+        "recent_30d_score": recent_30d_score,
+        "bounce_rate": bounce_rate
+    }
+    doc = frappe.get_doc({
+            "doctype": "Mira Engagement Summary",
+            **summary_data
+        })
+    doc.insert(ignore_permissions=True)
+    frappe.db.commit()
+
+
+def calculate_readiness(total_score, recent_30d_score, conversion_count, bounce_rate, avg_days_between_interactions):
+    score = total_score + recent_30d_score * 2 + conversion_count * 5
+    
+    # Trừ điểm nếu bounce rate cao hoặc khoảng cách tương tác lớn
+    score -= bounce_rate * 50
+    score -= avg_days_between_interactions
+    
+    # Xác định mức readiness
+    if score < 50:
+        return "Low"
+    elif score < 150:
+        return "Medium"
+    else:
+        return "High"
+
+@frappe.whitelist()
+def create_fake_interaction(talent_id, campaign_id, channel, interaction_type):
+    doc = frappe.get_doc({
+        "doctype": "Mira Interaction",
+        "talent_id": talent_id,
+        "campaign_id": campaign_id,
+        "channel": channel,
+        "interaction_type": interaction_type,
+        "action": f"Test {interaction_type}",
+        "url": "https://example.com/test",
+        "utm_source": "unit_test",
+        "utm_medium": channel.lower(),
+        "utm_campaign": campaign_id,
+        "ip_address": "127.0.0.1",
+        "user_agent": "Mozilla/5.0 Test Bot",
+        "engagement_score": 10,
+        "interaction_weight": 1.0,
+        "first_interaction_at": now_datetime(),
+        "previous_interaction_at": now_datetime(),
+        "engagement_timeline": 0,
+        "description": "Fake Interaction for testing"
+    })
+    doc.insert()
+    frappe.db.commit()
+    return doc.name

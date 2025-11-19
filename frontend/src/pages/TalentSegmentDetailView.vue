@@ -166,7 +166,7 @@
 						</div>
 						<div class="ml-4">
 							<div class="text-2xl font-bold text-green-900">
-								{{candidates.filter(c => c.status === 'ACTIVE').length}}
+								{{ newTalentsCount }}
 							</div>
 							<div class="text-sm text-green-700">{{ __('New Talents') }}</div>
 						</div>
@@ -299,10 +299,16 @@
 				<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 					<!-- Recruitment Priority Matrix -->
 					<RecruitmentPriorityBubbleChart 
+						v-if="recruitmentPriorityData && recruitmentPriorityData.length > 0"
 						:title="__('Recruitment Priority Matrix')"
 						:data="recruitmentPriorityData"
 						chartHeight="450px"
 					/>
+					<div v-else class="bg-gray-50 rounded-lg border border-gray-200 p-8 flex items-center justify-center h-[450px]">
+						<div class="text-center">
+							<div class="text-gray-400 mb-2">{{ __('Loading recruitment priority data...') }}</div>
+						</div>
+					</div>
 					
 					<!-- Salary Alignment -->
 					<SalaryAlignmentDonutChart 
@@ -879,50 +885,51 @@ const skillsData = ref([])
 const experienceData = ref([])
 
 // Recruitment Priority Matrix data - Bubble Chart
-const recruitmentPriorityData = ref([
-	{ 
-		name: 'High Priority', 
-		value: [7, 2, 42], // [timeline_days, readiness_index, talent_count]
-		readinessLabel: 'High',
-		timelineLabel: '0-10 days',
-		color: '#10B981' // Green
-	},
-	{ 
-		name: 'Quick Win', 
-		value: [15, 2, 28], 
-		readinessLabel: 'High',
-		timelineLabel: '11-20 days',
-		color: '#34D399'
-	},
-	{ 
-		name: 'Medium Priority', 
-		value: [30, 1, 35], 
-		readinessLabel: 'Medium',
-		timelineLabel: '21-40 days',
-		color: '#FBBF24' // Yellow
-	},
-	{ 
-		name: 'Consider', 
-		value: [45, 1, 22], 
-		readinessLabel: 'Medium',
-		timelineLabel: '41-60 days',
-		color: '#FCD34D'
-	},
-	{ 
-		name: 'Low Priority', 
-		value: [60, 0, 18], 
-		readinessLabel: 'Low',
-		timelineLabel: '61-80 days',
-		color: '#F87171' // Red
-	},
-	{ 
-		name: 'Long Term', 
-		value: [75, 0, 12], 
-		readinessLabel: 'Low',
-		timelineLabel: '80+ days',
-		color: '#EF4444'
-	}
-])
+const recruitmentPriorityData = ref([])
+// const recruitmentPriorityData = ref([
+// 	{ 
+// 		name: 'High Priority', 
+// 		value: [7, 2, 42], // [timeline_days, readiness_index, talent_count]
+// 		readinessLabel: 'High',
+// 		timelineLabel: '0-10 days',
+// 		color: '#10B981' // Green
+// 	},
+// 	{ 
+// 		name: 'Quick Win', 
+// 		value: [15, 2, 28], 
+// 		readinessLabel: 'High',
+// 		timelineLabel: '11-20 days',
+// 		color: '#34D399'
+// 	},
+// 	{ 
+// 		name: 'Medium Priority', 
+// 		value: [30, 1, 35], 
+// 		readinessLabel: 'Medium',
+// 		timelineLabel: '21-40 days',
+// 		color: '#FBBF24' // Yellow
+// 	},
+// 	{ 
+// 		name: 'Consider', 
+// 		value: [45, 1, 22], 
+// 		readinessLabel: 'Medium',
+// 		timelineLabel: '41-60 days',
+// 		color: '#FCD34D'
+// 	},
+// 	{ 
+// 		name: 'Low Priority', 
+// 		value: [60, 0, 18], 
+// 		readinessLabel: 'Low',
+// 		timelineLabel: '61-80 days',
+// 		color: '#F87171' // Red
+// 	},
+// 	{ 
+// 		name: 'Long Term', 
+// 		value: [75, 0, 12], 
+// 		readinessLabel: 'Low',
+// 		timelineLabel: '80+ days',
+// 		color: '#EF4444'
+// 	}
+// ])
 
 // Initialize with empty arrays, will be populated from API
 const salaryAlignmentData = ref([])
@@ -949,6 +956,32 @@ const filteredCandidates = computed(() => {
 	// For now, just return all candidates since we removed the search functionality
 	// from the main candidates table
 	return candidates.value
+})
+
+// Computed property to calculate New Talents (added within last 30 days)
+const newTalentsCount = computed(() => {
+	if (!candidates.value || candidates.value.length === 0) {
+		console.log('newTalentsCount: No candidates available')
+		return 0
+	}
+	
+	const thirtyDaysAgo = moment().subtract(30, 'days')
+	console.log('newTalentsCount: Calculating for date range after:', thirtyDaysAgo.format('YYYY-MM-DD HH:mm:ss'))
+	
+	const newTalents = candidates.value.filter(candidate => {
+		if (!candidate.added_at) {
+			console.log('newTalentsCount: Candidate has no added_at date:', candidate.name)
+			return false
+		}
+		
+		const addedDate = moment(candidate.added_at)
+		const isNew = addedDate.isAfter(thirtyDaysAgo)
+		console.log(`newTalentsCount: ${candidate.name} added at ${addedDate.format('YYYY-MM-DD HH:mm:ss')} - isNew: ${isNew}`)
+		return isNew
+	})
+	
+	console.log(`newTalentsCount: Found ${newTalents.length} new talents out of ${candidates.value.length} total`)
+	return newTalents.length
 })
 
 const filteredSuggestedCandidates = computed(() => {
@@ -1088,6 +1121,7 @@ const addSelectedCandidatesToSegment = async () => {
 			closeAddCandidateModal()
 			await loadCandidates()
 			await loadTalentSegment()
+			await loadDashboardData()
 		} else {
 			console.error('Failed to bulk insert candidates:', result)
 		}
@@ -1286,9 +1320,9 @@ const loadDashboardData = async () => {
 			}
 			
 			// Update recruitment priority data
-			// if (result.recruitment_priority && result.recruitment_priority.length > 0) {
-			// 	recruitmentPriorityData.value = result.recruitment_priority
-			// }
+			if (result.recruitment_priority && result.recruitment_priority.length > 0) {
+				recruitmentPriorityData.value = result.recruitment_priority
+			}
 			
 			console.log('Dashboard data updated successfully')
 		} else {

@@ -600,126 +600,6 @@ def get_segment_quality_source_analysis(segment_id):
 
 
 @frappe.whitelist()
-def get_segment_recruitment_priority_matrix(segment_id):
-	"""
-	Tính toán dữ liệu cho Recruitment Priority Matrix (Bubble Chart)
-	
-	Args:
-		segment_id: ID của segment cần phân tích
-	
-	Returns:
-		List dữ liệu bubble chart với format:
-		[
-			{
-				"name": "High Priority",
-				"value": [timeline_days, readiness_index, talent_count],
-				"readinessLabel": "High",
-				"timelineLabel": "0-10 days",
-				"color": "#10B981"
-			},
-			...
-		]
-	"""
-	try:
-		# Validate segment_id
-		if not segment_id:
-			frappe.throw(_("Segment ID is required"))
-		
-		# Kiểm tra segment có tồn tại không
-		if not frappe.db.exists("Mira Segment", segment_id):
-			frappe.throw(_("Segment not found"))
-		
-		# Lấy dữ liệu talents với recruitment_readiness và recruitment_engagement_timeline
-		results = frappe.db.sql("""
-			SELECT 
-				t.recruitment_readiness,
-				COALESCE(t.recruitment_engagement_timeline, 30) as timeline_days
-			FROM `tabMira Talent Pool` tp
-			INNER JOIN `tabMira Talent` t ON tp.talent_id = t.name
-			WHERE tp.segment_id = %(segment_id)s
-			AND t.recruitment_readiness IS NOT NULL
-		""", {"segment_id": segment_id}, as_dict=True)
-		
-		if not results:
-			return []
-		
-		# Định nghĩa mapping readiness -> index
-		readiness_mapping = {
-			"Cold": 0,   # Low
-			"Warm": 1,   # Medium  
-			"Hot": 2     # High
-		}
-		
-		# Định nghĩa các nhóm priority matrix
-		priority_groups = {
-			# [min_timeline, max_timeline, readiness_level, group_name, color]
-			"High Priority": {"timeline_range": [0, 10], "readiness": "Hot", "color": "#10B981"},
-			"Quick Win": {"timeline_range": [11, 20], "readiness": "Hot", "color": "#34D399"},
-			"Medium Priority": {"timeline_range": [21, 40], "readiness": "Warm", "color": "#FBBF24"},
-			"Consider": {"timeline_range": [41, 60], "readiness": "Warm", "color": "#FCD34D"},
-			"Low Priority": {"timeline_range": [61, 80], "readiness": "Cold", "color": "#F87171"},
-			"Long Term": {"timeline_range": [81, 999], "readiness": "Cold", "color": "#EF4444"}
-		}
-		
-		# Khởi tạo counter cho từng nhóm
-		group_counts = {group: 0 for group in priority_groups.keys()}
-		
-		# Phân loại talents vào các nhóm
-		for result in results:
-			readiness = result.recruitment_readiness
-			timeline = result.timeline_days or 30
-			
-			# Tìm nhóm phù hợp
-			for group_name, group_config in priority_groups.items():
-				min_timeline, max_timeline = group_config["timeline_range"]
-				group_readiness = group_config["readiness"]
-				
-				# Kiểm tra điều kiện: timeline trong khoảng VÀ readiness khớp
-				if (min_timeline <= timeline <= max_timeline and readiness == group_readiness):
-					group_counts[group_name] += 1
-					break
-		
-		# Chuyển đổi sang format bubble chart
-		bubble_data = []
-		for group_name, group_config in priority_groups.items():
-			talent_count = group_counts[group_name]
-			
-			# Chỉ thêm vào kết quả nếu có talents
-			if talent_count > 0:
-				min_timeline, max_timeline = group_config["timeline_range"]
-				readiness = group_config["readiness"]
-				
-				# Tính timeline trung bình cho hiển thị
-				avg_timeline = (min_timeline + min(max_timeline, 100)) // 2
-				
-				# Map readiness sang index
-				readiness_index = readiness_mapping.get(readiness, 1)
-				
-				# Tạo label
-				if max_timeline >= 999:
-					timeline_label = f"{min_timeline}+ days"
-				else:
-					timeline_label = f"{min_timeline}-{max_timeline} days"
-				
-				readiness_labels = {"Cold": "Low", "Warm": "Medium", "Hot": "High"}
-				readiness_label = readiness_labels.get(readiness, "Medium")
-				
-				bubble_data.append({
-					"name": group_name,
-					"value": [avg_timeline, readiness_index, talent_count],
-					"readinessLabel": readiness_label,
-					"timelineLabel": timeline_label,
-					"color": group_config["color"]
-				})
-		
-		return bubble_data
-		
-	except Exception as e:
-		frappe.log_error(f"Error in get_segment_recruitment_priority_matrix: {str(e)}")
-		return []
-
-
-@frappe.whitelist()
 def get_segment_dashboard_data(segment_id):
     """
     API tổng hợp để lấy tất cả dữ liệu dashboard cho một segment
@@ -755,7 +635,7 @@ def get_segment_dashboard_data(segment_id):
         salary_alignment_data = get_segment_salary_alignment(segment_id)
         quality_source_data = get_segment_quality_source_analysis(segment_id)
         talents_requiring_update_data = get_segment_talents_requiring_update(segment_id)
-        recruitment_priority_data = get_segment_recruitment_priority_matrix(segment_id)
+        recruitment_priority_data = get_recruitment_priority_matrix_data(segment_id)
         
         return {
             "skills": skills_data,
@@ -777,6 +657,141 @@ def get_segment_dashboard_data(segment_id):
             "talents_requiring_update": [],
             "recruitment_priority": []
         }
+
+
+@frappe.whitelist()
+def get_recruitment_priority_matrix_data(segment_ids=None):
+    """
+    Lấy dữ liệu cho Recruitment Priority Bubble Chart
+    
+    Args:
+        segment_ids: List ID của các segments cần lấy dữ liệu (optional)
+                    Nếu không truyền thì lấy tất cả segments active
+    
+    Returns:
+        List dữ liệu bubble chart:
+        Format: [
+            {
+                "value": [engagement_timeline, readiness_index, talent_count],
+                "name": "segment_name",
+                "readinessLabel": "High/Medium/Low",
+                "timelineLabel": "X days",
+                "color": "#color"
+            },
+            ...
+        ]
+    """
+    try:
+        # Parse segment_ids nếu được truyền vào
+        if segment_ids:
+            if isinstance(segment_ids, str):
+                # Nếu là string đơn lẻ, chuyển thành list
+                if segment_ids.startswith('[') and segment_ids.endswith(']'):
+                    import json
+                    segment_ids = json.loads(segment_ids)
+                else:
+                    # String đơn lẻ, chuyển thành list
+                    segment_ids = [segment_ids]
+            elif not isinstance(segment_ids, list):
+                # Nếu không phải string hoặc list, chuyển thành list
+                segment_ids = [segment_ids]
+        
+        # Query để lấy dữ liệu aggregate từ các bảng liên quan
+        segment_filter = ""
+        params = {}
+        
+        if segment_ids and len(segment_ids) > 0:
+            segment_filter = "AND s.name IN %(segment_ids)s"
+            params["segment_ids"] = segment_ids
+        
+        # Query chính để lấy dữ liệu từ tất cả các bảng liên quan
+        results = frappe.db.sql(f"""
+            SELECT 
+                s.name as segment_id,
+                s.title as segment_name,
+                COUNT(DISTINCT tp.talent_id) as talent_count,
+                AVG(COALESCE(es.engagement_timeline, 0)) as avg_engagement_timeline,
+                AVG(
+                    CASE 
+                        WHEN es.readiness_level = 'High' THEN 2
+                        WHEN es.readiness_level = 'Medium' THEN 1
+                        WHEN es.readiness_level = 'Low' THEN 0
+                        ELSE 0
+                    END
+                ) as avg_readiness_score,
+                AVG(COALESCE(es.total_score, 0)) as avg_engagement_score,
+                -- Tính readiness level dominant
+                SUM(CASE WHEN es.readiness_level = 'High' THEN 1 ELSE 0 END) as high_count,
+                SUM(CASE WHEN es.readiness_level = 'Medium' THEN 1 ELSE 0 END) as medium_count,
+                SUM(CASE WHEN es.readiness_level = 'Low' THEN 1 ELSE 0 END) as low_count
+            FROM `tabMira Segment` s
+            LEFT JOIN `tabMira Talent Pool` tp ON s.name = tp.segment_id
+            LEFT JOIN `tabMira Talent` t ON tp.talent_id = t.name
+            LEFT JOIN `tabMira Engagement Summary` es ON t.name = es.talent_id
+            WHERE s.is_active = 1
+            {segment_filter}
+            GROUP BY s.name, s.title
+            HAVING talent_count > 0
+            ORDER BY talent_count DESC
+        """, params, as_dict=True)
+        
+        if not results:
+            return []
+        
+        # Định nghĩa màu sắc cho từng mức readiness
+        readiness_colors = {
+            "High": "#10B981",    # Green
+            "Medium": "#F59E0B",  # Orange
+            "Low": "#EF4444"      # Red
+        }
+        
+        # Chuyển đổi dữ liệu sang format bubble chart
+        bubble_data = []
+        
+        for result in results:
+            # Tính toán các giá trị
+            talent_count = result.talent_count or 0
+            avg_timeline = round(result.avg_engagement_timeline or 0)
+            avg_readiness_score = result.avg_readiness_score or 0
+            
+            # Xác định readiness level dominant
+            high_count = result.high_count or 0
+            medium_count = result.medium_count or 0
+            low_count = result.low_count or 0
+            
+            # Tìm level có số lượng cao nhất
+            if high_count >= medium_count and high_count >= low_count:
+                readiness_label = "High"
+                readiness_index = 2
+            elif medium_count >= low_count:
+                readiness_label = "Medium"
+                readiness_index = 1
+            else:
+                readiness_label = "Low"
+                readiness_index = 0
+            
+            # Đảm bảo timeline không vượt quá 90 ngày (theo component)
+            timeline_display = min(avg_timeline, 90)
+            
+            # Format timeline label
+            timeline_label = f"{timeline_display} days" if timeline_display > 0 else "No data"
+            
+            bubble_data.append({
+                "value": [timeline_display, readiness_index, talent_count],
+                "name": result.segment_name or f"Segment {result.segment_id}",
+                "readinessLabel": readiness_label,
+                "timelineLabel": timeline_label,
+                "color": readiness_colors.get(readiness_label, "#6B7280"),
+                "segmentId": result.segment_id,
+                "talentCount": talent_count,
+                "avgEngagementScore": round(result.avg_engagement_score or 0, 1)
+            })
+        
+        return bubble_data
+        
+    except Exception as e:
+        frappe.log_error(f"Error in get_recruitment_priority_matrix_data: {str(e)}")
+        return []
 
 
 @frappe.whitelist()
