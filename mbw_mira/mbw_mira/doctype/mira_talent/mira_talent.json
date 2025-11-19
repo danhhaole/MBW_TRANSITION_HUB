@@ -41,7 +41,6 @@
   "recruiter_owner_id",
   "crm_status",
   "recruitment_readiness",
-  "recruitment_engagement_timeline",
   "last_interaction_date",
   "internal_rating",
   "priority_level",
@@ -244,12 +243,6 @@
    "options": "Cold\nWarm\nHot"
   },
   {
-   "description": "Estimated timeline for recruitment engagement in days. Used for priority matrix calculation.",
-   "fieldname": "recruitment_engagement_timeline",
-   "fieldtype": "Int",
-   "label": "Recruitment Engagement Timeline (Days)"
-  },
-  {
    "fieldname": "last_interaction_date",
    "fieldtype": "Date",
    "label": "Last Interaction Date"
@@ -296,7 +289,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-18 15:42:52.238677",
+ "modified": "2025-11-19 10:35:15.561556",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Talent",
