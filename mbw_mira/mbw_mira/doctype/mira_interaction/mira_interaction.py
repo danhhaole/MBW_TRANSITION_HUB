@@ -2,33 +2,13 @@
 # For license information, please see license.txt
 
 import frappe
-from frappe.utils import nowdate,now_datetime
+from frappe.utils import nowdate,now_datetime, date_diff, get_datetime
 from frappe.model.document import Document
 from mbw_mira.mbw_mira.doctype.mira_task_definition.mira_task_definition import create_task_definitions_from_event
 from mbw_mira.workers import resume_event
 
-
-
-class MiraInteraction(Document):
-
-	def before_save(self):
-		self.auto_tracking()
-
-	def on_update(self):
-		"""Tự động xử lý logic tương ứng với interaction_type"""
-
-		if not self.talent_id:
-			frappe.logger().warning(f"[Mira Interaction] Missing talent_id for {self.name}")
-			return
-
-		# Ánh xạ interaction_type → hàm xử lý
-		self.interaction_handle()
-
-
-	# AUTO TRACKING
-	def auto_tracking(self):
-		INTERACTION_SCORE = {
-			"EMAIL_OPENED": 2,
+INTERACTION_SCORE = {
+			"EMAIL_SENT": 2,
 			"ON_LINK_CLICK": 5,
 			"EMAIL_REPLIED": 10,
 			"PAGE_VISITED": 1,
@@ -45,6 +25,30 @@ class MiraInteraction(Document):
 			"CALL_COMPLETED": 10,
 			"SMS_REPLIED": 4
 		}
+
+class MiraInteraction(Document):
+
+	def before_save(self):
+		self.auto_tracking()
+
+	def on_update(self):
+		"""Tự động xử lý logic tương ứng với interaction_type"""
+
+		if not self.talent_id:
+			frappe.logger().warning(f"[Mira Interaction] Missing talent_id for {self.name}")
+			return
+
+		# Ánh xạ interaction_type → hàm xử lý
+		self.interaction_handler()
+
+	def after_insert(self):
+		#Tính vào summary khi có tương tác
+		if self.talent_id:
+			calculate_engagement_summary(self.talent_id)
+	
+	# AUTO TRACKING
+	def auto_tracking(self):
+		
 		now = now_datetime()
 
 		# --- 1) Lần tương tác đầu tiên của Talent ---
@@ -315,3 +319,124 @@ def create_mira_interaction(args):
 	).insert(ignore_permissions=True)
 	frappe.db.commit()
 
+
+def calculate_engagement_summary(talent_id):
+    """
+    Tổng hợp toàn bộ interaction để:
+    - Tính score tổng
+    - Tính timeline (days)
+    - Tổng hợp theo channel
+    - Tổng hợp theo interaction_type
+    - Tổng hợp theo campaign_type (Attract / Nurture / Recruit)
+    """
+
+    interactions = frappe.get_all(
+        "Mira Interaction",
+        filters={"talent_id": talent_id},
+        fields=[
+            "name",
+            "interaction_type",
+            "channel",
+            "campaign_type",
+            "interaction_weight",
+            "engagement_score",
+            "first_interaction_at",
+            "creation",
+        ],
+        order_by="creation asc"
+    )
+
+    if not interactions:
+        return
+
+    # --- 1. FIRST + LAST INTERACTION ---
+    first_date = interactions[0].get("first_interaction_at") or interactions[0].get("creation")
+    last_date = interactions[-1].get("creation")
+
+    timeline_days = date_diff(get_datetime(last_date), get_datetime(first_date))
+
+    # --- 2. TOTAL SCORE ---
+    total_score = sum([i.engagement_score or 0 for i in interactions])
+
+    # --- 3. TOTAL WEIGHT ---
+    total_weight = sum([i.interaction_weight or 0 for i in interactions])
+
+    # --- 4. SUMMARY GROUPING ---
+
+    # Group by channel
+    channel_summary = {}
+    for i in interactions:
+        channel = i.channel or "Unknown"
+        channel_summary[channel] = channel_summary.get(channel, 0) + 1
+
+    # Group by interaction type
+    type_summary = {}
+    for i in interactions:
+        itype = i.interaction_type or "Unknown"
+        type_summary[itype] = type_summary.get(itype, 0) + 1
+
+    # Group by campaign type (Attract / Nurture / Recruit)
+    campaign_summary = {}
+    for i in interactions:
+        ctype = i.campaign_type or "Unknown"
+        campaign_summary[ctype] = campaign_summary.get(ctype, 0) + 1
+
+    # --- 5. READINESS LEVEL ---
+    if total_score < 20:
+        readiness = "Low"
+    elif total_score < 60:
+        readiness = "Medium"
+    else:
+        readiness = "High"
+
+    # --- 6. UPDATE SUMMARY DOCTYPE ---
+    summary_name = frappe.db.exists("Mira Engagement Summary", {"talent_id": talent_id})
+    if summary_name:
+        summary = frappe.get_doc("Mira Engagement Summary", summary_name)
+    else:
+        summary = frappe.new_doc("Mira Engagement Summary")
+        summary.talent_id = talent_id
+
+    summary.first_interaction_at = first_date
+    summary.last_interaction_at = last_date
+    summary.engagement_timeline = timeline_days
+    summary.total_score = total_score
+    summary.total_weight = total_weight
+
+    summary.channel_breakdown = channel_summary
+    summary.type_breakdown = type_summary
+    summary.campaign_breakdown = campaign_summary
+
+    summary.readiness_level = readiness
+
+    summary.save(ignore_permissions=True)
+    frappe.db.commit()
+
+    return summary.name
+
+
+@frappe.whitelist()
+def create_fake_interaction(talent_id, campaign_id, channel, interaction_type):
+    doc = frappe.get_doc({
+        "doctype": "Mira Interaction",
+        "talent_id": talent_id,
+        "campaign_id": campaign_id,
+        "channel": channel,
+        "interaction_type": interaction_type,
+        "action": f"Test {interaction_type}",
+        "url": "https://example.com/test",
+        "utm_source": "unit_test",
+        "utm_medium": channel.lower(),
+        "utm_campaign": campaign_id,
+        "ip_address": "127.0.0.1",
+        "user_agent": "Mozilla/5.0 Test Bot",
+        "engagement_score": 10,
+        "interaction_weight": 1.0,
+        "first_interaction_at": now_datetime(),
+        "previous_interaction_at": now_datetime(),
+        "engagement_timeline": 0,
+        "description": "Fake Interaction for testing"
+    })
+    doc.insert()
+    frappe.db.commit()
+    return doc.name

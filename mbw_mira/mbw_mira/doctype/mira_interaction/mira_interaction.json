@@ -8,6 +8,7 @@
  "field_order": [
   "talent_id",
   "campaign_id",
+  "campaign_type",
   "channel",
   "interaction_type",
   "action",
@@ -17,11 +18,23 @@
   "utm_campaign",
   "ip_address",
   "user_agent",
+  
+  "creative_id",
+  "template_id",
+  "interaction_source_type",
+  "session_id",
+
+  "content_category",
+  "talent_segment",
+  "job_role_target",
+
   "engagement_score",
   "interaction_weight",
   "first_interaction_at",
   "previous_interaction_at",
   "engagement_timeline",
+
+  "raw_data",
   "description"
  ],
  "fields": [
@@ -36,6 +49,13 @@
    "fieldtype": "Link",
    "label": "Mira Campaign",
    "options": "Mira Campaign"
+  },
+  {
+   "fieldname": "campaign_type",
+   "fieldtype": "Select",
+   "label": "Campaign Type",
+   "options": "Attract\nNurture\nRecruit",
+   "read_only": 1
   },
   {
    "fieldname": "channel",
@@ -84,6 +104,46 @@
    "fieldtype": "Small Text",
    "label": "User Agent"
   },
+
+  {
+   "fieldname": "creative_id",
+   "fieldtype": "Data",
+   "label": "Creative ID / Ad ID"
+  },
+  {
+   "fieldname": "template_id",
+   "fieldtype": "Link",
+   "options": "Email Template",
+   "label": "Template ID"
+  },
+  {
+   "fieldname": "interaction_source_type",
+   "fieldtype": "Select",
+   "label": "Interaction Source Type",
+   "options": "SYSTEM_TRIGGERED\nUSER_TRIGGERED"
+  },
+  {
+   "fieldname": "session_id",
+   "fieldtype": "Data",
+   "label": "Session ID"
+  },
+
+  {
+   "fieldname": "content_category",
+   "fieldtype": "Data",
+   "label": "Content Category"
+  },
+  {
+   "fieldname": "talent_segment",
+   "fieldtype": "Data",
+   "label": "Talent Segment"
+  },
+  {
+   "fieldname": "job_role_target",
+   "fieldtype": "Data",
+   "label": "Target Job Role"
+  },
+
   {
    "fieldname": "engagement_score",
    "fieldtype": "Int",
@@ -112,6 +172,12 @@
    "label": "Engagement Timeline (Days)",
    "description": "Số ngày tính từ lần tương tác đầu tiên đến tương tác hiện tại",
    "read_only": 1
+  },
+
+  {
+   "fieldname": "raw_data",
+   "fieldtype": "JSON",
+   "label": "Raw Event Payload"
   },
   {
    "fieldname": "description",
