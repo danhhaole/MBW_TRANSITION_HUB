@@ -139,7 +139,7 @@
       v-model="showTemplateDialog"
       :options="{
         title: __('Email Template Editor'),
-        size: 'xl'
+        size: '7xl'
       }"
     >
       <template #body-content>

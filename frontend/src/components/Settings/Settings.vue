@@ -1,7 +1,7 @@
 <template>
   <Dialog
     v-model="showSettings"
-    :options="{ size: '5xl' }"
+    :options="{ size: '9xl' }"
     @close="activeSettingsPage = ''"
     :disableOutsideClickToClose="true"
   >
