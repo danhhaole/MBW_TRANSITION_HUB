@@ -1,6 +1,8 @@
 # Copyright (c) 2025, MBWCloud Co. and contributors
 # For license information, please see license.txt
 
+from datetime import datetime
+from typing import Counter
 import frappe
 from frappe.utils import nowdate,now_datetime, date_diff, get_datetime
 from frappe.model.document import Document
@@ -44,7 +46,7 @@ class MiraInteraction(Document):
 	def after_insert(self):
 		#Tính vào summary khi có tương tác
 		if self.talent_id:
-			calculate_engagement_summary(self.talent_id)
+			summarize_engagement_for_talent(self.talent_id)
 	
 	# AUTO TRACKING
 	def auto_tracking(self):
@@ -320,100 +322,104 @@ def create_mira_interaction(args):
 	frappe.db.commit()
 
 
-def calculate_engagement_summary(talent_id):
-    """
-    Tổng hợp toàn bộ interaction để:
-    - Tính score tổng
-    - Tính timeline (days)
-    - Tổng hợp theo channel
-    - Tổng hợp theo interaction_type
-    - Tổng hợp theo campaign_type (Attract / Nurture / Recruit)
-    """
-
+def summarize_engagement_for_talent(talent_id):
     interactions = frappe.get_all(
         "Mira Interaction",
         filters={"talent_id": talent_id},
         fields=[
-            "name",
             "interaction_type",
             "channel",
-            "campaign_type",
-            "interaction_weight",
             "engagement_score",
             "first_interaction_at",
-            "creation",
-        ],
-        order_by="creation asc"
+            "previous_interaction_at",
+            "creation"
+        ]
+    )
+    
+	
+    if not interactions:
+        return None
+
+    total_interactions = len(interactions)
+    total_score = sum(i.get("engagement_score",0) for i in interactions)
+
+    first_interaction_at = min(
+        [i.get("first_interaction_at") or i.get("creation") for i in interactions]
+    )
+    last_interaction_at = max(
+        [i.get("previous_interaction_at") or i.get("creation") for i in interactions]
+    )
+    engagement_timeline = (last_interaction_at - first_interaction_at).days if first_interaction_at and last_interaction_at else 0
+
+    # Top channel
+    channels = [i["channel"] for i in interactions if i.get("channel")]
+    top_channel = Counter(channels).most_common(1)[0][0] if channels else None
+
+    # Interaction type counts
+    click_count = sum(1 for i in interactions if i["interaction_type"]=="ON_LINK_CLICK")
+    open_count = sum(1 for i in interactions if i["interaction_type"]=="EMAIL_OPENED")
+    reply_count = sum(1 for i in interactions if i["interaction_type"] in ["EMAIL_REPLIED","SMS_REPLIED","CHAT_MESSAGE_SENT"])
+    visit_count = sum(1 for i in interactions if i["interaction_type"]=="PAGE_VISITED")
+    conversion_count = sum(1 for i in interactions if i["interaction_type"] in ["FORM_SUBMITTED","APPLICATION_SUBMITTED"])
+    bounce_count = sum(1 for i in interactions if i["interaction_type"]=="EMAIL_BOUNCED")
+
+    avg_days_between_interactions = engagement_timeline / total_interactions if total_interactions else 0
+
+    now = datetime.now()
+    recent_7d_score = sum(i.get("engagement_score",0) for i in interactions if i.get("previous_interaction_at") and (now - i["previous_interaction_at"]).days <= 7)
+    recent_30d_score = sum(i.get("engagement_score",0) for i in interactions if i.get("previous_interaction_at") and (now - i["previous_interaction_at"]).days <= 30)
+    bounce_rate = bounce_count / total_interactions if total_interactions else 0
+
+    # Readiness level (sử dụng hàm đã định nghĩa)
+    readiness_level = calculate_readiness(
+        total_score=total_score,
+        recent_30d_score=recent_30d_score,
+        conversion_count=conversion_count,
+        bounce_rate=bounce_rate,
+        avg_days_between_interactions=avg_days_between_interactions
     )
 
-    if not interactions:
-        return
-
-    # --- 1. FIRST + LAST INTERACTION ---
-    first_date = interactions[0].get("first_interaction_at") or interactions[0].get("creation")
-    last_date = interactions[-1].get("creation")
-
-    timeline_days = date_diff(get_datetime(last_date), get_datetime(first_date))
-
-    # --- 2. TOTAL SCORE ---
-    total_score = sum([i.engagement_score or 0 for i in interactions])
-
-    # --- 3. TOTAL WEIGHT ---
-    total_weight = sum([i.interaction_weight or 0 for i in interactions])
-
-    # --- 4. SUMMARY GROUPING ---
-
-    # Group by channel
-    channel_summary = {}
-    for i in interactions:
-        channel = i.channel or "Unknown"
-        channel_summary[channel] = channel_summary.get(channel, 0) + 1
-
-    # Group by interaction type
-    type_summary = {}
-    for i in interactions:
-        itype = i.interaction_type or "Unknown"
-        type_summary[itype] = type_summary.get(itype, 0) + 1
-
-    # Group by campaign type (Attract / Nurture / Recruit)
-    campaign_summary = {}
-    for i in interactions:
-        ctype = i.campaign_type or "Unknown"
-        campaign_summary[ctype] = campaign_summary.get(ctype, 0) + 1
-
-    # --- 5. READINESS LEVEL ---
-    if total_score < 20:
-        readiness = "Low"
-    elif total_score < 60:
-        readiness = "Medium"
-    else:
-        readiness = "High"
-
-    # --- 6. UPDATE SUMMARY DOCTYPE ---
-    summary_name = frappe.db.exists("Mira Engagement Summary", {"talent_id": talent_id})
-    if summary_name:
-        summary = frappe.get_doc("Mira Engagement Summary", summary_name)
-    else:
-        summary = frappe.new_doc("Mira Engagement Summary")
-        summary.talent_id = talent_id
-
-    summary.first_interaction_at = first_date
-    summary.last_interaction_at = last_date
-    summary.engagement_timeline = timeline_days
-    summary.total_score = total_score
-    summary.total_weight = total_weight
-
-    summary.channel_breakdown = channel_summary
-    summary.type_breakdown = type_summary
-    summary.campaign_breakdown = campaign_summary
-
-    summary.readiness_level = readiness
-
-    summary.save(ignore_permissions=True)
+    summary_data = {
+        "talent_id": talent_id,
+        "total_interactions": total_interactions,
+        "total_score": total_score,
+        "readiness_level": readiness_level,
+        "first_interaction_at": first_interaction_at,
+        "last_interaction_at": last_interaction_at,
+        "engagement_timeline": engagement_timeline,
+        "top_channel": top_channel,
+        "click_count": click_count,
+        "open_count": open_count,
+        "reply_count": reply_count,
+        "visit_count": visit_count,
+        "conversion_count": conversion_count,
+        "avg_days_between_interactions": avg_days_between_interactions,
+        "recent_7d_score": recent_7d_score,
+        "recent_30d_score": recent_30d_score,
+        "bounce_rate": bounce_rate
+    }
+    doc = frappe.get_doc({
+            "doctype": "Mira Engagement Summary",
+            **summary_data
+        })
+    doc.insert(ignore_permissions=True)
     frappe.db.commit()
 
-    return summary.name
 
+def calculate_readiness(total_score, recent_30d_score, conversion_count, bounce_rate, avg_days_between_interactions):
+    score = total_score + recent_30d_score * 2 + conversion_count * 5
+    
+    # Trừ điểm nếu bounce rate cao hoặc khoảng cách tương tác lớn
+    score -= bounce_rate * 50
+    score -= avg_days_between_interactions
+    
+    # Xác định mức readiness
+    if score < 50:
+        return "Low"
+    elif score < 150:
+        return "Medium"
+    else:
+        return "High"
 
 @frappe.whitelist()
 def create_fake_interaction(talent_id, campaign_id, channel, interaction_type):
