@@ -12,6 +12,7 @@
   "external_connection",
   "platform",
   "post_schedule_time",
+  "executed_at",
   "template_content",
   "subject",
   "social_media_images",
@@ -21,7 +22,8 @@
   "status",
   "retry_count",
   "error_message",
-  "response_data"
+  "response_data",
+  "is_active"
  ],
  "fields": [
   {
@@ -110,11 +112,22 @@
    "fieldtype": "Table",
    "label": "Attachments",
    "options": "Mira Campaign Social Attachment"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "label": "Active"
+  },
+  {
+   "fieldname": "executed_at",
+   "fieldtype": "Datetime",
+   "label": "Executed At"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-12 09:35:53.872103",
+ "modified": "2025-11-19 16:37:25.766340",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Campaign Social",
