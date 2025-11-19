@@ -131,7 +131,6 @@
       doctype="Mira Campaign"
       @apply="applyTemplate"
       @openSettings="openTemplateSettings"
-      @close="handleSelectorClose"
     />
 
     <!-- Email Template Editor Dialog -->
@@ -187,25 +186,25 @@
             </Autocomplete>
           </div>
 
-          <!-- Rich Text Editor -->
-          <div>
-            <TextEditor
-              ref="dialogTextarea"
-              editor-class="prose-sm min-h-[20rem] border rounded-lg border-gray-300 p-3"
-              :content="dialogContent"
-              :placeholder="emailPlaceholder"
-              @change="(val) => dialogContent = val"
-              :bubbleMenu="true"
-              :fixedMenu="true"
-            />
-            <div class="flex justify-between items-center mt-2">
-              <p class="text-xs text-gray-500">
-                {{ __("Use variables like [Candidate Name], [Job Title], [Company]") }}
-              </p>
-              <span class="text-xs text-gray-500">
-                {{ getTextLength(dialogContent) }} {{ __("characters") }}
-              </span>
+          <!-- Unlayer Email Editor -->
+          <div class="relative">
+            <!-- Loading Overlay -->
+            <div 
+              v-if="editorLoading" 
+              class="absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center rounded-lg"
+            >
+              <div class="text-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-3"></div>
+                <p class="text-sm text-gray-600 font-medium">{{ __('Loading email editor...') }}</p>
+              </div>
             </div>
+            
+            <UnlayerEmailEditor
+              ref="unlayerEditor"
+              v-model="dialogContent"
+              min-height="600px"
+              @ready="onEditorReady"
+            />
           </div>
         </div>
       </template>
@@ -227,10 +226,11 @@
 
 <script setup>
 import { ref, watch, nextTick, computed } from 'vue'
-import { FeatherIcon, Dialog, Button, FileUploader, TextEditor, FormControl, Autocomplete } from 'frappe-ui'
+import { FeatherIcon, Dialog, Button, FileUploader, FormControl, Autocomplete } from 'frappe-ui'
 import { useToast } from '../../../composables/useToast'
 import EmailTemplateSelectorModal from '@/components/Modals/EmailTemplateSelectorModal.vue'
 import { showSettings, activeSettingsPage } from '@/composables/settings'
+import UnlayerEmailEditor from '@/components/Settings/MiraEmailTemplate/UnlayerEmailEditor.vue'
 
 const props = defineProps({
   content: { type: Object, default: () => ({}) },
@@ -250,8 +250,9 @@ const showTemplateDialog = ref(false)
 const showTemplateSelectorModal = ref(false)
 const dialogContent = ref('')
 const aiGenerating = ref(false)
-const dialogTextarea = ref(null)
+const unlayerEditor = ref(null)
 const selectedDialogField = ref(null)
+const editorLoading = ref(false)
 const toast = useToast()
 
 const __ = (text) => text
@@ -324,77 +325,115 @@ const fieldAutocompleteOptions = computed(() => {
   }))
 })
 
-const emailPlaceholder = `<p>Hello {{ full_name }},</p>
-<p>We hope this email finds you well. We have an exciting opportunity at {{ latest_company }} that we believe would be a perfect fit for your skills and experience.</p>
-<p><strong>Position:</strong> {{ latest_title }}<br>
-<strong>Location:</strong> Ho Chi Minh City<br>
-<strong>Type:</strong> Full-time</p>
-<p>We would love to discuss this opportunity with you further. Are you available for a brief call this week?</p>
-<p>Best regards,<br>
-HR Team<br>
-{{ latest_company }}</p>`
-
 // Open template editor dialog
 const openTemplateEditor = () => {
   if (props.readonly) return
   
-  dialogContent.value = localContent.value.email_content || ''
+  editorLoading.value = true
+  
+  // Load existing design if available
+  if (localContent.value.email_content) {
+    try {
+      // Parse if it's JSON string, otherwise use as is
+      const design = typeof localContent.value.email_content === 'string' 
+        ? JSON.parse(localContent.value.email_content)
+        : localContent.value.email_content
+      
+      // Validate it's a proper Unlayer design
+      if (design && design.body && Array.isArray(design.body.rows)) {
+        dialogContent.value = design
+      } else {
+        console.warn('Email content is not valid Unlayer format, starting with empty canvas')
+        dialogContent.value = null
+      }
+    } catch (e) {
+      console.warn('Failed to parse email_content as JSON, starting with empty canvas:', e)
+      dialogContent.value = null
+      toast.info(__('Starting with blank canvas. Previous content was in old format.'))
+    }
+  } else {
+    dialogContent.value = null
+  }
+  
   showTemplateDialog.value = true
 }
 
 // Save template from dialog
-const saveTemplate = () => {
-  localContent.value.email_content = dialogContent.value
-  showTemplateDialog.value = false
+const saveTemplate = async () => {
+  if (!unlayerEditor.value) {
+    toast.error(__('Editor not ready'))
+    return
+  }
+  
+  try {
+    // Export design from Unlayer
+    const design = await unlayerEditor.value.saveDesign()
+    
+    // Save as JSON string for backend
+    localContent.value.email_content = JSON.stringify(design)
+    
+    showTemplateDialog.value = false
+    toast.success(__('Email template saved successfully'))
+  } catch (error) {
+    console.error('Failed to save template:', error)
+    toast.error(__('Failed to save template'))
+  }
 }
 
 // Generate content with AI (fake for now)
 const generateWithAI = async () => {
-  aiGenerating.value = true
-  
-  // Simulate AI generation
-  await new Promise(resolve => setTimeout(resolve, 2000))
-  
-  const aiContent = `<p>Hello {{ full_name }},</p>
-
-<p>I hope this message finds you well. I'm reaching out because we have an exciting opportunity at {{ latest_company }} that perfectly matches your background and expertise.</p>
-
-<p>We're currently looking for a talented {{ latest_title }} to join our dynamic team. Based on your experience and skills, I believe this role could be an excellent fit for your career growth.</p>
-
-<p><strong>Here's what makes this opportunity special:</strong></p>
-<ul>
-<li>Competitive salary and comprehensive benefits</li>
-<li>Flexible working arrangements</li>
-<li>Opportunity to work with cutting-edge technology</li>
-<li>Collaborative and innovative work environment</li>
-<li>Clear career progression path</li>
-</ul>
-
-<p>I'd love to schedule a brief call to discuss this opportunity in more detail. Are you available for a 15-minute conversation this week?</p>
-
-<p>Looking forward to hearing from you.</p>
-
-<p>Best regards,<br>
-{{ full_name }}<br>
-HR Team - {{ latest_company }}</p>`
-
-  dialogContent.value = aiContent
+  toast.info(__('AI generation will be available soon'))
   aiGenerating.value = false
 }
 
 // Use predefined template - open selector modal
 const useTemplate = () => {
-  showTemplateSelectorModal.value = true
+  // Temporarily close editor dialog to prevent modal conflicts
+  showTemplateDialog.value = false
+  
+  // Open selector modal
+  nextTick(() => {
+    showTemplateSelectorModal.value = true
+  })
 }
 
 // Apply selected template
 const applyTemplate = (template) => {
+  editorLoading.value = true
+  
   if (template.subject) {
     localContent.value.email_subject = template.subject
   }
-  if (template.message) {
-    dialogContent.value = template.message
+  
+  let templateApplied = false
+  
+  // Use email_design_json field (Unlayer design) instead of message (HTML export)
+  if (template.email_design_json) {
+    try {
+      // Parse template design JSON if it's string
+      const design = typeof template.email_design_json === 'string'
+        ? JSON.parse(template.email_design_json)
+        : template.email_design_json
+      
+      // Validate it's a proper Unlayer design (must have body.rows)
+      if (design && design.body && Array.isArray(design.body.rows)) {
+        dialogContent.value = design
+        templateApplied = true
+      } else {
+        console.warn('Template is not valid Unlayer format (missing body.rows)')
+      }
+    } catch (e) {
+      console.warn('Template email_design_json is not valid JSON:', e)
+    }
   }
+  
+  // If template couldn't be applied (old format or missing design JSON)
+  if (!templateApplied) {
+    dialogContent.value = null
+    toast.warning(__('This template does not have a valid design. Please create a new design with the visual editor.'))
+    editorLoading.value = false
+  }
+  
   showTemplateSelectorModal.value = false
   
   // Ensure editor dialog stays open
@@ -402,32 +441,72 @@ const applyTemplate = (template) => {
     showTemplateDialog.value = true
   })
   
-  toast.success(__('Template applied successfully'))
+  if (templateApplied) {
+    toast.success(__('Template applied successfully'))
+  }
 }
 
 // Open template settings
 const openTemplateSettings = () => {
+  // Close both modals
+  showTemplateSelectorModal.value = false
+  showTemplateDialog.value = false
+  
   // Open settings dialog and set active page to Email Templates
-  showSettings.value = true
-  activeSettingsPage.value = 'Email Templates'
-}
-
-// Handle selector modal close
-const handleSelectorClose = () => {
-  // Ensure editor dialog stays open when selector closes
   nextTick(() => {
-    showTemplateDialog.value = true
+    showSettings.value = true
+    activeSettingsPage.value = 'Email Templates'
   })
 }
 
-// Get preview content (strip HTML for preview or limit length)
+// Get preview content (export HTML from Unlayer design)
 const getPreviewContent = (content) => {
   if (!content) return ''
-  // Limit content length for preview
+  
+  try {
+    // If content is Unlayer design JSON, extract text preview
+    const design = typeof content === 'string' ? JSON.parse(content) : content
+    
+    if (design.body && design.body.rows) {
+      // Extract text from Unlayer design structure
+      let previewText = ''
+      design.body.rows.forEach(row => {
+        row.columns?.forEach(column => {
+          column.contents?.forEach(contentItem => {
+            if (contentItem.type === 'text' && contentItem.values?.text) {
+              // Strip HTML tags for preview
+              const div = document.createElement('div')
+              div.innerHTML = contentItem.values.text
+              previewText += div.textContent + ' '
+            }
+          })
+        })
+      })
+      
+      // Limit preview length
+      if (previewText.length > 200) {
+        return previewText.substring(0, 200) + '...'
+      }
+      return previewText || '<p>Email template created with visual editor</p>'
+    }
+  } catch (e) {
+    // If parsing fails, treat as plain text/HTML
+    console.warn('Failed to parse content as Unlayer design:', e)
+  }
+  
+  // Fallback for non-JSON content
   if (content.length > 200) {
     return content.substring(0, 200) + '...'
   }
   return content
+}
+
+// Editor ready callback
+const onEditorReady = (editor) => {
+  // Hide loading indicator when editor is fully ready
+  setTimeout(() => {
+    editorLoading.value = false
+  }, 100)
 }
 
 // Watch for field selection in dialog
@@ -445,40 +524,7 @@ watch(selectedDialogField, (newValue) => {
 const insertFieldToDialog = (option) => {
   if (!option) return
   
-  const fieldPlaceholder = `{{ ${option.value} }}`
-  
-  // For TextEditor, we need to insert HTML content
-  if (dialogTextarea.value?.editor) {
-    dialogTextarea.value.editor.chain().focus().insertContent(fieldPlaceholder).run()
-  } else {
-    // Fallback: append to content
-    dialogContent.value += fieldPlaceholder
-  }
-  
-  toast.success(`Inserted field: ${option.label}`)
-}
-
-// Insert variable in dialog textarea
-const insertVariableInDialog = (variable) => {
-  if (!dialogTextarea.value) return
-  
-  // For TextEditor, we need to insert HTML content
-  const editor = dialogTextarea.value.editor
-  if (editor) {
-    editor.chain().focus().insertContent(variable).run()
-  } else {
-    // Fallback: append to content
-    dialogContent.value = (dialogContent.value || '') + variable
-  }
-}
-
-// Get text length from HTML content
-const getTextLength = (htmlContent) => {
-  if (!htmlContent) return 0
-  // Strip HTML tags to get text length
-  const div = document.createElement('div')
-  div.innerHTML = htmlContent
-  return div.textContent?.length || 0
+  toast.info(__(`Copy this variable: {{ ${option.value} }} and paste it in the editor`))
 }
 
 // Handle file upload success
