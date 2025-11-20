@@ -196,10 +196,10 @@
                     <span class="text-gray-600">Recruitment readiness:</span>
                     <span class="font-medium">{{ talent.recruitment_readiness }}</span>
                   </div>
-                  <div v-if="talent.expected_salary" class="flex justify-between">
+                  <!-- <div v-if="talent.expected_salary" class="flex justify-between">
                     <span class="text-gray-600">Expected salary:</span>
-                    <span class="font-medium">{{ talent.expected_salary }}</span>
-                  </div>
+                    <span class="font-medium">{{ formatCurrency(talent.expected_salary) }}</span>
+                  </div> -->
                   <div v-if="talent.preferred_work_model" class="flex justify-between">
                     <span class="text-gray-600">Preferred work:</span>
                     <span class="font-medium">{{ talent.preferred_work_model }}</span>
