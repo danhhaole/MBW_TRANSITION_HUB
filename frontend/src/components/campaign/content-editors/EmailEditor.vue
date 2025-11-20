@@ -199,12 +199,22 @@
               </div>
             </div>
             
+            <EmailBuilder
+              ref="emailBuilderEditor"
+              v-model="dialogContent"
+              height="600px"
+              @ready="onEditorReady"
+            />
+            
+            <!-- OLD Unlayer Editor - COMMENTED OUT -->
+            <!--
             <UnlayerEmailEditor
               ref="unlayerEditor"
               v-model="dialogContent"
               min-height="600px"
               @ready="onEditorReady"
             />
+            -->
           </div>
         </div>
       </template>
@@ -230,7 +240,9 @@ import { FeatherIcon, Dialog, Button, FileUploader, FormControl, Autocomplete } 
 import { useToast } from '../../../composables/useToast'
 import EmailTemplateSelectorModal from '@/components/Modals/EmailTemplateSelectorModal.vue'
 import { showSettings, activeSettingsPage } from '@/composables/settings'
-import UnlayerEmailEditor from '@/components/Settings/MiraEmailTemplate/UnlayerEmailEditor.vue'
+import EmailBuilder from '@/components/Settings/MiraEmailTemplate/EmailBuilder/EmailBuilder.vue'
+// OLD IMPORT - COMMENTED OUT
+// import UnlayerEmailEditor from '@/components/Settings/MiraEmailTemplate/UnlayerEmailEditor.vue'
 
 const props = defineProps({
   content: { type: Object, default: () => ({}) },
@@ -250,7 +262,9 @@ const showTemplateDialog = ref(false)
 const showTemplateSelectorModal = ref(false)
 const dialogContent = ref('')
 const aiGenerating = ref(false)
-const unlayerEditor = ref(null)
+const emailBuilderEditor = ref(null)
+// OLD REF - COMMENTED OUT
+// const unlayerEditor = ref(null)
 const selectedDialogField = ref(null)
 const editorLoading = ref(false)
 const toast = useToast()
@@ -339,11 +353,18 @@ const openTemplateEditor = () => {
         ? JSON.parse(localContent.value.email_content)
         : localContent.value.email_content
       
-      // Validate it's a proper Unlayer design
-      if (design && design.body && Array.isArray(design.body.rows)) {
+      // NEW: Check for EmailBuilder format first
+      if (design && design.blocks && Array.isArray(design.blocks)) {
         dialogContent.value = design
+        console.log('Loading EmailBuilder format:', design)
+      }
+      // OLD: Validate it's a proper Unlayer design (backward compatibility)
+      else if (design && design.body && Array.isArray(design.body.rows)) {
+        dialogContent.value = design
+        console.log('Loading Unlayer format (legacy):', design)
+        toast.info(__('Loading legacy email format. Consider recreating with new editor.'))
       } else {
-        console.warn('Email content is not valid Unlayer format, starting with empty canvas')
+        console.warn('Email content is not valid format, starting with empty canvas')
         dialogContent.value = null
       }
     } catch (e) {
@@ -360,14 +381,21 @@ const openTemplateEditor = () => {
 
 // Save template from dialog
 const saveTemplate = async () => {
-  if (!unlayerEditor.value) {
+  if (!emailBuilderEditor.value) {
     toast.error(__('Editor not ready'))
     return
   }
   
   try {
-    // Export design from Unlayer
-    const design = await unlayerEditor.value.saveDesign()
+    // Export design from EmailBuilder
+    const exportData = emailBuilderEditor.value.exportHtml()
+    const blocks = emailBuilderEditor.value.getBlocks()
+    
+    // Create EmailBuilder format
+    const design = { 
+      blocks, 
+      emailSettings: exportData.emailSettings 
+    }
     
     // Save as JSON string for backend
     localContent.value.email_content = JSON.stringify(design)
@@ -407,7 +435,7 @@ const applyTemplate = (template) => {
   
   let templateApplied = false
   
-  // Use email_design_json field (Unlayer design) instead of message (HTML export)
+  // Use email_design_json field (EmailBuilder or Unlayer design) instead of message (HTML export)
   if (template.email_design_json) {
     try {
       // Parse template design JSON if it's string
@@ -415,12 +443,22 @@ const applyTemplate = (template) => {
         ? JSON.parse(template.email_design_json)
         : template.email_design_json
       
-      // Validate it's a proper Unlayer design (must have body.rows)
-      if (design && design.body && Array.isArray(design.body.rows)) {
+      // NEW: Check for EmailBuilder format first
+      if (design && design.blocks && Array.isArray(design.blocks)) {
+        localContent.value.email_content = JSON.stringify(design)
         dialogContent.value = design
         templateApplied = true
+        console.log('Applied EmailBuilder template:', design)
+      }
+      // OLD: Validate it's a proper Unlayer design (must have body.rows)
+      else if (design && design.body && Array.isArray(design.body.rows)) {
+        localContent.value.email_content = JSON.stringify(design)
+        dialogContent.value = design
+        templateApplied = true
+        console.log('Applied Unlayer template (legacy):', design)
+        toast.info(__('Applied legacy template format. Consider updating template.'))
       } else {
-        console.warn('Template is not valid Unlayer format (missing body.rows)')
+        console.warn('Template is not valid EmailBuilder or Unlayer format')
       }
     } catch (e) {
       console.warn('Template email_design_json is not valid JSON:', e)
@@ -459,22 +497,53 @@ const openTemplateSettings = () => {
   })
 }
 
-// Get preview content (export HTML from Unlayer design)
+// Get preview content (extract from EmailBuilder blocks or Unlayer design)
 const getPreviewContent = (content) => {
   if (!content) return ''
   
   try {
-    // If content is Unlayer design JSON, extract text preview
     const design = typeof content === 'string' ? JSON.parse(content) : content
     
+    // NEW: Handle EmailBuilder format
+    if (design.blocks && Array.isArray(design.blocks)) {
+      let previewText = ''
+      design.blocks.forEach(block => {
+        if (block.type === 'text' && block.props?.content) {
+          // Strip HTML tags for preview
+          const div = document.createElement('div')
+          div.innerHTML = block.props.content
+          previewText += div.textContent + ' '
+        }
+        // Handle nested blocks in layout columns
+        if (block.children && Array.isArray(block.children)) {
+          block.children.forEach(column => {
+            if (Array.isArray(column)) {
+              column.forEach(childBlock => {
+                if (childBlock.type === 'text' && childBlock.props?.content) {
+                  const div = document.createElement('div')
+                  div.innerHTML = childBlock.props.content
+                  previewText += div.textContent + ' '
+                }
+              })
+            }
+          })
+        }
+      })
+      
+      // Limit preview length
+      if (previewText.length > 200) {
+        return previewText.substring(0, 200) + '...'
+      }
+      return previewText || '<p>Email template created with EmailBuilder</p>'
+    }
+    
+    // OLD: Handle Unlayer design format (for backward compatibility)
     if (design.body && design.body.rows) {
-      // Extract text from Unlayer design structure
       let previewText = ''
       design.body.rows.forEach(row => {
         row.columns?.forEach(column => {
           column.contents?.forEach(contentItem => {
             if (contentItem.type === 'text' && contentItem.values?.text) {
-              // Strip HTML tags for preview
               const div = document.createElement('div')
               div.innerHTML = contentItem.values.text
               previewText += div.textContent + ' '
@@ -483,15 +552,13 @@ const getPreviewContent = (content) => {
         })
       })
       
-      // Limit preview length
       if (previewText.length > 200) {
         return previewText.substring(0, 200) + '...'
       }
       return previewText || '<p>Email template created with visual editor</p>'
     }
   } catch (e) {
-    // If parsing fails, treat as plain text/HTML
-    console.warn('Failed to parse content as Unlayer design:', e)
+    console.warn('Failed to parse content as design JSON:', e)
   }
   
   // Fallback for non-JSON content

@@ -122,46 +122,48 @@
           <span class="text-sm text-ink-gray-7">{{ __('Auto Send') }}</span>
         </div>
       </div>
-      <div>
-        <div class="mb-1.5 flex items-center justify-between">
-          <label class="text-base text-ink-gray-5">
-            {{ __('Email Design') }}
-            <span class="text-ink-red-3">*</span>
-          </label>
-          <div class="flex items-center gap-2">
-            <!-- Merge Tags Autocomplete -->
-            <Autocomplete
-              :options="mergeTagsAutocompleteOptions"
-              v-model="selectedMergeTag"
-              placeholder="Insert merge tag..."
-              :class="isFullscreen ? 'w-80' : 'w-64'"
-            >
-              <template #prefix>
-                <FeatherIcon name="code" class="h-4 w-4 text-gray-500" />
-              </template>
-            </Autocomplete>
-            
-            <!-- Fullscreen Toggle Button -->
-            <Button
-              :label="isFullscreen ? __('Exit Fullscreen') : __('Fullscreen')"
-              :icon-left="isFullscreen ? 'minimize-2' : 'maximize-2'"
-              variant="outline"
-              size="sm"
-              @click="isFullscreen = !isFullscreen"
-            />
-          </div>
+    </div>
+
+    <!-- Email Design Section - Always visible -->
+    <div>
+      <div class="mb-1.5 flex items-center justify-between">
+        <label class="text-base text-ink-gray-5" v-show="!isFullscreen">
+          {{ __('Email Design') }}
+          <span class="text-ink-red-3">*</span>
+        </label>
+        <div class="flex items-center gap-2" :class="isFullscreen ? 'w-full justify-end' : ''">
+          <!-- Merge Tags Autocomplete -->
+          <Autocomplete
+            :options="mergeTagsAutocompleteOptions"
+            v-model="selectedMergeTag"
+            placeholder="Insert merge tag..."
+            :class="isFullscreen ? 'w-80' : 'w-64'"
+          >
+            <template #prefix>
+              <FeatherIcon name="code" class="h-4 w-4 text-gray-500" />
+            </template>
+          </Autocomplete>
+          
+          <!-- Fullscreen Toggle Button -->
+          <Button
+            :label="isFullscreen ? __('Exit Fullscreen') : __('Fullscreen')"
+            :icon-left="isFullscreen ? 'minimize-2' : 'maximize-2'"
+            variant="outline"
+            size="sm"
+            @click="isFullscreen = !isFullscreen"
+          />
         </div>
-        <!-- Unlayer Email Editor -->
-        <UnlayerEmailEditor
-          ref="unlayerEditorRef"
-          v-model="emailDesignJson"
-          :min-height="isFullscreen ? 'calc(100vh - 250px)' : '385px'"
-          @ready="onUnlayerReady"
-        />
-        <p class="text-xs text-ink-gray-4 mt-2" v-show="!isFullscreen">
-          {{ __('Drag blocks from the sidebar to design your email. Click merge tags above to copy and paste into content.') }}
-        </p>
       </div>
+      <!-- Email Builder -->
+      <EmailBuilder
+        ref="emailBuilderRef"
+        v-model="emailDesignJson"
+        :height="isFullscreen ? 'calc(100vh - 250px)' : '400px'"
+        @ready="onEmailBuilderReady"
+      />
+      <p class="text-xs text-ink-gray-4 mt-2" v-show="!isFullscreen">
+        {{ __('Drag blocks from the sidebar to design your email. Click merge tags above to copy and paste into content.') }}
+      </p>
     </div>
     
     <!-- Email Preview Dialog -->
@@ -189,9 +191,8 @@
 import { TextEditor, FormControl, Switch, Button, Autocomplete, FeatherIcon } from 'frappe-ui'
 import { inject, onMounted, ref, computed, watch } from 'vue'
 import EmailPreview from './EmailPreview.vue'
-import UnlayerEmailEditor from './UnlayerEmailEditor.vue'
+import EmailBuilder from './EmailBuilder/EmailBuilder.vue'
 import { useToast } from '@/composables/useToast'
-import { createUnlayerDesignFromHtml } from './unlayerHelper'
 
 const props = defineProps({
   templateData: {
@@ -219,8 +220,10 @@ const showPreview = ref(false)
 const isFullscreen = ref(false)
 const selectedField = ref(null)
 const selectedMergeTag = ref(null)
-const unlayerEditorRef = ref(null)
+const emailBuilderRef = ref(null)
 const emailDesignJson = ref(null)
+// OLD REF - COMMENTED OUT
+// const unlayerEditorRef = ref(null)
 
 // Mira Talent & Campaign fields for insertion - grouped for better UX
 const talentFieldsGrouped = [
@@ -361,20 +364,21 @@ const createTemplate = async () => {
     return
   }
   
-  // Save design from Unlayer editor
-  if (!unlayerEditorRef.value) {
+  // Save design from EmailBuilder
+  if (!emailBuilderRef.value) {
     errorMessage.value = __('Email editor not ready')
     return
   }
   
   try {
-    const design = await unlayerEditorRef.value.saveDesign()
-    const { html } = await unlayerEditorRef.value.exportHtml()
+    const exportData = emailBuilderRef.value.exportHtml()
+    const blocks = emailBuilderRef.value.getBlocks()
+    const mjml = emailBuilderRef.value.getMJML()
     
-    // Store design JSON and HTML
-    emailDesignJson.value = design
-    template.value.message = html
-    template.value.email_design_json = JSON.stringify(design)
+    // Store blocks, HTML and MJML
+    emailDesignJson.value = { blocks, emailSettings: exportData.emailSettings }
+    template.value.message = exportData.html
+    template.value.email_design_json = JSON.stringify(emailDesignJson.value)
   } catch (error) {
     console.error('Error saving design:', error)
     errorMessage.value = __('Failed to save email design')
@@ -445,6 +449,12 @@ function insertFieldToMessage(option) {
   }
   
   toast.success(`Inserted field: ${option.label}`)
+}
+
+// EmailBuilder ready callback
+function onEmailBuilderReady(builderMethods) {
+  console.log('🎉 [NewTemplate] EmailBuilder ready callback')
+  // EmailBuilder is ready to use
 }
 
 onMounted(() => {

@@ -140,13 +140,23 @@
           />
         </div>
       </div>
-      <!-- Unlayer Email Editor -->
+      <!-- New Email Builder -->
+      <EmailBuilder
+        ref="emailBuilderRef"
+        v-model="emailDesignJson"
+        :height="isFullscreen ? 'calc(100vh - 250px)' : '400px'"
+        @ready="onEmailBuilderReady"
+      />
+      
+      <!-- OLD Unlayer Email Editor - COMMENTED OUT -->
+      <!-- 
       <UnlayerEmailEditor
         ref="unlayerEditorRef"
         v-model="emailDesignJson"
         :min-height="isFullscreen ? 'calc(100vh - 250px)' : '385px'"
         @ready="onUnlayerReady"
       />
+      -->
       <p class="text-xs text-ink-gray-4 mt-2" v-show="!isFullscreen">
         {{ __('Drag blocks from the sidebar to design your email. Click merge tags above to copy and paste into content.') }}
       </p>
@@ -184,9 +194,11 @@ import {
 } from 'frappe-ui'
 import { computed, inject, onMounted, ref, watch } from 'vue'
 import EmailPreview from './EmailPreview.vue'
-import UnlayerEmailEditor from './UnlayerEmailEditor.vue'
+import EmailBuilder from './EmailBuilder/EmailBuilder.vue'
 import { useToast } from '@/composables/useToast'
-import { createUnlayerDesignFromHtml } from './unlayerHelper'
+// OLD IMPORTS - COMMENTED OUT
+// import UnlayerEmailEditor from './UnlayerEmailEditor.vue'
+// import { createUnlayerDesignFromHtml } from './unlayerHelper'
 
 const props = defineProps({
   templateData: {
@@ -206,9 +218,11 @@ const showPreview = ref(false)
 const isFullscreen = ref(false)
 const selectedField = ref(null)
 const selectedMergeTag = ref(null)
-const unlayerEditorRef = ref(null)
+const emailBuilderRef = ref(null)
 const emailDesignJson = ref(null)
-const editorHasChanges = ref(false) // Track unsaved Unlayer changes
+const editorHasChanges = ref(false) // Track unsaved changes
+// OLD REFS - COMMENTED OUT
+// const unlayerEditorRef = ref(null)
 
 // Mira Talent & Campaign fields for insertion - grouped for better UX
 const talentFieldsGrouped = [
@@ -321,6 +335,25 @@ watch(selectedMergeTag, (newValue) => {
   }
 })
 
+// NEW EmailBuilder ready callback
+const onEmailBuilderReady = (builderMethods) => {
+  console.log('🎉 [Parent] EmailBuilder ready callback')
+  console.log('   Template message:', template.value.message?.substring(0, 50))
+  console.log('   Email design JSON:', emailDesignJson.value ? 'exists' : 'null')
+  
+  // Mark as changed when design updates
+  editorHasChanges.value = true
+  
+  // If we have existing HTML content, we could convert it to blocks here
+  // For now, start with empty design
+  if (template.value.message && !emailDesignJson.value) {
+    console.log('🔄 [Parent] Starting with empty design for now')
+    toast.info('Starting with new email design')
+  }
+}
+
+// OLD Unlayer ready callback - COMMENTED OUT
+/*
 const onUnlayerReady = (editor) => {
   console.log('🎉 [Parent] Unlayer editor ready callback')
   console.log('   Template message:', template.value.message?.substring(0, 50))
@@ -352,6 +385,7 @@ const onUnlayerReady = (editor) => {
     console.log('ℹ️ [Parent] No content to load')
   }
 }
+*/
 
 const updateTemplate = async () => {
   errorMessage.value = ''
@@ -364,20 +398,21 @@ const updateTemplate = async () => {
     return
   }
   
-  // Save design from Unlayer editor
-  if (!unlayerEditorRef.value) {
+  // Save design from EmailBuilder
+  if (!emailBuilderRef.value) {
     errorMessage.value = __('Email editor not ready')
     return
   }
   
   try {
-    const design = await unlayerEditorRef.value.saveDesign()
-    const { html } = await unlayerEditorRef.value.exportHtml()
+    const exportData = emailBuilderRef.value.exportHtml()
+    const blocks = emailBuilderRef.value.getBlocks()
+    const mjml = emailBuilderRef.value.getMJML()
     
-    // Store design JSON and HTML
-    emailDesignJson.value = design
-    template.value.message = html
-    template.value.email_design_json = JSON.stringify(design)
+    // Store blocks, HTML and MJML
+    emailDesignJson.value = { blocks, emailSettings: exportData.emailSettings }
+    template.value.message = exportData.html
+    template.value.email_design_json = JSON.stringify(emailDesignJson.value)
   } catch (error) {
     console.error('Error saving design:', error)
     errorMessage.value = __('Failed to save email design')
