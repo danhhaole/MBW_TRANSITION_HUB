@@ -170,6 +170,7 @@ def send_email_action(talentprofile_id, action_id):
         if result:
             action.status = "EXECUTED"
             social.status = "Success"
+            social.share_at = now_datetime()
             action.execution_result = {
                 "status": "Success",
                 "message": f"[EMAIL] Sent to {talentprofiles.name} — task: {action.name}",

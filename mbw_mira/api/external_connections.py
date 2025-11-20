@@ -733,6 +733,7 @@ def share_job_posting(
     message: str,
     schedule_type: str = "now",
     scheduled_time: str = None,
+    
     **kwargs,
 ) -> Dict[str, Any]:
     """
@@ -759,7 +760,7 @@ def share_job_posting(
                 "connection": connection_id,
                 "platform_type": connection.platform_type,
                 "message": message,
-                "ladipage_url":ladipage_url,
+                "ladipage_url":ladipage_url,                
                 "image_url":image_url,
                 "schedule_type": schedule_type,
                 "scheduled_time": (
@@ -1241,6 +1242,8 @@ def _process_job_share(share_doc):
                 "error": f"Unsupported platform type: {connection.platform_type}",
             }
 
+        
+        
         # Update share record with results
         share_doc.status = "Success" if result.get("success") else "Failed"
         share_doc.shared_at = now_datetime() if result.get("success") else None
@@ -1256,6 +1259,16 @@ def _process_job_share(share_doc):
             share_doc.response_data = json.dumps(result.get("response_data"))
 
         share_doc.save(ignore_permissions=True)
+
+        #Update social
+        if share_data and hasattr(share_data,"social_id"):
+            social = frappe.get_doc("Mira Campaign Social")
+            social.status = share_doc.status
+            social.response_data = share_doc.response_data
+            social.error_message = share_doc.error_message
+            social.share_at = share_doc.shared_at
+            social.executed_at = now_datetime()
+            social.save(ignore_permissions=True)
 
         # Update connection statistics
         _update_connection_stats(connection, result.get("success", False))
