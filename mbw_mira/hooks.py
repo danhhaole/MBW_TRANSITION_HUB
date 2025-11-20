@@ -155,7 +155,6 @@ add_to_apps_screen = [
 scheduler_events = {
     "cron": {
         "0/1 * * * *": [
-            "mbw_mira.schedulers.fetch_ats_mbw_campaigns.run",
             "mbw_mira.schedulers.sync_candidates_queue.run",
             "mbw_mira.schedulers.task_campaign_social.run_campaign_social_facebook",
             "mbw_mira.schedulers.task_campaign_social.run_campaign_social_zalo",
@@ -185,7 +184,7 @@ scheduler_events = {
         ],
     },
     "daily": [
-        "mbw_mira.schedulers.fetch_ats_mbw_campaigns.run"
+        
     ],
     "hourly": [
         # "mbw_mira.schedulers.enroll_talent_campaign.run",
