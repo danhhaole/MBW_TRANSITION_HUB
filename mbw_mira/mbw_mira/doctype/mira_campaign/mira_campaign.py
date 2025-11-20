@@ -10,18 +10,20 @@ class MiraCampaign(Document):
 
 	def on_update(self):
 		old_doc = self.get_doc_before_save()
+		print(old_doc.status)
 		if old_doc.status != self.status:
+			
 			self.update_status_social()
 
 	def update_status_social(self):
 		is_active = 0
-		if self.status == 'ACTICE':
+		if self.status == 'ACTIVE':
 			is_active =1
 		else:
 			is_active = 0
 		social_campaign = frappe.get_all("Mira Campaign Social",{"campaign_id":self.name},pluck='name')
 		if social_campaign:
 			for scp in social_campaign:
-				frappe.db.set_value("Mira Campaign Social",scp.name,"is_active", is_active)
+				frappe.db.set_value("Mira Campaign Social",scp,"is_active", is_active)
 
 			frappe.db.commit()

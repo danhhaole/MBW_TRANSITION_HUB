@@ -121,7 +121,8 @@
    "fieldtype": "Int",
    "hidden": 1,
    "label": "Total",
-   "read_only": 1
+   "read_only": 1,
+   "default": "0"
   },
   {
    "default": "0",

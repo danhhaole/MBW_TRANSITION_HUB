@@ -18,7 +18,7 @@ class MiraCampaignSocial(Document):
 		#Đếm social update vào campaign
 		self._count_total_social_step_campaign()
 		#Nếu Social thực hiện thì update trạng thái campaign
-		if self.has_value_changed("executed_at"):
+		if self.has_value_changed("executed_at") and self.executed_at:
 			self._update_status_campaign()
 
 	def after_delete(self):
@@ -26,9 +26,10 @@ class MiraCampaignSocial(Document):
 		self._count_total_social_step_campaign()
 
 	def _count_total_social_step_campaign(self):
-		total = frappe.db.count("Mira Campaign Social",{"campaign_id":self.name})
+		total = frappe.db.count("Mira Campaign Social",{"campaign_id":self.campaign_id})
 		#Set lại tổng trong campaign
 		frappe.db.set_value("Mira Campaign",self.campaign_id,"total",total)
+		frappe.db.commit()
 	
 	def _update_status_campaign(self):
 		campaign = frappe.get_doc("Mira Campaign",self.campaign_id)
