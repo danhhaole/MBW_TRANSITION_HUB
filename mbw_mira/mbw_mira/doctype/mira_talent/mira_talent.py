@@ -57,7 +57,7 @@ class MiraTalent(Document):
                             talent_id=self.name,
                             activity_type="System Update",
                             subject=f"{field} changed",
-                            description=f"Field **{field}** changed from **{old}** → **{new}**",
+                            description=f"Field **{field.fieldname}** changed from **{old}** → **{new}**",
                             trigger_type="system",
                             is_system_generated=1,
                             source="system"
