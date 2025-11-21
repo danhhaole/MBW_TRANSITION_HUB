@@ -295,7 +295,7 @@
                 <TalentInteractions v-else-if="tabs[tabIndex]?.content === 'interactions'" :talent="talent" />
                 
                 <!-- Applications Tab -->
-                <TalentApplications v-else-if="tabs[tabIndex]?.content === 'applications'" :talent="talent" />
+                <!-- <TalentApplications v-else-if="tabs[tabIndex]?.content === 'applications'" :talent="talent" /> -->
                 
                 <!-- Activities Tab -->
                 <TalentActivities v-else-if="tabs[tabIndex]?.content === 'activities'" :talent="talent" />
@@ -789,13 +789,13 @@ const tabs = computed(() => [
     count: 0,
     content: 'interactions'
   },
-  {
-    label: 'Applications',
-    name: 'applications',
-    icon: h(FeatherIcon, { class: 'w-4 h-4', name: 'briefcase' }),
-    count: 0,
-    content: 'applications'
-  },
+  // {
+  //   label: 'Applications',
+  //   name: 'applications',
+  //   icon: h(FeatherIcon, { class: 'w-4 h-4', name: 'briefcase' }),
+  //   count: 0,
+  //   content: 'applications'
+  // },
   {
     label: 'Activities',
     name: 'activities',
