@@ -45,23 +45,23 @@ class MiraTalent(Document):
                 self.on_status_changed(old_doc.crm_status,self.crm_status)
             if old_doc and hasattr(old_doc, 'tags') and old_doc.tags != self.tags:
                 self.on_tag_added()
+            meta_fields =  self.meta.fields            
+            if meta_fields:
+                for field in meta_fields:
+                    changed_fields = self.has_value_changed(field.fieldname)
+                    if changed_fields:
+                        old = old_doc.get(field.fieldname)
+                        new = self.get(field.fieldname)
 
-            # changed_fields = self.get_changed()
-
-            # if changed_fields:
-            #     for field in changed_fields:
-            #         old = self.get_doc_before_save().get(field)
-            #         new = self.get(field)
-
-            #         create_talent_activity_log(
-            #             talent_id=self.name,
-            #             activity_type="Updated",
-            #             subject=f"{field} changed",
-            #             description=f"Field **{field}** changed from **{old}** → **{new}**",
-            #             trigger_type="system",
-            #             is_system_generated=1,
-            #             source="system"
-            #         )
+                        create_talent_activity_log(
+                            talent_id=self.name,
+                            activity_type="System Update",
+                            subject=f"{field} changed",
+                            description=f"Field **{field}** changed from **{old}** → **{new}**",
+                            trigger_type="system",
+                            is_system_generated=1,
+                            source="system"
+                        )
             
     def on_talent_update(self):
         create_task_definitions_from_event(
