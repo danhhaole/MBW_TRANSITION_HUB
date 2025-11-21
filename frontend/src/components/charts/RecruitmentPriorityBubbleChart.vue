@@ -32,15 +32,27 @@ const initChart = () => {
 
 	chartInstance = echarts.init(chartRef.value)
 
+	// Handle empty data case
+	const hasData = props.data && props.data.length > 0
+	const chartData = hasData ? props.data : [
+		{ 
+			name: 'No Data', 
+			value: [0, 0, 0], 
+			readinessLabel: 'Low', 
+			timelineLabel: 'Immediate',
+			color: '#E5E7EB'
+		}
+	]
+
 	const option = {
 		tooltip: {
 			trigger: 'item',
-			formatter: (params) => {
+			formatter: hasData ? (params) => {
 				return `${params.data.name}<br/>
 						Readiness: ${params.data.readinessLabel}<br/>
 						Timeline: ${params.data.timelineLabel}<br/>
 						Talents: ${params.data.value[2]}`
-			}
+			} : () => 'No data available'
 		},
 		grid: {
 			left: '100px',
@@ -110,14 +122,14 @@ const initChart = () => {
 				symbolSize: (data) => {
 					return Math.sqrt(data[2]) * 8 // Size based on talent count
 				},
-				data: props.data.map(item => ({
+				data: chartData.map(item => ({
 					value: item.value,
 					name: item.name,
 					readinessLabel: item.readinessLabel,
 					timelineLabel: item.timelineLabel,
 					itemStyle: {
 						color: item.color || '#3B82F6',
-						opacity: 0.7
+						opacity: hasData ? 0.7 : 0.3
 					}
 				})),
 				label: {

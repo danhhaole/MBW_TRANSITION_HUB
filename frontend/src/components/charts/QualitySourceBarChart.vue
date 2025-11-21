@@ -32,18 +32,22 @@ const initChart = () => {
 
 	chartInstance = echarts.init(chartRef.value)
 
+	// Handle empty data case
+	const hasData = props.data && props.data.length > 0
+	const chartData = hasData ? props.data : [{ name: 'No Data', value: 0, totalTalents: 0 }]
+
 	const option = {
 		tooltip: {
 			trigger: 'axis',
 			axisPointer: {
 				type: 'shadow'
 			},
-			formatter: (params) => {
+			formatter: hasData ? (params) => {
 				const data = params[0]
 				return `${data.name}<br/>
 						A-rated talents: ${data.value}%<br/>
 						Total talents: ${data.data.totalTalents}`
-			}
+			} : () => 'No data available'
 		},
 		grid: {
 			left: '120px',
@@ -81,9 +85,9 @@ const initChart = () => {
 		},
 		yAxis: {
 			type: 'category',
-			data: props.data.map(item => item.name),
+			data: chartData.map(item => item.name),
 			axisLabel: {
-				color: '#374151',
+				color: hasData ? '#374151' : '#9CA3AF',
 				fontSize: 13,
 				fontWeight: 500
 			},
@@ -99,20 +103,20 @@ const initChart = () => {
 		series: [
 			{
 				type: 'bar',
-				data: props.data.map(item => ({
+				data: chartData.map(item => ({
 					value: item.value,
 					totalTalents: item.totalTalents,
 					itemStyle: {
-						color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+						color: hasData ? new echarts.graphic.LinearGradient(0, 0, 1, 0, [
 							{ offset: 0, color: item.color || '#3B82F6' },
 							{ offset: 1, color: item.colorEnd || '#60A5FA' }
-						]),
+						]) : '#E5E7EB',
 						borderRadius: [0, 4, 4, 0]
 					}
 				})),
 				barWidth: '50%',
 				label: {
-					show: true,
+					show: hasData,
 					position: 'right',
 					formatter: '{c}%',
 					color: '#374151',

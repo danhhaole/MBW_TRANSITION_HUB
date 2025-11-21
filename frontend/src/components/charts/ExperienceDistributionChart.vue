@@ -32,6 +32,15 @@ const initChart = () => {
 
 	chartInstance = echarts.init(chartRef.value)
 
+	// Handle empty data case
+	const hasData = props.data && props.data.length > 0
+	const chartData = hasData ? props.data : [
+		{ name: '0-2 years', value: 0 },
+		{ name: '3-5 years', value: 0 },
+		{ name: '6-10 years', value: 0 },
+		{ name: '11+ years', value: 0 }
+	]
+
 	const option = {
 		tooltip: {
 			trigger: 'axis',
@@ -49,7 +58,7 @@ const initChart = () => {
 		},
 		xAxis: {
 			type: 'category',
-			data: props.data.map(item => item.name),
+			data: chartData.map(item => item.name),
 			axisLabel: {
 				color: '#6B7280',
 				fontSize: 12
@@ -79,13 +88,13 @@ const initChart = () => {
 		},
 		series: [
 			{
-				data: props.data.map(item => ({
+				data: chartData.map(item => ({
 					value: item.value,
 					itemStyle: {
-						color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+						color: hasData ? new echarts.graphic.LinearGradient(0, 0, 0, 1, [
 							{ offset: 0, color: '#3B82F6' },
 							{ offset: 1, color: '#60A5FA' }
-						])
+						]) : '#E5E7EB'
 					}
 				})),
 				type: 'bar',

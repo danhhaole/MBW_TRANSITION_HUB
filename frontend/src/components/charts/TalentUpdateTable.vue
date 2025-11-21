@@ -10,7 +10,16 @@
 			</div>
 		</div>
 		
-		<div class="overflow-x-auto" :style="{ maxHeight: tableHeight }">
+		<div v-if="data.length === 0" class="flex items-center justify-center text-gray-400" :style="{ height: tableHeight }">
+			<div class="text-center">
+				<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+				</svg>
+				<p class="text-sm">{{ __('All talents are up to date!') }}</p>
+			</div>
+		</div>
+		
+		<div v-else class="overflow-x-auto" :style="{ maxHeight: tableHeight }">
 			<table class="min-w-full divide-y divide-gray-200">
 				<thead class="bg-gray-50 sticky top-0">
 					<tr>
@@ -74,13 +83,6 @@
 					</tr>
 				</tbody>
 			</table>
-			
-			<div v-if="data.length === 0" class="text-center py-8 text-gray-500">
-				<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-				</svg>
-				<p class="text-sm">{{ __('All talents are up to date!') }}</p>
-			</div>
 		</div>
 		
 		<!-- Pagination -->

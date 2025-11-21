@@ -32,14 +32,20 @@ const initChart = () => {
 
 	chartInstance = echarts.init(chartRef.value)
 
+	// Handle empty data case
+	const hasData = props.data && props.data.length > 0
+	const chartData = hasData ? props.data : [
+		{ name: 'No Data', value: 1, count: 0, color: '#E5E7EB' }
+	]
+
 	const option = {
 		tooltip: {
 			trigger: 'item',
-			formatter: (params) => {
+			formatter: hasData ? (params) => {
 				const dataItem = props.data.find(item => item.name === params.name)
 				const talentCount = dataItem ? dataItem.count : params.value
 				return `${params.name}: ${talentCount} talents (${params.percent}%)`
-			}
+			} : () => 'No data available'
 		},
 		legend: {
 			orient: 'vertical',
@@ -95,7 +101,7 @@ const initChart = () => {
 					},
 					smooth: true
 				},
-				data: props.data.map(item => ({
+				data: chartData.map(item => ({
 					value: item.value,
 					name: item.name,
 					itemStyle: {

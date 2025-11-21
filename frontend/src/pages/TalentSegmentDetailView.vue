@@ -263,29 +263,17 @@
 				<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 					<!-- Skill Deep Dive Chart -->
 					<SkillRadarChart 
-						v-if="skillsData && skillsData.length > 0"
 						:title="__('Skill Deep Dive')"
-						:data="skillsData"
+						:data="skillsData || []"
 						chartHeight="450px"
 					/>
-					<div v-else class="bg-gray-50 rounded-lg border border-gray-200 p-8 flex items-center justify-center h-[450px]">
-						<div class="text-center">
-							<div class="text-gray-400 mb-2">{{ __('Loading skills data...') }}</div>
-						</div>
-					</div>
 					
 					<!-- Experience Distribution Chart -->
 					<ExperienceDistributionChart 
-						v-if="experienceData && experienceData.length > 0"
 						:title="__('Experience vs. Seniority')"
-						:data="experienceData"
+						:data="experienceData || []"
 						chartHeight="450px"
 					/>
-					<div v-else class="bg-gray-50 rounded-lg border border-gray-200 p-8 flex items-center justify-center h-[450px]">
-						<div class="text-center">
-							<div class="text-gray-400 mb-2">{{ __('Loading experience data...') }}</div>
-						</div>
-					</div>
 				</div>
 			</div>
 
@@ -299,29 +287,17 @@
 				<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 					<!-- Recruitment Priority Matrix -->
 					<RecruitmentPriorityBubbleChart 
-						v-if="recruitmentPriorityData && recruitmentPriorityData.length > 0"
 						:title="__('Recruitment Priority Matrix')"
-						:data="recruitmentPriorityData"
+						:data="recruitmentPriorityData || []"
 						chartHeight="450px"
 					/>
-					<div v-else class="bg-gray-50 rounded-lg border border-gray-200 p-8 flex items-center justify-center h-[450px]">
-						<div class="text-center">
-							<div class="text-gray-400 mb-2">{{ __('Loading recruitment priority data...') }}</div>
-						</div>
-					</div>
 					
 					<!-- Salary Alignment -->
 					<SalaryAlignmentDonutChart 
-						v-if="salaryAlignmentData && salaryAlignmentData.length > 0"
 						:title="__('Salary Alignment')"
-						:data="salaryAlignmentData"
+						:data="salaryAlignmentData || []"
 						chartHeight="450px"
 					/>
-					<div v-else class="bg-gray-50 rounded-lg border border-gray-200 p-8 flex items-center justify-center h-[450px]">
-						<div class="text-center">
-							<div class="text-gray-400 mb-2">{{ __('Loading salary alignment data...') }}</div>
-						</div>
-					</div>
 				</div>
 			</div>
 
@@ -335,31 +311,19 @@
 				<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 					<!-- Talent Requiring Update -->
 					<TalentUpdateTable 
-						v-if="talentUpdateData && talentUpdateData.length > 0"
 						:title="__('Talent Requiring Update')"
 						:subtitle="__('Talents needing re-engagement (6+ months inactive)')"
-						:data="talentUpdateData"
+						:data="talentUpdateData || []"
 						tableHeight="450px"
 						@contact-talent="handleContactTalent"
 					/>
-					<div v-else class="bg-gray-50 rounded-lg border border-gray-200 p-8 flex items-center justify-center h-[450px]">
-						<div class="text-center">
-							<div class="text-gray-400 mb-2">{{ __('Loading talent update data...') }}</div>
-						</div>
-					</div>
 					
 					<!-- Quality Source Analysis -->
 					<QualitySourceBarChart 
-						v-if="qualitySourceData && qualitySourceData.length > 0"
 						:title="__('Quality Source Analysis')"
-						:data="qualitySourceData"
+						:data="qualitySourceData || []"
 						chartHeight="450px"
 					/>
-					<div v-else class="bg-gray-50 rounded-lg border border-gray-200 p-8 flex items-center justify-center h-[450px]">
-						<div class="text-center">
-							<div class="text-gray-400 mb-2">{{ __('Loading quality source data...') }}</div>
-						</div>
-					</div>
 				</div>
 			</div>
 

@@ -32,13 +32,23 @@ const initChart = () => {
 
 	chartInstance = echarts.init(chartRef.value)
 
+	// Handle empty data case
+	const hasData = props.data && props.data.length > 0
+	const chartData = hasData ? props.data : [
+		{ name: 'Skill 1', value: 0 },
+		{ name: 'Skill 2', value: 0 },
+		{ name: 'Skill 3', value: 0 },
+		{ name: 'Skill 4', value: 0 },
+		{ name: 'Skill 5', value: 0 }
+	]
+
 	const option = {
 		tooltip: {
 			trigger: 'item',
-			formatter: '{b}: {c}%'
+			formatter: hasData ? '{b}: {c}%' : 'No data available'
 		},
 		radar: {
-			indicator: props.data.map(item => ({
+			indicator: chartData.map(item => ({
 				name: item.name,
 				max: 100
 			})),
@@ -70,17 +80,17 @@ const initChart = () => {
 				type: 'radar',
 				data: [
 					{
-						value: props.data.map(item => item.value),
+						value: chartData.map(item => item.value),
 						name: 'Skill Level',
 						areaStyle: {
-							color: 'rgba(59, 130, 246, 0.2)'
+							color: hasData ? 'rgba(59, 130, 246, 0.2)' : 'rgba(229, 231, 235, 0.2)'
 						},
 						lineStyle: {
-							color: '#3B82F6',
+							color: hasData ? '#3B82F6' : '#E5E7EB',
 							width: 2
 						},
 						itemStyle: {
-							color: '#3B82F6'
+							color: hasData ? '#3B82F6' : '#E5E7EB'
 						}
 					}
 				]
