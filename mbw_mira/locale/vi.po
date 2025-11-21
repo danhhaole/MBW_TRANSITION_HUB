@@ -229,7 +229,7 @@ msgstr "Nhập khẩu ATS"
 #. Option for the 'Type' (Select) field in DocType "Mira Campaign"
 #: mbw_mira/mbw_mira/doctype/campaign/campaign.json
 msgid "ATTRACTION"
-msgstr "SỰ THU HÚT"
+msgstr "THU HÚT"
 
 #. Label of a Small Text field in DocType 'Mira Data Source'
 #: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
@@ -927,7 +927,7 @@ msgstr "Đính kèm"
 #: frontend/src/components/campaign/CampaignCardView.vue:27
 #: frontend/src/components/campaign/CampaignWizard.vue:99
 msgid "Attraction"
-msgstr "Sự thu hút"
+msgstr "Thu hút"
 
 #. Label of a Select field in DocType 'Mira Data Source'
 #: frontend/src/components/candidateDataSource/CandidateDataSourceTable.vue:103

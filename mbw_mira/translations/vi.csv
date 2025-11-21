@@ -48,9 +48,9 @@ API Secret đi kèm với API Key (nếu có),API SELX
 APPLICATION_SUBMITTED,Application_submited
 ARCHIVED,Lưu trữ
 ATS,ATS
-ATS Import,Nhập khẩu ATS
+ATS Import,Nhập từ ATS
 ATTRACTION,THU HÚT
-
+Attraction, Thu hút
 Access Token,Mã thông báo truy cập
 Access Token hiện tại (OAuth2),Truy cập Mã thông báo Hiện Tại (OAuth2)
 Action,Hoạt động
