@@ -548,17 +548,21 @@ const handleCompanyInfoSubmit = async (companyInfo) => {
       console.log('📝 Company info:', companyInfo)
       console.log('📋 Template data:', selectedTemplateData.value)
       
+      // Extract receive_data_configs from companyInfo to handle separately
+      const { receive_data_configs, ...otherCompanyInfo } = companyInfo
+      
       const payload = {
         template_id: selectedTemplateData.value.template_id,
         published: 1,
-        ...companyInfo
+        ...otherCompanyInfo
       }
       
-      // Add receive_data_configs if provided
-      if (companyInfo.receive_data_configs && companyInfo.receive_data_configs.length > 0) {
-        payload.receive_data_configs = companyInfo.receive_data_configs
-      }
+      // Always include receive_data_configs, even if empty array
+      const configs = receive_data_configs || []
+      payload.receive_data_configs = configs
       
+      console.log('📧 receive_data_configs extracted:', configs)
+      console.log('📧 receive_data_configs in payload:', payload.receive_data_configs || 'NOT INCLUDED')
       console.log('📤 Sending create payload to API:', payload)
       
       const response = await call('mbw_mira.integrations.cms_page.create_page_by_template', payload)

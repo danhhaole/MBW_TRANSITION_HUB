@@ -1,76 +1,11 @@
 <template>
-  <div class="border-t pt-4 mb-4">
-    <div 
-      class="flex items-center justify-between cursor-pointer mb-4 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-      @click="toggleSection"
-    >
-      <h4 class="text-sm font-semibold text-gray-900 flex items-center">
-        <FeatherIcon name="database" class="h-4 w-4 mr-2" />
-        {{ __('Data Collection Configuration') }}
-      </h4>
-      <FeatherIcon 
-        :name="expanded ? 'chevron-up' : 'chevron-down'" 
-        class="h-4 w-4 text-gray-500" 
-      />
-    </div>
-    
-    <div v-show="expanded" class="space-y-4">
+  <div class="space-y-4">
       <!-- Description -->
-      <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-        <div class="flex items-start">
-          <FeatherIcon name="info" class="h-4 w-4 text-blue-600 mr-2 mt-0.5" />
-          <div class="text-sm text-blue-800">
-            <p class="font-medium mb-1">{{ __('Configure how form data will be received') }}</p>
-            <p class="text-xs">{{ __('You can set up email notifications and API webhooks to receive candidate applications') }}</p>
-          </div>
-        </div>
-      </div>
+
 
       <!-- Fields Info -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <!-- Template Fields -->
-        <div v-if="templateFields.length > 0" class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-          <div class="flex items-start">
-            <FeatherIcon name="layout" class="h-4 w-4 text-blue-600 mr-2 mt-0.5" />
-            <div class="text-sm text-blue-800">
-              <p class="font-medium mb-1">{{ __('Template Form Fields') }}</p>
-              <div class="flex flex-wrap gap-1 mt-2">
-                <span 
-                  v-for="field in templateFields.slice(0, 5)" 
-                  :key="field.fieldname"
-                  class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800"
-                >
-                  {{ field.label }}
-                </span>
-                <span v-if="templateFields.length > 5" class="text-xs text-blue-600">
-                  +{{ templateFields.length - 5 }} more
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Mira Talent Fields -->
-        <div v-if="miraTalentFields.length > 0" class="bg-green-50 border border-green-200 rounded-lg p-3">
-          <div class="flex items-start">
-            <FeatherIcon name="database" class="h-4 w-4 text-green-600 mr-2 mt-0.5" />
-            <div class="text-sm text-green-800">
-              <p class="font-medium mb-1">{{ __('Mira Talent Fields') }}</p>
-              <div class="flex flex-wrap gap-1 mt-2">
-                <span 
-                  v-for="field in miraTalentFields.slice(0, 5)" 
-                  :key="field.fieldname"
-                  class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800"
-                >
-                  {{ field.label }}
-                </span>
-                <span v-if="miraTalentFields.length > 5" class="text-xs text-green-600">
-                  +{{ miraTalentFields.length - 5 }} more
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+
       </div>
 
       <!-- Existing Configs List -->
@@ -579,8 +514,6 @@
           </Button>
         </div>
       </div>
-
-    </div>
   </div>
 </template>
 

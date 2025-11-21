@@ -32,23 +32,17 @@
           />
         </div>
 
-        <!-- Company Information Section -->
-        <div class="border-t pt-4 mb-4">
-          <div 
-            class="flex items-center justify-between cursor-pointer mb-4 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-            @click="toggleSection('company')"
-          >
-            <h4 class="text-sm font-semibold text-gray-900 flex items-center">
-              <FeatherIcon name="briefcase" class="h-4 w-4 mr-2" />
-              {{ __('Company Information') }}
-            </h4>
-            <FeatherIcon 
-              :name="expandedSections.company ? 'chevron-up' : 'chevron-down'" 
-              class="h-4 w-4 text-gray-500" 
-            />
-          </div>
-          
-          <div v-show="expandedSections.company" class="space-y-4">
+        <!-- Tabs for different sections -->
+        <Tabs
+          as="div"
+          class="border rounded-lg"
+          v-model="activeTabIndex"
+          :tabs="tabsConfig"
+        >
+          <template #tab-panel="{ tab }">
+            <div class="p-6">
+              <!-- Company Information Tab -->
+              <div v-if="tab.key === 'company'" class="space-y-4">
             <!-- Company Profile Selection -->
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <div class="flex items-start">
@@ -172,26 +166,10 @@
                 :rows="3"
               />
             </div>
-          </div>
-        </div>
+              </div>
 
-        <!-- Job Information Section -->
-        <div class="border-t pt-4 mb-4">
-          <div 
-            class="flex items-center justify-between cursor-pointer mb-4 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-            @click="toggleSection('job')"
-          >
-            <h4 class="text-sm font-semibold text-gray-900 flex items-center">
-              <FeatherIcon name="file-text" class="h-4 w-4 mr-2" />
-              {{ __('Job Information') }}
-            </h4>
-            <FeatherIcon 
-              :name="expandedSections.job ? 'chevron-up' : 'chevron-down'" 
-              class="h-4 w-4 text-gray-500" 
-            />
-          </div>
-          
-          <div v-show="expandedSections.job" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Job Information Tab -->
+              <div v-if="tab.key === 'job'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
                 {{ __('Job Title') }}
@@ -326,26 +304,10 @@
                 :editorClass="'prose-sm !w-full !max-w-full overflow-auto min-h-[150px] max-h-80 py-1.5 px-2 rounded border border-gray-300 bg-white hover:border-gray-400 focus:border-gray-500 focus:ring-0 transition-colors'"
               />
             </div>
-          </div>
-        </div>
+              </div>
 
-        <!-- Contact Information Section -->
-        <div class="border-t pt-4 mb-4">
-          <div 
-            class="flex items-center justify-between cursor-pointer mb-4 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-            @click="toggleSection('contact')"
-          >
-            <h4 class="text-sm font-semibold text-gray-900 flex items-center">
-              <FeatherIcon name="phone" class="h-4 w-4 mr-2" />
-              {{ __('Contact Information') }}
-            </h4>
-            <FeatherIcon 
-              :name="expandedSections.contact ? 'chevron-up' : 'chevron-down'" 
-              class="h-4 w-4 text-gray-500" 
-            />
-          </div>
-          
-          <div v-show="expandedSections.contact" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Contact Information Tab -->
+              <div v-if="tab.key === 'contact'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
                 {{ __('Phone Number 1') }}
@@ -455,26 +417,10 @@
                 </template>
               </FileUploader>
             </div>
-          </div>
-        </div>
+              </div>
 
-        <!-- Social Media Section -->
-        <div class="border-t pt-4 mb-4">
-          <div 
-            class="flex items-center justify-between cursor-pointer mb-4 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-            @click="toggleSection('social')"
-          >
-            <h4 class="text-sm font-semibold text-gray-900 flex items-center">
-              <FeatherIcon name="share-2" class="h-4 w-4 mr-2" />
-              {{ __('Social Media Links') }}
-            </h4>
-            <FeatherIcon 
-              :name="expandedSections.social ? 'chevron-up' : 'chevron-down'" 
-              class="h-4 w-4 text-gray-500" 
-            />
-          </div>
-          
-          <div v-show="expandedSections.social" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Social Media Tab -->
+              <div v-if="tab.key === 'social'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
                 {{ __('Facebook') }}
@@ -529,15 +475,19 @@
                 :placeholder="__('Enter TikTok link')"
               />
             </div>
-          </div>
-        </div>
+              </div>
 
-        <!-- Receive Data Configurations Section -->
-        <ReceiveDataConfigsManager
-          v-model="formData.receive_data_configs"
-          :template-id="selectedTemplate?.template_id || formData.template_id"
-          :form-config-id="formData.form_config_id"
-        />
+              <!-- Data Collection Tab -->
+              <div v-if="tab.key === 'data'">
+                <ReceiveDataConfigsManager
+                  v-model="formData.receive_data_configs"
+                  :template-id="selectedTemplate?.template_id || formData.template_id"
+                  :form-config-id="formData.form_config_id"
+                />
+              </div>
+            </div>
+          </template>
+        </Tabs>
       </div>
     </template>
 
@@ -583,8 +533,8 @@
 </template>
 
 <script setup>
-import { ref, watch, computed, onMounted } from 'vue'
-import { Dialog, Button, FeatherIcon, FormControl, FileUploader, TextEditor, call } from 'frappe-ui'
+import { ref, watch, computed, onMounted, h } from 'vue'
+import { Dialog, Button, FeatherIcon, FormControl, FileUploader, TextEditor, Tabs, call } from 'frappe-ui'
 import { useToast } from '@/composables/useToast'
 import ReceiveDataConfigsManager from './ReceiveDataConfigsManager.vue'
 
@@ -640,17 +590,36 @@ const employmentTypeOptions = [
   { label: 'Remote', value: 'Remote' }
 ]
 
-// Collapsible sections state
-const expandedSections = ref({
-  company: true,
-  job: true,
-  contact: false,
-  social: false
-})
+// Tabs configuration
+const activeTabIndex = ref(0)
 
-const toggleSection = (section) => {
-  expandedSections.value[section] = !expandedSections.value[section]
-}
+const tabsConfig = [
+  {
+    key: 'company',
+    label: __('Company Info'),
+    icon: h(FeatherIcon, { name: 'briefcase', class: 'w-4 h-4' })
+  },
+  {
+    key: 'job',
+    label: __('Job Details'),
+    icon: h(FeatherIcon, { name: 'file-text', class: 'w-4 h-4' })
+  },
+  {
+    key: 'contact',
+    label: __('Contact Info'),
+    icon: h(FeatherIcon, { name: 'phone', class: 'w-4 h-4' })
+  },
+  {
+    key: 'social',
+    label: __('Social Media'),
+    icon: h(FeatherIcon, { name: 'share-2', class: 'w-4 h-4' })
+  },
+  {
+    key: 'data',
+    label: __('Data Collection'),
+    icon: h(FeatherIcon, { name: 'database', class: 'w-4 h-4' })
+  }
+]
 
 // Form data với tất cả fields từ API
 const formData = ref({

@@ -22,13 +22,43 @@ class CMSAPI:
         data = {"template_id": template_id, "page_title": page_title}
         data.update(filtered_kwargs)
         
-        # Debug receive_data_configs specifically
+        # Special handling for receive_data_configs
         if 'receive_data_configs' in data:
-            print(f"📧 Receive data configs in payload: {data['receive_data_configs']}")
-            print(f"📧 Type: {type(data['receive_data_configs'])}")
-            print(f"📧 Length: {len(data['receive_data_configs']) if hasattr(data['receive_data_configs'], '__len__') else 'N/A'}")
+            receive_configs = data['receive_data_configs']
+            print(f"📧 Raw receive_data_configs: {receive_configs}")
+            print(f"📧 Type: {type(receive_configs)}")
+            
+            # Validate and clean receive_data_configs
+            if receive_configs is None:
+                print("⚠️ receive_data_configs is None, removing field")
+                data.pop('receive_data_configs', None)
+            elif isinstance(receive_configs, list):
+                if len(receive_configs) == 0:
+                    print("✅ receive_data_configs is empty list, keeping as empty array")
+                    # Keep empty array as is
+                else:
+                    # Validate each config in the list
+                    valid_configs = []
+                    for i, config in enumerate(receive_configs):
+                        if isinstance(config, dict) and config.get('type'):
+                            valid_configs.append(config)
+                            print(f"✅ Config {i} is valid: {config.get('type')}")
+                        else:
+                            print(f"⚠️ Config {i} is invalid, skipping: {config}")
+                    
+                    if valid_configs:
+                        data['receive_data_configs'] = valid_configs
+                        print(f"📧 Final valid configs: {len(valid_configs)} items")
+                    else:
+                        print("⚠️ No valid configs found, keeping as empty array")
+                        data['receive_data_configs'] = []
+            else:
+                print(f"⚠️ receive_data_configs has unexpected type {type(receive_configs)}, removing field")
+                data.pop('receive_data_configs', None)
+        else:
+            print("✅ receive_data_configs field not present in payload - this is OK")
         
-        print("🚀 Create page data:", data)
+        print("🚀 Final create page data:", data)
         return self.provider.post("mbw_cms.api.page_api.create_page_by_template", data=data)
 
     # --- 3. Publish / Unpublish ---
