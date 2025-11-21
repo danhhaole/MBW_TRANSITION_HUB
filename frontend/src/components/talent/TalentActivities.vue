@@ -72,6 +72,32 @@
           </div>
         </div>
       </div>
+
+      <!-- Pagination -->
+      <div v-if="pagination.total > pagination.limit" class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+        <div class="text-sm text-gray-500">
+          Showing {{ (pagination.page - 1) * pagination.limit + 1 }} - {{ Math.min(pagination.page * pagination.limit, pagination.total) }} of {{ pagination.total }}
+        </div>
+        <div class="flex items-center space-x-2">
+          <button
+            @click="prevPage"
+            :disabled="pagination.page === 1"
+            class="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Previous
+          </button>
+          <span class="text-sm text-gray-600">
+            Page {{ pagination.page }} of {{ Math.ceil(pagination.total / pagination.limit) }}
+          </span>
+          <button
+            @click="nextPage"
+            :disabled="pagination.page * pagination.limit >= pagination.total"
+            class="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Next
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Empty State -->
@@ -96,6 +122,11 @@ const props = defineProps({
 
 const activities = ref([])
 const loading = ref(false)
+const pagination = ref({
+  page: 1,
+  limit: 20,
+  total: 0
+})
 
 // Fetch activities when component mounts
 onMounted(() => {
@@ -105,6 +136,7 @@ onMounted(() => {
 // Watch for talent changes
 watch(() => props.talent?.name, (newVal) => {
   if (newVal) {
+    pagination.value.page = 1
     fetchActivities()
   }
 })
@@ -114,18 +146,47 @@ const fetchActivities = async () => {
   
   loading.value = true
   try {
-    const response = await call('mbw_mira.api.interaction.get_talent_activity_logs', {
-      talent_id: props.talent.name,
-      limit: 50
+    const result = await call('frappe.client.get_list', {
+      doctype: 'Talent Activity Log',
+      filters: {
+        talent_id: props.talent.name
+      },
+      fields: ['name', 'activity_type', 'subject', 'description', 'date', 'creation', 'trigger_type', 'score_change', 'source'],
+      order_by: 'creation desc',
+      limit_start: (pagination.value.page - 1) * pagination.value.limit,
+      limit_page_length: pagination.value.limit
     })
     
-    if (response && response.activities) {
-      activities.value = response.activities
+    if (result && Array.isArray(result)) {
+      activities.value = result
+      
+      // Get total count for pagination
+      const count = await call('frappe.client.get_count', {
+        doctype: 'Talent Activity Log',
+        filters: {
+          talent_id: props.talent.name
+        }
+      })
+      pagination.value.total = count || 0
     }
   } catch (error) {
     console.error('Error fetching activities:', error)
   } finally {
     loading.value = false
+  }
+}
+
+const nextPage = () => {
+  if (pagination.value.page * pagination.value.limit < pagination.value.total) {
+    pagination.value.page++
+    fetchActivities()
+  }
+}
+
+const prevPage = () => {
+  if (pagination.value.page > 1) {
+    pagination.value.page--
+    fetchActivities()
   }
 }
 

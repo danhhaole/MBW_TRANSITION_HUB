@@ -2,7 +2,7 @@
 import { ref, onMounted } from "vue";
 import { X, Plus } from "lucide-vue-next";
 import { Dialog, Button, Autocomplete, toast, call } from "frappe-ui";
-import { createToast } from "@/utils/";
+import { useToast } from '@/composables/useToast';
 
 const props = defineProps({
 	docname: String,
@@ -15,6 +15,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["update:modelValue"]);
+
+const { showSuccess, showError } = useToast()
 
 const rawValue = props.modelValue || [];
 
@@ -87,12 +89,7 @@ const addTags = async () => {
 	);
 
 	if (newTags.length === 0) {
-		createToast({
-			title: "Info",
-			text: "Tất cả thẻ đã tồn tại",
-			icon: "info",
-			iconClasses: "bg-surface-blue-3 text-ink-white rounded-md p-px",
-		});
+		showSuccess("Tất cả thẻ đã tồn tại");
 		dialog.value = false;
 		return;
 	}
@@ -108,12 +105,7 @@ const addTags = async () => {
 
 	emit("update:modelValue", [...tags.value]);
 
-	createToast({
-		title: "Success",
-		text: "Đã thêm thẻ thành công",
-		icon: "check",
-		iconClasses: "bg-surface-green-3 text-ink-white rounded-md p-px",
-	});
+	showSuccess("Đã thêm thẻ thành công");
 
 	dialog.value = false;
 };
@@ -128,12 +120,7 @@ const removeTag = async (tag) => {
 	tags.value = tags.value.filter((t) => t.value !== tag.value);
 	emit("update:modelValue", [...tags.value]);
 
-	createToast({
-		title: "Success",
-		text: "Đã xoá thẻ",
-		icon: "check",
-		iconClasses: "bg-surface-green-3 text-ink-white rounded-md p-px",
-	});
+	showSuccess("Đã xoá thẻ");
 };
 </script>
 
