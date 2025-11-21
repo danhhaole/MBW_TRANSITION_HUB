@@ -98,7 +98,6 @@ const segmentOptions = computed(() => {
   return segments.value.map(segment => ({
     label: segment.title,
     value: segment.name,
-    description: segment.description
   }))
 })
 
