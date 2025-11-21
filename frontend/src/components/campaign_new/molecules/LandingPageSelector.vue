@@ -554,6 +554,11 @@ const handleCompanyInfoSubmit = async (companyInfo) => {
         ...companyInfo
       }
       
+      // Add receive_data_configs if provided
+      if (companyInfo.receive_data_configs && companyInfo.receive_data_configs.length > 0) {
+        payload.receive_data_configs = companyInfo.receive_data_configs
+      }
+      
       console.log('📤 Sending create payload to API:', payload)
       
       const response = await call('mbw_mira.integrations.cms_page.create_page_by_template', payload)
@@ -568,13 +573,16 @@ const handleCompanyInfoSubmit = async (companyInfo) => {
         const builderPage = page.page_builder_id || page.builder_page || page.builder_url || ''
         
         console.log('🏗️ Builder page from response:', builderPage)
+        console.log('📧 Receive data configs from response:', page.receive_data_configs)
         
         selectedPage.value = {
           id: page.page_id,
           title: page.page_title || companyInfo.page_title,
           url: publicUrl,
           isPublished: !!publicUrl,
-          builderUrl: buildBuilderUrl(builderPage)
+          builderUrl: buildBuilderUrl(builderPage),
+          formConfigId: page.form_config_id,
+          receiveDataConfigs: page.receive_data_configs || []
         }
         
         console.log('✅ Page created:', selectedPage.value)
@@ -693,11 +701,19 @@ const handleEditPageInfo = async () => {
         company_linkedin: pageData.company_linkedin || '',
         company_youtube: pageData.company_youtube || '',
         company_zalo_oa: pageData.company_zalo_oa || '',
-        company_tiktok: pageData.company_tiktok || ''
+        company_tiktok: pageData.company_tiktok || '',
+        
+        // Form configuration
+        form_config_id: pageData.form_config_id || null,
+        receive_data_configs: pageData.receive_data_configs || [],
+        template_id: pageData.template_id || null
       }
+
+      console.log('Loaded page data:', editingPageData.value);
+      console.log('Template ID:', editingPageData.value.template_id);
       
-      isEditMode.value = true
-      showCompanyInfoModal.value = true
+      isEditMode.value = true;
+      showCompanyInfoModal.value = true;
     } else {
       throw new Error(response?.message || 'Failed to load page details')
     }
@@ -788,6 +804,95 @@ const publishPage = async () => {
     toast.error(__('Failed to publish page'))
   }
 }
+
+// Get fields by template
+const getFieldsByTemplate = async (templateId) => {
+  try {
+    const response = await call('mbw_mira.integrations.cms_page.get_fields_by_template', {
+      template_id: templateId
+    })
+    
+    if (response?.message?.status === 'success' && response?.message?.data) {
+      return response.message.data
+    } else {
+      throw new Error(response?.message || 'Failed to get template fields')
+    }
+  } catch (error) {
+    console.error('❌ Error getting template fields:', error)
+    toast.error(__('Failed to get template fields: ') + (error.message || ''))
+    return []
+  }
+}
+
+// Create receive data config
+const createReceiveDataConfig = async (formConfigId, receiveDataConfig) => {
+  try {
+    const response = await call('mbw_mira.integrations.cms_page.create_link_account', {
+      form_config_id: formConfigId,
+      receive_data_config: receiveDataConfig
+    })
+    
+    if (response?.message?.status === 'success') {
+      toast.success(__('Receive data config created successfully'))
+      return response.message.data
+    } else {
+      throw new Error(response?.message || 'Failed to create receive data config')
+    }
+  } catch (error) {
+    console.error('❌ Error creating receive data config:', error)
+    toast.error(__('Failed to create receive data config: ') + (error.message || ''))
+    throw error
+  }
+}
+
+// Update receive data config
+const updateReceiveDataConfig = async (receiveDataConfig) => {
+  try {
+    const response = await call('mbw_mira.integrations.cms_page.update_link_account', {
+      receive_data_config: receiveDataConfig
+    })
+    
+    if (response?.message?.status === 'success') {
+      toast.success(__('Receive data config updated successfully'))
+      return response.message.data
+    } else {
+      throw new Error(response?.message || 'Failed to update receive data config')
+    }
+  } catch (error) {
+    console.error('❌ Error updating receive data config:', error)
+    toast.error(__('Failed to update receive data config: ') + (error.message || ''))
+    throw error
+  }
+}
+
+// Delete receive data config
+const deleteReceiveDataConfig = async (receiveDataConfigId) => {
+  try {
+    const response = await call('mbw_mira.integrations.cms_page.delete_link_account', {
+      receive_data_config_id: receiveDataConfigId
+    })
+    
+    if (response?.message?.status === 'success') {
+      toast.success(__('Receive data config deleted successfully'))
+      return true
+    } else {
+      throw new Error(response?.message || 'Failed to delete receive data config')
+    }
+  } catch (error) {
+    console.error('❌ Error deleting receive data config:', error)
+    toast.error(__('Failed to delete receive data config: ') + (error.message || ''))
+    throw error
+  }
+}
+
+// Expose methods for parent components
+defineExpose({
+  getFieldsByTemplate,
+  createReceiveDataConfig,
+  updateReceiveDataConfig,
+  deleteReceiveDataConfig,
+  selectedPage
+})
 
 // Initialize from props - watch after function definitions
 watch(() => [props.ladipageUrl, props.ladipageId], ([url, id]) => {

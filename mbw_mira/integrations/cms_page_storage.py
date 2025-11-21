@@ -125,6 +125,38 @@ def get_builder_page_data(page_id):
         
         doc = frappe.get_doc("Mira Campaign Builder Page", doc_name)
         
+        # Get receive data configs from CMS API
+        receive_data_configs = []
+        form_config_id = None
+        
+        try:
+            from mbw_mira.integrations.cms_page import get_link_accounts_by_page
+            link_accounts_response = get_link_accounts_by_page(doc.page_id)
+            
+            frappe.logger().info(f"📧 Link accounts response: {link_accounts_response}")
+            
+            if (link_accounts_response and 
+                link_accounts_response.get('message', {}).get('status') == 'success' and 
+                link_accounts_response.get('message', {}).get('data')):
+                
+                accounts_data = link_accounts_response['message']['data']
+                if accounts_data and len(accounts_data) > 0:
+                    # Get first account's data
+                    account = accounts_data[0]
+                    form_config_id = account.get('form_config_id')
+                    receive_data_configs = account.get('receive_data_configs', [])
+                    
+                    frappe.logger().info(f"✅ Found form_config_id: {form_config_id}")
+                    frappe.logger().info(f"✅ Found {len(receive_data_configs)} receive data configs")
+                else:
+                    frappe.logger().info("⚠️ No accounts data found")
+            else:
+                frappe.logger().info("⚠️ Failed to get link accounts or no data")
+                
+        except Exception as e:
+            frappe.logger().error(f"❌ Error getting receive data configs: {str(e)}")
+            # Continue without receive data configs if API fails
+        
         # Return all data as dict
         data = {
             "page_id": doc.page_id,
@@ -135,6 +167,10 @@ def get_builder_page_data(page_id):
             "url_public_page": doc.url_public_page,
             "page_builder_id": doc.page_builder_id,
             "campaign_id": doc.campaign_id,
+            
+            # Form configuration
+            "form_config_id": form_config_id,
+            "receive_data_configs": receive_data_configs,
             
             # Company info
             "company_name": doc.company_name,

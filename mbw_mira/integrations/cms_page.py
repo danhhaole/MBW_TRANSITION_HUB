@@ -22,6 +22,12 @@ class CMSAPI:
         data = {"template_id": template_id, "page_title": page_title}
         data.update(filtered_kwargs)
         
+        # Debug receive_data_configs specifically
+        if 'receive_data_configs' in data:
+            print(f"📧 Receive data configs in payload: {data['receive_data_configs']}")
+            print(f"📧 Type: {type(data['receive_data_configs'])}")
+            print(f"📧 Length: {len(data['receive_data_configs']) if hasattr(data['receive_data_configs'], '__len__') else 'N/A'}")
+        
         print("🚀 Create page data:", data)
         return self.provider.post("mbw_cms.api.page_api.create_page_by_template", data=data)
 
@@ -72,6 +78,39 @@ class CMSAPI:
     # --- 8. Get page details ---
     def get_page_public(self,query="published=1"):
         return self.provider.get(f"mbw_cms.api.page_api.get_pages?{query}")
+
+    # --- 9. Get fields by template ---
+    def get_fields_by_template(self, template_id):
+        return self.provider.get("mbw_cms.api.page_api.get_fields_by_template", params={"template_id": template_id})
+
+    # --- 10. Create link account (receive data config) ---
+    def create_link_account(self, form_config_id, receive_data_config):
+        data = {
+            "form_config_id": form_config_id,
+            "receive_data_config": receive_data_config
+        }
+        return self.provider.post("mbw_cms.api.page_api.create_link_account", data=data)
+
+    # --- 11. Update link account (receive data config) ---
+    def update_link_account(self, receive_data_config):
+        data = {"receive_data_config": receive_data_config}
+        return self.provider.put("mbw_cms.api.page_api.update_link_account", data=data)
+
+    # --- 12. Delete link account (receive data config) ---
+    def delete_link_account(self, receive_data_config_id):
+        return self.provider.delete("mbw_cms.api.page_api.delete_link_account", data={"receive_data_config_id": receive_data_config_id})
+
+    # --- 13. Get link accounts by page ID ---
+    def get_link_accounts_by_page(self, page_id):
+        return self.provider.get("mbw_cms.api.page_api.get_link_accounts_by_page", params={"page_id": page_id})
+
+    # --- 14. Get company profile list ---
+    def get_company_profile_list(self):
+        return self.provider.get("mbw_cms.api.company_profile_api.get_list")
+
+    # --- 15. Get company profile detail ---
+    def get_company_profile_detail(self, company_profile_name):
+        return self.provider.get("mbw_cms.api.company_profile_api.get_detail", params={"company_profile_name": company_profile_name})
 
 
 def example_usage():
@@ -125,22 +164,27 @@ def create_page_by_template(**kwargs):
     """Tạo page từ template"""
     try:
         # Debug: Log incoming kwargs
-        frappe.logger().info(f"📥 Received kwargs: {kwargs}")
-        frappe.logger().info(f"📥 kwargs type: {type(kwargs)}")
-        frappe.logger().info(f"📥 kwargs keys: {list(kwargs.keys())}")
+        frappe.logger().info(f"📥 Incoming kwargs: {kwargs}")
         
-        # Remove Frappe-specific parameters
-        kwargs.pop("cmd", None)  # ← FIX: Remove cmd parameter
+        template_id = kwargs.get('template_id')
+        page_title = kwargs.get('page_title')
+        receive_data_configs = kwargs.get('receive_data_configs', [])
         
-        template_id = kwargs.pop("template_id", None)
-        page_title = kwargs.pop("page_title", None)
+        if not template_id:
+            return {"status": "error", "message": "template_id is required"}
         
-        frappe.logger().info(f"📝 template_id: {template_id}")
-        frappe.logger().info(f"📝 page_title: {page_title}")
-        frappe.logger().info(f"📝 remaining kwargs: {kwargs}")
+        if not page_title:
+            return {"status": "error", "message": "page_title is required"}
         
-        if not template_id or not page_title:
-            return {"status": "error", "message": "template_id and page_title are required"}
+        # Debug receive_data_configs
+        frappe.logger().info(f"📧 Receive data configs: {receive_data_configs}")
+        
+        # Remove template_id and page_title from kwargs to avoid duplication
+        kwargs.pop('template_id', None)
+        kwargs.pop('page_title', None)
+        
+        frappe.logger().info(f"📤 Calling CMS API with template_id: {template_id}, page_title: {page_title}")
+        frappe.logger().info(f"📤 Additional kwargs: {kwargs}")
         
         cms = CMSAPI()
         # Pass remaining kwargs (optional fields)
@@ -148,9 +192,11 @@ def create_page_by_template(**kwargs):
         frappe.logger().info(f"✅ CMS result: {result}")
         return result
     except Exception as e:
-        frappe.logger().error(f"❌ Error creating page: {str(e)}")
-        frappe.log_error(f"Error creating page by template: {str(e)}")
-        return {"status": "error", "message": str(e)}
+        frappe.log_error(f"Error creating page: {str(e)}")
+        frappe.logger().error(f"❌ Full error details: {e}")
+        import traceback
+        frappe.logger().error(f"❌ Traceback: {traceback.format_exc()}")
+        return {"status": "error", "message": f"Error creating page: {str(e)}"}
 
 
 @frappe.whitelist()
@@ -259,4 +305,144 @@ def get_page_public(query="published=1"):
         return cms.get_page_public(query)
     except Exception as e:
         frappe.log_error(f"Error getting page public: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+
+@frappe.whitelist()
+def get_fields_by_template(template_id):
+    """Lấy danh sách các trường mapping có trong trang mẫu"""
+    try:
+        if not template_id:
+            return {"status": "error", "message": "template_id is required"}
+        
+        cms = CMSAPI()
+        return cms.get_fields_by_template(template_id)
+    except Exception as e:
+        frappe.log_error(f"Error getting fields by template: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+
+@frappe.whitelist()
+def create_link_account(form_config_id, receive_data_config):
+    """Tạo cấu hình nhận dữ liệu"""
+    try:
+        if not form_config_id or not receive_data_config:
+            return {"status": "error", "message": "form_config_id and receive_data_config are required"}
+        
+        # Parse receive_data_config if it's a string
+        if isinstance(receive_data_config, str):
+            import json
+            receive_data_config = json.loads(receive_data_config)
+        
+        cms = CMSAPI()
+        return cms.create_link_account(form_config_id, receive_data_config)
+    except Exception as e:
+        frappe.log_error(f"Error creating link account: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+
+@frappe.whitelist()
+def update_link_account(receive_data_config):
+    """Cập nhật cấu hình nhận dữ liệu"""
+    try:
+        if not receive_data_config:
+            return {"status": "error", "message": "receive_data_config is required"}
+        
+        # Parse receive_data_config if it's a string
+        if isinstance(receive_data_config, str):
+            import json
+            receive_data_config = json.loads(receive_data_config)
+        
+        cms = CMSAPI()
+        return cms.update_link_account(receive_data_config)
+    except Exception as e:
+        frappe.log_error(f"Error updating link account: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+
+@frappe.whitelist()
+def delete_link_account(receive_data_config_id):
+    """Xóa cấu hình nhận dữ liệu"""
+    try:
+        if not receive_data_config_id:
+            return {"status": "error", "message": "receive_data_config_id is required"}
+        
+        cms = CMSAPI()
+        return cms.delete_link_account(receive_data_config_id)
+    except Exception as e:
+        frappe.log_error(f"Error deleting link account: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+
+@frappe.whitelist()
+def get_link_accounts_by_page(page_id):
+    """Lấy danh sách cấu hình nhận dữ liệu theo page id"""
+    try:
+        if not page_id:
+            return {"status": "error", "message": "page_id is required"}
+        
+        cms = CMSAPI()
+        return cms.get_link_accounts_by_page(page_id)
+    except Exception as e:
+        frappe.log_error(f"Error getting link accounts by page: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+
+@frappe.whitelist()
+def get_company_profile_list():
+    """Lấy danh sách profile công ty"""
+    try:
+        cms = CMSAPI()
+        return cms.get_company_profile_list()
+    except Exception as e:
+        frappe.log_error(f"Error getting company profile list: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+
+@frappe.whitelist()
+def get_company_profile_detail(company_profile_name):
+    """Lấy chi tiết một profile công ty"""
+    try:
+        if not company_profile_name:
+            return {"status": "error", "message": "company_profile_name is required"}
+        
+        cms = CMSAPI()
+        return cms.get_company_profile_detail(company_profile_name)
+    except Exception as e:
+        frappe.log_error(f"Error getting company profile detail: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+
+@frappe.whitelist(allow_guest=True)
+def get_doctype_fields(doctype):
+    """Lấy danh sách fields của doctype để mapping"""
+    try:
+        if not doctype:
+            return {"status": "error", "message": "doctype is required"}
+        
+        # Kiểm tra quyền truy cập doctype
+        if not frappe.has_permission(doctype, "read"):
+            return {"status": "error", "message": f"No permission to read {doctype}"}
+        
+        meta = frappe.get_meta(doctype)
+        
+        # Lọc các fields phù hợp cho mapping
+        relevant_fieldtypes = ['Data', 'Text', 'Small Text', 'Long Text', 'Int', 'Float', 'Date', 'Datetime', 'Check', 'Select', 'Link', 'Attach', 'Attach Image', 'Currency']
+        exclude_fields = ['name', 'owner', 'creation', 'modified', 'modified_by', 'docstatus', 'idx', 'parent', 'parenttype', 'parentfield']
+        
+        fields = []
+        for field in meta.get("fields"):
+            if (field.fieldtype in relevant_fieldtypes and 
+                field.fieldname not in exclude_fields and 
+                not field.hidden and 
+                not field.read_only):
+                fields.append({
+                    "fieldname": field.fieldname,
+                    "label": field.label or field.fieldname,
+                    "fieldtype": field.fieldtype
+                })
+        
+        return {"status": "success", "data": fields}
+    except Exception as e:
+        frappe.log_error(f"Error getting doctype fields: {str(e)}")
         return {"status": "error", "message": str(e)}

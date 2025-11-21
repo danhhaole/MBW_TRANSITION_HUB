@@ -48,16 +48,38 @@
             />
           </div>
           
-          <div v-show="expandedSections.company" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                {{ __('Company Name') }}
-              </label>
-              <FormControl
-                v-model="formData.company_name"
-                type="text"
-                :placeholder="__('Enter company name')"
-              />
+          <div v-show="expandedSections.company" class="space-y-4">
+            <!-- Company Profile Selection -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div class="flex items-start">
+                <FeatherIcon name="info" class="h-4 w-4 text-blue-600 mr-2 mt-0.5" />
+                <div class="flex-1">
+                  <p class="text-sm font-medium text-blue-900 mb-2">{{ __('Quick Fill from Company Profile') }}</p>
+                  <p class="text-xs text-blue-700 mb-3">{{ __('Select a saved company profile to auto-fill information (you can still edit after selecting)') }}</p>
+                  
+                  <FormControl
+                    v-model="selectedCompanyProfile"
+                    type="select"
+                    :options="companyProfileOptions"
+                    :placeholder="__('Select company profile...')"
+                    :loading="loadingProfiles"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Company Information Fields -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  {{ __('Company Name') }}
+                </label>
+                <FormControl
+                  v-model="formData.company_name"
+                  type="text"
+                  :placeholder="__('Enter company name')"
+                />
+              </div>
             </div>
 
             <div>
@@ -437,7 +459,7 @@
         </div>
 
         <!-- Social Media Section -->
-        <div class="border-t pt-4">
+        <div class="border-t pt-4 mb-4">
           <div 
             class="flex items-center justify-between cursor-pointer mb-4 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
             @click="toggleSection('social')"
@@ -509,6 +531,13 @@
             </div>
           </div>
         </div>
+
+        <!-- Receive Data Configurations Section -->
+        <ReceiveDataConfigsManager
+          v-model="formData.receive_data_configs"
+          :template-id="selectedTemplate?.template_id || formData.template_id"
+          :form-config-id="formData.form_config_id"
+        />
       </div>
     </template>
 
@@ -554,8 +583,10 @@
 </template>
 
 <script setup>
-import { ref, watch, computed } from 'vue'
-import { Dialog, Button, FeatherIcon, FormControl, FileUploader, TextEditor } from 'frappe-ui'
+import { ref, watch, computed, onMounted } from 'vue'
+import { Dialog, Button, FeatherIcon, FormControl, FileUploader, TextEditor, call } from 'frappe-ui'
+import { useToast } from '@/composables/useToast'
+import ReceiveDataConfigsManager from './ReceiveDataConfigsManager.vue'
 
 const props = defineProps({
   show: {
@@ -590,7 +621,14 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'submit'])
 
+const toast = useToast()
 const isOpen = ref(props.show)
+
+// Company profile selection
+const selectedCompanyProfile = ref('')
+const companyProfileOptions = ref([])
+const companyProfilesData = ref([])
+const loadingProfiles = ref(false)
 
 // Employment type options
 const employmentTypeOptions = [
@@ -654,7 +692,12 @@ const formData = ref({
   company_linkedin: '',
   company_youtube: '',
   company_zalo_oa: '',
-  company_tiktok: ''
+  company_tiktok: '',
+  
+  // Receive data configurations
+  receive_data_configs: [],
+  form_config_id: null,
+  template_id: null
 })
 
 // Computed salary display with smart formatting
@@ -680,11 +723,21 @@ watch(() => props.show, (newVal) => {
       // Initialize with campaign name as default page title
       formData.value.page_title = props.campaignName || ''
     }
+    // Load company profiles when modal opens
+    loadCompanyProfiles()
   } else {
     // Reset form when closing
     resetForm()
   }
 })
+
+// Watch company profile selection
+watch(selectedCompanyProfile, (newValue, oldValue) => {
+  // Prevent infinite loop by checking if value actually changed
+  if (newValue !== oldValue && newValue !== null && newValue !== undefined && newValue !== '') {
+    onCompanyProfileSelect(newValue)
+  }
+}, { flush: 'post' })
 
 // Load initial data for edit mode
 const loadInitialData = () => {
@@ -742,7 +795,10 @@ const loadInitialData = () => {
     company_linkedin: props.initialData.company_linkedin || '',
     company_youtube: props.initialData.company_youtube || '',
     company_zalo_oa: props.initialData.company_zalo_oa || '',
-    company_tiktok: props.initialData.company_tiktok || ''
+    company_tiktok: props.initialData.company_tiktok || '',
+    receive_data_configs: props.initialData.receive_data_configs || [],
+    form_config_id: props.initialData.form_config_id || null,
+    template_id: props.initialData.template_id || ''
   }
   
   console.log('✅ Form data loaded:', formData.value)
@@ -786,8 +842,12 @@ const resetForm = () => {
     company_linkedin: '',
     company_youtube: '',
     company_zalo_oa: '',
-    company_tiktok: ''
+    company_tiktok: '',
+    receive_data_configs: [],
+    form_config_id: null,
+    template_id: ''
   }
+  selectedCompanyProfile.value = ''
 }
 
 const closeDialog = () => {
@@ -817,7 +877,103 @@ const confirmSubmit = () => {
     cleanedData.salary = salaryDisplay.value
   }
   
+  // Add receive_data_configs to cleaned data
+  console.log('🔍 Checking receive_data_configs in formData:', formData.value.receive_data_configs)
+  if (formData.value.receive_data_configs && formData.value.receive_data_configs.length > 0) {
+    cleanedData.receive_data_configs = formData.value.receive_data_configs
+    console.log('📧 Receive data configs added to submit:', cleanedData.receive_data_configs)
+  } else {
+    console.log('⚠️ No receive_data_configs found or empty array')
+  }
+  
+  console.log('📤 Final form data to submit:', cleanedData)
+  
   // Don't close modal - let parent handle closing on success
   emit('submit', cleanedData)
 }
+
+// Company profile methods
+const loadCompanyProfiles = async () => {
+  if (companyProfileOptions.value.length > 0) return // Already loaded
+  
+  loadingProfiles.value = true
+  try {
+    console.log('🏢 Loading company profiles...')
+    
+    const response = await call('mbw_mira.integrations.cms_page.get_company_profile_list')
+    
+    if (response?.message?.status === 'success' && response?.message?.data) {
+      // Store full profile data
+      companyProfilesData.value = response.message.data
+      
+      // Create options for dropdown
+      companyProfileOptions.value = response.message.data.map((profile, index) => ({
+        label: profile.company_name,
+        value: index // Use index to reference the full data
+      }))
+      
+      console.log('✅ Company profiles loaded:', companyProfileOptions.value)
+    } else {
+      console.log('⚠️ No company profiles found')
+    }
+  } catch (error) {
+    console.error('❌ Error loading company profiles:', error)
+    toast.error(__('Failed to load company profiles'))
+  } finally {
+    loadingProfiles.value = false
+  }
+}
+
+const onCompanyProfileSelect = (selectedIndex) => {
+  console.log(selectedIndex)
+  if (selectedIndex === null || selectedIndex === undefined || selectedIndex === '') {
+    return
+  }
+  
+  const profile = companyProfilesData.value[selectedIndex]
+  if (!profile) {
+    console.error('❌ Profile not found at index:', selectedIndex)
+    return
+  }
+  
+  console.log('📋 Auto-filling company profile:', profile)
+  
+  // Map API fields to form fields
+  formData.value = {
+    ...formData.value,
+    company_name: profile.company_name || '',
+    company_logo: profile.logo || '',
+    company_slogan: profile.slogan || '',
+    company_short_description: profile.short_description || '',
+    company_vision: profile.vision || '',
+    company_mission: profile.mission || '',
+    web_favicon: profile.favicon || '',
+    company_number_one: profile.phone_1 || '',
+    company_number_two: profile.phone_2 || '',
+    company_email_one: profile.email_1 || '',
+    company_email_two: profile.email_2 || '',
+    head_office: profile.headquarters_address || '',
+    company_website: profile.website || '',
+    company_fb: profile.facebook || '',
+    company_linkedin: profile.linkedin || '',
+    company_youtube: profile.youtube || '',
+    company_zalo_oa: profile.zalo_oa || '',
+    company_tiktok: profile.tiktok || ''
+  }
+  
+  console.log('✅ Company profile auto-filled into form')
+  toast.success(__('Company information loaded successfully'))
+}
+
+// Watch formData.receive_data_configs for changes
+watch(() => formData.value.receive_data_configs, (newConfigs) => {
+  console.log('📥 CompanyInfoModal formData.receive_data_configs changed:', newConfigs)
+}, { deep: true })
+
+// Initialize on mount
+onMounted(() => {
+  if (props.show) {
+    loadCompanyProfiles()
+  }
+})
 </script>
