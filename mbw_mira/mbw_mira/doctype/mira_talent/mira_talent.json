@@ -47,7 +47,12 @@
   "interaction_notes",
   "latest_title",
   "email_id_invalid",
-  "email_opt_out"
+  "email_opt_out",
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "utm_term",
+  "utm_content"
  ],
  "fields": [
   {
@@ -285,11 +290,46 @@
    "fieldname": "position",
    "fieldtype": "Data",
    "label": "Position"
+  },
+  {
+   "description": "Ngu\u1ed3n g\u1ed1c chi\u1ebfn d\u1ecbch (v\u00ed d\u1ee5: facebook, google, newsletter)",
+   "fieldname": "utm_source",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "UTM Source"
+  },
+  {
+   "description": "Ph\u01b0\u01a1ng ti\u1ec7n truy\u1ec1n th\u00f4ng (v\u00ed d\u1ee5: cpc, social, email)",
+   "fieldname": "utm_medium",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "UTM Medium"
+  },
+  {
+   "description": "T\u00ean chi\u1ebfn d\u1ecbch c\u1ee5 th\u1ec3 (v\u00ed d\u1ee5: Q4_BATalent_2025)",
+   "fieldname": "utm_campaign",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "UTM Campaign"
+  },
+  {
+   "description": "T\u1eeb kh\u00f3a \u0111\u00e3 s\u1eed d\u1ee5ng (ch\u1ee7 y\u1ebfu cho PPC/SEO)",
+   "fieldname": "utm_term",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "UTM Term"
+  },
+  {
+   "description": "N\u1ed9i dung c\u1ee5 th\u1ec3/bi\u1ebfn th\u1ec3 qu\u1ea3ng c\u00e1o (v\u00ed d\u1ee5: bannerA, textlink_footer)",
+   "fieldname": "utm_content",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "UTM Content"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-19 10:35:15.561556",
+ "modified": "2025-11-21 10:02:09.448892",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Talent",

@@ -3,8 +3,6 @@ import frappe
 from frappe.utils import now
 import json
 
-
-
 def enroll_talent_pool(pool_id: str):
     from mbw_mira.utils import find_candidates_fuzzy
     """
@@ -34,6 +32,7 @@ def enroll_talent_pool(pool_id: str):
         frappe.log_error(frappe.get_traceback(), f"[AutoSegment Error] Segment {pool_id}")
         return None
 
+#Xóa talent ra khỏi pool khi talent không đủ điểu kiện, chỉ xóa talent được thêm vào tự động
 def disenroll_talent_pool(pool_id:str):
     from mbw_mira.utils import find_candidates_fuzzy
     try:

@@ -3,7 +3,7 @@
 
 import frappe
 from frappe.model.document import Document
-from frappe.utils import cstr, cint, flt, add_days, nowdate, get_datetime,now_datetime
+from frappe.utils import cstr, cint, flt, add_days, nowdate, get_datetime,now_datetime,now
 from mbw_mira.api.common import get_filter_options, get_form_data, get_list_data
 import json
 from frappe import _
@@ -21,6 +21,10 @@ class MiraTalent(Document):
             target_id=self.name,
             event_payload=self.as_dict()
         )
+        if hasattr(self,"utm_campaign") and self.utm_campaign:
+            self.create_talent_pool()
+
+            
     def on_update(self):
         if not self.get("__islocal"):  # nghĩa là UPDATE, không phải INSERT
             # self.on_talent_update()
@@ -70,6 +74,31 @@ class MiraTalent(Document):
         # if hasattr(self,"campaign_id"): 
         #     self.create_talent_campaign()
 
+
+    def create_talent_pool(self):
+        """Tạo Talent pool nếu talent được thêm vào từ chiến dịch có utm_campaign và talent pool
+        """
+        if self.utm_campaign:
+            #Lấy ra campaign kiểm tra có talent pool không
+            target_pool = frappe.db.get_value("Mira Campaign",self.utm_campaign,"target_pool")
+            if target_pool and not check_exists(target_pool,self.name):
+                frappe.get_doc({
+                    "doctype": "Mira Talent Pool",
+                    "segment_id": target_pool,
+                    "talent_id": self.name,
+                    "enroll_type":"Automatic",
+                    "match_score":0,
+                    "added_at": now(),
+                    "added_by": frappe.session.user  # hoặc seg.owner_id
+                }).insert(ignore_permissions=True)
+                frappe.db.commit()
+
+def check_exists(segment_id,talent_id):
+    talent_degment_exists = frappe.db.exists("Mira Talent Pool",{"segment_id":segment_id,"talent_id":talent_id})
+    if talent_degment_exists:
+        return True
+    else:
+        return False
     # def create_talent_campaign(self):
     #     try:           
     #         first_step = get_first_campaign_step(self.campaign_id)

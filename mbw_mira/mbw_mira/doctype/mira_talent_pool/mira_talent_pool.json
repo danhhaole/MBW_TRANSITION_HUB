@@ -47,13 +47,13 @@
    "fieldname": "enroll_type",
    "fieldtype": "Select",
    "label": "Enroll Type",
-   "options": "Manual\nAutomatic"
+   "options": "Manual\nAutomatic\nCampaign"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-17 14:21:18.316556",
+ "modified": "2025-11-21 09:49:20.497017",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Talent Pool",
