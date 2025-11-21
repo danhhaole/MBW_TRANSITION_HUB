@@ -159,12 +159,12 @@
 											{{ segment.candidate_count || 0 }}
 										</div>
 									</div>
-									<div>
+									<!-- <div>
 										<div class="text-xs text-gray-500 mb-1">New Talents</div>
 										<div class="text-lg font-bold text-gray-900">
 											{{ segment.active_candidates_count || 0 }}
 										</div>
-									</div>
+									</div> -->
 									<div>
 										<div class="text-xs text-gray-500 mb-1">Potential Score</div>
 										<div
