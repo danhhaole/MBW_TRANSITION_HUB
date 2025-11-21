@@ -33,7 +33,8 @@ class MiraCampaignSocial(Document):
 	
 	def _update_status_campaign(self):
 		campaign = frappe.get_doc("Mira Campaign",self.campaign_id)
-		campaign.current = campaign.current + 1
+		if campaign.total > campaign.current:
+			campaign.current = campaign.current + 1
 		campaign.save(ignore_permissions=True)
 		frappe.db.commit()
 

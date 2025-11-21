@@ -10,7 +10,8 @@ class MiraCampaign(Document):
 
 	def on_update(self):
 		old_doc = self.get_doc_before_save()
-		print(old_doc.status)
+		# self.notify_update()
+
 		if old_doc.status != self.status:
 			
 			self.update_status_social()
