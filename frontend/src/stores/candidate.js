@@ -175,7 +175,7 @@ export const useCandidateStore = defineStore('candidate', {
       this.setLoading(true)
 
       try {
-        const {
+        let {
           filters = {},
           or_filters = undefined,
           fields = ['name', 'full_name', 'email', 'phone', 'skills', 'source', 'status', 'creation', 'modified'],
