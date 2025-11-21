@@ -1,180 +1,79 @@
 <template>
   <div class="space-y-6">
-    <!-- Interaction Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="bg-blue-50 rounded-lg p-6">
-        <div class="flex items-center">
-          <div class="p-3 rounded-full bg-blue-100">
-            <FeatherIcon name="users" class="w-6 h-6 text-blue-600" />
-          </div>
-          <div class="ml-4">
-            <p class="text-sm font-medium text-blue-600">Total Flows</p>
-            <p class="text-2xl font-bold text-blue-900">0</p>
-          </div>
-        </div>
+    <!-- Header -->
+    <div class="bg-white rounded-lg border border-gray-200 p-6">
+      <h2 class="text-xl font-semibold text-gray-900">Lịch sử Tương tác Marketing & Cá nhân</h2>
+      <p class="text-sm text-gray-600 mt-1">Lọc theo Email Sent, Email Opened, Link Clicked, Recruiter Messages.</p>
+    </div>
+
+    <!-- Loading State -->
+    <div v-if="loading" class="bg-white rounded-lg border border-gray-200 p-6">
+      <div class="flex items-center justify-center py-8">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span class="ml-3 text-gray-600">Loading interactions...</span>
       </div>
-      
-      <div class="bg-green-50 rounded-lg p-6">
-        <div class="flex items-center">
-          <div class="p-3 rounded-full bg-green-100">
-            <FeatherIcon name="send" class="w-6 h-6 text-green-600" />
-          </div>
-          <div class="ml-4">
-            <p class="text-sm font-medium text-green-600">Campaigns</p>
-            <p class="text-2xl font-bold text-green-900">0</p>
-          </div>
-        </div>
-      </div>
-      
-      <div class="bg-purple-50 rounded-lg p-6">
-        <div class="flex items-center">
-          <div class="p-3 rounded-full bg-purple-100">
-            <FeatherIcon name="layers" class="w-6 h-6 text-purple-600" />
-          </div>
-          <div class="ml-4">
-            <p class="text-sm font-medium text-purple-600">Sequences</p>
-            <p class="text-2xl font-bold text-purple-900">0</p>
+    </div>
+
+    <!-- Interactions List -->
+    <div v-else-if="interactions.length > 0" class="bg-white rounded-lg border border-gray-200">
+      <div class="divide-y divide-gray-200">
+        <div v-for="interaction in interactions" :key="interaction.name" class="p-4 hover:bg-gray-50 transition-colors">
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <!-- Interaction Type and Details -->
+              <div class="flex items-center space-x-2 mb-2">
+                <span class="font-semibold text-gray-900">{{ getInteractionLabel(interaction.interaction_type) }}:</span>
+                <span class="text-gray-700">
+                  <template v-if="interaction.campaign_name">
+                    Campaign: '{{ interaction.campaign_name }}'
+                  </template>
+                  <template v-else-if="interaction.action">
+                    {{ interaction.action }}
+                  </template>
+                  <template v-else>
+                    {{ interaction.interaction_type }}
+                  </template>
+                </span>
+              </div>
+
+              <!-- Platform Info -->
+              <div v-if="interaction.platform" class="text-sm text-gray-600 mb-1">
+                Platform: {{ interaction.platform }}
+                <span v-if="interaction.social_page_name"> - {{ interaction.social_page_name }}</span>
+              </div>
+
+              <!-- URL if available -->
+              <div v-if="interaction.url" class="text-sm text-gray-600 mb-1">
+                URL: <a :href="interaction.url" target="_blank" class="text-blue-600 hover:underline">{{ interaction.url }}</a>
+              </div>
+
+              <!-- Channel -->
+              <div v-if="interaction.channel" class="text-xs text-gray-500">
+                Channel: {{ interaction.channel }}
+              </div>
+            </div>
+
+            <!-- Date -->
+            <div class="text-right ml-4">
+              <p class="text-sm font-medium text-gray-900">{{ formatDate(interaction.creation) }}</p>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Flow Participation -->
-    <div class="bg-white rounded-lg border border-gray-200 p-6">
-      <h3 class="text-lg font-medium text-gray-900 mb-4">Flow Participation</h3>
-      <div class="space-y-4">
-        <!-- <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-          <div class="flex items-center space-x-3">
-            <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
-            <div>
-              <p class="font-medium text-gray-900">Recruitment Flow - Senior Developer</p>
-              <p class="text-sm text-gray-500">Started 5 days ago</p>
-            </div>
-          </div>
-          <div class="flex items-center space-x-2">
-            <Badge theme="blue" variant="subtle">Active</Badge>
-            <span class="text-sm text-gray-500">Step 3/5</span>
-          </div>
-        </div>
-
-        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-          <div class="flex items-center space-x-3">
-            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
-            <div>
-              <p class="font-medium text-gray-900">Onboarding Flow</p>
-              <p class="text-sm text-gray-500">Completed 2 weeks ago</p>
-            </div>
-          </div>
-          <div class="flex items-center space-x-2">
-            <Badge theme="green" variant="subtle">Completed</Badge>
-            <span class="text-sm text-gray-500">5/5</span>
-          </div>
-        </div>
-
-        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-          <div class="flex items-center space-x-3">
-            <div class="w-3 h-3 bg-orange-500 rounded-full"></div>
-            <div>
-              <p class="font-medium text-gray-900">Follow-up Sequence</p>
-              <p class="text-sm text-gray-500">Paused 1 week ago</p>
-            </div>
-          </div>
-          <div class="flex items-center space-x-2">
-            <Badge theme="orange" variant="subtle">Paused</Badge>
-            <span class="text-sm text-gray-500">2/4</span>
-          </div>
-        </div> -->
-      </div>
-    </div>
-
-    <!-- Campaign History -->
-    <div class="bg-white rounded-lg border border-gray-200 p-6">
-      <h3 class="text-lg font-medium text-gray-900 mb-4">Campaign History</h3>
-      <div class="space-y-4">
-        <!-- <div class="border-l-4 border-blue-500 pl-4">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="font-medium text-gray-900">Email Campaign - Tech Talent Pool</p>
-              <p class="text-sm text-gray-500">Sent 3 days ago</p>
-            </div>
-            <div class="text-right">
-              <p class="text-sm font-medium text-green-600">Opened</p>
-              <p class="text-xs text-gray-500">Click rate: 45%</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="border-l-4 border-green-500 pl-4">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="font-medium text-gray-900">SMS Campaign - Interview Reminder</p>
-              <p class="text-sm text-gray-500">Sent 1 week ago</p>
-            </div>
-            <div class="text-right">
-              <p class="text-sm font-medium text-blue-600">Replied</p>
-              <p class="text-xs text-gray-500">Response time: 2h</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="border-l-4 border-purple-500 pl-4">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="font-medium text-gray-900">WhatsApp Campaign - Job Opportunity</p>
-              <p class="text-sm text-gray-500">Sent 2 weeks ago</p>
-            </div>
-            <div class="text-right">
-              <p class="text-sm font-medium text-purple-600">Delivered</p>
-              <p class="text-xs text-gray-500">Read: Yes</p>
-            </div>
-          </div>
-        </div> -->
-      </div>
-    </div>
-
-    <!-- Interaction Timeline -->
-    <div class="bg-white rounded-lg border border-gray-200 p-6">
-      <h3 class="text-lg font-medium text-gray-900 mb-4">Interaction Timeline</h3>
-      <div class="relative">
-        <!-- <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
-        <div class="space-y-6">
-          <div class="relative flex items-start space-x-4">
-            <div class="relative z-10 flex items-center justify-center w-8 h-8 bg-blue-500 rounded-full">
-              <FeatherIcon name="mail" class="w-4 h-4 text-white" />
-            </div>
-            <div class="flex-1">
-              <p class="text-sm font-medium text-gray-900">Email sent: Interview invitation</p>
-              <p class="text-xs text-gray-500">3 days ago</p>
-            </div>
-          </div>
-
-          <div class="relative flex items-start space-x-4">
-            <div class="relative z-10 flex items-center justify-center w-8 h-8 bg-green-500 rounded-full">
-              <FeatherIcon name="phone" class="w-4 h-4 text-white" />
-            </div>
-            <div class="flex-1">
-              <p class="text-sm font-medium text-gray-900">Phone call: Technical screening</p>
-              <p class="text-xs text-gray-500">1 week ago</p>
-            </div>
-          </div>
-
-          <div class="relative flex items-start space-x-4">
-            <div class="relative z-10 flex items-center justify-center w-8 h-8 bg-purple-500 rounded-full">
-              <FeatherIcon name="message-circle" class="w-4 h-4 text-white" />
-            </div>
-            <div class="flex-1">
-              <p class="text-sm font-medium text-gray-900">WhatsApp: Job opportunity shared</p>
-              <p class="text-xs text-gray-500">2 weeks ago</p>
-            </div>
-          </div>
-        </div> -->
-      </div>
+    <!-- Empty State -->
+    <div v-else class="bg-white rounded-lg border border-gray-200 p-12 text-center">
+      <FeatherIcon name="inbox" class="w-12 h-12 text-gray-400 mx-auto mb-4" />
+      <h3 class="text-lg font-medium text-gray-900 mb-2">No Interactions Yet</h3>
+      <p class="text-gray-500">Email and marketing interactions will appear here.</p>
     </div>
   </div>
 </template>
 
 <script setup>
-import { FeatherIcon, Badge } from 'frappe-ui'
+import { ref, onMounted, watch } from 'vue'
+import { FeatherIcon, call } from 'frappe-ui'
 
 const props = defineProps({
   talent: {
@@ -182,4 +81,67 @@ const props = defineProps({
     required: true
   }
 })
+
+const interactions = ref([])
+const loading = ref(false)
+
+// Fetch interactions when component mounts
+onMounted(() => {
+  fetchInteractions()
+})
+
+// Watch for talent changes
+watch(() => props.talent?.name, (newVal) => {
+  if (newVal) {
+    fetchInteractions()
+  }
+})
+
+const fetchInteractions = async () => {
+  if (!props.talent?.name) return
+  
+  loading.value = true
+  try {
+    const response = await call('mbw_mira.api.interaction.get_talent_email_interactions', {
+      talent_id: props.talent.name
+    })
+    
+    if (response && response.interactions) {
+      interactions.value = response.interactions
+    }
+  } catch (error) {
+    console.error('Error fetching interactions:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+const getInteractionLabel = (type) => {
+  const labels = {
+    'EMAIL_SENT': 'Email Sent',
+    'EMAIL_OPENED': 'Email Opened',
+    'ON_LINK_CLICK': 'Link Clicked',
+    'EMAIL_DELIVERED': 'Email Delivered',
+    'EMAIL_BOUNCED': 'Email Bounced',
+    'EMAIL_UNSUBSCRIBED': 'Email Unsubscribed',
+    'EMAIL_REPLIED': 'Email Replied'
+  }
+  return labels[type] || type
+}
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return ''
+  try {
+    const date = new Date(dateStr)
+    return date.toLocaleDateString('vi-VN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  } catch (error) {
+    return dateStr
+  }
+}
 </script>

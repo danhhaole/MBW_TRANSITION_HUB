@@ -174,3 +174,134 @@ def unsubscribe():
     frappe.local.response.type = 'text/html'
     frappe.local.response.message = html
 
+
+@frappe.whitelist()
+def get_talent_email_interactions(talent_id):
+    """
+    Lấy các interaction EMAIL_SENT, EMAIL_OPENED, ON_LINK_CLICK của talent
+    kèm theo tên campaign và platform từ Mira Campaign Social
+    """
+    if not talent_id:
+        frappe.throw(_("Talent ID is required"))
+    
+    # Kiểm tra talent có tồn tại không
+    if not frappe.db.exists("Mira Talent", talent_id):
+        frappe.throw(_("Talent not found"))
+    
+    # Query để lấy interactions với campaign name và platform
+    interactions = frappe.db.sql("""
+        SELECT 
+            mi.name,
+            mi.talent_id,
+            mi.campaign_id,
+            mi.interaction_type,
+            mi.action,
+            mi.url,
+            mi.channel,
+            mi.creation,
+            mi.modified,
+            mc.campaign_name,
+            mcs.platform,
+            mcs.social_page_name
+        FROM 
+            `tabMira Interaction` mi
+        LEFT JOIN 
+            `tabMira Campaign` mc ON mi.campaign_id = mc.name
+        LEFT JOIN 
+            `tabMira Campaign Social` mcs ON mc.name = mcs.campaign_id
+        WHERE 
+            mi.talent_id = %(talent_id)s
+            AND mi.interaction_type IN ('EMAIL_SENT', 'EMAIL_OPENED', 'ON_LINK_CLICK')
+        ORDER BY 
+            mi.creation DESC
+    """, {"talent_id": talent_id}, as_dict=True)
+    
+    return {
+        "status": "success",
+        "talent_id": talent_id,
+        "total": len(interactions),
+        "interactions": interactions
+    }
+
+
+@frappe.whitelist()
+def get_interaction_counts(talent_id):
+    """
+    Đếm số lượng interactions theo type cho talent
+    """
+    if not talent_id:
+        frappe.throw(_("Talent ID is required"))
+    
+    counts = frappe.db.sql("""
+        SELECT 
+            interaction_type,
+            COUNT(*) as count
+        FROM 
+            `tabMira Interaction`
+        WHERE 
+            talent_id = %(talent_id)s
+        GROUP BY 
+            interaction_type
+    """, {"talent_id": talent_id}, as_dict=True)
+    
+    # Chuyển đổi thành dict để dễ sử dụng
+    result = {item['interaction_type']: item['count'] for item in counts}
+    
+    return {
+        "status": "success",
+        "talent_id": talent_id,
+        "counts": result
+    }
+
+
+@frappe.whitelist()
+def get_talent_activity_logs(talent_id, limit=50):
+    """
+    Lấy activity logs của talent từ Talent Activity Log
+    """
+    if not talent_id:
+        frappe.throw(_("Talent ID is required"))
+    
+    # Kiểm tra talent có tồn tại không
+    if not frappe.db.exists("Mira Talent", talent_id):
+        frappe.throw(_("Talent not found"))
+    
+    # Query để lấy activity logs
+    activities = frappe.db.sql("""
+        SELECT 
+            name,
+            talent_id,
+            activity_type,
+            subject,
+            description,
+            campaign_id,
+            interaction_id,
+            recruiter_id,
+            reference_doctype,
+            reference_name,
+            trigger_type,
+            is_system_generated,
+            score_change,
+            source,
+            meta_json,
+            date,
+            creation,
+            modified,
+            owner,
+            modified_by
+        FROM 
+            `tabTalent Activity Log`
+        WHERE 
+            talent_id = %(talent_id)s
+        ORDER BY 
+            date DESC, creation DESC
+        LIMIT %(limit)s
+    """, {"talent_id": talent_id, "limit": limit}, as_dict=True)
+    
+    return {
+        "status": "success",
+        "talent_id": talent_id,
+        "total": len(activities),
+        "activities": activities
+    }
+
