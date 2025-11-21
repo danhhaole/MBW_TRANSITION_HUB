@@ -7,6 +7,7 @@ import frappe
 from frappe.utils import nowdate,now_datetime, date_diff, get_datetime
 from frappe.model.document import Document
 from mbw_mira.mbw_mira.doctype.mira_task_definition.mira_task_definition import create_task_definitions_from_event
+from mbw_mira.mbw_mira.doctype.talent_activity_log.talent_activity_log import create_talent_activity_log
 from mbw_mira.workers import resume_event
 
 INTERACTION_SCORE = {
@@ -156,6 +157,19 @@ class MiraInteraction(Document):
 	def handle_email_sent(self):
 		"""Ghi nhận khi gửi email thành công."""
 		resume_event("email_sent", self.talent_id)
+
+		# create_talent_activity_log(
+		# 	talent_id=self.talent_id,
+		# 	activity_type="Email Sent",
+		# 	subject="Email Sent to Talent",
+		# 	description=f"Email sent using template {interaction.template_id}",
+		# 	campaign_id=interaction.campaign_id,
+		# 	interaction_id=interaction.name,
+		# 	trigger_type="auto",
+		# 	is_system_generated=1,
+		# 	reference_doctype="Talent Interaction",
+		# 	reference_name=interaction.name
+		# )
   
 		# create_task_definitions_from_event(
 		# 		event_trigger="ON_SEND_SUCCESS",

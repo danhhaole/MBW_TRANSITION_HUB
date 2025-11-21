@@ -11,6 +11,7 @@ import requests
 from frappe.utils.file_manager import save_file
 import os
 from mbw_mira.mbw_mira.doctype.mira_task_definition.mira_task_definition import create_task_definitions_from_event
+from mbw_mira.mbw_mira.doctype.talent_activity_log.talent_activity_log import create_talent_activity_log
 
 class MiraTalent(Document):
 
@@ -24,6 +25,17 @@ class MiraTalent(Document):
         if hasattr(self,"utm_campaign") and self.utm_campaign:
             self.create_talent_pool()
 
+        #Tạo log vào
+        create_talent_activity_log(
+            talent_id=self.name,
+            activity_type="Created",
+            subject=f"New Talent Created: {self.full_name}",
+            description=f"Talent {self.full_name} has been added to the system.",
+            trigger_type="system",
+            is_system_generated=1,
+            source=self.source
+        )
+
             
     def on_update(self):
         if not self.get("__islocal"):  # nghĩa là UPDATE, không phải INSERT
@@ -33,6 +45,23 @@ class MiraTalent(Document):
                 self.on_status_changed(old_doc.crm_status,self.crm_status)
             if old_doc and hasattr(old_doc, 'tags') and old_doc.tags != self.tags:
                 self.on_tag_added()
+
+            changed_fields = self.get_changed_fields()
+
+            if changed_fields:
+                for field in changed_fields:
+                    old = self.get_doc_before_save().get(field)
+                    new = self.get(field)
+
+                    create_talent_activity_log(
+                        talent_id=self.name,
+                        activity_type="Updated",
+                        subject=f"{field} changed",
+                        description=f"Field **{field}** changed from **{old}** → **{new}**",
+                        trigger_type="system",
+                        is_system_generated=1,
+                        source="system"
+                    )
             
     def on_talent_update(self):
         create_task_definitions_from_event(
