@@ -45,6 +45,7 @@ class MiraTalent(Document):
                 self.on_status_changed(old_doc.crm_status,self.crm_status)
             if old_doc and hasattr(old_doc, 'tags') and old_doc.tags != self.tags:
                 self.on_tag_added()
+
             meta_fields =  self.meta.fields            
             if meta_fields:
                 for field in meta_fields:
@@ -56,7 +57,7 @@ class MiraTalent(Document):
                         create_talent_activity_log(
                             talent_id=self.name,
                             activity_type="System Update",
-                            subject=f"{field} changed",
+                            subject=f"{field.fieldname} changed",
                             description=f"Field **{field.fieldname}** changed from **{old}** → **{new}**",
                             trigger_type="system",
                             is_system_generated=1,

@@ -114,7 +114,7 @@ class MiraInteraction(Document):
 			"EMAIL_DELIVERED": self.handle_email_delivered,
 			"EMAIL_BOUNCED": self.handle_email_bounced,
 			"EMAIL_OPENED": self.handle_email_engagement,
-			"EMAIL_CLICKED": self.handle_email_engagement,
+			"ON_LINK_CLICK": self.handle_on_link_click,
 			"EMAIL_UNSUBSCRIBED": self.handle_email_unsubscribe,
 			"EMAIL_REPLIED": self.handle_email_replied,
 
@@ -158,25 +158,19 @@ class MiraInteraction(Document):
 		"""Ghi nhận khi gửi email thành công."""
 		resume_event("email_sent", self.talent_id)
 
-		# create_talent_activity_log(
-		# 	talent_id=self.talent_id,
-		# 	activity_type="Email Sent",
-		# 	subject="Email Sent to Talent",
-		# 	description=f"Email sent using template {interaction.template_id}",
-		# 	campaign_id=interaction.campaign_id,
-		# 	interaction_id=interaction.name,
-		# 	trigger_type="auto",
-		# 	is_system_generated=1,
-		# 	reference_doctype="Talent Interaction",
-		# 	reference_name=interaction.name
-		# )
+		create_talent_activity_log(
+			talent_id=self.talent_id,
+			activity_type="Email Sent",
+			subject="Email Sent to Talent",
+			description=f"Email sent using template",
+			campaign_id=self.campaign_id,
+			interaction_id=self.name,
+			trigger_type="auto",
+			is_system_generated=1,
+			reference_doctype="Mira Interaction",
+			reference_name=self.name
+		)
   
-		# create_task_definitions_from_event(
-		# 		event_trigger="ON_SEND_SUCCESS",
-		# 		target_type="Mira Talent",
-		# 		target_id=self.talent_id,
-		# 		event_payload={"talent_id": self.talent_id}
-		# 	)
 			
 
 	def handle_email_delivered(self):
@@ -191,12 +185,6 @@ class MiraInteraction(Document):
 		"""Email opened hoặc clicked."""
 		self._update_talent_interaction("Quan tâm AI")
 		resume_event("email_open", self.talent_id)
-		# create_task_definitions_from_event(
-		# 	event_trigger="ON_LINK_CLICK",
-		# 	target_type="Mira Talent",
-		# 	target_id=self.talent_id,
-		# 	event_payload={"url": self.url}
-		# )
 
 	def handle_email_unsubscribe(self):
 		"""Người dùng hủy đăng ký."""
@@ -206,13 +194,34 @@ class MiraInteraction(Document):
 		"""Người dùng phản hồi email."""
 		pass
 
+	def handle_on_link_click(self):
+		create_talent_activity_log(
+			talent_id=self.talent_id,
+			activity_type="Link Clicked",
+			subject="Talent Clicked Link",
+			description="Talent clicked the campaign link.",
+			campaign_id=self.campaign_id,
+			interaction_id=self.name,
+			trigger_type="on_link_click",
+			is_system_generated=1
+		)
+
 	# ==========================================================
 	# ============== WEBSITE / CONTENT =========================
 	# ==========================================================
 
 	def handle_website_view(self):
 		"""Talent xem nội dung (career page, blog, job description...)."""
-		pass
+		create_talent_activity_log(
+			talent_id=self.talent_id,
+			activity_type="Page Visited",
+			subject="Talent Page Visited",
+			description="Talent Page Visited.",
+			campaign_id=self.campaign_id,
+			interaction_id=self.name,
+			trigger_type="on_link_click",
+			is_system_generated=1
+		)
 
 	# ==========================================================
 	# ============== FORM / REFERRAL / EVENT ===================
@@ -220,7 +229,17 @@ class MiraInteraction(Document):
 
 	def handle_form_completed(self):
 		"""Talent hoàn tất form (nurturing, sự kiện, khảo sát...)."""
-		pass
+		create_talent_activity_log(
+			talent_id=self.talent_id,
+			activity_type="Form Submited",
+			subject="Talent Form Submited",
+			description="Talent Form Submited.",
+			campaign_id=self.campaign_id,
+			interaction_id=self.name,
+			trigger_type="link_click",
+			is_system_generated=1
+		)
+
 
 	# ==========================================================
 	# ============== CHAT HANDLERS ==============================

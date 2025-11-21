@@ -6,11 +6,24 @@ from frappe import _
 from frappe.model.document import Document
 import json
 
+from mbw_mira.mbw_mira.doctype.talent_activity_log.talent_activity_log import create_talent_activity_log
+
 class MiraTalentPool(Document):
     
 
     def validate(self):
         validate_unique_candidate_segment(self)
+
+    def after_save(self):
+        create_talent_activity_log(
+                            talent_id=self.name,
+                            activity_type="Added to Pool",
+                            subject=f"Talent Added to Pool by {self.enroll_type}",
+                            description=f"Added to Pool {self.name} by {self.enroll_type}",
+                            trigger_type="system",
+                            is_system_generated=1,
+                            source="system"
+                        )
 
     def on_update(self):
         count_talentprofile_segment(self.segment_id)

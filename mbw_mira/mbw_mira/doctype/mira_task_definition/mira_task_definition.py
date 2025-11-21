@@ -67,13 +67,13 @@ def create_task_definitions_from_event(event_trigger, target_type, target_id, ev
         task_def.insert(ignore_permissions=True)
 
         # 3) Snapshot Flow Actions thành Runtime Actions
-        generate_runtime_actions(task_def)
+        task_action = generate_runtime_actions(task_def)
+        if task_action:
+            # 4) Set Entry Action (step đầu)
+            set_entry_action(task_def)
 
-        # 4) Set Entry Action (step đầu)
-        set_entry_action(task_def)
-
-        # 5) Tạo Task đầu tiên (scheduled theo giờ hành chính)
-        run_next_action(task_def.name)
+            # 5) Tạo Task đầu tiên (scheduled theo giờ hành chính)
+            run_next_action(task_def.name)
 
     frappe.db.commit()
 
@@ -89,7 +89,8 @@ def generate_runtime_actions(task_def):
     )
 
     if not flow_actions:
-        frappe.throw(f"No Flow Actions found for Flow {task_def.flow}")
+        return None
+        # frappe.throw(f"No Flow Actions found for Flow {task_def.flow}")
 
     runtime_map = {}   # map FlowAction → RuntimeRowName
     runtime_rows = []  # giữ runtime row theo thứ tự để chain
