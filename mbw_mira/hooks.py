@@ -184,7 +184,7 @@ scheduler_events = {
         ],
     },
     "daily": [
-        
+        "mbw_mira.schedulers.task_talent_pool_cold.scan_talent_pool_interaction_cold"
     ],
     "hourly": [
         # "mbw_mira.schedulers.enroll_talent_campaign.run",

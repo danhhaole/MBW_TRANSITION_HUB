@@ -5,6 +5,7 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 import json
+from frappe.utils import now_datetime, add_days,getdate,nowdate
 
 from mbw_mira.mbw_mira.doctype.talent_activity_log.talent_activity_log import create_talent_activity_log
 
@@ -60,6 +61,42 @@ def count_talentprofile_segment(segment_id):
     except Exception as e:
         pass
 
+
+def cleanup_inactive_talent_pool(pool_id):
+    """Remove talents added >30 days ago and no recent interaction"""
+
+    cutoff_date = add_days(nowdate(), -30)
+
+    # Lấy các bản ghi Talent Pool đã thêm hơn 30 ngày
+    pool_records = frappe.get_all(
+        "Mira Talent Pool",
+        filters={"segment_id":pool_id, "added_at": ("<", cutoff_date)},
+        fields=["name", "talent_id", "added_at"]
+    )
+
+    removed = []
+
+    for rec in pool_records:
+        talent = frappe.db.get_value(
+            "Mira Talent",
+            rec.talent_id,
+            ["last_interaction_date"],
+            as_dict=True
+        )
+
+        last_interaction = talent.last_interaction_date if talent else None
+
+        # Điều kiện: Không có interaction hoặc interaction quá 30 ngày
+        if not last_interaction or getdate(last_interaction) < getdate(cutoff_date):
+            frappe.delete_doc("Mira Talent Pool", rec.name, force=1)
+            removed.append(rec.name)
+
+    if removed:
+        frappe.logger("mira_cleanup").info(
+            f"Removed {len(removed)} talents from pool: {removed}"
+        )
+
+    return removed
 
 @frappe.whitelist()
 def bulk_insert_segments():
