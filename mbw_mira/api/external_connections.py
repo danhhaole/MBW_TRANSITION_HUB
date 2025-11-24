@@ -6,7 +6,8 @@ import json
 import secrets
 import requests
 from typing import Dict, List, Optional, Any
-
+from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
+import re
 from mbw_mira.helpers.html_parse import convert_html_for_facebook
 from mbw_mira.utils import make_signature
 
@@ -1284,23 +1285,47 @@ def _process_job_share(share_doc):
         frappe.log_error(f"Error processing job share: {str(e)}")
         return {"success": False, "error": str(e)}
 
-def _create_tracking(campaign,ladipge_url) -> str:
+def _create_tracking(campaign_id, source) -> str:
+    # Lấy domain chính xác
     origin = frappe.request.headers.get("Origin")
     protocol = frappe.request.scheme
     host = frappe.request.host
-    base_url = f"{protocol}://{host}"
-    if origin:
-        base_url = origin
-
+    base_url = origin if origin else f"{protocol}://{host}"
+    campaign = frappe.get_doc("Mira Campaign",campaign_id)
     params = {
-        "campaign_id": campaign,
+        "campaign_id": campaign.name if hasattr(campaign, "name") else campaign,
+        "talent_id": "",
         "action": "PAGE_VISITED",
-        "url": ladipge_url,
+        "url": campaign.landing_url,
+        "utm_campaign": campaign.name,
+        "utm_source": source,
+        "utm_medium": "social",
+        "utm_term": campaign.tags,
     }
+
     sig = make_signature(params)
-    # # dùng urllib để encode query string
     query = urlencode({**params, "sig": sig})
+
     return f"{base_url}/api/method/mbw_mira.api.interaction.page_visited?{query}"
+
+def replace_urls_with_tracking(content, campaign_id, source):
+    """
+    Tìm mọi URL trong content và thay bằng Tracking URL
+    """
+    url_regex = r"(https?://[^\s\"\'<>]+)"
+
+    def replace(match):
+        # Gọi vào hàm tracking đã có
+        tracking_url = _create_tracking(
+            campaign_id=campaign_id,
+            source=source
+        )
+
+        return tracking_url
+
+    # Replace toàn bộ URL
+    new_content = re.sub(url_regex, replace, content)
+    return new_content
 
 def _share_to_facebook(connection, share_doc, share_data):
     """Share job to Facebook via SocialHub API"""
@@ -1325,8 +1350,7 @@ def _share_to_facebook(connection, share_doc, share_data):
             return {"success": False, "error": "No Facebook page selected or available"}
 
         # Prepare post content
-        tracking_url = _create_tracking(share_doc.campaign,share_doc.ladipage_url) or ''
-        message = f"{share_doc.message} \n\n {tracking_url}"
+        message = replace_urls_with_tracking(share_doc.message,share_doc.campaign,"facebook")
 
         # Prepare image URL if available
 
@@ -1413,8 +1437,7 @@ def _share_to_zalo(connection, share_doc, share_data):
         if not page_id:
             return {"success": False, "error": "No Zalo OA ID configured or available"}
 
-        # Prepare job content
-        tracking_url = _create_tracking(share_doc.campaign,share_doc.ladipage_url) or ''
+        
 
         # Prepare image URL if available
         # photo_url = ""
@@ -1437,9 +1460,11 @@ def _share_to_zalo(connection, share_doc, share_data):
             "title": "",
             "photo_url": url_image,
             "description": description,
-            "content": f"{share_doc.message}\n\n{tracking_url}",
+            "content": f"{share_doc.message}",
         }
 
+        post_data.content = replace_urls_with_tracking(post_data.content,share_doc.campaign,"zalo") or ''
+        
         response = requests.post(socialhub_url, json=post_data, timeout=1000)
 
         if response.status_code == 200:

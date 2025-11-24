@@ -5,7 +5,7 @@ from mbw_mira.utils import verify_signature
 from frappe.utils import now_datetime, add_days
 
 @frappe.whitelist(allow_guest=True)
-def track(talent_id=None, action=None, type=None, url=None):
+def track(campaign_id =None, talent_id=None, action=None, type=None, url=None):
     if not talent_id or not type:
         frappe.throw("Missing required parameters: talent_id, type")
 
@@ -18,6 +18,7 @@ def track(talent_id=None, action=None, type=None, url=None):
     doc = frappe.get_doc({
         "doctype": "Mira Interaction",
         "talent_id": talent_id,
+        "campaign_id":campaign_id,
         "interaction_type": type,
         "action": action,
         "url": url,
@@ -44,6 +45,7 @@ def track(talent_id=None, action=None, type=None, url=None):
 
 @frappe.whitelist(allow_guest=True)
 def click_redirect():
+    campaign_id = frappe.form_dict.get("utm_campaign")
     talent_id = frappe.form_dict.get("talent_id")
     action = frappe.form_dict.get("action")
     url = frappe.form_dict.get("url")
@@ -53,6 +55,7 @@ def click_redirect():
         frappe.throw("Missing required parameters")
 
     params = {
+        "campaign_id":campaign_id,
         "talent_id": talent_id,
         "action": action,
         "url":url
@@ -60,7 +63,7 @@ def click_redirect():
     if not verify_signature(params, sig):
         frappe.throw("Invalid signature")
 
-    track(talent_id=talent_id, action=action, type="ON_LINK_CLICK", url=url)
+    track(campaign_id=campaign_id, talent_id=talent_id, action=action, type="ON_LINK_CLICK", url=url)
 
     frappe.local.response["type"] = "redirect"
     frappe.local.response["location"] = url
@@ -68,10 +71,11 @@ def click_redirect():
 
 @frappe.whitelist(allow_guest=True)
 def tracking_pixel():
+    campaign_id = frappe.form_dict.get("utm_campaign")
     talent_id = frappe.form_dict.get("talent_id")
     action = frappe.form_dict.get("action")
 
-    track(talent_id=talent_id, action=action, type="EMAIL_OPENED")
+    track(campaign_id=campaign_id, talent_id=talent_id, action=action, type="EMAIL_OPENED")
 
     # Return transparent GIF
     frappe.local.response.type = "binary"
@@ -90,10 +94,12 @@ def tracking_pixel():
 
 @frappe.whitelist(allow_guest=True)
 def page_visited():
-    campaign_id = frappe.form_dict.get("campaign_id")
+    campaign_id = frappe.form_dict.get("utm_campaign")
+    talent_id = frappe.form_dict.get("talent_id") or None
     action = frappe.form_dict.get("action")
     sig = frappe.form_dict.get("sig")
-    track(campaign_id=campaign_id, action=action, type="PAGE_VISITED")
+    
+    track(campaign_id=campaign_id,talent_id=talent_id, action=action, type="PAGE_VISITED")
     
     # Return transparent GIF
     frappe.local.response.type = "binary"
@@ -115,6 +121,7 @@ def page_visited():
 
 @frappe.whitelist(allow_guest=True)
 def unsubscribe():
+    campaign_id = frappe.form_dict.get("utm_campaign")
     talent_id = frappe.form_dict.get("talent_id")
     action = frappe.form_dict.get("action")
     sig = frappe.form_dict.get("sig")
@@ -124,6 +131,7 @@ def unsubscribe():
         frappe.throw("Missing parameters")
 
     params = {
+        "campaign_id":campaign_id,
         "talent_id": talent_id,
         "action": action,
         "url":url
@@ -134,6 +142,7 @@ def unsubscribe():
     # 1. Log Mira Interaction
     frappe.get_doc({
         "doctype": "Mira Interaction",
+        "campaign_id":campaign_id,
         "talent_id": talent_id,
         "action": action,
         "interaction_type": "EMAIL_UNSUBSCRIBED",

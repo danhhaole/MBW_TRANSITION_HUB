@@ -1,3 +1,4 @@
+import re
 import frappe
 import hmac
 import hashlib
@@ -7,7 +8,7 @@ from frappe.utils import now_datetime
 from mbw_mira.mbw_mira.doctype.mira_interaction.mira_interaction import (
     create_mira_interaction,
 )
-from urllib.parse import unquote
+from urllib.parse import unquote, urlencode
 import ipaddress
 import csv
 
@@ -34,8 +35,8 @@ def send_email_job(task_id, action):
     if talentprofiles.email_id_invalid:
         logger.error("Talent Email Invalid")
         return
-
-    context = (talentprofiles, task, action)
+    social = action
+    context = (talentprofiles, social, task)
 
     condition = {}
     if hasattr(action, "action_parameters"):
@@ -128,11 +129,11 @@ def send_email_action(talentprofile_id, action_id):
         logger.error("Talent Email Invalid")
         return
 
-    context = (talentprofiles, action)
+    context = (talentprofiles, social, None)
 
     condition = {}
-    if hasattr(action, "action_parameters"):
-        condition = json.loads(action.action_parameters)
+    if hasattr(social, "action_parameters"):
+        condition = json.loads(social.action_parameters)
     temp = condition
     message = render_template(temp.get("email_content"), context)
     subject = "Thông báo"
@@ -251,48 +252,116 @@ def render_template(template_str, context):
 
     if not template_str:
         return "Xin chào bạn"
-    talentprofiles, action,step = context
+
+    talentprofiles, social, step = context
+
+    # Base URL
     origin = frappe.request.headers.get("Origin")
     protocol = frappe.request.scheme
     host = frappe.request.host
-    base_url = f"{protocol}://{host}"
-    if origin:
-        base_url = origin
-    campaign = frappe.get_doc("Mira Campaign",action.campaign_id)
-    params = {
+    base_url = origin if origin else f"{protocol}://{host}"
+
+    # Campaign
+    campaign = frappe.get_doc("Mira Campaign", social.campaign_id)
+
+    # =====================
+    # Tracking Pixel
+    # =====================
+    pixel_params = {
         "talent_id": talentprofiles.name,
-        "action": action.name,
+        "action": social.name,
         "url": campaign.ladipge_url,
+        "utm_campaign": campaign.name,
+        "utm_source": "email",
+        "utm_medium": "email",
+        "utm_term": campaign.tags,
     }
 
-    context_parse = {"candidate_name": talentprofiles.full_name}
+    sig = make_signature(pixel_params)
+    pixel_query = urlencode({**pixel_params, "sig": sig})
+
+    # Gửi vào context
+    ctx = {
+        "candidate_name": talentprofiles.full_name,
+        "tracking_pixel_url": (
+            f"{base_url}/api/method/mbw_mira.api.interaction.tracking_pixel?{pixel_query}"
+        ),
+        "unsubscribe_link": _create_unsubscribe_link(talentprofiles.name, campaign),
+    }
+
+    # =====================
+    # Render raw HTML trước khi replace URL
+    # =====================
+    rendered_html = frappe.render_template(template_str, ctx)
+
+    # =====================
+    # Replace toàn bộ URL trong email bằng tracking link
+    # =====================
+    rendered_html = replace_urls_with_tracking_email(
+        content=rendered_html,
+        talent_id=talentprofiles.name,
+        campaign=campaign,
+    )
+
+    return rendered_html
+
+def _create_email_tracking(talent_id, campaign, original_url, action="EMAIL_CLICK"):
+    origin = frappe.request.headers.get("Origin")
+    protocol = frappe.request.scheme
+    host = frappe.request.host
+    base_url = origin if origin else f"{protocol}://{host}"
+
+    params = {
+        "talent_id": talent_id,
+        "action": action,
+        "url": original_url,
+        "utm_campaign": campaign.name,
+        "utm_source": "email",
+        "utm_medium": "email",
+        "utm_term": campaign.tags
+    }
 
     sig = make_signature(params)
-
-    # # dùng urllib để encode query string
     query = urlencode({**params, "sig": sig})
 
-    context_parse["tracking_pixel_url"] = (
-        f"{base_url}/api/method/mbw_mira.api.interaction.tracking_pixel?{query}"
+    return (
+        f"{base_url}/api/method/mbw_mira.api.interaction.click_redirect?{query}"
     )
-    # context_parse["tracking_link"] = (
-    #     f"{base_url}/api/method/mbw_mira.api.interaction.click_redirect?{query}"
-    # )
-    # context_parse["unsubscribe_link"] = (
-    #     f"{base_url}/mbw_mira/unsubscribe?{query}"
-    # )
 
-    # context_parse["register_link"] = (
-    #     f"{base_url}/mbw_mira/register?campaign={task.flow}"
-    # )
-    # context_parse["ladi_link"] = (
-    #     f"{base_url}/mbw_mira/ladi?campaign={task.flow}"
-    # )
-    # context_parse["apply_link"] = (
-    #     f"{base_url}/mbw_mira/application?campaign={task.flow}&email={talentprofiles.email}&name={talentprofiles.full_name}"
-    # )
+def _create_unsubscribe_link(talent_id, campaign):
+    origin = frappe.request.headers.get("Origin")
+    protocol = frappe.request.scheme
+    host = frappe.request.host
+    base_url = origin if origin else f"{protocol}://{host}"
 
-    return frappe.render_template(template_str, context_parse)
+    params = {
+        "talent_id": talent_id,
+        "campaign": campaign.name,
+        "action": "EMAIL_UNSUBSCRIBED"
+    }
+
+    sig = make_signature(params)
+    query = urlencode({**params, "sig": sig})
+
+    return f"{base_url}/api/method/mbw_mira.api.interaction.unsubscribe?{query}"
+
+
+def replace_urls_with_tracking_email(content, talent_id, campaign):
+    """
+    Tìm mọi URL trong nội dung email và convert -> tracking URL
+    """
+    url_regex = r"(https?://[^\s\"\'<>]+)"
+
+    def replace(match):
+        original_url = match.group(0)
+        return _create_email_tracking(
+            talent_id=talent_id,
+            campaign=campaign,
+            original_url=original_url,
+        )
+
+    return re.sub(url_regex, replace, content)
+
 
 
 def make_signature(data) -> str:
