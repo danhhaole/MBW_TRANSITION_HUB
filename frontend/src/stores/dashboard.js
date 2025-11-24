@@ -83,6 +83,27 @@ export const useDashboardStore = defineStore('dashboard', {
         'q4': new Date(now.getFullYear(), 9, 1) // Oct 1
       }
       return ranges[state.timeRange] || ranges['90d']
+    },
+    
+    // Get days count based on timeRange for API calls
+    daysFromTimeRange: (state) => {
+      const now = new Date()
+      switch(state.timeRange) {
+        case '30d': 
+          return 30
+        case '90d': 
+          return 90
+        case 'ytd': {
+          const startOfYear = new Date(now.getFullYear(), 0, 1)
+          return Math.floor((now - startOfYear) / (1000 * 60 * 60 * 24))
+        }
+        case 'q4': {
+          const startOfQ4 = new Date(now.getFullYear(), 9, 1) // Oct 1
+          return Math.floor((now - startOfQ4) / (1000 * 60 * 60 * 24))
+        }
+        default: 
+          return 90
+      }
     }
   },
 
@@ -90,55 +111,39 @@ export const useDashboardStore = defineStore('dashboard', {
     // ==================== MARKETING METRICS ====================
     
     /**
-     * Fetch KPI metrics for marketing dashboard
+     * Fetch KPI metrics for marketing dashboard using new APIs
      */
     async fetchMarketingMetrics(timeRange = null) {
       try {
         this.marketingMetrics.loading = true
         if (timeRange) this.timeRange = timeRange
         
-        const fromDate = this.dateRange
+        const days = this.daysFromTimeRange
         
-        // Fetch total talent pool size
-        const totalResult = await call('frappe.client.get_count', {
-          doctype: 'Mira Talent'          
-        })
-        
-        this.marketingMetrics.totalTalentPool = totalResult || 0
+        // Fetch total talent pool size (no filter)
+        const totalResult = await call('mbw_mira.api.dashboard.get_total_talents_count')
+        this.marketingMetrics.totalTalentPool = totalResult?.count || 0
         this.statistics.totalTalent = this.marketingMetrics.totalTalentPool
         
-        // Fetch new talents in time range
-        const newTalentsResult = await call('frappe.client.get_count', {
-          doctype: 'Mira Talent',
-          filters: {
-            creation: ['>=', fromDate.toISOString()]
-          }
+        // Fetch new talents in time range (filtered by creation)
+        const newTalentsResult = await call('mbw_mira.api.dashboard.get_new_talents_count', {
+          days: days
         })
-        
-        this.marketingMetrics.newTalents = newTalentsResult || 0
+        this.marketingMetrics.newTalents = newTalentsResult?.count || 0
         this.statistics.totalNewTalent = this.marketingMetrics.newTalents
         
-        // Fetch hot talents (MQL) - talents with high engagement
-        const hotTalentsResult = await call('frappe.client.get_count', {
-          doctype: 'Mira Talent',
-          filters: {
-            crm_status: ['in', ['MQL', 'HOT', 'ENGAGED']]
-          }
+        // Fetch hot talents (MQL) - talents with NURTURING campaigns and both EMAIL_OPENED + ON_LINK_CLICK
+        const hotTalentsResult = await call('mbw_mira.api.dashboard.get_nurturing_engaged_talents_count', {
+          days: days
         })
-        
-        this.marketingMetrics.hotTalents = hotTalentsResult || 0
+        this.marketingMetrics.hotTalents = hotTalentsResult?.count || 0
         this.statistics.totalTalentHot = this.marketingMetrics.hotTalents
         
-        // Fetch converted talents (SQL)
-        const convertedResult = await call('frappe.client.get_count', {
-          doctype: 'Mira Talent',
-          filters: {
-            crm_status: ['in', ['SQL', 'CONVERTED', 'QUALIFIED']],
-            modified: ['>=', fromDate.toISOString()]
-          }
+        // Fetch converted talents (SQL) - talents with RECRUITMENT campaigns (filtered by modified)
+        const convertedResult = await call('mbw_mira.api.dashboard.get_recruitment_talents_count', {
+          days: days
         })
-        
-        this.marketingMetrics.convertedTalents = convertedResult || 0
+        this.marketingMetrics.convertedTalents = convertedResult?.count || 0
         this.statistics.totalTalentConvert = this.marketingMetrics.convertedTalents
         
         // Calculate Cost Per Lead (mock calculation)

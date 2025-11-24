@@ -872,4 +872,192 @@ def get_segment_talents_requiring_update(segment_id):
         
     except Exception as e:
         frappe.log_error(f"Error in get_segment_talents_requiring_update: {str(e)}")
-        return [] 
+        return []
+
+
+@frappe.whitelist()
+def get_nurturing_engaged_talents_count(days):
+    """
+    Đếm số lượng talents có CẢ HAI loại interaction (EMAIL_OPENED VÀ ON_LINK_CLICK)
+    từ chiến dịch NURTURING, lọc theo last_interaction_date
+    
+    Args:
+        days: Số ngày tính từ hiện tại (bắt buộc, frontend sẽ truyền giá trị)
+    
+    Logic: Chỉ đếm talents có đủ CẢ HAI bản ghi interaction:
+    - Có ít nhất 1 bản ghi EMAIL_OPENED từ campaign NURTURING
+    - Có ít nhất 1 bản ghi ON_LINK_CLICK từ campaign NURTURING
+    - last_interaction_date trong khoảng thời gian được chỉ định
+    
+    Returns:
+        Dict chứa số lượng talents:
+        {
+            "count": 55   // Số talents có CẢ HAI loại interaction
+        }
+    """
+    try:
+        # Validate và tính ngày bắt đầu
+        if not days:
+            frappe.throw(_("Parameter 'days' is required"))
+        
+        days = int(days)
+        since_date = datetime.now() - timedelta(days=days)
+        
+        # Đếm số talents có CẢ HAI loại tương tác và lọc theo last_interaction_date
+        result = frappe.db.sql("""
+            SELECT COUNT(DISTINCT t1.talent_id) as count
+            FROM (
+                SELECT DISTINCT i.talent_id
+                FROM `tabMira Interaction` i
+                INNER JOIN `tabMira Campaign` c ON i.campaign_id = c.name
+                INNER JOIN `tabMira Talent` t ON i.talent_id = t.name
+                WHERE c.type = 'NURTURING'
+                AND i.interaction_type = 'EMAIL_OPENED'
+                AND i.talent_id IS NOT NULL
+                AND t.last_interaction_date >= %(since_date)s
+            ) t1
+            INNER JOIN (
+                SELECT DISTINCT i.talent_id
+                FROM `tabMira Interaction` i
+                INNER JOIN `tabMira Campaign` c ON i.campaign_id = c.name
+                INNER JOIN `tabMira Talent` t ON i.talent_id = t.name
+                WHERE c.type = 'NURTURING'
+                AND i.interaction_type = 'ON_LINK_CLICK'
+                AND i.talent_id IS NOT NULL
+                AND t.last_interaction_date >= %(since_date)s
+            ) t2 ON t1.talent_id = t2.talent_id
+        """, {"since_date": since_date.date()}, as_dict=True)
+        
+        count = result[0].count if result else 0
+        
+        return {
+            "count": count
+        }
+        
+    except Exception as e:
+        frappe.log_error(f"Error in get_nurturing_engaged_talents_count: {str(e)}")
+        return {
+            "count": 0
+        }
+
+
+@frappe.whitelist()
+def get_recruitment_talents_count(days):
+    """
+    Đếm số lượng talents có chiến dịch với type là RECRUITMENT, lọc theo modified
+    
+    Args:
+        days: Số ngày tính từ hiện tại (bắt buộc, frontend sẽ truyền giá trị)
+    
+    Logic: Đếm số talents duy nhất có bản ghi interaction từ campaign RECRUITMENT
+           và talent được cập nhật (modified) trong khoảng thời gian được chỉ định
+    
+    Returns:
+        Dict chứa số lượng talents:
+        {
+            "count": 120   // Số talents có campaign RECRUITMENT
+        }
+    """
+    try:
+        # Validate và tính ngày bắt đầu
+        if not days:
+            frappe.throw(_("Parameter 'days' is required"))
+        
+        days = int(days)
+        since_date = datetime.now() - timedelta(days=days)
+        
+        # Đếm số talents có interaction từ campaign RECRUITMENT và lọc theo modified
+        result = frappe.db.sql("""
+            SELECT COUNT(DISTINCT i.talent_id) as count
+            FROM `tabMira Interaction` i
+            INNER JOIN `tabMira Campaign` c ON i.campaign_id = c.name
+            INNER JOIN `tabMira Talent` t ON i.talent_id = t.name
+            WHERE c.type = 'RECRUITMENT'
+            AND i.talent_id IS NOT NULL
+            AND t.modified >= %(since_date)s
+        """, {"since_date": since_date}, as_dict=True)
+        
+        count = result[0].count if result else 0
+        
+        return {
+            "count": count
+        }
+        
+    except Exception as e:
+        frappe.log_error(f"Error in get_recruitment_talents_count: {str(e)}")
+        return {
+            "count": 0
+        }
+
+
+@frappe.whitelist()
+def get_new_talents_count(days):
+    """
+    Đếm tổng số lượng talents được thêm mới, lọc theo creation
+    
+    Args:
+        days: Số ngày tính từ hiện tại (bắt buộc, frontend sẽ truyền giá trị)
+    
+    Returns:
+        Dict chứa số lượng talents:
+        {
+            "count": 500   // Tổng số talents mới trong khoảng thời gian
+        }
+    """
+    try:
+        # Validate và tính ngày bắt đầu
+        if not days:
+            frappe.throw(_("Parameter 'days' is required"))
+        
+        days = int(days)
+        since_date = datetime.now() - timedelta(days=days)
+        
+        # Đếm talents được tạo trong N ngày gần đây
+        result = frappe.db.sql("""
+            SELECT COUNT(*) as count
+            FROM `tabMira Talent`
+            WHERE creation >= %(since_date)s
+        """, {"since_date": since_date}, as_dict=True)
+        
+        count = result[0].count if result else 0
+        
+        return {
+            "count": count
+        }
+        
+    except Exception as e:
+        frappe.log_error(f"Error in get_new_talents_count: {str(e)}")
+        return {
+            "count": 0
+        }
+
+
+@frappe.whitelist()
+def get_total_talents_count():
+    """
+    Đếm tổng số lượng talents (không có bộ lọc)
+    
+    Returns:
+        Dict chứa tổng số lượng talents:
+        {
+            "count": 1500   // Tổng số talents trong hệ thống
+        }
+    """
+    try:
+        # Đếm tất cả talents
+        result = frappe.db.sql("""
+            SELECT COUNT(*) as count
+            FROM `tabMira Talent`
+        """, as_dict=True)
+        
+        count = result[0].count if result else 0
+        
+        return {
+            "count": count
+        }
+        
+    except Exception as e:
+        frappe.log_error(f"Error in get_total_talents_count: {str(e)}")
+        return {
+            "count": 0
+        } 

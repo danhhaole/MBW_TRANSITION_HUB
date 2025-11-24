@@ -42,7 +42,7 @@
                 </Button>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
                 <StatCard
                     :label="__('Total Profiles')"
                     :value="marketingMetrics.totalTalentPool"
@@ -101,22 +101,6 @@
                     <template #icon>
                         <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </template>
-                </StatCard>
-
-                <StatCard
-                    :label="__('Cost/Talent')"
-                    :value="marketingMetrics.costPerLead"
-                    value-format="currency"
-                    icon-bg-class="bg-purple-50"
-                    icon-bg-hover-class="bg-purple-100"
-                    icon-color-class="text-purple-600"
-                    :meta="__('Target: $6.0')"
-                >
-                    <template #icon>
-                        <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </template>
                 </StatCard>
