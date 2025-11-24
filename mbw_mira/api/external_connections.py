@@ -1296,7 +1296,7 @@ def _create_tracking(campaign_id, source) -> str:
         "campaign_id": campaign.name if hasattr(campaign, "name") else campaign,
         "talent_id": "",
         "action": "PAGE_VISITED",
-        "url": campaign.landing_url,
+        "url": campaign.ladipage_url,
         "utm_campaign": campaign.name,
         "utm_source": source,
         "utm_medium": "social",
