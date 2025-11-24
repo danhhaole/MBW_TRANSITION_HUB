@@ -1299,8 +1299,7 @@ def _create_tracking(campaign_id, source) -> str:
         "url": campaign.ladipage_url,
         "utm_campaign": campaign.name,
         "utm_source": source,
-        "utm_medium": "social",
-        "utm_term": campaign.tags,
+        "utm_medium": "social"
     }
 
     sig = make_signature(params)
