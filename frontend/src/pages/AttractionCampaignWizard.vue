@@ -134,7 +134,10 @@ const campaignData = ref({
   selected_channels: [],
   email_content: {
     email_subject: '',
-    email_content: '',
+    email_content: '',        // Legacy field
+    block_content: '',        // EmailBuilder format
+    template_content: '',     // HTML format
+    mjml_content: '',         // MJML format
     attachments: [],
     sender_account: ''
   },

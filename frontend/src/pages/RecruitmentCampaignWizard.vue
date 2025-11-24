@@ -580,8 +580,13 @@ const loadCampaignData = async (campaignId) => {
         // Step 2: Content & Channels (will be loaded from social posts)
         selected_channels: [],
         email_content: {
-          subject: '',
-          body: '',
+          email_subject: '',
+          email_content: '',        // Legacy field
+          block_content: '',        // EmailBuilder format
+          template_content: '',     // HTML format
+          mjml_content: '',         // MJML format
+          attachments: [],
+          sender_account: null,
           schedule_time: null
         },
         facebook_content: {
@@ -652,19 +657,19 @@ const loadSocialPosts = async (campaignId) => {
     // Map posts back to campaign data
     for (const post of posts) {
       if (post.platform === 'Email') {
-        try {
-          const content = JSON.parse(post.template_content || '{}')
-          campaignData.value.email_content = {
-            subject: content.subject || '',
-            body: content.body || '',
-            schedule_time: post.post_schedule_time || null
-          }
-          if (!campaignData.value.selected_channels?.includes('email')) {
-            campaignData.value.selected_channels = campaignData.value.selected_channels || []
-            campaignData.value.selected_channels.push('email')
-          }
-        } catch (e) {
-          console.error('❌ Error parsing email content:', e)
+        campaignData.value.email_content = {
+          email_subject: post.subject || '',
+          email_content: post.template_content || '',     // HTML format
+          block_content: post.block_content || '',        // EmailBuilder format (primary for editing)
+          template_content: post.template_content || '',  // HTML format
+          mjml_content: post.mjml_content || '',          // MJML format
+          attachments: [],
+          sender_account: post.sender_account || null,
+          schedule_time: post.post_schedule_time || null
+        }
+        if (!campaignData.value.selected_channels?.includes('email')) {
+          campaignData.value.selected_channels = campaignData.value.selected_channels || []
+          campaignData.value.selected_channels.push('email')
         }
       } else if (post.platform === 'Facebook') {
         campaignData.value.facebook_content = {
@@ -728,10 +733,11 @@ const saveSocialPosts = async () => {
       
       socialPosts.push({
         platform: 'Email',
-        template_content: JSON.stringify({
-          subject: emailContent.subject,
-          body: emailContent.body
-        }),
+        subject: emailContent.email_subject || '',
+        template_content: emailContent.template_content || emailContent.email_content || '',  // HTML format
+        block_content: emailContent.block_content || '',        // EmailBuilder format
+        mjml_content: emailContent.mjml_content || '',          // MJML format
+        sender_account: emailContent.sender_account || null,
         status: 'Pending',
         post_schedule_time: emailContent.schedule_time || null
       })
@@ -812,8 +818,13 @@ const resetCampaignData = () => {
     // Step 2: Content & Channels
     selected_channels: [],
     email_content: {
-      subject: '',
-      body: '',
+      email_subject: '',
+      email_content: '',        // Legacy field
+      block_content: '',        // EmailBuilder format
+      template_content: '',     // HTML format
+      mjml_content: '',         // MJML format
+      attachments: [],
+      sender_account: null,
       schedule_time: null
     },
     facebook_content: {

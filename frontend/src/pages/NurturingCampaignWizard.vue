@@ -195,8 +195,21 @@ const canProceed = computed(() => {
       // Validate content based on channel
       let hasContent = false
       if (trigger.channel === 'email') {
-        // Email: must have subject and content
-        hasContent = !!(trigger.content?.email_subject?.trim() && trigger.content?.email_content?.trim())
+        // Email: must have subject and content (check multiple content formats)
+        const hasSubject = !!(trigger.content?.email_subject?.trim())
+        const hasEmailContent = !!(
+          trigger.content?.block_content?.trim() ||      // EmailBuilder format (primary)
+          trigger.content?.template_content?.trim() ||   // HTML format
+          trigger.content?.email_content?.trim()         // Legacy format
+        )
+        hasContent = hasSubject && hasEmailContent
+        
+        console.log('📧 [Validation] Email trigger validation:', {
+          hasSubject,
+          hasEmailContent,
+          hasContent,
+          content: trigger.content
+        })
       } else if (trigger.channel === 'zalo') {
         // Zalo: must have at least one block with content
         if (trigger.content?.blocks && Array.isArray(trigger.content.blocks)) {

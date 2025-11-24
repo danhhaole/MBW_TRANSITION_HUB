@@ -148,6 +148,7 @@
                 </div>
               </div>
 
+
               <!-- Card Body (Expandable) -->
               <div v-if="trigger.expanded" class="p-4 space-y-4">
                 <!-- Timing Configuration - Only for first message -->
@@ -450,7 +451,10 @@ const addTrigger = (channel = 'email') => {
   if (channel === 'email') {
     content = {
       email_subject: '',
-      email_content: '',
+      email_content: '',        // Legacy field
+      block_content: '',        // EmailBuilder format
+      template_content: '',     // HTML format
+      mjml_content: '',         // MJML format
       attachments: []
     }
   } else if (channel === 'zalo') {
@@ -499,7 +503,97 @@ const toggleExpand = (index) => {
 
 // Update trigger content
 const updateTriggerContent = (index, content) => {
+  console.log('🔄 [Step2] Updating trigger content:', { index, content })
   localTriggers.value[index].content = content
+  
+  // Debug: Log the updated trigger
+  console.log('✅ [Step2] Updated trigger:', localTriggers.value[index])
+  
+  // Emit updated triggers to parent
+  emit('update:triggers', localTriggers.value)
+}
+
+// Get content preview for email
+const getContentPreview = (content) => {
+  if (!content) return ''
+  
+  // Try block_content first (EmailBuilder format)
+  if (content.block_content) {
+    try {
+      const design = JSON.parse(content.block_content)
+      if (design.blocks && Array.isArray(design.blocks)) {
+        let previewText = ''
+        design.blocks.forEach(block => {
+          if (block.type === 'text' && block.props?.content) {
+            // Strip HTML tags for preview
+            const div = document.createElement('div')
+            div.innerHTML = block.props.content
+            previewText += div.textContent + ' '
+          }
+        })
+        return previewText.trim().substring(0, 100) + (previewText.length > 100 ? '...' : '')
+      }
+    } catch (e) {
+      console.warn('Failed to parse block_content:', e)
+    }
+  }
+  
+  // Fallback to template_content (HTML)
+  if (content.template_content) {
+    const div = document.createElement('div')
+    div.innerHTML = content.template_content
+    const text = div.textContent || div.innerText || ''
+    return text.trim().substring(0, 100) + (text.length > 100 ? '...' : '')
+  }
+  
+  // Fallback to email_content (legacy)
+  if (content.email_content) {
+    if (typeof content.email_content === 'string' && content.email_content.startsWith('{')) {
+      // Try to parse as JSON
+      try {
+        const design = JSON.parse(content.email_content)
+        if (design.blocks) {
+          return getContentPreview({ block_content: content.email_content })
+        }
+      } catch (e) {
+        // Treat as HTML
+        const div = document.createElement('div')
+        div.innerHTML = content.email_content
+        const text = div.textContent || div.innerText || ''
+        return text.trim().substring(0, 100) + (text.length > 100 ? '...' : '')
+      }
+    } else {
+      // Treat as HTML
+      const div = document.createElement('div')
+      div.innerHTML = content.email_content
+      const text = div.textContent || div.innerText || ''
+      return text.trim().substring(0, 100) + (text.length > 100 ? '...' : '')
+    }
+  }
+  
+  return ''
+}
+
+// Get content preview for Zalo
+const getZaloPreview = (content) => {
+  if (!content) return ''
+  
+  if (content.blocks && Array.isArray(content.blocks)) {
+    let previewText = ''
+    content.blocks.forEach(block => {
+      if (block.type === 'text' && block.text_content) {
+        previewText += block.text_content + ' '
+      }
+    })
+    return previewText.trim().substring(0, 100) + (previewText.length > 100 ? '...' : '')
+  }
+  
+  // Fallback to simple message
+  if (content.message) {
+    return content.message.substring(0, 100) + (content.message.length > 100 ? '...' : '')
+  }
+  
+  return ''
 }
 
 // Open delay editor

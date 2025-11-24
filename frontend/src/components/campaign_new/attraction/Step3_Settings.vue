@@ -774,10 +774,13 @@ const editAction = (triggerIndex, actionIndex) => {
       break
       
     case 'EMAIL':
-      // Ensure email fields are available: email_subject, email_content, attachments, sender_account
+      // Ensure email fields are available: email_subject, block_content, template_content, mjml_content, attachments, sender_account
       console.log('📧 Email action:', { 
         email_subject: action.email_subject,
-        email_content: action.email_content,
+        email_content: action.email_content,        // Legacy field
+        block_content: action.block_content,        // EmailBuilder format (primary for editing)
+        template_content: action.template_content,  // HTML format
+        mjml_content: action.mjml_content,          // MJML format
         attachments: action.attachments,
         sender_account: action.sender_account
       })

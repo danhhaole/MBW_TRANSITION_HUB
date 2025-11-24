@@ -17,7 +17,10 @@ const props = defineProps({
     type: Object,
     default: () => ({
       email_subject: '',
-      email_content: '',
+      email_content: '',        // Legacy field
+      block_content: '',        // EmailBuilder format
+      template_content: '',     // HTML format
+      mjml_content: '',         // MJML format
       attachments: [],
       sender_account: null
     })
@@ -32,7 +35,10 @@ const emit = defineEmits(['update:content'])
 
 const localContent = ref({
   email_subject: '',
-  email_content: '',
+  email_content: '',        // Legacy field
+  block_content: '',        // EmailBuilder format
+  template_content: '',     // HTML format
+  mjml_content: '',         // MJML format
   attachments: [],
   sender_account: null,
   ...props.content
@@ -45,7 +51,11 @@ const handleContentUpdate = (content) => {
   if (isUpdatingFromProps.value) {
     return
   }
+  
+  console.log('📧 [EmailContentEditor] Received content update:', content)
   localContent.value = { ...localContent.value, ...content }
+  console.log('📧 [EmailContentEditor] Emitting updated content:', localContent.value)
+  
   emit('update:content', localContent.value)
 }
 

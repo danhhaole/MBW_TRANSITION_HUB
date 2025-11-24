@@ -263,6 +263,8 @@ def get_nurturing_campaign_triggers(campaign_id):
                 "post_schedule_time",
                 "subject",
                 "template_content",
+                "block_content",
+                "mjml_content",
                 "post_file",
                 "social_media_images",
                 "social_page_id",
@@ -318,11 +320,28 @@ def get_nurturing_campaign_triggers(campaign_id):
             # Prepare content based on channel
             content = {}
             if channel == "email":
-                content = {
+                # Prepare email content for editing
+                email_content_data = {
                     "email_subject": post.subject or "",
-                    "email_content": post.template_content or "",
                     "attachments": post.get("attachments", [])
                 }
+                
+                # Prioritize block_content for editing, fallback to template_content
+                if post.block_content:
+                    # Use EmailBuilder blocks format for editing
+                    email_content_data["email_content"] = post.block_content
+                    email_content_data["block_content"] = post.block_content
+                else:
+                    # Fallback to template_content (HTML)
+                    email_content_data["email_content"] = post.template_content or ""
+                
+                # Include other formats if available
+                if post.template_content:
+                    email_content_data["template_content"] = post.template_content
+                if post.mjml_content:
+                    email_content_data["mjml_content"] = post.mjml_content
+                
+                content = email_content_data
             elif channel == "zalo":
                 # Try to parse as JSON (blocks structure)
                 try:
@@ -576,7 +595,22 @@ def save_nurturing_campaign_triggers(campaign_id, triggers):
             if channel == "email":
                 # Email: subject + content + attachments
                 post_data["subject"] = content.get("email_subject", "")
-                post_data["template_content"] = content.get("email_content", "")
+                
+                # Handle different content formats for email
+                if content.get("template_content"):
+                    # HTML format for rendering
+                    post_data["template_content"] = content.get("template_content", "")
+                else:
+                    # Fallback to email_content (could be HTML or EmailBuilder JSON)
+                    post_data["template_content"] = content.get("email_content", "")
+                
+                # MJML content for email services (if available)
+                if content.get("mjml_content"):
+                    post_data["mjml_content"] = content.get("mjml_content", "")
+                
+                # EmailBuilder blocks content for editing (if available)
+                if content.get("block_content"):
+                    post_data["block_content"] = content.get("block_content", "")
                 
                 # Handle attachments - will be added to child table after doc creation
                 # Store temporarily in post_data for later processing

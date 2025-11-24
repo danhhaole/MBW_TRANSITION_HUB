@@ -23,7 +23,9 @@
   "retry_count",
   "error_message",
   "response_data",
-  "is_active"
+  "is_active",
+  "mjml_content",
+  "block_content"
  ],
  "fields": [
   {
@@ -123,11 +125,21 @@
    "fieldname": "executed_at",
    "fieldtype": "Datetime",
    "label": "Executed At"
+  },
+  {
+   "fieldname": "mjml_content",
+   "fieldtype": "Long Text",
+   "label": "Mjml Content"
+  },
+  {
+   "fieldname": "block_content",
+   "fieldtype": "Long Text",
+   "label": "Block Content"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-19 16:37:25.766340",
+ "modified": "2025-11-24 09:58:04.827609",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Campaign Social",

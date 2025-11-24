@@ -898,6 +898,7 @@ import ZaloContentEditor from './ZaloContentEditor.vue'
 import MessengerContentEditor from './MessengerContentEditor.vue'
 import EmailContentEditor from './EmailContentEditor.vue'
 import { allActionTypes, actionIcons, actionDescriptions } from '../../../config/campaigns/commonConfig'
+import { convertEmailBuilderToHtml } from '@/utils/emailBuilderConverter.js'
 
 const props = defineProps({
   show: {
@@ -972,18 +973,33 @@ const selectedTag = computed(() => {
 // Email content object for EmailContentEditor
 const emailContent = computed(() => ({
   email_subject: localAction.value.email_subject || '',
-  email_content: localAction.value.email_content || localAction.value.content || '',
+  email_content: localAction.value.email_content || localAction.value.content || '',  // Legacy field
+  block_content: localAction.value.block_content || '',        // EmailBuilder format
+  template_content: localAction.value.template_content || '',  // HTML format
+  mjml_content: localAction.value.mjml_content || '',          // MJML format
   attachments: localAction.value.attachments || [],
   sender_account: localAction.value.sender_account || null
 }))
 
 // Handle email content update from EmailContentEditor
 const handleEmailContentUpdate = (content) => {
-  console.log('📧 Email content updated:', content)
+  console.log('📧 [ActionEditor] Email content updated:', content)
+  
+  // Save all content formats
   localAction.value.email_subject = content.email_subject
-  localAction.value.email_content = content.email_content
+  localAction.value.email_content = content.email_content        // Legacy field
+  localAction.value.block_content = content.block_content        // EmailBuilder format
+  localAction.value.template_content = content.template_content  // HTML format
+  localAction.value.mjml_content = content.mjml_content          // MJML format
   localAction.value.attachments = content.attachments
   localAction.value.sender_account = content.sender_account
+  
+  console.log('📧 [ActionEditor] Updated action fields:', {
+    email_subject: localAction.value.email_subject,
+    block_content: localAction.value.block_content?.substring(0, 100) + '...',
+    template_content: localAction.value.template_content?.substring(0, 100) + '...',
+    mjml_content: localAction.value.mjml_content?.substring(0, 100) + '...'
+  })
 }
 
 // Computed talent field options for Autocomplete
@@ -1415,9 +1431,26 @@ const save = () => {
   switch (localAction.value.action_type) {
     case 'EMAIL':
       actionParams.email_subject = localAction.value.email_subject
-      actionParams.email_content = localAction.value.email_content
+      actionParams.block_content = localAction.value.block_content        // EmailBuilder format
+      actionParams.template_content = localAction.value.template_content  // HTML format
+      actionParams.mjml_content = localAction.value.mjml_content          // MJML format
       actionParams.attachments = localAction.value.attachments || []
       actionParams.sender_account = localAction.value.sender_account || null
+      
+      // Convert block_content to HTML for email_content (for backward compatibility and email sending)
+      if (localAction.value.block_content) {
+        try {
+          const design = JSON.parse(localAction.value.block_content)
+          const htmlFormat = convertEmailBuilderToHtml(design)
+          actionParams.email_content = htmlFormat.html  // Converted HTML
+          console.log('📧 [ActionEditor] Converted block_content to HTML for email_content')
+        } catch (e) {
+          console.warn('Failed to convert block_content to HTML:', e)
+          actionParams.email_content = localAction.value.email_content || ''  // Fallback
+        }
+      } else {
+        actionParams.email_content = localAction.value.email_content || ''  // Legacy field
+      }
       break
     case 'MESSAGE':
       actionParams.channel = localAction.value.channel_type

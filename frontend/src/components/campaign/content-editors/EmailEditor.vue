@@ -43,7 +43,7 @@
             <div class="text-center">
               <FeatherIcon name="edit-3" class="h-8 w-8 text-gray-400 mx-auto mb-2" />
               <p class="text-gray-600 font-medium">
-                {{ localContent.email_content ? __("Edit Email Template") : __("Create Email Template") }}
+                {{ hasAnyContent ? __("Edit Email Template") : __("Create Email Template") }}
               </p>
               <p class="text-xs text-gray-500 mt-1">
                 {{ __("Click to open email template editor") }}
@@ -52,11 +52,11 @@
           </div>
           
           <!-- Content Preview -->
-          <div v-if="localContent.email_content" class="mt-4 p-3 bg-white rounded border">
+          <div v-if="hasAnyContent" class="mt-4 p-3 bg-white rounded border">
             <div class="text-xs text-gray-500 mb-2">{{ __("Preview:") }}</div>
             <div 
               class="prose prose-sm max-w-none text-gray-700 line-clamp-3 overflow-hidden"
-              v-html="getPreviewContent(localContent.email_content)"
+              v-html="getPreviewContent(getContentForPreview())"
             >
             </div>
           </div>
@@ -241,6 +241,12 @@ import { useToast } from '../../../composables/useToast'
 import EmailTemplateSelectorModal from '@/components/Modals/EmailTemplateSelectorModal.vue'
 import { showSettings, activeSettingsPage } from '@/composables/settings'
 import EmailBuilder from '@/components/Settings/MiraEmailTemplate/EmailBuilder/EmailBuilder.vue'
+import { 
+  convertEmailBuilderToHtml, 
+  convertHtmlToEmailBuilder, 
+  isEmailBuilderFormat, 
+  isHtmlFormat 
+} from '@/utils/emailBuilderConverter.js'
 // OLD IMPORT - COMMENTED OUT
 // import UnlayerEmailEditor from '@/components/Settings/MiraEmailTemplate/UnlayerEmailEditor.vue'
 
@@ -253,7 +259,10 @@ const emit = defineEmits(['update:content', 'save', 'preview'])
 
 const localContent = ref({
   email_subject: '',
-  email_content: '',
+  email_content: '',        // Legacy field (for backward compatibility)
+  block_content: '',        // EmailBuilder format for editing
+  template_content: '',     // HTML format for campaign storage/rendering
+  mjml_content: '',         // MJML format for email services
   attachments: [],
   ...props.content
 })
@@ -270,6 +279,23 @@ const editorLoading = ref(false)
 const toast = useToast()
 
 const __ = (text) => text
+
+// Check if there's any content to preview
+const hasAnyContent = computed(() => {
+  return !!(
+    localContent.value.block_content?.trim() ||
+    localContent.value.template_content?.trim() ||
+    localContent.value.email_content?.trim()
+  )
+})
+
+// Get content for preview (prioritize block_content)
+const getContentForPreview = () => {
+  return localContent.value.block_content || 
+         localContent.value.template_content || 
+         localContent.value.email_content || 
+         ''
+}
 
 // Talent & Campaign fields for insertion - grouped
 const talentFieldsGrouped = [
@@ -345,30 +371,44 @@ const openTemplateEditor = () => {
   
   editorLoading.value = true
   
-  // Load existing design if available
-  if (localContent.value.email_content) {
+  // Load existing design if available - prioritize block_content
+  const contentToLoad = localContent.value.block_content || localContent.value.email_content
+  
+  if (contentToLoad) {
     try {
-      // Parse if it's JSON string, otherwise use as is
-      const design = typeof localContent.value.email_content === 'string' 
-        ? JSON.parse(localContent.value.email_content)
-        : localContent.value.email_content
-      
-      // NEW: Check for EmailBuilder format first
-      if (design && design.blocks && Array.isArray(design.blocks)) {
-        dialogContent.value = design
-        console.log('Loading EmailBuilder format:', design)
+      // Check if it's JSON format first
+      if (typeof contentToLoad === 'string' && contentToLoad.trim().startsWith('{')) {
+        const design = JSON.parse(contentToLoad)
+        
+        // NEW: Check for EmailBuilder format first
+        if (design && design.blocks && Array.isArray(design.blocks)) {
+          dialogContent.value = design
+          console.log('Loading EmailBuilder format:', design)
+        }
+        // OLD: Validate it's a proper Unlayer design (backward compatibility)
+        else if (design && design.body && Array.isArray(design.body.rows)) {
+          dialogContent.value = design
+          console.log('Loading Unlayer format (legacy):', design)
+          toast.info(__('Loading legacy email format. Consider recreating with new editor.'))
+        } else {
+          console.warn('Email content is not valid JSON format, starting with empty canvas')
+          dialogContent.value = null
+        }
       }
-      // OLD: Validate it's a proper Unlayer design (backward compatibility)
-      else if (design && design.body && Array.isArray(design.body.rows)) {
-        dialogContent.value = design
-        console.log('Loading Unlayer format (legacy):', design)
-        toast.info(__('Loading legacy email format. Consider recreating with new editor.'))
-      } else {
-        console.warn('Email content is not valid format, starting with empty canvas')
+      // Handle HTML format - convert to EmailBuilder
+      else if (isHtmlFormat(contentToLoad)) {
+        console.log('Converting HTML to EmailBuilder format')
+        const converted = convertHtmlToEmailBuilder(contentToLoad)
+        dialogContent.value = converted
+        toast.info(__('Converted HTML content to visual editor format'))
+      }
+      // Handle plain text or other formats
+      else {
+        console.warn('Unknown content format, starting with empty canvas')
         dialogContent.value = null
       }
     } catch (e) {
-      console.warn('Failed to parse email_content as JSON, starting with empty canvas:', e)
+      console.warn('Failed to parse email_content, starting with empty canvas:', e)
       dialogContent.value = null
       toast.info(__('Starting with blank canvas. Previous content was in old format.'))
     }
@@ -391,14 +431,24 @@ const saveTemplate = async () => {
     const exportData = emailBuilderEditor.value.exportHtml()
     const blocks = emailBuilderEditor.value.getBlocks()
     
-    // Create EmailBuilder format
-    const design = { 
+    // Create EmailBuilder format for internal use
+    const emailBuilderFormat = { 
       blocks, 
       emailSettings: exportData.emailSettings 
     }
     
-    // Save as JSON string for backend
-    localContent.value.email_content = JSON.stringify(design)
+    // Convert to HTML/CSS for storage in campaign template_content
+    const htmlFormat = convertEmailBuilderToHtml(emailBuilderFormat)
+    
+    // Save all formats for different use cases
+    localContent.value.template_content = htmlFormat.html    // HTML for rendering
+    localContent.value.mjml_content = htmlFormat.mjml        // MJML for email services
+    localContent.value.block_content = JSON.stringify(emailBuilderFormat)  // EmailBuilder for editing
+    
+    console.log('💾 Saved formats:')
+    console.log('   template_content (HTML):', htmlFormat.html.substring(0, 100) + '...')
+    console.log('   mjml_content (MJML):', htmlFormat.mjml.substring(0, 100) + '...')
+    console.log('   block_content (EmailBuilder):', JSON.stringify(emailBuilderFormat).substring(0, 100) + '...')
     
     showTemplateDialog.value = false
     toast.success(__('Email template saved successfully'))
@@ -445,18 +495,31 @@ const applyTemplate = (template) => {
       
       // NEW: Check for EmailBuilder format first
       if (design && design.blocks && Array.isArray(design.blocks)) {
-        localContent.value.email_content = JSON.stringify(design)
+        // Convert and save all formats
+        const htmlFormat = convertEmailBuilderToHtml(design)
+        localContent.value.template_content = htmlFormat.html    // HTML for rendering
+        localContent.value.mjml_content = htmlFormat.mjml        // MJML for email services
+        localContent.value.block_content = JSON.stringify(design)  // EmailBuilder for editing
+        
         dialogContent.value = design
         templateApplied = true
         console.log('Applied EmailBuilder template:', design)
       }
       // OLD: Validate it's a proper Unlayer design (must have body.rows)
       else if (design && design.body && Array.isArray(design.body.rows)) {
-        localContent.value.email_content = JSON.stringify(design)
-        dialogContent.value = design
+        // Convert Unlayer to EmailBuilder format
+        const converted = convertHtmlToEmailBuilder(design.body?.rows?.[0]?.columns?.[0]?.contents?.[0]?.values?.text || '')
+        
+        // Convert and save all formats
+        const htmlFormat = convertEmailBuilderToHtml(converted)
+        localContent.value.template_content = htmlFormat.html    // HTML for rendering
+        localContent.value.mjml_content = htmlFormat.mjml        // MJML for email services
+        localContent.value.block_content = JSON.stringify(converted)  // EmailBuilder for editing
+        
+        dialogContent.value = converted
         templateApplied = true
-        console.log('Applied Unlayer template (legacy):', design)
-        toast.info(__('Applied legacy template format. Consider updating template.'))
+        console.log('Applied and converted Unlayer template (legacy):', design)
+        toast.info(__('Applied legacy template format. Converted to new format.'))
       } else {
         console.warn('Template is not valid EmailBuilder or Unlayer format')
       }

@@ -896,6 +896,34 @@ const resetNewConfigForm = () => {
   }
 }
 
+// Auto-save config if user has entered data but hasn't clicked Add Configuration or Save Changes
+const autoSaveConfigIfNeeded = async () => {
+  if (!canAddConfig.value) {
+    return false // No valid data to save
+  }
+  
+  // Case 1: User is adding new config but hasn't clicked "Add Configuration"
+  if (editingIndex.value < 0) {
+    console.log('🔄 Auto-saving new config before submit...')
+    await addConfig()
+    return true
+  }
+  
+  // Case 2: User is editing existing config but hasn't clicked "Save Changes"
+  if (editingIndex.value >= 0) {
+    console.log('🔄 Auto-saving edited config before submit...')
+    await updateConfig()
+    return true
+  }
+  
+  return false // No config was auto-saved
+}
+
+// Expose the auto-save function to parent component
+defineExpose({
+  autoSaveConfigIfNeeded
+})
+
 // Watch configs and emit changes
 watch(configs, (newConfigs, oldConfigs) => {
   // Prevent infinite loop by checking if configs actually changed

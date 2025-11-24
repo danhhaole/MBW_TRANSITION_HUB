@@ -8,6 +8,14 @@
           <span class="text-xs text-gray-500">{{ blocks.length }} blocks</span>
         </div>
         <div class="flex items-center gap-2">
+          <!-- Import HTML Button -->
+          <!-- <Button
+            label="Import HTML"
+            icon="upload"
+            variant="outline"
+            size="sm"
+            @click="showImportDialog = true"
+          /> -->
           <!-- Email Settings Button -->
           <Button
             label="Email Settings"
@@ -95,12 +103,79 @@
       </div>
     </div>
 
+    <!-- Import HTML Dialog -->
+    <Dialog
+      v-model="showImportDialog"
+      :options="{
+        title: 'Import HTML',
+        size: '4xl'
+      }"
+    >
+      <template #body-content>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              HTML Content
+            </label>
+            <textarea
+              v-model="importHtmlContent"
+              class="w-full h-64 p-3 border border-gray-300 rounded-lg font-mono text-sm"
+              placeholder="Paste your HTML content here..."
+            ></textarea>
+          </div>
+          
+          <!-- Example Button -->
+          <div class="flex items-center justify-between">
+            <Button
+              label="Load Example"
+              icon="file-text"
+              variant="outline"
+              size="sm"
+              @click="loadExampleHtml"
+            />
+            <div class="text-xs text-gray-500">
+              Tip: Paste HTML from any email template or webpage
+            </div>
+          </div>
+          
+          <!-- Preview of converted blocks -->
+          <div v-if="previewBlocks.length > 0" class="border-t pt-4">
+            <h4 class="text-sm font-medium text-gray-700 mb-2">
+              Preview ({{ previewBlocks.length }} blocks will be created)
+            </h4>
+            <div class="max-h-32 overflow-y-auto bg-gray-50 p-2 rounded text-xs">
+              <div v-for="(block, index) in previewBlocks" :key="index" class="mb-1">
+                <span class="font-medium">{{ block.type }}:</span>
+                <span class="text-gray-600 ml-1">{{ getBlockPreview(block) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+      
+      <template #actions>
+        <div class="flex items-center justify-end gap-2">
+          <Button
+            label="Cancel"
+            variant="outline"
+            @click="cancelImport"
+          />
+          <Button
+            label="Convert & Import"
+            variant="solid"
+            :disabled="!importHtmlContent.trim()"
+            @click="importHtml"
+          />
+        </div>
+      </template>
+    </Dialog>
+
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
-import { Button, FeatherIcon } from 'frappe-ui'
+import { Button, FeatherIcon, Dialog } from 'frappe-ui'
 import Sortable from 'sortablejs'
 import Sidebar from './Sidebar.vue'
 import Canvas from './Canvas.vue'
@@ -149,6 +224,11 @@ const emailSettings = ref({
   contentAlign: 'center',
   fontFamily: 'Arial, sans-serif'
 })
+
+// Import HTML state
+const showImportDialog = ref(false)
+const importHtmlContent = ref('')
+const previewBlocks = ref([])
 
 // Device configurations
 const devices = [
@@ -563,6 +643,322 @@ function toggleEmailSettings() {
   if (showEmailSettings.value) {
     selectedBlockIndex.value = null
     selectedNestedBlock.value = null
+  }
+}
+
+// Import HTML methods
+function convertHtmlToBlocks(html) {
+  const blocks = []
+  
+  // Create a temporary DOM element to parse HTML
+  const tempDiv = document.createElement('div')
+  tempDiv.innerHTML = html.trim()
+  
+  // Check if this is a full HTML document
+  let elementsToProcess = []
+  
+  // Look for html/body structure
+  const htmlElement = tempDiv.querySelector('html')
+  const bodyElement = tempDiv.querySelector('body')
+  
+  if (htmlElement && bodyElement) {
+    // Full HTML document - extract from body
+    elementsToProcess = Array.from(bodyElement.children)
+    console.log('📄 Processing full HTML document with body content')
+  } else if (bodyElement) {
+    // Just body tag
+    elementsToProcess = Array.from(bodyElement.children)
+    console.log('📄 Processing HTML body content')
+  } else {
+    // Fragment or simple HTML
+    elementsToProcess = Array.from(tempDiv.children)
+    console.log('📄 Processing HTML fragment')
+  }
+  
+  // Process each element
+  const elements = elementsToProcess
+  
+  for (const element of elements) {
+    const tagName = element.tagName.toLowerCase()
+    
+    if (tagName === 'h1' || tagName === 'h2' || tagName === 'h3' || tagName === 'h4' || tagName === 'h5' || tagName === 'h6') {
+      // Heading block
+      blocks.push({
+        id: Date.now() + Math.random(),
+        type: 'heading',
+        props: {
+          content: element.innerHTML,
+          level: parseInt(tagName.charAt(1)),
+          align: getTextAlign(element),
+          color: getTextColor(element),
+          fontSize: getFontSize(element) || (tagName === 'h1' ? '32px' : tagName === 'h2' ? '28px' : '24px')
+        }
+      })
+    } else if (tagName === 'p') {
+      // Text block
+      blocks.push({
+        id: Date.now() + Math.random(),
+        type: 'text',
+        props: {
+          content: element.innerHTML,
+          align: getTextAlign(element),
+          color: getTextColor(element),
+          fontSize: getFontSize(element) || '16px'
+        }
+      })
+    } else if (tagName === 'img') {
+      // Image block
+      blocks.push({
+        id: Date.now() + Math.random(),
+        type: 'image',
+        props: {
+          src: element.src || element.getAttribute('src') || '',
+          alt: element.alt || '',
+          width: element.width || 'auto',
+          height: element.height || 'auto',
+          align: getTextAlign(element.parentElement) || 'center'
+        }
+      })
+    } else if (tagName === 'a') {
+      // Button block (if it looks like a button)
+      const isButton = element.style.backgroundColor || 
+                      element.style.padding || 
+                      element.className.includes('btn') ||
+                      element.className.includes('button')
+      
+      if (isButton) {
+        blocks.push({
+          id: Date.now() + Math.random(),
+          type: 'button',
+          props: {
+            text: element.textContent.trim(),
+            url: element.href || '',
+            align: getTextAlign(element.parentElement) || 'center',
+            backgroundColor: getBackgroundColor(element) || '#007bff',
+            textColor: getTextColor(element) || '#ffffff',
+            borderRadius: '4px',
+            padding: '12px 24px'
+          }
+        })
+      } else {
+        // Regular text with link
+        blocks.push({
+          id: Date.now() + Math.random(),
+          type: 'text',
+          props: {
+            content: `<a href="${element.href || ''}">${element.innerHTML}</a>`,
+            align: getTextAlign(element.parentElement),
+            color: getTextColor(element),
+            fontSize: getFontSize(element) || '16px'
+          }
+        })
+      }
+    } else if (tagName === 'div' || tagName === 'section') {
+      // Process div/section content recursively
+      const innerHtml = element.innerHTML
+      if (innerHtml.trim()) {
+        const innerBlocks = convertHtmlToBlocks(innerHtml)
+        blocks.push(...innerBlocks)
+      }
+    } else {
+      // Generic text block for other elements
+      const textContent = element.textContent.trim()
+      if (textContent) {
+        blocks.push({
+          id: Date.now() + Math.random(),
+          type: 'text',
+          props: {
+            content: element.innerHTML,
+            align: getTextAlign(element),
+            color: getTextColor(element),
+            fontSize: getFontSize(element) || '16px'
+          }
+        })
+      }
+    }
+  }
+  
+  return blocks
+}
+
+// Helper functions to extract styles
+function getTextAlign(element) {
+  if (!element) return 'left'
+  
+  // Try inline style first, then computed style, then align attribute
+  let align = element.style.textAlign
+  
+  if (!align) {
+    try {
+      // Create temporary element to get computed styles if element is not in DOM
+      const temp = document.createElement('div')
+      temp.innerHTML = element.outerHTML
+      document.body.appendChild(temp)
+      const tempElement = temp.firstChild
+      align = getComputedStyle(tempElement).textAlign
+      document.body.removeChild(temp)
+    } catch (e) {
+      // Fallback to checking parent or attribute
+      align = element.getAttribute('align')
+    }
+  }
+  
+  return ['left', 'center', 'right', 'justify'].includes(align) ? align : 'left'
+}
+
+function getTextColor(element) {
+  if (!element) return '#000000'
+  
+  let color = element.style.color
+  
+  if (!color || color === 'inherit') {
+    try {
+      const temp = document.createElement('div')
+      temp.innerHTML = element.outerHTML
+      document.body.appendChild(temp)
+      const tempElement = temp.firstChild
+      color = getComputedStyle(tempElement).color
+      document.body.removeChild(temp)
+    } catch (e) {
+      color = '#000000'
+    }
+  }
+  
+  return convertColorToHex(color) || '#000000'
+}
+
+function getBackgroundColor(element) {
+  if (!element) return null
+  
+  let bgColor = element.style.backgroundColor
+  
+  if (!bgColor || bgColor === 'transparent' || bgColor === 'inherit') {
+    try {
+      const temp = document.createElement('div')
+      temp.innerHTML = element.outerHTML
+      document.body.appendChild(temp)
+      const tempElement = temp.firstChild
+      bgColor = getComputedStyle(tempElement).backgroundColor
+      document.body.removeChild(temp)
+    } catch (e) {
+      return null
+    }
+  }
+  
+  return bgColor !== 'rgba(0, 0, 0, 0)' && bgColor !== 'transparent' ? convertColorToHex(bgColor) : null
+}
+
+function getFontSize(element) {
+  if (!element) return null
+  
+  let fontSize = element.style.fontSize
+  
+  if (!fontSize) {
+    try {
+      const temp = document.createElement('div')
+      temp.innerHTML = element.outerHTML
+      document.body.appendChild(temp)
+      const tempElement = temp.firstChild
+      fontSize = getComputedStyle(tempElement).fontSize
+      document.body.removeChild(temp)
+    } catch (e) {
+      return null
+    }
+  }
+  
+  return fontSize || null
+}
+
+// Convert various color formats to hex
+function convertColorToHex(color) {
+  if (!color) return null
+  
+  // Already hex
+  if (color.startsWith('#')) return color
+  
+  // RGB/RGBA to hex
+  if (color.startsWith('rgb')) {
+    const values = color.match(/\d+/g)
+    if (values && values.length >= 3) {
+      const r = parseInt(values[0]).toString(16).padStart(2, '0')
+      const g = parseInt(values[1]).toString(16).padStart(2, '0')
+      const b = parseInt(values[2]).toString(16).padStart(2, '0')
+      return `#${r}${g}${b}`
+    }
+  }
+  
+  // Named colors to hex (basic ones)
+  const namedColors = {
+    'black': '#000000', 'white': '#ffffff', 'red': '#ff0000',
+    'green': '#008000', 'blue': '#0000ff', 'yellow': '#ffff00',
+    'cyan': '#00ffff', 'magenta': '#ff00ff', 'silver': '#c0c0c0',
+    'gray': '#808080', 'maroon': '#800000', 'olive': '#808000',
+    'lime': '#00ff00', 'aqua': '#00ffff', 'teal': '#008080',
+    'navy': '#000080', 'fuchsia': '#ff00ff', 'purple': '#800080'
+  }
+  
+  return namedColors[color.toLowerCase()] || color
+}
+
+function getBlockPreview(block) {
+  switch (block.type) {
+    case 'text':
+    case 'heading':
+      const div = document.createElement('div')
+      div.innerHTML = block.props.content
+      return div.textContent.substring(0, 50) + '...'
+    case 'image':
+      return block.props.alt || block.props.src.substring(0, 30) + '...'
+    case 'button':
+      return block.props.text
+    default:
+      return 'Content'
+  }
+}
+
+// Watch for HTML content changes to update preview
+watch(importHtmlContent, (newHtml) => {
+  if (newHtml.trim()) {
+    try {
+      previewBlocks.value = convertHtmlToBlocks(newHtml)
+    } catch (e) {
+      console.warn('Error parsing HTML:', e)
+      previewBlocks.value = []
+    }
+  } else {
+    previewBlocks.value = []
+  }
+})
+
+function loadExampleHtml() {
+
+}
+
+function cancelImport() {
+  showImportDialog.value = false
+  importHtmlContent.value = ''
+  previewBlocks.value = []
+}
+
+function importHtml() {
+  if (!importHtmlContent.value.trim()) return
+  
+  try {
+    const newBlocks = convertHtmlToBlocks(importHtmlContent.value)
+    
+    // Add converted blocks to existing blocks
+    blocks.value.push(...newBlocks)
+    
+    // Trigger change event
+    onChange()
+    
+    // Close dialog and reset
+    cancelImport()
+    
+    console.log(`✅ Successfully imported ${newBlocks.length} blocks from HTML`)
+  } catch (error) {
+    console.error('❌ Error importing HTML:', error)
+    alert('Error importing HTML. Please check your HTML format and try again.')
   }
 }
 

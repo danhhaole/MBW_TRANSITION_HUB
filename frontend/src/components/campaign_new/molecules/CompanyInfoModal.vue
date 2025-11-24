@@ -480,6 +480,7 @@
               <!-- Data Collection Tab -->
               <div v-if="tab.key === 'data'">
                 <ReceiveDataConfigsManager
+                  ref="receiveDataConfigsRef"
                   v-model="formData.receive_data_configs"
                   :template-id="selectedTemplate?.template_id || formData.template_id"
                   :form-config-id="formData.form_config_id"
@@ -573,6 +574,7 @@ const emit = defineEmits(['close', 'submit'])
 
 const toast = useToast()
 const isOpen = ref(props.show)
+const receiveDataConfigsRef = ref(null)
 
 // Company profile selection
 const selectedCompanyProfile = ref('')
@@ -823,9 +825,24 @@ const closeDialog = () => {
   isOpen.value = false
 }
 
-const confirmSubmit = () => {
+const confirmSubmit = async () => {
   if (!formData.value.page_title || props.loading) {
     return
+  }
+  
+  // Auto-save any pending config before submit
+  if (receiveDataConfigsRef.value && receiveDataConfigsRef.value.autoSaveConfigIfNeeded) {
+    try {
+      const wasSaved = await receiveDataConfigsRef.value.autoSaveConfigIfNeeded()
+      if (wasSaved) {
+        console.log('✅ Auto-saved pending configuration before submit')
+        toast.success(__('Auto-saved pending data collection configuration'))
+      }
+    } catch (error) {
+      console.error('❌ Failed to auto-save config:', error)
+      toast.error(__('Failed to save data collection configuration'))
+      return // Don't proceed if auto-save failed
+    }
   }
   
   // Clean up empty values to reduce payload size
