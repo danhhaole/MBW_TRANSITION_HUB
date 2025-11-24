@@ -6,8 +6,8 @@ from frappe.utils import now_datetime, add_days
 
 @frappe.whitelist(allow_guest=True)
 def track(campaign_id =None, talent_id=None, action=None, type=None, url=None):
-    if not talent_id or not type:
-        frappe.throw("Missing required parameters: talent_id, type")
+    # if not talent_id or not type:
+    #     frappe.throw("Missing required parameters: talent_id, type")
 
     # Ghi thêm thông tin User Agent, IP
     info = {
@@ -46,13 +46,13 @@ def track(campaign_id =None, talent_id=None, action=None, type=None, url=None):
 @frappe.whitelist(allow_guest=True)
 def click_redirect():
     campaign_id = frappe.form_dict.get("utm_campaign")
-    talent_id = frappe.form_dict.get("talent_id")
+    talent_id = frappe.form_dict.get("talent_id") or ""
     action = frappe.form_dict.get("action")
     url = frappe.form_dict.get("url")
     sig = frappe.form_dict.get("sig")
 
-    if not talent_id or not sig:
-        frappe.throw("Missing required parameters")
+    # if not talent_id or not sig:
+    #     frappe.throw("Missing required parameters")
 
     params = {
         "campaign_id":campaign_id,
