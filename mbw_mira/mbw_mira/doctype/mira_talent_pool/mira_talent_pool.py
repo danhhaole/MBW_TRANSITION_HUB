@@ -30,6 +30,8 @@ class MiraTalentPool(Document):
         count_talentprofile_segment(self.segment_id)
         #Cập nhật phân trạng thái CATEGORIZED vào thông tin hồ sơ
         
+    def after_delete(self):
+        count_talentprofile_segment(self.segment_id)
 
 def validate_unique_candidate_segment(doc):
     """
