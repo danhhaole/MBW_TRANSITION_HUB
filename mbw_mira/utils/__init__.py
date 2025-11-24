@@ -279,7 +279,9 @@ def render_template(template_str, context):
 
     sig = make_signature(pixel_params)
     pixel_query = urlencode({**pixel_params, "sig": sig})
-
+    tracking_url = (
+        f"{base_url}/api/method/mbw_mira.api.interaction.click_redirect?{pixel_query}"
+    )
     # Gửi vào context
     ctx = {
         "candidate_name": talentprofiles.full_name,
@@ -297,10 +299,9 @@ def render_template(template_str, context):
     # =====================
     # Replace toàn bộ URL trong email bằng tracking link
     # =====================
-    rendered_html = replace_urls_with_tracking_email(
+    rendered_html = append_tracking_to_urls(
         content=rendered_html,
-        talent_id=talentprofiles.name,
-        campaign=campaign,
+        tracking_url=tracking_url
     )
 
     return rendered_html
@@ -346,19 +347,22 @@ def _create_unsubscribe_link(talent_id, campaign):
     return f"{base_url}/api/method/mbw_mira.api.interaction.unsubscribe?{query}"
 
 
-def replace_urls_with_tracking_email(content, talent_id, campaign):
+def append_tracking_to_urls(content, tracking_url):
     """
-    Tìm mọi URL trong nội dung email và convert -> tracking URL
+    Không thay URL gốc.
+    Chỉ thêm param url=<tracking> vào link tìm thấy.
     """
     url_regex = r"(https?://[^\s\"\'<>]+)"
 
     def replace(match):
         original_url = match.group(0)
-        return _create_email_tracking(
-            talent_id=talent_id,
-            campaign=campaign,
-            original_url=original_url,
-        )
+
+        # Nếu trong url có ?, thêm &url
+        if "?" in original_url:
+            return f"{original_url}&url={tracking_url}"
+
+        # Nếu chưa có ?, thêm ?url
+        return f"{original_url}?url={tracking_url}"
 
     return re.sub(url_regex, replace, content)
 

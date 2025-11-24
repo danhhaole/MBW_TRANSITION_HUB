@@ -1309,22 +1309,30 @@ def _create_tracking(campaign_id, source) -> str:
 
 def replace_urls_with_tracking(content, campaign_id, source):
     """
-    Tìm mọi URL trong content và thay bằng Tracking URL
+    Tìm mọi URL trong content và gắn thêm param:
+    - Nếu có ? thì thêm &url=<tracking>
+    - Nếu không có ? thì thêm ?url=<tracking>
+    URL gốc được giữ nguyên.
     """
     url_regex = r"(https?://[^\s\"\'<>]+)"
 
+    # Tạo tracking URL một lần cho cả email
+    tracking_url = _create_tracking(
+        campaign_id,
+        source
+    )
+
     def replace(match):
-        # Gọi vào hàm tracking đã có
-        tracking_url = _create_tracking(
-            campaign_id=campaign_id,
-            source=source
-        )
+        original_url = match.group(0)
 
-        return tracking_url
+        # Nếu URL đã có query string
+        if "?" in original_url:
+            return f"{original_url}&url={tracking_url}"
 
-    # Replace toàn bộ URL
-    new_content = re.sub(url_regex, replace, content)
-    return new_content
+        # Nếu chưa có query string
+        return f"{original_url}?url={tracking_url}"
+
+    return re.sub(url_regex, replace, content)
 
 def _share_to_facebook(connection, share_doc, share_data):
     """Share job to Facebook via SocialHub API"""
@@ -1350,7 +1358,6 @@ def _share_to_facebook(connection, share_doc, share_data):
 
         # Prepare post content
         message = replace_urls_with_tracking(share_doc.message,share_doc.campaign,"facebook")
-
         # Prepare image URL if available
 
         # SocialHub API call
