@@ -1263,7 +1263,7 @@ def _process_job_share(share_doc):
 
         #Update social
         if share_data and hasattr(share_data,"social_id"):
-            social = frappe.get_doc("Mira Campaign Social")
+            social = frappe.get_doc("Mira Campaign Social",share_data.social_id)
             social.status = share_doc.status
             social.response_data = share_doc.response_data
             social.error_message = share_doc.error_message
@@ -1291,14 +1291,14 @@ def _get_base_url()->str:
     base_url = origin if origin else f"{protocol}://{host}"
     return base_url
 
-def _create_tracking(campaign_id, source) -> str:
+def _create_tracking(campaign_id, source,social_id) -> str:
     # Lấy domain chính xác
     
     campaign = frappe.get_doc("Mira Campaign",campaign_id)
     params = {
         "campaign_id": campaign.name if hasattr(campaign, "name") else campaign,
         "talent_id": "",
-        "action": "PAGE_VISITED",
+        "action": social_id,
         "url": campaign.ladipage_url,
         "utm_campaign": campaign.name,
         "utm_source": source,
@@ -1310,7 +1310,7 @@ def _create_tracking(campaign_id, source) -> str:
 
     return f"{_get_base_url()}/api/method/mbw_mira.api.interaction.page_visited?{query}"
 
-def replace_urls_with_tracking(content, campaign_id, source):
+def replace_urls_with_tracking(content, campaign_id, source,social_id):
     """
     Thay tất cả URL trong content bằng redirect URL:
     - Gói URL gốc vào param `url`
@@ -1320,7 +1320,7 @@ def replace_urls_with_tracking(content, campaign_id, source):
     url_regex = r"(https?://[^\s\"\'<>]+)"
 
     # Lấy tracking URL
-    tracking_url = _create_tracking(campaign_id, source)
+    tracking_url = _create_tracking(campaign_id, source,social_id)
     encoded_tracking = quote(tracking_url, safe="")
 
     # URL redirect
@@ -1364,7 +1364,10 @@ def _share_to_facebook(connection, share_doc, share_data):
             return {"success": False, "error": "No Facebook page selected or available"}
 
         # Prepare post content
-        message = replace_urls_with_tracking(share_doc.message,share_doc.campaign,"facebook")
+        social_id = None
+        if hasattr(share_data,"social_id") and share_data.social_id:
+            social_id = share_data.social_id
+        message = replace_urls_with_tracking(share_doc.message,share_doc.campaign,"facebook",social_id)
         # Prepare image URL if available
 
         # SocialHub API call
@@ -1450,7 +1453,9 @@ def _share_to_zalo(connection, share_doc, share_data):
         if not page_id:
             return {"success": False, "error": "No Zalo OA ID configured or available"}
 
-        
+        social_id = None
+        if hasattr(share_data,"social_id") and share_data.social_id:
+            social_id = share_data.social_id
 
         # Prepare image URL if available
         # photo_url = ""
@@ -1476,7 +1481,7 @@ def _share_to_zalo(connection, share_doc, share_data):
             "content": f"{share_doc.message}",
         }
 
-        post_data.content = replace_urls_with_tracking(post_data.content,share_doc.campaign,"zalo") or ''
+        post_data.content = replace_urls_with_tracking(post_data.content,share_doc.campaign,"zalo",social_id) or ''
         
         response = requests.post(socialhub_url, json=post_data, timeout=1000)
 
