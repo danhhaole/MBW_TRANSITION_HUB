@@ -41,6 +41,10 @@ export const useDashboardStore = defineStore('dashboard', {
     campaignPerformance: [],
     campaignPerformanceLoading: false,
     
+    // Top campaigns with latest interactions
+    topCampaignsWithLatestInteractions: [],
+    topCampaignsLoading: false,
+    
     // Conversion by source
     conversionBySource: [],
     conversionLoading: false,
@@ -164,36 +168,34 @@ export const useDashboardStore = defineStore('dashboard', {
     },
     
     /**
-     * Fetch funnel data (email campaign funnel)
+     * Fetch funnel data (email campaign funnel) using new nurturing funnel API
      */
     async fetchFunnelData(timeRange = null) {
       try {
         this.funnelData.loading = true
         if (timeRange) this.timeRange = timeRange
         
-        const fromDate = this.dateRange
+        const days = this.daysFromTimeRange
         
-        // Get email campaign actions
-        const actionsResult = await call('frappe.client.get_list', {
-          doctype: 'Mira Action',
-          filters: {
-            action_type: ['in', ['EMAIL', 'MESSAGE']],
-            creation: ['>=', fromDate.toISOString()]
-          },
-          fields: ['name', 'status', 'action_type'],
-          limit_page_length: 0
+        // Use the new nurturing funnel API
+        const funnelResult = await call('mbw_mira.api.dashboard.get_nurturing_funnel_data', {
+          days: days
         })
         
-        const actions = actionsResult?.data || []
-        
-        // Calculate funnel metrics
-        this.funnelData.sent = actions.length
-        
-        // Mock data for now - in real implementation, parse metadata
-        this.funnelData.opened = Math.floor(actions.length * 0.5)
-        this.funnelData.clicked = Math.floor(actions.length * 0.16)
-        this.funnelData.mql = this.marketingMetrics.hotTalents
-        this.funnelData.sql = this.marketingMetrics.convertedTalents
+        if (funnelResult) {
+          this.funnelData.sent = funnelResult.sent?.count || 0
+          this.funnelData.opened = funnelResult.opened?.count || 0
+          this.funnelData.clicked = funnelResult.clicked?.count || 0
+          this.funnelData.mql = funnelResult.mql?.count || 0
+          this.funnelData.sql = funnelResult.sql?.count || 0
+          
+          // Store percentages for potential future use
+          this.funnelData.sentPercentage = funnelResult.sent?.percentage || 100.0
+          this.funnelData.openedPercentage = funnelResult.opened?.percentage || 0.0
+          this.funnelData.clickedPercentage = funnelResult.clicked?.percentage || 0.0
+          this.funnelData.mqlPercentage = funnelResult.mql?.percentage || 0.0
+          this.funnelData.sqlPercentage = funnelResult.sql?.percentage || 0.0
+        }
         
         return { success: true, data: this.funnelData }
       } catch (error) {
@@ -319,6 +321,37 @@ export const useDashboardStore = defineStore('dashboard', {
     },
     
     /**
+     * Fetch top 5 campaigns with latest interactions
+     */
+    async fetchTopCampaignsWithLatestInteractions(timeRange = null) {
+      try {
+        this.topCampaignsLoading = true
+        if (timeRange) this.timeRange = timeRange
+        
+        const days = this.daysFromTimeRange
+        
+        // Call the new API
+        const result = await call('mbw_mira.api.dashboard.get_top_campaigns_with_latest_interactions', {
+          days: days
+        })
+        
+        if (result && Array.isArray(result)) {
+          this.topCampaignsWithLatestInteractions = result
+        } else {
+          this.topCampaignsWithLatestInteractions = []
+        }
+        
+        return { success: true, data: this.topCampaignsWithLatestInteractions }
+      } catch (error) {
+        console.error('Error fetching top campaigns with latest interactions:', error)
+        this.error = this.parseError(error)
+        return { success: false, error: this.error }
+      } finally {
+        this.topCampaignsLoading = false
+      }
+    },
+    
+    /**
      * Fetch conversion rates by source
      */
     async fetchConversionBySource(timeRange = null) {
@@ -375,6 +408,44 @@ export const useDashboardStore = defineStore('dashboard', {
     },
     
     /**
+     * Fetch task list data for hot leads
+     */
+    async fetchTaskListData(timeRange = null) {
+      try {
+        if (timeRange) this.timeRange = timeRange
+        
+        // Get pending manual tasks for hot leads
+        const tasksResult = await call('mbw_mira.api.doc.get_list_data', {
+          doctype: 'Mira Action',
+          filters: {
+            status: 'PENDING_MANUAL'
+          },
+          fields: ['name', 'scheduled_at', 'talent_campaign_id', 'campaign_social', 'assignee_id'],
+          order_by: 'scheduled_at asc',
+          limit_page_length: 10
+        })
+        
+        if (tasksResult && tasksResult.success && tasksResult.data) {
+          this.taskListData = tasksResult.data.map(task => ({
+            id: task.name,
+            title: 'Manual Review Required',
+            description: `Campaign: ${task.campaign_social || 'Unknown'}`,
+            dueDate: this.formatDueDate(task.scheduled_at),
+            priority: 'high',
+            assignee: task.assignee_id || 'Unassigned',
+            status: task.status
+          }))
+        }
+        
+        return { success: true, data: this.taskListData }
+      } catch (error) {
+        console.error('Error fetching task list data:', error)
+        this.error = this.parseError(error)
+        return { success: false, error: this.error }
+      }
+    },
+    
+    /**
      * Refresh all marketing dashboard data
      */
     async refreshMarketingDashboard(timeRange = null) {
@@ -387,7 +458,9 @@ export const useDashboardStore = defineStore('dashboard', {
           this.fetchFunnelData(timeRange),
           this.fetchSourceData(timeRange),
           this.fetchCampaignPerformance(timeRange),
-          this.fetchConversionBySource(timeRange)
+          this.fetchTopCampaignsWithLatestInteractions(timeRange),
+          this.fetchConversionBySource(timeRange),
+          this.fetchTaskListData(timeRange)
         ])
         
         // Check if any failed

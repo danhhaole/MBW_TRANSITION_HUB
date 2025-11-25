@@ -120,8 +120,8 @@
                 />
 
                 <CampaignBarChart 
-                    :title="__('Top 5 Campaigns (CTR)')"
-                    :data="campaignChartData"
+                    :title="__('Top 5 Campaigns (Latest Interactions)')"
+                    :data="topCampaignsChartData"
                     chart-height="320px"
                 />
             </div>
@@ -175,6 +175,7 @@ const {
     funnelData,
     sourceData,
     campaignPerformance,
+    topCampaignsWithLatestInteractions,
     conversionBySource,
 	taskListData,
     loading
@@ -202,7 +203,7 @@ const conversionColumns = [
 const funnelChartData = computed(() => {
     // Labels này nên được dịch nếu bạn muốn biểu đồ hiển thị tiếng Anh
     const labels = ['Sent', 'Opened', 'Click Link', 'MQL', 'SQL'].map(label => __(label))
-    const colors = ['#e2e8f0', '#94a3b8', '#fbbf24', '#10b981', '#3b82f6']
+    const colors = ['#699ce0', '#94a3b8', '#fbbf24', '#10b981', '#3b82f6']
     const values = [
         funnelData.value.sent,
         funnelData.value.opened,
@@ -210,10 +211,23 @@ const funnelChartData = computed(() => {
         funnelData.value.mql,
         funnelData.value.sql
     ]
+    const percentages = [
+        funnelData.value.sentPercentage || 100.0,
+        funnelData.value.openedPercentage || 0.0,
+        funnelData.value.clickedPercentage || 0.0,
+        funnelData.value.mqlPercentage || 0.0,
+        funnelData.value.sqlPercentage || 0.0
+    ]
+
+    console.log("values", values);
+    
+    console.log("percentages", percentages);
+    
     
     return labels.map((label, index) => ({
         name: label,
         value: values[index],
+        percentage: percentages[index],
         color: colors[index],
         totalSent: funnelData.value.sent || 1
     }))
@@ -236,6 +250,12 @@ const campaignChartData = computed(() => {
         name: item.name,
         value: item.ctr
     }))
+})
+
+// Computed - Top campaigns with latest interactions chart data
+const topCampaignsChartData = computed(() => {
+    // Dữ liệu đã được format sẵn từ API với name, value, color
+    return topCampaignsWithLatestInteractions.value || []
 })
 
 // Methods

@@ -28,9 +28,30 @@ const chartRef = ref(null)
 let chartInstance = null
 
 const initChart = () => {
-	if (!chartRef.value || !props.data.length) return
+	if (!chartRef.value) return
 
-	chartInstance = echarts.init(chartRef.value)
+	// Khởi tạo chart instance nếu chưa có
+	if (!chartInstance) {
+		chartInstance = echarts.init(chartRef.value)
+	}
+
+	console.log('SourcePieChart - initChart called with data:', props.data)
+
+	// Nếu không có data, hiển thị chart trống
+	if (!props.data.length) {
+		chartInstance.setOption({
+			title: {
+				text: 'No data available',
+				left: 'center',
+				top: 'center',
+				textStyle: {
+					color: '#9CA3AF',
+					fontSize: 14
+				}
+			}
+		}, true) // true để clear previous options
+		return
+	}
 
 	const totalValue = props.data.reduce((sum, item) => sum + item.value, 0)
 
@@ -75,7 +96,7 @@ const initChart = () => {
 		}]
 	}
 
-	chartInstance.setOption(option)
+	chartInstance.setOption(option, true) // true để hoàn toàn thay thế options cũ
 }
 
 const resizeChart = () => {

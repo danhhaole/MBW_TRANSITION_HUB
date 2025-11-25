@@ -991,6 +991,180 @@ def get_recruitment_talents_count(days):
 
 
 @frappe.whitelist()
+def get_nurturing_funnel_data(days):
+    """
+    API để lấy dữ liệu cho Nurturing Funnel Chart
+    
+    Args:
+        days: Số ngày tính từ hiện tại (bắt buộc, frontend sẽ truyền giá trị)
+    
+    Returns:
+        Dict chứa dữ liệu funnel với số lượng và phần trăm:
+        {
+            "sent": {"count": 100, "percentage": 100.0},      // Số lượng actions đã gửi
+            "opened": {"count": 50, "percentage": 50.0},      // Số lần mở email / số actions * 100
+            "clicked": {"count": 20, "percentage": 20.0},     // Số lần click / số actions * 100
+            "mql": {"count": 15, "percentage": 15.0},         // Số talents MQL / số actions * 100
+            "sql": {"count": 5, "percentage": 0.0}            // Số talents SQL (% tạm thời = 0)
+        }
+    """
+    try:
+        # Validate và tính ngày bắt đầu
+        if not days:
+            frappe.throw(_("Parameter 'days' is required"))
+        
+        days = int(days)
+        since_date = datetime.now() - timedelta(days=days)
+        
+        # 1. Đếm số lượng actions SEND_EMAIL đã được thực hiện (lọc theo last_interaction_date của talent)
+        actions_sent_result = frappe.db.sql("""
+            SELECT COUNT(DISTINCT a.name) as count
+            FROM `tabMira Action` a
+            INNER JOIN `tabMira Talent Campaign` tc ON a.talent_campaign_id = tc.name
+            INNER JOIN `tabMira Talent` t ON tc.talent_id = t.name
+            WHERE a.action_type = 'SEND_EMAIL'
+            AND a.status = 'EXECUTED'
+            AND t.last_interaction_date >= %(since_date)s
+        """, {"since_date": since_date.date()}, as_dict=True)
+        
+        total_actions_sent = actions_sent_result[0].count if actions_sent_result else 0
+        
+        # 2. Tính phần trăm EMAIL_OPENED theo từng talent
+        opened_data = frappe.db.sql("""
+            SELECT 
+                i.talent_id,
+                COUNT(DISTINCT i.action) as opened_actions,
+                (SELECT COUNT(DISTINCT a2.name) 
+                 FROM `tabMira Action` a2 
+                 INNER JOIN `tabMira Talent Campaign` tc2 ON a2.talent_campaign_id = tc2.name
+                 WHERE a2.action_type = 'SEND_EMAIL' 
+                 AND a2.status = 'EXECUTED'
+                 AND tc2.talent_id = i.talent_id
+                 AND EXISTS (
+                     SELECT 1 FROM `tabMira Talent` t2 
+                     WHERE t2.name = tc2.talent_id 
+                     AND t2.last_interaction_date >= %(since_date)s
+                 )
+                ) as total_actions
+            FROM `tabMira Interaction` i
+            INNER JOIN `tabMira Action` a ON i.action = a.name
+            INNER JOIN `tabMira Talent` t ON i.talent_id = t.name
+            WHERE a.action_type = 'SEND_EMAIL'
+            AND i.interaction_type = 'EMAIL_OPENED'
+            AND i.talent_id IS NOT NULL
+            AND t.last_interaction_date >= %(since_date)s
+            GROUP BY i.talent_id
+        """, {"since_date": since_date.date()}, as_dict=True)
+        
+        opened_talents_count = len(opened_data)
+        opened_percentage_sum = sum(
+            (row.opened_actions / row.total_actions * 100) if row.total_actions > 0 else 0 
+            for row in opened_data
+        )
+        
+        # 3. Tính phần trăm ON_LINK_CLICK theo từng talent
+        clicked_data = frappe.db.sql("""
+            SELECT 
+                i.talent_id,
+                COUNT(DISTINCT i.action) as clicked_actions,
+                (SELECT COUNT(DISTINCT a2.name) 
+                 FROM `tabMira Action` a2 
+                 INNER JOIN `tabMira Talent Campaign` tc2 ON a2.talent_campaign_id = tc2.name
+                 WHERE a2.action_type = 'SEND_EMAIL' 
+                 AND a2.status = 'EXECUTED'
+                 AND tc2.talent_id = i.talent_id
+                 AND EXISTS (
+                     SELECT 1 FROM `tabMira Talent` t2 
+                     WHERE t2.name = tc2.talent_id 
+                     AND t2.last_interaction_date >= %(since_date)s
+                 )
+                ) as total_actions
+            FROM `tabMira Interaction` i
+            INNER JOIN `tabMira Action` a ON i.action = a.name
+            INNER JOIN `tabMira Talent` t ON i.talent_id = t.name
+            WHERE a.action_type = 'SEND_EMAIL'
+            AND i.interaction_type = 'ON_LINK_CLICK'
+            AND i.talent_id IS NOT NULL
+            AND t.last_interaction_date >= %(since_date)s
+            GROUP BY i.talent_id
+        """, {"since_date": since_date.date()}, as_dict=True)
+        
+        clicked_talents_count = len(clicked_data)
+        clicked_percentage_sum = sum(
+            (row.clicked_actions / row.total_actions * 100) if row.total_actions > 0 else 0 
+            for row in clicked_data
+        )
+        
+        # 4. Tính phần trăm EMAIL_SENT theo từng talent (tương tự)
+        sent_data = frappe.db.sql("""
+            SELECT 
+                i.talent_id,
+                COUNT(DISTINCT i.action) as sent_actions,
+                (SELECT COUNT(DISTINCT a2.name) 
+                 FROM `tabMira Action` a2 
+                 INNER JOIN `tabMira Talent Campaign` tc2 ON a2.talent_campaign_id = tc2.name
+                 WHERE a2.action_type = 'SEND_EMAIL' 
+                 AND a2.status = 'EXECUTED'
+                 AND tc2.talent_id = i.talent_id
+                 AND EXISTS (
+                     SELECT 1 FROM `tabMira Talent` t2 
+                     WHERE t2.name = tc2.talent_id 
+                     AND t2.last_interaction_date >= %(since_date)s
+                 )
+                ) as total_actions
+            FROM `tabMira Interaction` i
+            INNER JOIN `tabMira Action` a ON i.action = a.name
+            INNER JOIN `tabMira Talent` t ON i.talent_id = t.name
+            WHERE a.action_type = 'SEND_EMAIL'
+            AND i.interaction_type = 'EMAIL_SENT'
+            AND i.talent_id IS NOT NULL
+            AND t.last_interaction_date >= %(since_date)s
+            GROUP BY i.talent_id
+        """, {"since_date": since_date.date()}, as_dict=True)
+        
+        sent_talents_count = len(sent_data)
+        sent_percentage_sum = sum(
+            (row.sent_actions / row.total_actions * 100) if row.total_actions > 0 else 0 
+            for row in sent_data
+        )
+        
+        # 4. Lấy MQL count từ hàm có sẵn (số talents có cả opened và clicked)
+        mql_data = get_nurturing_engaged_talents_count(days)
+        mql_count = mql_data.get("count", 0)
+        
+        # 5. Lấy SQL count từ hàm có sẵn
+        sql_data = get_recruitment_talents_count(days)
+        sql_count = sql_data.get("count", 0)
+        
+        # Tính phần trăm trung bình (chia cho số lượng talents)
+        sent_avg_percentage = (sent_percentage_sum / sent_talents_count) if sent_talents_count > 0 else 0
+        opened_avg_percentage = (opened_percentage_sum / opened_talents_count) if opened_talents_count > 0 else 0
+        clicked_avg_percentage = (clicked_percentage_sum / clicked_talents_count) if clicked_talents_count > 0 else 0
+        
+        # MQL và SQL percentage tạm thời tính theo cách cũ
+        mql_percentage = (mql_count / total_actions_sent * 100) if total_actions_sent > 0 else 0
+        sql_percentage = 0  # Tạm thời để 0% như yêu cầu
+        
+        return {
+            "sent": {"count": sent_talents_count, "percentage": round(sent_avg_percentage, 1)},
+            "opened": {"count": opened_talents_count, "percentage": round(opened_avg_percentage, 1)},
+            "clicked": {"count": clicked_talents_count, "percentage": round(clicked_avg_percentage, 1)},
+            "mql": {"count": mql_count, "percentage": round(mql_percentage, 1)},
+            "sql": {"count": sql_count, "percentage": sql_percentage}
+        }
+        
+    except Exception as e:
+        frappe.log_error(f"Error in get_nurturing_funnel_data: {str(e)}")
+        return {
+            "sent": {"count": 0, "percentage": 100.0},
+            "opened": {"count": 0, "percentage": 0.0},
+            "clicked": {"count": 0, "percentage": 0.0},
+            "mql": {"count": 0, "percentage": 0.0},
+            "sql": {"count": 0, "percentage": 0.0}
+        }
+
+
+@frappe.whitelist()
 def get_new_talents_count(days):
     """
     Đếm tổng số lượng talents được thêm mới, lọc theo creation
@@ -1060,4 +1234,102 @@ def get_total_talents_count():
         frappe.log_error(f"Error in get_total_talents_count: {str(e)}")
         return {
             "count": 0
-        } 
+        }
+
+
+@frappe.whitelist()
+def get_top_campaigns_with_latest_interactions(days):
+    """
+    Lấy top 5 chiến dịch có talent tương tác mới nhất từ bảng Mira Interaction
+    Lọc theo last_interaction_date của talent giống như các API dashboard khác
+    
+    Args:
+        days: Số ngày tính từ hiện tại (bắt buộc, frontend sẽ truyền giá trị)
+    
+    Returns:
+        List top 5 campaigns với thông tin phù hợp cho CampaignBarChart:
+        [
+            {
+                "campaign_id": "CAMP-001",
+                "campaign_name": "Tech Talent Nurturing Q4",
+                "campaign_type": "NURTURING", 
+                "talent_count": 45,
+                "latest_interaction_date": "2024-11-20",
+                "interaction_types": ["EMAIL_OPENED", "ON_LINK_CLICK"],
+                "total_interactions": 128
+            },
+            ...
+        ]
+    """
+    try:
+        # Validate và tính ngày bắt đầu
+        if not days:
+            frappe.throw(_("Parameter 'days' is required"))
+        
+        days = int(days)
+        since_date = datetime.now() - timedelta(days=days)
+        
+        # Query để lấy top 5 campaigns có talent tương tác mới nhất
+        # Lọc theo last_interaction_date của talent
+        results = frappe.db.sql("""
+            SELECT 
+                c.name as campaign_id,
+                c.campaign_name,
+                c.type as campaign_type,
+                COUNT(DISTINCT i.talent_id) as talent_count,
+                MAX(t.last_interaction_date) as latest_interaction_date,
+                COUNT(i.name) as total_interactions,
+                GROUP_CONCAT(DISTINCT i.interaction_type ORDER BY i.interaction_type) as interaction_types
+            FROM `tabMira Interaction` i
+            INNER JOIN `tabMira Campaign` c ON i.campaign_id = c.name
+            INNER JOIN `tabMira Talent` t ON i.talent_id = t.name
+            WHERE t.last_interaction_date >= %(since_date)s
+            AND i.talent_id IS NOT NULL
+            AND c.name IS NOT NULL
+            GROUP BY c.name, c.campaign_name, c.type
+            ORDER BY latest_interaction_date DESC, talent_count DESC
+            LIMIT 5
+        """, {"since_date": since_date.date()}, as_dict=True)
+        
+        if not results:
+            return []
+        
+        # Format dữ liệu trả về phù hợp với CampaignBarChart component
+        campaigns_data = []
+        
+        # Định nghĩa màu sắc cho từng loại campaign
+        campaign_colors = {
+            "NURTURING": "#10B981",    # Green
+            "RECRUITMENT": "#3B82F6",  # Blue  
+            "ATTRACT": "#8B5CF6",      # Purple
+            "ONBOARDING": "#F59E0B"    # Orange
+        }
+        
+        for i, result in enumerate(results):
+            # Chuyển đổi interaction_types từ string thành list
+            interaction_types = []
+            if result.interaction_types:
+                interaction_types = [t.strip() for t in result.interaction_types.split(',')]
+            
+            # Lấy màu theo campaign type hoặc màu mặc định
+            color = campaign_colors.get(result.campaign_type, "#6B7280")
+            
+            campaigns_data.append({
+                # Format cho CampaignBarChart component
+                "name": result.campaign_name,
+                "value": result.talent_count or 0,
+                "color": color,
+                
+                # Thông tin chi tiết bổ sung
+                "campaign_id": result.campaign_id,
+                "campaign_type": result.campaign_type,
+                "latest_interaction_date": result.latest_interaction_date.strftime('%Y-%m-%d') if result.latest_interaction_date else None,
+                "interaction_types": interaction_types,
+                "total_interactions": result.total_interactions or 0
+            })
+        
+        return campaigns_data
+        
+    except Exception as e:
+        frappe.log_error(f"Error in get_top_campaigns_with_latest_interactions: {str(e)}")
+        return [] 

@@ -28,9 +28,30 @@ const chartRef = ref(null)
 let chartInstance = null
 
 const initChart = () => {
-	if (!chartRef.value || !props.data.length) return
+	if (!chartRef.value) return
 
-	chartInstance = echarts.init(chartRef.value)
+	// Khởi tạo chart instance nếu chưa có
+	if (!chartInstance) {
+		chartInstance = echarts.init(chartRef.value)
+	}
+
+	console.log('CampaignBarChart - initChart called with data:', props.data)
+
+	// Nếu không có data, hiển thị chart trống
+	if (!props.data.length) {
+		chartInstance.setOption({
+			title: {
+				text: 'No data available',
+				left: 'center',
+				top: 'center',
+				textStyle: {
+					color: '#9CA3AF',
+					fontSize: 14
+				}
+			}
+		}, true) // true để clear previous options
+		return
+	}
 
 	const option = {
 		tooltip: {
@@ -38,7 +59,7 @@ const initChart = () => {
 			axisPointer: { type: 'shadow' },
 			formatter: (params) => {
 				const param = params[0]
-				return `${param.name}<br/>CTR: ${param.value}%`
+				return `${param.name}<br/>Talents: ${param.value}`
 			}
 		},
 		grid: {
@@ -61,7 +82,6 @@ const initChart = () => {
 		},
 		yAxis: {
 			type: 'value',
-			max: 20,
 			axisLine: { show: false },
 			axisTick: { show: false },
 			splitLine: { lineStyle: { color: '#f1f5f9' } },
@@ -80,14 +100,14 @@ const initChart = () => {
 			label: {
 				show: true,
 				position: 'top',
-				formatter: '{c}%',
+				formatter: '{c}',
 				fontSize: 10,
 				color: '#475569'
 			}
 		}]
 	}
 
-	chartInstance.setOption(option)
+	chartInstance.setOption(option, true) // true để hoàn toàn thay thế options cũ
 }
 
 const resizeChart = () => {

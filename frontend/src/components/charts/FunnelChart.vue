@@ -33,12 +33,40 @@ const calculatePercentage = (currentCount, totalCount) => {
 }
 
 const initChart = () => {
-	if (!chartRef.value || !props.data.length) return
+	if (!chartRef.value) return
 
-	chartInstance = echarts.init(chartRef.value)
+	// Khởi tạo chart instance nếu chưa có
+	if (!chartInstance) {
+		chartInstance = echarts.init(chartRef.value)
+	}
+
+	// Nếu không có data, hiển thị chart trống
+	if (!props.data.length) {
+		chartInstance.setOption({
+			title: {
+				text: 'No data available',
+				left: 'center',
+				top: 'center',
+				textStyle: {
+					color: '#9CA3AF',
+					fontSize: 14
+				}
+			}
+		}, true) // true để clear previous options
+		return
+	}
 
 	const labels = props.data.map(item => item.name)
 	const totalSent = props.data[0]?.totalSent || props.data[0]?.value || 100
+	
+	// Tính phần trăm cho mỗi item để vẽ bar
+	const dataWithPercentage = props.data.map(item => {
+		const percentage = item.percentage !== undefined ? item.percentage : calculatePercentage(item.value, totalSent)
+		return {
+			...item,
+			calculatedPercentage: parseFloat(percentage)
+		}
+	})
 
 	const option = {
 		tooltip: {
@@ -46,8 +74,9 @@ const initChart = () => {
 			axisPointer: { type: 'shadow' },
 			formatter: (params) => {
 				const param = params[0]
-				const percentage = calculatePercentage(param.value, totalSent)
-				return `${param.name}<br/>${param.value} hồ sơ (${percentage}%)`
+				const item = props.data[param.dataIndex]
+				const percentage = item.percentage !== undefined ? item.percentage : calculatePercentage(item.value, totalSent)
+				return `${param.name}<br/>${item.value} hồ sơ (${percentage}%)`
 			}
 		},
 		grid: {
@@ -58,7 +87,7 @@ const initChart = () => {
 		},
 		xAxis: {
 			type: 'value',
-			max: totalSent,
+			max: 100, // Max là 100% thay vì maxValue
 			show: false
 		},
 		yAxis: {
@@ -71,8 +100,8 @@ const initChart = () => {
 		},
 		series: [{
 			type: 'bar',
-			data: props.data.map(item => ({
-				value: item.value,
+			data: dataWithPercentage.map((item, index) => ({
+				value: item.calculatedPercentage, // Sử dụng phần trăm để vẽ độ dài bar
 				itemStyle: { 
 					color: item.color || '#3b82f6', 
 					borderRadius: [0, 4, 4, 0] 
@@ -82,14 +111,18 @@ const initChart = () => {
 			label: {
 				show: true,
 				position: 'right',
-				formatter: '{c}',
+				formatter: (params) => {
+					const item = props.data[params.dataIndex]
+					const percentage = item.percentage !== undefined ? item.percentage : calculatePercentage(item.value, totalSent)
+					return `${item.value} (${percentage}%)`
+				},
 				fontSize: 11,
 				color: '#64748b'
 			}
 		}]
 	}
 
-	chartInstance.setOption(option)
+	chartInstance.setOption(option, true) // true để hoàn toàn thay thế options cũ
 }
 
 const resizeChart = () => {
