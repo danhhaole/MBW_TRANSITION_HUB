@@ -95,7 +95,7 @@
       "fieldname": "trigger_type",
       "label": "Trigger Type",
       "fieldtype": "Select",
-      "options": "manual\nauto\nsystem\nlink_click"
+      "options": "manual\nauto\nsystem\non_link_click"
     },
     {
       "fieldname": "is_system_generated",
