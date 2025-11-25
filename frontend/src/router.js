@@ -45,6 +45,8 @@ const routes = [
 
 	// Campaign Templates
 	{ path: '/campaign-templates', name: 'CampaignTemplateManagement', component: () => import('@/pages/CampaignTemplateManagement.vue') },
+	{ path: '/campaign-templates/create', name: 'CampaignTemplateCreate', component: () => import('@/pages/CampaignTemplateWizard.vue') },
+	{ path: '/campaign-templates/:id/edit', name: 'CampaignTemplateEdit', component: () => import('@/pages/CampaignTemplateWizard.vue') },
 	{ path: '/campaign-template/:id', name: 'CampaignTemplateDetail', component: () => import('@/pages/CampaignTemplateDetail.vue') },
 
 	// Tags

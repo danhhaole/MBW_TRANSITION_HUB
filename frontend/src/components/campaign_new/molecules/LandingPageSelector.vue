@@ -260,6 +260,10 @@ const props = defineProps({
     type: String,
     default: ''
   },
+  doctype: {
+    type: String,
+    default: 'Mira Campaign' // 'Mira Campaign' or 'Mira Campaign Template'
+  }
 })
 
 const emit = defineEmits(['update:ladipageUrl', 'update:ladipageId'])
@@ -390,7 +394,7 @@ const selectPublishedPage = async (page) => {
   if (props.campaignId) {
     try {
       await call('frappe.client.set_value', {
-        doctype: 'Mira Campaign',
+        doctype: props.doctype,
         name: props.campaignId,
         fieldname: {
           ladipage_url: page.router,
@@ -595,20 +599,20 @@ const handleCompanyInfoSubmit = async (companyInfo) => {
         emit('update:ladipageUrl', publicUrl)
         emit('update:ladipageId', page.page_id)
         
-        // Save to campaign database
+        // Save to campaign/template database
         if (props.campaignId) {
           try {
             await call('frappe.client.set_value', {
-              doctype: 'Mira Campaign',
+              doctype: props.doctype,
               name: props.campaignId,
               fieldname: {
                 ladipage_url: publicUrl,
                 ladipage_id: page.page_id
               }
             })
-            console.log('✅ Saved page to campaign:', props.campaignId)
+            console.log(`✅ Saved page to ${props.doctype}:`, props.campaignId)
           } catch (error) {
-            console.error('❌ Error saving page to campaign:', error)
+            console.error(`❌ Error saving page to ${props.doctype}:`, error)
           }
         }
         
@@ -781,20 +785,20 @@ const publishPage = async () => {
         selectedPage.value.url = publicUrl
         emit('update:ladipageUrl', publicUrl)
         
-        // Save to campaign database
+        // Save to campaign/template database
         if (props.campaignId) {
           try {
             await call('frappe.client.set_value', {
-              doctype: 'Mira Campaign',
+              doctype: props.doctype,
               name: props.campaignId,
               fieldname: {
                 ladipage_url: publicUrl,
                 ladipage_id: selectedPage.value.id
               }
             })
-            console.log('✅ Updated campaign with published URL:', publicUrl)
+            console.log(`✅ Updated ${props.doctype} with published URL:`, publicUrl)
           } catch (error) {
-            console.error('❌ Error updating campaign URL:', error)
+            console.error(`❌ Error updating ${props.doctype} URL:`, error)
           }
         }
       }

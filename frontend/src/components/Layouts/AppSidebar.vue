@@ -353,7 +353,7 @@ const links = [
 			{
 				label: 'Campaign Templates',
 				icon: TaskIcon,
-				to: { name: 'FlowTemplateManagement' },
+				to: { name: 'CampaignTemplateManagement' },
 			},
 		]
 	},

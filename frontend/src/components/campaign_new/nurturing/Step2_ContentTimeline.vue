@@ -6,6 +6,7 @@
       v-model:ladipage-id="localLadipageId"
       :campaign-id="props.name"
       :campaign-name="campaignName"
+      :doctype="doctype"
     />
 
     <!-- Header - Sticky -->
@@ -382,6 +383,10 @@ const props = defineProps({
     type: String,
     default: ''
   },
+  doctype: {
+    type: String,
+    default: 'Mira Campaign' // 'Mira Campaign' or 'Mira Campaign Template'
+  }
 })
 const emit = defineEmits(['update:triggers', 'update:ladipageUrl', 'update:ladipageId'])
 

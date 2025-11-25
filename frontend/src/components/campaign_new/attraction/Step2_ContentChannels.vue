@@ -18,6 +18,7 @@
       :campaign-name="campaignName"
       :company-info="companyInfo"
       :job-info="jobInfo"
+      :doctype="doctype"
     />
 
 
@@ -353,6 +354,10 @@ const props = defineProps({
   showError: {
     type: Boolean,
     default: false
+  },
+  doctype: {
+    type: String,
+    default: 'Mira Campaign' // 'Mira Campaign' or 'Mira Campaign Template'
   }
 })
 

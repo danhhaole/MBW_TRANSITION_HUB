@@ -67,7 +67,7 @@
    "fieldname": "target_type",
    "fieldtype": "Select",
    "label": "Target Type",
-   "options": "Talent\nTalent Pool\nCampaign"
+   "options": "Talent\nTalent Pool\nCampaign\nTemplate"
   },
   {
    "fieldname": "trigger_type",

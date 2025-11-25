@@ -19,6 +19,7 @@
       :campaign-name="campaignName"
       :company-info="companyInfo"
       :job-info="jobInfo"
+      :doctype="doctype"
     />
 
     <!-- Channel Selection with Add Button -->
@@ -317,6 +318,10 @@ const props = defineProps({
   showError: {
     type: Boolean,
     default: false
+  },
+  doctype: {
+    type: String,
+    default: 'Mira Campaign' // 'Mira Campaign' or 'Mira Campaign Template'
   }
 })
 

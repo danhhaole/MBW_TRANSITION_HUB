@@ -32,6 +32,8 @@ export const useCampaignTemplateStore = defineStore('campaignTemplate', {
       total: 0,
       active: 0,
       inactive: 0,
+      system_templates: 0,
+      my_templates: 0,
       by_type: {}
     }
   }),
@@ -133,70 +135,82 @@ export const useCampaignTemplateStore = defineStore('campaignTemplate', {
       
       try {
         const {
-          filters = {},
-          fields = ['*'],
-          order_by = 'modified desc',
-          page_length = this.pagination.limit,
-          start = (this.pagination.page - 1) * this.pagination.limit
+          page = this.pagination.page,
+          limit = this.pagination.limit,
+          searchText = this.searchText,
+          typeFilter = this.typeFilter,
+          activeFilter = this.activeFilter,
+          scopeFilter = null
         } = options
 
         // Build filters
-        let enhancedFilters = { ...filters }
+        let filters = {}
         
-        if (this.searchText && this.searchText.trim()) {
-          enhancedFilters['template_name'] = ['like', `%${this.searchText.trim()}%`]
+        if (typeFilter && typeFilter !== 'all') {
+          filters['campaign_type'] = typeFilter
         }
 
-        if (this.typeFilter && this.typeFilter !== 'all') {
-          enhancedFilters['campaign_type'] = this.typeFilter
+        if (activeFilter && activeFilter !== 'all') {
+          filters['is_active'] = activeFilter === 'active' ? 1 : 0
         }
 
-        if (this.activeFilter && this.activeFilter !== 'all') {
-          enhancedFilters['is_active'] = this.activeFilter === 'active' ? 1 : 0
+        // Add scope_type filter if provided
+        if (scopeFilter) {
+          filters['scope_type'] = scopeFilter
         }
 
-        // Fetch templates
-        const response = await call('frappe.client.get_list', {
+        // Build or_filters for search
+        let or_filters = undefined
+        if (searchText && searchText.trim()) {
+          or_filters = [
+            ['template_name', 'like', `%${searchText.trim()}%`],
+            ['description', 'like', `%${searchText.trim()}%`]
+          ]
+        }
+
+        // Use get_list_data API which returns both data and count
+        const result = await call('mbw_mira.api.doc.get_list_data', {
           doctype: 'Mira Campaign Template',
-          fields: fields,
-          filters: enhancedFilters,
-          order_by: order_by,
-          limit_page_length: page_length,
-          limit_start: start
+          fields: ['*'],
+          filters: filters,
+          or_filters: or_filters,
+          limit_page_length: limit,
+          limit_start: (page - 1) * limit,
+          order_by: 'modified desc'
         })
-
-        // Get total count for pagination
-        const totalCount = await call('frappe.client.get_count', {
-          doctype: 'Mira Campaign Template',
-          filters: enhancedFilters
-        })
-
-        // Process templates to add display fields
-        const processedTemplates = (response || []).map(template => ({
-          ...template,
-          display_status: template.is_active ? 'Active' : 'Inactive',
-          type_display: this.getCampaignTypeDisplay(template.campaign_type)
-        }))
-
-        this.templates = processedTemplates
         
-        // Update pagination
-        this.pagination = {
-          page: Math.floor(start / page_length) + 1,
-          limit: page_length,
-          total: totalCount || 0,
-          pages: Math.ceil((totalCount || 0) / page_length),
-          has_next: (start + page_length) < (totalCount || 0),
-          has_prev: start > 0,
-          showing_from: start + 1,
-          showing_to: Math.min(start + page_length, totalCount || 0)
-        }
+        if (result && result.success && Array.isArray(result.data)) {
+          // Process templates to add display fields
+          const processedTemplates = result.data.map(template => ({
+            ...template,
+            display_status: template.is_active ? 'Active' : 'Inactive',
+            type_display: this.getCampaignTypeDisplay(template.campaign_type)
+          }))
 
-        this.setSuccess('Templates loaded successfully')
-        return {
-          success: true,
-          data: processedTemplates,
-          pagination: this.pagination
+          this.templates = processedTemplates
+          
+          // Update pagination info with correct total count
+          const total = result.count || 0
+          this.pagination = {
+            page,
+            limit,
+            total,
+            pages: Math.ceil(total / limit),
+            has_next: page * limit < total,
+            has_prev: page > 1,
+            showing_from: total > 0 ? (page - 1) * limit + 1 : 0,
+            showing_to: Math.min(page * limit, total)
+          }
+
+          this.setSuccess('Templates loaded successfully')
+          return {
+            success: true,
+            data: processedTemplates,
+            pagination: this.pagination,
+            count: result.count
+          }
+        } else {
+          throw new Error('API returned invalid response')
         }
       } catch (error) {
         console.error('Error fetching templates:', error)
@@ -269,6 +283,11 @@ export const useCampaignTemplateStore = defineStore('campaignTemplate', {
         })
 
         if (response) {
+          // Save social contents if any
+          if (data.selected_channels && data.selected_channels.length > 0) {
+            await this.saveSocialContents(response.name, data)
+          }
+          
           // Add to local state
           const newTemplate = {
             ...response,
@@ -387,6 +406,37 @@ export const useCampaignTemplateStore = defineStore('campaignTemplate', {
       }
     },
 
+    // Use template to create campaign
+    async useTemplate(templateName, campaignName) {
+      this.setLoading(true)
+      
+      try {
+        const response = await call('mbw_mira.api.campaign_template.use_template', {
+          template_name: templateName,
+          campaign_name: campaignName
+        })
+
+        if (response) {
+          this.setSuccess('Campaign created successfully from template')
+          return {
+            success: true,
+            data: response,
+            campaign_name: response.name,
+            message: 'Campaign created successfully from template!'
+          }
+        } else {
+          throw new Error('Failed to create campaign from template')
+        }
+      } catch (error) {
+        console.error('Error using template:', error)
+        this.setError(this.parseError(error) || 'Failed to create campaign from template')
+        return {
+          success: false,
+          error: this.parseError(error) || 'Failed to create campaign from template'
+        }
+      }
+    },
+
     // Get form data with field layout
     async fetchFormData(name = null) {
       this.setLoading(true)
@@ -439,24 +489,54 @@ export const useCampaignTemplateStore = defineStore('campaignTemplate', {
     // Get statistics
     async fetchStatistics() {
       try {
-        const [totalCount, activeCount] = await Promise.all([
-          call('frappe.client.get_count', {
-            doctype: 'Mira Campaign Template'
-          }),
-          call('frappe.client.get_count', {
-            doctype: 'Mira Campaign Template',
-            filters: { is_active: 1 }
+        // Use get_list_data to get all templates with count
+        const result = await call('mbw_mira.api.doc.get_list_data', {
+          doctype: 'Mira Campaign Template',
+          fields: ['campaign_type', 'is_active', 'scope_type'],
+          limit_page_length: 9999
+        })
+
+        console.log('📊 fetchStatistics result:', result)
+
+        if (result && result.success && Array.isArray(result.data)) {
+          const templates = result.data
+          let activeCount = 0
+          let systemTemplates = 0
+          let myTemplates = 0
+          const typeStats = {}
+
+          templates.forEach(template => {
+            if (template.is_active) activeCount++
+            
+            // Count by scope_type for tabs
+            if (template.scope_type === 'PUBLIC' || template.scope_type === 'ORGANIZATION') {
+              systemTemplates++
+            } else if (template.scope_type === 'PRIVATE') {
+              myTemplates++
+            }
+            
+            const type = template.campaign_type
+            if (type) {
+              if (!typeStats[type]) {
+                typeStats[type] = { total: 0, active: 0 }
+              }
+              typeStats[type].total++
+              if (template.is_active) {
+                typeStats[type].active++
+              }
+            }
           })
-        ])
 
-        // Get type statistics
-        const typeStats = await this.fetchTypeStatistics()
-
-        this.statistics = {
-          total: totalCount || 0,
-          active: activeCount || 0,
-          inactive: (totalCount || 0) - (activeCount || 0),
-          by_type: typeStats
+          this.statistics = {
+            total: result.count || templates.length,
+            active: activeCount,
+            inactive: (result.count || templates.length) - activeCount,
+            system_templates: systemTemplates,
+            my_templates: myTemplates,
+            by_type: typeStats
+          }
+          
+          console.log('📊 Updated statistics:', this.statistics)
         }
 
         return {
@@ -472,36 +552,6 @@ export const useCampaignTemplateStore = defineStore('campaignTemplate', {
       }
     },
 
-    // Get type statistics
-    async fetchTypeStatistics() {
-      try {
-        const templates = await call('frappe.client.get_list', {
-          doctype: 'Mira Campaign Template',
-          fields: ['campaign_type', 'is_active'],
-          limit_page_length: 999
-        })
-
-        const stats = {}
-        if (templates && Array.isArray(templates)) {
-          templates.forEach(template => {
-            const type = template.campaign_type
-            if (!stats[type]) {
-              stats[type] = { total: 0, active: 0 }
-            }
-            stats[type].total++
-            if (template.is_active) {
-              stats[type].active++
-            }
-          })
-        }
-
-        return stats
-      } catch (error) {
-        console.error('Error getting type statistics:', error)
-        return {}
-      }
-    },
-
     // Search templates
     async searchTemplates(searchTerm, options = {}) {
       this.setSearchText(searchTerm)
@@ -511,19 +561,25 @@ export const useCampaignTemplateStore = defineStore('campaignTemplate', {
     // Get filter options for specific field
     async fetchFilterOptions(fieldname) {
       try {
-        const response = await call('frappe.client.get_list', {
+        const result = await call('mbw_mira.api.doc.get_list_data', {
           doctype: 'Mira Campaign Template',
           fields: [fieldname],
-          distinct: true,
-          order_by: fieldname
+          limit_page_length: 9999
         })
 
-        const options = response
-          ?.filter(item => item[fieldname])
-          ?.map(item => ({
-            label: item[fieldname],
-            value: item[fieldname]
-          })) || []
+        const uniqueValues = new Set()
+        if (result && result.success && Array.isArray(result.data)) {
+          result.data.forEach(item => {
+            if (item[fieldname]) {
+              uniqueValues.add(item[fieldname])
+            }
+          })
+        }
+
+        const options = Array.from(uniqueValues).sort().map(value => ({
+          label: value,
+          value: value
+        }))
 
         return {
           success: true,
@@ -547,6 +603,64 @@ export const useCampaignTemplateStore = defineStore('campaignTemplate', {
       }
     },
 
+    // Use template to create a new campaign
+    async useTemplate(templateId, campaignName = null, startDate = null, targetPool = null) {
+      this.setLoading(true)
+      
+      try {
+        const result = await call('mbw_mira.api.campaign_from_template.create_campaign_from_template', {
+          template_id: templateId,
+          campaign_name: campaignName,
+          start_date: startDate,
+          target_pool: targetPool
+        })
+        
+        if (result && result.success) {
+          this.setSuccess('Campaign created from template')
+          return {
+            success: true,
+            message: result.message,
+            campaign_id: result.data?.campaign_id,
+            campaign_name: result.data?.campaign_id, // Use ID for routing
+            data: result.data
+          }
+        } else {
+          throw new Error(result?.error || 'Failed to create campaign from template')
+        }
+      } catch (error) {
+        console.error('Error using template:', error)
+        this.setError(error.message || 'Failed to create campaign from template')
+        return {
+          success: false,
+          error: error.message || 'Failed to create campaign from template'
+        }
+      }
+    },
+
+    // Get template preview before using
+    async getTemplatePreview(templateId) {
+      try {
+        const result = await call('mbw_mira.api.campaign_from_template.get_template_preview', {
+          template_id: templateId
+        })
+        
+        if (result && result.success) {
+          return {
+            success: true,
+            data: result.data
+          }
+        } else {
+          throw new Error(result?.error || 'Failed to get template preview')
+        }
+      } catch (error) {
+        console.error('Error getting template preview:', error)
+        return {
+          success: false,
+          error: error.message || 'Failed to get template preview'
+        }
+      }
+    },
+
     // Helper methods
     validateTemplate(data, action = 'create') {
       const errors = []
@@ -566,7 +680,7 @@ export const useCampaignTemplateStore = defineStore('campaignTemplate', {
       }
 
       // Validate campaign type
-      const validTypes = ['Email', 'SMS', 'Ads', 'Social Media', 'Direct Mail']
+      const validTypes = ['ATTRACTION', 'NURTURING', 'RECRUITMENT']
       if (data.campaign_type && !validTypes.includes(data.campaign_type)) {
         errors.push('Invalid campaign type')
       }
@@ -590,16 +704,52 @@ export const useCampaignTemplateStore = defineStore('campaignTemplate', {
         prepared.is_active = prepared.is_active !== undefined ? prepared.is_active : 1
       }
 
+      // Build configuration_json from campaign info fields
+      const configFields = ['objective', 'target_pool', 'config_data', 'conditions', 'candidate_count']
+      const config = prepared.configuration || {}
+      
+      // Get values from campaign_info nested structure or flat structure
+      const campaignInfo = prepared.campaign_info || {}
+      
+      configFields.forEach(field => {
+        const value = campaignInfo[field] || prepared[field]
+        if (value !== undefined && value !== null && value !== '') {
+          config[field] = value
+        }
+      })
+      
+      // Store configuration as JSON string
+      if (Object.keys(config).length > 0) {
+        prepared.configuration_json = JSON.stringify(config)
+      }
+      
+      // Remove fields that don't exist in doctype
+      delete prepared.objective
+      delete prepared.target_pool
+      delete prepared.config_data
+      delete prepared.conditions
+      delete prepared.candidate_count
+      delete prepared.campaign_info
+      delete prepared.content_channels
+      delete prepared.campaign_settings
+      delete prepared.configuration
+      delete prepared.selected_channels
+      delete prepared.facebook_content
+      delete prepared.zalo_content
+      delete prepared.email_content
+      delete prepared.sms_content
+      delete prepared.social_contents_raw
+      delete prepared.campaign_tags
+      delete prepared.template_description
+
       return prepared
     },
 
     getCampaignTypeDisplay(type) {
       const typeMap = {
-        'Email': 'Email Campaign',
-        'SMS': 'SMS Campaign', 
-        'Ads': 'Advertisement Campaign',
-        'Social Media': 'Social Media Campaign',
-        'Direct Mail': 'Direct Mail Campaign'
+        'ATTRACTION': 'Attraction Campaign',
+        'NURTURING': 'Nurturing Campaign', 
+        'RECRUITMENT': 'Recruitment Campaign'
       }
       return typeMap[type] || type
     },
@@ -661,6 +811,206 @@ export const useCampaignTemplateStore = defineStore('campaignTemplate', {
       }
 
       return error.message || 'An error occurred'
+    },
+
+    // Save social contents for template
+    async saveSocialContents(templateId, templateData) {
+      try {
+        const socialContents = []
+        const selectedChannels = templateData.selected_channels || []
+        
+        // Process each selected channel
+        for (const channel of selectedChannels) {
+          let contentData = {
+            platform: this.getPlatformName(channel),
+            channel_type: channel,
+            is_active: 1
+          }
+          
+          // Get content based on channel
+          if (channel === 'facebook' && templateData.facebook_content) {
+            contentData.template_content = templateData.facebook_content.content || ''
+            contentData.social_media_images = templateData.facebook_content.image || null
+            contentData.page_id = templateData.facebook_content.page_id || null
+            contentData.connection_id = templateData.facebook_content.connection_id || null
+          } else if (channel === 'zalo' && templateData.zalo_content) {
+            contentData.template_content = templateData.zalo_content.content || ''
+            contentData.social_media_images = templateData.zalo_content.image || null
+            contentData.page_id = templateData.zalo_content.page_id || null
+            contentData.connection_id = templateData.zalo_content.connection_id || null
+          } else if (channel === 'email' && templateData.email_content) {
+            contentData.template_content = templateData.email_content.body || templateData.email_content.content || ''
+            contentData.subject = templateData.email_content.subject || ''
+            contentData.mjml_content = templateData.email_content.mjml_content || null
+            contentData.block_content = templateData.email_content.block_content || null
+          }
+          
+          if (contentData.template_content) {
+            socialContents.push(contentData)
+          }
+        }
+        
+        // Also check for content without selected channels (e.g., direct content input)
+        if (selectedChannels.length === 0) {
+          // Check Facebook content
+          if (templateData.facebook_content?.content) {
+            socialContents.push({
+              platform: 'Facebook',
+              channel_type: 'facebook',
+              is_active: 1,
+              template_content: templateData.facebook_content.content,
+              social_media_images: templateData.facebook_content.image || null,
+              page_id: templateData.facebook_content.page_id || null,
+              connection_id: templateData.facebook_content.connection_id || null
+            })
+          }
+          
+          // Check Zalo content
+          if (templateData.zalo_content?.content) {
+            socialContents.push({
+              platform: 'Zalo',
+              channel_type: 'zalo',
+              is_active: 1,
+              template_content: templateData.zalo_content.content,
+              social_media_images: templateData.zalo_content.image || null,
+              page_id: templateData.zalo_content.page_id || null,
+              connection_id: templateData.zalo_content.connection_id || null
+            })
+          }
+          
+          // Check Email content
+          if (templateData.email_content?.body || templateData.email_content?.content) {
+            socialContents.push({
+              platform: 'Email',
+              channel_type: 'email',
+              is_active: 1,
+              template_content: templateData.email_content.body || templateData.email_content.content || '',
+              subject: templateData.email_content.subject || '',
+              mjml_content: templateData.email_content.mjml_content || null,
+              block_content: templateData.email_content.block_content || null
+            })
+          }
+        }
+        
+        // Bulk save social contents
+        if (socialContents.length > 0) {
+          console.log('💾 Saving social contents:', socialContents)
+          await call('mbw_mira.mbw_mira.doctype.mira_campaign_template_social.api.bulk_save_template_social_contents', {
+            template_id: templateId,
+            contents_data: socialContents
+          })
+        }
+      } catch (error) {
+        console.error('Error saving social contents:', error)
+        // Don't throw error to avoid breaking template creation
+      }
+    },
+
+    // Helper method to get platform name
+    getPlatformName(channel) {
+      const platformMap = {
+        'facebook': 'Facebook',
+        'zalo': 'Zalo', 
+        'email': 'Email',
+        'sms': 'SMS'
+      }
+      return platformMap[channel] || channel
+    },
+
+    // Load template with social contents for editing
+    async loadTemplateWithSocialContents(templateId) {
+      try {
+        console.log('🔍 Loading template with social contents:', templateId)
+        const response = await call(
+          'mbw_mira.mbw_mira.doctype.mira_campaign_template_social.api.get_template_with_social_contents',
+          { template_id: templateId }
+        )
+        
+        console.log('📦 API Response:', response)
+        
+        // Handle Frappe response wrapper (response.message or direct response)
+        const result = response?.message || response
+        
+        if (result?.success) {
+          console.log('✅ Template data loaded:', result.data)
+          return result.data
+        } else {
+          console.error('❌ Error loading template:', result?.error)
+          return null
+        }
+      } catch (error) {
+        console.error('❌ Error loading template with social contents:', error)
+        return null
+      }
+    },
+
+    // Get social contents for a template
+    async getSocialContents(templateId) {
+      try {
+        const response = await call(
+          'mbw_mira.mbw_mira.doctype.mira_campaign_template_social.api.get_template_social_contents',
+          { template_id: templateId }
+        )
+        
+        // Handle Frappe response wrapper
+        const result = response?.message || response
+        
+        if (result?.success) {
+          return {
+            raw: result.data,
+            formatted: result.formatted,
+            selectedChannels: result.selected_channels
+          }
+        }
+        return null
+      } catch (error) {
+        console.error('Error getting social contents:', error)
+        return null
+      }
+    },
+
+    // Save template flows (triggers)
+    async saveTemplateFlows(templateId, triggers) {
+      try {
+        console.log('💾 Saving template flows:', templateId, triggers)
+        const response = await call(
+          'mbw_mira.api.campaign_template_flow.sync_template_flows',
+          { 
+            campaign_template_id: templateId,
+            triggers: triggers
+          }
+        )
+        
+        const result = response?.message || response
+        console.log('📦 Save flows response:', result)
+        
+        return result
+      } catch (error) {
+        console.error('Error saving template flows:', error)
+        return { success: false, error: error.message }
+      }
+    },
+
+    // Get template flows (triggers)
+    async getTemplateFlows(templateId) {
+      try {
+        console.log('🔍 Getting template flows:', templateId)
+        const response = await call(
+          'mbw_mira.api.campaign_template_flow.get_template_flows',
+          { campaign_template_id: templateId }
+        )
+        
+        const result = response?.message || response
+        console.log('📦 Get flows response:', result)
+        
+        if (result?.success) {
+          return result.data || []
+        }
+        return []
+      } catch (error) {
+        console.error('Error getting template flows:', error)
+        return []
+      }
     }
   }
 })
