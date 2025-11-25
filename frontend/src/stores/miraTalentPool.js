@@ -398,7 +398,7 @@ export const useMiraTalentPoolStore = defineStore('miraTalentPool', {
       this.clearMessages()
       
       try {
-        await call('frappe.client.delete', {
+        const result =await call('frappe.client.delete', {
           doctype: 'Mira Talent Pool',
           name
         })
@@ -412,7 +412,7 @@ export const useMiraTalentPoolStore = defineStore('miraTalentPool', {
         
         this.setSuccess('Talent pool deleted successfully')
         this.setLoading(false)
-        return true
+        return result
       } catch (error) {
         this.setError(this.parseError(error))
         this.setLoading(false)

@@ -6,7 +6,7 @@ from mbw_mira.utils import verify_signature
 from frappe.utils import now_datetime, add_days
 
 @frappe.whitelist(allow_guest=True)
-def track(campaign_id =None, talent_id=None,source=None,medium = None, action=None, type=None, url=None):
+def track(campaign_id =None, talent_id=None,source=None,medium = None, action=None, type=None, url=None,ip_address=None):
     # if not talent_id or not type:
     #     frappe.throw("Missing required parameters: talent_id, type")
 
@@ -27,6 +27,7 @@ def track(campaign_id =None, talent_id=None,source=None,medium = None, action=No
         "utm_medium":medium,
         "chanel":source,
         "url": url,
+        "ip_address":ip_address,
         "description": json.dumps(info)
     })
     doc.insert(ignore_permissions=True)
@@ -77,12 +78,12 @@ def click_redirect():
     print(query_params)
     talent_id = query_params.get("talent_id",[""])[0]
     action = query_params.get("action",[""])[0]
-
+    ip_address = frappe.local.request_ip or ""
     # Ghi tracking chỉ 1 lần
     track(campaign_id=campaign_id, talent_id=talent_id,
           source=source, medium=medium,
           action=action, type="ON_LINK_CLICK",
-          url=decoded_url)
+          url=decoded_url,ip_address=ip_address)
 
     frappe.local.response["type"] = "redirect"
     frappe.local.response["location"] = decoded_url
@@ -108,7 +109,7 @@ def tracking_pixel():
 
     talent_id = frappe.form_dict.get("talent_id") or ""
     action = frappe.form_dict.get("action") or ""
-
+    ip_address = frappe.local.request_ip or ""
     # --- Track chỉ 1 lần dựa trên sig ---
     if sig and frappe.cache().get(f"used_sig:{sig}"):
         # Sig đã dùng → không track nữa
@@ -116,7 +117,7 @@ def tracking_pixel():
     else:
         if sig:
             frappe.cache().set(f"used_sig:{sig}", True, expire=3600)  # cache 1h
-
+        
         # Gọi hàm track
         track(
             campaign_id=campaign_id,
@@ -125,7 +126,8 @@ def tracking_pixel():
             medium=medium,
             action=action,
             type="EMAIL_OPENED",
-            url=decoded_url
+            url=decoded_url,
+            ip_address = ip_address
         )
 
     # --- Trả về transparent 1x1 GIF ---
@@ -158,7 +160,7 @@ def page_visited():
 
     talent_id = frappe.form_dict.get("talent_id")
     action = frappe.form_dict.get("action")
-
+    ip_address = frappe.local.request_ip or ""
     # --- Track chỉ 1 lần dựa trên sig ---
     if sig and frappe.cache().get(f"used_sig:{sig}"):
         # Sig đã dùng → không track nữa
@@ -176,7 +178,8 @@ def page_visited():
             medium=medium,
             action=action,
             type="PAGE_VISITED",
-            url=""
+            url="",
+            ip_address = ip_address
         )
 
     # --- Trả về response JSON success ---

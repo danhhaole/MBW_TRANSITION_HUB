@@ -1324,7 +1324,7 @@ const removeFromSegment = async (candidate) => {
 		try {
 			// Delete the Mira Talent Pool relationship
 			if (candidate.candidate_segment_id) {
-				const result = await miraTalentPoolStore.delete(candidate.candidate_segment_id)
+				const result = await miraTalentPoolStore.deleteTalentPool(candidate.candidate_segment_id)
 				if (result.success) {
 					await loadCandidates()
 					// Update the segment's candidate count
