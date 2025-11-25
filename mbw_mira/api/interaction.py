@@ -102,9 +102,9 @@ def tracking_pixel():
     parsed = urllib.parse.urlparse(decoded_url)
     query_params = urllib.parse.parse_qs(parsed.query)
 
-    campaign_id = query_params.get("utm_campaign", [""])[0]
-    source = query_params.get("utm_source", [""])[0]
-    medium = query_params.get("utm_medium", [""])[0]
+    campaign_id = query_params.get("utm_campaign")
+    source = query_params.get("utm_source")
+    medium = query_params.get("utm_medium")
 
     talent_id = frappe.form_dict.get("talent_id") or ""
     action = frappe.form_dict.get("action") or ""
@@ -152,12 +152,12 @@ def tracking_pixel():
 def page_visited():
     # Parse query params từ URL gốc
     sig = frappe.form_dict.get("sig") or ""
-    campaign_id = frappe.form_dict.get("utm_campaign",[""])[0]
-    source = frappe.form_dict.get("utm_source",[""])[0]
-    medium = frappe.form_dict.get("utm_medium",[""])[0]
+    campaign_id = frappe.form_dict.get("utm_campaign")
+    source = frappe.form_dict.get("utm_source")
+    medium = frappe.form_dict.get("utm_medium")
 
-    talent_id = frappe.form_dict.get("talent_id",[""])[0]
-    action = frappe.form_dict.get("action",[""])[0]
+    talent_id = frappe.form_dict.get("talent_id")
+    action = frappe.form_dict.get("action")
 
     # --- Track chỉ 1 lần dựa trên sig ---
     if sig and frappe.cache().get(f"used_sig:{sig}"):
