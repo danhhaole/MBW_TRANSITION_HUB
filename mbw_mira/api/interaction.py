@@ -93,13 +93,14 @@ def click_redirect():
 def tracking_pixel():
     encoded_url = frappe.form_dict.get("url") or ""
     tracking_sig = frappe.form_dict.get("url_tracking") or ""
-    
+    sig = frappe.form_dict.get("sig") or ""
+
     # Decode URL gốc
     decoded_url = urllib.parse.unquote(encoded_url)
 
     # Parse query params từ URL gốc
     parsed = urllib.parse.urlparse(decoded_url)
-    query_params = urllib.parse.parse_qs(parsed.query)  # Trả về dict với list giá trị
+    query_params = urllib.parse.parse_qs(parsed.query)
 
     campaign_id = query_params.get("utm_campaign", [""])[0]
     source = query_params.get("utm_source", [""])[0]
@@ -107,36 +108,58 @@ def tracking_pixel():
 
     talent_id = frappe.form_dict.get("talent_id") or ""
     action = frappe.form_dict.get("action") or ""
-    sig = frappe.form_dict.get("sig") or ""
 
-    track(campaign_id=campaign_id, talent_id=talent_id,source=source,medium=medium, action=action, type="EMAIL_OPENED")
+    # --- Track chỉ 1 lần dựa trên sig ---
+    if sig and frappe.cache().get(f"used_sig:{sig}"):
+        # Sig đã dùng → không track nữa
+        pass
+    else:
+        if sig:
+            frappe.cache().set(f"used_sig:{sig}", True, expire=3600)  # cache 1h
 
-    # Return transparent GIF
-    frappe.local.response.type = "binary"
-    frappe.local.response.filename = "pixel.gif"
-    frappe.local.response.filecontent = (
+        # Gọi hàm track
+        track(
+            campaign_id=campaign_id,
+            talent_id=talent_id,
+            source=source,
+            medium=medium,
+            action=action,
+            type="EMAIL_OPENED",
+            url=decoded_url
+        )
+
+    # --- Trả về transparent 1x1 GIF ---
+    gif_bytes = (
         b"GIF89a\x01\x00\x01\x00\x80\x00\x00\x00\x00\x00"
         b"\xFF\xFF\xFF!\xF9\x04\x01\x00\x00\x00\x00,"
         b"\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02L\x01\x00;"
     )
 
-    # ensure headers is a dict
+    frappe.local.response.type = "binary"
+    frappe.local.response.filename = "pixel.gif"
+    frappe.local.response.filecontent = gif_bytes
+
+    # Headers chuẩn
     if frappe.local.response.get("headers") is None:
         frappe.local.response["headers"] = {}
 
     frappe.local.response["headers"]["Content-Type"] = "image/gif"
+    frappe.local.response["headers"]["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    frappe.local.response["headers"]["Pragma"] = "no-cache"
+    frappe.local.response["headers"]["Expires"] = "0"
 
 @frappe.whitelist(allow_guest=True)
 def page_visited():
     encoded_url = frappe.form_dict.get("url") or ""
     tracking_sig = frappe.form_dict.get("url_tracking") or ""
-    
+    sig = frappe.form_dict.get("sig") or ""
+
     # Decode URL gốc
     decoded_url = urllib.parse.unquote(encoded_url)
 
     # Parse query params từ URL gốc
     parsed = urllib.parse.urlparse(decoded_url)
-    query_params = urllib.parse.parse_qs(parsed.query)  # Trả về dict với list giá trị
+    query_params = urllib.parse.parse_qs(parsed.query)
 
     campaign_id = query_params.get("utm_campaign", [""])[0]
     source = query_params.get("utm_source", [""])[0]
@@ -144,24 +167,34 @@ def page_visited():
 
     talent_id = frappe.form_dict.get("talent_id") or ""
     action = frappe.form_dict.get("action") or ""
-    sig = frappe.form_dict.get("sig") or ""
-    
-    track(campaign_id=campaign_id,talent_id=talent_id,source=source, medium=medium, action=action, type="PAGE_VISITED")
-    
-    # Return transparent GIF
-    frappe.local.response.type = "binary"
-    frappe.local.response.filename = "pixel.gif"
-    frappe.local.response.filecontent = (
-        b"GIF89a\x01\x00\x01\x00\x80\x00\x00\x00\x00\x00"
-        b"\xFF\xFF\xFF!\xF9\x04\x01\x00\x00\x00\x00,"
-        b"\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02L\x01\x00;"
-    )
 
-    # ensure headers is a dict
-    if frappe.local.response.get("headers") is None:
-        frappe.local.response["headers"] = {}
+    # --- Track chỉ 1 lần dựa trên sig ---
+    if sig and frappe.cache().get(f"used_sig:{sig}"):
+        # Sig đã dùng → không track nữa
+        pass
+    else:
+        # Đánh dấu sig đã dùng 1 lần
+        if sig:
+            frappe.cache().set(f"used_sig:{sig}", True, expire=3600)
 
-    frappe.local.response["headers"]["Content-Type"] = "image/gif"
+        # Gọi hàm track
+        track(
+            campaign_id=campaign_id,
+            talent_id=talent_id,
+            source=source,
+            medium=medium,
+            action=action,
+            type="PAGE_VISITED",
+            url=decoded_url
+        )
+
+    # --- Trả về response JSON success ---
+    frappe.local.response.type = "json"
+    frappe.local.response.data = {
+        "status": "success",
+        "message": "Page visited tracked",
+        "url": decoded_url
+    }
 
 
 
