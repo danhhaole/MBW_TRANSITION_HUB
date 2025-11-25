@@ -8,7 +8,7 @@ from frappe.utils import now_datetime
 from mbw_mira.mbw_mira.doctype.mira_interaction.mira_interaction import (
     create_mira_interaction,
 )
-from urllib.parse import unquote, urlencode
+from urllib.parse import quote, unquote, urlencode
 import ipaddress
 import csv
 
@@ -280,7 +280,7 @@ def render_template(template_str, context):
     sig = make_signature(pixel_params)
     pixel_query = urlencode({**pixel_params, "sig": sig})
     tracking_url = (
-        f"{base_url}/api/method/mbw_mira.api.interaction.click_redirect?{pixel_query}"
+        f"{base_url}/api/method/mbw_mira.api.interaction.page_visited?{pixel_query}"
     )
     # Gửi vào context
     ctx = {
@@ -330,11 +330,7 @@ def _create_email_tracking(talent_id, campaign, original_url, action="EMAIL_CLIC
     )
 
 def _create_unsubscribe_link(talent_id, campaign):
-    origin = frappe.request.headers.get("Origin")
-    protocol = frappe.request.scheme
-    host = frappe.request.host
-    base_url = origin if origin else f"{protocol}://{host}"
-
+    
     params = {
         "talent_id": talent_id,
         "campaign": campaign.name,
@@ -344,25 +340,41 @@ def _create_unsubscribe_link(talent_id, campaign):
     sig = make_signature(params)
     query = urlencode({**params, "sig": sig})
 
-    return f"{base_url}/api/method/mbw_mira.api.interaction.unsubscribe?{query}"
+    return f"{_get_base_url()}/api/method/mbw_mira.api.interaction.unsubscribe?{query}"
 
-
+def _get_base_url()->str:
+    origin = frappe.request.headers.get("Origin")
+    protocol = frappe.request.scheme
+    host = frappe.request.host
+    base_url = origin if origin else f"{protocol}://{host}"
+    return base_url
 def append_tracking_to_urls(content, tracking_url):
     """
-    Không thay URL gốc.
-    Chỉ thêm param url=<tracking> vào link tìm thấy.
+    Thay tất cả URL trong content bằng redirect URL:
+    - Gói URL gốc vào param `url`
+    - Thêm param `url_tracking` với tracking link
+    - Không thay đổi URL nếu đã có tracking
     """
     url_regex = r"(https?://[^\s\"\'<>]+)"
+
+    # Encode tracking URL
+    encoded_tracking = quote(tracking_url, safe="")
+
+    # URL redirect
+    redirect_base = f"{_get_base_url()}/api/method/mbw_mira.api.interaction.click_redirect?url="
 
     def replace(match):
         original_url = match.group(0)
 
-        # Nếu trong url có ?, thêm &url
-        if "?" in original_url:
-            return f"{original_url}&url={tracking_url}"
+        # Nếu đã có tracking → bỏ qua
+        if "url_tracking=" in original_url:
+            return original_url
 
-        # Nếu chưa có ?, thêm ?url
-        return f"{original_url}?url={tracking_url}"
+        # Encode URL gốc để làm param
+        encoded_original = quote(original_url, safe="")
+
+        # Trả về URL redirect đầy đủ
+        return f"{redirect_base}{encoded_original}&url_tracking={encoded_tracking}"
 
     return re.sub(url_regex, replace, content)
 
