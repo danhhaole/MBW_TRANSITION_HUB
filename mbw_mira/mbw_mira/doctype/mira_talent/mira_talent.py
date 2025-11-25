@@ -50,7 +50,7 @@ class MiraTalent(Document):
             if meta_fields:
                 for field in meta_fields:
                     changed_fields = self.has_value_changed(field.fieldname)
-                    if changed_fields:
+                    if changed_fields and hasattr(old_doc,field.fieldname):
                         old = old_doc.get(field.fieldname)
                         new = self.get(field.fieldname)
 
