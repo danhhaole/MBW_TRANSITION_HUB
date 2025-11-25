@@ -67,16 +67,16 @@ def click_redirect():
 
     # Decode URL gốc
     decoded_url = urllib.parse.unquote(encoded_url)
-
+    decode_urltrack = urllib.parse.unquote(tracking_sig)
     # Parse query params
-    parsed = urllib.parse.urlparse(decoded_url)
+    parsed = urllib.parse.urlparse(decode_urltrack)
     query_params = urllib.parse.parse_qs(parsed.query)
-    campaign_id = query_params.get("utm_campaign", [""])[0]
-    source = query_params.get("utm_source", [""])[0]
-    medium = query_params.get("utm_medium", [""])[0]
-
-    talent_id = frappe.form_dict.get("talent_id") or ""
-    action = frappe.form_dict.get("action") or ""
+    campaign_id = query_params.get("utm_campaign",[""])[0]
+    source = query_params.get("utm_source",[""])[0]
+    medium = query_params.get("utm_medium",[""])[0]
+    print(query_params)
+    talent_id = query_params.get("talent_id",[""])[0]
+    action = query_params.get("action",[""])[0]
 
     # Ghi tracking chỉ 1 lần
     track(campaign_id=campaign_id, talent_id=talent_id,
@@ -150,23 +150,14 @@ def tracking_pixel():
 
 @frappe.whitelist(allow_guest=True)
 def page_visited():
-    encoded_url = frappe.form_dict.get("url") or ""
-    tracking_sig = frappe.form_dict.get("url_tracking") or ""
-    sig = frappe.form_dict.get("sig") or ""
-
-    # Decode URL gốc
-    decoded_url = urllib.parse.unquote(encoded_url)
-
     # Parse query params từ URL gốc
-    parsed = urllib.parse.urlparse(decoded_url)
-    query_params = urllib.parse.parse_qs(parsed.query)
+    sig = frappe.form_dict.get("sig") or ""
+    campaign_id = frappe.form_dict.get("utm_campaign",[""])[0]
+    source = frappe.form_dict.get("utm_source",[""])[0]
+    medium = frappe.form_dict.get("utm_medium",[""])[0]
 
-    campaign_id = query_params.get("utm_campaign", [""])[0]
-    source = query_params.get("utm_source", [""])[0]
-    medium = query_params.get("utm_medium", [""])[0]
-
-    talent_id = frappe.form_dict.get("talent_id") or ""
-    action = frappe.form_dict.get("action") or ""
+    talent_id = frappe.form_dict.get("talent_id",[""])[0]
+    action = frappe.form_dict.get("action",[""])[0]
 
     # --- Track chỉ 1 lần dựa trên sig ---
     if sig and frappe.cache().get(f"used_sig:{sig}"):
@@ -185,7 +176,7 @@ def page_visited():
             medium=medium,
             action=action,
             type="PAGE_VISITED",
-            url=decoded_url
+            url=""
         )
 
     # --- Trả về response JSON success ---
@@ -193,7 +184,7 @@ def page_visited():
     frappe.local.response.data = {
         "status": "success",
         "message": "Page visited tracked",
-        "url": decoded_url
+        "url": ""
     }
 
 
