@@ -1,3 +1,4 @@
+import urllib
 import frappe
 from frappe import _
 import json
@@ -5,7 +6,7 @@ from mbw_mira.utils import verify_signature
 from frappe.utils import now_datetime, add_days
 
 @frappe.whitelist(allow_guest=True)
-def track(campaign_id =None, talent_id=None, action=None, type=None, url=None):
+def track(campaign_id =None, talent_id=None,source=None,medium = None, action=None, type=None, url=None):
     # if not talent_id or not type:
     #     frappe.throw("Missing required parameters: talent_id, type")
 
@@ -21,6 +22,10 @@ def track(campaign_id =None, talent_id=None, action=None, type=None, url=None):
         "campaign_id":campaign_id,
         "interaction_type": type,
         "action": action,
+        "utm_campaign":campaign_id,
+        "utm_source":source,
+        "utm_medium":medium,
+        "chanel":source,
         "url": url,
         "description": json.dumps(info)
     })
@@ -45,37 +50,66 @@ def track(campaign_id =None, talent_id=None, action=None, type=None, url=None):
 
 @frappe.whitelist(allow_guest=True)
 def click_redirect():
-    campaign_id = frappe.form_dict.get("utm_campaign")
+    encoded_url = frappe.form_dict.get("url") or ""
+    tracking_sig = frappe.form_dict.get("url_tracking") or ""
+    sig = frappe.form_dict.get("sig") or ""
+
+    # Kiểm tra token/sig
+    if sig and frappe.cache().get(f"used_sig:{sig}"):
+        # Sig đã dùng → chỉ redirect
+        frappe.local.response["type"] = "redirect"
+        frappe.local.response["location"] = urllib.parse.unquote(encoded_url)
+        return
+
+    # Đánh dấu token đã dùng
+    if sig:
+        frappe.cache().set(f"used_sig:{sig}", True, expire=3600)  # hết hạn 1h
+
+    # Decode URL gốc
+    decoded_url = urllib.parse.unquote(encoded_url)
+
+    # Parse query params
+    parsed = urllib.parse.urlparse(decoded_url)
+    query_params = urllib.parse.parse_qs(parsed.query)
+    campaign_id = query_params.get("utm_campaign", [""])[0]
+    source = query_params.get("utm_source", [""])[0]
+    medium = query_params.get("utm_medium", [""])[0]
+
     talent_id = frappe.form_dict.get("talent_id") or ""
-    action = frappe.form_dict.get("action")
-    url = frappe.form_dict.get("url")
-    sig = frappe.form_dict.get("sig")
+    action = frappe.form_dict.get("action") or ""
 
-    # if not talent_id or not sig:
-    #     frappe.throw("Missing required parameters")
-
-    params = {
-        "campaign_id":campaign_id,
-        "talent_id": talent_id,
-        "action": action,
-        "url":url
-    }
-    # if not verify_signature(params, sig):
-    #     frappe.throw("Invalid signature")
-
-    track(campaign_id=campaign_id, talent_id=talent_id, action=action, type="ON_LINK_CLICK", url=url)
+    # Ghi tracking chỉ 1 lần
+    track(campaign_id=campaign_id, talent_id=talent_id,
+          source=source, medium=medium,
+          action=action, type="ON_LINK_CLICK",
+          url=decoded_url)
 
     frappe.local.response["type"] = "redirect"
-    frappe.local.response["location"] = url
+    frappe.local.response["location"] = decoded_url
+
 
 
 @frappe.whitelist(allow_guest=True)
 def tracking_pixel():
-    campaign_id = frappe.form_dict.get("utm_campaign")
-    talent_id = frappe.form_dict.get("talent_id")
-    action = frappe.form_dict.get("action")
+    encoded_url = frappe.form_dict.get("url") or ""
+    tracking_sig = frappe.form_dict.get("url_tracking") or ""
+    
+    # Decode URL gốc
+    decoded_url = urllib.parse.unquote(encoded_url)
 
-    track(campaign_id=campaign_id, talent_id=talent_id, action=action, type="EMAIL_OPENED")
+    # Parse query params từ URL gốc
+    parsed = urllib.parse.urlparse(decoded_url)
+    query_params = urllib.parse.parse_qs(parsed.query)  # Trả về dict với list giá trị
+
+    campaign_id = query_params.get("utm_campaign", [""])[0]
+    source = query_params.get("utm_source", [""])[0]
+    medium = query_params.get("utm_medium", [""])[0]
+
+    talent_id = frappe.form_dict.get("talent_id") or ""
+    action = frappe.form_dict.get("action") or ""
+    sig = frappe.form_dict.get("sig") or ""
+
+    track(campaign_id=campaign_id, talent_id=talent_id,source=source,medium=medium, action=action, type="EMAIL_OPENED")
 
     # Return transparent GIF
     frappe.local.response.type = "binary"
@@ -94,12 +128,25 @@ def tracking_pixel():
 
 @frappe.whitelist(allow_guest=True)
 def page_visited():
-    campaign_id = frappe.form_dict.get("utm_campaign")
-    talent_id = frappe.form_dict.get("talent_id") or None
-    action = frappe.form_dict.get("action")
-    sig = frappe.form_dict.get("sig")
+    encoded_url = frappe.form_dict.get("url") or ""
+    tracking_sig = frappe.form_dict.get("url_tracking") or ""
     
-    track(campaign_id=campaign_id,talent_id=talent_id, action=action, type="PAGE_VISITED")
+    # Decode URL gốc
+    decoded_url = urllib.parse.unquote(encoded_url)
+
+    # Parse query params từ URL gốc
+    parsed = urllib.parse.urlparse(decoded_url)
+    query_params = urllib.parse.parse_qs(parsed.query)  # Trả về dict với list giá trị
+
+    campaign_id = query_params.get("utm_campaign", [""])[0]
+    source = query_params.get("utm_source", [""])[0]
+    medium = query_params.get("utm_medium", [""])[0]
+
+    talent_id = frappe.form_dict.get("talent_id") or ""
+    action = frappe.form_dict.get("action") or ""
+    sig = frappe.form_dict.get("sig") or ""
+    
+    track(campaign_id=campaign_id,talent_id=talent_id,source=source, medium=medium, action=action, type="PAGE_VISITED")
     
     # Return transparent GIF
     frappe.local.response.type = "binary"
