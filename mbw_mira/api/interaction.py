@@ -60,8 +60,8 @@ def click_redirect():
         "action": action,
         "url":url
     }
-    if not verify_signature(params, sig):
-        frappe.throw("Invalid signature")
+    # if not verify_signature(params, sig):
+    #     frappe.throw("Invalid signature")
 
     track(campaign_id=campaign_id, talent_id=talent_id, action=action, type="ON_LINK_CLICK", url=url)
 
