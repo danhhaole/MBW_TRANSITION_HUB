@@ -24,13 +24,16 @@
               </FormControl>
             </div>
 
-            <!-- Channel Filter -->
+            <!-- Template Type Filter -->
             <div class="">
-              <Select
-                v-model="selectedChannel"
-                :options="channelOptions"
-                
-              />
+              <select
+                v-model="templateTypeFilter"
+                class="border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">{{ __('All Templates') }}</option>
+                <option value="default">{{ __('Default Templates') }}</option>
+                <option value="my">{{ __('My Templates') }}</option>
+              </select>
             </div>
 
             <!-- Show Recommended Only -->
@@ -62,89 +65,115 @@
               v-for="template in paginatedTemplates"
               :key="template.name"
               @click="selectTemplate(template)"
-              class="group relative cursor-pointer rounded-lg border border-gray-200 overflow-hidden transition-all hover:shadow-lg hover:border-blue-500"
+              class="group relative cursor-pointer rounded-lg border-2 overflow-hidden transition-all hover:shadow-lg"
+              :class="selectedTemplate?.name === template.name ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200 hover:border-blue-300'"
             >
-            <!-- Template Preview Image -->
-            <div class="relative h-36 bg-gray-100 overflow-hidden">
-              <img
-                v-if="template.thumbnail"
-                :src="template.thumbnail"
-                :alt="template.name_template"
-                class="w-full h-full object-cover"
-              />
-              <div v-else class="flex items-center justify-center h-full">
-                <FeatherIcon name="layout" class="h-16 w-16 text-gray-300" />
-              </div>
-              
-              <!-- Recommended Badge -->
-              <div
-                v-if="template.is_suggestion"
-                class="absolute top-3 right-3 bg-green-500 text-white text-xs font-medium px-2 py-1 rounded"
-              >
-                {{ __("Recommended") }}
-              </div>
-
-              <!-- Premium Badge -->
-              <div
-                v-if="template.is_premium"
-                class="absolute top-3 left-3 bg-yellow-500 text-white text-xs font-medium px-2 py-1 rounded"
-              >
-                {{ __("Premium") }}
-              </div>
-            </div>
-
-            <!-- Template Info -->
-            <div class="p-4">
-              <h3 class="font-semibold text-gray-900 mb-1 line-clamp-1">
-                {{ template.name_template }}
-              </h3>
-              <p class="text-sm text-gray-600 mb-3 line-clamp-2">
-                {{ template.description || __("No description") }}
-              </p>
-
-              <!-- Template Type Badges -->
-              <div class="flex items-center gap-2 flex-wrap">
-                <!-- Channel Badge -->
-                <span
-                  v-if="template.channel"
-                  class="inline-flex items-center px-2 py-1 rounded text-xs font-medium"
-                  :class="getChannelBadgeClass(template.channel)"
+              <!-- Template Preview Image -->
+              <div class="relative h-24 bg-gray-100 overflow-hidden">
+                <img
+                  v-if="template.thumbnail"
+                  :src="template.thumbnail"
+                  :alt="template.template_name"
+                  class="w-full h-full object-cover"
+                />
+                <div v-else class="flex items-center justify-center h-full">
+                  <FeatherIcon name="layout" class="h-16 w-16 text-gray-300" />
+                </div>
+                
+                <!-- Recommended Badge -->
+                <div
+                  v-if="template.is_suggestion"
+                  class="absolute top-3 right-3 bg-green-500 text-white text-xs font-medium px-2 py-1 rounded"
                 >
-                  <FeatherIcon :name="getChannelIcon(template.channel)" class="h-3 w-3 mr-1" />
-                  {{ template.channel }}
-                </span>
-              </div>
-            </div>
+                  {{ __("Recommended") }}
+                </div>
 
-            <!-- Hover Overlay -->
-            <div class="absolute inset-0 bg-blue-500 bg-opacity-0 group-hover:bg-opacity-10 transition-all pointer-events-none" />
+                <!-- Premium Badge -->
+                <div
+                  v-if="template.is_premium"
+                  class="absolute top-3 left-3 bg-yellow-500 text-white text-xs font-medium px-2 py-1 rounded"
+                >
+                  {{ __("Premium") }}
+                </div>
+                
+                <!-- Default Badge -->
+                <div
+                  v-if="template.is_default"
+                  class="absolute bottom-3 left-3 bg-blue-500 text-white text-xs font-medium px-2 py-1 rounded"
+                >
+                  {{ __("Default") }}
+                </div>
+              </div>
+
+              <!-- Template Info -->
+              <div class="p-4">
+                <h3 class="font-semibold text-gray-900 mb-1 line-clamp-1">
+                  {{ template.template_name }}
+                </h3>
+                <p class="text-sm text-gray-600 mb-3 line-clamp-2">
+                  {{ template.description || __("No description") }}
+                </p>
+
+                <!-- Template Type Badges -->
+                <div class="flex items-center gap-2 flex-wrap">
+                  <!-- Campaign Type Badge -->
+                  <span
+                    v-if="template.campaign_type"
+                    class="inline-flex items-center px-2 py-1 rounded text-xs font-medium"
+                    :class="getCampaignTypeBadgeClass(template.campaign_type)"
+                  >
+                    <FeatherIcon :name="getCampaignTypeIcon(template.campaign_type)" class="h-3 w-3 mr-1" />
+                    {{ getCampaignTypeLabel(template.campaign_type) }}
+                  </span>
+                  
+                  <!-- My Template Badge (for non-default) -->
+                  <span
+                    v-if="!template.is_default"
+                    class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-purple-100 text-purple-700"
+                  >
+                    <FeatherIcon name="user" class="h-3 w-3 mr-1" />
+                    {{ __('My Template') }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Selected Indicator -->
+              <div 
+                v-if="selectedTemplate?.name === template.name"
+                class="absolute top-2 right-2 bg-blue-500 text-white rounded-full p-1"
+              >
+                <FeatherIcon name="check" class="h-4 w-4" />
+              </div>
+
+              <!-- Hover Overlay -->
+              <div class="absolute inset-0 bg-blue-500 bg-opacity-0 group-hover:bg-opacity-10 transition-all pointer-events-none" />
             </div>
           </div>
 
           <!-- Pagination -->
-        </div>
-        <div v-if="totalPages > 1" class="flex items-center justify-between border-t border-gray-200 pt-4">
-          <div class="text-sm text-gray-600">
-            {{ __('Showing') }} {{ startIndex + 1 }} - {{ Math.min(endIndex, filteredTemplates.length) }} {{ __('of') }} {{ filteredTemplates.length }} {{ __('templates') }}
-          </div>
-          <div class="flex items-center gap-2">
-            <button
-              @click="currentPage--"
-              :disabled="currentPage === 1"
-              class="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <FeatherIcon name="chevron-left" class="h-4 w-4" />
-            </button>
-            <span class="text-sm text-gray-700">
-              {{ __('Page') }} {{ currentPage }} {{ __('of') }} {{ totalPages }}
-            </span>
-            <button
-              @click="currentPage++"
-              :disabled="currentPage === totalPages"
-              class="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <FeatherIcon name="chevron-right" class="h-4 w-4" />
-            </button>
+          <div v-if="totalPages > 1" class="flex items-center justify-between border-t border-gray-200 pt-4">
+            <div class="text-sm text-gray-600">
+              {{ __('Showing') }} {{ startIndex + 1 }} - {{ Math.min(endIndex, filteredTemplates.length) }} {{ __('of') }} {{ filteredTemplates.length }} {{ __('templates') }}
+            </div>
+            <div class="flex items-center gap-2">
+              <button
+                @click="currentPage--"
+                :disabled="currentPage === 1"
+                class="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <FeatherIcon name="chevron-left" class="h-4 w-4" />
+              </button>
+              <span class="text-sm text-gray-700">
+                {{ __('Page') }} {{ currentPage }} {{ __('of') }} {{ totalPages }}
+              </span>
+              <button
+                @click="currentPage++"
+                :disabled="currentPage === totalPages"
+                class="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <FeatherIcon name="chevron-right" class="h-4 w-4" />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -157,9 +186,24 @@
     </template>
 
     <template #actions>
-      <div class="flex justify-end">
+      <div class="flex justify-end gap-2">
         <Button variant="outline" @click="handleClose">
           {{ __('Cancel') }}
+        </Button>
+        <Button 
+          variant="solid" 
+          theme="blue"
+          :disabled="!selectedTemplate || creating"
+          :loading="creating"
+          @click="confirmSelection"
+        >
+          <template v-if="creating">
+           
+            {{ __('Creating...') }}
+          </template>
+          <template v-else>
+            {{ __('Continue') }}
+          </template>
         </Button>
       </div>
     </template>
@@ -168,14 +212,17 @@
 
 <script setup>
 import { ref, watch, computed } from 'vue'
-import { Dialog, Button, FeatherIcon, FormControl, Select, Checkbox } from 'frappe-ui'
-import { createResource } from 'frappe-ui'
+import { Dialog, Button, FeatherIcon, FormControl, Checkbox, call } from 'frappe-ui'
 import { useToast } from '@/composables/useToast'
 
 const props = defineProps({
   modelValue: {
     type: Boolean,
     default: false
+  },
+  campaignType: {
+    type: String,
+    default: null
   }
 })
 
@@ -185,20 +232,13 @@ const show = ref(props.modelValue)
 const templates = ref([])
 const loading = ref(false)
 const error = ref(null)
+const selectedTemplate = ref(null)
+const creating = ref(false)
 
 // Filter states
 const searchText = ref('')
-const selectedChannel = ref('')
 const showRecommendedOnly = ref(false)
-
-// Channel options for Select component
-const channelOptions = [
-  { label: __('All Channels'), value: '' },
-  { label: __('Email'), value: 'Email' },
-  { label: __('Zalo ZNS'), value: 'Zalo_ZNS' },
-  { label: __('Zalo OA'), value: 'Zalo_OA' },
-  { label: __('SMS'), value: 'SMS' },
-]
+const templateTypeFilter = ref('')  // '', 'default', 'my'
 
 // Pagination states
 const currentPage = ref(1)
@@ -215,14 +255,16 @@ const filteredTemplates = computed(() => {
   if (searchText.value) {
     const search = searchText.value.toLowerCase()
     filtered = filtered.filter(t => 
-      t.name_template?.toLowerCase().includes(search) ||
+      t.template_name?.toLowerCase().includes(search) ||
       t.description?.toLowerCase().includes(search)
     )
   }
 
-  // Filter by channel
-  if (selectedChannel.value) {
-    filtered = filtered.filter(t => t.channel === selectedChannel.value)
+  // Filter by template type (default vs my templates)
+  if (templateTypeFilter.value === 'default') {
+    filtered = filtered.filter(t => t.is_default)
+  } else if (templateTypeFilter.value === 'my') {
+    filtered = filtered.filter(t => !t.is_default)
   }
 
   // Filter by recommended
@@ -242,38 +284,8 @@ const paginatedTemplates = computed(() =>
 )
 
 // Reset pagination when filters change
-watch([searchText, selectedChannel, showRecommendedOnly], () => {
+watch([searchText, showRecommendedOnly, templateTypeFilter], () => {
   currentPage.value = 1
-})
-
-// Frappe resource to fetch templates
-const templatesResource = createResource({
-  url: 'frappe.client.get_list',
-  params: {
-    doctype: 'Mira Flow Template',
-    fields: [
-      'name',
-      'name_template',
-      'description',
-      'channel',
-      'is_suggestion',
-      'is_premium',
-      'thumbnail'
-    ],
-    filters: {},
-    order_by: 'is_suggestion desc, modified desc',
-    limit_page_length: 50
-  },
-  auto: false,
-  onSuccess(data) {
-    templates.value = data || []
-    loading.value = false
-  },
-  onError(err) {
-    console.error('Error loading templates:', err)
-    error.value = 'Failed to load templates'
-    loading.value = false
-  }
 })
 
 watch(() => props.modelValue, (newVal) => {
@@ -290,43 +302,116 @@ watch(show, (newVal) => {
 const loadTemplates = async () => {
   loading.value = true
   error.value = null
-  templatesResource.fetch()
+  
+  try {
+    // Build filters based on campaign type
+    const filters = {
+      is_active: 1
+    }
+    
+    // Filter by campaign type if provided
+    if (props.campaignType) {
+      filters.campaign_type = props.campaignType
+    }
+    
+    console.log('📋 Loading templates with filters:', filters)
+    
+    const result = await call('frappe.client.get_list', {
+      doctype: 'Mira Campaign Template',
+      fields: [
+        'name',
+        'template_name',
+        'description',
+        'campaign_type',
+        'scope_type',
+        'is_suggestion',
+        'is_premium',
+        'is_default',
+        'thumbnail',
+        'modified'
+      ],
+      filters: filters,
+      or_filters: [
+        
+      ],
+      order_by: 'is_suggestion desc, is_default desc, modified desc',
+      limit_page_length: 50
+    })
+    
+    console.log('✅ Loaded templates:', result)
+    templates.value = result || []
+    loading.value = false
+  } catch (err) {
+    console.error('❌ Error loading templates:', err)
+    error.value = 'Failed to load templates'
+    loading.value = false
+  }
 }
 
 const selectTemplate = (template) => {
-  // Show "Feature in development" message
-  info(
-    __('This feature will be available soon'),
-    { duration: 5000 }
-  )
+  // Just select, don't emit yet
+  selectedTemplate.value = template
+}
+
+const confirmSelection = async () => {
+  if (!selectedTemplate.value) return
   
-  // Uncomment when ready to implement
-  // emit('select', template)
-  // show.value = false
+  creating.value = true
+  
+  try {
+    // Create campaign from template
+    const result = await call('mbw_mira.api.campaign_from_template.create_campaign_from_template', {
+      template_id: selectedTemplate.value.name
+    })
+    
+    if (result?.success) {
+      emit('select', { ...selectedTemplate.value, createdCampaign: result.data })
+      show.value = false
+      selectedTemplate.value = null
+    } else {
+      const { error: toastError } = useToast()
+      toastError(result?.error || __('Failed to create campaign from template'))
+    }
+  } catch (err) {
+    console.error('Error creating campaign from template:', err)
+    const { error: toastError } = useToast()
+    toastError(__('Error creating campaign from template'))
+  } finally {
+    creating.value = false
+  }
 }
 
 const handleClose = () => {
   show.value = false
+  selectedTemplate.value = null
 }
 
-const getChannelIcon = (channel) => {
+// Campaign type helpers
+const getCampaignTypeIcon = (type) => {
   const iconMap = {
-    'Email': 'mail',
-    'Zalo_ZNS': 'message-square',
-    'Zalo_OA': 'message-circle',
-    'SMS': 'message-square',
+    'ATTRACTION': 'target',
+    'NURTURING': 'heart',
+    'RECRUITMENT': 'users',
   }
-  return iconMap[channel] || 'send'
+  return iconMap[type] || 'file-text'
 }
 
-const getChannelBadgeClass = (channel) => {
+const getCampaignTypeBadgeClass = (type) => {
   const classMap = {
-    'Email': 'bg-blue-100 text-blue-700',
-    'Zalo_ZNS': 'bg-green-100 text-green-700',
-    'Zalo_OA': 'bg-purple-100 text-purple-700',
-    'SMS': 'bg-orange-100 text-orange-700',
+    'ATTRACTION': 'bg-blue-100 text-blue-700',
+    'NURTURING': 'bg-green-100 text-green-700',
+    'RECRUITMENT': 'bg-purple-100 text-purple-700',
   }
-  return classMap[channel] || 'bg-gray-100 text-gray-700'
+  return classMap[type] || 'bg-gray-100 text-gray-700'
+}
+
+const getCampaignTypeLabel = (type) => {
+  const labelMap = {
+    'ATTRACTION': __('Attraction'),
+    'NURTURING': __('Nurturing'),
+    'RECRUITMENT': __('Recruitment'),
+  }
+  return labelMap[type] || type
 }
 </script>
 

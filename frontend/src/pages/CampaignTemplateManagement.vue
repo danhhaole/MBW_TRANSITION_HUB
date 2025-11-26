@@ -150,38 +150,23 @@
 									:key="template.name"
 									class="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow group relative"
 								>
-									<!-- Action Buttons (Hover) -->
+									<!-- Action Dropdown (Hover) -->
 									<div
-										class="absolute top-2 left-2 z-10 flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity"
+										class="absolute top-2 left-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity"
+										@click.stop
 									>
-										<button
-											@click.stop="handleUseTemplate(template)"
-											class="w-8 h-8 bg-purple-500 text-white rounded-full hover:bg-purple-600 flex items-center justify-center shadow-lg"
-											title="Use Template"
+										<Dropdown
+											:options="getTemplateActions(template)"
+											placement="right"
 										>
-											<FeatherIcon name="play" class="h-4 w-4" />
-										</button>
-										<button
-											@click.stop="viewTemplateDetails(template)"
-											class="w-8 h-8 bg-blue-500 text-white rounded-full hover:bg-blue-600 flex items-center justify-center shadow-lg"
-											title="View Details"
-										>
-											<FeatherIcon name="eye" class="h-4 w-4" />
-										</button>
-										<button
-											@click.stop="handleEditTemplate(template)"
-											class="w-8 h-8 bg-green-500 text-white rounded-full hover:bg-green-600 flex items-center justify-center shadow-lg"
-											title="Edit Template"
-										>
-											<FeatherIcon name="edit-2" class="h-4 w-4" />
-										</button>
-										<button
-											@click.stop="confirmDelete(template)"
-											class="w-8 h-8 bg-red-500 text-white rounded-full hover:bg-red-600 flex items-center justify-center shadow-lg"
-											title="Delete Template"
-										>
-											<FeatherIcon name="trash-2" class="h-4 w-4" />
-										</button>
+											<template v-slot="{ open }">
+												<button
+													class="w-8 h-8 bg-white text-gray-700 rounded-full hover:bg-gray-100 flex items-center justify-center shadow-lg border border-gray-200"
+												>
+													<FeatherIcon name="more-horizontal" class="h-4 w-4" />
+												</button>
+											</template>
+										</Dropdown>
 									</div>
 
 									<!-- Template Thumbnail -->
@@ -209,20 +194,20 @@
 										<div
 											class="absolute top-2 right-2 flex items-center space-x-1"
 										>
-											<Badge
+											<span
 												v-if="template.is_premium"
-												theme="purple"
-												size="sm"
+												class="inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-md"
 											>
+												<FeatherIcon name="star" class="w-3 h-3 mr-1" />
 												{{ __('Premium') }}
-											</Badge>
-											<Badge
+											</span>
+											<span
 												v-if="template.is_suggestion"
-												theme="green"
-												size="sm"
+												class="inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-md"
 											>
+												<FeatherIcon name="thumbs-up" class="w-3 h-3 mr-1" />
 												{{ __('Recommended') }}
-											</Badge>
+											</span>
 										</div>
 									</div>
 
@@ -314,17 +299,25 @@
 			@close="showDetailModal = false"
 			@use-template="handleUseTemplate"
 		/>
+
+		<!-- Use Template Modal -->
+		<UseTemplateModal
+			v-model="showUseTemplateModal"
+			:template="templateToUse"
+			@created="handleCampaignCreated"
+		/>
 	</div>
 </template>
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Button, Select, Badge, FeatherIcon, FormControl, Breadcrumbs } from 'frappe-ui'
+import { Button, Select, Badge, FeatherIcon, FormControl, Breadcrumbs, Dropdown } from 'frappe-ui'
 import { useCampaignTemplateStore } from '@/stores/campaignTemplate'
 import { useToast } from '@/composables/useToast'
 import LayoutHeader from "@/components/LayoutHeader.vue"
 import CampaignTemplateDetailModal from '@/components/campaignTemplate/CampaignTemplateDetailModal.vue'
+import UseTemplateModal from '@/components/campaign-template/UseTemplateModal.vue'
 import { debounce } from 'lodash'
 
 // Composables
@@ -342,6 +335,8 @@ const typeFilter = ref('')
 const showDetailModal = ref(false)
 const selectedTemplate = ref(null)
 const modalLoading = ref(false)
+const showUseTemplateModal = ref(false)
+const templateToUse = ref(null)
 
 // Tab counts - stored locally and updated when switching tabs
 const systemCount = ref(0)
@@ -489,38 +484,52 @@ const viewTemplateDetails = async (template) => {
 	}
 }
 
-const handleUseTemplate = async (template) => {
-	// Confirm before creating campaign
-	const confirmMessage = `Create a new campaign from template "${template.template_name}"?\n\nThis will copy all content, triggers and settings from the template.`
+const handleUseTemplate = (template) => {
+	// Open modal instead of confirm
+	templateToUse.value = template
+	showUseTemplateModal.value = true
+}
+
+// Get dropdown actions for template card
+const getTemplateActions = (template) => [
+	{
+		label: __('Use Template'),
+		icon: 'play',
+		onClick: () => handleUseTemplate(template)
+	},
+	{
+		label: __('View Details'),
+		icon: 'eye',
+		onClick: () => viewTemplateDetails(template)
+	},
+	{
+		label: __('Edit'),
+		icon: 'edit-2',
+		onClick: () => handleEditTemplate(template)
+	},
+	{
+		label: __('Delete'),
+		icon: 'trash-2',
+		theme: 'red',
+		onClick: () => confirmDelete(template)
+	}
+]
+
+// Handle campaign created from modal
+const handleCampaignCreated = (data) => {
+	toast.success(__('Campaign created successfully!'))
+	showDetailModal.value = false
+	showUseTemplateModal.value = false
 	
-	if (!confirm(confirmMessage)) {
-		return
+	// Navigate to campaign list based on type
+	const typeRoutes = {
+		'ATTRACTION': '/attraction',
+		'NURTURING': '/nurture',
+		'RECRUITMENT': '/recruitment'
 	}
 	
-	try {
-		modalLoading.value = true
-		toast.info(__('Creating campaign from template...'))
-		
-		const result = await templateStore.useTemplate(
-			template.name,
-			`${template.template_name} - ${new Date().toLocaleDateString()}`
-		)
-		
-		if (result.success) {
-			toast.success(result.message || __('Campaign created successfully from template!'))
-			showDetailModal.value = false
-			
-			// Navigate to campaigns list
-			router.push('/campaigns')
-		} else {
-			toast.error(result.error || __('Failed to create campaign from template'))
-		}
-	} catch (error) {
-		console.error('Error using template:', error)
-		toast.error(__('An error occurred while creating campaign'))
-	} finally {
-		modalLoading.value = false
-	}
+	const route = typeRoutes[data.campaign_type] || '/campaigns'
+	router.push(route)
 }
 
 const handleCreateTemplate = () => {

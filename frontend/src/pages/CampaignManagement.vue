@@ -214,6 +214,7 @@
           @edit="openEditDialog"
           @view="openViewDialog"
           @delete="handleDelete"
+          @save-as-template="handleSaveAsTemplate"
           @create="openCreateDialog"
         />
 
@@ -224,6 +225,7 @@
           @edit="openEditDialog"
           @view="openViewDialog"
           @delete="handleDelete"
+          @save-as-template="handleSaveAsTemplate"
           @create="openCreateDialog"
         />
       </div>
@@ -238,6 +240,7 @@
       <!-- Template Selection Modal -->
       <TemplateSelectionModal
         v-model="showTemplateSelection"
+        :campaign-type="props.campaignType"
         @select="handleTemplateSelection"
       />
 
@@ -273,6 +276,13 @@
 
       <!-- Toast notifications -->
       <toast-container />
+
+      <!-- Save as Template Modal -->
+      <SaveAsTemplateModal
+        v-model="showSaveAsTemplateModal"
+        :campaign="campaignToSaveAsTemplate"
+        @saved="handleTemplateSaved"
+      />
 
       <!-- Delete Confirmation Dialog -->
       <Dialog
@@ -352,9 +362,10 @@ import {
   CampaignView,
   CampaignCreationMethodModal,
   TemplateSelectionModal,
+  SaveAsTemplateModal,
 } from "@/components/campaign";
 import { ToastContainer } from "@/components/shared";
-import { Button, Breadcrumbs, Select, Dialog } from "frappe-ui";
+import { Button, Breadcrumbs, Select, Dialog, call } from "frappe-ui";
 import LayoutHeader from "@/components/LayoutHeader.vue";
 import Loading from "@/components/Loading.vue";
 import { useCampaignStore } from "@/stores/campaign";
@@ -411,6 +422,10 @@ const isSearching = ref(false);
 const showDeleteConfirmDialog = ref(false);
 const campaignToDelete = ref(null);
 const linkedDocuments = ref([]);
+
+// Save as template modal
+const showSaveAsTemplateModal = ref(false);
+const campaignToSaveAsTemplate = ref(null);
 
 // Composables
 const {
@@ -543,9 +558,26 @@ const handleMethodSelection = (method) => {
   }
 };
 
-const handleTemplateSelection = (template) => {
-  console.log('Selected template:', template);
-  // TODO: Implement template-based campaign creation when doctype is ready
+const handleTemplateSelection = async (template) => {
+  console.log('Template selected, campaign created:', template);
+  showTemplateSelection.value = false;
+  
+  // Campaign was already created in the modal
+  if (template?.createdCampaign) {
+    success(__('Campaign created from template successfully!'));
+    
+    // Reload campaign list
+    await loadCampaignsWithFilters();
+    
+    // Open the created campaign for editing
+    const createdCampaign = template.createdCampaign;
+    if (createdCampaign?.campaign_id) {
+      const campaign = campaigns.value.find(c => c.name === createdCampaign.campaign_id);
+      if (campaign) {
+        openEditDialog(campaign);
+      }
+    }
+  }
 };
 
 const handleCreateFromSidebar = (section) => {
@@ -692,6 +724,18 @@ const cancelDelete = () => {
   showDeleteConfirmDialog.value = false;
   campaignToDelete.value = null;
   linkedDocuments.value = [];
+};
+
+const handleSaveAsTemplate = (campaign) => {
+  campaignToSaveAsTemplate.value = campaign;
+  showSaveAsTemplateModal.value = true;
+};
+
+const handleTemplateSaved = (templateData) => {
+  showToast(__('Campaign saved as template successfully!'), 'success');
+  console.log('✅ Template created:', templateData);
+  showSaveAsTemplateModal.value = false;
+  campaignToSaveAsTemplate.value = null;
 };
 
 // Watch route changes to reload data when switching between campaign types

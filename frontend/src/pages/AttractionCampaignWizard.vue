@@ -14,11 +14,14 @@
       :can-proceed="canProceed"
       :can-finalize="isLastStep"
       :is-edit-mode="false"
+      :show-save-as-template="!!campaignData.name"
+      :saving-as-template="savingAsTemplate"
       @exit="closeWizard"
       @back="prevStep"
       @save="saveDraft"
       @save-and-continue="nextStep"
       @finalize="finalizeCampaign"
+      @save-as-template="handleSaveAsTemplate"
       @update:campaign-name="campaignData.campaign_name = $event"
     />
 
@@ -84,6 +87,13 @@
         />
       </div>
     </div>
+
+    <!-- Save as Template Modal -->
+    <SaveAsTemplateModal
+      v-model="showSaveAsTemplateModal"
+      :campaign="{ name: campaignData.name, campaign_name: campaignData.campaign_name, type: campaignData.type }"
+      @saved="handleTemplateSaved"
+    />
   </div>
 </template>
 
@@ -95,6 +105,7 @@ import CampaignWizardStepper from '@/components/campaign/CampaignWizardStepper.v
 import CampaignStep1 from '@/components/campaign_new/attraction/Step1_CampaignInfo.vue'
 import CampaignStep2 from '@/components/campaign_new/attraction/Step2_ContentChannels.vue'
 import CampaignStep3 from '@/components/campaign_new/attraction/Step3_Settings.vue'
+import { SaveAsTemplateModal } from '@/components/campaign'
 import { useCampaignStore } from '@/stores/campaign'
 import { useToast } from '@/composables/useToast'
 import moment from 'moment'
@@ -111,6 +122,10 @@ const props = defineProps({
   editCampaignId: {
     type: String,
     default: null
+  },
+  templateId: {
+    type: String,
+    default: null
   }
 })
 
@@ -124,6 +139,8 @@ const toast = useToast()
 const currentStep = ref(1)
 const saving = ref(false)
 const finalizing = ref(false)
+const savingAsTemplate = ref(false)
+const showSaveAsTemplateModal = ref(false)
 const showValidationError = ref(false)
 
 const campaignData = ref({
@@ -815,6 +832,135 @@ const handleStepClick = (stepNumber) => {
     currentStep.value = stepNumber
   }
 }
+
+// Save as Template
+const handleSaveAsTemplate = () => {
+  if (!campaignData.value.name) {
+    toast.error(__('Please save the campaign first'))
+    return
+  }
+  showSaveAsTemplateModal.value = true
+}
+
+const handleTemplateSaved = (templateData) => {
+  toast.success(__('Campaign saved as template successfully!'))
+  console.log('✅ Template created:', templateData)
+  showSaveAsTemplateModal.value = false
+}
+
+// Load template data
+const loadTemplateData = async (templateId) => {
+  try {
+    console.log('📋 Loading template data:', templateId)
+    
+    const result = await call('mbw_mira.api.campaign_from_template.get_template_data', {
+      template_id: templateId
+    })
+    
+    if (result?.success && result?.data) {
+      const template = result.data
+      console.log('✅ Template loaded:', template)
+      
+      // Fill campaign data from template
+      campaignData.value.campaign_name = template.template_name ? `${template.template_name} - Copy` : ''
+      campaignData.value.description = template.description || ''
+      campaignData.value.target_pool = template.target_pool || ''
+      campaignData.value.ladipage_url = template.ladipage_url || ''
+      campaignData.value.ladipage_id = template.ladipage_id || ''
+      
+      // Parse configuration_json if exists
+      if (template.configuration_json) {
+        try {
+          const config = typeof template.configuration_json === 'string' 
+            ? JSON.parse(template.configuration_json) 
+            : template.configuration_json
+          
+          campaignData.value.objective = config.objective || ''
+          campaignData.value.config_data = config.config_data || {}
+          campaignData.value.conditions = config.conditions || []
+          campaignData.value.candidate_count = config.candidate_count || 0
+        } catch (e) {
+          console.warn('⚠️ Error parsing configuration_json:', e)
+        }
+      }
+      
+      // Load social contents
+      if (template.social_contents && template.social_contents.length > 0) {
+        for (const social of template.social_contents) {
+          const platform = (social.platform || '').toLowerCase()
+          if (platform === 'email') {
+            campaignData.value.email_content = {
+              email_subject: social.subject || '',
+              email_body: social.template_content || '',
+              mjml_content: social.mjml_content || '',
+              block_content: social.block_content || ''
+            }
+            if (!campaignData.value.selected_channels.includes('email')) {
+              campaignData.value.selected_channels.push('email')
+            }
+          } else if (platform === 'facebook') {
+            campaignData.value.facebook_content = {
+              content: social.template_content || '',
+              image: social.social_media_images || null,
+              page_id: social.page_id || null
+            }
+            if (!campaignData.value.selected_channels.includes('facebook')) {
+              campaignData.value.selected_channels.push('facebook')
+            }
+          } else if (platform === 'zalo') {
+            campaignData.value.zalo_content = {
+              content: social.template_content || '',
+              image: social.social_media_images || null
+            }
+            if (!campaignData.value.selected_channels.includes('zalo')) {
+              campaignData.value.selected_channels.push('zalo')
+            }
+          }
+        }
+      }
+      
+      // Load triggers from flow_config
+      if (template.flow_config) {
+        try {
+          const flowConfig = typeof template.flow_config === 'string'
+            ? JSON.parse(template.flow_config)
+            : template.flow_config
+          
+          if (flowConfig.triggers && flowConfig.triggers.length > 0) {
+            campaignData.value.triggers = flowConfig.triggers
+            console.log('✅ Loaded triggers from template:', flowConfig.triggers)
+          }
+        } catch (e) {
+          console.warn('⚠️ Error parsing flow_config:', e)
+        }
+      }
+      
+      toast.success(__('Template data loaded successfully!'))
+    } else {
+      console.error('❌ Failed to load template:', result?.error)
+      toast.error(result?.error || __('Failed to load template'))
+    }
+  } catch (error) {
+    console.error('❌ Error loading template:', error)
+    toast.error(__('Error loading template data'))
+  }
+}
+
+// Watch for show prop changes
+watch(() => props.show, (newVal) => {
+  if (newVal) {
+    if (props.templateId) {
+      // Load from template
+      loadTemplateData(props.templateId)
+    } else if (props.editCampaignId) {
+      // Load existing campaign (edit mode)
+      // TODO: implement loadCampaignData if needed
+    } else {
+      // New campaign - reset data
+      resetCampaignData()
+    }
+  }
+})
 
 // Translation helper
 

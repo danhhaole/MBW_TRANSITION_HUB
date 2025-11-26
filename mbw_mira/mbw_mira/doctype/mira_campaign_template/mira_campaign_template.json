@@ -31,6 +31,7 @@
   "column_break_config",
   "configuration_json",
   "actions_triggers_section",
+  "flow_config",
   "template_actions",
   "column_break_actions",
   "template_triggers",
@@ -171,6 +172,12 @@
    "fieldname": "actions_triggers_section",
    "fieldtype": "Section Break",
    "label": "Template Actions & Triggers"
+  },
+  {
+   "description": "JSON configuration for flows, triggers and actions",
+   "fieldname": "flow_config",
+   "fieldtype": "JSON",
+   "label": "Flow Configuration"
   },
   {
    "fieldname": "template_actions",

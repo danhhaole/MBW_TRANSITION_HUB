@@ -1,116 +1,35 @@
 <template>
   <div class="min-h-screen bg-gray-50">
     <!-- Header -->
-    <div class="bg-white border-b border-gray-200 sticky top-0 z-10">
-      <div class="max-w-full mx-5 px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16">
-          <!-- Left: Back button and Title -->
-          <div class="flex items-center space-x-4">
-            <Button variant="ghost" @click="handleBack">
-              <template #prefix>
-                <FeatherIcon name="arrow-left" class="h-4 w-4" />
-              </template>
-              {{ __('Back') }}
-            </Button>
-            
-            <div class="h-8 w-px bg-gray-300"></div>
-            
-            <div>
-              <h1 class="text-xl font-semibold text-gray-900">
-                {{ isEditMode ? __('Edit Campaign Template') : __('Create Campaign Template') }}
-              </h1>
-              <p class="text-sm text-gray-500">
-                {{ __('Step {0} of {1}', [currentStep, totalSteps]) }}
-              </p>
-            </div>
-          </div>
+    <TemplateWizardHeader
+      :template-name="templateData.template_name || (isEditMode ? __('Edit Template') : __('New Template'))"
+      :current-step="currentStep"
+      :total-steps="totalSteps"
+      :loading="loading"
+      :saving="saving"
+      :finalizing="finalizing"
+      :can-save="canProceed"
+      :can-proceed="canProceed"
+      :can-finalize="canProceed"
+      :is-edit-mode="isEditMode"
+      @exit="handleBack"
+      @back="prevStep"
+      @save="finalizeTemplate"
+      @save-and-continue="nextStep"
+      @finalize="finalizeTemplate"
+      @update:template-name="updateTemplateName"
+    />
 
-          <!-- Right: Actions -->
-          <div class="flex items-center space-x-3">
-            <!-- Save Draft Button -->
-            <Button 
-              v-if="templateData.name && templateData.name !== 'template'"
-              variant="outline" 
-              @click="saveDraft" 
-              :loading="saving"
-            >
-              {{ __('Save Draft') }}
-            </Button>
-            
-            <Button v-if="currentStep > 1" variant="outline" @click="prevStep">
-              {{ __('Previous') }}
-            </Button>
-            
-            <Button v-if="currentStep < totalSteps" theme="blue" @click="nextStep" :disabled="!canProceed">
-              {{ __('Save & Continue') }}
-            </Button>
-            
-            <Button v-else theme="blue" @click="finalizeTemplate" :loading="finalizing">
-              {{ isEditMode ? __('Update Template') : __('Create Template') }}
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Progress Bar -->
-    <div class="bg-white border-b border-gray-200">
-      <div class="max-w-full mx-5 px-4 sm:px-6 lg:px-8">
-        <div class="py-4">
-          <div class="flex items-center justify-between mb-2">
-            <div class="flex space-x-4">
-              <div 
-                v-for="(step, index) in steps" 
-                :key="step.id"
-                class="flex items-center cursor-pointer"
-                @click="handleStepClick(index + 1)"
-              >
-                <div 
-                  :class="[
-                    'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors',
-                    currentStep > index + 1 
-                      ? 'bg-green-500 text-white hover:bg-green-600' 
-                      : currentStep === index + 1 
-                        ? 'bg-blue-500 text-white' 
-                        : 'bg-gray-200 text-gray-500 hover:bg-gray-300'
-                  ]"
-                >
-                  <FeatherIcon 
-                    v-if="currentStep > index + 1" 
-                    name="check" 
-                    class="w-4 h-4" 
-                  />
-                  <span v-else>{{ index + 1 }}</span>
-                </div>
-                <span 
-                  :class="[
-                    'ml-2 text-sm font-medium transition-colors',
-                    currentStep >= index + 1 ? 'text-gray-900 hover:text-blue-600' : 'text-gray-500'
-                  ]"
-                >
-                  {{ step.title }}
-                </span>
-                <FeatherIcon 
-                  v-if="index < steps.length - 1" 
-                  name="chevron-right" 
-                  class="w-4 h-4 mx-4 text-gray-400" 
-                />
-              </div>
-            </div>
-          </div>
-          <div class="w-full bg-gray-200 rounded-full h-2">
-            <div 
-              class="bg-blue-500 h-2 rounded-full transition-all duration-300"
-              :style="{ width: `${(currentStep / totalSteps) * 100}%` }"
-            ></div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- Stepper -->
+    <TemplateWizardStepper
+      :steps="wizardSteps"
+      :current-step="currentStep"
+      @step-click="handleStepClick"
+    />
 
     <!-- Content Area -->
     <div class="flex-1 overflow-y-auto">
-      <div class="max-w-4xl mx-auto px-6 py-8">
+      <div class="max-w-7xl mx-auto px-6 py-8">
         
         <!-- Loading State -->
         <div v-if="loading" class="flex justify-center items-center h-64">
@@ -120,8 +39,8 @@
         
         <!-- Step 1: Template Information -->
         <div v-else-if="currentStep === 1" class="space-y-6">
-          <!-- Quick Templates -->
-          <div class="bg-white rounded-lg shadow p-6">
+          <!-- Quick Templates - Only show in create mode -->
+          <div v-if="!isEditMode" class="bg-white rounded-lg shadow p-6">
             <h2 class="text-lg font-medium text-gray-900 mb-6">{{ __('Choose Template Type') }}</h2>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -131,7 +50,7 @@
                 @click="selectQuickTemplate(quickTemplate)"
                 :class="[
                   'border-2 rounded-lg p-4 cursor-pointer transition-all',
-                  selectedQuickTemplate?.id === quickTemplate.id 
+                  selectedQuickTemplate?.id === quickTemplate.id || templateData.campaign_type === quickTemplate.type
                     ? 'border-blue-500 bg-blue-50' 
                     : 'border-gray-200 hover:border-gray-300'
                 ]"
@@ -146,6 +65,19 @@
                   </div>
                 </div>
                 <p class="text-xs text-gray-600">{{ quickTemplate.description }}</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Campaign Type Badge - Show in edit mode -->
+          <div v-else class="bg-white rounded-lg shadow p-4">
+            <div class="flex items-center">
+              <div :class="['w-10 h-10 rounded-lg flex items-center justify-center', getCampaignTypeColor(templateData.campaign_type)]">
+                <FeatherIcon :name="getCampaignTypeIcon(templateData.campaign_type)" class="w-5 h-5 text-white" />
+              </div>
+              <div class="ml-3">
+                <p class="text-xs text-gray-500">{{ __('Campaign Type') }}</p>
+                <h4 class="text-sm font-semibold text-gray-900">{{ getCampaignTypeLabel(templateData.campaign_type) }}</h4>
               </div>
             </div>
           </div>
@@ -166,6 +98,7 @@
             :is-default="templateData.is_default"
             :is-premium="templateData.is_premium"
             :is-suggestion="templateData.is_suggestion"
+            :thumbnail="templateData.thumbnail"
             :show-error="false"
             @update:template-name="templateData.template_name = $event; if (!templateData.campaign_name) templateData.campaign_name = $event"
             @update:template-description="templateData.template_description = $event"
@@ -181,6 +114,7 @@
             @update:is-default="templateData.is_default = $event"
             @update:is-premium="templateData.is_premium = $event"
             @update:is-suggestion="templateData.is_suggestion = $event"
+            @update:thumbnail="templateData.thumbnail = $event"
           />
         </div>
 
@@ -289,6 +223,8 @@ import Link from '@/components/Controls/Link.vue'
 
 // Import template components
 import TemplateStep1 from '@/components/campaign_template/TemplateStep1.vue'
+import TemplateWizardHeader from '@/components/campaign-template/TemplateWizardHeader.vue'
+import TemplateWizardStepper from '@/components/campaign-template/TemplateWizardStepper.vue'
 
 // Import Step2 components (original)
 import AttractionStep2 from '@/components/campaign_new/attraction/Step2_ContentChannels.vue'
@@ -355,9 +291,12 @@ const templateData = ref({
   step3_triggers: [],
   is_premium: false,
   is_suggestion: false,
-  is_default: false,
+  is_default: true,  // Default true for admin
   start_date_strategy: 'immediate',
-  scope_type: 'PUBLIC'
+  scope_type: 'PUBLIC',  // Default PUBLIC for admin
+  
+  // Thumbnail
+  thumbnail: ''
 })
 
 // Steps
@@ -411,6 +350,19 @@ const quickTemplates = [
 
 // Computed
 const isEditMode = computed(() => !!route.params.id)
+
+// Wizard steps for stepper component
+const wizardSteps = computed(() => [
+  { number: 1, label: __('Template Info') },
+  { number: 2, label: __('Content') },
+  { number: 3, label: __('Settings') }
+])
+
+// Update template name from header
+const updateTemplateName = (newName) => {
+  templateData.value.template_name = newName
+  hasUnsavedChanges.value = true
+}
 
 const campaignTypeOptions = [
   { label: __('Attraction'), value: 'ATTRACTION' },
@@ -507,6 +459,34 @@ const jobStageOptions = [
   { label: __('Reference'), value: 'reference' },
   { label: __('Offer'), value: 'offer' }
 ]
+
+// Helper functions for campaign type display
+const getCampaignTypeColor = (type) => {
+  const colors = {
+    'ATTRACTION': 'bg-blue-500',
+    'NURTURING': 'bg-green-500',
+    'RECRUITMENT': 'bg-purple-500'
+  }
+  return colors[type] || 'bg-gray-500'
+}
+
+const getCampaignTypeIcon = (type) => {
+  const icons = {
+    'ATTRACTION': 'users',
+    'NURTURING': 'mail',
+    'RECRUITMENT': 'target'
+  }
+  return icons[type] || 'file'
+}
+
+const getCampaignTypeLabel = (type) => {
+  const labels = {
+    'ATTRACTION': __('Attraction Campaign'),
+    'NURTURING': __('Nurturing Campaign'),
+    'RECRUITMENT': __('Recruitment Campaign')
+  }
+  return labels[type] || type
+}
 
 const canProceed = computed(() => {
   if (currentStep.value === 1) {
@@ -700,7 +680,12 @@ const saveDraft = async () => {
             target_pool: templateData.value.target_pool,
             config_data: templateData.value.config_data,
             conditions: templateData.value.conditions,
-            candidate_count: templateData.value.candidate_count
+            candidate_count: templateData.value.candidate_count,
+            thumbnail: templateData.value.thumbnail,
+            scope_type: templateData.value.scope_type,
+            is_default: templateData.value.is_default ? 1 : 0,
+            is_premium: templateData.value.is_premium ? 1 : 0,
+            is_suggestion: templateData.value.is_suggestion ? 1 : 0
           }
         })
         
@@ -750,12 +735,22 @@ const saveDraft = async () => {
       })
     }
 
-    // Step 4: Save triggers/flows if any (for step 3)
+    // Step 4: Save triggers/flows as flow_config JSON (for step 3)
     // Use step3_triggers which is bound to Step3 components
     const triggersToSave = templateData.value.step3_triggers || templateData.value.triggers || []
-    if (currentStep.value >= 3 && triggersToSave.length > 0) {
-      console.log('💾 Saving template flows:', triggersToSave)
-      await templateStore.saveTemplateFlows(templateData.value.name, triggersToSave)
+    if (currentStep.value >= 3) {
+      const flowConfig = {
+        triggers: triggersToSave,
+        updated_at: new Date().toISOString()
+      }
+      console.log('💾 Saving flow_config:', flowConfig)
+      
+      await call('frappe.client.set_value', {
+        doctype: 'Mira Campaign Template',
+        name: templateData.value.name,
+        fieldname: 'flow_config',
+        value: JSON.stringify(flowConfig)
+      })
     }
 
   } catch (error) {
@@ -971,6 +966,7 @@ const loadTemplateForEdit = async () => {
         is_default: data.is_default || false,
         is_premium: data.is_premium || false,
         is_suggestion: data.is_suggestion || false,
+        thumbnail: data.thumbnail || '',
         
         // Campaign Info from configuration
         objective: data.objective || '',
@@ -1009,12 +1005,21 @@ const loadTemplateForEdit = async () => {
       
       console.log('✅ Template data mapped:', templateData.value)
       
-      // Load triggers/flows
-      const triggers = await templateStore.getTemplateFlows(templateId)
-      if (triggers && triggers.length > 0) {
-        templateData.value.step3_triggers = triggers
-        templateData.value.triggers = triggers // Also set for compatibility
-        console.log('✅ Loaded triggers:', triggers)
+      // Load triggers/flows from flow_config JSON
+      if (data.flow_config) {
+        try {
+          const flowConfig = typeof data.flow_config === 'string' 
+            ? JSON.parse(data.flow_config) 
+            : data.flow_config
+          
+          if (flowConfig.triggers && flowConfig.triggers.length > 0) {
+            templateData.value.step3_triggers = flowConfig.triggers
+            templateData.value.triggers = flowConfig.triggers
+            console.log('✅ Loaded triggers from flow_config:', flowConfig.triggers)
+          }
+        } catch (e) {
+          console.error('❌ Error parsing flow_config:', e)
+        }
       }
     } else {
       console.error('❌ Failed to load template data')

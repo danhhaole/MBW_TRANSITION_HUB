@@ -27,60 +27,57 @@
         <div class="flex items-center space-x-2">
           <FeatherIcon name="arrow-left" class="h-4 w-4" />
           <span>{{ __("Back") }}</span>
-
         </div>
         </Button>
 
-              <!-- Center: Campaign name (editable) -->
-      <div class="flex-1 max-w-md mx-6">
-        <div v-if="!isEditingName" class="flex items-center justify-center space-x-2">
-          <h1 class="text-lg font-semibold text-gray-900 truncate">
-            {{ campaignName || __("New Campaign") }}
-          </h1>
-          <Button
-            variant="ghost"
-            theme="gray"
-            size="sm"
-            @click="startEditingName"
-            class="p-1"
-          >
-            <FeatherIcon name="edit-2" class="h-4 w-4" />
-          </Button>
-        </div>
-        
-        <div v-else class="flex items-center space-x-2">
-          <input
-            ref="nameInput"
-            v-model="editingNameValue"
-            type="text"
-            class="flex-1 px-3 py-1 text-lg font-semibold text-center border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            @keyup.enter="saveName"
-            @keyup.escape="cancelEditingName"
-            @blur="saveName"
-          />
-          <Button
-            variant="ghost"
-            theme="green"
-            size="sm"
-            @click="saveName"
-            class="p-1"
-          >
-            <FeatherIcon name="check" class="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            theme="gray"
-            size="sm"
-            @click="cancelEditingName"
-            class="p-1"
-          >
-            <FeatherIcon name="x" class="h-4 w-4" />
-          </Button>
+        <!-- Center: Template name (editable) -->
+        <div class="flex-1 max-w-md mx-6">
+          <div v-if="!isEditingName" class="flex items-center justify-center space-x-2">
+            <h1 class="text-lg font-semibold text-gray-900 truncate">
+              {{ templateName || __("New Template") }}
+            </h1>
+            <Button
+              variant="ghost"
+              theme="gray"
+              size="sm"
+              @click="startEditingName"
+              class="p-1"
+            >
+              <FeatherIcon name="edit-2" class="h-4 w-4" />
+            </Button>
+          </div>
+          
+          <div v-else class="flex items-center space-x-2">
+            <input
+              ref="nameInput"
+              v-model="editingNameValue"
+              type="text"
+              class="flex-1 px-3 py-1 text-lg font-semibold text-center border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              @keyup.enter="saveName"
+              @keyup.escape="cancelEditingName"
+              @blur="saveName"
+            />
+            <Button
+              variant="ghost"
+              theme="green"
+              size="sm"
+              @click="saveName"
+              class="p-1"
+            >
+              <FeatherIcon name="check" class="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              theme="gray"
+              size="sm"
+              @click="cancelEditingName"
+              class="p-1"
+            >
+              <FeatherIcon name="x" class="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
-      </div>
-
-
 
       <!-- Right: Action buttons -->
       <div class="flex items-center space-x-3">
@@ -101,22 +98,6 @@
           {{ __("Saved") }}
         </div>
         
-        <!-- Save as Template button -->
-        <Button
-          v-if="showSaveAsTemplate"
-          variant="outline"
-          theme="gray"
-          size="sm"
-          @click="$emit('save-as-template')"
-          :loading="savingAsTemplate"
-          class="flex items-center space-x-2"
-        >
-        <div class="flex items-center space-x-2">
-          <FeatherIcon name="bookmark" class="h-4 w-4" />
-          <span>{{ __("Save as Template") }}</span>
-        </div>
-        </Button>
-
         <!-- Continue button - show if not at last step -->
         <Button
           v-if="currentStep < totalSteps"
@@ -132,7 +113,7 @@
         
         <!-- Save button - show in edit mode at last step -->
         <Button
-          v-else-if="isEditMode && canFinalize"
+          v-else-if="isEditMode"
           variant="solid"
           theme="blue"
           size="sm"
@@ -140,12 +121,12 @@
           :loading="saving"
           :disabled="!canSave"
         >
-          {{ __("Save Changes") }}
+          {{ __("Update Template") }}
         </Button>
         
-        <!-- Finalize button - show only in create mode at last step -->
+        <!-- Create button - show only in create mode at last step -->
         <Button
-          v-else-if="!isEditMode && canFinalize"
+          v-else
           variant="solid"
           theme="green"
           size="sm"
@@ -153,7 +134,7 @@
           :loading="finalizing"
           :disabled="!canFinalize"
         >
-          {{ __("Finalize Campaign") }}
+          {{ __("Create Template") }}
         </Button>
       </div>
     </div>
@@ -166,7 +147,7 @@ import { Button, FeatherIcon } from 'frappe-ui'
 
 // Props
 const props = defineProps({
-  campaignName: {
+  templateName: {
     type: String,
     default: ''
   },
@@ -213,14 +194,6 @@ const props = defineProps({
   isEditMode: {
     type: Boolean,
     default: false
-  },
-  showSaveAsTemplate: {
-    type: Boolean,
-    default: false
-  },
-  savingAsTemplate: {
-    type: Boolean,
-    default: false
   }
 })
 
@@ -231,8 +204,7 @@ const emit = defineEmits([
   'save',
   'save-and-continue',
   'finalize',
-  'save-as-template',
-  'update:campaign-name'
+  'update:template-name'
 ])
 
 // Name editing state
@@ -246,7 +218,7 @@ const __ = (text) => text
 // Name editing functions
 const startEditingName = async () => {
   isEditingName.value = true
-  editingNameValue.value = props.campaignName || ''
+  editingNameValue.value = props.templateName || ''
   await nextTick()
   nameInput.value?.focus()
   nameInput.value?.select()
@@ -254,7 +226,7 @@ const startEditingName = async () => {
 
 const saveName = () => {
   if (editingNameValue.value.trim()) {
-    emit('update:campaign-name', editingNameValue.value.trim())
+    emit('update:template-name', editingNameValue.value.trim())
   }
   isEditingName.value = false
 }

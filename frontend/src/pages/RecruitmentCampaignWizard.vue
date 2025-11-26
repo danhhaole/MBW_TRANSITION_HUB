@@ -9,11 +9,14 @@
       :saving="saving"
       :finalizing="finalizing"
       :is-edit-mode="false"
+      :show-save-as-template="!!campaignData.name"
+      :saving-as-template="savingAsTemplate"
       @exit="closeWizard"
       @back="prevStep"
       @save="saveDraft"
       @save-and-continue="nextStep"
       @finalize="finalizeCampaign"
+      @save-as-template="handleSaveAsTemplate"
       @update:campaign-name="campaignData.campaign_name = $event"
     />
 
@@ -92,6 +95,13 @@
         </div>
       </div>
     </div>
+
+    <!-- Save as Template Modal -->
+    <SaveAsTemplateModal
+      v-model="showSaveAsTemplateModal"
+      :campaign="{ name: campaignData.name, campaign_name: campaignData.campaign_name, type: campaignData.type }"
+      @saved="handleTemplateSaved"
+    />
   </div>
 </template>
 
@@ -104,6 +114,7 @@ import CampaignWizardStepper from '@/components/campaign/CampaignWizardStepper.v
 import CampaignStep1 from '@/components/campaign_new/recruitment/Step1_CampaignInfo.vue'
 import CampaignStep2 from '@/components/campaign_new/recruitment/Step2_ContentChannels.vue'
 import CampaignStep3 from '@/components/campaign_new/recruitment/Step3_Settings.vue'
+import { SaveAsTemplateModal } from '@/components/campaign'
 import { useCampaignStore } from '@/stores/campaign'
 import { useToast } from '@/composables/useToast'
 
@@ -132,6 +143,8 @@ const toast = useToast()
 const currentStep = ref(1)
 const saving = ref(false)
 const finalizing = ref(false)
+const savingAsTemplate = ref(false)
+const showSaveAsTemplateModal = ref(false)
 const showValidationError = ref(false)
 const loadingTriggers = ref(false)
 
@@ -899,6 +912,20 @@ watch(currentStep, async (newStep, oldStep) => {
     await loadCampaignFlows(campaignData.value.name)
   }
 })
+
+const handleSaveAsTemplate = () => {
+  if (!campaignData.value.name) {
+    toast.error(__('Please save the campaign first'))
+    return
+  }
+  showSaveAsTemplateModal.value = true
+}
+
+const handleTemplateSaved = (templateData) => {
+  toast.success(__('Campaign saved as template successfully!'))
+  console.log('✅ Template created:', templateData)
+  showSaveAsTemplateModal.value = false
+}
 
 </script>
 

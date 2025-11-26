@@ -33,6 +33,7 @@ def get_template_with_social_contents(template_id):
             "template_name": template.template_name,
             "description": template.description,
             "campaign_type": template.campaign_type,
+            "thumbnail": template.thumbnail or "",
             # Get from config or direct fields
             "objective": config.get("objective", getattr(template, "objective", "")),
             "target_pool": config.get("target_pool", getattr(template, "target_pool", "")),
@@ -46,6 +47,8 @@ def get_template_with_social_contents(template_id):
             "scope_type": template.scope_type,
             "ladipage_url": template.ladipage_url,
             "ladipage_id": template.ladipage_id,
+            # Flow config for Step 3
+            "flow_config": template.flow_config or "",
             # Include full config for reference
             "configuration": config,
             # Social contents

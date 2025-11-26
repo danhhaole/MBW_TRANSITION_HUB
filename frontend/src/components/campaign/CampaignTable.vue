@@ -117,6 +117,13 @@
                   >
                     <FeatherIcon name="edit" class="h-4 w-4" />
                   </button>
+                  <button 
+                    @click="handleSaveAsTemplate(campaign)"
+                    class="text-gray-600 hover:text-purple-600 p-2 rounded-md hover:bg-purple-50 transition-colors"
+                    :title="__('Save as Template')"
+                  >
+                    <FeatherIcon name="bookmark" class="h-4 w-4" />
+                  </button>
                   <button
                     v-if="campaign.status === 'DRAFT'" 
                     @click="handleDelete(campaign)"
@@ -259,7 +266,7 @@ const props = defineProps({
 
 // Emits
 const emit = defineEmits([
-  'edit', 'view', 'delete', 'page-change', 'status-change'
+  'edit', 'view', 'delete', 'save-as-template', 'page-change', 'status-change'
 ])
 
 // Refs
@@ -438,6 +445,10 @@ const handleView = (item) => {
 const handleDelete = (item) => {
   // Emit delete event directly to parent
   emit('delete', item)
+}
+
+const handleSaveAsTemplate = (item) => {
+  emit('save-as-template', item)
 }
 
 const handlePageChange = (page) => {
