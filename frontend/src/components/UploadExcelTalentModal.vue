@@ -625,7 +625,7 @@ const props = defineProps({
     modelValue: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'created', 'close'])
 
 const internalShow = computed({
   get() {
@@ -904,6 +904,14 @@ const autoMapFields = () => {
     'preferred_location': ['preferred_location', 'desired location', 'vi_tri_mong_muon', 'vị trí mong muốn'],
     'skills': ['skills', 'kỹ năng', 'ky nang', 'ky_nang', 'skill', 'kỹ năng chuyên môn'],
     'source': ['source', 'nguon', 'nguồn', 'nguon_goc', 'nguồn gốc'],
+    'availability_date': ['availability_date', 'availability date', 'ngày có thể làm việc', 'ngay co the lam viec', 'available_date', 'start_date'],
+    'expected_salary': ['expected_salary', 'expected salary', 'mức lương mong muốn', 'muc luong mong muon', 'salary_expectation', 'luong_mong_muon'],
+    'hard_skills': ['hard_skills', 'hard skills', 'kỹ năng cứng', 'ky nang cung', 'technical_skills', 'ky nang ky thuat'],
+    'soft_skills': ['soft_skills', 'soft skills', 'kỹ năng mềm', 'ky nang mem', 'interpersonal_skills', 'ky nang giao tiep'],
+    'domain_expertise': ['domain_expertise', 'domain expertise', 'chuyên môn lĩnh vực', 'chuyen mon linh vuc', 'industry_knowledge', 'kinh nghiem linh vuc'],
+    'cultural_fit': ['cultural_fit', 'cultural fit', 'phù hợp văn hóa', 'phu hop van hoa', 'culture_fit', 'van_hoa_cong_ty'],
+    'internal_rating': ['internal_rating', 'internal rating', 'đánh giá nội bộ', 'danh gia noi bo', 'rating', 'xep_hang'],
+    'recruitment_readiness': ['recruitment_readiness', 'recruitment readiness', 'sẵn sàng tuyển dụng', 'san sang tuyen dung', 'readiness', 'tinh_trang_tuyen_dung']
 };
 
     availableFields.value.forEach(field => {
@@ -995,6 +1003,15 @@ const processImport = async (validationOnly = false) => {
 
             const actionText = validationOnly ? __('Validation') : __('Import')
             toast.success(__(`Processed ${importResults.value.total} records. ${importResults.value.success} successful, ${importResults.value.failed} failed.`))
+            
+            // Emit created event if import was successful and not validation only
+            if (!validationOnly && importResults.value.success > 0) {
+                emit('created', {
+                    success: importResults.value.success,
+                    failed: importResults.value.failed,
+                    total: importResults.value.total
+                })
+            }
         } else {
             throw new Error(result.exc || __('Import failed'))
         }
@@ -1080,6 +1097,7 @@ const goBackToUpload = () => {
 
 const closeModal = () => {
     show.value = false
+    emit('close')
 }
 
 const downloadErrorLog = () => {

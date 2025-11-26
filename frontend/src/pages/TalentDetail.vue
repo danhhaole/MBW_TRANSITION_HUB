@@ -208,6 +208,36 @@
                     <span class="text-gray-600">Availability date:</span>
                     <span class="font-medium">{{ formatDate(talent.availability_date) }}</span>
                   </div>
+                  <div v-if="talent.cultural_fit" class="flex justify-between">
+                    <span class="text-gray-600">Cultural fit:</span>
+                    <span class="font-medium">{{ talent.cultural_fit }}</span>
+                  </div>
+                  <div v-if="talent.internal_rating" class="flex justify-between">
+                    <span class="text-gray-600">Internal rating:</span>
+                    <span class="font-medium">{{ talent.internal_rating }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Professional Skills -->
+              <div v-if="talent.hard_skills || talent.soft_skills || talent.domain_expertise" class="border-t border-gray-200 p-4">
+                <h3 class="text-sm font-medium text-gray-900 mb-3 flex items-center">
+                  <FeatherIcon name="award" class="w-4 h-4 mr-2" />
+                  Professional Skills
+                </h3>
+                <div class="space-y-3 text-sm">
+                  <div v-if="talent.hard_skills">
+                    <span class="text-gray-600 font-medium">Hard Skills:</span>
+                    <p class="text-gray-900 mt-1">{{ talent.hard_skills }}</p>
+                  </div>
+                  <div v-if="talent.soft_skills">
+                    <span class="text-gray-600 font-medium">Soft Skills:</span>
+                    <p class="text-gray-900 mt-1">{{ talent.soft_skills }}</p>
+                  </div>
+                  <div v-if="talent.domain_expertise">
+                    <span class="text-gray-600 font-medium">Domain Expertise:</span>
+                    <p class="text-gray-900 mt-1">{{ talent.domain_expertise }}</p>
+                  </div>
                 </div>
               </div>
 
@@ -641,6 +671,134 @@
               </div>
             </div>
 
+            <!-- New Additional Fields Section -->
+            <div class="bg-blue-50 rounded-md p-4 space-y-4">
+              <h5 class="text-sm font-medium text-gray-900 mb-3">Professional Assessment</h5>
+              
+              <!-- Row 1: Availability Date and Expected Salary -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <!-- Availability Date -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Availability Date
+                  </label>
+                  <input
+                    v-model="editForm.availability_date"
+                    type="date"
+                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
+                  />
+                </div>
+
+                <!-- Expected Salary -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Expected Salary
+                  </label>
+                  <input
+                    v-model.number="editForm.expected_salary"
+                    type="number"
+                    min="0"
+                    step="1000000"
+                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
+                    placeholder="VND"
+                  />
+                </div>
+              </div>
+
+              <!-- Row 2: Hard Skills and Soft Skills -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <!-- Hard Skills -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Hard Skills
+                  </label>
+                  <textarea
+                    v-model="editForm.hard_skills"
+                    rows="2"
+                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
+                    placeholder="Technical skills, certifications, tools..."
+                  ></textarea>
+                </div>
+
+                <!-- Soft Skills -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Soft Skills
+                  </label>
+                  <textarea
+                    v-model="editForm.soft_skills"
+                    rows="2"
+                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
+                    placeholder="Communication, leadership, teamwork..."
+                  ></textarea>
+                </div>
+              </div>
+
+              <!-- Domain Expertise -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Domain Expertise
+                </label>
+                <textarea
+                  v-model="editForm.domain_expertise"
+                  rows="2"
+                  class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
+                  placeholder="Industry knowledge, specialized domains..."
+                ></textarea>
+              </div>
+
+              <!-- Row 3: Assessment Fields -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <!-- Cultural Fit -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Cultural Fit
+                  </label>
+                  <select
+                    v-model="editForm.cultural_fit"
+                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
+                  >
+                    <option value="">Select fit level</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                  </select>
+                </div>
+
+                <!-- Internal Rating -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Internal Rating
+                  </label>
+                  <select
+                    v-model="editForm.internal_rating"
+                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
+                  >
+                    <option value="">Select rating</option>
+                    <option value="A">A - Excellent</option>
+                    <option value="B">B - Good</option>
+                    <option value="C">C - Average</option>
+                  </select>
+                </div>
+
+                <!-- Recruitment Readiness -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Recruitment Readiness
+                  </label>
+                  <select
+                    v-model="editForm.recruitment_readiness"
+                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
+                  >
+                    <option value="">Select readiness</option>
+                    <option value="Cold">Cold</option>
+                    <option value="Warm">Warm</option>
+                    <option value="Hot">Hot</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
             <!-- Interaction Notes -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -871,7 +1029,16 @@ const editTalent = () => {
         return processed
       })(),
       current_status: talent.value.current_status || talent.value.status || 'Active',
-      crm_status: talent.value.crm_status || 'New'
+      crm_status: talent.value.crm_status || 'New',
+      // New additional fields
+      availability_date: talent.value.availability_date || '',
+      expected_salary: talent.value.expected_salary || null,
+      hard_skills: talent.value.hard_skills || '',
+      soft_skills: talent.value.soft_skills || '',
+      domain_expertise: talent.value.domain_expertise || '',
+      cultural_fit: talent.value.cultural_fit || '',
+      internal_rating: talent.value.internal_rating || '',
+      recruitment_readiness: talent.value.recruitment_readiness || ''
     }
     
     // Set skill tags for display
@@ -1061,6 +1228,14 @@ const formatExperience = (years) => {
   const num = parseFloat(years)
   if (num === 1) return '1 year'
   return `${num} years`
+}
+
+const formatCurrency = (amount) => {
+  if (!amount || amount === 0) return '-'
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND'
+  }).format(amount)
 }
 
 const formatFileSize = (bytes) => {

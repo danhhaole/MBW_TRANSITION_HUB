@@ -892,6 +892,134 @@
 									</div>
 								</div>
 
+								<!-- New Additional Fields Section -->
+								<div class="bg-blue-50 rounded-md p-4 space-y-4">
+									<h5 class="text-sm font-medium text-gray-900 mb-3">Professional Assessment</h5>
+									
+									<!-- Row 1: Availability Date and Expected Salary -->
+									<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+										<!-- Availability Date -->
+										<div>
+											<label class="block text-sm font-medium text-gray-700 mb-1">
+												Availability Date
+											</label>
+											<input
+												v-model="newTalent.availability_date"
+												type="date"
+												class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
+											/>
+										</div>
+
+										<!-- Expected Salary -->
+										<div>
+											<label class="block text-sm font-medium text-gray-700 mb-1">
+												Expected Salary
+											</label>
+											<input
+												v-model.number="newTalent.expected_salary"
+												type="number"
+												min="0"
+												step="1000000"
+												class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
+												placeholder="VND"
+											/>
+										</div>
+									</div>
+
+									<!-- Row 2: Hard Skills and Soft Skills -->
+									<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+										<!-- Hard Skills -->
+										<div>
+											<label class="block text-sm font-medium text-gray-700 mb-1">
+												Hard Skills
+											</label>
+											<textarea
+												v-model="newTalent.hard_skills"
+												rows="2"
+												class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
+												placeholder="Technical skills, certifications, tools..."
+											></textarea>
+										</div>
+
+										<!-- Soft Skills -->
+										<div>
+											<label class="block text-sm font-medium text-gray-700 mb-1">
+												Soft Skills
+											</label>
+											<textarea
+												v-model="newTalent.soft_skills"
+												rows="2"
+												class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
+												placeholder="Communication, leadership, teamwork..."
+											></textarea>
+										</div>
+									</div>
+
+									<!-- Domain Expertise -->
+									<div>
+										<label class="block text-sm font-medium text-gray-700 mb-1">
+											Domain Expertise
+										</label>
+										<textarea
+											v-model="newTalent.domain_expertise"
+											rows="2"
+											class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
+											placeholder="Industry knowledge, specialized domains..."
+										></textarea>
+									</div>
+
+									<!-- Row 3: Assessment Fields -->
+									<div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+										<!-- Cultural Fit -->
+										<div>
+											<label class="block text-sm font-medium text-gray-700 mb-1">
+												Cultural Fit
+											</label>
+											<select
+												v-model="newTalent.cultural_fit"
+												class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
+											>
+												<option value="">Select fit level</option>
+												<option value="High">High</option>
+												<option value="Medium">Medium</option>
+												<option value="Low">Low</option>
+											</select>
+										</div>
+
+										<!-- Internal Rating -->
+										<div>
+											<label class="block text-sm font-medium text-gray-700 mb-1">
+												Internal Rating
+											</label>
+											<select
+												v-model="newTalent.internal_rating"
+												class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
+											>
+												<option value="">Select rating</option>
+												<option value="A">A - Excellent</option>
+												<option value="B">B - Good</option>
+												<option value="C">C - Average</option>
+											</select>
+										</div>
+
+										<!-- Recruitment Readiness -->
+										<div>
+											<label class="block text-sm font-medium text-gray-700 mb-1">
+												Recruitment Readiness
+											</label>
+											<select
+												v-model="newTalent.recruitment_readiness"
+												class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
+											>
+												<option value="">Select readiness</option>
+												<option value="Cold">Cold</option>
+												<option value="Warm">Warm</option>
+												<option value="Hot">Hot</option>
+											</select>
+										</div>
+									</div>
+								</div>
+
 								<!-- Resume Upload - Compact Version -->
 								<div>
 									<label class="block text-sm font-medium text-gray-700 mb-2"
@@ -1817,11 +1945,14 @@ const closeUploadModal = () => {
 }
 
 const handleTalentCreated = async (result) => {
-	showSuccess(`Successfully created ${result.success} talent`)
+	showSuccess(`Successfully imported ${result.success} talent(s)`)
+	// Refresh the talents list to show newly imported talents
 	await talentPoolStore.fetchTalents({
 		page: talentPoolStore.pagination.page,
 		limit: talentPoolStore.pagination.limit,
 	})
+	// Force reactivity update
+	forceUpdate.value++
 }
 
 const openUploadMany = () => {

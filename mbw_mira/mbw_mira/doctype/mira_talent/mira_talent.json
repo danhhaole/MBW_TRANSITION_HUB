@@ -190,7 +190,7 @@
   },
   {
    "fieldname": "hard_skills",
-   "fieldtype": "Select",
+   "fieldtype": "Small Text",
    "label": "Hard Skills"
   },
   {
@@ -200,12 +200,12 @@
   },
   {
    "fieldname": "latest_company",
-   "fieldtype": "Text",
+   "fieldtype": "Small Text",
    "label": "Latest Company"
   },
   {
    "fieldname": "highest_education",
-   "fieldtype": "Text",
+   "fieldtype": "Small Text",
    "label": "Highest Education"
   },
   {
@@ -329,7 +329,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-21 10:02:09.448892",
+ "modified": "2025-11-26 08:33:18.866031",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Talent",

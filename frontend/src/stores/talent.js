@@ -548,6 +548,15 @@ export const useTalentStore = defineStore('talent', {
 				desired_role: talentData.desired_role?.trim(),
 				interaction_notes: talentData.interaction_notes?.trim(),
 				crm_status: talentData.crm_status || 'New',
+				// New additional fields
+				availability_date: talentData.availability_date,
+				expected_salary: parseFloat(talentData.expected_salary) || 0,
+				hard_skills: talentData.hard_skills?.trim(),
+				soft_skills: talentData.soft_skills?.trim(),
+				domain_expertise: talentData.domain_expertise?.trim(),
+				cultural_fit: talentData.cultural_fit,
+				internal_rating: talentData.internal_rating,
+				recruitment_readiness: talentData.recruitment_readiness,
 			}
 		},
 

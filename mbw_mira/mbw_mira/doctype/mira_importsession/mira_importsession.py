@@ -967,7 +967,9 @@ def download_talent_template():
 		
 		# Define important fields in order
 		important_fields = [
-			'full_name', 'email', 'phone', 'skills', 'source', 'crm_status'
+			'full_name', 'email', 'phone', 'skills', 'source', 'crm_status',
+			'availability_date', 'expected_salary', 'hard_skills', 'soft_skills',
+			'domain_expertise', 'cultural_fit', 'internal_rating', 'recruitment_readiness'
 		]
 		
 		template_fields = []
@@ -1006,6 +1008,22 @@ def download_talent_template():
 				sample_data[header] = 'Import Excel'
 			elif field['fieldname'] == 'crm_status':
 				sample_data[header] = 'New'
+			elif field['fieldname'] == 'availability_date':
+				sample_data[header] = '2024-03-01'
+			elif field['fieldname'] == 'expected_salary':
+				sample_data[header] = '25000000'
+			elif field['fieldname'] == 'hard_skills':
+				sample_data[header] = 'Python, React, Node.js, PostgreSQL'
+			elif field['fieldname'] == 'soft_skills':
+				sample_data[header] = 'Communication, Leadership, Problem Solving'
+			elif field['fieldname'] == 'domain_expertise':
+				sample_data[header] = 'Fintech, E-commerce, Web Development'
+			elif field['fieldname'] == 'cultural_fit':
+				sample_data[header] = 'High'
+			elif field['fieldname'] == 'internal_rating':
+				sample_data[header] = 'A'
+			elif field['fieldname'] == 'recruitment_readiness':
+				sample_data[header] = 'Warm'
 			else:
 				sample_data[header] = ''
 		
@@ -1534,14 +1552,16 @@ def read_file_to_dataframe(file_path: str, filename: str) -> pd.DataFrame:
 	ext = filename.split('.')[-1].lower()
 	try:
 		if ext in ['xlsx', 'xls']:
-			df = pd.read_excel(file_path, engine='openpyxl' if ext == 'xlsx' else None)
+			# 👉 Force all cells to be read as strings to keep leading zeros (e.g. phone numbers)
+			df = pd.read_excel(file_path, dtype=str, engine='openpyxl' if ext == 'xlsx' else None)
 		elif ext == 'csv':
 			# Try different encodings
 			encodings = ['utf-8', 'latin-1', 'cp1252']
 			df = None
 			for encoding in encodings:
 				try:
-					df = pd.read_csv(file_path, encoding=encoding)
+					# 👉 Force all columns to string to keep leading zeros
+					df = pd.read_csv(file_path, encoding=encoding, dtype=str, keep_default_na=False)
 					break
 				except (UnicodeDecodeError, UnicodeError):
 					continue
@@ -1555,6 +1575,10 @@ def read_file_to_dataframe(file_path: str, filename: str) -> pd.DataFrame:
 		# Clean data
 		df = df.dropna(how='all')
 		df.columns = [str(col).strip() for col in df.columns]
+		
+		# ✅ Convert all values to string (avoid float/int converting again)
+		df = df.applymap(lambda x: str(x).strip() if pd.notna(x) else "")
+		
 		return df
 	except Exception as e:
 		frappe.throw(_("Error reading file: {0}").format(str(e)))
@@ -2749,9 +2773,9 @@ def process_phone_number(phone: Any) -> Optional[str]:
 	else:
 		cleaned = re.sub(r'[^\d]', '', cleaned)
 	
-	# Validate length
+	# Validate length (allow 10-15 digits)
 	digit_only = re.sub(r'[^\d]', '', cleaned)
-	if len(digit_only) <= 10 or len(digit_only) > 15:
+	if len(digit_only) < 10 or len(digit_only) > 15:
 		return None
 	
 	return cleaned[:20]  # Limit total length
