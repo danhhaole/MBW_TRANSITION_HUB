@@ -388,3 +388,303 @@ def get_talent_activity_logs(talent_id, limit=50):
         "activities": activities
     }
 
+
+@frappe.whitelist()
+def get_campaign_stats(campaign_id):
+    """
+    Lấy thống kê tương tác cho một campaign từ Mira Interaction và Mira Action
+    Trả về: sent, delivered, opened, clicked, unsubscribed, bounced, replied, failed
+    """
+    if not campaign_id:
+        frappe.throw(_("Campaign ID is required"))
+    
+    # Kiểm tra campaign có tồn tại không
+    if not frappe.db.exists("Mira Campaign", campaign_id):
+        frappe.throw(_("Campaign not found"))
+    
+    # Lấy tất cả interactions của campaign này
+    interactions = frappe.get_all(
+        "Mira Interaction",
+        filters={"campaign_id": campaign_id},
+        fields=["interaction_type"],
+        limit_page_length=0
+    )
+    
+    # Đếm số lượng theo interaction_type
+    counts = {}
+    for item in interactions:
+        itype = item.get("interaction_type")
+        if itype:
+            counts[itype] = counts.get(itype, 0) + 1
+    
+    # Đếm số talent trong campaign (từ Mira Talent Campaign)
+    total_talents = frappe.db.count("Mira Talent Campaign", {"campaign_id": campaign_id})
+    
+    # Đếm số contact trong campaign (từ Mira Contact Campaign)
+    total_contacts = frappe.db.count("Mira Contact Campaign", {"campaign_id": campaign_id})
+    
+    total_recipients = total_talents + total_contacts
+    
+    # Lấy danh sách talent_campaign_ids thuộc campaign này
+    talent_campaigns = frappe.get_all(
+        "Mira Talent Campaign",
+        filters={"campaign_id": campaign_id},
+        fields=["name"],
+        limit_page_length=0
+    )
+    talent_campaign_ids = [tc.name for tc in talent_campaigns]
+    
+    # Đếm số actions theo status từ Mira Action
+    action_status = {}
+    if talent_campaign_ids:
+        actions = frappe.get_all(
+            "Mira Action",
+            filters={"talent_campaign_id": ["in", talent_campaign_ids]},
+            fields=["status"],
+            limit_page_length=0
+        )
+        for action in actions:
+            status = action.get("status")
+            if status:
+                action_status[status] = action_status.get(status, 0) + 1
+    
+    # Tính toán các metrics
+    sent = counts.get('EMAIL_SENT', 0)
+    delivered = counts.get('EMAIL_DELIVERED', 0)
+    opened = counts.get('EMAIL_OPENED', 0)
+    clicked = counts.get('ON_LINK_CLICK', 0)
+    unsubscribed = counts.get('EMAIL_UNSUBSCRIBED', 0)
+    bounced = counts.get('EMAIL_BOUNCED', 0)
+    replied = counts.get('EMAIL_REPLIED', 0)
+    failed = action_status.get('FAILED', 0)
+    
+    # Nếu không có sent, dùng total_recipients làm base
+    base = sent if sent > 0 else total_recipients
+    
+    # Tính tỷ lệ phần trăm
+    def calc_rate(count, base):
+        if base == 0:
+            return "0%"
+        return f"{round((count / base) * 100, 1)}%"
+    
+    return {
+        "status": "success",
+        "campaign_id": campaign_id,
+        "stats": {
+            "sent": sent if sent > 0 else total_recipients,
+            "delivered": delivered,
+            "delivered_percent": calc_rate(delivered, base),
+            "open_rate": calc_rate(opened, base),
+            "open_count": opened,
+            "click_rate": calc_rate(clicked, base),
+            "click_count": clicked,
+            "unsubscribe_rate": calc_rate(unsubscribed, base),
+            "unsubscribe_count": unsubscribed,
+            "bounce_rate": calc_rate(bounced, base),
+            "bounce_count": bounced,
+            "reply_rate": calc_rate(replied, base),
+            "reply_count": replied,
+            "error_rate": calc_rate(failed, base),
+            "error_count": failed,
+            "total_recipients": total_recipients,
+            "total_talents": total_talents,
+            "total_contacts": total_contacts
+        },
+        "raw_counts": counts,
+        "action_status": action_status
+    }
+
+
+@frappe.whitelist()
+def get_campaign_link_clicks(campaign_id, limit=20):
+    """
+    Lấy danh sách các link được click trong campaign, group theo URL
+    """
+    if not campaign_id:
+        frappe.throw(_("Campaign ID is required"))
+    
+    # Lấy tất cả interactions loại ON_LINK_CLICK có URL
+    interactions = frappe.get_all(
+        "Mira Interaction",
+        filters={
+            "campaign_id": campaign_id,
+            "interaction_type": "ON_LINK_CLICK",
+            "url": ["is", "set"]
+        },
+        fields=["url"],
+        limit_page_length=0
+    )
+    
+    # Group theo URL và đếm
+    url_counts = {}
+    for item in interactions:
+        url = item.get("url")
+        if url:
+            url_counts[url] = url_counts.get(url, 0) + 1
+    
+    # Chuyển thành list và sort theo clicks giảm dần
+    link_clicks = [{"url": url, "clicks": count} for url, count in url_counts.items()]
+    link_clicks.sort(key=lambda x: x["clicks"], reverse=True)
+    
+    # Limit kết quả
+    link_clicks = link_clicks[:int(limit)]
+    
+    return {
+        "status": "success",
+        "campaign_id": campaign_id,
+        "total": len(link_clicks),
+        "link_clicks": link_clicks
+    }
+
+
+@frappe.whitelist()
+def get_campaign_top_talents(campaign_id, limit=10):
+    """
+    Lấy danh sách top talents có nhiều tương tác nhất trong campaign
+    """
+    if not campaign_id:
+        frappe.throw(_("Campaign ID is required"))
+    
+    # Lấy tất cả interactions có talent_id
+    interactions = frappe.get_all(
+        "Mira Interaction",
+        filters={
+            "campaign_id": campaign_id,
+            "talent_id": ["is", "set"]
+        },
+        fields=["talent_id", "interaction_type"],
+        limit_page_length=0
+    )
+    
+    # Group theo talent_id và đếm các loại interaction
+    talent_stats = {}
+    for item in interactions:
+        talent_id = item.get("talent_id")
+        itype = item.get("interaction_type")
+        
+        if talent_id not in talent_stats:
+            talent_stats[talent_id] = {
+                "talent_id": talent_id,
+                "total_interactions": 0,
+                "clicks": 0,
+                "opens": 0,
+                "replies": 0
+            }
+        
+        talent_stats[talent_id]["total_interactions"] += 1
+        
+        if itype == "ON_LINK_CLICK":
+            talent_stats[talent_id]["clicks"] += 1
+        elif itype == "EMAIL_OPENED":
+            talent_stats[talent_id]["opens"] += 1
+        elif itype == "EMAIL_REPLIED":
+            talent_stats[talent_id]["replies"] += 1
+    
+    # Lấy thông tin talent (full_name, email)
+    talent_ids = list(talent_stats.keys())
+    if talent_ids:
+        talents = frappe.get_all(
+            "Mira Talent",
+            filters={"name": ["in", talent_ids]},
+            fields=["name", "full_name", "email"],
+            limit_page_length=0
+        )
+        talent_info = {t.name: t for t in talents}
+        
+        # Merge thông tin
+        for talent_id, stats in talent_stats.items():
+            info = talent_info.get(talent_id, {})
+            stats["full_name"] = info.get("full_name", "")
+            stats["email"] = info.get("email", "")
+    
+    # Chuyển thành list và sort
+    top_talents = list(talent_stats.values())
+    top_talents.sort(key=lambda x: (x["clicks"], x["opens"], x["total_interactions"]), reverse=True)
+    
+    # Limit kết quả
+    top_talents = top_talents[:int(limit)]
+    
+    return {
+        "status": "success",
+        "campaign_id": campaign_id,
+        "total": len(top_talents),
+        "top_talents": top_talents
+    }
+
+
+@frappe.whitelist()
+def get_campaign_filter_counts(campaign_id):
+    """
+    Lấy số lượng cho các filter buttons trong Campaign Detail (sent, delivered, opened, clicked, failed, bounced, spam)
+    """
+    if not campaign_id:
+        frappe.throw(_("Campaign ID is required"))
+    
+    # Lấy tất cả interactions của campaign
+    interactions = frappe.get_all(
+        "Mira Interaction",
+        filters={"campaign_id": campaign_id},
+        fields=["interaction_type", "talent_id"],
+        limit_page_length=0
+    )
+    
+    # Đếm số unique talent_id theo interaction_type
+    type_talents = {}
+    for item in interactions:
+        itype = item.get("interaction_type")
+        talent_id = item.get("talent_id")
+        if itype and talent_id:
+            if itype not in type_talents:
+                type_talents[itype] = set()
+            type_talents[itype].add(talent_id)
+    
+    counts = {itype: len(talents) for itype, talents in type_talents.items()}
+    
+    # Lấy danh sách talent_campaign_ids thuộc campaign này
+    talent_campaigns = frappe.get_all(
+        "Mira Talent Campaign",
+        filters={"campaign_id": campaign_id},
+        fields=["name", "talent_id"],
+        limit_page_length=0
+    )
+    talent_campaign_ids = [tc.name for tc in talent_campaigns]
+    
+    # Đếm số unique talent_id có action FAILED
+    failed_talent_ids = set()
+    if talent_campaign_ids:
+        failed_actions = frappe.get_all(
+            "Mira Action",
+            filters={
+                "talent_campaign_id": ["in", talent_campaign_ids],
+                "status": "FAILED"
+            },
+            fields=["talent_campaign_id"],
+            limit_page_length=0
+        )
+        
+        # Map talent_campaign_id -> talent_id
+        tc_to_talent = {tc.name: tc.talent_id for tc in talent_campaigns}
+        for action in failed_actions:
+            tc_id = action.get("talent_campaign_id")
+            if tc_id and tc_id in tc_to_talent:
+                failed_talent_ids.add(tc_to_talent[tc_id])
+    
+    # Tổng số talent/contact trong campaign
+    total_talents = frappe.db.count("Mira Talent Campaign", {"campaign_id": campaign_id})
+    total_contacts = frappe.db.count("Mira Contact Campaign", {"campaign_id": campaign_id})
+    
+    return {
+        "status": "success",
+        "campaign_id": campaign_id,
+        "filter_counts": {
+            "sent": counts.get('EMAIL_SENT', 0) or (total_talents + total_contacts),
+            "delivered": counts.get('EMAIL_DELIVERED', 0),
+            "opened": counts.get('EMAIL_OPENED', 0),
+            "clicked": counts.get('ON_LINK_CLICK', 0),
+            "failed": len(failed_talent_ids),
+            "bounced": counts.get('EMAIL_BOUNCED', 0),
+            "spam": counts.get('EMAIL_SPAM', 0) or 0
+        },
+        "total_recipients": total_talents + total_contacts
+    }
+

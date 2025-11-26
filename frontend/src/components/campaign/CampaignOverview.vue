@@ -230,7 +230,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import { call } from 'frappe-ui'
 
 const props = defineProps({
 	campaignId: {
@@ -239,7 +240,12 @@ const props = defineProps({
 	},
 })
 
-// Mock data - replace with actual API calls
+// Loading states
+const loadingStats = ref(false)
+const loadingLinkClicks = ref(false)
+const loadingTopTalents = ref(false)
+
+// Stats data from API
 const stats = ref({
 	sent: 0,
 	delivered: 0,
@@ -256,41 +262,109 @@ const stats = ref({
 	replyCount: 0,
 })
 
-const linkClicks = ref([
-	// {
-	// 	url: 'https://youtu.be/MuQvbKr1IIttm-cc0?si=haRZ25TcvU',
-	// 	clicks: 2,
-	// },
-])
+const linkClicks = ref([])
+const topTalents = ref([])
 
-const topTalents = ref([
-	// {
-	// 	id: 1,
-	// 	name: 'thao.nguyen@mbwconsulting.com',
-	// 	email: 'thao.nguyen@mbwconsulting.com',
-	// 	clicks: 1,
-	// },
-])
-
-// TODO: Replace with actual API calls
+// Load campaign statistics from API
 const loadStats = async () => {
-	// Implement API call to get campaign statistics
-	console.log('Loading campaign stats for:', props.campaignId)
+	if (!props.campaignId) return
+	
+	loadingStats.value = true
+	try {
+		const response = await call('mbw_mira.api.interaction.get_campaign_stats', {
+			campaign_id: props.campaignId
+		})
+		
+		if (response.status === 'success' && response.stats) {
+			const s = response.stats
+			stats.value = {
+				sent: s.sent || 0,
+				delivered: s.delivered || 0,
+				deliveredPercent: s.delivered_percent || '0%',
+				openRate: s.open_rate || '0%',
+				openCount: s.open_count || 0,
+				clickRate: s.click_rate || '0%',
+				clickCount: s.click_count || 0,
+				unsubscribeRate: s.unsubscribe_rate || '0%',
+				unsubscribeCount: s.unsubscribe_count || 0,
+				errorRate: s.error_rate || '0%',
+				errorCount: s.error_count || 0,
+				replyRate: s.reply_rate || '0%',
+				replyCount: s.reply_count || 0,
+			}
+		}
+	} catch (error) {
+		console.error('Error loading campaign stats:', error)
+	} finally {
+		loadingStats.value = false
+	}
 }
 
+// Load link click data from API
 const loadLinkClicks = async () => {
-	// Implement API call to get link click data
-	console.log('Loading link clicks for:', props.campaignId)
+	if (!props.campaignId) return
+	
+	loadingLinkClicks.value = true
+	try {
+		const response = await call('mbw_mira.api.interaction.get_campaign_link_clicks', {
+			campaign_id: props.campaignId,
+			limit: 20
+		})
+		
+		if (response.status === 'success') {
+			linkClicks.value = response.link_clicks || []
+		}
+	} catch (error) {
+		console.error('Error loading link clicks:', error)
+	} finally {
+		loadingLinkClicks.value = false
+	}
 }
 
+// Load top talents from API
 const loadTopTalents = async () => {
-	// Implement API call to get top talents
-	console.log('Loading top talents for:', props.campaignId)
+	if (!props.campaignId) return
+	
+	loadingTopTalents.value = true
+	try {
+		const response = await call('mbw_mira.api.interaction.get_campaign_top_talents', {
+			campaign_id: props.campaignId,
+			limit: 10
+		})
+		
+		if (response.status === 'success') {
+			topTalents.value = (response.top_talents || []).map(talent => ({
+				id: talent.talent_id,
+				name: talent.full_name || talent.email || talent.talent_id,
+				email: talent.email || '',
+				clicks: talent.clicks || 0,
+				opens: talent.opens || 0,
+				replies: talent.replies || 0,
+				total: talent.total_interactions || 0
+			}))
+		}
+	} catch (error) {
+		console.error('Error loading top talents:', error)
+	} finally {
+		loadingTopTalents.value = false
+	}
 }
 
-onMounted(() => {
+// Load all data
+const loadAllData = () => {
 	loadStats()
 	loadLinkClicks()
 	loadTopTalents()
+}
+
+// Watch for campaignId changes
+watch(() => props.campaignId, (newId) => {
+	if (newId) {
+		loadAllData()
+	}
+}, { immediate: false })
+
+onMounted(() => {
+	loadAllData()
 })
 </script>

@@ -1032,37 +1032,37 @@ const loadTalentCampaign = async () => {
 
 		// 2. Load from Mira Contact Campaign table
 		try {
-			const contactCampaignRes = await call('frappe.client.get_list', {
-				doctype: 'Mira Contact Campaign',
-				fields: ['name', 'contact_id', 'status'],
-				filters: [['campaign_id', '=', route.params.id]],
-				limit_page_length: 1000,
-			})
+			// const contactCampaignRes = await call('frappe.client.get_list', {
+			// 	doctype: 'Mira Contact Campaign',
+			// 	fields: ['name', 'contact_id', 'status'],
+			// 	filters: [['campaign_id', '=', route.params.id]],
+			// 	limit_page_length: 1000,
+			// })
 
-			if (contactCampaignRes.length > 0) {
-				const contactIds = contactCampaignRes.map((cc) => cc.contact_id)
-				const contactRes = await call('frappe.client.get_list', {
-					doctype: 'Mira Contact',
-					fields: ['name', 'full_name', 'email', 'phone'],
-					filters: [['name', 'in', contactIds]],
-					limit_page_length: 1000,
-				})
+			// if (contactCampaignRes.length > 0) {
+			// 	const contactIds = contactCampaignRes.map((cc) => cc.contact_id)
+			// 	const contactRes = await call('frappe.client.get_list', {
+			// 		doctype: 'Mira Contact',
+			// 		fields: ['name', 'full_name', 'email', 'phone'],
+			// 		filters: [['name', 'in', contactIds]],
+			// 		limit_page_length: 1000,
+			// 	})
 
-				// Merge contact data with campaign data
-				const contactData = contactRes.map((contact) => {
-					const campaignRecord = contactCampaignRes.find(
-						(cc) => cc.contact_id === contact.name,
-					)
-					return {
-						...contact,
-						campaign_record_id: campaignRecord.name,
-						status: campaignRecord.status,
-						__source: 'mira_contact',
-					}
-				})
+			// 	// Merge contact data with campaign data
+			// 	const contactData = contactRes.map((contact) => {
+			// 		const campaignRecord = contactCampaignRes.find(
+			// 			(cc) => cc.contact_id === contact.name,
+			// 		)
+			// 		return {
+			// 			...contact,
+			// 			campaign_record_id: campaignRecord.name,
+			// 			status: campaignRecord.status,
+			// 			__source: 'mira_contact',
+			// 		}
+			// 	})
 
-				all.push(...contactData)
-			}
+			// 	all.push(...contactData)
+			// }
 		} catch (err) {
 			console.error('Error loading Mira Contact Campaign:', err)
 		}
@@ -1895,24 +1895,24 @@ const closeActionModal = () => {
 const loadMiraCandidates = async () => {
 	loadingMiraCandidates.value = true
 	try {
-		const res = await call('frappe.client.get_list', {
-			doctype: 'Mira Candidate',
-			fields: [
-				'name',
-				'full_name',
-				'email',
-				'phone',
-				'avatar',
-				'headline',
-				'source',
-				'skills',
-				'status',
-				'last_interaction',
-			],
-			filters: { campaign_id: route.params.id },
-			limit_page_length: 100,
-		})
-		miraCandidates.value = res
+		// const res = await call('frappe.client.get_list', {
+		// 	doctype: 'Mira Candidate',
+		// 	fields: [
+		// 		'name',
+		// 		'full_name',
+		// 		'email',
+		// 		'phone',
+		// 		'avatar',
+		// 		'headline',
+		// 		'source',
+		// 		'skills',
+		// 		'status',
+		// 		'last_interaction',
+		// 	],
+		// 	filters: { campaign_id: route.params.id },
+		// 	limit_page_length: 100,
+		// })
+		miraCandidates.value = []
 	} catch (err) {
 		console.error('Error loading Mira Candidates:', err)
 		miraCandidates.value = []
@@ -1949,6 +1949,29 @@ const loadInteractions = async () => {
 		interactions.value = []
 	} finally {
 		loadingInteractions.value = false
+	}
+}
+
+// Load filter counts for talent list from API
+const loadFilterCounts = async () => {
+	try {
+		const response = await call('mbw_mira.api.interaction.get_campaign_filter_counts', {
+			campaign_id: route.params.id
+		})
+		
+		if (response.status === 'success' && response.filter_counts) {
+			filterCounts.value = {
+				sent: response.filter_counts.sent || 0,
+				delivered: response.filter_counts.delivered || 0,
+				opened: response.filter_counts.opened || 0,
+				clicked: response.filter_counts.clicked || 0,
+				failed: response.filter_counts.failed || 0,
+				bounced: response.filter_counts.bounced || 0,
+				spam: response.filter_counts.spam || 0,
+			}
+		}
+	} catch (error) {
+		console.error('Error loading filter counts:', error)
 	}
 }
 
@@ -1998,6 +2021,7 @@ onMounted(() => {
 	loadSocialPages()
 	loadJobOpenings()
 	loadInteractions()
+	loadFilterCounts()
 })
 
 // Watchers
@@ -2010,6 +2034,8 @@ watch(
 			loadCandidateCampaigns()
 			loadActions()
 			loadAvailableCandidates()
+			loadFilterCounts()
+			loadTalentCampaign()
 		}
 	},
 )

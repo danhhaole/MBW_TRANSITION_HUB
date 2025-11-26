@@ -96,31 +96,52 @@ export const useCampaignStepStore = defineStore('campaignStep', {
           order_by = 'step_order asc' 
         } = filterOptions
 
-        const response = await call('mbw_mira.mbw_mira.doctype.campaignstep.campaignstep.get_campaign_steps_paginated', {
-          page,
-          limit,
-          search,
-          campaign,
-          action_type,
-          order_by
+        // Build filters
+        const filters = []
+        if (campaign) {
+          filters.push(['campaign', '=', campaign])
+        }
+        if (action_type) {
+          filters.push(['action_type', '=', action_type])
+        }
+        if (search) {
+          filters.push(['campaign_step_name', 'like', `%${search}%`])
+        }
+
+        const response = await call('frappe.client.get_list', {
+          doctype: 'Mira Campaign Step',
+          fields: ['*'],
+          filters: filters,
+          order_by: order_by,
+          limit_start: (page - 1) * limit,
+          limit_page_length: limit
         })
 
-        if (response && response.data) {
-          this.campaignSteps = response.data
+        // Get total count
+        const totalCount = await call('frappe.client.get_count', {
+          doctype: 'Mira Campaign Step',
+          filters: filters
+        })
+
+        if (response) {
+          this.campaignSteps = response
+          
+          const total = totalCount || response.length
+          const pages = Math.ceil(total / limit)
           
           // Update pagination info
           this.pagination = {
             page,
             limit,
-            total: response.pagination?.total || response.data.length,
-            pages: response.pagination?.pages || Math.ceil(response.data.length / limit),
-            has_next: response.pagination?.has_next || false,
-            has_prev: response.pagination?.has_prev || false,
-            showing_from: response.pagination?.showing_from || ((page - 1) * limit + 1),
-            showing_to: response.pagination?.showing_to || Math.min(page * limit, response.data.length)
+            total: total,
+            pages: pages,
+            has_next: page < pages,
+            has_prev: page > 1,
+            showing_from: (page - 1) * limit + 1,
+            showing_to: Math.min(page * limit, total)
           }
           
-          return { data: response.data, pagination: this.pagination }
+          return { data: response, pagination: this.pagination }
         } else {
           throw new Error('Không thể tải danh sách bước chiến dịch')
         }
