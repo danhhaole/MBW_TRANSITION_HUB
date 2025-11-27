@@ -281,7 +281,12 @@ def get_campaign_qrcode():
         "url": register_url,
         "image": f"data:image/png;base64,{img_base64}"
     }
-
+def _get_base_url()->str:
+    origin = frappe.request.headers.get("Origin")
+    protocol = frappe.request.scheme
+    host = frappe.request.host
+    base_url = origin if origin else f"{protocol}://{host}"
+    return base_url
 @frappe.whitelist()
 def create_landing_page_qrcode():
     """
@@ -315,7 +320,8 @@ def create_landing_page_qrcode():
     # Construct final URL
     separator = "&" if "?" in landing_page_url else "?"
     final_url = f"{landing_page_url}{separator}{'&'.join(utm_params)}"
-    
+
+    final_url = f"{_get_base_url()}/api/method/mbw_mira.api.interaction.click_redirect?url={final_url}"
     # Tạo QR code
     qr = qrcode.QRCode(
         version=2,

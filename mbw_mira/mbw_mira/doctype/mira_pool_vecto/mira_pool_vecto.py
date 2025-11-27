@@ -73,6 +73,7 @@ def calculate_and_set_vector(doc):
 def parse_segment_criteria(criteria_value, key):
     """
     Phân tích cú pháp mảng filters/JSON từ trường 'criteria' và trích xuất giá trị cho 'key'.
+    Đã sửa lỗi trả về list rỗng cho trường 'skills'.
     """
     if not criteria_value: return None
         
@@ -80,45 +81,61 @@ def parse_segment_criteria(criteria_value, key):
     
     try:
         criteria_list = json.loads(criteria_value) if isinstance(criteria_value, str) else criteria_value
+        if not isinstance(criteria_list, list):
+            return None
     except json.JSONDecodeError:
         return None
         
-    extracted_values = []
+    extracted_conditions = []
+    
+    # Các toán tử so sánh để phân biệt với giá trị thô
+    comparison_operators = ['==', '=', '>', '>=', '<', '<=']
 
     for item in criteria_list:
         if isinstance(item, list) and len(item) == 3:
             field, op, value = item
+            op_lower = op.lower()
             
             if field.lower() == key.lower():
-                # Xử lý các toán tử quan trọng (==, in, like, >, <, v.v.)
                 
-                # Logic mới cho Skills và các trường đa giá trị
-                if key.lower() == 'skills':
-                    # Loại bỏ toán tử và chỉ lấy giá trị
+                # --- Trường hợp 1: Đa giá trị (IN, LIKE, hoặc là trường SKILLS) ---
+                if op_lower in ('in', 'like') or key.lower() == 'skills':
                     if isinstance(value, str):
-                        # Giả định kỹ năng được phân tách bằng dấu phẩy
-                        skills = [v.strip() for v in value.split(',')]
-                        extracted_values.extend(skills)
+                        # Tách và làm sạch các giá trị (ví dụ: 'python, django' -> ['python', 'django'])
+                        values = [v.strip() for v in value.split(',') if v.strip()]
+                        extracted_conditions.extend(values)
                     else:
-                        extracted_values.append(value)
+                        extracted_conditions.append(value)
                 
-                # Logic cũ cho YOE và các trường so sánh
-                elif op.lower() in ('==', '=', '>', '>=', '<', '<='):
-                    extracted_values.append(f"{op} {value}")
+                # --- Trường hợp 2: So sánh (YOE, Salary, Rating) ---
+                elif op_lower in comparison_operators:
+                    # Lưu trữ điều kiện so sánh để xử lý tính toán sau
+                    extracted_conditions.append(f"{op} {value}")
+                    
+                # --- Trường hợp 3: Toán tử khác ---
+                else:
+                    extracted_conditions.append(f"{op} {value}")
 
-    if not extracted_values: return None
-        
-    # Nếu là Skills hoặc trường đa giá trị
-    if key.lower() == 'skills' or len(extracted_values) > 1:
-        # Trả về danh sách các giá trị duy nhất
-        return list(set(extracted_values)) 
-        
-    # Trả về giá trị đơn
-    return extracted_values[0]
+
+    if not extracted_conditions: return None
+    
+    # --- LOGIC SỬA LỖI: Tách biệt giá trị và điều kiện ---
+    
+    # Nếu đang tìm SKILLS (hoặc bất kỳ trường nào dùng IN/LIKE)
+    if key.lower() == 'skills':
+        # Chỉ trả về các giá trị thô (không có toán tử so sánh)
+        return list(set(extracted_conditions)) 
+
+    # Nếu đang tìm các điều kiện so sánh (YOE, Salary)
+    return extracted_conditions
 
 def insert_mira_pool_vecto(segment_id):
     """
     Tạo một bản ghi Mira Pool Vecto mới dựa trên dữ liệu chuẩn hóa từ Mira Segment.
+    Hàm này đảm bảo các trường phái sinh được tính toán đầy đủ và chuẩn hóa.
+    
+    :param segment_id: Tên (ID) của Mira Segment.
+    :return: Tên (ID) của bản ghi Mira Pool Vecto mới.
     """
     if not segment_id:
         frappe.throw("Segment ID là bắt buộc.")
@@ -132,11 +149,15 @@ def insert_mira_pool_vecto(segment_id):
         
         # a. Min YOE (Ánh xạ từ experience_years, lấy giá trị > lớn nhất)
         yoe_conditions = parse_segment_criteria(criteria, 'experience_years')
+        
         min_yoe_value = 0 
         if isinstance(yoe_conditions, list):
             for cond in yoe_conditions:
                 if isinstance(cond, str) and cond.startswith('>'):
-                     min_yoe_value = max(min_yoe_value, int(cond.replace('>', '').replace('=', '').strip()))
+                     try:
+                         min_yoe_value = max(min_yoe_value, int(cond.replace('>', '').replace('=', '').strip()))
+                     except ValueError:
+                         pass # Bỏ qua nếu không parse được số
         
         # b. Skills Must Have
         skills_list = parse_segment_criteria(criteria, 'skills')
@@ -144,16 +165,17 @@ def insert_mira_pool_vecto(segment_id):
         # c. Location (Ánh xạ từ City hoặc Country)
         location_list = parse_segment_criteria(criteria, 'city') or parse_segment_criteria(criteria, 'country')
 
-        # d. Tạo chuỗi Embedding Text Source
+        # d. Tạo chuỗi Embedding Text Source (Tạo embedding_text ngay lập tức)
         embedding_text_parts = [
             f"Segment Title: {segment_doc.title}",
             f"Segment Description: {segment_doc.description}"
         ]
         
         if skills_list:
-            embedding_text_parts.append(f"Required Skills: {json.dumps(skills_list)}")
+            # Lưu ý: Giữ định dạng JSON cho list skills để embedding model hiểu rõ cấu trúc
+            embedding_text_parts.append(f"Required Skills: {json.dumps(skills_list, ensure_ascii=False)}")
         if location_list:
-            embedding_text_parts.append(f"Target Locations: {json.dumps(location_list)}")
+            embedding_text_parts.append(f"Target Locations: {json.dumps(location_list, ensure_ascii=False)}")
         if min_yoe_value > 0:
              embedding_text_parts.append(f"Minimum YOE: {min_yoe_value}")
              
@@ -162,26 +184,29 @@ def insert_mira_pool_vecto(segment_id):
         # 3. Tạo đối tượng DocType Mira Pool Vecto mới
         pool_doc = frappe.get_doc({
             "doctype": "Mira Pool Vecto",
+            # Các trường được phái sinh
             "min_yoe": min_yoe_value,
-            # Lưu các trường dưới dạng chuỗi JSON hoặc chuỗi thông thường
             "skills_must_have": json.dumps(skills_list) if skills_list else None,
             "location": json.dumps(location_list) if location_list else None,
-            "embedding_text": final_embedding_text, # Gán text nguồn đã tạo
-            "mira_segment": segment_id,
+            "embedding_text": final_embedding_text, 
+            "mira_segment": segment_id, # Liên kết bắt buộc
+            
         })
         
         # 4. Tính toán và gán vector embedding
+        # Hàm này sử dụng final_embedding_text để gọi API và gán embedding_vector
         calculate_and_set_vector(pool_doc)
         
         # 5. Chèn bản ghi vào cơ sở dữ liệu
         pool_doc.insert(ignore_permissions=True)
-        
+        print("pool_doc",pool_doc)
         return pool_doc.name
 
     except frappe.DoesNotExistError:
         frappe.throw(f"Mira Segment '{segment_id}' không tồn tại.")
     except Exception as e:
         frappe.db.rollback()
+        # Log lỗi chi tiết để debug
         frappe.log_error(title="Insert Pool Vecto Failed", message=str(e))
         frappe.throw(f"Không thể chèn bản ghi Mira Pool Vecto từ Segment '{segment_id}': {e}")
 
@@ -203,17 +228,32 @@ def derive_pool_fields_from_segment(pool_doc):
         
         # --- Tái phân tích Criteria ---
         
-        # 1. Min YOE
+        # 1. Min YOE (CẬP NHẬT LOGIC)
         yoe_conditions = parse_segment_criteria(criteria, 'experience_years')
         min_yoe_value = 0 
+        
+        # Nếu có nhiều điều kiện YOE (ví dụ: ["< 10", ">= 5"])
         if isinstance(yoe_conditions, list):
             for cond in yoe_conditions:
-                if isinstance(cond, str) and cond.startswith('>'):
-                     min_yoe_value = max(min_yoe_value, int(cond.replace('>', '').replace('=', '').strip()))
+                if isinstance(cond, str) and (cond.startswith('>') or cond.startswith('>=')):
+                    # Trích xuất số từ chuỗi '>= 5'
+                    num_str = cond.replace('>', '').replace('=', '').strip()
+                    try:
+                        min_yoe_value = max(min_yoe_value, int(num_str))
+                    except ValueError:
+                        pass # Bỏ qua nếu không phải số
+        
+        # Nếu chỉ có một điều kiện YOE (ví dụ: ">= 5")
+        elif isinstance(yoe_conditions, str) and (yoe_conditions.startswith('>') or yoe_conditions.startswith('>=')):
+             num_str = yoe_conditions.replace('>', '').replace('=', '').strip()
+             try:
+                 min_yoe_value = int(num_str)
+             except ValueError:
+                 pass
         
         # 2. Skills Must Have
         skills_list = parse_segment_criteria(criteria, 'skills')
-        
+        print("skills_list",skills_list)
         # 3. Location
         location_list = parse_segment_criteria(criteria, 'city') or parse_segment_criteria(criteria, 'country')
 
@@ -256,11 +296,10 @@ def derive_pool_fields_from_segment(pool_doc):
         return changed
 
     except frappe.DoesNotExistError:
-        frappe.log_error(title="Segment Not Found", message=f"Segment '{segment_id}' không tồn tại cho Pool '{pool_doc.name}'.")
-        # Giữ lại các trường hiện tại, nhưng đánh dấu là có lỗi
+        frappe.log_error(title="Segment Not Found", message=f"Mira Segment '{segment_id}' không tồn tại cho Pool '{pool_doc.name}'.")
         return False
     except Exception as e:
-        frappe.log_error(title="Derive Pool Failed", message=str(e))
+        frappe.log_error(title="Derive Pool Failed", message=f"Lỗi khi xử lý Pool {pool_doc.name}: {e}")
         return False
 
 def update_mira_pool_vecto(pool_name, new_data):
@@ -274,15 +313,6 @@ def update_mira_pool_vecto(pool_name, new_data):
     try:
         # 1. Tải DocType hiện có
         pool_doc = frappe.get_doc("Mira Pool Vecto", {"mira_segment":pool_name})
-        
-        fields_to_update = [
-            "min_yoe", 
-            "skills_must_have", 
-            "location", 
-            "embedding_text", 
-            "mira_segment"
-        ]
-        
         has_changed = True
                 
         # 3. Tái phân tích Segment và cập nhật các trường phái sinh
@@ -291,7 +321,7 @@ def update_mira_pool_vecto(pool_name, new_data):
             derived_changed = derive_pool_fields_from_segment(pool_doc)
             if derived_changed:
                 has_changed = True
-        print(derived_changed)
+        
         # 4. Tính toán lại vector embedding nếu dữ liệu liên quan thay đổi
         if has_changed:
             # Hàm calculate_and_set_vector sẽ sử dụng pool_doc.embedding_text mới nhất

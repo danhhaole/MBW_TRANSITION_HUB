@@ -547,6 +547,8 @@ def get_job_qrcode(campaign_id, target_url=None):
             # Get site URL and build job URL
             site_url = frappe.utils.get_url()
             target_url = f"{site_url}/mbw_mira/jobs/tuyen-lap-trinh-vien-python"
+
+
         
         # Generate QR code
         qr = qrcode.QRCode(

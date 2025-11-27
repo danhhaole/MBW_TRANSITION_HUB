@@ -398,7 +398,7 @@ def verify_signature(data, sig):
 
 # Tìm candidate khớp với talentsegment
 def find_candidates_fuzzy(
-    criteria=None, segment_name=None, min_score=50, disenroll=False
+    criteria=None, segment_name=None, min_score=55, disenroll=False
 ):
     """
     Tìm các ứng viên có mức độ khớp >= min_score (0–100) theo fuzzy matching
@@ -406,8 +406,8 @@ def find_candidates_fuzzy(
     """
     try:
         # Convert min_score to float
-        min_score = float(min_score) if float(min_score) >= 0 else 50.0
-        print(min_score)
+        min_score = float(min_score) if float(min_score) >= 0 else 55.0
+        
         # --- Load conditions từ segment ---
         conditions = []
         if segment_name:
