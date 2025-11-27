@@ -1,80 +1,269 @@
+import base64
 import requests
 import json
 import frappe
+from frappe import _
+import time
+import filetype
+from frappe.utils.file_manager import save_file
+import urllib.parse
 
-# Lưu ý quan trọng:
-# 1. TOKEN API (Bearer) KHÔNG NÊN được hardcode trong code production.
-#    Nên lưu trữ trong DocType Setting hoặc Site Config.
-# 2. Bạn cần đảm bảo thư viện 'requests' đã được cài đặt trong môi trường bench.
-
+# ==============================
+# CONFIG
+# ==============================
 EMBEDDING_API_URL = "https://aiapi.fastwork.vn/embedding_qwen/v1/embeddings"
-# Tạm thời hardcode, nhưng khuyến nghị lấy từ frappe.conf.get()
-DEFAULT_API_TOKEN = "1d161ba4-ddab-491d-a2b6-ad0eac14fb33" 
+VLM_API_URL = "https://aiapi.fastwork.vn/vlm/v1/chat/completions"
+LLM_API_URL = "https://aiapi.fastwork.vn/vlm/v1/chat/completions"
+
+API_KEY = "b8040c68-b18b-4e01-9d61-b03536c02fcb"
+API_MODEL = "5CD-AI/Vintern-3B-R-beta"
 MODEL_NAME = "Qwen/Qwen3-Embedding-0.6B"
+DEFAULT_API_TOKEN = "1d161ba4-ddab-491d-a2b6-ad0eac14fb33"
 
-def get_vector_embeddings(input_text_list, api_token=DEFAULT_API_TOKEN):
-    """
-    Gọi API để lấy vector embedding cho một danh sách các chuỗi văn bản.
+AI_BASEURL_V2 = (
+    frappe.conf.get("ai_baseurl_v2") or "https://aihub.fastwork.vn/hr_agent/"
+)
 
-    :param input_text_list: Danh sách các chuỗi văn bản cần tạo vector (ví dụ: ["hello", "world"]).
-    :param api_token: Token API (Bearer) để xác thực.
-    :return: Danh sách các vector (list of lists of floats) hoặc None nếu có lỗi.
-    """
-    if not input_text_list or not isinstance(input_text_list, list):
-        frappe.log_error(title="Embedding Error", message="Input must be a non-empty list of strings.")
+
+# ==============================
+# JSON PARSER
+# ==============================
+def extractJSON(text):
+    """Cố gắng parse JSON từ các dạng trả về của LLM"""
+    try:
+        return json.loads(text)
+    except:
+        pass
+
+    try:
+        match = frappe.safe_decode(text).strip().split("```json")
+        if len(match) > 1:
+            block = match[1].split("```")[0]
+            return json.loads(block)
+    except:
+        pass
+
+    try:
+        start = text.find("{")
+        end = text.rfind("}")
+        if start != -1 and end != -1:
+            return json.loads(text[start : end + 1])
+    except:
+        pass
+
+    return None
+
+
+# ==============================
+# FILE TO BASE64
+# ==============================
+def file_to_base64(path):
+    try:
+        with open(path, "rb") as f:
+            return base64.b64encode(f.read()).decode("utf-8")
+    except Exception as e:
+        frappe.log_error(str(e), "File Base64 Error")
         return None
 
-    # 1. Chuẩn bị Payload
-    payload = {
-        "model": MODEL_NAME,
-        "input": input_text_list
-    }
 
-    # 2. Chuẩn bị Headers
+# ==============================
+# EMBEDDING
+# ==============================
+def get_vector_embeddings(input_text_list, api_token=DEFAULT_API_TOKEN):
+    if not input_text_list or not isinstance(input_text_list, list):
+        frappe.log_error("Embedding Error", "Input must be list of strings")
+        return None
+
+    payload = {"model": MODEL_NAME, "input": input_text_list}
+
     headers = {
-        'Content-Type': 'application/json',
-        'Authorization': f'Bearer {api_token}'
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {api_token}",
     }
 
     try:
-        # 3. Thực hiện POST Request
-        response = requests.request(
-            "POST", 
-            EMBEDDING_API_URL, 
-            headers=headers, 
-            data=json.dumps(payload),
-            timeout=30 # Đặt timeout để tránh treo
+        res = requests.post(
+            EMBEDDING_API_URL, headers=headers, data=json.dumps(payload), timeout=30
         )
-        
-        # 4. Kiểm tra trạng thái HTTP
-        if response.status_code == 200:
-            data = response.json()
-            # Kiểm tra xem 'data' có tồn tại và chứa 'embedding' không
-            if data.get('data'):
-                # Trích xuất chỉ các mảng vector (embedding)
-                embeddings = [item['embedding'] for item in data['data']]
-                return embeddings
-            else:
-                frappe.log_error(
-                    title="Embedding API Error", 
-                    message=f"API returned 200 but missing embedding data. Response: {data}"
-                )
-                return None
-        else:
-            # Ghi log lỗi nếu API trả về trạng thái lỗi (4xx, 5xx)
-            frappe.log_error(
-                title="Embedding API Failed", 
-                message=f"Status: {response.status_code}, Response: {response.text}"
-            )
+
+        if res.status_code == 200:
+            data = res.json()
+            if data.get("data"):
+                return [item["embedding"] for item in data["data"]]
             return None
 
-    except requests.exceptions.RequestException as e:
-        # Xử lý các lỗi kết nối, timeout, DNS, v.v.
-        frappe.log_error(
-            title="Embedding Connection Error", 
-            message=str(e)
-        )
+        frappe.log_error("Embedding API Error", res.text)
+        return None
+
+    except Exception as e:
+        frappe.log_error(str(e), "Embedding API Error")
         return None
 
 
-    
+# ==============================
+# CALL VLM API (OCR ẢNH)
+# ==============================
+def call_vlm_api(base64_img, categories):
+    prompt = f"""
+Hãy phân tích hình ảnh này và thực hiện 2 nhiệm vụ:
+
+1. OCR: Đọc toàn bộ chữ trong ảnh (giữ format dòng).
+2. Phân loại: Xác định loại tài liệu thuộc nhóm sau: {categories}.
+
+Trả về JSON:
+{{
+  "category": "",
+  "confidence": "",
+  "raw_text": ""
+}}
+"""
+
+    body = {
+        "model": API_MODEL,
+        "messages": [
+            {"role": "system", "content": "Bạn là assistant, luôn trả JSON hợp lệ."},
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": prompt},
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": "data:image/jpeg;base64," + base64_img},
+                    },
+                ],
+            },
+        ],
+        "temperature": 0,
+    }
+
+    headers = {
+        "Authorization": f"Bearer {API_KEY}",
+        "Content-Type": "application/json",
+    }
+
+    res = requests.post(VLM_API_URL, headers=headers, data=json.dumps(body))
+
+    if not res.ok:
+        frappe.throw(f"VLM API error {res.status_code}: {res.text}")
+
+    data = res.json()
+    text = data["choices"][0]["message"]["content"]
+
+    return extractJSON(text)
+
+
+# ==============================
+# CALL LLM API
+# ==============================
+def call_llm_extract_transfer(raw_text):
+    prompt = f"""
+Dựa vào văn bản sau, trích thông tin chuyển khoản thành JSON:
+
+NỘI DUNG OCR:
+{raw_text}
+
+Trả JSON:
+{{
+ "transaction_id": "",
+ "sender_name": "",
+ "receiver_name": "",
+ "receiver_account": "",
+ "amount": "",
+ "content": ""
+}}
+"""
+
+    body = {
+        "model": API_MODEL,
+        "messages": [
+            {"role": "system", "content": "Trả JSON hợp lệ."},
+            {"role": "user", "content": [{"type": "text", "text": prompt}]},
+        ],
+        "temperature": 0,
+    }
+
+    headers = {
+        "Authorization": f"Bearer {API_KEY}",
+        "Content-Type": "application/json",
+    }
+
+    res = requests.post(LLM_API_URL, headers=headers, data=json.dumps(body))
+
+    data = res.json()
+    text = data["choices"][0]["message"]["content"]
+    return extractJSON(text)
+
+
+# ==============================
+# UPLOAD BASE64 FILE
+# ==============================
+def upload_base64_without_filename(
+    base64_data,
+    attached_to_doctype=None,
+    attached_to_name=None,
+    attached_to_field=None,
+    is_private=1,
+):
+    try:
+        content = base64.b64decode(base64_data)
+        kind = filetype.guess(content)
+
+        ext = kind.extension if kind else "bin"
+        mime = kind.mime if kind else "application/octet-stream"
+
+        file_name = f"extract_{int(time.time())}.{ext}"
+
+        saved = save_file(
+            fname=file_name,
+            content=content,
+            dt=attached_to_doctype,
+            dn=attached_to_name,
+            is_private=is_private,
+        )
+
+        saved.file_type = ext.upper()
+        saved.save(ignore_permissions=True)
+
+        return saved.file_url
+
+    except Exception:
+        frappe.log_error(frappe.get_traceback(), "Upload Extracted CV Error")
+        return None
+
+
+# ==============================
+# QUY TRÌNH HOÀN CHỈNH: OCR → TRÍCH THÔNG TIN
+# ==============================
+@frappe.whitelist()
+def extract_image_document(
+    file_name, categories="['bank_transfer','invoice','id_card','cv']"
+):
+    """
+    Pipeline:
+    1. Lấy file từ DocType File → base64
+    2. OCR bằng VLM
+    3. Nếu category = bank_transfer → Trích thông tin giao dịch
+    """
+    file_doc = frappe.get_doc("File", file_name)
+    file_path = frappe.utils.get_files_path(file_doc.file_name)
+
+    base64_img = file_to_base64(file_path)
+    if not base64_img:
+        frappe.throw("Cannot read file to base64")
+
+    ocr_result = call_vlm_api(base64_img, categories)
+
+    if not ocr_result:
+        frappe.throw("OCR result invalid")
+
+    result = {
+        "ocr": ocr_result,
+        "raw_text": ocr_result.get("raw_text"),
+        "category": ocr_result.get("category"),
+    }
+
+    if ocr_result.get("category") == "bank_transfer":
+        transfer_info = call_llm_extract_transfer(ocr_result["raw_text"])
+        result["transfer_info"] = transfer_info
+
+    return result

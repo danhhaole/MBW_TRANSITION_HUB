@@ -67,8 +67,10 @@ class MiraTalentVecto(Document):
 
 
 def insert_mira_talent(data):
-    if not isinstance(data, dict):
-        frappe.throw("Dữ liệu đầu vào phải là một đối tượng JSON/Dict hợp lệ.")
+
+    if hasattr(data,'criteria') and data.criteria:
+        criteria_parse = json.loads(data.criteria)
+    print(criteria_parse)
     try:
         pool_doc = frappe.get_doc({
             "doctype": "Mira Talent Vecto",
