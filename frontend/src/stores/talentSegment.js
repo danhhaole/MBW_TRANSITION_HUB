@@ -227,13 +227,16 @@ export const useTalentSegmentStore = defineStore('talentSegment', {
         }
         
         // Enhance data with display fields
+        const segmentIds = (data || []).map(segment => segment.name)
+        const engagementRates = segmentIds.length > 0 ? await this.calculateMultipleEngagementRates(segmentIds) : {}
+        
         const enhancedData = (data || []).map(segment => ({
           ...segment,
           display_type: this.getTypeDisplay(segment.type),
           type_color: this.getSegmentTypeColor(segment.type),
           formatted_creation: this.formatDate(segment.creation),
           formatted_modified: this.formatRelativeDate(segment.modified),
-          engagement_rate: this.calculateEngagementRate(segment.candidate_count || 0)
+          engagement_rate: engagementRates[segment.name]?.engagement_rate || 0
         }))
         
         this.talentSegments = enhancedData
@@ -275,7 +278,7 @@ export const useTalentSegmentStore = defineStore('talentSegment', {
             type_color: this.getSegmentTypeColor(data.type),
             formatted_creation: this.formatDate(data.creation),
             formatted_modified: this.formatRelativeDate(data.modified),
-            engagement_rate: this.calculateEngagementRate(data.candidate_count || 0)
+            engagement_rate: await this.calculateEngagementRate(data.name)
           }
           
           this.currentTalentSegment = enhancedData
@@ -320,7 +323,7 @@ export const useTalentSegmentStore = defineStore('talentSegment', {
             type_color: this.getSegmentTypeColor(result.type),
             formatted_creation: this.formatDate(result.creation),
             formatted_modified: this.formatRelativeDate(result.modified),
-            engagement_rate: this.calculateEngagementRate(result.candidate_count || 0)
+            engagement_rate: await this.calculateEngagementRate(result.name)
           }
           
           this.talentSegments.unshift(enhancedData)
@@ -368,7 +371,7 @@ export const useTalentSegmentStore = defineStore('talentSegment', {
               display_type: this.getTypeDisplay(result.type || this.talentSegments[index].type),
               type_color: this.getSegmentTypeColor(result.type || this.talentSegments[index].type),
               formatted_modified: this.formatRelativeDate(result.modified || new Date().toISOString()),
-              engagement_rate: this.calculateEngagementRate(result.candidate_count || this.talentSegments[index].candidate_count || 0)
+              engagement_rate: await this.calculateEngagementRate(result.name || this.talentSegments[index].name)
             }
             
             this.talentSegments[index] = enhancedData
@@ -788,7 +791,42 @@ export const useTalentSegmentStore = defineStore('talentSegment', {
       return colorMap[type] || colorMap['MANUAL']
     },
     
-    calculateEngagementRate(candidateCount, totalInteractions = 0) {
+    async calculateEngagementRate(segmentId) {
+      try {
+        const result = await call('mbw_mira.mbw_mira.doctype.mira_segment.mira_segment.calculate_segment_engagement_rate', {
+          segment_id: segmentId
+        })
+        
+        if (result && result.status === 'success') {
+          return result.engagement_rate || 0
+        }
+        
+        return 0
+      } catch (error) {
+        console.error('Calculate engagement rate error:', error)
+        return 0
+      }
+    },
+    
+    async calculateMultipleEngagementRates(segmentIds) {
+      try {
+        const result = await call('mbw_mira.mbw_mira.doctype.mira_segment.mira_segment.get_segments_engagement_rates', {
+          segment_ids: segmentIds
+        })
+        
+        if (result && result.status === 'success') {
+          return result.results || {}
+        }
+        
+        return {}
+      } catch (error) {
+        console.error('Calculate multiple engagement rates error:', error)
+        return {}
+      }
+    },
+    
+    // Fallback method for old calculation (if needed)
+    calculateEngagementRateFallback(candidateCount, totalInteractions = 0) {
       if (!candidateCount || candidateCount === 0) return 0
       
       // Simplified engagement rate calculation

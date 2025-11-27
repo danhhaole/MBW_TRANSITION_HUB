@@ -308,3 +308,197 @@ def check_segment_links(name=None):
 			"status": "error",
 			"message": str(e)
 		}
+
+
+@frappe.whitelist()
+def calculate_segment_engagement_rate(segment_id=None, max_expected_score=None):
+	"""
+	Tính Engagement Rate thực tế cho segment dựa trên:
+	- Mira Talent Pool: segment_id -> talent_id
+	- Mira Interaction: talent_id -> engagement_score
+	
+	Args:
+		segment_id: ID của Mira Segment
+		max_expected_score: Điểm tối đa dự kiến cho 1 talent (để normalize)
+		
+	Returns:
+		dict: Engagement rate và thống kê chi tiết
+	"""
+	try:
+		if not segment_id:
+			data = frappe.local.form_dict
+			segment_id = data.get("segment_id")
+			max_expected_score = data.get("max_expected_score")
+		
+		if not segment_id:
+			return {
+				"status": "error",
+				"message": _("Segment ID is required")
+			}
+		
+		# Kiểm tra segment có tồn tại không
+		if not frappe.db.exists("Mira Segment", segment_id):
+			return {
+				"status": "error",
+				"message": _("Segment {0} does not exist").format(segment_id)
+			}
+		
+		# Lấy danh sách talent trong segment
+		talent_pool = frappe.get_all("Mira Talent Pool",
+			filters={"segment_id": segment_id},
+			fields=["talent_id"]
+		)
+		
+		if not talent_pool:
+			return {
+				"status": "success",
+				"engagement_rate": 0,
+				"total_talents": 0,
+				"total_interactions": 0,
+				"total_engagement_score": 0,
+				"average_score_per_talent": 0,
+				"talents_with_interactions": 0
+			}
+		
+		talent_ids = [pool.talent_id for pool in talent_pool]
+		total_talents = len(talent_ids)
+		
+		# Lấy tất cả interactions của các talent trong segment
+		interactions = frappe.get_all("Mira Interaction",
+			filters={"talent_id": ["in", talent_ids]},
+			fields=["talent_id", "engagement_score", "interaction_type", "creation"]
+		)
+		
+		# Tính toán thống kê
+		total_interactions = len(interactions)
+		total_engagement_score = sum(interaction.engagement_score or 0 for interaction in interactions)
+		
+		# Đếm số talent có ít nhất 1 interaction
+		talents_with_interactions = len(set(interaction.talent_id for interaction in interactions))
+		
+		# Tính engagement rate theo 2 công thức
+		# Công thức 1: (Số talent có tương tác / Tổng số talent) * 100
+		engagement_rate_by_participation = (talents_with_interactions / total_talents * 100) if total_talents > 0 else 0
+		
+		# Công thức 2: (Tổng điểm engagement / Tổng số talent) - normalized to percentage
+		average_score_per_talent = (total_engagement_score / total_talents) if total_talents > 0 else 0
+		
+		# Normalize average score to percentage
+		# Use provided max_expected_score or default to 100
+		max_expected_score_per_talent = float(max_expected_score) if max_expected_score else 100.0
+		engagement_rate_by_score = min(100, (average_score_per_talent / max_expected_score_per_talent * 100)) if max_expected_score_per_talent > 0 else 0
+		
+		# Combined engagement rate (weighted average of both methods)
+		engagement_rate = (engagement_rate_by_participation * 0.6 + engagement_rate_by_score * 0.4)
+		
+		# Thống kê theo loại interaction
+		interaction_stats = {}
+		for interaction in interactions:
+			interaction_type = interaction.interaction_type
+			if interaction_type not in interaction_stats:
+				interaction_stats[interaction_type] = {
+					"count": 0,
+					"total_score": 0
+				}
+			interaction_stats[interaction_type]["count"] += 1
+			interaction_stats[interaction_type]["total_score"] += interaction.engagement_score or 0
+		
+		return {
+			"status": "success",
+			"engagement_rate": round(engagement_rate, 2),
+			"engagement_rate_by_participation": round(engagement_rate_by_participation, 2),
+			"engagement_rate_by_score": round(engagement_rate_by_score, 2),
+			"total_talents": total_talents,
+			"total_interactions": total_interactions,
+			"total_engagement_score": total_engagement_score,
+			"average_score_per_talent": round(average_score_per_talent, 2),
+			"talents_with_interactions": talents_with_interactions,
+			"max_expected_score_used": max_expected_score_per_talent,
+			"interaction_stats": interaction_stats,
+			"segment_id": segment_id,
+			"calculation_details": {
+				"participation_weight": 0.6,
+				"score_weight": 0.4,
+				"formula": "engagement_rate = (participation_rate * 0.6) + (score_rate * 0.4)"
+			}
+		}
+		
+	except Exception as e:
+		frappe.log_error(
+			message=frappe.get_traceback(),
+			title=f"Calculate Segment Engagement Rate Error: {segment_id}"
+		)
+		return {
+			"status": "error",
+			"message": str(e)
+		}
+
+
+@frappe.whitelist()
+def get_segments_engagement_rates(segment_ids=None):
+	"""
+	Lấy engagement rate cho nhiều segment cùng lúc
+	
+	Args:
+		segment_ids: List hoặc JSON string của segment IDs
+		
+	Returns:
+		dict: Engagement rates cho từng segment
+	"""
+	try:
+		if not segment_ids:
+			data = frappe.local.form_dict
+			segment_ids = data.get("segment_ids")
+		
+		if not segment_ids:
+			return {
+				"status": "error",
+				"message": _("Segment IDs are required")
+			}
+		
+		# Parse segment_ids nếu là string
+		if isinstance(segment_ids, str):
+			try:
+				segment_ids = json.loads(segment_ids)
+			except:
+				segment_ids = [s.strip() for s in segment_ids.split(",") if s.strip()]
+		
+		if not isinstance(segment_ids, list):
+			return {
+				"status": "error",
+				"message": _("Invalid segment IDs format")
+			}
+		
+		results = {}
+		for segment_id in segment_ids:
+			result = calculate_segment_engagement_rate(segment_id)
+			if result.get("status") == "success":
+				results[segment_id] = {
+					"engagement_rate": result.get("engagement_rate", 0),
+					"engagement_rate_by_participation": result.get("engagement_rate_by_participation", 0),
+					"engagement_rate_by_score": result.get("engagement_rate_by_score", 0),
+					"total_talents": result.get("total_talents", 0),
+					"talents_with_interactions": result.get("talents_with_interactions", 0),
+					"total_interactions": result.get("total_interactions", 0),
+					"average_score_per_talent": result.get("average_score_per_talent", 0)
+				}
+			else:
+				results[segment_id] = {
+					"engagement_rate": 0,
+					"error": result.get("message", "Unknown error")
+				}
+		
+		return {
+			"status": "success",
+			"results": results
+		}
+		
+	except Exception as e:
+		frappe.log_error(
+			message=frappe.get_traceback(),
+			title="Get Segments Engagement Rates Error"
+		)
+		return {
+			"status": "error",
+			"message": str(e)
+		}
