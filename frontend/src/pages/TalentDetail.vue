@@ -94,12 +94,12 @@
                 <div v-if="talent.resume" class="flex items-center space-x-3">
                   <FeatherIcon name="file-text" class="w-4 h-4 text-gray-400 flex-shrink-0" />
                   <a 
-                    :href="'/files/' + talent.resume" 
+                    :href="talent.resume" 
                     target="_blank" 
                     class="text-sm text-blue-600 hover:text-blue-800 hover:underline truncate"
                     :title="talent.resume"
                   >
-                    {{ talent.resume }}
+                    {{ talent.resume.split('/').pop() }}
                   </a>
                 </div>
                 
@@ -803,6 +803,79 @@
               </div>
             </div>
 
+            <!-- Resume Upload - Compact Version -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Resume</label
+              >
+              <div v-if="editForm.resume">
+                <!-- Compact file preview -->
+                <div class="flex items-center justify-between p-2 border border-gray-200 rounded-md bg-gray-50">
+                  <div class="flex items-center">
+                    <FeatherIcon name="file-text" class="h-4 w-4 text-gray-500 mr-2" />
+                    <span class="text-sm text-gray-900 truncate max-w-xs">
+                      {{ editForm.resume }}
+                    </span>
+                  </div>
+                  <div class="flex space-x-1">
+                    <a
+                      :href="'/files/' + editForm.resume"
+                      target="_blank"
+                      class="p-1 text-gray-500 hover:text-blue-600"
+                      title="View file"
+                    >
+                      <FeatherIcon name="eye" class="h-3 w-3" />
+                    </a>
+                    <button
+                      type="button"
+                      @click="removeResume"
+                      class="p-1 text-gray-500 hover:text-red-600"
+                      title="Remove file"
+                    >
+                      <FeatherIcon name="x" class="h-3 w-3" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <FileUploader
+                v-else
+                :fileTypes="['.pdf', '.doc', '.docx']"
+                :upload-args="{
+                  doctype: 'Mira Talent',
+                  docname: talentName,
+                  private: false,
+                }"
+                @success="handleFileUploadSuccess"
+                @error="handleFileUploadError"
+              >
+                <template v-slot="{ openFileSelector, uploading, progress }">
+                  <div
+                    class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:border-blue-500 transition-colors"
+                    @click="openFileSelector"
+                  >
+                    <div class="flex items-center space-x-2">
+                      <FeatherIcon name="upload" class="h-5 w-5 text-gray-400" />
+                      <div class="text-sm text-gray-600">
+                        <span class="font-medium text-blue-600 hover:text-blue-500">
+                          Upload a file
+                        </span>
+                        <span class="text-gray-500"> or drag and drop</span>
+                      </div>
+                    </div>
+                    <div
+                      v-if="uploading"
+                      class="ml-4 w-20 bg-gray-200 rounded-full h-2"
+                    >
+                      <div
+                        class="bg-blue-600 h-2 rounded-full"
+                        :style="`width: ${progress}%`"
+                      ></div>
+                    </div>
+                  </div>
+                </template>
+              </FileUploader>
+            </div>
+
             <!-- Interaction Notes -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -847,7 +920,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useTalentDetailStore } from '@/stores/talentDetail'
 import { useTalentStore } from '@/stores/talent'
 import { useToast } from '@/composables/useToast'
-import { Button, Badge, Dropdown, FeatherIcon, Breadcrumbs, Tabs, Dialog, call } from 'frappe-ui'
+import { Button, Badge, Dropdown, FeatherIcon, Breadcrumbs, Tabs, Dialog, call, FileUploader } from 'frappe-ui'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import Loading from '@/components/Loading.vue'
 import TalentSummary from '@/components/talent/TalentSummary.vue'
@@ -914,7 +987,8 @@ const editForm = ref({
   interaction_notes: '',
   skills: [],
   current_status: 'Active',
-  crm_status: 'New'
+  crm_status: 'New',
+  resume: ''
 })
 
 const sourceOptions = ref([
@@ -1042,7 +1116,8 @@ const editTalent = () => {
       domain_expertise: talent.value.domain_expertise || '',
       cultural_fit: talent.value.cultural_fit || '',
       internal_rating: talent.value.internal_rating || '',
-      recruitment_readiness: talent.value.recruitment_readiness || ''
+      recruitment_readiness: talent.value.recruitment_readiness || '',
+      resume: talent.value.resume || ''
     }
     
     // Set skill tags for display
@@ -1091,6 +1166,34 @@ const checkEmail = () => {
     emailError.value = 'Please enter a valid email address'
   } else {
     emailError.value = ''
+  }
+}
+
+// Resume upload handlers
+const handleFileUploadSuccess = (file) => {
+  console.log('File uploaded successfully:', file)
+  
+  // Validate file size (10MB = 10 * 1024 * 1024 bytes)
+  const maxSize = 10 * 1024 * 1024
+  if (file.size > maxSize) {
+    showError('File size exceeds 10MB limit')
+    return
+  }
+  
+  // Store the file URL
+  editForm.value.resume = file.file_url || file.name
+  showSuccess('Resume uploaded successfully')
+}
+
+const handleFileUploadError = (error) => {
+  console.error('File upload error:', error)
+  showError('Failed to upload file. Please try again.')
+}
+
+const removeResume = () => {
+  if (confirm('Are you sure you want to remove this resume?')) {
+    editForm.value.resume = ''
+    showSuccess('Resume removed')
   }
 }
 

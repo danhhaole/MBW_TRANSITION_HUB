@@ -204,9 +204,6 @@
 											{{ __('Contact') }}
 										</th>
 										<th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-											{{ __('Position') }}
-										</th>
-										<th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
 											{{ __('City') }}
 										</th>
 										<th class="py-3 px-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
@@ -262,9 +259,6 @@
 										<td class="py-4 px-4 text-sm text-gray-700">
 											<div>{{ talent.email }}</div>
 											<div class="text-gray-500">{{ talent.phone }}</div>
-										</td>
-										<td class="py-4 px-4 text-sm text-gray-700">
-											{{ talent.position || '-' }}
 										</td>
 										<td class="py-4 px-4 text-sm text-gray-700">
 											{{ talent.current_city || '-' }}
@@ -866,7 +860,7 @@
 								<!-- Two Column Layout for Position and Current City -->
 								<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
 									<!-- Position -->
-									<div>
+									<!-- <div>
 										<label class="block text-sm font-medium text-gray-700 mb-1">
 											Position
 										</label>
@@ -876,7 +870,7 @@
 											class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
 											placeholder="Enter current position"
 										/>
-									</div>
+									</div> -->
 
 									<!-- Current City -->
 									<div>
