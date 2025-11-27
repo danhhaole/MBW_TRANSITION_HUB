@@ -396,24 +396,28 @@ export const useTalentSegmentStore = defineStore('talentSegment', {
       this.clearMessages()
       
       try {
-        await call('frappe.client.delete', {
-          doctype: 'Mira Segment',
+        // Use the new delete_segment API that handles unlinking references
+        const result = await call('mbw_mira.mbw_mira.doctype.mira_segment.mira_segment.delete_segment', {
           name
         })
         
-        // Remove from local state
-        this.talentSegments = this.talentSegments.filter(segment => segment.name !== name)
-        
-        if (this.currentTalentSegment?.name === name) {
-          this.currentTalentSegment = null
+        if (result && result.status === 'success') {
+          // Remove from local state
+          this.talentSegments = this.talentSegments.filter(segment => segment.name !== name)
+          
+          if (this.currentTalentSegment?.name === name) {
+            this.currentTalentSegment = null
+          }
+          
+          // Remove from segment talents cache
+          delete this.segmentTalents[name]
+          
+          this.setSuccess(result.message || 'Talent segment deleted successfully')
+          this.setLoading(false)
+          return true
+        } else {
+          throw new Error(result?.message || 'Failed to delete talent segment')
         }
-        
-        // Remove from segment talents cache
-        delete this.segmentTalents[name]
-        
-        this.setSuccess('Talent segment deleted successfully')
-        this.setLoading(false)
-        return true
       } catch (error) {
         this.setError(this.parseError(error))
         this.setLoading(false)
