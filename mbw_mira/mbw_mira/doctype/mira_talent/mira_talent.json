@@ -11,7 +11,6 @@
   "date_of_birth",
   "email",
   "phone",
-  "position",
   "linkedin_profile",
   "facebook_profile",
   "zalo_profile",
@@ -287,11 +286,6 @@
    "label": "Invalid Email"
   },
   {
-   "fieldname": "position",
-   "fieldtype": "Data",
-   "label": "Position"
-  },
-  {
    "description": "Ngu\u1ed3n g\u1ed1c chi\u1ebfn d\u1ecbch (v\u00ed d\u1ee5: facebook, google, newsletter)",
    "fieldname": "utm_source",
    "fieldtype": "Data",
@@ -329,7 +323,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-26 08:33:18.866031",
+ "modified": "2025-11-27 09:44:02.842307",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Talent",

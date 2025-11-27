@@ -5,7 +5,7 @@ import frappe
 from frappe.model.document import Document
 from frappe.utils import now, time_diff_in_seconds, flt
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from frappe import _
 from frappe.utils.file_manager import save_file, get_file
 from frappe.utils import now_datetime, now, getdate, today
@@ -1796,16 +1796,50 @@ def validate_and_process_talent(talent_data: Dict, existing_emails: Set = None) 
 		"source": process_talent_source,
 		"skills": lambda x: process_text_field(x, 1000),
 		"crm_status": process_talent_crm_status,
+		"gender": lambda x: process_text_field(x, 50),
+		"date_of_birth": process_date_field,
+		"linkedin_profile": lambda x: process_text_field(x, 255),
+		"facebook_profile": lambda x: process_text_field(x, 255),
+		"zalo_profile": lambda x: process_text_field(x, 255),
+		"current_city": lambda x: process_text_field(x, 255),
+		"desired_role": lambda x: process_text_field(x, 255),
+		"domain_expertise": lambda x: process_text_field(x, 1000),
+		"hard_skills": lambda x: process_text_field(x, 1000),
+		"soft_skills": lambda x: process_text_field(x, 1000),
+		"total_years_of_experience": lambda x: process_numeric_field(x),
+		"latest_company": lambda x: process_text_field(x, 255),
+		"highest_education": lambda x: process_text_field(x, 255),
+		"current_salary": lambda x: process_numeric_field(x),
+		"expected_salary": lambda x: process_numeric_field(x),
+		"preferred_work_model": lambda x: process_text_field(x, 50),
+		"availability_date": process_date_field,
+		"recruiter_owner_id": process_owner_id,
+		"recruitment_readiness": lambda x: process_text_field(x, 50),
+		"last_interaction_date": process_date_field,
+		"internal_rating": lambda x: process_text_field(x, 10),
+		"priority_level": lambda x: process_text_field(x, 50),
+		"interaction_notes": lambda x: process_text_field(x, 2000),
+		"tags": lambda x: process_text_field(x, 1000),
+		"cultural_fit": lambda x: process_text_field(x, 50),
+		"notes": lambda x: process_text_field(x, 2000),
+		"current_status": lambda x: process_text_field(x, 50),
+		"latest_title": lambda x: process_text_field(x, 140),
 	}
 	
 	for field, processor in field_processors.items():
 		if field in talent_data and talent_data[field]:
 			try:
-				result = processor(talent_data[field])
+				original_value = talent_data[field]
+				result = processor(original_value)
 				if result is not None:
 					processed[field] = result
+					print(f"Field '{field}': '{original_value}' -> '{result}'")
+				else:
+					print(f"Field '{field}': '{original_value}' -> None (validation failed)")
 			except Exception as e:
-				errors.append(_("Error processing {0}: {1}").format(field, str(e)))
+				error_msg = _("Error processing {0}: {1}").format(field, str(e))
+				errors.append(error_msg)
+				print(f"Error processing field '{field}': {e}")
 	
 	# Set default values if not provided
 	if "status" not in processed:
@@ -2755,6 +2789,57 @@ def get_import_progress(session_id: str):
 	
 #     return None
 
+def process_numeric_field(value: Any) -> Optional[float]:
+	"""Process numeric field (for salary, experience years, etc.)"""
+	if not value:
+		return None
+	
+	try:
+		# Handle string numbers with commas
+		if isinstance(value, str):
+			# Remove commas, spaces, and other formatting
+			cleaned = re.sub(r'[,\s]', '', value.strip())
+			if not cleaned:
+				return None
+			return float(cleaned)
+		return float(value)
+	except (ValueError, TypeError):
+		return None
+
+def process_date_field(date_value: Any) -> Optional[str]:
+	"""Process date field with multiple format support"""
+	if not date_value:
+		return None
+	
+	# If already a date object
+	if isinstance(date_value, (date, datetime)):
+		return date_value.strftime('%Y-%m-%d')
+	
+	# If string, try to parse
+	if isinstance(date_value, str):
+		date_str = date_value.strip()
+		if not date_str:
+			return None
+		
+		date_formats = [
+			"%Y-%m-%d", "%d/%m/%Y", "%m/%d/%Y", "%d-%m-%Y",
+			"%Y/%m/%d", "%d.%m.%Y", "%Y.%m.%d", "%B %d, %Y",
+			"%d/%m/%y", "%m/%d/%y", "%d-%m-%y", "%y-%m-%d"
+		]
+		
+		for fmt in date_formats:
+			try:
+				parsed_date = datetime.strptime(date_str, fmt).date()
+				current_year = datetime.now().year
+				# Reasonable date range validation
+				if parsed_date.year < 1950 or parsed_date.year > current_year + 5:
+					continue
+				return parsed_date.strftime('%Y-%m-%d')
+			except ValueError:
+				continue
+	
+	return None
+
 def process_phone_number(phone: Any) -> Optional[str]:
 	"""Enhanced phone number processing"""
 	if not phone:
@@ -2773,11 +2858,13 @@ def process_phone_number(phone: Any) -> Optional[str]:
 	else:
 		cleaned = re.sub(r'[^\d]', '', cleaned)
 	
-	# Validate length (allow 10-15 digits)
+	# Validate length (allow 9-15 digits for Vietnam phone numbers)
 	digit_only = re.sub(r'[^\d]', '', cleaned)
-	if len(digit_only) < 10 or len(digit_only) > 15:
+	if len(digit_only) < 9 or len(digit_only) > 15:
+		print(f"Phone validation failed: '{phone_str}' -> '{cleaned}' -> {len(digit_only)} digits")
 		return None
 	
+	print(f"Phone processed: '{phone_str}' -> '{cleaned}'")
 	return cleaned[:20]  # Limit total length
 
 

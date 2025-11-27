@@ -896,30 +896,82 @@ const autoMapFields = () => {
     const commonMappings = {
     'full_name': ['full_name', 'name', 'full name', 'họ và tên', 'tên đầy đủ', 'hoten', 'ho ten', 'ho_ten'],
     'gender': ['gender', 'giới tính', 'gioi_tinh', 'phai', 'giới tính'],
-    'email': ['email', 'contact_email', 'email address', 'địa chỉ email', 'email_ca_nhan', 'email ca nhan'],
-    'phone': ['phone', 'contact_phone', 'phone number', 'số điện thoại', 'sdt', 'dien_thoai', 'dien thoai'],
-    'linkedin_profile': ['linkedin', 'linkedin_profile', 'linkedin profile', 'lien_ket_linkedin', 'liên kết linkedin'],
+    'email': ['email', 'primary_email', 'contact_email', 'email address', 'địa chỉ email', 'email_ca_nhan', 'email ca nhan', 'email chinh'],
+    'phone': ['phone', 'phone_number', 'contact_phone', 'phone number', 'số điện thoại', 'sdt', 'dien_thoai', 'dien thoai'],
+    'linkedin_profile': ['linkedin', 'linkedin_profile', 'linkedin_url', 'linkedin profile', 'lien_ket_linkedin', 'liên kết linkedin', 'link linkedin'],
     'facebook_profile': ['facebook', 'facebook_profile', 'facebook profile', 'lien_ket_facebook', 'liên kết facebook'],
     'zalo_profile': ['zalo', 'zalo_profile', 'zalo profile', 'lien_ket_zalo', 'liên kết zalo'],
-    'preferred_location': ['preferred_location', 'desired location', 'vi_tri_mong_muon', 'vị trí mong muốn'],
-    'skills': ['skills', 'kỹ năng', 'ky nang', 'ky_nang', 'skill', 'kỹ năng chuyên môn'],
-    'source': ['source', 'nguon', 'nguồn', 'nguon_goc', 'nguồn gốc'],
-    'availability_date': ['availability_date', 'availability date', 'ngày có thể làm việc', 'ngay co the lam viec', 'available_date', 'start_date'],
+    'date_of_birth': ['date_of_birth', 'birth_date', 'dob', 'ngày sinh', 'ngay sinh', 'sinh_nhat'],
+    'current_city': ['current_city', 'city', 'address', 'địa chỉ', 'dia chi', 'thành phố', 'thanh pho'],
+    'desired_role': ['desired_role', 'desired position', 'vị trí mong muốn', 'vi tri mong muon', 'vai trò mong muốn'],
+    'domain_expertise': ['domain_expertise', 'domain expertise', 'chuyên môn lĩnh vực', 'chuyen mon linh vuc', 'industry_knowledge', 'kinh nghiem linh vuc', 'linh vuc chuyen mon'],
+    'hard_skills': ['hard_skills', 'hard skills', 'kỹ năng cứng', 'ky nang cung', 'technical_skills', 'ky nang ky thuat', 'technical skill', 'hard skill'],
+    'soft_skills': ['soft_skills', 'soft skills', 'kỹ năng mềm', 'ky nang mem', 'interpersonal_skills', 'ky nang giao tiep', 'soft skill'],
+    'total_years_of_experience': ['total_years_of_experience', 'years_of_experience', 'experience_years', 'tổng số năm kinh nghiệm', 'tong so nam kinh nghiem', 'kinh nghiem'],
+    'latest_company': ['latest_company', 'current_company', 'last_company', 'công ty gần nhất', 'cong ty gan nhat', 'cong ty hien tai'],
+    'highest_education': ['highest_education', 'education', 'học vấn cao nhất', 'hoc van cao nhat', 'trinh do hoc van'],
+    'current_salary': ['current_salary', 'salary', 'mức lương hiện tại', 'muc luong hien tai', 'luong hien tai'],
     'expected_salary': ['expected_salary', 'expected salary', 'mức lương mong muốn', 'muc luong mong muon', 'salary_expectation', 'luong_mong_muon'],
-    'hard_skills': ['hard_skills', 'hard skills', 'kỹ năng cứng', 'ky nang cung', 'technical_skills', 'ky nang ky thuat'],
-    'soft_skills': ['soft_skills', 'soft skills', 'kỹ năng mềm', 'ky nang mem', 'interpersonal_skills', 'ky nang giao tiep'],
-    'domain_expertise': ['domain_expertise', 'domain expertise', 'chuyên môn lĩnh vực', 'chuyen mon linh vuc', 'industry_knowledge', 'kinh nghiem linh vuc'],
-    'cultural_fit': ['cultural_fit', 'cultural fit', 'phù hợp văn hóa', 'phu hop van hoa', 'culture_fit', 'van_hoa_cong_ty'],
+    'preferred_work_model': ['preferred_work_model', 'work_model', 'hình thức làm việc', 'hinh thuc lam viec', 'mo hinh lam viec'],
+    'availability_date': ['availability_date', 'availability date', 'ngày có thể làm việc', 'ngay co the lam viec', 'available_date', 'start_date', 'thoi gian bat dau'],
+    'source': ['source', 'nguon', 'nguồn', 'nguon_goc', 'nguồn gốc', 'nguon talent'],
+    'recruiter_owner_id': ['recruiter_owner_id', 'recruiter', 'owner', 'người phụ trách', 'nguoi phu trach'],
+    'crm_status': ['crm_status', 'pool_status', 'trạng thái pool', 'trang thai pool', 'trang thai crm'],
+    'recruitment_readiness': ['recruitment_readiness', 'recruitment readiness', 'sẵn sàng tuyển dụng', 'san sang tuyen dung', 'readiness', 'tinh_trang_tuyen_dung', 'muc do san sang'],
+    'last_interaction_date': ['last_interaction_date', 'interaction_date', 'lần tương tác cuối', 'lan tuong tac cuoi', 'ngay tuong tac'],
     'internal_rating': ['internal_rating', 'internal rating', 'đánh giá nội bộ', 'danh gia noi bo', 'rating', 'xep_hang'],
-    'recruitment_readiness': ['recruitment_readiness', 'recruitment readiness', 'sẵn sàng tuyển dụng', 'san sang tuyen dung', 'readiness', 'tinh_trang_tuyen_dung']
+    'priority_level': ['priority_level', 'priority', 'mức độ ưu tiên', 'muc do uu tien', 'do uu tien'],
+    'interaction_notes': ['interaction_notes', 'notes', 'ghi chú tương tác', 'ghi chu tuong tac', 'ghi chu'],
+    'tags': ['tags', 'labels', 'thẻ/nhãn', 'the nhan', 'nhan'],
+    'cultural_fit': ['cultural_fit', 'cultural fit', 'phù hợp văn hóa', 'phu hop van hoa', 'culture_fit', 'van_hoa_cong_ty'],
+    'skills': ['skills', 'kỹ năng', 'ky nang', 'ky_nang', 'skill', 'kỹ năng chuyên môn'],
 };
 
-    availableFields.value.forEach(field => {
-        const variations = commonMappings[field.fieldname] || []
+    // Define priority order for skill-related fields (specific before general)
+    const fieldPriority = {
+        'hard_skills': 1,
+        'soft_skills': 2, 
+        'skills': 3, // General skills has lowest priority
+        'domain_expertise': 4
+    }
+    
+    // Sort fields by priority (specific skills first, then general)
+    const sortedFields = availableFields.value.sort((a, b) => {
+        const priorityA = fieldPriority[a.fieldname] || 999
+        const priorityB = fieldPriority[b.fieldname] || 999
+        return priorityA - priorityB
+    })
 
+    // First pass: Exact matches (highest priority)
+    sortedFields.forEach(field => {
+        const variations = commonMappings[field.fieldname] || []
+        
         for (const header of previewData.value.columns) {
             const normalizedHeader = header.toLowerCase().trim().replace(/[_\s-]/g, '')
+            
+            for (const variation of variations) {
+                const normalizedVariation = variation.toLowerCase().replace(/[_\s-]/g, '')
+                if (normalizedHeader === normalizedVariation) {
+                    mapping[field.fieldname] = header
+                    break
+                }
+            }
+            if (mapping[field.fieldname]) break
+        }
+    })
 
+    // Second pass: Partial matches for unmapped fields
+    sortedFields.forEach(field => {
+        if (mapping[field.fieldname]) return // Skip already mapped fields
+        
+        const variations = commonMappings[field.fieldname] || []
+        
+        for (const header of previewData.value.columns) {
+            // Skip headers already used in mapping
+            if (Object.values(mapping).includes(header)) continue
+            
+            const normalizedHeader = header.toLowerCase().trim().replace(/[_\s-]/g, '')
+            
             for (const variation of variations) {
                 const normalizedVariation = variation.toLowerCase().replace(/[_\s-]/g, '')
                 if (normalizedHeader.includes(normalizedVariation) ||

@@ -192,6 +192,10 @@
                     <span class="text-gray-600">Created:</span>
                     <span class="font-medium">{{ formatDate(talent.creation) }}</span>
                   </div>
+                  <div v-if="talent.desired_role" class="flex justify-between">
+                    <span class="text-gray-600">Desired role:</span>
+                    <span class="font-medium">{{ talent.desired_role }}</span>
+                  </div>
                   <div v-if="talent.recruitment_readiness" class="flex justify-between">
                     <span class="text-gray-600">Recruitment readiness:</span>
                     <span class="font-medium">{{ talent.recruitment_readiness }}</span>
