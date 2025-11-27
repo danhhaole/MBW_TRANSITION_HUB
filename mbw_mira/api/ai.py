@@ -424,7 +424,7 @@ def upload_base64_without_filename(
     attached_to_doctype=None,
     attached_to_name=None,
     attached_to_field=None,
-    is_private=0,
+    is_private=1,
 ):
     try:
         # Validate attached_to_name parameter

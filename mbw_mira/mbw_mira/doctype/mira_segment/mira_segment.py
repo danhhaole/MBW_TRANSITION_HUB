@@ -5,19 +5,27 @@ import json
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from mbw_mira.mbw_mira.doctype.mira_pool_vecto.mira_pool_vecto import insert_mira_pool_vecto,update_mira_pool_vecto
 from mbw_mira.utils import find_candidates_fuzzy
 
 
 class MiraSegment(Document):
 
 	def after_insert(self):
-		insert_mira_pool_vecto(self.name)
+		frappe.enqueue(
+                    "mbw_mira.mbw_mira.doctype.mira_pool_vecto.mira_pool_vecto.insert_mira_pool_vecto",
+                    queue="default",
+                    segment_id=self.name
+                )
 
 	def on_update(self):
 		if not self.flags.in_insert:
-			try:
-				update_mira_pool_vecto(self.name,self.as_dict())
+			try:				
+				frappe.enqueue(
+                    "mbw_mira.mbw_mira.doctype.mira_pool_vecto.mira_pool_vecto.update_mira_pool_vecto",
+                    queue="default",
+                    pool_name=self.name,
+                    new_data=self.as_dict()
+                )
 				# meta_fields =  self.meta.fields
 				# old_doc = self.get_doc_before_save()
 				# field_update = None
@@ -31,7 +39,7 @@ class MiraSegment(Document):
 				# if field_update:
 				# 	update_mira_pool_vecto(self.name,field_update)
 			except Exception as e:
-				print(str(e))          
+				pass         
 
 
 @frappe.whitelist()

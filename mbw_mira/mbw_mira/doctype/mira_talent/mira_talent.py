@@ -3,8 +3,7 @@
 
 import frappe
 from frappe.model.document import Document
-from frappe.utils import cstr, cint, flt, add_days, nowdate, get_datetime,now_datetime,now
-from mbw_mira.api.common import get_filter_options, get_form_data, get_list_data
+from frappe.utils import nowdate, now_datetime,now
 import json
 from frappe import _
 import requests
@@ -36,10 +35,23 @@ class MiraTalent(Document):
             source=self.source
         )
 
+        #Tạo talent vecto
+        frappe.enqueue(
+                "mbw_mira.mbw_mira.doctype.mira_talent_vecto.mira_talent_vecto.create_talent_vector",
+                queue="default",
+                talent_name=self.name
+            )
+
             
     def on_update(self):
         if not self.flags.in_insert:  # nghĩa là UPDATE, không phải INSERT
-            # self.on_talent_update()
+            #Tạo talent vecto
+            frappe.enqueue(
+                    "mbw_mira.mbw_mira.doctype.mira_talent_vecto.mira_talent_vecto.create_talent_vector",
+                    queue="default",
+                    talent_name=self.name
+                )
+
             old_doc = self.get_doc_before_save()
             if old_doc and hasattr(old_doc, 'crm_status') and old_doc.crm_status != self.crm_status:
                 self.on_status_changed(old_doc.crm_status,self.crm_status)

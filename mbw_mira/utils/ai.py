@@ -267,3 +267,43 @@ def extract_image_document(
         result["transfer_info"] = transfer_info
 
     return result
+
+
+#====================================
+# Extract CV
+#====================================
+
+def extract_cv_backend(file_name):
+    # url_extract_ai = f"{AI_BASEURL}/v2/genai/hr-assistants/cv-extraction/pdf-upload"
+    url_extract_ai = f"{AI_BASEURL_V2}/api/v1/cv_extract"
+
+    if not file_name:
+        frappe.throw("Missing 'file_name' in request parameters.")
+
+    headers = {"x-api-key": "6Bwunlw3Fm1J23tGKZjb/WJXwBDI3gRY971+VUFOU+w="}
+
+    try:
+        file_name = frappe.db.get_value("File", {"name": file_name}, "file_name")
+
+        file_path = frappe.utils.get_files_path(file_name)
+
+        with open(file_path, "rb") as f:
+            files = {"file": (file_name, f, "application/pdf")}
+            response = requests.post(url_extract_ai, files=files, headers=headers)
+        if response.status_code == 200:
+            data = frappe.parse_json(response.json())
+            if data and data.data:
+                print(data)
+
+            return data
+        else:
+            frappe.log_error("Error extract")
+            return ""
+
+    except frappe.DoesNotExistError:
+        frappe.log_error("File does not exists")
+        return ""
+
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "CV Upload API")
+        return ""
