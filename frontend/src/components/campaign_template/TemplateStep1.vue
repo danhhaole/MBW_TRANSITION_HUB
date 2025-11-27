@@ -125,8 +125,10 @@
 
       <!-- Campaign Tags -->
       <CampaignTagPicker
-        :campaign-tags="campaignTags"
-        @update:campaign-tags="$emit('update:campaignTags', $event)"
+        :campaign-id="templateId"
+        :model-value="campaignTags"
+        doctype="Mira Campaign Template"
+        @update:model-value="$emit('update:campaignTags', $event)"
       />
     </div>
 
@@ -316,6 +318,10 @@ const props = defineProps({
   campaignTags: {
     type: Array,
     default: () => []
+  },
+  templateId: {
+    type: String,
+    default: ''
   },
   scopeType: {
     type: String,

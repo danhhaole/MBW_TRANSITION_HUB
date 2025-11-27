@@ -170,6 +170,13 @@ watch(() => props.modelValue, (val) => {
   }
 })
 
+// Watch template changes - in case template is set after modal opens
+watch(() => props.template, (val) => {
+  if (val && isOpen.value && !previewData.value) {
+    loadPreview()
+  }
+})
+
 watch(isOpen, (val) => {
   emit('update:modelValue', val)
   if (!val) {

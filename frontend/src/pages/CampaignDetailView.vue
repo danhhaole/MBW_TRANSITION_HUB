@@ -150,9 +150,9 @@
 								/>
 							</svg>
 
-							<!-- Social Icon for Social -->
+							<!-- Social Icon for Social Posts -->
 							<svg
-								v-else-if="tab.key === 'social'"
+								v-else-if="tab.key === 'social_posts'"
 								class="w-5 h-5 mr-2"
 								fill="none"
 								stroke="currentColor"
@@ -162,7 +162,7 @@
 									stroke-linecap="round"
 									stroke-linejoin="round"
 									stroke-width="2"
-									d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+									d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
 								/>
 							</svg>
 							<!-- Chart Icon for Analytics -->
@@ -438,8 +438,148 @@
 						</div>
 					</div>
 
+					<!-- Social Posts Tab -->
+					<div v-else-if="activeTab === 'social_posts'">
+						<div class="flex justify-between items-center mb-6">
+							<h3 class="text-lg font-medium text-gray-900">
+								{{ __('Social Media Posts') }}
+								<span class="ml-2 text-sm font-normal text-gray-500">({{ socialPosts.length }})</span>
+							</h3>
+						</div>
 
+						<!-- Loading State -->
+						<div v-if="loadingSocialPosts" class="text-center py-8">
+							<div class="animate-spin inline-block w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+							<p class="mt-2 text-gray-500">{{ __('Loading social posts...') }}</p>
+						</div>
 
+						<!-- Empty State -->
+						<div v-else-if="socialPosts.length === 0" class="text-center py-12 bg-gray-50 rounded-lg">
+							<svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+							</svg>
+							<h3 class="mt-2 text-sm font-medium text-gray-900">{{ __('No social posts') }}</h3>
+							<p class="mt-1 text-sm text-gray-500">{{ __('No social media posts have been created for this campaign yet.') }}</p>
+						</div>
+
+						<!-- Social Posts Cards -->
+						<div v-else class="space-y-4">
+							<div 
+								v-for="post in socialPosts" 
+								:key="post.name"
+								class="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden cursor-pointer"
+								@click="openPostPreview(post)"
+							>
+								<div class="flex">
+									<!-- Image Section -->
+									<div v-if="post.social_media_images" class="flex-shrink-0 w-48 h-48 bg-gray-100">
+										<img 
+											:src="post.social_media_images" 
+											class="w-full h-full object-cover"
+											:alt="post.subject || 'Post image'"
+										/>
+									</div>
+									<div v-else class="flex-shrink-0 w-48 h-48 bg-gray-100 flex items-center justify-center">
+										<svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+										</svg>
+									</div>
+
+									<!-- Content Section -->
+									<div class="flex-1 p-5">
+										<!-- Header: Platform & Status -->
+										<div class="flex items-center justify-between mb-3">
+											<div class="flex items-center space-x-3">
+												<!-- Platform Badge -->
+												<span
+													:class="getPlatformClasses(post.platform)"
+													class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
+												>
+													<svg v-if="post.platform?.toLowerCase() === 'facebook'" class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 24 24">
+														<path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+													</svg>
+													<svg v-else-if="post.platform?.toLowerCase() === 'instagram'" class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 24 24">
+														<path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+													</svg>
+													<svg v-else class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+														<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+													</svg>
+													{{ post.platform || 'Social' }}
+												</span>
+
+												<!-- Page Name -->
+												<span class="text-sm text-gray-600">
+													{{ post.social_page_name || '-' }}
+												</span>
+											</div>
+
+											<!-- Status Badge -->
+											<span
+												:class="getSocialPostStatusClasses(post.status)"
+												class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
+											>
+												<span 
+													class="w-2 h-2 rounded-full mr-2"
+													:class="{
+														'bg-yellow-500': post.status === 'Pending',
+														'bg-blue-500': post.status === 'Processing',
+														'bg-green-500': post.status === 'Success',
+														'bg-red-500': post.status === 'Failed',
+														'bg-gray-500': post.status === 'Cancelled'
+													}"
+												></span>
+												{{ post.status || 'Pending' }}
+											</span>
+										</div>
+
+										<!-- Subject -->
+										<h4 v-if="post.subject" class="text-base font-semibold text-gray-900 mb-2">
+											{{ post.subject }}
+										</h4>
+
+										<!-- Content Preview -->
+										<p class="text-sm text-gray-600 mb-4 line-clamp-3">
+											{{ stripHtml(post.template_content) || __('No content') }}
+										</p>
+
+										<!-- Error Message -->
+										<div v-if="post.error_message" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+											<div class="flex items-start">
+												<svg class="w-5 h-5 text-red-500 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+												</svg>
+												<p class="text-sm text-red-700">{{ post.error_message }}</p>
+											</div>
+										</div>
+
+										<!-- Footer: Timestamps -->
+										<div class="flex items-center justify-between pt-3 border-t border-gray-100">
+											<div class="flex items-center space-x-6 text-sm text-gray-500">
+												<!-- Scheduled Time -->
+												<div class="flex items-center">
+													<svg class="w-4 h-4 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+														<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+													</svg>
+													<span>{{ __('Scheduled') }}: {{ formatDateTime(post.post_schedule_time) || '-' }}</span>
+												</div>
+
+												<!-- Executed Time -->
+												<div v-if="post.executed_at" class="flex items-center">
+													<svg class="w-4 h-4 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+														<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+													</svg>
+													<span>{{ __('Executed') }}: {{ formatDateTime(post.executed_at) }}</span>
+												</div>
+											</div>
+
+											<!-- Post ID -->
+											<span class="text-xs text-gray-400">{{ post.name }}</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
 
 				</div>
 			</div>
@@ -519,17 +659,292 @@
 			</Dialog>
 
 
-			<!-- Campaign Wizard for Edit -->
+			<!-- Campaign Wizards for Edit (based on campaign type) -->
+			<AttractionCampaignWizard
+				v-if="campaign.type === 'ATTRACTION'"
+				:show="showEditWizard"
+				:campaign-type="campaign.type"
+				:edit-campaign-id="campaign.name"
+				@close="handleWizardClose"
+				@success="handleWizardSuccess"
+			/>
+
+			<NurturingCampaignWizard
+				v-if="campaign.type === 'NURTURING'"
+				:show="showEditWizard"
+				:campaign-type="campaign.type"
+				:edit-campaign-id="campaign.name"
+				@close="handleWizardClose"
+				@success="handleWizardSuccess"
+			/>
+
+			<RecruitmentCampaignWizard
+				v-if="campaign.type === 'RECRUITMENT'"
+				:show="showEditWizard"
+				:campaign-type="campaign.type"
+				:edit-campaign-id="campaign.name"
+				@close="handleWizardClose"
+				@success="handleWizardSuccess"
+			/>
+
+			<!-- Social Post Preview Modal -->
 			<Dialog
-				v-model="showCampaignWizard"
-				:options="{ size: '5xl', title: __('Edit Campaign') }"
+				v-model="showPostPreview"
+				:options="{ size: '4xl' }"
 			>
-				<template #body-content>
-					<CampaignWizard
-						:editing-campaign="campaign"
-						@success="handleCampaignWizardSuccess"
-						@cancel="showCampaignWizard = false"
-					/>
+				<template #body>
+					<div v-if="selectedPost" class="relative">
+						<!-- Close Button -->
+						<button
+							@click="closePostPreview"
+							class="absolute top-4 right-4 z-10 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"
+						>
+							<svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+							</svg>
+						</button>
+
+						<!-- Header -->
+						<div class="p-6 border-b border-gray-200">
+							<div class="flex items-center justify-between">
+								<div class="flex items-center space-x-4">
+									<!-- Platform Badge -->
+									<span
+										:class="getPlatformClasses(selectedPost.platform)"
+										class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium"
+									>
+										<svg v-if="selectedPost.platform?.toLowerCase() === 'facebook'" class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+											<path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+										</svg>
+										<svg v-else-if="selectedPost.platform?.toLowerCase() === 'instagram'" class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+											<path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073z"/>
+										</svg>
+										<svg v-else class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+										</svg>
+										{{ selectedPost.platform || 'Social' }}
+									</span>
+
+									<!-- Page Name -->
+									<div>
+										<p class="text-sm text-gray-500">{{ __('Page') }}</p>
+										<p class="font-medium text-gray-900">{{ selectedPost.social_page_name || '-' }}</p>
+									</div>
+								</div>
+
+								<!-- Status Badge -->
+								<span
+									:class="getSocialPostStatusClasses(selectedPost.status)"
+									class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium"
+								>
+									<span 
+										class="w-2.5 h-2.5 rounded-full mr-2"
+										:class="{
+											'bg-yellow-500': selectedPost.status === 'Pending',
+											'bg-blue-500': selectedPost.status === 'Processing',
+											'bg-green-500': selectedPost.status === 'Success',
+											'bg-red-500': selectedPost.status === 'Failed',
+											'bg-gray-500': selectedPost.status === 'Cancelled'
+										}"
+									></span>
+									{{ selectedPost.status || 'Pending' }}
+								</span>
+							</div>
+						</div>
+
+						<!-- Content -->
+						<div class="p-6">
+							<!-- Preview based on platform -->
+							<div v-if="selectedPost.platform?.toLowerCase() === 'facebook'" class="space-y-4">
+								<!-- Facebook Post Preview -->
+								<h4 class="text-sm font-medium text-gray-500 mb-3">{{ __('Facebook Post Preview') }}</h4>
+								<div class="bg-white border border-gray-200 rounded-lg p-4 max-w-lg mx-auto">
+									<!-- Facebook Header -->
+									<div class="flex items-center mb-3">
+										<div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+											{{ selectedPost.social_page_name ? selectedPost.social_page_name.charAt(0).toUpperCase() : 'F' }}
+										</div>
+										<div class="ml-3">
+											<p class="font-semibold text-gray-900 text-sm">{{ selectedPost.social_page_name || 'Facebook Page' }}</p>
+											<p class="text-xs text-gray-500">{{ formatDateTime(selectedPost.post_schedule_time) || 'Now' }}</p>
+										</div>
+									</div>
+									
+									<!-- Post Content -->
+									<div class="mb-3">
+										<p class="text-gray-800 text-sm whitespace-pre-wrap">{{ stripHtml(selectedPost.template_content) || selectedPost.subject || 'No content' }}</p>
+									</div>
+									
+									<!-- Post Image -->
+									<div v-if="selectedPost.social_media_images" class="mb-3">
+										<img 
+											:src="selectedPost.social_media_images" 
+											class="w-full rounded-lg object-cover max-h-80"
+											:alt="selectedPost.subject || 'Post image'"
+										/>
+									</div>
+									
+									<!-- Facebook Actions -->
+									<div class="flex items-center justify-between pt-2 border-t border-gray-200 text-gray-500 text-sm">
+										<div class="flex space-x-6">
+											<span class="flex items-center">
+												<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+												</svg>
+												Like
+											</span>
+											<span class="flex items-center">
+												<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+												</svg>
+												Comment
+											</span>
+											<span class="flex items-center">
+												<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+												</svg>
+												Share
+											</span>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div v-else-if="selectedPost.platform?.toLowerCase() === 'instagram'" class="space-y-4">
+								<!-- Instagram Post Preview -->
+								<h4 class="text-sm font-medium text-gray-500 mb-3">{{ __('Instagram Post Preview') }}</h4>
+								<div class="bg-white border border-gray-200 rounded-lg max-w-sm mx-auto">
+									<!-- Instagram Header -->
+									<div class="flex items-center p-3 border-b border-gray-100">
+										<div class="w-8 h-8 bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
+											{{ selectedPost.social_page_name ? selectedPost.social_page_name.charAt(0).toUpperCase() : 'I' }}
+										</div>
+										<div class="ml-3 flex-1">
+											<p class="font-semibold text-gray-900 text-sm">{{ selectedPost.social_page_name || 'Instagram Account' }}</p>
+										</div>
+										<svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01" />
+										</svg>
+									</div>
+									
+									<!-- Post Image -->
+									<div class="aspect-square bg-gray-100">
+										<img 
+											v-if="selectedPost.social_media_images"
+											:src="selectedPost.social_media_images" 
+											class="w-full h-full object-cover"
+											:alt="selectedPost.subject || 'Post image'"
+										/>
+										<div v-else class="w-full h-full flex items-center justify-center text-gray-400">
+											<svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+											</svg>
+										</div>
+									</div>
+									
+									<!-- Instagram Actions -->
+									<div class="p-3">
+										<div class="flex items-center justify-between mb-3">
+											<div class="flex space-x-4">
+												<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+												</svg>
+												<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+												</svg>
+												<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+												</svg>
+											</div>
+											<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+											</svg>
+										</div>
+										
+										<!-- Caption -->
+										<div class="text-sm">
+											<span class="font-semibold">{{ selectedPost.social_page_name || 'account' }}</span>
+											<span class="ml-1">{{ stripHtml(selectedPost.template_content) || selectedPost.subject || 'No caption' }}</span>
+										</div>
+										
+										<p class="text-xs text-gray-500 mt-1 uppercase">{{ formatDateTime(selectedPost.post_schedule_time) || 'Now' }}</p>
+									</div>
+								</div>
+							</div>
+
+							<div v-else class="space-y-4">
+								<!-- Email Preview -->
+								<h4 class="text-sm font-medium text-gray-500 mb-3">{{ __('Email Preview') }}</h4>
+								<div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+									<!-- Email Header -->
+									<div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
+										<div class="flex items-center justify-between text-sm">
+											<div>
+												<p class="font-medium text-gray-900">{{ selectedPost.subject || 'No Subject' }}</p>
+												<p class="text-gray-500">From: {{ selectedPost.social_page_name || 'Campaign' }}</p>
+											</div>
+											<p class="text-gray-500">{{ formatDateTime(selectedPost.post_schedule_time) || 'Draft' }}</p>
+										</div>
+									</div>
+									
+									<!-- Email Content -->
+									<div class="p-4">
+										<iframe
+											v-if="selectedPost.template_content"
+											:srcdoc="selectedPost.template_content"
+											class="w-full h-96 border-0"
+											sandbox="allow-same-origin"
+										></iframe>
+										<div v-else class="p-8 text-center text-gray-400">
+											{{ __('No email content') }}
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<!-- Timestamps Section (below all previews) -->
+							<div class="mt-6 pt-6 border-t border-gray-200">
+								<div class="grid grid-cols-2 gap-4">
+									<div>
+										<h4 class="text-sm font-medium text-gray-500 mb-1">{{ __('Scheduled') }}</h4>
+										<p class="text-sm text-gray-900">{{ formatDateTime(selectedPost.post_schedule_time) || '-' }}</p>
+									</div>
+									<div>
+										<h4 class="text-sm font-medium text-gray-500 mb-1">{{ __('Executed') }}</h4>
+										<p class="text-sm text-gray-900">{{ formatDateTime(selectedPost.executed_at) || '-' }}</p>
+									</div>
+									<div>
+										<h4 class="text-sm font-medium text-gray-500 mb-1">{{ __('Created') }}</h4>
+										<p class="text-sm text-gray-900">{{ formatDateTime(selectedPost.creation) || '-' }}</p>
+									</div>
+									<div>
+										<h4 class="text-sm font-medium text-gray-500 mb-1">{{ __('Post ID') }}</h4>
+										<p class="text-sm text-gray-900 font-mono">{{ selectedPost.name }}</p>
+									</div>
+								</div>
+
+								<!-- Error Message -->
+								<div v-if="selectedPost.error_message" class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+									<div class="flex items-start">
+										<svg class="w-5 h-5 text-red-500 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+										</svg>
+										<div>
+											<h4 class="text-sm font-medium text-red-800 mb-1">{{ __('Error') }}</h4>
+											<p class="text-sm text-red-700">{{ selectedPost.error_message }}</p>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<!-- Footer -->
+						<div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end">
+							<Button variant="outline" @click="closePostPreview">
+								{{ __('Close') }}
+							</Button>
+						</div>
+					</div>
 				</template>
 			</Dialog>
 
@@ -859,24 +1274,31 @@ import { useCampaignStepStore } from '@/stores/campaignStep'
 import { Dialog, Breadcrumbs, Button, FormControl, call } from 'frappe-ui'
 import { debounce } from 'lodash-es'
 import CampaignForm from '@/components/campaign/CampaignForm.vue'
-import CampaignWizard from '@/components/campaign/CampaignWizard.vue'
 import CampaignSocialList from '@/components/campaign/CampaignSocialList.vue'
 import CampaignOverview from '@/components/campaign/CampaignOverview.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
+
+// Campaign Wizards based on type
+import AttractionCampaignWizard from '@/pages/AttractionCampaignWizard.vue'
+import NurturingCampaignWizard from '@/pages/NurturingCampaignWizard.vue'
+import RecruitmentCampaignWizard from '@/pages/RecruitmentCampaignWizard.vue'
 import moment from 'moment'
 import Link from '@/components/Controls/Link.vue'
 
 const route = useRoute()
 const router = useRouter()
 
-// Campaign store
+// Stores
 const campaignStore = useCampaignStore()
 const campaignStepStore = useCampaignStepStore()
+const miraTalentPoolStore = useMiraTalentPoolStore()
+const candidateStore = useCandidateStore()
+const talentSegmentStore = useTalentSegmentStore()
 
 // State
 const activeTab = ref('overview')
 const loading = ref(false)
-const showCampaignWizard = ref(false)
+const showEditWizard = ref(false)
 const loadingSteps = ref(false)
 const loadingCandidates = ref(false)
 const loadingActions = ref(false)
@@ -916,6 +1338,12 @@ const loadingJobOpenings = ref(false)
 // Interactions states
 const interactions = ref([])
 const loadingInteractions = ref(false)
+
+// Social posts states
+const socialPosts = ref([])
+const loadingSocialPosts = ref(false)
+const showPostPreview = ref(false)
+const selectedPost = ref(null)
 
 // Talent filter states
 const talentFilter = ref('sent') // Default filter
@@ -1171,41 +1599,12 @@ const tabs = computed(() => {
 			label: __('Detail Talent'),
 			count: candidateCampaigns.value.length,
 		},
-		// {
-		// 	key: 'mira_candidates',
-		// 	label: __('Candidates'),
-		// 	count: miraCandidates.value.length,
-		// },
-		// {
-		// 	key: 'actions',
-		// 	label: __('Actions'),
-		// 	count: actions.value.length,
-		// },
-		// {
-		// 	key: 'social',
-		// 	label: __('Media Posts'),
-		// 	count: 0,
-		// },
-		// {
-		// 	key: 'interactions',
-		// 	label: __('Interactions'),
-		// 	count: interactions.value.length,
-		// },
-		// {
-		// 	key: 'analytics',
-		// 	label: __('Analytics'),
-		// 	count: 0,
-		// },
+		{
+			key: 'social_posts',
+			label: __('Social Posts'),
+			count: socialPosts.value.length,
+		},
 	]
-
-	// Chỉ hiển thị tab Social Media khi source_type là DataSource
-	// if (campaign.value.source_type === 'DataSource') {
-	//   baseTabs.splice(4, 0, {
-	//     key: 'social',
-	//     label: __('Media Posts'),
-	//     count: 0 // Will be updated when we have social posts count
-	//   })
-	// }
 
 	return baseTabs
 })
@@ -1256,6 +1655,33 @@ const getActionStatusClasses = (status) => {
 		SKIPPED: 'bg-yellow-100 text-yellow-800',
 		FAILED: 'bg-red-100 text-red-800',
 		PENDING_MANUAL: 'bg-orange-100 text-orange-800',
+	}
+	return classes[status] || 'bg-gray-100 text-gray-800'
+}
+
+const getPlatformClasses = (platform) => {
+	const classes = {
+		facebook: 'bg-blue-100 text-blue-800',
+		Facebook: 'bg-blue-100 text-blue-800',
+		instagram: 'bg-pink-100 text-pink-800',
+		Instagram: 'bg-pink-100 text-pink-800',
+		linkedin: 'bg-blue-100 text-blue-800',
+		LinkedIn: 'bg-blue-100 text-blue-800',
+		twitter: 'bg-sky-100 text-sky-800',
+		Twitter: 'bg-sky-100 text-sky-800',
+		tiktok: 'bg-gray-900 text-white',
+		TikTok: 'bg-gray-900 text-white',
+	}
+	return classes[platform] || 'bg-gray-100 text-gray-800'
+}
+
+const getSocialPostStatusClasses = (status) => {
+	const classes = {
+		Pending: 'bg-yellow-100 text-yellow-800',
+		Processing: 'bg-blue-100 text-blue-800',
+		Success: 'bg-green-100 text-green-800',
+		Failed: 'bg-red-100 text-red-800',
+		Cancelled: 'bg-gray-100 text-gray-800',
 	}
 	return classes[status] || 'bg-gray-100 text-gray-800'
 }
@@ -1952,6 +2378,45 @@ const loadInteractions = async () => {
 	}
 }
 
+// Load social posts for the campaign
+const loadSocialPosts = async () => {
+	loadingSocialPosts.value = true
+	try {
+		const res = await call('frappe.client.get_list', {
+			doctype: 'Mira Campaign Social',
+			fields: [
+				'name',
+				'campaign_id',
+				'social_page_id',
+				'social_page_name',
+				'external_connection',
+				'platform',
+				'post_schedule_time',
+				'executed_at',
+				'template_content',
+				'subject',
+				'social_media_images',
+				'status',
+				'retry_count',
+				'error_message',
+				'share_at',
+				'creation',
+				'modified',
+			],
+			filters: { campaign_id: route.params.id },
+			order_by: 'creation desc',
+			limit_page_length: 100,
+		})
+		socialPosts.value = res || []
+		console.log('✅ Loaded social posts:', socialPosts.value.length)
+	} catch (err) {
+		console.error('Error loading social posts:', err)
+		socialPosts.value = []
+	} finally {
+		loadingSocialPosts.value = false
+	}
+}
+
 // Load filter counts for talent list from API
 const loadFilterCounts = async () => {
 	try {
@@ -2007,6 +2472,11 @@ watch(activeTab, (newTab) => {
 		if (interactions.value.length === 0) {
 			loadInteractions()
 		}
+	} else if (newTab === 'social_posts') {
+		console.log(' Switching to social posts tab, loading data...')
+		if (socialPosts.value.length === 0) {
+			loadSocialPosts()
+		}
 	}
 })
 onMounted(() => {
@@ -2057,13 +2527,38 @@ const formatDateTime = (date) => {
 	return moment(date).format('DD/MM/YYYY HH:mm:ss')
 }
 
-const editCampaign = () => {
-	showCampaignWizard.value = true
+// Strip HTML tags and decode entities for preview
+const stripHtml = (html) => {
+	if (!html) return ''
+	// Create a temporary element to decode HTML entities
+	const doc = new DOMParser().parseFromString(html, 'text/html')
+	return doc.body.textContent || ''
 }
 
-const handleCampaignWizardSuccess = async () => {
-	showCampaignWizard.value = false
+// Open post preview modal
+const openPostPreview = (post) => {
+	selectedPost.value = post
+	showPostPreview.value = true
+}
+
+// Close post preview modal
+const closePostPreview = () => {
+	showPostPreview.value = false
+	selectedPost.value = null
+}
+
+const editCampaign = () => {
+	showEditWizard.value = true
+}
+
+const handleWizardClose = () => {
+	showEditWizard.value = false
+}
+
+const handleWizardSuccess = async () => {
+	showEditWizard.value = false
 	await loadCampaign()
+	await loadCampaignSteps()
 }
 
 const getActiveCandidates = () => {

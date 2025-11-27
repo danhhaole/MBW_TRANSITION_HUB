@@ -485,7 +485,9 @@ const viewTemplateDetails = async (template) => {
 }
 
 const handleUseTemplate = (template) => {
-	// Open modal instead of confirm
+	// Close detail modal first if open
+	showDetailModal.value = false
+	// Set template and open use template modal
 	templateToUse.value = template
 	showUseTemplateModal.value = true
 }

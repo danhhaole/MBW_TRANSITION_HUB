@@ -187,6 +187,10 @@ const props = defineProps({
   modelValue: {
     type: Array,
     default: () => []
+  },
+  doctype: {
+    type: String,
+    default: 'Mira Campaign' // Can be 'Mira Campaign' or 'Mira Campaign Template'
   }
 })
 
@@ -334,19 +338,19 @@ const applyTags = async () => {
       return
     }
 
-    // If campaign exists, add tags to Frappe's tag system
-    // Otherwise, just update local state - wizard will add tags after campaign is created
+    // If campaign/template exists, add tags to Frappe's tag system
+    // Otherwise, just update local state - wizard will add tags after document is created
     if (props.campaignId) {
       for (const tag of newTags) {
         await call('frappe.desk.doctype.tag.tag.add_tag', {
           tag: tag.value,
-          dt: 'Mira Campaign',
+          dt: props.doctype,
           dn: props.campaignId
         })
       }
-      console.log('✅ Tags added to existing campaign')
+      console.log(`✅ Tags added to existing ${props.doctype}`)
     } else {
-      console.log('ℹ️ Campaign not yet created - tags will be added after campaign creation')
+      console.log(`ℹ️ ${props.doctype} not yet created - tags will be added after document creation`)
     }
 
     // Update local tags
@@ -366,16 +370,16 @@ const applyTags = async () => {
 // Remove tag
 const removeTag = async (tag) => {
   try {
-    // If campaign exists, remove from Frappe's tag system
+    // If campaign/template exists, remove from Frappe's tag system
     if (props.campaignId) {
       await call('frappe.desk.doctype.tag.tag.remove_tag', {
         tag: tag.value,
-        dt: 'Mira Campaign',
+        dt: props.doctype,
         dn: props.campaignId
       })
-      console.log('✅ Tag removed from campaign')
+      console.log(`✅ Tag removed from ${props.doctype}`)
     } else {
-      console.log('ℹ️ Campaign not yet created - removing from local state only')
+      console.log(`ℹ️ ${props.doctype} not yet created - removing from local state only`)
     }
 
     tags.value = tags.value.filter(t => t.value !== tag.value)

@@ -94,6 +94,7 @@
             :conditions="templateData.conditions"
             :candidate-count="templateData.candidate_count"
             :campaign-tags="templateData.campaign_tags"
+            :template-id="templateData.name"
             :scope-type="templateData.scope_type"
             :is-default="templateData.is_default"
             :is-premium="templateData.is_premium"
@@ -259,7 +260,7 @@ const templateData = ref({
   template_description: '',
   campaign_type: 'ATTRACTION',
   campaign_name: '', // for CampaignBasicInfo
-  name: 'template', // campaign ID for components
+  name: '', // template ID - empty until created
   objective: '',
   campaign_tags: [],
   
@@ -623,7 +624,7 @@ const saveDraft = async () => {
   
   try {
     // Step 1: Save template
-    if (!templateData.value.name || templateData.value.name === 'template') {
+    if (!templateData.value.name) {
       // Create new template
       const result = await templateStore.createTemplate({
         template_name: templateData.value.template_name,
