@@ -745,6 +745,17 @@
 													deletingPool?.title
 												}}"? {{ __('This action cannot be undone.') }}
 											</p>
+											<div v-if="deletingPool?.candidate_count > 0" class="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+												<div class="flex items-start">
+													<FeatherIcon name="alert-triangle" class="w-5 h-5 text-yellow-600 mr-2 flex-shrink-0 mt-0.5" />
+													<div class="text-sm text-yellow-800">
+														<p class="font-medium">{{ __('Warning') }}</p>
+														<p class="mt-1">
+															{{ __('This pool contains {0} talent(s). You must remove all talents from the pool before deleting it.', [deletingPool.candidate_count]) }}
+														</p>
+													</div>
+												</div>
+											</div>
 										</div>
 									</div>
 								</div>
@@ -765,6 +776,7 @@
 									theme="red"
 									@click="confirmDelete"
 									:loading="loading"
+									:disabled="deletingPool?.candidate_count > 0"
 								>
 									{{ __('Delete') }}
 								</Button>
@@ -1126,14 +1138,19 @@ const confirmDelete = async () => {
 	if (deletingPool.value) {
 		try {
 			loading.value = true
-			await talentSegmentStore.deleteTalentSegment(deletingPool.value.name)
-			showSuccess(__('Talent pool deleted successfully'))
-			showDeleteDialog.value = false
-			deletingPool.value = null
-			await talentSegmentStore.fetchTalentSegments()
+			const result = await talentSegmentStore.deleteTalentSegment(deletingPool.value.name)
+			
+			if (result) {
+				showSuccess(__('Talent pool deleted successfully'))
+				showDeleteDialog.value = false
+				deletingPool.value = null
+				await talentSegmentStore.fetchTalentSegments()
+			}
 		} catch (error) {
 			console.error('Error deleting pool:', error)
-			showError(error.message || __('Failed to delete talent pool'))
+			// Hiển thị thông báo lỗi chi tiết từ backend
+			const errorMessage = error.message || __('Failed to delete talent pool')
+			showError(errorMessage)
 		} finally {
 			loading.value = false
 		}

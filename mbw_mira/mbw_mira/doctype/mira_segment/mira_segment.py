@@ -91,6 +91,16 @@ def delete_segment(name=None):
 		if not frappe.has_permission("Mira Segment", "delete", doc=doc):
 			frappe.throw(_("No permission to delete Segment {0}").format(name))
 		
+		# Kiểm tra xem segment có talent không
+		talent_count = frappe.db.count("Mira Talent Pool", {"segment_id": name})
+		
+		if talent_count > 0:
+			return {
+				"status": "error",
+				"message": _("Cannot delete segment. Please remove all {0} talent(s) from the pool before deleting the segment.").format(talent_count),
+				"talent_count": talent_count
+			}
+		
 		# Lấy meta để kiểm tra links
 		meta = frappe.get_meta("Mira Segment")
 		
