@@ -31,10 +31,10 @@
               <img
                 :src="qr.qr_image"
                 alt="QR Code"
-                class="w-16 h-16 border border-gray-200 rounded"
+                class="w-24 h-24 border border-gray-200 rounded"
               />
             </div>
-            <div v-else class="flex-shrink-0 w-16 h-16 bg-gray-100 border border-gray-200 rounded flex items-center justify-center">
+            <div v-else class="flex-shrink-0 w-24 h-24 bg-gray-100 border border-gray-200 rounded flex items-center justify-center">
               <FeatherIcon name="image" class="h-6 w-6 text-gray-400" />
             </div>
 
