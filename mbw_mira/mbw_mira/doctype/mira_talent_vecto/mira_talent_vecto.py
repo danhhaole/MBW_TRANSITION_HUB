@@ -19,7 +19,7 @@ class MiraTalentVecto(Document):
 		calculate_and_set_vector(self)
 
 	def on_update(self):
-		compare_talent_pool_vecto(self.name)
+		compare_talent_pool_vecto(self.mira_talent)
 	
 
 def compare_talent_pool_vecto(talent_id) -> float:
@@ -28,8 +28,8 @@ def compare_talent_pool_vecto(talent_id) -> float:
     #Lấy ra
     talent_vecto = frappe.db.get_value("Mira Talent Vecto",{"mira_talent": talent_id}, "embedding_vector")
     list_vecto = parse_vector_list(pool_vecto)
+    print(len(talent_vecto))
     score = compare_vector_with_list(talent_vecto,list_vecto,0.5)
-    print("score", score)
     return score
 	
     
@@ -105,7 +105,7 @@ def calculate_and_set_vector(doc):
 	if text_source:
 		try:
 			# 2. Gọi API tạo vector
-			embeddings_list = get_vector_embeddings([text_source])
+			embeddings_list = get_vector_embeddings([json.dumps(text_source)])
 			
 			if embeddings_list and embeddings_list[0]:
 				# 3. Lưu vector

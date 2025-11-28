@@ -56,7 +56,7 @@ export const useTalentDetailStore = defineStore('talentDetail', {
         }
         
         // Fetch activities
-        await this.fetchActivities(name)
+        // await this.fetchActivities(name)
         
       } catch (err) {
         this.error = err.message

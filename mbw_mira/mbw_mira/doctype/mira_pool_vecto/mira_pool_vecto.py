@@ -60,7 +60,7 @@ def calculate_and_set_vector(doc):
     text_source = " | ".join(text_source_parts)
 
     if text_source:
-        embeddings_list = get_vector_embeddings([text_source])
+        embeddings_list = get_vector_embeddings([json.dumps(text_source)])
         
         if embeddings_list and embeddings_list[0]:
             doc.embedding_vector = json.dumps(embeddings_list[0])
@@ -199,7 +199,7 @@ def insert_mira_pool_vecto(segment_id):
         
         # 5. Chèn bản ghi vào cơ sở dữ liệu
         pool_doc.insert(ignore_permissions=True)
-        print("pool_doc",pool_doc)
+        # print("pool_doc",pool_doc)
         return pool_doc.name
 
     except frappe.DoesNotExistError:
@@ -253,7 +253,7 @@ def derive_pool_fields_from_segment(pool_doc):
         
         # 2. Skills Must Have
         skills_list = parse_segment_criteria(criteria, 'skills')
-        print("skills_list",skills_list)
+        # print("skills_list",skills_list)
         # 3. Location
         location_list = parse_segment_criteria(criteria, 'city') or parse_segment_criteria(criteria, 'country')
 

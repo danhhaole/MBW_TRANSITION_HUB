@@ -9,6 +9,7 @@ from frappe import _
 import requests
 from frappe.utils.file_manager import save_file
 import os
+from mbw_mira.mbw_mira.doctype.mira_talent_vecto.mira_talent_vecto import create_talent_vector
 from mbw_mira.mbw_mira.doctype.mira_task_definition.mira_task_definition import create_task_definitions_from_event
 from mbw_mira.mbw_mira.doctype.talent_activity_log.talent_activity_log import create_talent_activity_log
 
@@ -46,6 +47,7 @@ class MiraTalent(Document):
     def on_update(self):
         if not self.flags.in_insert:  # nghĩa là UPDATE, không phải INSERT
             #Tạo talent vecto
+            create_talent_vector(self.name)
             frappe.enqueue(
                     "mbw_mira.mbw_mira.doctype.mira_talent_vecto.mira_talent_vecto.create_talent_vector",
                     queue="default",

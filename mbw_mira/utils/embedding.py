@@ -24,13 +24,15 @@ def compare_vector_with_list(target_vec, vector_list, top_k=None):
 
     # kiểm tra chiều dài vector
     vector_len = len(target_vec)
+    print(vector_len)
     for i, v in enumerate(vector_list):
+        
         if len(v) != vector_len:
             frappe.throw(
                 _("Vector at index {0} has different length").format(i)
             )
 
-    # reshape đúng chuẩn sklearn
+    # reshape sklearn
     a = np.array(target_vec).reshape(1, -1)
     b = np.array(vector_list)
 
