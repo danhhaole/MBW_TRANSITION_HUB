@@ -1,6 +1,7 @@
 # Copyright (c) 2025, MBWCloud Co. and contributors
 # For license information, please see license.txt
 
+import ast
 import frappe
 import json
 from frappe.model.document import Document
@@ -19,26 +20,72 @@ class MiraTalentVecto(Document):
 		calculate_and_set_vector(self)
 
 	def on_update(self):
-		compare_talent_pool_vecto(self.mira_talent)
+		try:
+			compare_talent_pool_vecto(self.mira_talent)
+		except Exception as e:
+			print(str(e))
+			pass
 	
+def safe_parse_vector(value):
+    """Trả về list[float] bất kể input là string JSON hay list."""
+    if value is None:
+        return None
 
-def compare_talent_pool_vecto(talent_id) -> float:
-    #Lấy danh sách pool vecto
-    pool_vecto = frappe.get_all("Mira Pool Vecto",fields=["embedding_vector"])
-    #Lấy ra
-    talent_vecto = frappe.db.get_value("Mira Talent Vecto",{"mira_talent": talent_id}, "embedding_vector")
-    list_vecto = parse_vector_list(pool_vecto)
-    print(len(talent_vecto))
-    score = compare_vector_with_list(talent_vecto,list_vecto,0.5)
+    # Nếu là string JSON -> parse
+    if isinstance(value, str):
+        try:
+            return json.loads(value)
+        except Exception:
+            frappe.log_error("Invalid JSON vector", value)
+            return None
+
+    # Nếu đã là list -> trả về luôn
+    if isinstance(value, list):
+        return value
+
+    return None
+
+def compare_talent_pool_vecto(talent_id):
+    # Lấy vector của talent
+    embedding_str = frappe.db.get_value(
+        "Mira Talent Vecto",
+        {"mira_talent": talent_id},
+        "embedding_vector"
+    )
+    target = safe_parse_vector(embedding_str)
+
+    # Lấy list vector pool
+    pool = frappe.get_all("Mira Pool Vecto", fields=["embedding_vector"])
+    list_vec = [safe_parse_vector(item["embedding_vector"]) for item in pool]
+
+    # loại bỏ vector None
+    list_vec = [x for x in list_vec if x]
+
+    score = compare_vector_with_list(target, list_vec)
+    print(score)
     return score
 	
-    
+
+def parse_embedding(value):
+    if value is None:
+        return None
+
+    # Convert numpy.str_ -> string
+    if not isinstance(value, str):
+        value = str(value)
+
+    # Trim các ký tự thừa
+    value = value.strip().strip('"').strip("'")
+
+    # Parse an toàn
+    try:
+        return ast.literal_eval(value)
+    except Exception:
+        value = value.replace("[", "").replace("]", "")
+        return [float(x.strip()) for x in value.split(",") if x.strip()]
+
 def parse_vector_list(records):
-    """
-    Chuyển list dict [{'embedding_vector': '...'}]
-    → list[list[float]]
-    """
-    return [json.loads(r["embedding_vector"]) for r in records]
+    return [parse_embedding(r["embedding_vector"]) for r in records]
 
 def create_talent_summary_text(talent_doc):
 	"""
@@ -100,7 +147,8 @@ def calculate_and_set_vector(doc):
 	"""
 
 	# 1. Tạo chuỗi embedding_text dựa trên loại DocType
-	text_source = create_talent_summary_text(doc)
+	talent = frappe.get_doc("Mira Talent",doc.mira_talent)
+	text_source = create_talent_summary_text(talent)
 	doc.summary_text = text_source
 	if text_source:
 		try:
