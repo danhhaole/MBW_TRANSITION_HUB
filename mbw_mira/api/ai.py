@@ -158,9 +158,9 @@ def extract_cv_backend(file_name):
     headers = {"x-api-key": "6Bwunlw3Fm1J23tGKZjb/WJXwBDI3gRY971+VUFOU+w="}
 
     try:
-        file_name = frappe.db.get_value("File", {"name": file_name}, "file_name")
-        print('========================= file_name 2: ', file_name, flush=True)
-        file_path = get_files_path(file_name)
+        file_url = frappe.db.get_value("File", {"name": file_name, "is_private":1}, "file_url")
+        print('========================= file_name 2: ', file_url, flush=True)
+        file_path = get_files_path(file_url)
         print('========================= file_path 3: ', file_path, flush=True)
         with open(file_path, "rb") as f:
             files = {"file": (file_name, f, "application/pdf")}
@@ -259,7 +259,7 @@ def extract_cv_url():
     try:
         # Lấy cả file_name và file_url từ database
         file_info = frappe.db.get_value(
-            "File", {"name": file_name}, ["file_name", "file_url"], as_dict=True
+            "File", {"name": file_name, "is_private":1}, ["file_name", "file_url"], as_dict=True
         )
 
         if not file_info:
@@ -1050,7 +1050,7 @@ def extract_cv_backend_v2(file_name):
 
     try:
         file_doc = frappe.db.get_value(
-            "File", {"file_name": file_name}, ["file_name"], as_dict=1
+            "File", {"file_name": file_name, "is_private":1}, ["file_name"], as_dict=1
         )
 
         file_path = get_files_path(file_doc.get("file_name"))
@@ -1198,7 +1198,7 @@ def process_cv(file_url, job_opening_id=None):
         # Find the file document
         file_doc = frappe.db.get_value(
             "File",
-            filters={"file_url": file_url},
+            filters={"file_url": file_url, "is_private":1},
             fieldname=["name", "file_name"],
             as_dict=True,
         )

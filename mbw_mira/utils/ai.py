@@ -244,8 +244,8 @@ def extract_image_document(
     2. OCR bằng VLM
     3. Nếu category = bank_transfer → Trích thông tin giao dịch
     """
-    file_doc = frappe.get_doc("File", file_name)
-    file_path = frappe.utils.get_files_path(file_doc.file_name)
+    file_doc = frappe.get_doc("File", {"name": file_name, "is_private":1})
+    file_path = frappe.utils.get_files_path(file_doc.file_url)
 
     base64_img = file_to_base64(file_path)
     if not base64_img:
@@ -283,9 +283,9 @@ def extract_cv_backend(file_name):
     headers = {"x-api-key": "6Bwunlw3Fm1J23tGKZjb/WJXwBDI3gRY971+VUFOU+w="}
 
     try:
-        file_name = frappe.db.get_value("File", {"name": file_name}, "file_name")
+        file_url = frappe.db.get_value("File", {"name": file_name, "is_private":1}, "file_url")
 
-        file_path = frappe.utils.get_files_path(file_name)
+        file_path = frappe.utils.get_files_path(file_url)
 
         with open(file_path, "rb") as f:
             files = {"file": (file_name, f, "application/pdf")}
