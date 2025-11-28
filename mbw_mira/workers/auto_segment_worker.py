@@ -41,7 +41,7 @@ def disenroll_talent_pool(pool_id:str):
         if matches:
             for talent in matches:
                 score = talent.get("score")
-                if check_exists(pool_id,talent.get("name")) and score < 50:
+                if check_exists(pool_id,talent.get("name")) and score <= 55:
                     frappe.delete_doc("Mira Talent Pool",{"segment_id": pool_id,"talent_id": talent.get("name")})
             frappe.db.commit()
                     
