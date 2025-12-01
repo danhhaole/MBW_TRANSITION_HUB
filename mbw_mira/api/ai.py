@@ -1,3 +1,4 @@
+import os
 import frappe
 import json
 import requests
@@ -159,9 +160,7 @@ def extract_cv_backend(file_name):
 
     try:
         file_url = frappe.db.get_value("File", {"name": file_name, "is_private":1}, "file_url")
-        print('========================= file_name 2: ', file_url, flush=True)
-        file_path = get_files_path(file_url)
-        print('========================= file_path 3: ', file_path, flush=True)
+        file_path = os.path.join(frappe.get_site_path(), file_url.lstrip("/"))
         with open(file_path, "rb") as f:
             files = {"file": (file_name, f, "application/pdf")}
             response = requests.post(url_extract_ai, files=files, headers=headers)
@@ -282,14 +281,14 @@ def extract_cv_url():
 
         import os
 
-        if file_url.startswith("/files/"):
-            # Lấy tên file thực tế từ URL
-            actual_filename = file_url.replace("/files/", "")
-            # Tạo đường dẫn đầy đủ
-            file_path = get_files_path(actual_filename)
-        else:
-            # Fallback: thử dùng file_name gốc
-            file_path = get_files_path(file_info.file_name)
+        # if file_url.startswith("/files/"):
+        #     # Lấy tên file thực tế từ URL
+        #     actual_filename = file_url.replace("/files/", "")
+        #     # Tạo đường dẫn đầy đủ
+        #     file_path = get_files_path(actual_filename)
+        # else:
+        #     # Fallback: thử dùng file_name gốc
+        file_path = os.path.join(frappe.get_site_path(), file_url.lstrip("/"))
 
         # Kiểm tra file có tồn tại không
         if not os.path.exists(file_path):
@@ -1050,10 +1049,10 @@ def extract_cv_backend_v2(file_name):
 
     try:
         file_doc = frappe.db.get_value(
-            "File", {"file_name": file_name, "is_private":1}, ["file_name"], as_dict=1
+            "File", {"file_name": file_name, "is_private":1}, ["file_url"], as_dict=1
         )
 
-        file_path = get_files_path(file_doc.get("file_name"))
+        file_path = os.path.join(frappe.get_site_path(), file_doc.get("file_url").lstrip("/"))        
 
         with open(file_path, "rb") as f:
             files = {"file": (file_name, f, "application/pdf")}
