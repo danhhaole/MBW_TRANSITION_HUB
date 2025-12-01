@@ -64,16 +64,30 @@ const initChart = () => {
 			}
 		},
 		legend: {
-			orient: 'horizontal',
-			bottom: '0',
-			left: 'center',
-			itemGap: 12,
-			textStyle: { fontSize: 11, color: '#475569' }
+			type: 'scroll',
+			orient: 'vertical',
+			right: '8%',
+			top: '15%',
+			bottom: '15%',
+			itemGap: 10,
+			itemWidth: 14,
+			itemHeight: 14,
+			textStyle: { 
+				fontSize: 12, 
+				color: '#475569',
+				width: 90,
+				overflow: 'truncate'
+			},
+			pageIconSize: 12,
+			pageTextStyle: {
+				fontSize: 10,
+				color: '#64748b'
+			}
 		},
 		series: [{
 			type: 'pie',
-			radius: ['45%', '75%'],
-			center: ['50%', '45%'],
+			radius: ['35%', '55%'],
+			center: ['32%', '50%'],
 			avoidLabelOverlap: false,
 			itemStyle: {
 				borderRadius: 6,
@@ -84,8 +98,12 @@ const initChart = () => {
 			emphasis: {
 				label: {
 					show: true,
-					fontSize: 14,
-					fontWeight: 'bold'
+					fontSize: 13,
+					fontWeight: 'bold',
+					formatter: (params) => {
+						const percentage = ((params.value / totalValue) * 100).toFixed(1)
+						return `${percentage}%`
+					}
 				}
 			},
 			data: props.data.map(item => ({

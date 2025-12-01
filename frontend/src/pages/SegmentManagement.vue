@@ -810,6 +810,10 @@ import { useRouter } from 'vue-router'
 import { useToast } from '@/composables/useToast'
 import { useTalentSegmentStore } from '@/stores/talentSegment'
 import { globalStore } from '@/stores/global'
+import { usePermissionStore } from "@/stores/permission";
+
+const permission = usePermissionStore()
+
 // Breadcrumbs
 const breadcrumbs = [{ label: __('Pools'), route: { name: 'SegmentPool' } }]
 const { showSuccess, showError } = useToast()
@@ -858,6 +862,8 @@ const poolActions = (pool) => [
 	},
 ]
 
+const canCreate = permission.can("Mira Segment", "create");
+console.log("canCreate", canCreate.value);
 const segments = computed(() => talentSegmentStore.talentSegments)
 const handleRefresh = async () => {
   await fetchSegments();

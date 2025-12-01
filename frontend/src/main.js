@@ -13,6 +13,8 @@ import { initSocket } from './socket'
 import router from './router'
 import translationPlugin from './translation'
 import { posthogPlugin } from './telemetry'
+import { usersStore } from './stores/user'
+import { usePermissionStore } from './stores/permission'
 import App from './App.vue'
 
 import {
@@ -59,24 +61,53 @@ for (let key in globalComponents) {
 
 app.config.globalProperties.$dialog = createDialog
 
-let socket
-if (import.meta.env.DEV) {
-  frappeRequest({ url: '/api/method/mbw_mira.www.mbw_mira.get_context_for_dev' }).then(
-    (values) => {
+async function bootstrap() {
+  const { userResource, allUsers, getUser } = usersStore()
+  const permissionStore = usePermissionStore()
+
+  try {
+    // Đảm bảo đã load user data
+    await getUser.promise
+    
+    // Kiểm tra xem getUser.data có tồn tại và có roles không
+    if (getUser.data && getUser.data.roles) {
+      await permissionStore.loadFeatures()
+    } else {
+      console.log('User data or roles not available, initializing with minimal permissions')
+      await permissionStore.loadFeatures()
+    }
+  } catch (error) {
+    console.error('Error loading user data:', error)
+    // Khởi tạo với quyền truy cập trống nếu có lỗi
+    await permissionStore.loadFeatures()
+  }
+
+  app.provide('$user', userResource)
+  app.provide('$allUsers', allUsers)
+  app.config.globalProperties.$user = userResource
+
+  let socket
+  if (import.meta.env.DEV) {
+    try {
+      const values = await frappeRequest({
+        url: '/api/method/mbw_mira.www.mbw_mira.get_context_for_dev',
+      })
       for (let key in values) {
         window[key] = values[key]
       }
-      socket = initSocket()
-      app.config.globalProperties.$socket = socket
-      app.mount('#app')
-    },
-  )
-}  else {
-  socket = initSocket()
-  app.config.globalProperties.$socket = socket
+    } catch (err) {
+      console.error('Error loading dev context:', err)
+    }
+    
+    socket = initSocket()
+    app.config.globalProperties.$socket = socket
+    window.$dialog = createDialog
+  } else {
+    socket = initSocket()
+    app.config.globalProperties.$socket = socket
+  }
+
   app.mount('#app')
 }
 
-if (import.meta.env.DEV) {
-  window.$dialog = createDialog
-}
+bootstrap()

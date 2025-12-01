@@ -2,6 +2,8 @@ import json
 import frappe
 from frappe import _
 import os
+from mbw_mira.scripts.feature_seeder import ensure_roles as ensure_mira_roles
+from mbw_mira.scripts.feature_seeder import seed as seed_mbw_features
 
 def after_install():
     # Optional: run automatically on fresh install
@@ -312,3 +314,26 @@ def read_builder_settings_module_path(file_name):
 			pass
 		except Exception as e:
 			frappe.log_error(frappe.get_traceback(), file_name)
+
+def seed_mbw_mira_features_if_ready():
+	"""Gọi seeder: tạo Role → Feature → Link. Bỏ qua nếu thiếu DocType."""
+	try:
+		need = [
+			"MBW Feature Settings",
+			"MBW Feature Setting Detail",
+			"MBW Feature Role Permission",
+		]
+		missing = [dt for dt in need if not frappe.db.exists("DocType", dt)]
+		if missing:
+			print("⏭️ Skip seeding MBW ATS features (missing DocTypes):", ", ".join(missing))
+			print("   → Chạy bench migrate rồi gọi lại sau: bench --site <site> execute mbw_ats.scripts.feature_seeder.seed")
+			return
+
+		print("=== Seed MBW ATS Features (import module) ===")
+		ensure_mira_roles()
+		seed_mbw_features()
+		print("✅ Done seeding MBW Mira Features")
+
+	except Exception as e:
+		frappe.log_error(f"Seed MBW ATS features failed: {e}", "MBW Mira Install")
+		print(f"❌ Seed MBW ATS features failed: {e}")
