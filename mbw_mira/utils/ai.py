@@ -200,7 +200,7 @@ Trả JSON:
 # Summary JSON to text
 # ==============================
 def call_llm_convert_json_to_text(json_cv):
-    prompt = f"""Tóm tắt CV sau đây thành một bản mô tả chuẩn hóa, ngắn gọn (150–250 từ), tối ưu cho tạo vector embedding phục vụ semantic search và job–candidate matching.
+    prompt = f"""Tóm tắt CV sau đây thành một bản mô tả chuẩn hóa, ngắn gọn (150–250 từ), tối ưu cho tạo vector embedding phục vụ semantic search và talent-pool matching.
 
 Yêu cầu:
 - Không dùng từ ngữ cảm tính (vd: nhiệt huyết, sáng tạo, nỗ lực...)
@@ -250,6 +250,64 @@ CV:
     }
     try:
         response = requests.post(LLM_API_URL, headers=headers, data=json.dumps(body))
+        if response.status_code == 200:
+            data = response.json()
+            return json.loads(data["choices"][0]["message"]["content"])
+        else:
+            return response.text
+    except Exception as e:
+        frappe.log_error(f"Lỗi convert {str(e)}")
+        return None
+
+#Tóm tắt thông tin job
+def call_llm_convert_json_to_text_JD(JD_JSON):
+    prompt = f"""Tóm tắt Job Description sau thành một mô tả standard hóa, ngắn gọn (150–250 từ), tối ưu cho việc tạo vector embedding dùng trong semantic search và talent-pool matching.
+
+Yêu cầu:
+- Không dùng từ cảm tính, không mô tả môi trường, phúc lợi, giọng văn quảng cáo.
+- Chỉ giữ thông tin nghề nghiệp: nhiệm vụ chính, kỹ năng, công nghệ, yêu cầu, lĩnh vực.
+- Chuẩn hóa output theo cấu trúc cố định sau:
+
+{{
+  "role_summary": "mô tả 3–5 câu về mục tiêu vị trí, thâm niên, lĩnh vực, phạm vi công việc.",
+  "responsibilities": [
+    "nhiệm vụ quan trọng 1",
+    "nhiệm vụ quan trọng 2",
+    "..."
+  ],
+  "required_skills": ["kỹ năng bắt buộc 1", "kỹ năng 2", ...],
+  "technical_stack": ["công nghệ / tool / framework (nếu có)"],
+  "preferred_skills": ["ưu tiên (optional)"],
+  "industry": ["lĩnh vực công ty/role"],
+  "seniority": "cấp độ yêu cầu (Fresher/Junior/Mid/Senior/Lead)"
+}}
+
+Job Description:
+{JD_JSON}
+"""
+
+    body = {
+        "model": API_MODEL,
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are a helpful assistant that responds JSON.",
+            },
+            {
+                "role": "user",
+                "content": prompt,
+            },
+        ],
+        "temperature": 0.0,
+        "max_tokens": 12048,
+    }
+
+    header = headers = {
+        "Authorization": f"Bearer {API_KEY}",
+        "Content-Type": "application/json",
+    }
+    try:
+        response = requests.post(LLM_API_URL, headers=headers, data=json.dumps(body), timeout=300)
         if response.status_code == 200:
             data = response.json()
             return json.loads(data["choices"][0]["message"]["content"])

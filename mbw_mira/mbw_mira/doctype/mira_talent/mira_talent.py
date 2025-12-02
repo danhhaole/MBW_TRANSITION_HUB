@@ -783,10 +783,10 @@ def extract_and_summary(talent_id, resume):
 
 # Summary without resume
 def summary_without_resume(talent_id):
-    talent = frappe.get_doc(
+    talent = frappe.db.get_value(
         "Mira Talent",
         talent_id,
-        fields=[
+        [
             "full_name",
             "gender",
             "date_of_birth",
@@ -821,11 +821,11 @@ def summary_without_resume(talent_id):
             "internal_rating",
             "interaction_notes",
             "latest_title",
-        ],
+        ],as_dict=1
     )
 
     # Summary lại json
-    summary_json = call_llm_convert_json_to_text(talent.as_dict())
+    summary_json = call_llm_convert_json_to_text(talent)
     if summary_json:
         frappe.db.set_value(
             "Mira Talent", talent_id, "resume_summary", json.dumps(summary_json)

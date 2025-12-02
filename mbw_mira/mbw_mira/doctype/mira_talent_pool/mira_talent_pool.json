@@ -9,6 +9,7 @@
   "talent_id",
   "segment_id",
   "match_score",
+  "ai_score",
   "enroll_type",
   "added_at",
   "added_by"
@@ -48,12 +49,18 @@
    "fieldtype": "Select",
    "label": "Enroll Type",
    "options": "Manual\nAutomatic\nCampaign"
+  },
+  {
+   "fieldname": "ai_score",
+   "fieldtype": "Float",
+   "label": "AI Score",
+   "precision": "3"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-21 09:49:20.497017",
+ "modified": "2025-12-02 17:08:58.206758",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Talent Pool",
