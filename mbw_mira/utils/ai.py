@@ -1,4 +1,5 @@
 import base64
+import os
 import requests
 import json
 import frappe
@@ -16,8 +17,9 @@ VLM_API_URL = "https://aiapi.fastwork.vn/vlm/v1/chat/completions"
 LLM_API_URL = "https://aiapi.fastwork.vn/vlm/v1/chat/completions"
 
 API_KEY = "b8040c68-b18b-4e01-9d61-b03536c02fcb"
-API_MODEL = "5CD-AI/Vintern-3B-R-beta"
-MODEL_NAME = "Qwen/Qwen3-Embedding-0.6B"
+API_MODEL = f"5CD-AI/Vintern-3B-R-beta"
+MODEL_NAME = f"Qwen/Qwen3-Embedding-0.6B"
+MODEL_RAW_NAME = f"Qwen/Qwen3-8B"
 DEFAULT_API_TOKEN = "1d161ba4-ddab-491d-a2b6-ad0eac14fb33"
 
 AI_BASEURL_V2 = (
@@ -83,7 +85,7 @@ def get_vector_embeddings(input_text_list, api_token=DEFAULT_API_TOKEN):
 
     try:
         res = requests.post(
-            EMBEDDING_API_URL, headers=headers, data=json.dumps(payload), timeout=30
+            EMBEDDING_API_URL, headers=headers, data=json.dumps(payload), timeout=300
         )
 
         if res.status_code == 200:
@@ -195,6 +197,70 @@ Trả JSON:
 
 
 # ==============================
+# Summary JSON to text
+# ==============================
+def call_llm_convert_json_to_text(json_cv):
+    prompt = f"""Tóm tắt CV sau đây thành một bản mô tả chuẩn hóa, ngắn gọn (150–250 từ), tối ưu cho tạo vector embedding phục vụ semantic search và job–candidate matching.
+
+Yêu cầu:
+- Không dùng từ ngữ cảm tính (vd: nhiệt huyết, sáng tạo, nỗ lực...)
+- Không viết theo văn phong giới thiệu. Không dùng câu văn dài.
+- Chỉ tập trung vào dữ liệu: kỹ năng, kinh nghiệm, công nghệ, vị trí làm việc, lĩnh vực dự án và thành tựu định lượng.
+- Chuẩn hóa output theo format sau:
+
+{{
+  "summary": "mô tả tổng quan 3–5 câu, nêu chức danh chính, số năm kinh nghiệm, lĩnh vực đã làm.",
+  "skills": ["kỹ năng 1", "kỹ năng 2", ...],
+  "technical_stack": ["tech 1", "tech 2", ...],
+  "roles": ["vai trò chính đã đảm nhiệm"],
+  "industries": ["lĩnh vực đã làm"],
+  "key_experience": [
+     "kinh nghiệm tiêu biểu 1",
+     "kinh nghiệm tiêu biểu 2"
+  ],
+  "achievements": [
+     "thành tựu định lượng nếu có"
+  ],
+  "location":["Nơi làm việc mong muốn nếu có"]
+}}
+
+CV:
+{json_cv}
+"""
+
+    body = {
+        "model": API_MODEL,
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are a helpful assistant that responds JSON.",
+            },
+            {
+                "role": "user",
+                "content": prompt,
+            },
+        ],
+        "temperature": 0.0,
+        "max_tokens": 12048,
+    }
+
+    header = headers = {
+        "Authorization": f"Bearer {API_KEY}",
+        "Content-Type": "application/json",
+    }
+    try:
+        response = requests.post(LLM_API_URL, headers=headers, data=json.dumps(body))
+        if response.status_code == 200:
+            data = response.json()
+            return json.loads(data["choices"][0]["message"]["content"])
+        else:
+            return response.text
+    except Exception as e:
+        frappe.log_error(f"Lỗi convert {str(e)}")
+        return None
+
+
+# ==============================
 # UPLOAD BASE64 FILE
 # ==============================
 def upload_base64_without_filename(
@@ -244,7 +310,7 @@ def extract_image_document(
     2. OCR bằng VLM
     3. Nếu category = bank_transfer → Trích thông tin giao dịch
     """
-    file_doc = frappe.get_doc("File", {"name": file_name, "is_private":1})
+    file_doc = frappe.get_doc("File", {"name": file_name, "is_private": 1})
     file_path = frappe.utils.get_files_path(file_doc.file_url)
 
     base64_img = file_to_base64(file_path)
@@ -269,9 +335,10 @@ def extract_image_document(
     return result
 
 
-#====================================
+# ====================================
 # Extract CV
-#====================================
+# ====================================
+
 
 def extract_cv_backend(file_name):
     # url_extract_ai = f"{AI_BASEURL}/v2/genai/hr-assistants/cv-extraction/pdf-upload"
@@ -283,19 +350,59 @@ def extract_cv_backend(file_name):
     headers = {"x-api-key": "6Bwunlw3Fm1J23tGKZjb/WJXwBDI3gRY971+VUFOU+w="}
 
     try:
-        file_url = frappe.db.get_value("File", {"name": file_name, "is_private":1}, "file_url")
+        file_url = frappe.db.get_value(
+            "File", {"name": file_name, "is_private": 1}, "file_url"
+        )
 
-        file_path = frappe.utils.get_files_path(file_url)
+        file_path = os.path.join(frappe.get_site_path(), file_url.lstrip("/"))
 
         with open(file_path, "rb") as f:
             files = {"file": (file_name, f, "application/pdf")}
-            response = requests.post(url_extract_ai, files=files, headers=headers)
+            response = requests.post(
+                url_extract_ai, files=files, headers=headers, timeout=12000
+            )
         if response.status_code == 200:
-            data = frappe.parse_json(response.json())
-            if data and data.data:
-                print(data)
+            profile = frappe.parse_json(response.json())
 
-            return data
+            return profile.data
+        else:
+            frappe.log_error("Error extract")
+            return ""
+
+    except frappe.DoesNotExistError:
+        frappe.log_error("File does not exists")
+        return ""
+
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "CV Upload API")
+        return ""
+
+
+def extract_cv_backend_file_url(file_url):
+    # url_extract_ai = f"{AI_BASEURL}/v2/genai/hr-assistants/cv-extraction/pdf-upload"
+    url_extract_ai = f"{AI_BASEURL_V2}/api/v1/cv_extract"
+
+    if not file_url:
+        frappe.throw("Missing 'file_url' in request parameters.")
+
+    headers = {"x-api-key": "6Bwunlw3Fm1J23tGKZjb/WJXwBDI3gRY971+VUFOU+w="}
+
+    try:
+        file_name = frappe.db.get_value(
+            "File", {"file_url": file_url, "is_private": 1}, "file_name"
+        )
+
+        file_path = os.path.join(frappe.get_site_path(), file_url.lstrip("/"))
+
+        with open(file_path, "rb") as f:
+            files = {"file": (file_name, f, "application/pdf")}
+            response = requests.post(
+                url_extract_ai, files=files, headers=headers, timeout=12000
+            )
+        if response.status_code == 200:
+            profile = frappe.parse_json(response.json())
+
+            return profile.data
         else:
             frappe.log_error("Error extract")
             return ""

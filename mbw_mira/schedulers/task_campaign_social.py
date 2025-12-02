@@ -81,8 +81,9 @@ def run_campaign_social_email():
         "Mira Campaign Social",
         {"is_active": 1, "platform": "Email", "status": "Pending","post_schedule_time":["between", [before_60s, after_60s]]},order_by="post_schedule_time asc"
     )
+    
     if campaign_social_email:
-        for cpe in campaign_social_email:
+        for cpe in campaign_social_email:            
             frappe.enqueue(
                 "mbw_mira.workers.process_action.enroll_talent_campaign",
                 social=cpe,          

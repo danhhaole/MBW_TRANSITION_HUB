@@ -51,7 +51,10 @@
   "utm_medium",
   "utm_campaign",
   "utm_term",
-  "utm_content"
+  "utm_content",
+  "column_break_irhm",
+  "resume_extract",
+  "resume_summary"
  ],
  "fields": [
   {
@@ -319,11 +322,29 @@
    "fieldtype": "Data",
    "hidden": 1,
    "label": "UTM Content"
+  },
+  {
+   "fieldname": "column_break_irhm",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "resume_extract",
+   "fieldtype": "JSON",
+   "in_preview": 1,
+   "label": "Resume Extract",
+   "read_only": 1
+  },
+  {
+   "fieldname": "resume_summary",
+   "fieldtype": "Text",
+   "in_preview": 1,
+   "label": "Resume Summary",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-27 09:44:02.842307",
+ "modified": "2025-12-02 12:29:07.129400",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Talent",
