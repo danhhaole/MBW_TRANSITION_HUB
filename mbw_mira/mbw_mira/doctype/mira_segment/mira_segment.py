@@ -519,17 +519,20 @@ def summary_pool_ai(pool_id):
         frappe.db.set_value(
             "Mira Segment", pool_id, "ai_summary", json.dumps(embeding_json)
         )
-        if check_exists_vecto(pool_id):
-            doc = frappe.get_doc("Mira Pool Vecto", {"mira_segment": pool_id})
-            doc.update({"embedding_text": embeding_json.get("role_summary")})
-            doc.save(ignore_permissions=True)
-        else:
-            doc = frappe.new_doc("Mira Pool Vecto")
-            doc.update(
-                {"mira_segment": pool_id, "embedding_text": embeding_json.get("role_summary")}
-            )
-            doc.insert(ignore_permissions=True)
-        frappe.db.commit()
+        try:
+            if check_exists_vecto(pool_id):
+                doc = frappe.get_doc("Mira Pool Vecto", {"mira_segment": pool_id})
+                doc.update({"embedding_text": embeding_json.get("role_summary")})
+                doc.save(ignore_permissions=True)
+            else:
+                doc = frappe.new_doc("Mira Pool Vecto")
+                doc.update(
+                    {"mira_segment": pool_id, "embedding_text": embeding_json.get("role_summary")}
+                )
+                doc.insert(ignore_permissions=True)
+            frappe.db.commit()
+        except Exception as e:
+            frappe.log_error("Có lỗi lưu vào pool vecto")
 
 def check_exists_vecto(pool_id):
     exists_vecto = frappe.db.exists("Mira Pool Vecto", {"mira_segment": pool_id})

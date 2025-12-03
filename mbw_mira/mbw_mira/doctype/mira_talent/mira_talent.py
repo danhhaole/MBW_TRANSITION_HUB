@@ -764,21 +764,24 @@ def extract_and_summary(talent_id, resume):
             frappe.db.set_value(
                 "Mira Talent", talent_id, "resume_summary", json.dumps(summary_json)
             )
-            # Lưu vào Mira talent vecto để tạo vecto phục vụ cho việc tìm pool theo AI
-            if check_exists_vecto(talent_id):
-                doc = frappe.get_doc("Mira Talent Vecto", {"mira_talent": talent_id})
-                doc.update({"summary_text": summary_json.get("summary")})
-                doc.save(ignore_permissions=True)
-            else:
-                doc = frappe.new_doc("Mira Talent Vecto")
-                doc.update(
-                    {
-                        "mira_talent": talent_id,
-                        "summary_text": summary_json.get("summary"),
-                    }
-                )
-                doc.insert(ignore_permissions=True)
-            frappe.db.commit()
+            try:
+                # Lưu vào Mira talent vecto để tạo vecto phục vụ cho việc tìm pool theo AI
+                if check_exists_vecto(talent_id):
+                    doc = frappe.get_doc("Mira Talent Vecto", {"mira_talent": talent_id})
+                    doc.update({"summary_text": summary_json.get("summary")})
+                    doc.save(ignore_permissions=True)
+                else:
+                    doc = frappe.new_doc("Mira Talent Vecto")
+                    doc.update(
+                        {
+                            "mira_talent": talent_id,
+                            "summary_text": summary_json.get("summary"),
+                        }
+                    )
+                    doc.insert(ignore_permissions=True)
+                frappe.db.commit()
+            except Exception as e:
+                frappe.log_error("Có lỗi lưu vào talent vecto")
 
 
 # Summary without resume

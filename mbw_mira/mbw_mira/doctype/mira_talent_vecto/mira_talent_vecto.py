@@ -51,21 +51,24 @@ def set_vecto_and_compare(doc):
 
 
 def compare_talent_pool_vecto(talent_id):
-    # Lấy vector của talent
-    embedding_str = frappe.db.get_value(
-        "Mira Talent Vecto",
-        {"mira_talent": talent_id},
-        "embedding_vector"
-    )
-    target = safe_parse_vector(embedding_str)
+    try:
+        # Lấy vector của talent
+        embedding_str = frappe.db.get_value(
+            "Mira Talent Vecto",
+            {"mira_talent": talent_id},
+            "embedding_vector"
+        )
+        target = safe_parse_vector(embedding_str)
 
-    # Lấy list vector pool
-    pool = frappe.get_all("Mira Pool Vecto", fields=["embedding_vector"])
-    list_vec = [safe_parse_vector(item["embedding_vector"]) for item in pool]
+        # Lấy list vector pool
+        pool = frappe.get_all("Mira Pool Vecto", fields=["embedding_vector"])
+        list_vec = [safe_parse_vector(item["embedding_vector"]) for item in pool]
 
-    # loại bỏ vector None
-    list_vec = [x for x in list_vec if x]
+        # loại bỏ vector None
+        list_vec = [x for x in list_vec if x]
 
-    score = compare_vector_with_list(target, list_vec)
-    return score
+        score = compare_vector_with_list(target, list_vec)
+        return score
+    except Exception as e:
+        return None
 	
