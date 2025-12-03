@@ -5,7 +5,7 @@
 				<Breadcrumbs :items="breadcrumbs" />
 			</template>
 			<template #right-header>
-				<Button variant="solid" theme="blue" @click="showCampaignWizard = true">
+				<Button v-if="canCreate" variant="solid" theme="blue" @click="showCampaignWizard = true">
 					<template #prefix>
 						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
 							stroke="currentColor">
@@ -37,7 +37,7 @@
 					</template>
 					{{ __('Analytics') }}
 				</Button> -->
-				<Button variant="outline" theme="gray" @click="openEditModal">
+				<Button v-if="canEdit" variant="outline" theme="gray" @click="openEditModal">
 					<template #prefix>
 						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
 							stroke="currentColor">
@@ -47,7 +47,7 @@
 					</template>
 					{{ __('Edit Pool') }}
 				</Button>
-				<Button variant="outline" theme="red" @click="$router.push('/talent-pools')">
+				<Button v-if="canDelete" variant="outline" theme="red" @click="$router.push('/talent-pools')">
 					<template #prefix>
 						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
 							stroke="currentColor">
@@ -765,9 +765,13 @@ import TalentUpdateTable from '@/components/charts/TalentUpdateTable.vue'
 import QualitySourceBarChart from '@/components/charts/QualitySourceBarChart.vue'
 import { processSkills } from '@/stores/candidate'
 import moment from 'moment'
+import { usePermissionStore } from "@/stores/permission";
 
+const permission = usePermissionStore()
 
-
+const canEdit = permission.can("Mira Segment", "manage");
+const canDelete = permission.can("Mira Segment", "delete");
+const canCreate = permission.can("Mira Campaign", "create");
 // Store initialization
 const campaignStore = useCampaignStore()
 const candidateStore = useCandidateStore()

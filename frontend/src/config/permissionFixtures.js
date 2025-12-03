@@ -57,13 +57,6 @@ export const DOCTYPE_FEATURE_MAP = {
     mira_talent_reporting: "report",
     mira_talent_import: "create",
     mira_talent_export: "report",
-    mira_interaction_full_access: "view",
-    mira_interaction_creation: "view",
-    mira_interaction_view_only: "view",
-    mira_interaction_management: "view",
-    mira_interaction_delete: "view",
-    mira_interaction_reporting: "view",
-    mira_interaction_analytics: "view"
   },
 
   "User": {
@@ -95,22 +88,6 @@ export const DOCTYPE_FEATURE_MAP = {
     mira_campaign_template_use: "view"
   },
 
-  "Mira Action Template": {
-    mira_campaign_template_full_access: "full",
-    mira_campaign_template_creation: "create",
-    mira_campaign_template_view_only: "view",
-    mira_campaign_template_management: "full",
-    mira_campaign_template_use: "view"
-  },
-
-  "Mira Trigger Template": {
-    mira_campaign_template_full_access: "full",
-    mira_campaign_template_creation: "create",
-    mira_campaign_template_view_only: "view",
-    mira_campaign_template_management: "full",
-    mira_campaign_template_use: "view"
-  },
-
   // ==================== INTERACTION FEATURES ====================
   "Mira Interaction": {
     mira_interaction_full_access: "full",
@@ -120,26 +97,6 @@ export const DOCTYPE_FEATURE_MAP = {
     mira_interaction_delete: "delete",
     mira_interaction_reporting: "report",
     mira_interaction_analytics: "report"
-  },
-
-  "Mira Campaign": {
-    mira_interaction_full_access: "view",
-    mira_interaction_creation: "view",
-    mira_interaction_view_only: "view",
-    mira_interaction_management: "view",
-    mira_interaction_delete: "view",
-    mira_interaction_reporting: "view",
-    mira_interaction_analytics: "view"
-  },
-
-  "Email Template": {
-    mira_interaction_full_access: "view",
-    mira_interaction_creation: "view",
-    mira_interaction_view_only: "view",
-    mira_interaction_management: "view",
-    mira_interaction_delete: "view",
-    mira_interaction_reporting: "view",
-    mira_interaction_analytics: "view"
   },
 
   // ==================== ACTION FEATURES ====================
@@ -152,25 +109,5 @@ export const DOCTYPE_FEATURE_MAP = {
     mira_action_reporting: "report",
     mira_action_execution: "execute"
   },
-
-  "Mira Talent Campaign": {
-    mira_action_full_access: "view",
-    mira_action_creation: "view",
-    mira_action_view_only: "view",
-    mira_action_management: "view",
-    mira_action_delete: "view",
-    mira_action_reporting: "view",
-    mira_action_execution: "view"
-  },
-
-  "Mira Campaign Social": {
-    mira_action_full_access: "view",
-    mira_action_creation: "view",
-    mira_action_view_only: "view",
-    mira_action_management: "view",
-    mira_action_delete: "view",
-    mira_action_reporting: "view",
-    mira_action_execution: "view"
-  }
 };
   

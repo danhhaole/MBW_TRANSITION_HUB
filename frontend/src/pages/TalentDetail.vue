@@ -819,7 +819,7 @@
                   </div>
                   <div class="flex space-x-1">
                     <a
-                      :href="'/files/' + editForm.resume"
+                      :href="editForm.resume"
                       target="_blank"
                       class="p-1 text-gray-500 hover:text-blue-600"
                       title="View file"
@@ -919,6 +919,7 @@ import { ref, computed, onMounted, onUnmounted, watch, h } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useTalentDetailStore } from '@/stores/talentDetail'
 import { useTalentStore } from '@/stores/talent'
+import { usePermissionStore } from '@/stores/permission'
 import { useToast } from '@/composables/useToast'
 import { Button, Badge, Dropdown, FeatherIcon, Breadcrumbs, Tabs, Dialog, call, FileUploader } from 'frappe-ui'
 import LayoutHeader from '@/components/LayoutHeader.vue'
@@ -937,6 +938,7 @@ const router = useRouter()
 // Store
 const talentDetailStore = useTalentDetailStore()
 const talentStore = useTalentStore()
+const permission = usePermissionStore()
 
 // Composables
 const { showSuccess, showError } = useToast()
@@ -1052,20 +1054,33 @@ const tabs = computed(() => [
 const tabIndex = ref(0)
 
 
+// Permission checks
+const canEdit = computed(() => permission.can('Mira Talent', 'manage'))
+const canDelete = computed(() => permission.can('Mira Talent', 'delete'))
+
 // Action dropdown options
-const actionOptions = [
-  {
-    label: 'Edit Talent',
-    icon: 'edit',
-    onClick: () => editTalent()
-  },
-  {
-    label: 'Delete Talent',
-    icon: 'trash-2',
-    onClick: () => deleteTalent(),
-    class: 'text-red-600'
+const actionOptions = computed(() => {
+  const options = []
+  
+  if (canEdit.value) {
+    options.push({
+      label: 'Edit Talent',
+      icon: 'edit',
+      onClick: () => editTalent()
+    })
   }
-]
+  
+  if (canDelete.value) {
+    options.push({
+      label: 'Delete Talent',
+      icon: 'trash-2',
+      onClick: () => deleteTalent(),
+      class: 'text-red-600'
+    })
+  }
+  
+  return options
+})
 
 // Methods
 const handleRefresh = async () => {

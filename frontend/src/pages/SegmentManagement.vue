@@ -7,7 +7,7 @@
 					<Breadcrumbs :items="breadcrumbs" />
 				</template>
 				<template #right-header>
-					<Button variant="solid" theme="gray" @click="openDialogSegmentOption = true">
+					<Button v-if="canCreate" variant="solid" theme="gray" @click="openDialogSegmentOption = true">
 						<template #prefix>
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
@@ -296,6 +296,7 @@
 									}}"
 								</p>
 								<Button
+									v-if="canCreate"
 									variant="solid" theme="gray"
 									@click="openDialogSegmentOption = true"
 								>

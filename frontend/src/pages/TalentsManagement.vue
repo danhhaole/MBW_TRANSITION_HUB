@@ -7,7 +7,7 @@
 					<Breadcrumbs :items="breadcrumbs" />
 				</template>
 				<template #right-header>
-					<Button variant="solid" theme="gray" @click="openDialogTalentOption = true">
+					<Button v-if="canCreate" variant="solid" theme="gray" @click="openDialogTalentOption = true">
 						<template #prefix>
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
@@ -343,6 +343,7 @@
 								{{ __('No results for') }} "{{ talentPoolStore.filters.search }}"
 							</p>
 							<Button
+								v-if="canCreate"
 								@click="openDialogTalentOption = true"
 								theme="gray"
 								variant="solid"
@@ -1030,7 +1031,7 @@
 											</div>
 											<div class="flex space-x-1">
 												<a
-													:href="'/files/' + newTalent.resume"
+													:href="'/private/files/' + newTalent.resume"
 													target="_blank"
 													class="p-1 text-gray-500 hover:text-blue-600"
 													title="View file"
@@ -1053,7 +1054,7 @@
 										:upload-args="{
 											doctype: 'Mira Talent',
 											docname: 'temp',
-											private: false,
+											private: true,
 										}"
 										@success="handleFileUploadSuccess"
 										@error="handleFileUploadError"
@@ -1336,6 +1337,9 @@ import UploadExcelTalentModal from '@/components/UploadExcelTalentModal.vue'
 import BulkCVUploadModal from '@/components/BulkCVUploadModal.vue'
 import ATSTalentSyncDialog from '@/components/ATSTalentSyncDialog.vue'
 import SyncHistoryModal from '@/components/SyncHistoryModal.vue'
+import { usePermissionStore } from "@/stores/permission";
+
+const permission = usePermissionStore()
 // Breadcrumbs
 const breadcrumbs = [{ label: __('Talent Profiles'), route: { name: 'TalentPool' } }]
 const { showSuccess, showError } = useToast()
@@ -1398,7 +1402,7 @@ const filters = ref({
 	source: '',
 	crm_status: ''
 })
-
+const canCreate = permission.can("Mira Talent", "create");
 const loading = computed(() => talentPoolStore.loading)
 const skillInput = ref('')
 const skillTags = ref([])
@@ -1723,7 +1727,7 @@ const handleFileUploadSuccess = (file) => {
 	}
 
 	// Update the resume field with the file name
-	newTalent.value.resume = file.file_name
+	newTalent.value.resume = file.file_url
 
 	// Show success message
 	showSuccess('Resume uploaded successfully!')
