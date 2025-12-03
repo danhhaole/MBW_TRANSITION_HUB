@@ -163,7 +163,7 @@ def extract_cv_backend(file_name):
         file_path = os.path.join(frappe.get_site_path(), file_url.lstrip("/"))
         with open(file_path, "rb") as f:
             files = {"file": (file_name, f, "application/pdf")}
-            response = requests.post(url_extract_ai, files=files, headers=headers)
+            response = requests.post(url_extract_ai, files=files, headers=headers, timeout=1200)
         if response.status_code == 200:
             data = frappe.parse_json(response.json())
             if data and data.data:
@@ -281,11 +281,9 @@ def extract_cv_url():
 
         import os
 
-        # if file_url.startswith("/files/"):
-        #     # Lấy tên file thực tế từ URL
-        #     actual_filename = file_url.replace("/files/", "")
-        #     # Tạo đường dẫn đầy đủ
-        #     file_path = get_files_path(actual_filename)
+        if file_url.startswith("/files/"):
+            # Lấy tên file thực tế từ URL
+            actual_filename = file_url.replace("/files/", "")
         # else:
         #     # Fallback: thử dùng file_name gốc
         file_path = os.path.join(frappe.get_site_path(), file_url.lstrip("/"))
@@ -315,7 +313,7 @@ def extract_cv_url():
 
         with open(file_path, "rb") as f:
             files = {"file": (actual_filename, f, mime_type)}
-            response = requests.post(url_extract_ai, files=files, headers=headers)
+            response = requests.post(url_extract_ai, files=files, headers=headers, timeout=1200)
 
         if response.status_code == 200:
             data = frappe.parse_json(response.json())
@@ -1056,7 +1054,7 @@ def extract_cv_backend_v2(file_name):
 
         with open(file_path, "rb") as f:
             files = {"file": (file_name, f, "application/pdf")}
-            response = requests.post(url_extract_ai, files=files, headers=headers)
+            response = requests.post(url_extract_ai, files=files, headers=headers, timeout=1200)
         if response.status_code == 200:
             data = frappe.parse_json(response.json())
             if data and data.data:
