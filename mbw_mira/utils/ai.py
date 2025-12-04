@@ -12,19 +12,21 @@ import urllib.parse
 # ==============================
 # CONFIG
 # ==============================
-EMBEDDING_API_URL = "https://aiapi.fastwork.vn/embedding_qwen/v1/embeddings"
-VLM_API_URL = "https://aiapi.fastwork.vn/vlm/v1/chat/completions"
-LLM_API_URL = "https://aiapi.fastwork.vn/vlm/v1/chat/completions"
+AI_BASE_URL = frappe.conf.get("ai_base_url") or "https://aiapi.fastwork.vn"
+URL_AI_BASE_V2= frappe.conf.get("ai_baseurl_v2") or "https://aihub.fastwork.vn"
 
-API_KEY = "b8040c68-b18b-4e01-9d61-b03536c02fcb"
-API_MODEL = f"5CD-AI/Vintern-3B-R-beta"
-MODEL_NAME = f"Qwen/Qwen3-Embedding-0.6B"
-MODEL_RAW_NAME = f"Qwen/Qwen3-8B"
-DEFAULT_API_TOKEN = "1d161ba4-ddab-491d-a2b6-ad0eac14fb33"
 
-AI_BASEURL_V2 = (
-    frappe.conf.get("ai_baseurl_v2") or "https://aihub.fastwork.vn/hr_agent/"
-)
+EMBEDDING_API_URL = f"{AI_BASE_URL}/embedding_qwen/v1/embeddings"
+VLM_API_URL = f"{AI_BASE_URL}/vlm/v1/chat/completions"
+LLM_API_URL = f"{AI_BASE_URL}/vlm/v1/chat/completions"
+
+API_KEY = frappe.conf.get("API_KEY") or  "b8040c68-b18b-4e01-9d61-b03536c02fcb"
+API_MODEL = frappe.conf.get("API_MODEL") or f"5CD-AI/Vintern-3B-R-beta"
+MODEL_NAME = frappe.conf.get("MODEL_NAME") or f"Qwen/Qwen3-Embedding-0.6B"
+MODEL_RAW_NAME = frappe.conf.get("MODEL_RAW_NAME") or f"Qwen/Qwen3-8B"
+DEFAULT_API_TOKEN = frappe.conf.get("DEFAULT_API_TOKEN") or "1d161ba4-ddab-491d-a2b6-ad0eac14fb33"
+
+AI_BASEURL_V2 = f"{URL_AI_BASE_V2}/hr_agent/"
 
 
 # ==============================

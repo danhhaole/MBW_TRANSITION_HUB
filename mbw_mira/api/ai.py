@@ -9,10 +9,10 @@ from frappe.utils import get_files_path
 from frappe import _
 from frappe.utils.file_manager import save_file
 
-AI_BASEURL = frappe.conf.get("ai_baseurl") or "https://aihub.fastwork.vn/hr_agent/"
-AI_BASEURL_V2 = (
-    frappe.conf.get("ai_baseurl_v2") or "https://aihub.fastwork.vn/hr_agent/"
-)
+URL_AI_BASE_V2= frappe.conf.get("ai_baseurl_v2") or "https://aihub.fastwork.vn"
+
+AI_BASEURL = f"{URL_AI_BASE_V2}/hr_agent/"
+AI_BASEURL_V2 = f"{URL_AI_BASE_V2}/hr_agent/"
 
 
 # AI_BASEURL_V2 = frappe.conf.get("ai_baseurl_v2") or "https://aihub.fastwork.vn/hr_agent"
