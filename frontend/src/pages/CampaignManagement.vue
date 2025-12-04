@@ -8,7 +8,7 @@
           <Breadcrumbs :items="breadcrumbs" />
         </template>
         <template #right-header>
-          <Button variant="solid" theme="gray" @click="openCreateDialog">
+          <Button variant="solid" theme="gray" @click="openCreateDialog" v-if="canCreate">
             <template #prefix>
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -345,14 +345,7 @@
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useCampaignList, useCampaignCRUD } from "../composables/useCampaign";
-
-// Props
-const props = defineProps({
-  campaignType: {
-    type: String,
-    default: null
-  }
-});
+import { usePermissionStore } from "@/stores/permission"
 import useToast from "@/composables/useToast";
 import {
   CampaignTable,
@@ -374,6 +367,19 @@ import { useCampaignStore } from "@/stores/campaign";
 import AttractionCampaignWizard from "@/pages/AttractionCampaignWizard.vue";
 import NurturingCampaignWizard from "@/pages/NurturingCampaignWizard.vue";
 import RecruitmentCampaignWizard from "@/pages/RecruitmentCampaignWizard.vue";
+
+const permission = usePermissionStore()
+const canCreate = computed(() => permission.can("Mira Campaign", "create"))
+const canEdit = computed(() => permission.can("Mira Campaign", "edit"))
+const canDelete = computed(() => permission.can("Mira Campaign", "delete"))
+
+// Props
+const props = defineProps({
+  campaignType: {
+    type: String,
+    default: null
+  }
+});
 // import AutomationSidebar from "@/components/AutomationSidebar.vue";
 // import { useAutomationStatsStore } from "@/stores/automationStats";
 

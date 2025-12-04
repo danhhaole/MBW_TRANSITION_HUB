@@ -8,7 +8,7 @@
 					<Breadcrumbs :items="breadcrumbs" />
 				</template>
 				<template #right-header>
-					<Button variant="solid" theme="gray" @click="handleCreateTemplate">
+					<Button variant="solid" theme="gray" @click="handleCreateTemplate" v-if="canCreate">
 						<template #prefix>
 							<FeatherIcon name="plus" class="h-4 w-4" />
 						</template>
@@ -319,11 +319,17 @@ import LayoutHeader from "@/components/LayoutHeader.vue"
 import CampaignTemplateDetailModal from '@/components/campaignTemplate/CampaignTemplateDetailModal.vue'
 import UseTemplateModal from '@/components/campaign-template/UseTemplateModal.vue'
 import { debounce } from 'lodash'
+import { usePermissionStore } from "@/stores/permission"
 
 // Composables
 const router = useRouter()
 const templateStore = useCampaignTemplateStore()
 const toast = useToast()
+const permissionStore = usePermissionStore()
+
+const canCreate = computed(() => permissionStore.can('Mira Campaign Template', 'Create'))
+const canEdit = computed(() => permissionStore.can('Mira Campaign Template', 'Edit'))
+const canDelete = computed(() => permissionStore.can('Mira Campaign Template', 'Delete'))
 
 // Breadcrumbs
 const breadcrumbs = [{ label: __('Campaign Templates'), route: { name: 'CampaignTemplateManagement' } }]
@@ -493,29 +499,39 @@ const handleUseTemplate = (template) => {
 }
 
 // Get dropdown actions for template card
-const getTemplateActions = (template) => [
-	{
-		label: __('Use Template'),
-		icon: 'play',
-		onClick: () => handleUseTemplate(template)
-	},
-	{
-		label: __('View Details'),
-		icon: 'eye',
-		onClick: () => viewTemplateDetails(template)
-	},
-	{
-		label: __('Edit'),
-		icon: 'edit-2',
-		onClick: () => handleEditTemplate(template)
-	},
-	{
-		label: __('Delete'),
-		icon: 'trash-2',
-		theme: 'red',
-		onClick: () => confirmDelete(template)
+const getTemplateActions = (template) => {
+	const actions = [
+		{
+			label: __('Use Template'),
+			icon: 'play',
+			onClick: () => handleUseTemplate(template)
+		},
+		{
+			label: __('View Details'),
+			icon: 'eye',
+			onClick: () => viewTemplateDetails(template)
+		}
+	]
+	
+	if (canEdit.value) {
+		actions.push({
+			label: __('Edit'),
+			icon: 'edit-2',
+			onClick: () => handleEditTemplate(template)
+		})
 	}
-]
+
+	if (canDelete.value) {
+		actions.push({
+			label: __('Delete'),
+			icon: 'trash-2',
+			theme: 'red',
+		onClick: () => confirmDelete(template)
+	})
+	}
+	
+	return actions
+}
 
 // Handle campaign created from modal
 const handleCampaignCreated = (data) => {

@@ -111,6 +111,7 @@
                     <FeatherIcon name="eye" class="h-4 w-4" />
                   </button>
                   <button 
+                    v-if="canEdit"
                     @click="handleEdit(campaign)"
                     class="text-gray-600 hover:text-green-600 p-2 rounded-md hover:bg-green-50 transition-colors"
                     :title="__('Edit')"
@@ -118,6 +119,7 @@
                     <FeatherIcon name="edit" class="h-4 w-4" />
                   </button>
                   <button 
+                    v-if="canEdit"
                     @click="handleSaveAsTemplate(campaign)"
                     class="text-gray-600 hover:text-purple-600 p-2 rounded-md hover:bg-purple-50 transition-colors"
                     :title="__('Save as Template')"
@@ -125,7 +127,7 @@
                     <FeatherIcon name="bookmark" class="h-4 w-4" />
                   </button>
                   <button
-                    v-if="campaign.status === 'DRAFT'" 
+                    v-if="campaign.status === 'DRAFT' && canDelete" 
                     @click="handleDelete(campaign)"
                     class="text-gray-600 hover:text-red-600 p-2 rounded-md hover:bg-red-50 transition-colors"
                     :title="__('Delete')"
@@ -235,8 +237,13 @@ import { Dialog, FeatherIcon } from 'frappe-ui'
 import { Button } from 'frappe-ui'
 import Loading from '@/components/Loading.vue'
 import { call } from 'frappe-ui'
+import { usePermissionStore } from "@/stores/permission"
 
-// Translation helper function
+const permission = usePermissionStore()
+const canEdit = computed(() => permission.can("Mira Campaign", "edit"))
+const canDelete = computed(() => permission.can("Mira Campaign", "delete"))
+
+// Translation helper function  
 
 
 // Props
