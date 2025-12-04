@@ -2,9 +2,6 @@ import frappe
 from frappe.utils import nowdate, getdate
 from datetime import datetime
 import json
-# Nếu chưa có thư viện dateutil trong môi trường Frappe, bạn có thể cần phải cài đặt
-# hoặc sử dụng logic tính toán tháng/năm thủ công hơn.
-# Nếu bạn không thể cài đặt, hãy loại bỏ dòng sau và thay bằng logic tính toán thuần Frappe/Python.
 from dateutil.relativedelta import relativedelta 
 
 
@@ -23,7 +20,7 @@ def map_resume_json_to_talent(json_data):
     else:
         data_dict = json_data
 
-    # Giả định dữ liệu hồ sơ chính nằm trong key 'data' hoặc là root object
+    # Dữ liệu hồ sơ chính nằm trong key 'data' hoặc là root object
     data = data_dict.get("data", data_dict)
     
     # 1. Trích xuất thông tin cơ bản
