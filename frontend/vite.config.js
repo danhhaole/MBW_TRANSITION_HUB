@@ -32,10 +32,10 @@ export default defineConfig({
 			devOptions: { enabled: false },
 			manifest: {
 				display: 'standalone',
-				name: 'MBW Mira',
-				short_name: 'MBW Mira',
+				name: 'Talent CRM',
+				short_name: 'Talent CRM',
 				start_url: '/mbw_mira',
-				description: 'MBW Mira .',
+				description: 'Talent CRM .',
 				icons: [],
 			},
 			workbox: {

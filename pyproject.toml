@@ -3,7 +3,7 @@ name = "mbw_mira"
 authors = [
     { name = "MBWCloud Co.", email = "dev@mbw.vn"}
 ]
-description = "MBW Mira Talent Pool"
+description = "MBW Talent CRM"
 requires-python = ">=3.10"
 readme = "README.md"
 dynamic = ["version"]

@@ -1,6 +1,6 @@
-### MBW Mira
+### Talent CRM
 
-MBW Mira Talent Pool
+Talent CRM Talent Pool
 
 ### Installation
 
