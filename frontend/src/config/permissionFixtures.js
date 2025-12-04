@@ -59,25 +59,6 @@ export const DOCTYPE_FEATURE_MAP = {
     mira_talent_export: "report",
   },
 
-  "User": {
-    mira_talent_full_access: "view",
-    mira_talent_creation: "view",
-    mira_talent_view_only: "view",
-    mira_talent_management: "view",
-    mira_campaign_template_full_access: "view",
-    mira_campaign_template_creation: "view",
-    mira_campaign_template_view_only: "view",
-    mira_campaign_template_management: "view",
-    mira_campaign_template_use: "view",
-    mira_action_full_access: "view",
-    mira_action_creation: "view",
-    mira_action_view_only: "view",
-    mira_action_management: "view",
-    mira_action_delete: "view",
-    mira_action_reporting: "view",
-    mira_action_execution: "view"
-  },
-
   // ==================== CAMPAIGN TEMPLATE FEATURES ====================
   "Mira Campaign Template": {
     mira_campaign_template_full_access: "full",
