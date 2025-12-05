@@ -281,12 +281,25 @@ def get_campaign_qrcode():
         "url": register_url,
         "image": f"data:image/png;base64,{img_base64}"
     }
-def _get_base_url()->str:
-    origin = frappe.request.headers.get("Origin")
-    protocol = frappe.request.scheme
-    host = frappe.request.host
-    base_url = origin if origin else f"{protocol}://{host}"
-    return base_url
+from frappe.utils import get_url
+
+def _get_base_url():
+    # Nếu đang trong HTTP request → dùng request data
+    if getattr(frappe, "request", None):
+        try:
+            origin = frappe.request.headers.get("Origin")
+            if origin:
+                return origin
+
+            protocol = frappe.request.scheme
+            host = frappe.request.host
+            if protocol and host:
+                return f"{protocol}://{host}"
+        except Exception:
+            pass
+
+    # Nếu đang trong background job hoặc không có request → fallback an toàn
+    return get_url()
 @frappe.whitelist()
 def create_landing_page_qrcode():
     """

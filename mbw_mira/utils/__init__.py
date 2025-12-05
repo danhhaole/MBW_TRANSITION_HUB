@@ -342,12 +342,25 @@ def _create_unsubscribe_link(talent_id, campaign):
 
     return f"{_get_base_url()}/api/method/mbw_mira.api.interaction.unsubscribe?{query}"
 
-def _get_base_url()->str:
-    origin = frappe.request.headers.get("Origin")
-    protocol = frappe.request.scheme
-    host = frappe.request.host
-    base_url = origin if origin else f"{protocol}://{host}"
-    return base_url
+from frappe.utils import get_url
+
+def _get_base_url():
+    # Nếu đang trong HTTP request → dùng request data
+    if getattr(frappe, "request", None):
+        try:
+            origin = frappe.request.headers.get("Origin")
+            if origin:
+                return origin
+
+            protocol = frappe.request.scheme
+            host = frappe.request.host
+            if protocol and host:
+                return f"{protocol}://{host}"
+        except Exception:
+            pass
+
+    # Nếu đang trong background job hoặc không có request → fallback an toàn
+    return get_url()
 def append_tracking_to_urls(content, tracking_url):
     """
     Thay tất cả URL trong content bằng redirect URL:
