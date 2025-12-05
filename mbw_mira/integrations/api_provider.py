@@ -11,13 +11,13 @@ class APIProvider:
 
         # Lấy config từ site_config hoặc frappe conf
         provider_config = frappe.get_conf()
-        print(provider_config.get("base_url"))
+        print(provider_config.get("ladipage_base_url"))
         if not provider_config:
             frappe.throw(f"No config found for provider ")
 
-        self.base_url = provider_config.get("base_url")
-        self.api_key = provider_config.get("api_key")
-        self.api_secret = provider_config.get("api_secret")
+        self.base_url = provider_config.get("ladipage_base_url")
+        self.api_key = provider_config.get("ladipage_api_key")
+        self.api_secret = provider_config.get("ladipage_api_secret")
         self.extra_headers = provider_config.get("headers", {})
 
         if not self.base_url or not self.api_key or not self.api_secret:
