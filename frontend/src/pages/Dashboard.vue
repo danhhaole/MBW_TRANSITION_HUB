@@ -212,11 +212,11 @@ const funnelChartData = computed(() => {
         funnelData.value.sql
     ]
     const percentages = [
-        funnelData.value.sentPercentage || 100.0,
-        funnelData.value.openedPercentage || 0.0,
-        funnelData.value.clickedPercentage || 0.0,
-        funnelData.value.mqlPercentage || 0.0,
-        funnelData.value.sqlPercentage || 0.0
+        funnelData.value.sentPercentage ?? 100.0,
+        funnelData.value.openedPercentage ?? 0.0,
+        funnelData.value.clickedPercentage ?? 0.0,
+        funnelData.value.mqlPercentage ?? 0.0,
+        funnelData.value.sqlPercentage ?? 0.0
     ]
 
     console.log("values", values);

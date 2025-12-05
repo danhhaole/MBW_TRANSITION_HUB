@@ -183,18 +183,18 @@ export const useDashboardStore = defineStore('dashboard', {
         })
         
         if (funnelResult) {
-          this.funnelData.sent = funnelResult.sent?.count || 0
-          this.funnelData.opened = funnelResult.opened?.count || 0
-          this.funnelData.clicked = funnelResult.clicked?.count || 0
-          this.funnelData.mql = funnelResult.mql?.count || 0
-          this.funnelData.sql = funnelResult.sql?.count || 0
+          this.funnelData.sent = funnelResult.sent?.count ?? 0
+          this.funnelData.opened = funnelResult.opened?.count ?? 0
+          this.funnelData.clicked = funnelResult.clicked?.count ?? 0
+          this.funnelData.mql = funnelResult.mql?.count ?? 0
+          this.funnelData.sql = funnelResult.sql?.count ?? 0
           
           // Store percentages for potential future use
-          this.funnelData.sentPercentage = funnelResult.sent?.percentage || 100.0
-          this.funnelData.openedPercentage = funnelResult.opened?.percentage || 0.0
-          this.funnelData.clickedPercentage = funnelResult.clicked?.percentage || 0.0
-          this.funnelData.mqlPercentage = funnelResult.mql?.percentage || 0.0
-          this.funnelData.sqlPercentage = funnelResult.sql?.percentage || 0.0
+          this.funnelData.sentPercentage = funnelResult.sent?.percentage ?? 100.0
+          this.funnelData.openedPercentage = funnelResult.opened?.percentage ?? 0.0
+          this.funnelData.clickedPercentage = funnelResult.clicked?.percentage ?? 0.0
+          this.funnelData.mqlPercentage = funnelResult.mql?.percentage ?? 0.0
+          this.funnelData.sqlPercentage = funnelResult.sql?.percentage ?? 0.0
         }
         
         return { success: true, data: this.funnelData }

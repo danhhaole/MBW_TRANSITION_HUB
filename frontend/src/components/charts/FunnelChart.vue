@@ -57,8 +57,25 @@ const initChart = () => {
 	}
 
 	const labels = props.data.map(item => item.name)
-	const totalSent = props.data[0]?.totalSent || props.data[0]?.value || 100
+	const totalSent = props.data[0]?.totalSent || props.data[0]?.value || 0
 	
+	// Kiểm tra nếu tất cả giá trị đều là 0
+	const allZero = props.data.every(item => item.value === 0)
+	if (allZero) {
+		chartInstance.setOption({
+			title: {
+				text: 'No data available',
+				left: 'center',
+				top: 'center',
+				textStyle: {
+					color: '#9CA3AF',
+					fontSize: 14
+				}
+			}
+		}, true)
+		return
+	}
+
 	// Tính phần trăm cho mỗi item để vẽ bar
 	const dataWithPercentage = props.data.map(item => {
 		const percentage = item.percentage !== undefined ? item.percentage : calculatePercentage(item.value, totalSent)
