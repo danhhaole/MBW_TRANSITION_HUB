@@ -240,8 +240,8 @@ import { call } from 'frappe-ui'
 import { usePermissionStore } from "@/stores/permission"
 
 const permission = usePermissionStore()
-const canEdit = computed(() => permission.can("Mira Campaign", "edit"))
-const canDelete = computed(() => permission.can("Mira Campaign", "delete"))
+const canEdit = permission.can("Mira Campaign", "edit")
+const canDelete = permission.can("Mira Campaign", "delete")
 
 // Translation helper function  
 

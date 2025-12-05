@@ -369,9 +369,9 @@ import NurturingCampaignWizard from "@/pages/NurturingCampaignWizard.vue";
 import RecruitmentCampaignWizard from "@/pages/RecruitmentCampaignWizard.vue";
 
 const permission = usePermissionStore()
-const canCreate = computed(() => permission.can("Mira Campaign", "create"))
-const canEdit = computed(() => permission.can("Mira Campaign", "edit"))
-const canDelete = computed(() => permission.can("Mira Campaign", "delete"))
+const canCreate = permission.can("Mira Campaign", "create")
+const canEdit = permission.can("Mira Campaign", "edit")
+const canDelete = permission.can("Mira Campaign", "delete")
 
 // Props
 const props = defineProps({

@@ -1055,8 +1055,8 @@ const tabIndex = ref(0)
 
 
 // Permission checks
-const canEdit = computed(() => permission.can('Mira Talent', 'manage'))
-const canDelete = computed(() => permission.can('Mira Talent', 'delete'))
+const canEdit = permission.can('Mira Talent', 'manage')
+const canDelete = permission.can('Mira Talent', 'delete')
 
 // Action dropdown options
 const actionOptions = computed(() => {

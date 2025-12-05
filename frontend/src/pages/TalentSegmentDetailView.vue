@@ -769,9 +769,9 @@ import { usePermissionStore } from "@/stores/permission";
 
 const permission = usePermissionStore()
 
-const canEdit = permission.can("Mira Segment", "manage");
-const canDelete = permission.can("Mira Segment", "delete");
-const canCreate = permission.can("Mira Campaign", "create");
+const canEdit = permission.can("Mira Segment", "manage")
+const canDelete = permission.can("Mira Segment", "delete")
+const canCreate = permission.can("Mira Campaign", "create")
 // Store initialization
 const campaignStore = useCampaignStore()
 const candidateStore = useCandidateStore()

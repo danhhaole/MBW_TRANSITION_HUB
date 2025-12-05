@@ -863,8 +863,7 @@ const poolActions = (pool) => [
 	},
 ]
 
-const canCreate = permission.can("Mira Segment", "create");
-console.log("canCreate", canCreate.value);
+const canCreate = permission.can("Mira Segment", "create")
 const segments = computed(() => talentSegmentStore.talentSegments)
 const handleRefresh = async () => {
   await fetchSegments();

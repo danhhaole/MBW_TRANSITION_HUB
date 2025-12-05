@@ -1402,7 +1402,7 @@ const filters = ref({
 	source: '',
 	crm_status: ''
 })
-const canCreate = permission.can("Mira Talent", "create");
+const canCreate = permission.can("Mira Talent", "create")
 const loading = computed(() => talentPoolStore.loading)
 const skillInput = ref('')
 const skillTags = ref([])

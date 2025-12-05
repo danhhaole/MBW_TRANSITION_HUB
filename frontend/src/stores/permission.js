@@ -21,8 +21,10 @@ export const usePermissionStore = defineStore("permission", () => {
 				console.warn("⚠️ Không thể fetch userResource:", err);
 			}
 
+			console.log("userResource", userResource.data);
+
 			let resRoles = [];
-			if (userResource.data?.name && userResource.data.name !== "Guest") {
+			if (userResource.data && userResource.data !== "Guest") {
 				try {
 					resRoles = await call("mbw_mira.api.roles.get_user_roles", {
 						user: userResource.data,
@@ -68,6 +70,7 @@ export const usePermissionStore = defineStore("permission", () => {
 	// ⚡ auto reactive version của can()
 	function can(doctype, level) {
 		console.log(roles.value)
+		console.log(level)
 		return computed(() => {
 			if (!isReady.value) return false;
 			if (roles.value.includes("Administrator") || roles.value.includes("System Manager")) {
@@ -75,6 +78,7 @@ export const usePermissionStore = defineStore("permission", () => {
 				return true;
 			}
 			const perm = featureMap.value[doctype];
+			
 			return perm === level || perm === "full";
 		});
 	}
