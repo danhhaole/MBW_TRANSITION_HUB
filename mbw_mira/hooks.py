@@ -87,7 +87,7 @@ add_to_apps_screen = [
 
 # before_install = "mbw_mira.install.before_install"
 after_install = "mbw_mira.install.after_install"
-# after_migrate = "mbw_mira.install.install_test"
+after_migrate = "mbw_mira.install.seed_mbw_mira_features_if_ready"
 
 # Uninstallation
 # ------------
