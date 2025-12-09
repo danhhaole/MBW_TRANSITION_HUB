@@ -5,66 +5,66 @@ import frappe
 APP_MODULE = "MBW Mira"  # fallback nếu module data không cung cấp
 
 MIRA_ROLES = [
-    "Recruiter",
-    "Hiring Manager",
-    "HR Staff",
+    "Talent Recruiter",
+    "Talent HR Manager",
+    "Talent HR User",
 ]
 
 # Map mặc định (nếu cần)
 FAKE_ROLE_MAP = {
     # Campaign Features
-    "mira_campaign_full_access":         ["Recruiter"],
-    "mira_campaign_creation":            ["Recruiter", "HR Staff"],
-    "mira_campaign_view_only":           ["Hiring Manager"],
-    "mira_campaign_management":          ["Recruiter", "Hiring Manager"],
-    "mira_campaign_file_management":     ["Recruiter", "HR Staff"],
-    "mira_campaign_sharing":             ["Recruiter", "Hiring Manager"],
-    "mira_campaign_reporting":           ["Recruiter", "Hiring Manager"],
+    "mira_campaign_full_access":         ["Talent Recruiter"],
+    "mira_campaign_creation":            ["Talent Recruiter", "Talent HR User"],
+    "mira_campaign_view_only":           ["Talent HR Manager"],
+    "mira_campaign_management":          ["Talent Recruiter", "Talent HR Manager"],
+    "mira_campaign_file_management":     ["Talent Recruiter", "Talent HR User"],
+    "mira_campaign_sharing":             ["Talent Recruiter", "Talent HR Manager"],
+    "mira_campaign_reporting":           ["Talent Recruiter", "Talent HR Manager"],
     
     # Segment (Pool) Features
-    "mira_segment_full_access":          ["Recruiter"],
-    "mira_segment_creation":             ["Recruiter", "HR Staff"],
-    "mira_segment_view_only":            ["Hiring Manager"],
-    "mira_segment_management":           ["Recruiter", "Hiring Manager"],
-    "mira_segment_delete":               ["Recruiter"],
-    "mira_segment_reporting":            ["Recruiter", "Hiring Manager"],
-    "mira_segment_sync_ats":             ["Recruiter"],
+    "mira_segment_full_access":          ["Talent Recruiter"],
+    "mira_segment_creation":             ["Talent Recruiter", "Talent HR User"],
+    "mira_segment_view_only":            ["Talent HR Manager"],
+    "mira_segment_management":           ["Talent Recruiter", "Talent HR Manager"],
+    "mira_segment_delete":               ["Talent Recruiter"],
+    "mira_segment_reporting":            ["Talent Recruiter", "Talent HR Manager"],
+    "mira_segment_sync_ats":             ["Talent Recruiter"],
     
     # Talent Features
-    "mira_talent_full_access":           ["Recruiter"],
-    "mira_talent_creation":              ["Recruiter", "HR Staff"],
-    "mira_talent_view_only":             ["Hiring Manager"],
-    "mira_talent_management":            ["Recruiter", "Hiring Manager"],
-    "mira_talent_delete":                ["Recruiter"],
-    "mira_talent_reporting":             ["Recruiter", "Hiring Manager"],
-    "mira_talent_import":                ["Recruiter", "HR Staff"],
-    "mira_talent_export":                ["Recruiter", "Hiring Manager", "HR Staff"],
+    "mira_talent_full_access":           ["Talent Recruiter"],
+    "mira_talent_creation":              ["Talent Recruiter", "Talent HR User"],
+    "mira_talent_view_only":             ["Talent HR Manager"],
+    "mira_talent_management":            ["Talent Recruiter", "Talent HR Manager"],
+    "mira_talent_delete":                ["Talent Recruiter"],
+    "mira_talent_reporting":             ["Talent Recruiter", "Talent HR Manager"],
+    "mira_talent_import":                ["Talent Recruiter", "Talent HR User"],
+    "mira_talent_export":                ["Talent Recruiter", "Talent HR Manager", "Talent HR User"],
     
     # Campaign Template Features
-    "mira_campaign_template_full_access":     ["Recruiter"],
-    "mira_campaign_template_creation":        ["Recruiter", "HR Staff"],
-    "mira_campaign_template_view_only":       ["Hiring Manager"],
-    "mira_campaign_template_management":      ["Recruiter"],
-    "mira_campaign_template_delete":          ["Recruiter"],
-    "mira_campaign_template_use":             ["Recruiter", "Hiring Manager", "HR Staff"],
+    "mira_campaign_template_full_access":     ["Talent Recruiter"],
+    "mira_campaign_template_creation":        ["Talent Recruiter", "Talent HR User"],
+    "mira_campaign_template_view_only":       ["Talent HR Manager"],
+    "mira_campaign_template_management":      ["Talent Recruiter"],
+    "mira_campaign_template_delete":          ["Talent Recruiter"],
+    "mira_campaign_template_use":             ["Talent Recruiter", "Talent HR Manager", "Talent HR User"],
     
     # Interaction Features
-    "mira_interaction_full_access":      ["Recruiter"],
-    "mira_interaction_creation":         ["Recruiter", "HR Staff"],
-    "mira_interaction_view_only":        ["Hiring Manager"],
-    "mira_interaction_management":       ["Recruiter"],
-    "mira_interaction_delete":           ["Recruiter"],
-    "mira_interaction_reporting":        ["Recruiter", "Hiring Manager"],
-    "mira_interaction_analytics":        ["Recruiter", "Hiring Manager"],
+    "mira_interaction_full_access":      ["Talent Recruiter"],
+    "mira_interaction_creation":         ["Talent Recruiter", "Talent HR User"],
+    "mira_interaction_view_only":        ["Talent HR Manager"],
+    "mira_interaction_management":       ["Talent Recruiter"],
+    "mira_interaction_delete":           ["Talent Recruiter"],
+    "mira_interaction_reporting":        ["Talent Recruiter", "Talent HR Manager"],
+    "mira_interaction_analytics":        ["Talent Recruiter", "Talent HR Manager"],
     
     # Action Features
-    "mira_action_full_access":           ["Recruiter"],
-    "mira_action_creation":              ["Recruiter", "HR Staff"],
-    "mira_action_view_only":             ["Hiring Manager"],
-    "mira_action_management":            ["Recruiter"],
-    "mira_action_delete":                ["Recruiter"],
-    "mira_action_reporting":             ["Recruiter", "Hiring Manager"],
-    "mira_action_execution":             ["Recruiter", "HR Staff"],
+    "mira_action_full_access":           ["Talent Recruiter"],
+    "mira_action_creation":              ["Talent Recruiter", "Talent HR User"],
+    "mira_action_view_only":             ["Talent HR Manager"],
+    "mira_action_management":            ["Talent Recruiter"],
+    "mira_action_delete":                ["Talent Recruiter"],
+    "mira_action_reporting":             ["Talent Recruiter", "Talent HR Manager"],
+    "mira_action_execution":             ["Talent Recruiter", "Talent HR User"],
 }
 
 # ---------------------------- helpers ----------------------------
@@ -75,8 +75,8 @@ def ensure_roles():
     print("=== Ensure MIRA Roles ===")
     for role_name in MIRA_ROLES:
         if frappe.db.exists("Role", role_name):
-            frappe.db.set_value("Role", role_name, "desk_access", 0)
-            print(f"• Role exists: {role_name}")
+            # Không ghi đè settings của role đã tồn tại để tránh xung đột với các app khác
+            print(f"• Role exists: {role_name} (skipping update)")
         else:
             frappe.get_doc({
                 "doctype": "Role",

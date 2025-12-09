@@ -7,7 +7,7 @@
       </h3>
       <CampaignBasicInfo
         :campaign-name="campaignName"
-        :objective="objective"
+        :objective="description"
         :show-error="showError"
         @update:campaign-name="$emit('update:campaignName', $event)"
         @update:objective="$emit('update:description', $event)"

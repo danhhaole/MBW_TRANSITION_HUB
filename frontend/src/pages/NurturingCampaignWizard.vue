@@ -39,7 +39,7 @@
         <CampaignStep1
           v-if="currentStep === 1"
           :campaign-name="campaignData.campaign_name"
-          :objective="campaignData.objective"
+          :objective="campaignData.description"
           :campaign-id="campaignData.name"
           :campaign-tags="campaignData.campaign_tags"
           :config-data="campaignData.config_data"
@@ -48,7 +48,7 @@
           :show-error="showValidationError"
           :start-date="campaignData.start_date"
           @update:campaign-name="campaignData.campaign_name = $event"
-          @update:objective="campaignData.objective = $event"
+          @update:objective="campaignData.description = $event"
           @update:campaign-tags="campaignData.campaign_tags = $event"
           @update:config-data="campaignData.config_data = $event"
           @update:conditions="campaignData.conditions = $event"
@@ -460,7 +460,7 @@ const targetPool = campaignData.value.config_data?.selectedSegment?.value || cam
       
       const result = await campaignStore.submitNewCampaign({
         campaign_name: campaignData.value.campaign_name,
-        description: campaignData.value.objective,
+        description: campaignData.value.description,
         target_pool: targetPool,
         condition_filter: JSON.stringify(campaignData.value.conditions),
         type: campaignData.value.type,
@@ -508,7 +508,7 @@ const targetPool = campaignData.value.config_data?.selectedSegment?.value || cam
           name: campaignData.value.name,
           fieldname: {
             campaign_name: campaignData.value.campaign_name,
-            description: campaignData.value.objective,
+            description: campaignData.value.description,
             target_pool: targetPool,
             condition_filter: JSON.stringify(campaignData.value.conditions),
             start_date: campaignData.value.start_date
