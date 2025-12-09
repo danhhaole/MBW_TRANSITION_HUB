@@ -85,10 +85,10 @@
           </div>
         </div>
       </template>
-      
+
       <!-- Block Properties -->
       <template v-else-if="block">
-      
+
         <!-- Text Block Properties -->
       <template v-if="block.type === 'text'">
         <!-- Content -->
@@ -106,7 +106,7 @@
             <FeatherIcon name="maximize-2" class="w-4 h-4 mr-2" />
             Dimension
           </h4>
-          
+
           <!-- Height -->
           <FormControl
             type="number"
@@ -115,7 +115,7 @@
             label="Height"
             placeholder="Auto"
           />
-          
+
           <!-- Padding -->
           <div class="space-y-2">
             <label class="text-sm font-medium text-gray-700">Padding</label>
@@ -160,7 +160,7 @@
             <FeatherIcon name="type" class="w-4 h-4 mr-2" />
             Typography
           </h4>
-          
+
           <!-- Text Type -->
           <FormControl
             type="select"
@@ -174,7 +174,7 @@
               { label: 'Heading 3', value: 'h3' }
             ]"
           />
-          
+
           <!-- Font Family -->
           <FormControl
             type="select"
@@ -190,7 +190,7 @@
               { label: 'Verdana', value: 'Verdana, sans-serif' }
             ]"
           />
-          
+
           <!-- Font Size -->
           <FormControl
             type="number"
@@ -199,7 +199,7 @@
             label="Size"
             placeholder="16"
           />
-          
+
           <!-- Text Color -->
           <FormControl
             type="color"
@@ -207,7 +207,7 @@
             @change="$emit('change')"
             label="Color"
           />
-          
+
           <!-- Line Height -->
           <FormControl
             type="select"
@@ -223,7 +223,7 @@
               { label: '2.0', value: '2.0' }
             ]"
           />
-          
+
           <!-- Font Style -->
           <FormControl
             type="select"
@@ -235,7 +235,7 @@
               { label: 'Italic', value: 'italic' }
             ]"
           />
-          
+
           <!-- Letter Spacing -->
           <FormControl
             type="number"
@@ -244,7 +244,7 @@
             label="Letter spacing"
             placeholder="0"
           />
-          
+
           <!-- Font Weight Buttons -->
           <div class="space-y-2">
             <label class="text-sm font-medium text-gray-700">Weight</label>
@@ -280,7 +280,7 @@
             <FeatherIcon name="square" class="w-4 h-4 mr-2" />
             Block
           </h4>
-          
+
           <!-- Background Color -->
           <FormControl
             type="color"
@@ -288,7 +288,7 @@
             @change="$emit('change')"
             label="Background color"
           />
-          
+
           <!-- Text Alignment -->
           <div class="space-y-2">
             <label class="text-sm font-medium text-gray-700">Align</label>
@@ -323,12 +323,13 @@
       <template v-if="block.type === 'button'">
         <!-- Content -->
         <FormControl
-          type="text"
+          type="textarea"
           v-model="block.props.text"
           @change="$emit('change')"
           label="Button Text"
+          :rows="3"
         />
-        
+
         <FormControl
           type="text"
           v-model="block.props.href"
@@ -343,7 +344,7 @@
             <FeatherIcon name="maximize-2" class="w-4 h-4 mr-2" />
             Dimension
           </h4>
-          
+
           <!-- Width -->
           <FormControl
             type="select"
@@ -356,7 +357,7 @@
               { label: 'Custom', value: 'custom' }
             ]"
           />
-          
+
           <!-- Custom Width -->
           <FormControl
             v-if="block.props.width === 'custom'"
@@ -366,7 +367,7 @@
             label="Custom Width (px)"
             placeholder="200"
           />
-          
+
           <!-- Height -->
           <FormControl
             type="number"
@@ -375,7 +376,7 @@
             label="Height (px)"
             placeholder="Auto"
           />
-          
+
           <!-- Padding -->
           <div class="space-y-2">
             <label class="text-sm font-medium text-gray-700">Padding</label>
@@ -420,7 +421,7 @@
             <FeatherIcon name="type" class="w-4 h-4 mr-2" />
             Typography
           </h4>
-          
+
           <!-- Font Family -->
           <FormControl
             type="select"
@@ -436,7 +437,7 @@
               { label: 'Verdana', value: 'Verdana, sans-serif' }
             ]"
           />
-          
+
           <!-- Font Size -->
           <FormControl
             type="number"
@@ -445,7 +446,7 @@
             label="Size (px)"
             placeholder="16"
           />
-          
+
           <!-- Text Color -->
           <FormControl
             type="color"
@@ -453,7 +454,7 @@
             @change="$emit('change')"
             label="Text Color"
           />
-          
+
           <!-- Font Weight -->
           <FormControl
             type="select"
@@ -470,7 +471,7 @@
               { label: '700', value: '700' }
             ]"
           />
-          
+
           <!-- Letter Spacing -->
           <FormControl
             type="number"
@@ -487,7 +488,7 @@
             <FeatherIcon name="square" class="w-4 h-4 mr-2" />
             Border
           </h4>
-          
+
           <!-- Border Toggle -->
           <div class="flex items-center space-x-2 mb-3">
             <input
@@ -498,7 +499,7 @@
             />
             <label class="text-sm font-medium text-gray-700">Enable Border</label>
           </div>
-          
+
           <template v-if="block.props.hasBorder">
             <!-- Border Width -->
             <FormControl
@@ -508,7 +509,7 @@
               label="Border Width (px)"
               placeholder="1"
             />
-            
+
             <!-- Border Color -->
             <FormControl
               type="color"
@@ -516,7 +517,7 @@
               @change="$emit('change')"
               label="Border Color"
             />
-            
+
             <!-- Border Radius -->
             <FormControl
               type="number"
@@ -534,7 +535,7 @@
             <FeatherIcon name="layout" class="w-4 h-4 mr-2" />
             Block
           </h4>
-          
+
           <!-- Background Color -->
           <FormControl
             type="color"
@@ -542,7 +543,7 @@
             @change="$emit('change')"
             label="Background Color"
           />
-          
+
           <!-- Button Alignment -->
           <div class="space-y-2">
             <label class="text-sm font-medium text-gray-700">Align</label>
@@ -581,7 +582,7 @@
             <FeatherIcon name="image" class="w-4 h-4 mr-2" />
             Image settings
           </h4>
-          
+
           <!-- Link Address -->
           <FormControl
             type="text"
@@ -590,11 +591,11 @@
             label="Link address"
             placeholder="https://"
           />
-          
+
           <!-- File Upload -->
           <div class="space-y-2">
             <label class="text-sm font-medium text-gray-700">Select file</label>
-            
+
             <!-- Show uploaded file info -->
             <div v-if="block.props.src && block.props.fileName" class="border rounded-lg p-3 bg-gray-50">
               <div class="flex items-center justify-between">
@@ -623,7 +624,7 @@
                 </div>
               </div>
             </div>
-            
+
             <!-- File uploader (show when no file or changing) -->
             <FileUploader
               v-if="!block.props.src || showUploader"
@@ -664,7 +665,7 @@
               </template>
             </FileUploader>
           </div>
-          
+
           <!-- Alt Text -->
           <FormControl
             type="text"
@@ -673,7 +674,7 @@
             label="Alt text"
             placeholder="Brief description of your image"
           />
-          
+
           <!-- Full Width on Mobile -->
           <div class="flex items-center space-x-2 mt-2">
             <input
@@ -692,7 +693,7 @@
             <FeatherIcon name="maximize-2" class="w-4 h-4 mr-2" />
             Dimension
           </h4>
-          
+
           <!-- Width Type -->
           <div class="space-y-2">
             <label class="text-sm font-medium text-gray-700">Width</label>
@@ -713,7 +714,7 @@
               </Button>
             </div>
           </div>
-          
+
           <!-- Fixed Width Input -->
           <FormControl
             v-if="block.props.widthType === 'fixed'"
@@ -724,7 +725,7 @@
             placeholder="600"
             class="mt-2"
           />
-          
+
           <!-- Height -->
           <FormControl
             type="number"
@@ -734,7 +735,7 @@
             placeholder="Auto"
             class="mt-2"
           />
-          
+
           <!-- Padding -->
           <div class="space-y-2">
             <label class="text-sm font-medium text-gray-700">Padding</label>
@@ -779,7 +780,7 @@
             <FeatherIcon name="square" class="w-4 h-4 mr-2" />
             Border
           </h4>
-          
+
           <!-- Border Toggle -->
           <div class="flex items-center space-x-2 mb-3">
             <input
@@ -790,7 +791,7 @@
             />
             <label class="text-sm font-medium text-gray-700">Border</label>
           </div>
-          
+
           <template v-if="block.props.hasBorder">
             <!-- Border Width -->
             <FormControl
@@ -800,7 +801,7 @@
               label="Border Width (px)"
               placeholder="1"
             />
-            
+
             <!-- Border Color -->
             <FormControl
               type="color"
@@ -809,7 +810,7 @@
               label="Border Color"
             />
           </template>
-          
+
           <!-- Corner Radius -->
           <FormControl
             type="number"
@@ -826,7 +827,7 @@
             <FeatherIcon name="layout" class="w-4 h-4 mr-2" />
             Block
           </h4>
-          
+
           <!-- Background Color -->
           <FormControl
             type="color"
@@ -834,7 +835,7 @@
             @change="$emit('change')"
             label="Background color"
           />
-          
+
           <!-- Image Alignment -->
           <div class="space-y-2">
             <label class="text-sm font-medium text-gray-700">Align</label>
@@ -873,7 +874,7 @@
             <FeatherIcon name="minus" class="w-4 h-4 mr-2" />
             Line
           </h4>
-          
+
           <!-- Height -->
           <FormControl
             type="number"
@@ -882,7 +883,7 @@
             label="Height (px)"
             placeholder="4"
           />
-          
+
           <!-- Style -->
           <FormControl
             type="select"
@@ -895,7 +896,7 @@
               { label: 'Dotted', value: 'dotted' }
             ]"
           />
-          
+
           <!-- Color -->
           <FormControl
             type="color"
@@ -911,7 +912,7 @@
             <FeatherIcon name="maximize-2" class="w-4 h-4 mr-2" />
             Dimension
           </h4>
-          
+
           <!-- Width -->
           <FormControl
             type="select"
@@ -926,7 +927,7 @@
               { label: 'Custom', value: 'custom' }
             ]"
           />
-          
+
           <!-- Custom Width -->
           <FormControl
             v-if="block.props.width === 'custom'"
@@ -936,7 +937,7 @@
             label="Custom Width (px)"
             placeholder="300"
           />
-          
+
           <!-- Padding -->
           <div class="space-y-2">
             <label class="text-sm font-medium text-gray-700">Padding</label>
@@ -981,7 +982,7 @@
             <FeatherIcon name="square" class="w-4 h-4 mr-2" />
             Block
           </h4>
-          
+
           <!-- Background Color -->
           <FormControl
             type="color"
@@ -989,7 +990,7 @@
             @change="$emit('change')"
             label="Background color"
           />
-          
+
           <!-- Divider Alignment -->
           <div class="space-y-2">
             <label class="text-sm font-medium text-gray-700">Align</label>
@@ -1030,7 +1031,7 @@
           label="Height (px)"
           placeholder="40"
         />
-        
+
         <!-- Background Color -->
         <FormControl
           type="color"

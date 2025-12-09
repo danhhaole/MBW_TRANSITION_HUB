@@ -27,7 +27,7 @@
           :label="__('Update')"
           icon-left="check"
           variant="solid"
-          
+
           :loading="templates.setValue.loading"
           @click="updateTemplate"
         />
@@ -129,7 +129,7 @@
               <FeatherIcon name="code" class="h-4 w-4 text-gray-500" />
             </template>
           </Autocomplete>
-          
+
           <!-- Fullscreen Toggle Button -->
           <Button
             :label="isFullscreen ? __('Exit Fullscreen') : __('Fullscreen')"
@@ -147,9 +147,9 @@
         :height="isFullscreen ? 'calc(100vh - 250px)' : '400px'"
         @ready="onEmailBuilderReady"
       />
-      
+
       <!-- OLD Unlayer Email Editor - COMMENTED OUT -->
-      <!-- 
+      <!--
       <UnlayerEmailEditor
         ref="unlayerEditorRef"
         v-model="emailDesignJson"
@@ -161,13 +161,13 @@
         {{ __('Drag blocks from the sidebar to design your email. Click merge tags above to copy and paste into content.') }}
       </p>
     </div>
-    
+
     <!-- Email Preview Dialog -->
     <EmailPreview
       v-model="showPreview"
       :templateData="template"
     />
-    
+
     <div v-if="errorMessage">
       <div class="rounded-md bg-red-50 p-4">
         <div class="flex">
@@ -340,10 +340,10 @@ const onEmailBuilderReady = (builderMethods) => {
   console.log('🎉 [Parent] EmailBuilder ready callback')
   console.log('   Template message:', template.value.message?.substring(0, 50))
   console.log('   Email design JSON:', emailDesignJson.value ? 'exists' : 'null')
-  
+
   // Mark as changed when design updates
   editorHasChanges.value = true
-  
+
   // If we have existing HTML content, we could convert it to blocks here
   // For now, start with empty design
   if (template.value.message && !emailDesignJson.value) {
@@ -358,7 +358,7 @@ const onUnlayerReady = (editor) => {
   console.log('🎉 [Parent] Unlayer editor ready callback')
   console.log('   Template message:', template.value.message?.substring(0, 50))
   console.log('   Email design JSON:', emailDesignJson.value ? 'exists' : 'null')
-  
+
   // Listen to design changes to mark dirty
   if (editor && editor.addEventListener) {
     editor.addEventListener('design:updated', () => {
@@ -366,18 +366,18 @@ const onUnlayerReady = (editor) => {
       editorHasChanges.value = true
     })
   }
-  
+
   // If switching to advanced editor with existing HTML but no design JSON
   if (template.value.message && !emailDesignJson.value) {
     console.log('🔄 [Parent] Converting HTML to Unlayer design...')
     const basicDesign = createUnlayerDesignFromHtml(template.value.message)
     console.log('📋 [Parent] Basic design created:', basicDesign)
     console.log('⏳ [Parent] Calling editor.loadDesign()...')
-    
+
     // Deep clone to remove any Vue reactivity
     const plainDesign = JSON.parse(JSON.stringify(basicDesign))
     editor.loadDesign(plainDesign)
-    
+
     toast.info('Converted HTML content to Advanced editor')
   } else if (emailDesignJson.value) {
     console.log('✅ [Parent] Design JSON already exists, should be loaded by component')
@@ -397,18 +397,18 @@ const updateTemplate = async () => {
     errorMessage.value = __('Subject is required')
     return
   }
-  
+
   // Save design from EmailBuilder
   if (!emailBuilderRef.value) {
     errorMessage.value = __('Email editor not ready')
     return
   }
-  
+
   try {
     const exportData = emailBuilderRef.value.exportHtml()
     const blocks = emailBuilderRef.value.getBlocks()
     const mjml = emailBuilderRef.value.getMJML()
-    
+
     // Store blocks, HTML and MJML
     emailDesignJson.value = { blocks, emailSettings: exportData.emailSettings }
     template.value.message = exportData.html
@@ -418,7 +418,7 @@ const updateTemplate = async () => {
     errorMessage.value = __('Failed to save email design')
     return
   }
-  
+
   if (!template.value.message) {
     errorMessage.value = __('Message is required')
     return
@@ -440,7 +440,7 @@ const updateTemplate = async () => {
     onSuccess: () => {
       // Reset editor changes flag after successful save
       editorHasChanges.value = false
-      
+
       emit('updateStep', 'template-list')
       toast.success('Template updated successfully')
     },
@@ -453,10 +453,10 @@ const updateTemplate = async () => {
 
 function insertFieldToSubject(option) {
   if (!option) return
-  
+
   const fieldPlaceholder = `{{ ${option.value} }}`
   const input = subjectRef.value?.$el?.querySelector('input')
-  
+
   if (input) {
     const start = input.selectionStart || 0
     const end = input.selectionEnd || 0
@@ -470,22 +470,22 @@ function insertFieldToSubject(option) {
   } else {
     template.value.subject = (template.value.subject || '') + fieldPlaceholder
   }
-  
+
   toast.success(`Inserted field: ${option.label}`)
 }
 
 function insertFieldToMessage(option) {
   if (!option) return
-  
+
   const fieldPlaceholder = `{{ ${option.value} }}`
-  
+
   // Insert into Rich Text Editor
   if (content.value?.editor) {
     content.value.editor.commands.insertContent(fieldPlaceholder)
   } else {
     template.value.message += fieldPlaceholder
   }
-  
+
   toast.success(`Inserted field: ${option.label}`)
 }
 
@@ -500,7 +500,7 @@ const dirty = computed(() => {
     Boolean(template.value.default_template) !== Boolean(props.templateData.default_template) ||
     Boolean(template.value.auto_send) !== Boolean(props.templateData.auto_send)
   )
-  
+
   // Check if Unlayer design changed
   let designChanged = false
   if (emailDesignJson.value) {
@@ -508,7 +508,7 @@ const dirty = computed(() => {
     const originalDesign = props.templateData.email_design_json || ''
     designChanged = currentDesign !== originalDesign
   }
-  
+
   // Also check if editor has unsaved changes (user is actively editing)
   return basicFieldsChanged || designChanged || editorHasChanges.value
 })
@@ -516,23 +516,23 @@ const dirty = computed(() => {
 onMounted(() => {
   console.log('🚀 [EditTemplate] Component mounted')
   console.log('   Template data:', props.templateData)
-  
+
   template.value = { ...props.templateData }
   // Convert to boolean for switches
   template.value.is_active = Boolean(template.value.is_active)
   template.value.default_template = Boolean(template.value.default_template)
   template.value.auto_send = Boolean(template.value.auto_send)
-  
+
   // Load existing design if available
   if (template.value.email_design_json) {
     console.log('📦 [EditTemplate] Found email_design_json in template')
     console.log('   Raw JSON:', template.value.email_design_json?.substring(0, 100))
-    
+
     try {
       emailDesignJson.value = typeof template.value.email_design_json === 'string'
         ? JSON.parse(template.value.email_design_json)
         : template.value.email_design_json
-      
+
       console.log('✅ [EditTemplate] Parsed design JSON:', emailDesignJson.value)
     } catch (error) {
       console.error('❌ [EditTemplate] Error parsing email design JSON:', error)
@@ -540,8 +540,8 @@ onMounted(() => {
   } else if (template.value.message) {
     // Convert existing HTML message to Unlayer format
     console.log('🔄 [EditTemplate] Converting existing HTML to Unlayer design')
-    const basicDesign = createUnlayerDesignFromHtml(template.value.message)
-    emailDesignJson.value = basicDesign
+    // const basicDesign = createUnlayerDesignFromHtml(template.value.message)
+    // emailDesignJson.value = basicDesign
   } else {
     console.log('ℹ️ [EditTemplate] No existing content, starting with blank canvas')
   }

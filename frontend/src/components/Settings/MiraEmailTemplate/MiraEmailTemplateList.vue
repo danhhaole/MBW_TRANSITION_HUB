@@ -172,11 +172,7 @@
                 placement="right"
                 :button="{
                   icon: 'more-horizontal',
-                  variant: 'ghost',
-                  onblur: (e) => {
-                    e.stopPropagation()
-                    confirmDelete = false
-                  },
+                  variant: 'ghost'
                 }"
                 @click.stop
               />
@@ -214,7 +210,6 @@ const toast = useToast()
 const search = ref('')
 const currentType = ref('All')
 const currentStatus = ref('All')
-const confirmDelete = ref(false)
 
 const typeOptions = [
   { label: __('All Types'), value: 'All' },
@@ -313,13 +308,14 @@ function toggleDefault(template) {
 }
 
 function deleteTemplate(template) {
-  confirmDelete.value = false
   templates.delete.submit(template.name, {
     onSuccess: () => {
       toast.success('Template deleted successfully')
+      templates.reload()
     },
     onError: (error) => {
-      toast.error(error.messages?.[0] || 'Failed to delete template')
+      console.error('Delete error:', error)
+      toast.error('Failed to delete template')
     },
   })
 }
@@ -334,19 +330,8 @@ function getDropdownOptions(template) {
     {
       label: __('Delete'),
       icon: 'trash-2',
-      onClick: (e) => {
-        e.preventDefault()
-        e.stopPropagation()
-        confirmDelete.value = true
-      },
-      condition: () => !confirmDelete.value,
-    },
-    {
-      label: __('Confirm Delete'),
-      icon: 'trash-2',
       theme: 'red',
       onClick: () => deleteTemplate(template),
-      condition: () => confirmDelete.value,
     },
   ]
 
