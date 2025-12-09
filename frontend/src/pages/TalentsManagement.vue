@@ -268,17 +268,17 @@
 												<template v-if="talent.skills && processSkills(talent.skills).length > 0">
 													<span
 														v-if="processSkills(talent.skills).length === 1"
-														class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 truncate max-w-[200px]"
+														class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 max-w-[200px]"
 														:title="processSkills(talent.skills)[0]"
 													>
-														{{ processSkills(talent.skills)[0] }}
+														<span class="truncate">{{ processSkills(talent.skills)[0] }}</span>
 													</span>
 													<template v-else>
 														<span 
-															class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 truncate max-w-[200px]"
+															class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 max-w-[200px]"
 															:title="processSkills(talent.skills)[0]"
 														>
-															{{ processSkills(talent.skills)[0] }}
+															<span class="truncate">{{ processSkills(talent.skills)[0] }}</span>
 														</span>
 														<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
 															+{{ processSkills(talent.skills).length - 1 }}
