@@ -154,18 +154,13 @@ def upload_resumes():
         session.save(ignore_permissions=True)
         frappe.db.commit()
 
-        # Enqueue background job to process files
-        frappe.enqueue(
-            "mbw_mira.mbw_mira.doctype.mira_resumeuploadsession.mira_resumeuploadsession.process_resume_files",
-            queue="short",
-            job_id=f"process_resume_{session.name}",
-            session_name=session.name
-        )
+        # Call process_resume_files directly (no enqueue)
+        process_resume_files(session.name)
 
         return {
             "status": "success",
             "session_name": session.name,
-            "message": _(f"Upload session {0} created successfully. Processing in the background.", session.name)
+            "message": _(f"Upload session {0} created successfully. Processing files.", session.name)
         }
 
     except Exception as e:
@@ -174,8 +169,7 @@ def upload_resumes():
 
 def process_resume_files(session_name):
     """
-    Background job to process uploaded resume files, call external API to extract data,
-    and create ATS_Candidate records.
+    Process uploaded resume files by enqueuing each file individually for sequential processing.
     """
     try:
         print('========================= session_name 1: ', session_name, flush=True)
@@ -191,153 +185,229 @@ def process_resume_files(session_name):
             "message": f"Started processing {len(session.files)} file(s)" + (f" for segment {session.segment}" if session.segment else "")
         })
         session.save(ignore_permissions=True)
+        frappe.db.commit()
 
-        for file in session.files:
-            try:
-                fname = frappe.get_doc("File", {"file_name": file.file_name})
-                print('========================= fname 2: ', fname, flush=True)
-                print('========================= fname.name 3: ', fname.name, flush=True)
-                # Call external API to extract data
-                candidate_data = extract_cv_backend(fname.name)
-                if not candidate_data:
-                    file.status = "Error"
-                    file.error_message = "Failed to extract data from CV."
-                    session.failed_count += 1
-                    
-                    # Log extraction failure
-                    session.append("logs", {
-                        "timestamp": now(),
-                        "log_type": "Error",
-                        "message": f"Failed to extract data from {file.file_name}"
-                    })
-                    continue
-                else:
-                    # Check for duplicate email
-                    data = candidate_data.get("data", candidate_data)
-                    personal_info = data.get("personal_info", {})
-                    email = personal_info.get("can_email") or personal_info.get("email")
-                    
-                    if email:
-                        existing = frappe.db.exists("Mira Talent", {"email": email})
-                        if existing:
-                            file.status = "Duplicate"
-                            file.talent_id = existing
-                            session.duplicated_count += 1
-                            
-                            # Log duplicate
-                            session.append("logs", {
-                                "timestamp": now(),
-                                "log_type": "Warning",
-                                "message": f"Duplicate email found for {file.file_name}: {email}",
-                                "talent_id": existing
-                            })
-                            continue
-                    
-                    # Use map_resume_json_to_talent helper to create talent
-                    try:
-                        candidate_dict = map_resume_json_to_talent(candidate_data)
-                        candidate = frappe.get_doc("Mira Talent", candidate_dict.get("name"))
-                        
-                        # Set additional fields
-                        candidate.source = "Import CV"
-                        candidate.crm_status = "New"
-                        
-                        # Attach the CV file to the resume field
-                        if file.file_url:
-                            candidate.resume = file.file_url
-                            print(f'========================= Attached CV file: {file.file_url} to talent {candidate.name}', flush=True)
-                        
-                        candidate.save(ignore_permissions=True)
-                        frappe.db.commit()
-                        
-                        file.status = "Success"
-                        file.talent_id = candidate.name
-                        file.processed_at = now()
-                        session.success_count += 1
-                        
-                        # Log success
-                        session.append("logs", {
-                            "timestamp": now(),
-                            "log_type": "Success",
-                            "message": f"Successfully created talent from {file.file_name}: {candidate.full_name} (CV attached)",
-                            "talent_id": candidate.name
-                        })
-                        
-                        # Add talent to segment pool if segment is selected
-                        print(f'========================= session.segment: {session.segment}', flush=True)
-                        if session.segment:
-                            try:
-                                print(f'========================= Creating talent pool for {candidate.name} in segment {session.segment}', flush=True)
-                                talent_pool = frappe.new_doc("Mira Talent Pool")
-                                talent_pool.talent_id = candidate.name
-                                talent_pool.segment_id = session.segment
-                                talent_pool.added_at = now()
-                                talent_pool.added_by = session.upload_by
-                                print(f'========================= Inserting talent pool: {talent_pool.as_dict()}', flush=True)
-                                talent_pool.insert(ignore_permissions=True)
-                                frappe.db.commit()
-                                print(f'========================= Talent pool created successfully: {talent_pool.name}', flush=True)
-                                
-                                # Log the talent pool assignment
-                                session.append("logs", {
-                                    "timestamp": now(),
-                                    "log_type": "Success",
-                                    "message": f"Added talent {candidate.full_name} ({candidate.name}) to segment pool {session.segment}",
-                                    "talent_id": candidate.name,
-                                    "segment_id": session.segment
-                                })
-                            except Exception as pool_error:
-                                # Log the error but don't fail the entire process
-                                print(f'========================= ERROR creating talent pool: {str(pool_error)}', flush=True)
-                                import traceback
-                                print(f'========================= Traceback: {traceback.format_exc()}', flush=True)
-                                session.append("logs", {
-                                    "timestamp": now(),
-                                    "log_type": "Error",
-                                    "message": f"Failed to add talent {candidate.name} to segment pool: {str(pool_error)}",
-                                    "talent_id": candidate.name,
-                                    "segment_id": session.segment
-                                })
-                                frappe.log_error(message=str(pool_error), title=f"Talent Pool Assignment Error - {candidate.name}")
-                                
-                    except Exception as map_error:
-                        file.status = "Error"
-                        file.error_message = f"Failed to map CV data: {str(map_error)}"
-                        session.failed_count += 1
-                        
-                        # Log mapping error
-                        session.append("logs", {
-                            "timestamp": now(),
-                            "log_type": "Error",
-                            "message": f"Failed to map data from {file.file_name}: {str(map_error)}"
-                        })
-                        frappe.log_error(message=str(map_error), title=f"Resume Mapping Error - {file.file_name}")
-                        continue
-
-            except Exception as e:
-                file.status = "Error"
-                file.error_message = str(e)
-                session.failed_count += 1
-
-            session.save(ignore_permissions=True)
-            frappe.db.commit()
-            
-        frappe.publish_realtime('resume_upload_update', {'session_name': session_name})
-        session.status = "Completed"
-        
-        # Log session completion
-        session.append("logs", {
-            "timestamp": now(),
-            "log_type": "Success",
-            "message": f"Processing completed: {session.success_count} successful, {session.failed_count} failed, {session.duplicated_count} duplicates"
-        })
-        session.save(ignore_permissions=True)
+        # Enqueue each file for sequential processing
+        for idx, file in enumerate(session.files):
+            frappe.enqueue(
+                "mbw_mira.mbw_mira.doctype.mira_resumeuploadsession.mira_resumeuploadsession.process_single_resume_file",
+                queue="default",
+                timeout=300,
+                job_id=f"process_resume_file_{session_name}_{idx}",
+                session_name=session_name,
+                file_name=file.file_name,
+                is_last_file=(idx == len(session.files) - 1)
+            )
+            print(f'========================= Enqueued file {idx + 1}/{len(session.files)}: {file.file_name}', flush=True)
 
     except Exception as e:
         frappe.log_error(message=str(e), title="Resume Processing Error")
-        session.status = "Error"
+        try:
+            session = frappe.get_doc("Mira ResumeUploadSession", session_name)
+            session.status = "Error"
+            session.append("logs", {
+                "timestamp": now(),
+                "log_type": "Error",
+                "message": f"Session processing error: {str(e)}"
+            })
+            session.save(ignore_permissions=True)
+            frappe.db.commit()
+        except:
+            pass
+
+def process_single_resume_file(session_name, file_name, is_last_file=False):
+    """
+    Process a single resume file. This function is enqueued for each file to ensure sequential processing.
+    """
+    try:
+        session = frappe.get_doc("Mira ResumeUploadSession", session_name)
+        
+        # Find the file in the session
+        file = None
+        for f in session.files:
+            if f.file_name == file_name:
+                file = f
+                break
+        
+        if not file:
+            frappe.log_error(message=f"File {file_name} not found in session {session_name}", title="Resume File Not Found")
+            return
+        
+        # Skip if already processed
+        if file.status in ["Success", "Duplicate"]:
+            print(f'========================= File {file_name} already processed, skipping', flush=True)
+            return
+        
+        try:
+            fname = frappe.get_doc("File", {"file_name": file.file_name})
+            print('========================= fname 2: ', fname, flush=True)
+            print('========================= fname.name 3: ', fname.name, flush=True)
+            
+            # Call external API to extract data
+            candidate_data = extract_cv_backend(fname.name)
+            if not candidate_data:
+                file.status = "Error"
+                file.error_message = "Failed to extract data from CV."
+                session.failed_count += 1
+                
+                # Log extraction failure
+                session.append("logs", {
+                    "timestamp": now(),
+                    "log_type": "Error",
+                    "message": f"Failed to extract data from {file.file_name}"
+                })
+            else:
+                # Check for duplicate email
+                data = candidate_data.get("data", candidate_data)
+                personal_info = data.get("personal_info", {})
+                email = personal_info.get("can_email") or personal_info.get("email")
+                
+                if email:
+                    existing = frappe.db.exists("Mira Talent", {"email": email})
+                    if existing:
+                        file.status = "Duplicate"
+                        file.talent_id = existing
+                        session.duplicated_count += 1
+                        
+                        # Log duplicate
+                        session.append("logs", {
+                            "timestamp": now(),
+                            "log_type": "Warning",
+                            "message": f"Duplicate email found for {file.file_name}: {email}",
+                            "talent_id": existing
+                        })
+                        session.save(ignore_permissions=True)
+                        frappe.db.commit()
+                        
+                        # Update summary and publish realtime update
+                        update_summary_counts(session_name)
+                        frappe.publish_realtime('resume_upload_update', {'session_name': session_name})
+                        return
+                
+                # Use map_resume_json_to_talent helper to create talent
+                try:
+                    candidate_dict = map_resume_json_to_talent(candidate_data)
+                    candidate = frappe.get_doc("Mira Talent", candidate_dict.get("name"))
+                    
+                    # Set additional fields
+                    candidate.source = "Import CV"
+                    candidate.crm_status = "New"
+                    
+                    # Attach the CV file to the resume field
+                    if file.file_url:
+                        candidate.resume = file.file_url
+                        print(f'========================= Attached CV file: {file.file_url} to talent {candidate.name}', flush=True)
+                    
+                    candidate.save(ignore_permissions=True)
+                    frappe.db.commit()
+                    
+                    file.status = "Success"
+                    file.talent_id = candidate.name
+                    file.processed_at = now()
+                    session.success_count += 1
+                    
+                    # Log success
+                    session.append("logs", {
+                        "timestamp": now(),
+                        "log_type": "Success",
+                        "message": f"Successfully created talent from {file.file_name}: {candidate.full_name} (CV attached)",
+                        "talent_id": candidate.name
+                    })
+                    
+                    # Add talent to segment pool if segment is selected
+                    print(f'========================= session.segment: {session.segment}', flush=True)
+                    if session.segment:
+                        try:
+                            print(f'========================= Creating talent pool for {candidate.name} in segment {session.segment}', flush=True)
+                            talent_pool = frappe.new_doc("Mira Talent Pool")
+                            talent_pool.talent_id = candidate.name
+                            talent_pool.segment_id = session.segment
+                            talent_pool.added_at = now()
+                            talent_pool.added_by = session.upload_by
+                            print(f'========================= Inserting talent pool: {talent_pool.as_dict()}', flush=True)
+                            talent_pool.insert(ignore_permissions=True)
+                            frappe.db.commit()
+                            print(f'========================= Talent pool created successfully: {talent_pool.name}', flush=True)
+                            
+                            # Log the talent pool assignment
+                            session.append("logs", {
+                                "timestamp": now(),
+                                "log_type": "Success",
+                                "message": f"Added talent {candidate.full_name} ({candidate.name}) to segment pool {session.segment}",
+                                "talent_id": candidate.name,
+                                "segment_id": session.segment
+                            })
+                        except Exception as pool_error:
+                            # Log the error but don't fail the entire process
+                            print(f'========================= ERROR creating talent pool: {str(pool_error)}', flush=True)
+                            import traceback
+                            print(f'========================= Traceback: {traceback.format_exc()}', flush=True)
+                            session.append("logs", {
+                                "timestamp": now(),
+                                "log_type": "Error",
+                                "message": f"Failed to add talent {candidate.name} to segment pool: {str(pool_error)}",
+                                "talent_id": candidate.name,
+                                "segment_id": session.segment
+                            })
+                            frappe.log_error(message=str(pool_error), title=f"Talent Pool Assignment Error - {candidate.name}")
+                            
+                except Exception as map_error:
+                    file.status = "Error"
+                    file.error_message = f"Failed to map CV data: {str(map_error)}"
+                    session.failed_count += 1
+                    
+                    # Log mapping error
+                    session.append("logs", {
+                        "timestamp": now(),
+                        "log_type": "Error",
+                        "message": f"Failed to map data from {file.file_name}: {str(map_error)}"
+                    })
+                    frappe.log_error(message=str(map_error), title=f"Resume Mapping Error - {file.file_name}")
+
+        except Exception as e:
+            file.status = "Error"
+            file.error_message = str(e)
+            session.failed_count += 1
+            
+            # Log file processing error
+            session.append("logs", {
+                "timestamp": now(),
+                "log_type": "Error",
+                "message": f"Error processing {file.file_name}: {str(e)}"
+            })
+            frappe.log_error(message=str(e), title=f"Resume File Processing Error - {file.file_name}")
+
         session.save(ignore_permissions=True)
         frappe.db.commit()
+        
+        # Update summary counts
+        update_summary_counts(session_name)
+        
+        # Publish realtime update with file status
+        frappe.publish_realtime('resume_upload_update', {
+            'session_name': session_name,
+            'file_status': file.status,
+            'file_name': file.file_name,
+            'talent_id': file.talent_id if file.status == 'Success' else None
+        })
+        
+        # If this is the last file, mark session as completed
+        if is_last_file:
+            session.reload()
+            session.status = "Completed"
+            session.append("logs", {
+                "timestamp": now(),
+                "log_type": "Success",
+                "message": f"Processing completed: {session.success_count} successful, {session.failed_count} failed, {session.duplicated_count} duplicates"
+            })
+            session.save(ignore_permissions=True)
+            frappe.db.commit()
+            frappe.publish_realtime('resume_upload_update', {'session_name': session_name})
+            print(f'========================= Session {session_name} completed', flush=True)
+            
+    except Exception as e:
+        frappe.log_error(message=str(e), title=f"Single Resume Processing Error - {file_name}")
+        print(f'========================= ERROR processing file {file_name}: {str(e)}', flush=True)
 
 @frappe.whitelist(allow_guest=False)
 def get_upload_history():

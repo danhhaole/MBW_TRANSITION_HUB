@@ -87,7 +87,7 @@
                                     </svg>
                                 </div>
                                 <div>
-                                    <h5 class="card-title">{{ __("Select Segment") }}</h5>
+                                    <h5 class="card-title">{{ __("Select Pool") }}</h5>
                                     <p class="card-subtitle">{{ __("Link segment to a specific (optional)") }}
                                     </p>
                                 </div>

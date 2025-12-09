@@ -264,16 +264,20 @@
 											{{ talent.current_city || '-' }}
 										</td>
 										<td class="py-4 px-4 text-sm text-gray-700">
-											<div class="flex flex-wrap gap-1">
+											<div class="flex flex-wrap gap-1 max-w-xs">
 												<template v-if="talent.skills && processSkills(talent.skills).length > 0">
 													<span
 														v-if="processSkills(talent.skills).length === 1"
-														class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 truncate"
+														class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 truncate max-w-[200px]"
+														:title="processSkills(talent.skills)[0]"
 													>
 														{{ processSkills(talent.skills)[0] }}
 													</span>
 													<template v-else>
-														<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 truncate">
+														<span 
+															class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 truncate max-w-[200px]"
+															:title="processSkills(talent.skills)[0]"
+														>
 															{{ processSkills(talent.skills)[0] }}
 														</span>
 														<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
@@ -1139,7 +1143,10 @@
 			/>
 
 			<!-- Upload BulkCV Talent -->
-			<BulkCVUploadModal v-model="showBulkUploadModal" />
+			<BulkCVUploadModal 
+				v-model="showBulkUploadModal" 
+				@talent-created="handleBulkUploadSuccess"
+			/>
 
 			<!-- ATS Talent Sync Dialog -->
 			<ATSTalentSyncDialog
@@ -1966,6 +1973,15 @@ const syncFromATS = () => {
 
 const handleSyncSuccess = async () => {
 	showSuccess(__('Sync started successfully. You will be notified when the process completes.'))
+}
+
+const handleBulkUploadSuccess = async () => {
+	// Refresh the talents list when a new talent is created from bulk CV upload
+	await talentPoolStore.fetchTalents({
+		page: talentPoolStore.pagination.page,
+		limit: talentPoolStore.pagination.limit,
+	})
+	forceUpdate.value++
 }
 
 const viewTalent = (talent) => {

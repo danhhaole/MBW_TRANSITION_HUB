@@ -10,7 +10,7 @@
             <div class="p-4">
                 <!-- Job Selection -->
                 <div class="mb-4">
-                    <h4 class="font-sm font-bold">{{ __("Select Segment (Optional)") }}</h4>
+                    <h4 class="font-sm font-bold">{{ __("Select Pool (Optional)") }}</h4>
                     <div>
                         <Link :doctype="'Mira Segment'" v-model="selected_segment" :searchfield="'description'" :placeholder="__('Select segment')" />
                     </div>
@@ -182,7 +182,7 @@ const props = defineProps({
     }
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue', 'talent-created']);
 
 // Computed property to sync with the parent's v-model
 const show = computed({
@@ -362,6 +362,10 @@ onMounted(() => {
     $socket.on('resume_upload_update', (data) => {
         if (data.session_name) {
             fetchHistory();
+            // Emit event to parent when a talent is created successfully
+            if (data.status === 'Success' || data.file_status === 'Success') {
+                emit('talent-created');
+            }
         }
     });
 });
