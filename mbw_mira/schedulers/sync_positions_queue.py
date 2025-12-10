@@ -5,8 +5,10 @@ import json
 def run():
     """
     Process pending position sync jobs from queue
+    NOTE: This is now deprecated as sync jobs are enqueued directly from API
+    Kept for backward compatibility with any existing Pending jobs
     """
-    # Get pending sync jobs
+    # Get pending sync jobs (should be rare now)
     pending_syncs = frappe.get_all(
         "Mira ATS Sync Log",
         filters={
@@ -22,12 +24,20 @@ def run():
             # Get data source
             data_source = frappe.get_doc("Mira Data Source", sync_job.connection)
             
-            # Enqueue the actual sync work - background function will handle status update
+            # Update to In Progress before enqueuing
+            sync_log = frappe.get_doc("Mira ATS Sync Log", sync_job.name)
+            sync_log.status = "In Progress"
+            sync_log.start_time = frappe.utils.now()
+            sync_log.save(ignore_permissions=True)
+            frappe.db.commit()
+            
+            # Enqueue the actual sync work
             frappe.enqueue(
                 "mbw_mira.workers.ats.fetch_mbw_ats_data.sync_data_source_positions_background",
                 data_source_name=data_source.name,
                 sync_log_name=sync_job.name,
-                queue="short"
+                queue="short",
+                timeout=3600
             )
             
         except Exception as e:
@@ -72,17 +82,45 @@ def retry_failed_sync(sync_log_name):
     try:
         sync_log = frappe.get_doc("Mira ATS Sync Log", sync_log_name)
         
-        if sync_log.status in ["Failed", "Partially Completed"]:
-            # Reset sync log for retry
-            sync_log.status = "Pending"
-            sync_log.start_time = None
+        if sync_log.status in ["Failed", "Partially Completed", "Cancelled"]:
+            # Get data source
+            data_source = frappe.get_doc("Mira Data Source", sync_log.connection)
+            
+            # Use database transaction to prevent race condition
+            existing_sync = frappe.db.sql("""
+                SELECT name 
+                FROM `tabMira ATS Sync Log`
+                WHERE connection = %s 
+                AND sync_type = %s
+                AND status IN ('Pending', 'In Progress')
+                AND name != %s
+                LIMIT 1
+                FOR UPDATE
+            """, (data_source.name, "Position to Segment", sync_log_name), as_dict=True)
+            
+            if existing_sync:
+                frappe.throw("A sync job is already running for this connection. Please wait for it to complete.")
+            
+            # Reset sync log and start immediately with In Progress status
+            sync_log.status = "In Progress"
+            sync_log.start_time = frappe.utils.now()
             sync_log.end_time = None
             sync_log.success_count = 0
             sync_log.failed_count = 0
             sync_log.error_log = None
-            sync_log.details = f"Position sync retry requested at {frappe.utils.now()}"
+            sync_log.details = f"Position sync retry started at {frappe.utils.now()}"
             sync_log.save(ignore_permissions=True)
             frappe.db.commit()
+            
+            # Enqueue background job immediately
+            frappe.enqueue(
+                "mbw_mira.workers.ats.fetch_mbw_ats_data.sync_data_source_positions_background",
+                data_source_name=data_source.name,
+                sync_log_name=sync_log_name,
+                queue="short",
+                timeout=3600
+            )
+            
             return True
         else:
             return False

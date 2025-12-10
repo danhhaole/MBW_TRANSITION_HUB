@@ -117,7 +117,7 @@
                       
                       <!-- Retry Button -->
                       <Button
-                        v-if="log.status === 'Failed' || log.status === 'Partially Completed'"
+                        v-if="log.status === 'Failed' || log.status === 'Partially Completed' || log.status === 'Cancelled'"
                         variant="outline"
                         theme="gray"
                         size="sm"
@@ -314,10 +314,12 @@ const fetchSyncLogs = async (page = 1) => {
 
 const getStatusClass = (status) => {
   const statusMap = {
+    'Pending': 'bg-gray-100 text-gray-800',
     'In Progress': 'bg-blue-100 text-blue-800',
     'Completed': 'bg-green-100 text-green-800',
     'Partially Completed': 'bg-yellow-100 text-yellow-800',
-    'Failed': 'bg-red-100 text-red-800'
+    'Failed': 'bg-red-100 text-red-800',
+    'Cancelled': 'bg-orange-100 text-orange-800'
   }
   return statusMap[status] || 'bg-gray-100 text-gray-800'
 }
@@ -401,13 +403,50 @@ const retrySync = async (syncLogName) => {
   }
 }
 
-// Setup socket listener for sync completion
+// Setup socket listener for sync completion and progress
 const { $socket } = globalStore()
 if ($socket) {
+  // Listen for completion events
   $socket.on('candidate_sync_complete', (data) => {
     if (isOpen.value && data.sync_type === 'Candidate to Talent') {
       // Refresh sync history when modal is open
       fetchSyncLogs(currentPage.value)
+    }
+  })
+  
+  $socket.on('position_sync_complete', (data) => {
+    if (isOpen.value && data.sync_type === 'Position to Segment') {
+      // Refresh sync history when modal is open
+      fetchSyncLogs(currentPage.value)
+    }
+  })
+  
+  // Listen for progress events
+  $socket.on('candidate_sync_progress', (data) => {
+    if (isOpen.value) {
+      // Update the specific sync log in the list
+      const logIndex = syncLogs.value.findIndex(log => log.name === data.sync_log_name)
+      if (logIndex !== -1) {
+        syncLogs.value[logIndex].success_count = data.success_count
+        syncLogs.value[logIndex].failed_count = data.failed_count
+        syncLogs.value[logIndex].skipped_count = data.skipped_count || 0
+        syncLogs.value[logIndex].total_records = data.total_records
+        syncLogs.value[logIndex].details = data.details
+      }
+    }
+  })
+  
+  $socket.on('position_sync_progress', (data) => {
+    if (isOpen.value) {
+      // Update the specific sync log in the list
+      const logIndex = syncLogs.value.findIndex(log => log.name === data.sync_log_name)
+      if (logIndex !== -1) {
+        syncLogs.value[logIndex].success_count = data.success_count
+        syncLogs.value[logIndex].failed_count = data.failed_count
+        syncLogs.value[logIndex].skipped_count = data.skipped_count || 0
+        syncLogs.value[logIndex].total_records = data.total_records
+        syncLogs.value[logIndex].details = data.details
+      }
     }
   })
 }

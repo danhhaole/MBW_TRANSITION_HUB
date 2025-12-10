@@ -313,15 +313,95 @@
             </div>
           </div>
           
-          <ConditionsBuilder
-            ref="conditionsBuilderRef"
-            v-model="filterConditions"
-            doctype="Mira Talent"
-            :title="__('Filter Conditions')"
-            :description="__('Add conditions to filter which candidates to sync. Leave empty to sync all active candidates.')"
-            :show-preview="false"
-            :validate-on-change="false"
-          />
+          <!-- Existing Sync Log Warning -->
+          <div v-if="existingSyncStatus?.has_sync_log && !syncProgress.isActive" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+            <div class="flex items-start">
+              <FeatherIcon name="alert-circle" class="h-5 w-5 text-yellow-600 mt-0.5 mr-2" />
+              <div class="flex-1">
+                <h4 class="text-sm font-medium text-yellow-900">{{ __('Sync Log Already Exists') }}</h4>
+                <p class="text-sm text-yellow-700 mt-1">
+                  {{ __('This connection already has a sync log with status: {0}', [existingSyncStatus.status]) }}
+                </p>
+                <p class="text-sm text-yellow-700 mt-1">
+                  {{ __('Please go to Sync History to Retry or Cancel the existing sync log.') }}
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Sync Progress Display -->
+          <div v-if="syncProgress.isActive" class="bg-white border border-gray-200 rounded-lg p-6 space-y-4">
+            <div class="flex items-center justify-between">
+              <h4 class="text-sm font-semibold text-gray-900">{{ __('Sync Progress') }}</h4>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                {{ __('In Progress') }}
+              </span>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div class="space-y-2">
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-gray-600">
+                  {{ __('Processing: {0} / {1}', [syncProgress.currentRecord, syncProgress.totalRecords]) }}
+                </span>
+                <span class="font-medium text-gray-900">
+                  {{ syncProgress.totalRecords > 0 ? Math.round((syncProgress.currentRecord / syncProgress.totalRecords) * 100) : 0 }}%
+                </span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2.5">
+                <div 
+                  class="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
+                  :style="{ width: syncProgress.totalRecords > 0 ? `${(syncProgress.currentRecord / syncProgress.totalRecords) * 100}%` : '0%' }"
+                ></div>
+              </div>
+            </div>
+            
+            <!-- Stats -->
+            <div class="grid grid-cols-4 gap-3">
+              <div class="text-center p-3 bg-green-50 rounded-lg">
+                <div class="text-2xl font-bold text-green-600">{{ syncProgress.successCount }}</div>
+                <div class="text-xs text-green-700 mt-1">{{ __('Success') }}</div>
+              </div>
+              <div class="text-center p-3 bg-red-50 rounded-lg">
+                <div class="text-2xl font-bold text-red-600">{{ syncProgress.failedCount }}</div>
+                <div class="text-xs text-red-700 mt-1">{{ __('Failed') }}</div>
+              </div>
+              <div class="text-center p-3 bg-yellow-50 rounded-lg">
+                <div class="text-2xl font-bold text-yellow-600">{{ syncProgress.skippedCount || 0 }}</div>
+                <div class="text-xs text-yellow-700 mt-1">{{ __('Skipped') }}</div>
+              </div>
+              <div class="text-center p-3 bg-gray-50 rounded-lg">
+                <div class="text-2xl font-bold text-gray-600">{{ syncProgress.totalRecords }}</div>
+                <div class="text-xs text-gray-700 mt-1">{{ __('Total') }}</div>
+              </div>
+            </div>
+            
+            <!-- Latest Talent -->
+            <div v-if="syncProgress.latestTalent" class="bg-gray-50 rounded-lg p-3">
+              <div class="flex items-center gap-2 text-sm">
+                <FeatherIcon 
+                  :name="syncProgress.latestTalent.action === 'created' ? 'plus-circle' : 'refresh-cw'" 
+                  class="h-4 w-4 text-blue-600" 
+                />
+                <span class="text-gray-600">{{ __('Latest:') }}</span>
+                <span class="font-medium text-gray-900">{{ syncProgress.latestTalent.fullName }}</span>
+                <span class="text-xs text-gray-500">({{ syncProgress.latestTalent.action }})</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Filter Conditions (hidden during sync) -->
+          <div v-if="!syncProgress.isActive">
+            <ConditionsBuilder
+              ref="conditionsBuilderRef"
+              v-model="filterConditions"
+              doctype="Mira Talent"
+              :title="__('Filter Conditions')"
+              :description="__('Add conditions to filter which candidates to sync. Leave empty to sync all active candidates.')"
+              :show-preview="false"
+              :validate-on-change="false"
+            />
+          </div>
         </div>
 
       </div>
@@ -383,11 +463,12 @@
             theme="gray"
             @click="startSync"
             :loading="syncing"
+            :disabled="existingSyncStatus?.has_sync_log || syncProgress.isActive"
           >
             <template #prefix v-if="!syncing">
               <FeatherIcon name="play" class="h-4 w-4" />
             </template>
-            {{ __('Start Sync') }}
+            {{ syncing ? __('Syncing...') : __('Start Sync') }}
           </Button>
         </div>
       </div>
@@ -443,6 +524,18 @@ const formData = ref({
   is_active: 1
 })
 const errors = ref({})
+const syncProgress = ref({
+  isActive: false,
+  syncLogName: null,
+  successCount: 0,
+  failedCount: 0,
+  skippedCount: 0,
+  totalRecords: 0,
+  currentRecord: 0,
+  latestTalent: null
+})
+const existingSyncStatus = ref(null)
+const checkingSyncStatus = ref(false)
 
 // Computed
 const canProceed = computed(() => {
@@ -468,6 +561,15 @@ watch(isOpen, (newValue) => {
   }
 })
 
+// Watch selected connection to check sync status
+watch(selectedConnection, async (newVal) => {
+  if (newVal) {
+    await checkExistingSyncStatus()
+  } else {
+    existingSyncStatus.value = null
+  }
+})
+
 // Methods
 const resetDialog = () => {
   currentStep.value = 1
@@ -479,6 +581,39 @@ const resetDialog = () => {
   currentPage.value = 1
   totalRecords.value = 0
   resetFormData()
+  resetSyncProgress()
+}
+
+const resetSyncProgress = () => {
+  syncProgress.value = {
+    isActive: false,
+    syncLogName: null,
+    successCount: 0,
+    failedCount: 0,
+    skippedCount: 0,
+    totalRecords: 0,
+    currentRecord: 0,
+    latestTalent: null
+  }
+}
+
+const checkExistingSyncStatus = async () => {
+  if (!selectedConnection.value) return
+  
+  checkingSyncStatus.value = true
+  try {
+    const response = await call('mbw_mira.api.sync_segment.check_sync_status', {
+      data_source_name: selectedConnection.value.name,
+      sync_type: 'Candidate to Talent'
+    })
+    
+    existingSyncStatus.value = response
+  } catch (error) {
+    console.error('Error checking sync status:', error)
+    existingSyncStatus.value = null
+  } finally {
+    checkingSyncStatus.value = false
+  }
 }
 
 const resetFormData = () => {
@@ -611,16 +746,21 @@ const startSync = async () => {
     
     if (response.status === 'success') {
       showSuccess(response.message || __('Sync started successfully. The process is running in the background.'))
+      
+      // Initialize sync progress tracking
+      syncProgress.value.isActive = true
+      syncProgress.value.syncLogName = response.sync_log_name
+      
       emit('success')
-      // Close dialog after successful sync start
-      closeDialog()
+      // Don't close dialog immediately - let user see progress
+      // closeDialog()
     } else {
       showError(response.message || __('Sync failed'))
+      syncing.value = false
     }
   } catch (error) {
     console.error('Error starting sync:', error)
     showError(error.message || __('Failed to start sync'))
-  } finally {
     syncing.value = false
   }
 }
@@ -715,5 +855,55 @@ const getVisiblePages = () => {
   }
   
   return pages
+}
+
+// Setup socket listeners for realtime sync progress
+import { globalStore } from '@/stores/global'
+const { $socket } = globalStore()
+
+if ($socket) {
+  $socket.on('candidate_sync_progress', (data) => {
+    if (syncProgress.value.isActive && data.sync_log_name === syncProgress.value.syncLogName) {
+      syncProgress.value.successCount = data.success_count
+      syncProgress.value.failedCount = data.failed_count
+      syncProgress.value.skippedCount = data.skipped_count || 0
+      syncProgress.value.totalRecords = data.total_records
+      syncProgress.value.currentRecord = data.current_record
+      
+      if (data.talent_full_name) {
+        syncProgress.value.latestTalent = {
+          name: data.talent_name,
+          fullName: data.talent_full_name,
+          action: data.action
+        }
+      }
+    }
+  })
+  
+  $socket.on('candidate_sync_complete', (data) => {
+    if (syncProgress.value.isActive && data.sync_log_name === syncProgress.value.syncLogName) {
+      syncProgress.value.successCount = data.success_count
+      syncProgress.value.failedCount = data.failed_count
+      syncProgress.value.skippedCount = data.skipped_count || 0
+      syncProgress.value.totalRecords = data.total_records
+      
+      // Mark sync as complete
+      syncing.value = false
+      
+      // Show completion message
+      if (data.status === 'Completed') {
+        showSuccess(__('Sync completed successfully! {0} talents synced.', [data.success_count]))
+      } else if (data.status === 'Partially Completed') {
+        showSuccess(__('Sync completed with some errors. Success: {0}, Failed: {1}', [data.success_count, data.failed_count]))
+      } else if (data.status === 'Failed') {
+        showError(__('Sync failed: {0}', [data.details]))
+      }
+      
+      // Close dialog after a short delay
+      setTimeout(() => {
+        closeDialog()
+      }, 2000)
+    }
+  })
 }
 </script>

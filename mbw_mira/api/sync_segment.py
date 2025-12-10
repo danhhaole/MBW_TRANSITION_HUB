@@ -35,27 +35,57 @@ def sync_positions(data_source_name):
     
     # Create sync log for queue processing
     try:
-        # Create sync log with Pending status
+        # Check if ANY sync log exists for this connection (regardless of status)
+        # User must retry existing log instead of creating new one
+        existing_sync = frappe.db.sql("""
+            SELECT name, status
+            FROM `tabMira ATS Sync Log`
+            WHERE connection = %s 
+            AND sync_type = %s
+            ORDER BY creation DESC
+            LIMIT 1
+            FOR UPDATE
+        """, (data_source.name, "Position to Segment"), as_dict=True)
+        
+        if existing_sync:
+            status = existing_sync[0].status
+            if status in ["Pending", "In Progress"]:
+                frappe.throw(f"A sync job is already running for this connection. Please wait for it to complete or cancel it.")
+            else:
+                frappe.throw(f"A sync log already exists for this connection with status '{status}'. Please use Retry to run sync again.")
+        
+        # Create sync log with In Progress status (start immediately)
         sync_log = frappe.get_doc({
             "doctype": "Mira ATS Sync Log",
             "connection": data_source.name,
             "sync_type": "Position to Segment",
-            "status": "Pending",
-            "details": f"Position sync queued for {data_source.source_title} ({data_source.source_name})"
+            "status": "In Progress",
+            "start_time": frappe.utils.now(),
+            "details": f"Position sync started for {data_source.source_title} ({data_source.source_name})"
         })
         sync_log.insert(ignore_permissions=True)
         frappe.db.commit()
         
+        # Enqueue background job immediately
+        frappe.enqueue(
+            "mbw_mira.workers.ats.fetch_mbw_ats_data.sync_data_source_positions_background",
+            data_source_name=data_source.name,
+            sync_log_name=sync_log.name,
+            queue="short",
+            timeout=3600  # 1 hour timeout
+        )
+        
         return {
             "status": "success",
-            "message": "Position sync has been queued successfully. Check sync history for progress.",
+            "message": "Position sync has been started. Check sync history for progress.",
             "sync_log_name": sync_log.name
         }
     except Exception as e:
-        frappe.log_error(f"Failed to queue position sync for {data_source_name}: {str(e)}", "Queue Position Sync Error")
+        frappe.db.rollback()
+        frappe.log_error(f"Failed to start position sync for {data_source_name}: {str(e)}", "Start Position Sync Error")
         return {
             "status": "error",
-            "message": f"Failed to queue sync: {str(e)}"
+            "message": f"Failed to start sync: {str(e)}"
         }
 
 @frappe.whitelist()
@@ -93,27 +123,99 @@ def sync_candidates(data_source_name):
     
     # Create sync log for queue processing
     try:
-        # Create sync log with Pending status
+        # Check if ANY sync log exists for this connection (regardless of status)
+        # User must retry existing log instead of creating new one
+        existing_sync = frappe.db.sql("""
+            SELECT name, status
+            FROM `tabMira ATS Sync Log`
+            WHERE connection = %s 
+            AND sync_type = %s
+            ORDER BY creation DESC
+            LIMIT 1
+            FOR UPDATE
+        """, (data_source.name, "Candidate to Talent"), as_dict=True)
+        
+        if existing_sync:
+            status = existing_sync[0].status
+            if status in ["Pending", "In Progress"]:
+                frappe.throw(f"A sync job is already running for this connection. Please wait for it to complete or cancel it.")
+            else:
+                frappe.throw(f"A sync log already exists for this connection with status '{status}'. Please use Retry to run sync again.")
+        
+        # Create sync log with In Progress status (start immediately)
         sync_log = frappe.get_doc({
             "doctype": "Mira ATS Sync Log",
             "connection": data_source.name,
             "sync_type": "Candidate to Talent",
-            "status": "Pending",
-            "details": f"Sync queued for {data_source.source_title} ({data_source.source_name})"
+            "status": "In Progress",
+            "start_time": frappe.utils.now(),
+            "details": f"Sync started for {data_source.source_title} ({data_source.source_name})"
         })
         sync_log.insert(ignore_permissions=True)
         frappe.db.commit()
         
+        # Enqueue background job immediately
+        frappe.enqueue(
+            "mbw_mira.workers.ats.fetch_mbw_ats_data.sync_data_source_candidates_background",
+            data_source_name=data_source.name,
+            sync_log_name=sync_log.name,
+            queue="short",
+            timeout=3600  # 1 hour timeout
+        )
+        
         return {
             "status": "success",
-            "message": "Candidate sync has been queued successfully. Check sync history for progress.",
+            "message": "Candidate sync has been started. Check sync history for progress.",
             "sync_log_name": sync_log.name
         }
     except Exception as e:
-        frappe.log_error(f"Failed to queue candidate sync for {data_source_name}: {str(e)}", "Queue Sync Error")
+        frappe.db.rollback()
+        frappe.log_error(f"Failed to start candidate sync for {data_source_name}: {str(e)}", "Start Sync Error")
         return {
             "status": "error",
-            "message": f"Failed to queue sync: {str(e)}"
+            "message": f"Failed to start sync: {str(e)}"
+        }
+
+@frappe.whitelist()
+def check_sync_status(data_source_name, sync_type="Candidate to Talent"):
+    """
+    Check if a sync log exists for this connection
+    
+    Args:
+        data_source_name (str): Name of Mira Data Source
+        sync_type (str): Type of sync - "Candidate to Talent" or "Position to Segment"
+        
+    Returns:
+        dict: {
+            "has_sync_log": bool,
+            "sync_log_name": str or None,
+            "status": str or None,
+            "can_start_new": bool
+        }
+    """
+    existing_sync = frappe.db.get_value(
+        "Mira ATS Sync Log",
+        {
+            "connection": data_source_name,
+            "sync_type": sync_type
+        },
+        ["name", "status"],
+        order_by="creation desc"
+    )
+    
+    if existing_sync:
+        return {
+            "has_sync_log": True,
+            "sync_log_name": existing_sync[0],
+            "status": existing_sync[1],
+            "can_start_new": False
+        }
+    else:
+        return {
+            "has_sync_log": False,
+            "sync_log_name": None,
+            "status": None,
+            "can_start_new": True
         }
 
 @frappe.whitelist()

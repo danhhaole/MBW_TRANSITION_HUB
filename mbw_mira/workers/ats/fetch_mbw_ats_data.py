@@ -613,6 +613,7 @@ def sync_data_source_candidates_background(data_source_name, sync_log_name):
             
             success_count = 0
             failed_count = 0
+            skipped_count = 0
             error_log = []
 
             for i, candidate in enumerate(candidates):
@@ -636,17 +637,48 @@ def sync_data_source_candidates_background(data_source_name, sync_log_name):
                         segment_id=None
                     )
                     
-                    # Kiểm tra talent đã tồn tại
-                    existing = None
+                    # Kiểm tra duplicate email - SKIP nếu email đã tồn tại
                     if talent_data.get("email"):
-                        existing = frappe.db.exists("Mira Talent", {"email": talent_data["email"]})
+                        existing_by_email = frappe.db.exists("Mira Talent", {"email": talent_data["email"]})
+                        if existing_by_email:
+                            # Skip duplicate email - không tạo/update
+                            skipped_count += 1
+                            error_log.append({
+                                "candidate": candidate.get("name"),
+                                "email": talent_data.get("email"),
+                                "reason": "Duplicate email - skipped"
+                            })
+                            
+                            # Publish realtime update for skipped record
+                            try:
+                                frappe.publish_realtime(
+                                    event='candidate_sync_progress',
+                                    message={
+                                        'sync_log_name': sync_log_name,
+                                        'sync_type': 'Candidate to Talent',
+                                        'status': 'In Progress',
+                                        'success_count': success_count,
+                                        'failed_count': failed_count,
+                                        'skipped_count': skipped_count,
+                                        'total_records': len(candidates),
+                                        'current_record': i + 1,
+                                        'error': f"Duplicate email: {talent_data.get('email')}",
+                                        'details': f"Processing {success_count + failed_count + skipped_count}/{len(candidates)}"
+                                    }
+                                )
+                            except Exception as socket_error:
+                                pass
+                            
+                            continue  # Skip to next candidate
                     
-                    if not existing and candidate_doc.get("name"):
-                        existing = frappe.db.exists("Mira Talent", {"sync_id": candidate_doc.get("name")})
-
-                    if existing:
-                        # Update existing talent
-                        talent = frappe.get_doc("Mira Talent", existing)
+                    # Kiểm tra theo sync_id (nếu không có email hoặc email không trùng)
+                    existing_by_sync_id = None
+                    if candidate_doc.get("name"):
+                        existing_by_sync_id = frappe.db.exists("Mira Talent", {"sync_id": candidate_doc.get("name")})
+                    
+                    if existing_by_sync_id:
+                        # Update existing talent by sync_id
+                        talent = frappe.get_doc("Mira Talent", existing_by_sync_id)
                         talent.update(talent_data)
                         talent.save(ignore_permissions=True)
                         action = "updated"
@@ -661,12 +693,36 @@ def sync_data_source_candidates_background(data_source_name, sync_log_name):
                     # Commit sau mỗi talent thành công
                     frappe.db.commit()
                     
-                    # Update progress every 10 records
+                    # Publish realtime update after each successful record
+                    try:
+                        frappe.publish_realtime(
+                            event='candidate_sync_progress',
+                            message={
+                                'sync_log_name': sync_log_name,
+                                'sync_type': 'Candidate to Talent',
+                                'status': 'In Progress',
+                                'success_count': success_count,
+                                'failed_count': failed_count,
+                                'skipped_count': skipped_count,
+                                'total_records': len(candidates),
+                                'current_record': i + 1,
+                                'talent_name': talent.name,
+                                'talent_full_name': talent.full_name,
+                                'action': action,
+                                'details': f"Processing {success_count + failed_count + skipped_count}/{len(candidates)}"
+                            }
+                        )
+                    except Exception as socket_error:
+                        # Don't fail the sync if socket emit fails
+                        pass
+                    
+                    # Update sync log progress every 10 records
                     if (i + 1) % 10 == 0:
                         sync_log.reload()
                         sync_log.success_count = success_count
                         sync_log.failed_count = failed_count
-                        sync_log.details = f"Processing... {success_count + failed_count}/{len(candidates)} completed"
+                        sync_log.skipped_count = skipped_count
+                        sync_log.details = f"Processing... {success_count + failed_count + skipped_count}/{len(candidates)} completed"
                         sync_log.save(ignore_permissions=True)
                         frappe.db.commit()
 
@@ -679,15 +735,36 @@ def sync_data_source_candidates_background(data_source_name, sync_log_name):
                     
                     # Rollback failed transaction
                     frappe.db.rollback()
+                    
+                    # Publish realtime update for failed record
+                    try:
+                        frappe.publish_realtime(
+                            event='candidate_sync_progress',
+                            message={
+                                'sync_log_name': sync_log_name,
+                                'sync_type': 'Candidate to Talent',
+                                'status': 'In Progress',
+                                'success_count': success_count,
+                                'failed_count': failed_count,
+                                'skipped_count': skipped_count,
+                                'total_records': len(candidates),
+                                'current_record': i + 1,
+                                'error': str(e)[:100],
+                                'details': f"Processing {success_count + failed_count + skipped_count}/{len(candidates)}"
+                            }
+                        )
+                    except Exception as socket_error:
+                        pass
 
             # Final update sync log
             sync_log.reload()
-            sync_log.status = "Completed" if failed_count == 0 else "Partially Completed"
+            sync_log.status = "Completed" if (failed_count == 0 and skipped_count == 0) else "Partially Completed"
             sync_log.success_count = success_count
             sync_log.failed_count = failed_count
+            sync_log.skipped_count = skipped_count
             sync_log.error_log = json.dumps(error_log, indent=2)
             sync_log.end_time = frappe.utils.now()
-            sync_log.details = f"Candidate sync completed. Success: {success_count}, Failed: {failed_count}"
+            sync_log.details = f"Candidate sync completed. Success: {success_count}, Failed: {failed_count}, Skipped (Duplicate): {skipped_count}"
             sync_log.save(ignore_permissions=True)
             
             # Emit socket event for real-time updates
@@ -700,6 +777,7 @@ def sync_data_source_candidates_background(data_source_name, sync_log_name):
                         'status': sync_log.status,
                         'success_count': success_count,
                         'failed_count': failed_count,
+                        'skipped_count': skipped_count,
                         'total_records': len(candidates),
                         'details': sync_log.details
                     }
@@ -794,6 +872,7 @@ def sync_data_source_positions_background(data_source_name, sync_log_name):
             
             success_count = 0
             failed_count = 0
+            skipped_count = 0
             error_log = []
 
             for i, position in enumerate(positions):
@@ -806,14 +885,52 @@ def sync_data_source_positions_background(data_source_name, sync_log_name):
                         frappe.db.commit()
                         return
                     
-                    # Check if segment already exists
+                    # Check if segment already exists by sync_id
                     position_id = position.get("name")
-                    segment_name = f"ATS-{position_id}"
-                    segment = frappe.db.get_value(
+                    position_title = position.get("position_name")
+                    
+                    existing_segment = frappe.db.get_value(
                         "Mira Segment",
                         {"sync_id": position_id, "type": "DYNAMIC"},
                         "name"
                     )
+                    
+                    # Check duplicate by title (similar to email check for talents)
+                    if not existing_segment and position_title:
+                        duplicate_by_title = frappe.db.exists(
+                            "Mira Segment",
+                            {"title": position_title, "type": "DYNAMIC"}
+                        )
+                        if duplicate_by_title:
+                            # Skip duplicate title - không tạo/update
+                            skipped_count += 1
+                            error_log.append({
+                                "position": position_id,
+                                "title": position_title,
+                                "reason": "Duplicate title - skipped"
+                            })
+                            
+                            # Publish realtime update for skipped record
+                            try:
+                                frappe.publish_realtime(
+                                    event='position_sync_progress',
+                                    message={
+                                        'sync_log_name': sync_log_name,
+                                        'sync_type': 'Position to Segment',
+                                        'status': 'In Progress',
+                                        'success_count': success_count,
+                                        'failed_count': failed_count,
+                                        'skipped_count': skipped_count,
+                                        'total_records': len(positions),
+                                        'current_record': i + 1,
+                                        'error': f"Duplicate title: {position_title}",
+                                        'details': f"Processing {success_count + failed_count + skipped_count}/{len(positions)}"
+                                    }
+                                )
+                            except Exception as socket_error:
+                                pass
+                            
+                            continue  # Skip to next position
 
                     # Prepare segment data
                     # Parse HTML description to plain text
@@ -826,7 +943,7 @@ def sync_data_source_positions_background(data_source_name, sync_log_name):
                     
                     segment_data = {
                         "doctype": "Mira Segment",
-                        "title": position.get("position_name"),
+                        "title": position_title,
                         "description": description_text,
                         "type": "DYNAMIC",
                         "source": "SYNC_ATS",
@@ -834,9 +951,9 @@ def sync_data_source_positions_background(data_source_name, sync_log_name):
                         "criteria": json.dumps(criteria)
                     }
 
-                    if segment:
-                        # Update existing segment
-                        segment_doc = frappe.get_doc("Mira Segment", segment)
+                    if existing_segment:
+                        # Update existing segment by sync_id
+                        segment_doc = frappe.get_doc("Mira Segment", existing_segment)
                         segment_doc.update(segment_data)
                         segment_doc.save(ignore_permissions=True)
                         action = "updated"
@@ -851,12 +968,36 @@ def sync_data_source_positions_background(data_source_name, sync_log_name):
                     # Commit after each successful segment to avoid conflicts
                     frappe.db.commit()
                     
+                    # Publish realtime update after each successful record
+                    try:
+                        frappe.publish_realtime(
+                            event='position_sync_progress',
+                            message={
+                                'sync_log_name': sync_log_name,
+                                'sync_type': 'Position to Segment',
+                                'status': 'In Progress',
+                                'success_count': success_count,
+                                'failed_count': failed_count,
+                                'skipped_count': skipped_count,
+                                'total_records': len(positions),
+                                'current_record': i + 1,
+                                'segment_name': segment_doc.name,
+                                'segment_title': segment_doc.title,
+                                'action': action,
+                                'details': f"Processing {success_count + failed_count + skipped_count}/{len(positions)}"
+                            }
+                        )
+                    except Exception as socket_error:
+                        # Don't fail the sync if socket emit fails
+                        pass
+                    
                     # Update progress every 5 records
                     if (i + 1) % 5 == 0:
                         sync_log.reload()
                         sync_log.success_count = success_count
                         sync_log.failed_count = failed_count
-                        sync_log.details = f"Processing... {success_count + failed_count}/{len(positions)} completed"
+                        sync_log.skipped_count = skipped_count
+                        sync_log.details = f"Processing... {success_count + failed_count + skipped_count}/{len(positions)} completed"
                         sync_log.save(ignore_permissions=True)
                         frappe.db.commit()
 
@@ -869,15 +1010,36 @@ def sync_data_source_positions_background(data_source_name, sync_log_name):
                     
                     # Rollback failed transaction
                     frappe.db.rollback()
+                    
+                    # Publish realtime update for failed record
+                    try:
+                        frappe.publish_realtime(
+                            event='position_sync_progress',
+                            message={
+                                'sync_log_name': sync_log_name,
+                                'sync_type': 'Position to Segment',
+                                'status': 'In Progress',
+                                'success_count': success_count,
+                                'failed_count': failed_count,
+                                'skipped_count': skipped_count,
+                                'total_records': len(positions),
+                                'current_record': i + 1,
+                                'error': str(e)[:100],
+                                'details': f"Processing {success_count + failed_count + skipped_count}/{len(positions)}"
+                            }
+                        )
+                    except Exception as socket_error:
+                        pass
 
             # Final update sync log
             sync_log.reload()
-            sync_log.status = "Completed" if failed_count == 0 else "Partially Completed"
+            sync_log.status = "Completed" if (failed_count == 0 and skipped_count == 0) else "Partially Completed"
             sync_log.success_count = success_count
             sync_log.failed_count = failed_count
+            sync_log.skipped_count = skipped_count
             sync_log.error_log = json.dumps(error_log, indent=2)
             sync_log.end_time = frappe.utils.now()
-            sync_log.details = f"Position sync completed. Success: {success_count}, Failed: {failed_count}"
+            sync_log.details = f"Position sync completed. Success: {success_count}, Failed: {failed_count}, Skipped (Duplicate): {skipped_count}"
             sync_log.save(ignore_permissions=True)
             
             # Emit socket event for real-time updates
@@ -890,6 +1052,7 @@ def sync_data_source_positions_background(data_source_name, sync_log_name):
                         'status': sync_log.status,
                         'success_count': success_count,
                         'failed_count': failed_count,
+                        'skipped_count': skipped_count,
                         'total_records': len(positions),
                         'details': sync_log.details
                     }
