@@ -21,8 +21,8 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200">
-            <tr 
-              v-for="campaign in campaigns" 
+            <tr
+              v-for="campaign in campaigns"
               :key="campaign.name || campaign.id"
               class="hover:bg-gray-50"
             >
@@ -30,9 +30,9 @@
               <td class="py-4 px-4">
                 <div class="flex items-center">
                   <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-                    <FeatherIcon 
-                      :name="getInteractionIcon(campaign.interaction_method)" 
-                      class="h-4 w-4 text-blue-600" 
+                    <FeatherIcon
+                      :name="getInteractionIcon(campaign.interaction_method)"
+                      class="h-4 w-4 text-blue-600"
                     />
                   </div>
                   <div>
@@ -103,14 +103,14 @@
               <!-- Actions -->
               <td class="py-4 px-4">
                 <div class="flex items-center space-x-2">
-                  <button 
+                  <button
                     @click="handleView(campaign)"
                     class="text-gray-600 hover:text-blue-600 p-2 rounded-md hover:bg-blue-50 transition-colors"
                     :title="__('View Details')"
                   >
                     <FeatherIcon name="eye" class="h-4 w-4" />
                   </button>
-                  <button 
+                  <button
                     v-if="canEdit"
                     @click="handleEdit(campaign)"
                     class="text-gray-600 hover:text-green-600 p-2 rounded-md hover:bg-green-50 transition-colors"
@@ -118,7 +118,7 @@
                   >
                     <FeatherIcon name="edit" class="h-4 w-4" />
                   </button>
-                  <button 
+                  <button
                     v-if="canEdit"
                     @click="handleSaveAsTemplate(campaign)"
                     class="text-gray-600 hover:text-purple-600 p-2 rounded-md hover:bg-purple-50 transition-colors"
@@ -127,7 +127,7 @@
                     <FeatherIcon name="bookmark" class="h-4 w-4" />
                   </button>
                   <button
-                    v-if="campaign.status === 'DRAFT' && canDelete" 
+                    v-if="campaign.status === 'DRAFT' && canDelete"
                     @click="handleDelete(campaign)"
                     class="text-gray-600 hover:text-red-600 p-2 rounded-md hover:bg-red-50 transition-colors"
                     :title="__('Delete')"
@@ -171,7 +171,7 @@
           {{ __('Display') }} {{ pagination.showing_from || 1 }}-{{ pagination.showing_to || campaigns.length }} {{ __('of') }} {{ pagination.total || campaigns.length }} {{ __('campaigns') }}
         </div>
         <div class="flex space-x-1">
-          <button 
+          <button
             @click="handlePageChange(1)"
             :disabled="pagination.page === 1"
             class="px-3 py-1 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -180,7 +180,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
             </svg>
           </button>
-          
+
           <template v-for="page in getPaginationRange()" :key="page">
             <button
               v-if="page === '...'"
@@ -198,8 +198,8 @@
               {{ page }}
             </button>
           </template>
-          
-          <button 
+
+          <button
             @click="handlePageChange(pagination.page + 1)"
             :disabled="pagination.page >= pagination.pages"
             class="px-3 py-1 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -243,7 +243,7 @@ const permission = usePermissionStore()
 const canEdit = permission.can("Mira Campaign", "edit")
 const canDelete = permission.can("Mira Campaign", "delete")
 
-// Translation helper function  
+// Translation helper function
 
 
 // Props
@@ -283,20 +283,44 @@ const qrData = ref({ url: '', image: '' })
 // Handle status change
 const handleStatusChange = async (campaign, newStatus) => {
   try {
+    // Get the document first
+    const doc = await call('frappe.client.get', {
+      doctype: 'Mira Campaign',
+      name: campaign.name
+    })
+
+    // Update status
+    doc.status = newStatus
+
+    // Save document (triggers on_update hook)
     await call('frappe.client.set_value', {
       doctype: 'Mira Campaign',
       name: campaign.name,
-      fieldname: 'status',
-      value: newStatus
+      fieldname: {
+        status: newStatus
+      }
     })
-    
+
     // Update local data
     campaign.status = newStatus
-    
+
     // Emit event to parent
     emit('status-change', { campaign, newStatus })
-    
+
     console.log(`✅ Status updated to ${newStatus}`)
+
+    // If status is ACTIVE, trigger email sending
+    if (newStatus === 'ACTIVE') {
+      console.log('📧 Triggering email send for campaign:', campaign.name)
+      try {
+        const result = await call('mbw_mira.api.campaign.send_campaign_welcome_emails', {
+          campaign_id: campaign.name
+        })
+        console.log('📧 Email send result:', result)
+      } catch (emailError) {
+        console.error('❌ Error sending emails:', emailError)
+      }
+    }
   } catch (error) {
     console.error('❌ Error updating status:', error)
     // Revert on error
@@ -331,7 +355,7 @@ const getStatusSelectClass = (status) => {
 const getStatusText = (status) => {
   const texts = {
     'DRAFT': 'Draft',
-    'ACTIVE': 'Active', 
+    'ACTIVE': 'Active',
     'PAUSED': 'Paused',
     'ARCHIVED': 'Archived',
     'FAILED': 'Failed',
@@ -391,14 +415,14 @@ const getProgress = (campaign) => {
     }
     return progressMap[campaign.status] || 0
   }
-  
+
   const now = new Date()
   const start = new Date(campaign.start_date)
   const end = new Date(campaign.end_date)
-  
+
   if (now < start) return 0
   if (now > end) return 100
-  
+
   const total = end - start
   const current = now - start
   return Math.round((current / total) * 100)
@@ -422,7 +446,7 @@ const getPaginationRange = () => {
   const totalPages = props.pagination?.pages || 1
   const currentPage = props.pagination?.page || 1
   const range = []
-  
+
   if (totalPages <= 5) {
     for (let i = 1; i <= totalPages; i++) {
       range.push(i)
@@ -436,7 +460,7 @@ const getPaginationRange = () => {
       range.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages)
     }
   }
-  
+
   return range
 }
 

@@ -17,7 +17,7 @@
           class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           :class="{ 'bg-gray-100 cursor-not-allowed': readonly }"
         />   -->
-        <FormControl 
+        <FormControl
           v-model="localContent.email_subject"
           :disabled="readonly"
           :placeholder="__('Enter email subject line...')"
@@ -35,7 +35,7 @@
         <label class="block text-sm font-medium text-gray-700 mb-2">
           {{ __("Email Content") }} <span class="text-red-500">*</span>
         </label>
-        
+
         <div class="border border-gray-300 rounded-lg p-4 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
              @click="openTemplateEditor"
              :class="{ 'cursor-not-allowed bg-gray-200': readonly }">
@@ -50,12 +50,12 @@
               </p>
             </div>
           </div>
-          
+
           <!-- Content Preview -->
           <div v-if="hasAnyContent" class="mt-4 p-3 bg-white rounded border">
             <div class="text-xs text-gray-500 mb-2">{{ __("Preview:") }}</div>
-            <div 
-              class="prose prose-sm max-w-none text-gray-700 line-clamp-3 overflow-hidden"
+            <div
+              class="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap overflow-hidden"
               v-html="getPreviewContent(getContentForPreview())"
             >
             </div>
@@ -68,7 +68,7 @@
         <label class="block text-sm font-medium text-gray-700 mb-2">
           {{ __("File Attachments") }}
         </label>
-        
+
         <!-- Uploaded Files List -->
         <div v-if="localContent.attachments && localContent.attachments.length > 0" class="mb-4 space-y-2">
           <div
@@ -189,8 +189,8 @@
           <!-- Unlayer Email Editor -->
           <div class="relative">
             <!-- Loading Overlay -->
-            <div 
-              v-if="editorLoading" 
+            <div
+              v-if="editorLoading"
               class="absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center rounded-lg"
             >
               <div class="text-center">
@@ -198,14 +198,14 @@
                 <p class="text-sm text-gray-600 font-medium">{{ __('Loading email editor...') }}</p>
               </div>
             </div>
-            
+
             <EmailBuilder
               ref="emailBuilderEditor"
               v-model="dialogContent"
               height="600px"
               @ready="onEditorReady"
             />
-            
+
             <!-- OLD Unlayer Editor - COMMENTED OUT -->
             <!--
             <UnlayerEmailEditor
@@ -218,7 +218,7 @@
           </div>
         </div>
       </template>
-      
+
       <template #actions>
 
         <div class="flex items-center justify-end gap-2">
@@ -241,11 +241,11 @@ import { useToast } from '../../../composables/useToast'
 import EmailTemplateSelectorModal from '@/components/Modals/EmailTemplateSelectorModal.vue'
 import { showSettings, activeSettingsPage } from '@/composables/settings'
 import EmailBuilder from '@/components/Settings/MiraEmailTemplate/EmailBuilder/EmailBuilder.vue'
-import { 
-  convertEmailBuilderToHtml, 
-  convertHtmlToEmailBuilder, 
-  isEmailBuilderFormat, 
-  isHtmlFormat 
+import {
+  convertEmailBuilderToHtml,
+  convertHtmlToEmailBuilder,
+  isEmailBuilderFormat,
+  isHtmlFormat
 } from '@/utils/emailBuilderConverter.js'
 // OLD IMPORT - COMMENTED OUT
 // import UnlayerEmailEditor from '@/components/Settings/MiraEmailTemplate/UnlayerEmailEditor.vue'
@@ -291,9 +291,9 @@ const hasAnyContent = computed(() => {
 
 // Get content for preview (prioritize block_content)
 const getContentForPreview = () => {
-  return localContent.value.block_content || 
-         localContent.value.template_content || 
-         localContent.value.email_content || 
+  return localContent.value.block_content ||
+         localContent.value.template_content ||
+         localContent.value.email_content ||
          ''
 }
 
@@ -368,18 +368,18 @@ const fieldAutocompleteOptions = computed(() => {
 // Open template editor dialog
 const openTemplateEditor = () => {
   if (props.readonly) return
-  
+
   editorLoading.value = true
-  
+
   // Load existing design if available - prioritize block_content
   const contentToLoad = localContent.value.block_content || localContent.value.email_content
-  
+
   if (contentToLoad) {
     try {
       // Check if it's JSON format first
       if (typeof contentToLoad === 'string' && contentToLoad.trim().startsWith('{')) {
         const design = JSON.parse(contentToLoad)
-        
+
         // NEW: Check for EmailBuilder format first
         if (design && design.blocks && Array.isArray(design.blocks)) {
           dialogContent.value = design
@@ -415,7 +415,7 @@ const openTemplateEditor = () => {
   } else {
     dialogContent.value = null
   }
-  
+
   showTemplateDialog.value = true
 }
 
@@ -425,31 +425,31 @@ const saveTemplate = async () => {
     toast.error(__('Editor not ready'))
     return
   }
-  
+
   try {
     // Export design from EmailBuilder
     const exportData = emailBuilderEditor.value.exportHtml()
     const blocks = emailBuilderEditor.value.getBlocks()
-    
+
     // Create EmailBuilder format for internal use
-    const emailBuilderFormat = { 
-      blocks, 
-      emailSettings: exportData.emailSettings 
+    const emailBuilderFormat = {
+      blocks,
+      emailSettings: exportData.emailSettings
     }
-    
+
     // Convert to HTML/CSS for storage in campaign template_content
     const htmlFormat = convertEmailBuilderToHtml(emailBuilderFormat)
-    
+
     // Save all formats for different use cases
     localContent.value.template_content = htmlFormat.html    // HTML for rendering
     localContent.value.mjml_content = htmlFormat.mjml        // MJML for email services
     localContent.value.block_content = JSON.stringify(emailBuilderFormat)  // EmailBuilder for editing
-    
+
     console.log('💾 Saved formats:')
     console.log('   template_content (HTML):', htmlFormat.html.substring(0, 100) + '...')
     console.log('   mjml_content (MJML):', htmlFormat.mjml.substring(0, 100) + '...')
     console.log('   block_content (EmailBuilder):', JSON.stringify(emailBuilderFormat).substring(0, 100) + '...')
-    
+
     showTemplateDialog.value = false
     toast.success(__('Email template saved successfully'))
   } catch (error) {
@@ -468,7 +468,7 @@ const generateWithAI = async () => {
 const useTemplate = () => {
   // Temporarily close editor dialog to prevent modal conflicts
   showTemplateDialog.value = false
-  
+
   // Open selector modal
   nextTick(() => {
     showTemplateSelectorModal.value = true
@@ -478,13 +478,13 @@ const useTemplate = () => {
 // Apply selected template
 const applyTemplate = (template) => {
   editorLoading.value = true
-  
+
   if (template.subject) {
     localContent.value.email_subject = template.subject
   }
-  
+
   let templateApplied = false
-  
+
   // Use email_design_json field (EmailBuilder or Unlayer design) instead of message (HTML export)
   if (template.email_design_json) {
     try {
@@ -492,7 +492,7 @@ const applyTemplate = (template) => {
       const design = typeof template.email_design_json === 'string'
         ? JSON.parse(template.email_design_json)
         : template.email_design_json
-      
+
       // NEW: Check for EmailBuilder format first
       if (design && design.blocks && Array.isArray(design.blocks)) {
         // Convert and save all formats
@@ -500,7 +500,7 @@ const applyTemplate = (template) => {
         localContent.value.template_content = htmlFormat.html    // HTML for rendering
         localContent.value.mjml_content = htmlFormat.mjml        // MJML for email services
         localContent.value.block_content = JSON.stringify(design)  // EmailBuilder for editing
-        
+
         dialogContent.value = design
         templateApplied = true
         console.log('Applied EmailBuilder template:', design)
@@ -509,13 +509,13 @@ const applyTemplate = (template) => {
       else if (design && design.body && Array.isArray(design.body.rows)) {
         // Convert Unlayer to EmailBuilder format
         const converted = convertHtmlToEmailBuilder(design.body?.rows?.[0]?.columns?.[0]?.contents?.[0]?.values?.text || '')
-        
+
         // Convert and save all formats
         const htmlFormat = convertEmailBuilderToHtml(converted)
         localContent.value.template_content = htmlFormat.html    // HTML for rendering
         localContent.value.mjml_content = htmlFormat.mjml        // MJML for email services
         localContent.value.block_content = JSON.stringify(converted)  // EmailBuilder for editing
-        
+
         dialogContent.value = converted
         templateApplied = true
         console.log('Applied and converted Unlayer template (legacy):', design)
@@ -527,21 +527,21 @@ const applyTemplate = (template) => {
       console.warn('Template email_design_json is not valid JSON:', e)
     }
   }
-  
+
   // If template couldn't be applied (old format or missing design JSON)
   if (!templateApplied) {
     dialogContent.value = null
     toast.warning(__('This template does not have a valid design. Please create a new design with the visual editor.'))
     editorLoading.value = false
   }
-  
+
   showTemplateSelectorModal.value = false
-  
+
   // Ensure editor dialog stays open
   nextTick(() => {
     showTemplateDialog.value = true
   })
-  
+
   if (templateApplied) {
     toast.success(__('Template applied successfully'))
   }
@@ -552,7 +552,7 @@ const openTemplateSettings = () => {
   // Close both modals
   showTemplateSelectorModal.value = false
   showTemplateDialog.value = false
-  
+
   // Open settings dialog and set active page to Email Templates
   nextTick(() => {
     showSettings.value = true
@@ -563,19 +563,17 @@ const openTemplateSettings = () => {
 // Get preview content (extract from EmailBuilder blocks or Unlayer design)
 const getPreviewContent = (content) => {
   if (!content) return ''
-  
+
   try {
     const design = typeof content === 'string' ? JSON.parse(content) : content
-    
+
     // NEW: Handle EmailBuilder format
     if (design.blocks && Array.isArray(design.blocks)) {
-      let previewText = ''
+      let previewHtml = ''
       design.blocks.forEach(block => {
         if (block.type === 'text' && block.props?.content) {
-          // Strip HTML tags for preview
-          const div = document.createElement('div')
-          div.innerHTML = block.props.content
-          previewText += div.textContent + ' '
+          // Giữ nguyên HTML để preview hiển thị đúng xuống dòng / định dạng
+          previewHtml += block.props.content + ' '
         }
         // Handle nested blocks in layout columns
         if (block.children && Array.isArray(block.children)) {
@@ -583,23 +581,24 @@ const getPreviewContent = (content) => {
             if (Array.isArray(column)) {
               column.forEach(childBlock => {
                 if (childBlock.type === 'text' && childBlock.props?.content) {
-                  const div = document.createElement('div')
-                  div.innerHTML = childBlock.props.content
-                  previewText += div.textContent + ' '
+                  previewHtml += childBlock.props.content + ' '
                 }
               })
             }
           })
         }
       })
-      
-      // Limit preview length
-      if (previewText.length > 200) {
-        return previewText.substring(0, 200) + '...'
+
+      // Limit preview length một cách đơn giản bằng textContent nếu quá dài
+      if (previewHtml.length > 2000) {
+        const div = document.createElement('div')
+        div.innerHTML = previewHtml
+        const text = div.textContent || ''
+        return text.substring(0, 200) + '...'
       }
-      return previewText || '<p>Email template created with EmailBuilder</p>'
+      return previewHtml || '<p>Email template created with EmailBuilder</p>'
     }
-    
+
     // OLD: Handle Unlayer design format (for backward compatibility)
     if (design.body && design.body.rows) {
       let previewText = ''
@@ -614,7 +613,7 @@ const getPreviewContent = (content) => {
           })
         })
       })
-      
+
       if (previewText.length > 200) {
         return previewText.substring(0, 200) + '...'
       }
@@ -623,7 +622,7 @@ const getPreviewContent = (content) => {
   } catch (e) {
     console.warn('Failed to parse content as design JSON:', e)
   }
-  
+
   // Fallback for non-JSON content
   if (content.length > 200) {
     return content.substring(0, 200) + '...'
@@ -653,7 +652,7 @@ watch(selectedDialogField, (newValue) => {
 // Insert field to dialog editor
 const insertFieldToDialog = (option) => {
   if (!option) return
-  
+
   toast.info(__(`Copy this variable: {{ ${option.value} }} and paste it in the editor`))
 }
 
@@ -665,11 +664,11 @@ const handleFileUploadSuccess = (file) => {
     toast.error(__('File size must be less than 10MB'))
     return
   }
-  
+
   if (!localContent.value.attachments) {
     localContent.value.attachments = []
   }
-  
+
   localContent.value.attachments.push({
     file_name: file.file_name,
     file_url: file.file_url,
@@ -691,11 +690,11 @@ const removeAttachment = (index) => {
 // Format file size
 const formatFileSize = (bytes) => {
   if (!bytes) return '0 B'
-  
+
   const k = 1024
   const sizes = ['B', 'KB', 'MB', 'GB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
-  
+
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 

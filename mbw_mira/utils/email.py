@@ -20,75 +20,146 @@ def send_email(
     bcc=None,
     reply_to=None,
     attachments=None,
-    text_message=None
+    text_message=None,
+    as_html=True,
+    debug=True,
+    inline_css=True
 ):
+    print("!!! send_email function called !!!")
     """
     Unified send email utility:
     - Use Frappe Email Account if configured
     - Else fallback to AWS SES
     - Logs all emails to Email Log
     """
+    print(f"\n===== EMAIL SEND DEBUG START =====")
+    print(f"Recipients: {recipients}")
+    print(f"Subject: {subject}")
+    print(f"Template: {template}")
+    print(f"Content length: {len(content) if content else 0}")
+    print(f"Content type: {'HTML' if as_html and content and ('<' in content and '>' in content) else 'Plain Text'}")
+    print(f"Sender: {sender}")
+    print(f"CC: {cc}")
+    print(f"BCC: {bcc}")
+    print(f"Reply To: {reply_to}")
+    print(f"=====================================")
+    print("DEBUG: About to check recipients...")
     if not recipients:
+        print("DEBUG: No recipients found, throwing error...")
         frappe.throw("Recipients are required")
+    print("DEBUG: Recipients check passed")
     if not (template or content):
+        print("DEBUG: No template or content found, throwing error...")
         frappe.throw("Either template name or raw content must be provided")
+    print("DEBUG: Template/content check passed")
 
-    # Normalize
-    recipients = normalize_emails(recipients)
-    cc = normalize_emails(cc)
-    bcc = normalize_emails(bcc)
-    reply_to = normalize_emails(reply_to)
-    prepared_attachments = prepare_attachments(attachments)
-    
+    print("DEBUG: Skipping normalize_emails and prepare_attachments for debugging...")
+    # Skip these functions temporarily to isolate the issue
+    prepared_attachments = []
+    print("DEBUG: Email preparation complete (simplified)")
+
     # Default sender
-    senderemail= ''
-    if sender_email():
-        senderemail = sender_email().email_id
+    senderemail = ''
+    print("DEBUG: About to check for email account...")
+    try:
+        email_account = sender_email()
+        print(f"DEBUG: Email account check result: {email_account}")
+    except Exception as e:
+        print(f"DEBUG: Error checking email account: {e}")
+        email_account = None
+
+    if email_account:
+        senderemail = email_account.email_id
+        print(f"DEBUG: Using sender email: {senderemail}")
+        print(f"DEBUG: Email account enabled: {email_account.enabled}")
+    else:
+        print("DEBUG: No email account found!")
+
+    if not sender:
+        sender = senderemail or frappe.get_system_settings('mail_sender_name') or 'Notifications'
+        print(f"DEBUG: Final sender: {sender}")
+
+    print("DEBUG: About to enter try block for email sending...")
     if template:
+        print("DEBUG: Processing template...")
         content = render_template(template, template_args)
         if not text_message:
             text_message = frappe.utils.strip_html(content)
+        print("DEBUG: Template processed")
     status = "Success"
     error = None
+    print("DEBUG: Status and error initialized")
 
     try:
+        print(f"\nDEBUG: Attempting to send email...")
+        print(f"DEBUG: senderemail exists: {bool(senderemail)}")
+        print(f"DEBUG: as_html: {as_html}")
+        print(f"DEBUG: content exists: {bool(content)}")
+
         if senderemail:
-            # Use Frappe
-            frappe.sendmail(
-                recipients=recipients,
-                subject=subject,
-                sender=senderemail,
-                cc=cc,
-                bcc=bcc,
-                reply_to=reply_to,
-                attachments=prepared_attachments,
-                content=content,
-                delayed=False
-            )
-            status = "Fallback"
+            print("DEBUG: Using Frappe email account...")
+            # Use Frappe with HTML support
+            if as_html and content:
+                print("DEBUG: Sending HTML email via Frappe...")
+                print(f"DEBUG: About to call frappe.sendmail with HTML content...")
+                print(f"DEBUG: Content preview: {content[:100]}...")
+                # Send as HTML email
+                result = frappe.sendmail(
+                    recipients=recipients,
+                    subject=subject,
+                    sender=senderemail,
+                    content=content,
+                    now=True
+                )
+                print(f"DEBUG: frappe.sendmail returned: {result}")
+                print("DEBUG: HTML email sent via Frappe successfully!")
+            else:
+                print("DEBUG: Sending plain text email via Frappe...")
+                # Send as plain text
+                frappe.sendmail(
+                    recipients=recipients,
+                    subject=subject,
+                    sender=senderemail,
+                    message=text_message or content,
+                    now=True
+                )
+                print("DEBUG: Plain text email sent via Frappe successfully!")
+            status = "Success"
             frappe.logger().info(f"Email sent via Frappe to {recipients}")
         else:
-            # Fallback to AWS SES
-            
+            print("DEBUG: No email account, falling back to AWS SES...")
+            # Fallback to AWS SES with HTML support
             sendmail_via_ses(
                 recipients=recipients,
                 subject=subject,
-                message=content
+                message=content,
+                text_message=text_message if text_message else (frappe.utils.strip_html(content) if content else None),
+                debug=debug
             )
+            print("DEBUG: Email sent via SES successfully!")
             status = "Fallback"
             frappe.logger().info(f"Email sent via AWS SES to {recipients}")
-        
+
     except Exception as e:
         status = "Failed"
         error = str(e)
+        print(f"DEBUG: Email sending failed with error: {error}")
+        print(f"DEBUG: Error type: {type(e).__name__}")
+        import traceback
+        print(f"DEBUG: Traceback: {traceback.format_exc()}")
         frappe.log_error(frappe.get_traceback(), "send_email Failed")
         raise
 
     finally:
+        print(f"DEBUG: Email sending completed with status: {status}")
+        # Process email queue to send immediately
+        process_email_queue()
+        # Check email queue after sending
+        check_email_queue()
         # Always log to Email Log
         log_email_transaction(
             subject=subject,
-            sender=sender_email or sender,
+            sender=senderemail or sender,
             recipients=recipients,
             cc=cc,
             bcc=bcc,
@@ -98,6 +169,8 @@ def send_email(
             status=status,
             error=error
         )
+        print(f"DEBUG: Email transaction logged")
+        print(f"===== EMAIL SEND DEBUG END =====\n")
         return True if status == "Fallback" else False
 
 def normalize_emails(emails):
@@ -152,23 +225,34 @@ def send_via_s3(recipients, subject, html_content, cc=None, bcc=None, attachment
     frappe.logger().info(f"[S3 Fallback] Would send email to {recipients}")
     # Implement your S3, SES, Mailgun, etc. integration here
     pass
-def sendmail_via_ses(recipients, subject, message):
+def sendmail_via_ses(recipients, subject, message, text_message=None, debug=False):
+    print(f"\n===== SES DEBUG START =====")
+    print(f"DEBUG: SES recipients: {recipients}")
+    print(f"DEBUG: SES subject: {subject}")
+    print(f"DEBUG: SES message length: {len(message) if message else 0}")
+    print(f"DEBUG: SES text_message length: {len(text_message) if text_message else 0}")
     try:
         sender = (frappe.conf.get("aws_sender") or "no-reply@mbwcloud.com").strip()
         region = frappe.conf.get("aws_region") or "us-east-1"
         aws_access_key_id = frappe.conf.get("aws_access_key_id")
         aws_secret_access_key = frappe.conf.get("aws_secret_access_key")
-        
+
+        print(f"DEBUG: SES sender: {sender}")
+        print(f"DEBUG: SES region: {region}")
+        print(f"DEBUG: SES access key configured: {bool(aws_access_key_id)}")
+        print(f"DEBUG: SES secret key configured: {bool(aws_secret_access_key)}")
+
         client = boto3.client(
             'ses',
             region_name=region,
             aws_access_key_id=aws_access_key_id,
             aws_secret_access_key=aws_secret_access_key
         )
+        print("DEBUG: SES client created successfully")
 
         if isinstance(recipients, str):
             recipients = [recipients]
-        
+
         # Clean email addresses
         recipients = [r.strip() for r in recipients if r and isinstance(r, str) and r.strip()]
 
@@ -178,23 +262,125 @@ def sendmail_via_ses(recipients, subject, message):
                 raise ValueError(f"Invalid email address detected: {repr(r)}")
 
         if client:
+            print("DEBUG: Preparing SES message...")
+            # Prepare message body
+            message_body = {}
+
+            # Add HTML part if message contains HTML
+            if message and ('<' in message and '>' in message):
+                message_body['Html'] = {'Data': message, 'Charset': 'UTF-8'}
+                print("DEBUG: Added HTML part to SES message")
+
+            # Add text part
+            text_content = text_message or (frappe.utils.strip_html(message) if message else None)
+            if text_content:
+                message_body['Text'] = {'Data': text_content, 'Charset': 'UTF-8'}
+                print("DEBUG: Added text part to SES message")
+
+            print(f"DEBUG: Sending email via SES to {len(recipients)} recipients...")
             response = client.send_email(
                 Source=sender,
                 Destination={'ToAddresses': recipients},
                 Message={
                     'Subject': {'Data': subject, 'Charset': 'UTF-8'},
-                    'Body': {
-                        'Html': {'Data': message, 'Charset': 'UTF-8'},
-                        'Text': {'Data': frappe.utils.strip_html(message), 'Charset': 'UTF-8'}
-                    }
+                    'Body': message_body
                 }
             )
+            print(f"DEBUG: SES response: {response}")
+            print("DEBUG: Email sent via SES successfully!")
             return response
         else:
+            print("DEBUG: SES client is None!")
             return None
 
     except Exception as e:
+        print(f"DEBUG: SES sending failed with error: {str(e)}")
+        print(f"DEBUG: Error type: {type(e).__name__}")
+        import traceback
+        print(f"DEBUG: SES traceback: {traceback.format_exc()}")
         frappe.log_error(frappe.get_traceback(), "SES Email Sending Failed")
+        print("===== SES DEBUG END =====\n")
+        raise
+
+def process_email_queue():
+    """Process the email queue immediately"""
+    print("\n===== PROCESSING EMAIL QUEUE =====")
+    try:
+        # Try different approaches to process the queue
+        try:
+            from frappe.email.queue import flush
+            flush()
+            print("DEBUG: Email queue flushed successfully!")
+        except ImportError:
+            try:
+                # Alternative method - trigger send queued emails
+                from frappe.email.doctype.email_queue.email_queue import send_unsent_emails
+                send_unsent_emails()
+                print("DEBUG: Email queue processed via send_unsent_emails!")
+            except ImportError:
+                # Last resort - directly call the sending function
+                from frappe.utils.background_jobs import enqueue
+                enqueue("frappe.email.queue.send_queued_emails", queue="short")
+                print("DEBUG: Email queue processing enqueued!")
+    except Exception as e:
+        print(f"DEBUG: Error processing email queue: {e}")
+        import traceback
+        print(f"DEBUG: Traceback: {traceback.format_exc()}")
+    print("===== EMAIL QUEUE PROCESSING END =====\n")
+
+def test_simple_email():
+    """Simple test email function to isolate the issue"""
+    print("\n===== SIMPLE EMAIL TEST =====")
+    try:
+        print("DEBUG: Starting simple email test...")
+
+        # Test basic Frappe sendmail
+        result = frappe.sendmail(
+            recipients=['leduchoanh2k@gmail.com'],
+            subject='Test Email - Simple',
+            message='This is a test email to debug the sending issue.',
+            delayed=False
+        )
+        print(f"DEBUG: Simple email result: {result}")
+        print("DEBUG: Simple email test completed successfully!")
+
+    except Exception as e:
+        print(f"DEBUG: Simple email test failed: {e}")
+        import traceback
+        print(f"DEBUG: Traceback: {traceback.format_exc()}")
+
+    print("===== SIMPLE EMAIL TEST END =====\n")
+
+def check_email_queue():
+    """Check the status of the email queue"""
+    print("\n===== EMAIL QUEUE CHECK =====")
+    try:
+        # Check email queue using correct API
+        try:
+            queued_emails = frappe.db.get_all('Email Queue',
+                                             fields=['name', 'recipients', 'subject', 'status', 'creation'],
+                                             order_by='creation desc',
+                                             limit=10)
+            print(f"DEBUG: Found {len(queued_emails)} queued emails")
+
+            for email in queued_emails:
+                print(f"DEBUG: Queued email - To: {email.recipients}, Subject: {email.subject}, Status: {email.status}")
+
+        except Exception as e:
+            print(f"DEBUG: Error checking Email Queue: {e}")
+
+        # Check email log
+        email_logs = frappe.db.get_all('Email Log',
+                                     fields=['recipient', 'subject', 'status', 'creation'],
+                                     order_by='creation desc',
+                                     limit=5)
+        print(f"DEBUG: Found {len(email_logs)} recent email logs")
+        for log in email_logs:
+            print(f"DEBUG: Email Log - To: {log.recipient}, Subject: {log.subject}, Status: {log.status}, Time: {log.creation}")
+
+    except Exception as e:
+        print(f"DEBUG: Error checking email queue: {e}")
+    print("===== EMAIL QUEUE CHECK END =====\n")
 
 #Hàm log gửi email
 def log_email_transaction(
