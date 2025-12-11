@@ -45,7 +45,14 @@ const initChart = () => {
 	const option = {
 		tooltip: {
 			trigger: 'item',
-			formatter: hasData ? '{b}: {c}%' : 'No data available'
+			formatter: (params) => {
+				if (!hasData) return 'No data available'
+				const dataIndex = params.dataIndex
+				const skill = chartData[dataIndex]
+				const percentage = skill.value
+				const count = skill.count || 0
+				return `<strong>${skill.name}</strong><br/>Percentage: ${percentage}%<br/>Talents: ${count}`
+			}
 		},
 		radar: {
 			indicator: chartData.map(item => ({

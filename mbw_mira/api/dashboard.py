@@ -248,15 +248,16 @@ def update_task(taskId, outcome, notes, completedAt):
 @frappe.whitelist()
 def get_segment_top_skills(segment_id, limit=10):
     """
-    Lấy top skills phổ biến nhất trong một segment
+    Lấy top skills phổ biến nhất trong một segment với phần trăm
     
     Args:
         segment_id: ID của segment cần lấy thống kê
         limit: Số lượng skills trả về (mặc định 10, có thể từ 5-10)
     
     Returns:
-        List các skills với tên và số lần xuất hiện
-        Format: [{"name": "Python", "value": 15}, ...]
+        List các skills với tên và phần trăm
+        Format: [{"name": "Python", "value": 75.5}, ...]
+        value là % = (số talent có skill A / tổng số talent có skill trong top) * 100
     """
     try:
         # Validate segment_id
@@ -277,7 +278,7 @@ def get_segment_top_skills(segment_id, limit=10):
         # Lấy tất cả talents trong segment thông qua Mira Talent Pool
         talent_ids = frappe.db.sql("""
             SELECT talent_id
-            FROM `tabMira Talent Pool`
+            FROM `tabMira Talent Pool` 
             WHERE segment_id = %(segment_id)s
         """, {"segment_id": segment_id}, as_dict=True)
         
@@ -287,8 +288,8 @@ def get_segment_top_skills(segment_id, limit=10):
         # Lấy skills của tất cả talents
         talent_id_list = [t.talent_id for t in talent_ids]
         talents = frappe.db.sql("""
-            SELECT skills
-            FROM `tabMira Talent`
+            SELECT name, skills
+            FROM `tabMira Talent` 
             WHERE name IN %(talent_ids)s
             AND skills IS NOT NULL
             AND skills != ''
@@ -296,6 +297,8 @@ def get_segment_top_skills(segment_id, limit=10):
         
         # Đếm tần suất xuất hiện của từng skill
         skill_count = {}
+        skill_talents = {}  # Track which talents have which skills
+        
         for talent in talents:
             if talent.skills:
                 # Skills được lưu dưới dạng comma-separated string
@@ -308,11 +311,13 @@ def get_segment_top_skills(segment_id, limit=10):
                                 "name": skill_count[skill_lower]["name"],
                                 "value": skill_count[skill_lower]["value"] + 1
                             }
+                            skill_talents[skill_lower].add(talent.name)
                         else:
                             skill_count[skill_lower] = {
                                 "name": skill,  # Giữ nguyên format gốc của skill đầu tiên
                                 "value": 1
                             }
+                            skill_talents[skill_lower] = {talent.name}
         
         # Sắp xếp theo số lần xuất hiện giảm dần và lấy top N
         sorted_skills = sorted(
@@ -321,7 +326,31 @@ def get_segment_top_skills(segment_id, limit=10):
             reverse=True
         )[:limit]
         
-        return sorted_skills
+        if not sorted_skills:
+            return []
+        
+        # Tính tổng số talent có ít nhất 1 skill trong top
+        all_talents_with_top_skills = set()
+        for skill_data in sorted_skills:
+            skill_lower = skill_data["name"].lower()
+            all_talents_with_top_skills.update(skill_talents[skill_lower])
+        
+        total_talents_with_skills = len(all_talents_with_top_skills)
+        
+        # Tính phần trăm cho từng skill
+        result = []
+        for skill_data in sorted_skills:
+            skill_lower = skill_data["name"].lower()
+            talent_count = skill_data["value"]
+            percentage = round((talent_count / total_talents_with_skills) * 100, 1) if total_talents_with_skills > 0 else 0
+            
+            result.append({
+                "name": skill_data["name"],
+                "value": percentage,
+                "count": talent_count  # Giữ lại count để hiển thị trong tooltip nếu cần
+            })
+        
+        return result
         
     except Exception as e:
         frappe.log_error(f"Error in get_segment_top_skills: {str(e)}")
