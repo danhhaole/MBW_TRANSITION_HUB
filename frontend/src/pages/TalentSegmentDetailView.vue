@@ -1288,9 +1288,10 @@ const loadDashboardData = async () => {
 			}
 			
 			// Update recruitment priority data
-			if (result.recruitment_priority && result.recruitment_priority.length > 0) {
-				recruitmentPriorityData.value = result.recruitment_priority
-			}
+            if (result.recruitment_priority && result.recruitment_priority) {
+                // API trả về object { data: [...] }, ta lấy mảng data gán vào
+                recruitmentPriorityData.value = result.recruitment_priority
+            }
 			
 			console.log('Dashboard data updated successfully')
 		} else {

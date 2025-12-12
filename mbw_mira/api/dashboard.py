@@ -664,7 +664,7 @@ def get_segment_dashboard_data(segment_id):
         salary_alignment_data = get_segment_salary_alignment(segment_id)
         quality_source_data = get_segment_quality_source_analysis(segment_id)
         talents_requiring_update_data = get_segment_talents_requiring_update(segment_id)
-        recruitment_priority_data = get_recruitment_priority_matrix_data(segment_id)
+        recruitment_priority_data = get_matrix_data(segment_id)
         
         return {
             "skills": skills_data,
@@ -1362,3 +1362,60 @@ def get_top_campaigns_with_latest_interactions(days):
     except Exception as e:
         frappe.log_error(f"Error in get_top_campaigns_with_latest_interactions: {str(e)}")
         return [] 
+
+@frappe.whitelist()
+def get_matrix_data(segment_id):
+    """
+    API trả về danh sách chi tiết Talent trong Segment kèm theo các chỉ số tương tác.
+    Format trả về khớp hoàn toàn với yêu cầu Frontend để vẽ Matrix.
+    """
+    if not segment_id:
+        return []
+
+    # Query SQL: Join Summary với Pool để lấy đúng ứng viên trong Segment
+    data = frappe.db.sql("""
+        SELECT 
+            s.talent_id,
+            s.engagement_timeline,
+            s.readiness_level,
+            s.total_score,
+            s.top_channel,
+            s.click_count,
+            s.open_count,
+            s.reply_count,
+            s.visit_count,
+            s.conversion_count
+        FROM 
+            `tabMira Engagement Summary` s
+        INNER JOIN 
+            `tabMira Talent Pool` p ON s.talent_id = p.talent_id
+        WHERE 
+            p.segment_id = %(segment_id)s
+            AND s.readiness_level IN ('Low', 'Medium', 'High')
+    """, {"segment_id": segment_id}, as_dict=True)
+
+    # Mapping dữ liệu
+    result = []
+    
+    # Map Readiness Level sang trục Y (1, 2, 3)
+    y_map = {
+        "Low": 1, 
+        "Medium": 2, 
+        "High": 3
+    }
+
+    for d in data:
+        result.append({
+            "talent_id": d.talent_id,
+            "x": d.engagement_timeline or 0,        # Trục X: Timeline
+            "y": y_map.get(d.readiness_level, 1),   # Trục Y: 1, 2, 3
+            "size": d.total_score or 0,             # Bubble Size
+            "top_channel": d.top_channel or "Unknown",
+            "click": d.click_count or 0,            # Mapping đúng key yêu cầu
+            "open": d.open_count or 0,
+            "reply": d.reply_count or 0,
+            "visit": d.visit_count or 0,
+            "conversion": d.conversion_count or 0
+        })
+
+    return result

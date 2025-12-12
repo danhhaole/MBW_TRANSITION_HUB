@@ -10,171 +10,183 @@ import { ref, onMounted, watch, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
 
 const props = defineProps({
-	title: {
-		type: String,
-		default: 'Recruitment Priority Matrix'
-	},
-	data: {
-		type: Array,
-		default: () => []
-	},
-	chartHeight: {
-		type: String,
-		default: '400px'
-	}
+    title: {
+        type: String,
+        default: 'Recruitment Priority Matrix'
+    },
+    data: {
+        type: Array,
+        default: () => []
+    },
+    chartHeight: {
+        type: String,
+        default: '400px'
+    }
 })
 
 const chartRef = ref(null)
 let chartInstance = null
 
 const initChart = () => {
-	if (!chartRef.value) return
+    if (!chartRef.value) return
 
-	chartInstance = echarts.init(chartRef.value)
+    chartInstance = echarts.init(chartRef.value)
 
-	// Handle empty data case
-	const hasData = props.data && props.data.length > 0
-	const chartData = hasData ? props.data : [
-		{ 
-			name: 'No Data', 
-			value: [0, 0, 0], 
-			readinessLabel: 'Low', 
-			timelineLabel: 'Immediate',
-			color: '#E5E7EB'
-		}
-	]
+    // 1. TRANSFORM DATA: Chuyển dữ liệu Raw từ API sang format ECharts
+    let chartData = []
+    
+    if (props.data && props.data.length > 0) {
+        chartData = props.data.map(item => {
+            // Map Y (1->Low/0, 2->Medium/1, 3->High/2)
+            const yIndex = (item.y || 1) - 1
+            const readinessLevels = ['Low', 'Medium', 'High']
+            const readinessLabel = readinessLevels[yIndex] || 'Unknown'
 
-	const option = {
-		tooltip: {
-			trigger: 'item',
-			formatter: hasData ? (params) => {
-				return `${params.data.name}<br/>
-						Readiness: ${params.data.readinessLabel}<br/>
-						Timeline: ${params.data.timelineLabel}<br/>
-						Talents: ${params.data.value[2]}`
-			} : () => 'No data available'
-		},
-		grid: {
-			left: '100px',
-			right: '4%',
-			bottom: '60px',
-			top: '10%',
-			containLabel: true
-		},
-		xAxis: {
-			name: 'Engagement Timeline (Days)',
-			nameLocation: 'middle',
-			nameGap: 35,
-			nameTextStyle: {
-				color: '#4B5563',
-				fontSize: 13,
-				fontWeight: 'bold'
-			},
-			type: 'value',
-			min: 0,
-			max: 90,
-			axisLabel: {
-				color: '#6B7280',
-				fontSize: 12,
-				formatter: '{value}d'
-			},
-			axisLine: {
-				lineStyle: {
-					color: '#E5E7EB'
-				}
-			},
-			splitLine: {
-				lineStyle: {
-					color: '#F3F4F6'
-				}
-			}
-		},
-		yAxis: {
-			name: 'Recruitment Readiness',
-			nameLocation: 'middle',
-			nameGap: 70,
-			nameTextStyle: {
-				color: '#4B5563',
-				fontSize: 13,
-				fontWeight: 'bold'
-			},
-			type: 'category',
-			data: ['Low', 'Medium', 'High'],
-			axisLabel: {
-				color: '#6B7280',
-				fontSize: 12
-			},
-			axisLine: {
-				lineStyle: {
-					color: '#E5E7EB'
-				}
-			},
-			splitLine: {
-				show: true,
-				lineStyle: {
-					color: '#F3F4F6'
-				}
-			}
-		},
-		series: [
-			{
-				type: 'scatter',
-				symbolSize: (data) => {
-					return Math.sqrt(data[2]) * 8 // Size based on talent count
-				},
-				data: chartData.map(item => ({
-					value: item.value,
-					name: item.name,
-					readinessLabel: item.readinessLabel,
-					timelineLabel: item.timelineLabel,
-					itemStyle: {
-						color: item.color || '#3B82F6',
-						opacity: hasData ? 0.7 : 0.3
-					}
-				})),
-				label: {
-					show: true,
-					formatter: '{@[2]}',
-					position: 'inside',
-					color: '#fff',
-					fontSize: 11,
-					fontWeight: 'bold'
-				},
-				emphasis: {
-					itemStyle: {
-						opacity: 1,
-						shadowBlur: 10,
-						shadowColor: 'rgba(0, 0, 0, 0.3)'
-					}
-				}
-			}
-		]
-	}
+            // Map Color
+            const colorMap = {
+                'Low': '#9CA3AF',    // Gray-400
+                'Medium': '#F59E0B', // Amber-500
+                'High': '#10B981'    // Emerald-500
+            }
 
-	chartInstance.setOption(option)
+            return {
+                name: item.talent_id, // Hiển thị ID hoặc Tên
+                // ECharts Value: [X, Y, Size]
+                value: [
+                    item.x,       // Timeline (Days)
+                    yIndex,       // Y Index (0, 1, 2)
+                    item.size     // Bubble Size (Score)
+                ],
+                readinessLabel: readinessLabel,
+                timelineLabel: `${item.x} days`,
+                color: colorMap[readinessLabel] || '#3B82F6',
+                
+                // Lưu lại toàn bộ dữ liệu gốc để hiển thị tooltip
+                raw: item 
+            }
+        })
+    } else {
+        // Dữ liệu giả khi không có data
+        chartData = [{ 
+            name: 'No Data', 
+            value: [0, 0, 0], 
+            readinessLabel: 'Low', 
+            timelineLabel: 'Immediate', 
+            color: '#E5E7EB',
+            raw: {} 
+        }]
+    }
+
+    const option = {
+        tooltip: {
+            trigger: 'item',
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            borderColor: '#E5E7EB',
+            textStyle: { color: '#374151' },
+            // Custom Tooltip hiển thị chi tiết chỉ số tương tác
+            formatter: (params) => {
+                if (!params.data.raw || !params.data.raw.talent_id) return 'No data'
+                const d = params.data.raw
+                return `
+                    <div class="font-bold text-gray-900 mb-1">${d.talent_id}</div>
+                    <div class="text-xs text-gray-500 mb-2">Channel: <span class="font-medium">${d.top_channel}</span></div>
+                    <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                        <div>Readiness: <span style="color:${params.data.color}; font-weight:bold">${params.data.readinessLabel}</span></div>
+                        <div>Timeline: <b>${d.x} days</b></div>
+                        <div>Score: <b>${d.size}</b></div>
+                        <div>Conversion: <b>${d.conversion}</b></div>
+                    </div>
+                    <div class="mt-2 pt-2 border-t border-gray-100 flex justify-between text-xs text-gray-400">
+                        <span>👆 ${d.click}</span>
+                        <span>👀 ${d.open}</span>
+                        <span>↩️ ${d.reply}</span>
+                        <span>👁️ ${d.visit}</span>
+                    </div>
+                `
+            }
+        },
+        grid: {
+            left: '60px',
+            right: '4%',
+            bottom: '40px',
+            top: '30px',
+            containLabel: true
+        },
+        xAxis: {
+            name: 'Timeline (Days)',
+            nameLocation: 'middle',
+            nameGap: 30,
+            type: 'value',
+            min: 0,
+            max: 100, // Có thể điều chỉnh max tùy dữ liệu
+            splitLine: { lineStyle: { type: 'dashed' } }
+        },
+        yAxis: {
+            name: 'Readiness',
+            type: 'category',
+            data: ['Low', 'Medium', 'High'],
+            splitLine: { show: true, lineStyle: { type: 'dashed' } },
+            axisLine: { show: false },
+            axisTick: { show: false }
+        },
+        series: [
+            {
+                type: 'scatter',
+                symbolSize: (data) => {
+                    // Scale kích thước bubble: Score càng lớn bubble càng to
+                    // Giới hạn min=10, max=50 để không quá bé hoặc quá to
+                    const size = Math.sqrt(data[2]) * 4
+                    return Math.min(Math.max(size, 8), 60)
+                },
+                data: chartData.map(item => ({
+                    value: item.value,
+                    name: item.name,
+                    readinessLabel: item.readinessLabel,
+                    timelineLabel: item.timelineLabel,
+                    itemStyle: {
+                        color: item.color,
+                        opacity: 0.6,
+                        shadowBlur: 2,
+                        shadowColor: 'rgba(0,0,0,0.1)'
+                    },
+                    raw: item.raw // Truyền raw data xuống series item
+                })),
+                emphasis: {
+                    focus: 'series',
+                    itemStyle: {
+                        opacity: 1,
+                        shadowBlur: 10,
+                        shadowColor: 'rgba(0,0,0,0.2)'
+                    }
+                }
+            }
+        ]
+    }
+
+    chartInstance.setOption(option)
 }
 
 const resizeChart = () => {
-	if (chartInstance) {
-		chartInstance.resize()
-	}
+    if (chartInstance) {
+        chartInstance.resize()
+    }
 }
 
 onMounted(() => {
-	initChart()
-	window.addEventListener('resize', resizeChart)
+    initChart()
+    window.addEventListener('resize', resizeChart)
 })
 
 watch(() => props.data, () => {
-	if (chartInstance) {
-		initChart()
-	}
+    if (chartInstance) {
+        initChart() // Re-render khi data thay đổi
+    }
 }, { deep: true })
 
 onUnmounted(() => {
-	if (chartInstance) {
-		chartInstance.dispose()
-	}
-	window.removeEventListener('resize', resizeChart)
+    if (chartInstance) {
+        chartInstance.dispose()
+    }
+    window.removeEventListener('resize', resizeChart)
 })
 </script>
