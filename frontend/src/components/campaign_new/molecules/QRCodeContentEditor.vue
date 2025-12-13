@@ -147,7 +147,7 @@
             />
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 gap-4">
             <!-- UTM Source -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -160,7 +160,7 @@
             </div>
 
             <!-- UTM Medium -->
-            <div>
+            <!-- <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">
                 {{ __('UTM Medium') }} <span class="text-red-500">*</span>
               </label>
@@ -168,7 +168,7 @@
                 v-model="newQRData.utm_medium"
                 :placeholder="__('e.g., qr, print, offline')"
               />
-            </div>
+            </div> -->
           </div>
 
           <!-- Preview if QR exists -->
