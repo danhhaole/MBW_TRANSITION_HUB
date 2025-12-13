@@ -759,7 +759,7 @@ def extract_and_summary(talent_id, resume):
             "Mira Talent", talent_id, "resume_extract", json.dumps(profile)
         )
         # Summary lại json
-        summary_json = call_llm_convert_json_to_text(profile)
+        summary_json =  json.loads(call_llm_convert_json_to_text(profile))
         if summary_json:
             frappe.db.set_value(
                 "Mira Talent", talent_id, "resume_summary", json.dumps(summary_json)
