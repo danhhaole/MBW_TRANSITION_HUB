@@ -13,6 +13,7 @@
   "total_records",
   "success_count",
   "failed_count",
+  "skipped_count",
   "error_log",
   "details",
   "section_break_1",
@@ -66,6 +67,11 @@
    "fieldname": "failed_count",
    "fieldtype": "Int",
    "label": "Failed Count"
+  },
+  {
+   "fieldname": "skipped_count",
+   "fieldtype": "Int",
+   "label": "Skipped Count (Duplicates)"
   },
   {
    "fieldname": "error_log",

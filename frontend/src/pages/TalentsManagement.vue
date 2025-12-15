@@ -659,7 +659,9 @@
 										:class="[
 											'block w-full rounded-md shadow-sm text-sm px-3 py-2',
 											emailError
-												? 'border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:outline-none focus:ring-red-500'
+												? emailError.includes('blacklist')
+													? 'border-yellow-300 text-yellow-900 placeholder-yellow-300 focus:border-yellow-500 focus:outline-none focus:ring-yellow-500'
+													: 'border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:outline-none focus:ring-red-500'
 												: 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',
 										]"
 										placeholder="Enter email address"
@@ -668,7 +670,10 @@
 									/>
 									<p
 										v-if="emailError"
-										class="mt-1 text-xs text-red-600"
+										:class="[
+											'mt-1 text-xs',
+											emailError.includes('blacklist') ? 'text-yellow-600' : 'text-red-600'
+										]"
 										id="email-error"
 									>
 										{{ emailError }}
@@ -683,9 +688,24 @@
 									<input
 										v-model="newTalent.phone"
 										type="tel"
-										class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2"
+										@blur="checkPhoneNumber"
+										:class="[
+											'block w-full rounded-md shadow-sm text-sm px-3 py-2',
+											phoneError
+												? 'border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:outline-none focus:ring-red-500'
+												: 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',
+										]"
 										placeholder="Enter phone number"
+										aria-invalid="true"
+										aria-describedby="phone-error"
 									/>
+									<p
+										v-if="phoneError"
+										class="mt-1 text-xs text-red-600"
+										id="phone-error"
+									>
+										{{ phoneError }}
+									</p>
 								</div>
 							</div>
 						</div>
@@ -1339,6 +1359,7 @@ import LayoutHeader from '@/components/LayoutHeader.vue'
 import { useRouter } from 'vue-router'
 import { useToast } from '@/composables/useToast'
 import { useTalentStore } from '@/stores/talent'
+import { useBlacklistStore } from '@/stores/blacklist'
 import { globalStore } from '@/stores/global';
 import UploadExcelTalentModal from '@/components/UploadExcelTalentModal.vue'
 import BulkCVUploadModal from '@/components/BulkCVUploadModal.vue'
@@ -1353,6 +1374,7 @@ const { showSuccess, showError } = useToast()
 const router = useRouter()
 //Store
 const talentPoolStore = useTalentStore()
+const blacklistStore = useBlacklistStore()
 const { $socket } = globalStore();
 const openDialogTalentOption = ref(false) // 4 option dialog
 const showTalentForm = ref(false) //create talent dialog
@@ -1654,6 +1676,7 @@ const showBulkDeleteDialog = ref(false)
 const isBulkDeleting = ref(false)
 const searchTimeout = ref(null)
 const emailError = ref('')
+const phoneError = ref('')
 const isEmailValid = computed(() => {
 	const email = newTalent.value.email
 	if (!email) return true // Empty is valid until submit
@@ -1794,6 +1817,25 @@ const checkEmail = async () => {
 		return
 	}
 
+	// Check for blacklist
+	try {
+		const result = await call('frappe.client.get_list', {
+			doctype: 'Mira BlackList',
+			filters: { email: newTalent.value.email },
+			fields: ['name', 'email', 'tag'],
+			limit: 1
+		})
+
+		if (result && result.length > 0) {
+			const blacklistEntry = result[0]
+			const tagInfo = blacklistEntry.tag ? ` (${blacklistEntry.tag})` : ''
+			emailError.value = `⚠️ This email is in the blacklist${tagInfo}. Please verify before proceeding.`
+			return
+		}
+	} catch (error) {
+		console.error('Error checking blacklist:', error)
+	}
+
 	// Check for duplicate email
 	try {
 		const emailExists = await talentPoolStore.checkEmailExists(newTalent.value.email)
@@ -1806,6 +1848,70 @@ const checkEmail = async () => {
 		console.error('Error checking email:', error)
 		emailError.value = ''
 	}
+}
+
+/**
+ * Validate phone number with extensible country support
+ * @param {string} phoneNumber - Phone number to validate
+ * @param {string} country - Country code (default: 'VN' for Vietnam)
+ * @returns {Object} - { isValid: boolean, error: string }
+ */
+const validatePhoneNumber = (phoneNumber, country = 'VN') => {
+	if (!phoneNumber || phoneNumber.trim() === '') {
+		return { isValid: true, error: '' } // Phone is optional
+	}
+
+	// Remove all spaces and special characters except + for validation
+	const cleanedPhone = phoneNumber.replace(/[\s\-()]/g, '')
+
+	// Country-specific validation patterns
+	const validationPatterns = {
+		// Vietnam: 10-11 digits, or starts with +84
+		VN: {
+			patterns: [
+				/^\+84[0-9]{9,10}$/, // +84 followed by 9-10 digits
+				/^84[0-9]{9,10}$/, // 84 followed by 9-10 digits
+				/^0[0-9]{9,10}$/, // Starts with 0, followed by 9-10 digits (total 10-11 digits)
+				/^[0-9]{10,11}$/ // 10-11 digits
+			],
+			errorMessage: 'Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam (10-11 số hoặc bắt đầu từ +84)'
+		},
+		// Add more countries here as needed
+		// US: {
+		//   patterns: [/^\+1[0-9]{10}$/, /^1[0-9]{10}$/, /^[0-9]{10}$/],
+		//   errorMessage: 'Invalid US phone number. Please enter 10 digits or +1 followed by 10 digits'
+		// },
+		// ... other countries
+	}
+
+	// Get validation pattern for the specified country
+	const countryValidation = validationPatterns[country]
+
+	if (!countryValidation) {
+		return {
+			isValid: false,
+			error: `Validation not supported for country: ${country}`
+		}
+	}
+
+	// Check if phone matches any of the country's patterns
+	const isValid = countryValidation.patterns.some(pattern => pattern.test(cleanedPhone))
+
+	return {
+		isValid,
+		error: isValid ? '' : countryValidation.errorMessage
+	}
+}
+
+// Phone validation handler
+const checkPhoneNumber = () => {
+	if (!newTalent.value.phone || newTalent.value.phone.trim() === '') {
+		phoneError.value = ''
+		return
+	}
+
+	const validation = validatePhoneNumber(newTalent.value.phone, 'VN')
+	phoneError.value = validation.error
 }
 
 // Handle talent submit talent (create talent)
@@ -1829,11 +1935,39 @@ const handleTalentSubmit = async () => {
 			return
 		}
 
+		// Check for blacklist
+		try {
+			const blacklistResult = await call('frappe.client.get_list', {
+				doctype: 'Mira BlackList',
+				filters: { email: newTalent.value.email },
+				fields: ['name', 'email', 'tag'],
+				limit: 1
+			})
+
+			if (blacklistResult && blacklistResult.length > 0) {
+				const blacklistEntry = blacklistResult[0]
+				const tagInfo = blacklistEntry.tag ? ` (${blacklistEntry.tag})` : ''
+				showError(__(`This email is in the blacklist${tagInfo}. Cannot create talent with blacklisted email.`))
+				return
+			}
+		} catch (error) {
+			console.error('Error checking blacklist:', error)
+		}
+
 		// Check for duplicate email
 		const emailExists = await talentPoolStore.checkEmailExists(newTalent.value.email)
 		if (emailExists) {
 			showError(__('This email is already in use. Please use a different email address.'))
 			return
+		}
+
+		// Validate phone number if provided
+		if (newTalent.value.phone && newTalent.value.phone.trim()) {
+			const phoneValidation = validatePhoneNumber(newTalent.value.phone, 'VN')
+			if (!phoneValidation.isValid) {
+				showError(phoneValidation.error)
+				return
+			}
 		}
 
 		// Validate LinkedIn URL format if provided

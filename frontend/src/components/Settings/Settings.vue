@@ -59,10 +59,12 @@
 <script setup>
 import Email2Icon from '@/components/Icons/Email2Icon.vue'
 import TagIcon from '@/components/Icons/TagIcon.vue'
+import BlacklistIcon from '@/components/Icons/BlacklistIcon.vue'
 import ExternalLinkIcon from '@/components/Icons/ExternalLinkIcon.vue'
 import NoteIcon from '@/components/Icons/NoteIcon.vue'
 import CampaignTemplateSettings from '@/components/Settings/CampaignTemplateSettings.vue'
 import TagSettings from '@/components/Settings/TagSettings.vue'
+import BlacklistSettings from '@/components/Settings/BlacklistSettings.vue'
 import ConnectorSettings from '@/components/Settings/ConnectorSettings.vue'
 import MiraEmailTemplateSettings from '@/components/Settings/MiraEmailTemplateSettings.vue'
 import SidebarLink from '@/components/SidebarLink.vue'
@@ -102,6 +104,11 @@ const tabs = computed(() => {
           label: __('Tags'),
           icon: TagIcon,
           component: markRaw(TagSettings),
+        },
+        {
+          label: __('Blacklist'),
+          icon: BlacklistIcon,
+          component: markRaw(BlacklistSettings),
         },
       ],
     },
