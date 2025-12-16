@@ -160,7 +160,7 @@
           </div>
 
           <!-- Days Configuration for ON_NO_EMAIL_CLICK trigger -->
-          <div
+          <!-- <div
             v-if="trigger.trigger_type === 'ON_NO_EMAIL_CLICK'"
             class="ml-10 mt-3 mb-4"
           >
@@ -172,7 +172,6 @@
                     {{ __('After how many minutes without email click? (For testing: 5 minutes = 5 days in production)') }}
                   </p>
 
-                  <!-- Days input -->
                   <div class="mb-2">
                     <FormControl
                       type="number"
@@ -184,7 +183,6 @@
                     />
                   </div>
 
-                  <!-- Show configured days -->
                   <div v-if="getTriggerDays(trigger)" class="flex items-center space-x-2 bg-white border border-orange-200 rounded px-2 py-1.5 mb-2">
                     <FeatherIcon name="alert-circle" class="h-3 w-3 text-orange-600" />
                     <span class="text-xs font-medium text-gray-900">
@@ -192,7 +190,6 @@
                     </span>
                   </div>
 
-                  <!-- Test buttons -->
                   <div class="flex gap-2 mt-4">
                     <Button
                       variant="outline"
@@ -220,7 +217,7 @@
                 </div>
               </div>
             </div>
-          </div>
+          </div> -->
 
           <!-- Trigger Actions -->
           <div class="ml-10 mt-3">
@@ -250,7 +247,7 @@
                     </div>
                     <div class="p-2 max-h-64 overflow-y-auto">
                       <button
-                        v-for="option in actionTypeOptions"
+                        v-for="option in getActionTypesForTrigger(trigger.trigger_type)"
                         :key="option.value"
                         @click="close(); addActionToTrigger(index, option.value)"
                         class="w-full text-left px-3 py-2 rounded hover:bg-gray-50 transition-colors group"
@@ -395,7 +392,18 @@ const CAMPAIGN_TYPE = CAMPAIGN_TYPES.NURTURING
 
 // Get campaign-specific trigger and action types
 const triggerTypeOptions = getTriggerTypes(CAMPAIGN_TYPE)
-const actionTypeOptions = getActionTypes(CAMPAIGN_TYPE)
+const baseActionTypeOptions = getActionTypes(CAMPAIGN_TYPE)
+
+// Function to get action types based on trigger type
+const getActionTypesForTrigger = (triggerType) => {
+  if (triggerType === 'ON_NO_EMAIL_CLICK') {
+    // For ON_NO_EMAIL_CLICK trigger, include the special action
+    return baseActionTypeOptions
+  } else {
+    // For other triggers, exclude the special action
+    return baseActionTypeOptions.filter(action => action.value !== 'STOP_NURTURING_AND_EMAIL')
+  }
+}
 
 const toast = useToast()
 
@@ -804,6 +812,10 @@ const getActionPreview = (action) => {
       const notes = params.transfer_notes || action.transfer_notes
       return notes ? `${__('Handoff to')} ${params.ats_system || action.ats_system || 'ATS'}: ${notes}` : `${__('Handoff to')} ${params.ats_system || action.ats_system || 'ATS'}`
 
+    case 'STOP_NURTURING_AND_EMAIL':
+      const emailSubject = params.email_subject || action.email_subject
+      return emailSubject ? `${__('Stop nurturing and send email')}: ${emailSubject}` : __('Stop nurturing and send final email')
+
     default:
       // Fallback to old content field
       if (action.content) {
@@ -1043,6 +1055,40 @@ const handleActionSave = async (updatedAction) => {
                 console.error("Auto-send failed", e)
                 toast.error(__('Failed to send email: {0}', [e.message]))
             }
+        }
+    }
+
+    // Special handling for STOP_NURTURING_AND_EMAIL action
+    if (finalAction.action_type === 'STOP_NURTURING_AND_EMAIL') {
+        const poolName = props.targetPool
+        const campaignId = props.campaignId
+        
+        if (poolName && campaignId) {
+            try {
+                const subject = finalAction.email_subject || 'Final Nurturing Email'
+                const content = finalAction.email_content || ''
+
+                toast.info(__('Stopping nurturing and sending final emails...'))
+
+                // Call API to stop nurturing and send final email
+                const res = await call('mbw_mira.api.campaign.stop_nurturing_and_send_email', {
+                    campaign_id: campaignId,
+                    pool_name: poolName,
+                    subject: subject,
+                    content: content
+                })
+
+                if (res && res.status === 'success') {
+                    toast.success(__('Nurturing stopped and final email sent to {0} talents', [res.sent_count || 0]))
+                } else {
+                    toast.error(__('Failed to stop nurturing: {0}', [res.error || 'Unknown error']))
+                }
+            } catch (e) {
+                console.error("Stop nurturing failed", e)
+                toast.error(__('Failed to stop nurturing and send email: {0}', [e.message]))
+            }
+        } else {
+            toast.error(__('Missing campaign ID or pool name for stop nurturing action'))
         }
     }
   }

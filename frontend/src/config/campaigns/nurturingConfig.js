@@ -71,7 +71,9 @@ export const nurturingActionTypes = [
   { label: __('Stop Tracking'), value: 'STOP_TRACKING' },
   // Internal & ATS
   { label: __('Internal Notification'), value: 'INTERNAL_NOTIFICATION' },
-  { label: __('Handoff to ATS'), value: 'HANDOFF_TO_ATS' }
+  { label: __('Handoff to ATS'), value: 'HANDOFF_TO_ATS' },
+  // Special action for No Email Click trigger
+  { label: __('Stop Nurturing and Send Email'), value: 'STOP_NURTURING_AND_EMAIL' }
 ]
 
 /**
@@ -152,7 +154,8 @@ export const nurturingActionIcons = {
   'CHANGE_STATUS': 'toggle-right',
   'STOP_TRACKING': 'user-minus',
   'INTERNAL_NOTIFICATION': 'bell-ring',
-  'HANDOFF_TO_ATS': 'send'
+  'HANDOFF_TO_ATS': 'send',
+  'STOP_NURTURING_AND_EMAIL': 'user-x'
 }
 
 /**
@@ -177,5 +180,6 @@ export const nurturingActionDescriptions = {
   'CHANGE_STATUS': __('Change nurturing status'),
   'STOP_TRACKING': __('Stop nurturing tracking'),
   'INTERNAL_NOTIFICATION': __('Notify nurturing team'),
-  'HANDOFF_TO_ATS': __('Transfer to recruitment')
+  'HANDOFF_TO_ATS': __('Transfer to recruitment'),
+  'STOP_NURTURING_AND_EMAIL': __('Stop nurturing and send final email to user')
 }

@@ -82,16 +82,12 @@ export function getTriggerTypes(campaignType) {
  * TODO: Filter per campaign when requirements are documented
  */
 export function getActionTypes(campaignType) {
-  // TODO: Uncomment when ready to filter per campaign
-  // const config = {
-  //   [CAMPAIGN_TYPES.ATTRACTION]: attractionActionTypes,
-  //   [CAMPAIGN_TYPES.NURTURING]: nurturingActionTypes,
-  //   [CAMPAIGN_TYPES.RECRUITMENT]: recruitmentActionTypes
-  // }
-  // return config[campaignType] || allActionTypes
-  
-  // Return all actions for now
-  return allActionTypes
+  const config = {
+    [CAMPAIGN_TYPES.ATTRACTION]: attractionActionTypes,
+    [CAMPAIGN_TYPES.NURTURING]: nurturingActionTypes,
+    [CAMPAIGN_TYPES.RECRUITMENT]: recruitmentActionTypes
+  }
+  return config[campaignType] || allActionTypes
 }
 
 /**
@@ -157,16 +153,13 @@ export function getTriggerLabel(triggerType, campaignType) {
  * NOTE: Currently uses common icons for all campaigns
  */
 export function getActionIcon(actionType, campaignType) {
-  // TODO: Uncomment for campaign-specific icons
-  // const config = {
-  //   [CAMPAIGN_TYPES.ATTRACTION]: attractionActionIcons,
-  //   [CAMPAIGN_TYPES.NURTURING]: nurturingActionIcons,
-  //   [CAMPAIGN_TYPES.RECRUITMENT]: recruitmentActionIcons
-  // }
-  // const icons = config[campaignType] || actionIcons
-  // return icons[actionType] || 'zap'
-  
-  return actionIcons[actionType] || 'zap'
+  const config = {
+    [CAMPAIGN_TYPES.ATTRACTION]: attractionActionIcons,
+    [CAMPAIGN_TYPES.NURTURING]: nurturingActionIcons,
+    [CAMPAIGN_TYPES.RECRUITMENT]: recruitmentActionIcons
+  }
+  const icons = config[campaignType] || actionIcons
+  return icons[actionType] || 'zap'
 }
 
 /**
@@ -178,16 +171,13 @@ export function getActionIcon(actionType, campaignType) {
  * NOTE: Currently uses common descriptions for all campaigns
  */
 export function getActionDescription(actionType, campaignType) {
-  // TODO: Uncomment for campaign-specific descriptions
-  // const config = {
-  //   [CAMPAIGN_TYPES.ATTRACTION]: attractionActionDescriptions,
-  //   [CAMPAIGN_TYPES.NURTURING]: nurturingActionDescriptions,
-  //   [CAMPAIGN_TYPES.RECRUITMENT]: recruitmentActionDescriptions
-  // }
-  // const descriptions = config[campaignType] || actionDescriptions
-  // return descriptions[actionType] || ''
-  
-  return actionDescriptions[actionType] || ''
+  const config = {
+    [CAMPAIGN_TYPES.ATTRACTION]: attractionActionDescriptions,
+    [CAMPAIGN_TYPES.NURTURING]: nurturingActionDescriptions,
+    [CAMPAIGN_TYPES.RECRUITMENT]: recruitmentActionDescriptions
+  }
+  const descriptions = config[campaignType] || actionDescriptions
+  return descriptions[actionType] || ''
 }
 
 /**
