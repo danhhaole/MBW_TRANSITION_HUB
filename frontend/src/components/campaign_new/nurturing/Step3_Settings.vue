@@ -497,17 +497,12 @@ watch(() => props.targetPool, () => {
 // Filter out already added trigger types
 const availableTriggerTypes = computed(() => {
   const existingTypes = localTriggers.value.map(t => t.trigger_type)
-  const conditionalTypes = ['ON_BIRTHDAY', 'ON_NO_EMAIL_CLICK']
 
   return triggerTypeOptions.filter(option => {
-    // 1. Filter out existing
+    // Filter out existing triggers only
     if (existingTypes.includes(option.value)) return false
 
-    // 2. Conditional Visibility for Birthday/No-Click
-    if (conditionalTypes.includes(option.value)) {
-      return hasBirthdayInPool.value
-    }
-
+    // Always show all trigger types (removed birthday check)
     return true
   })
 })

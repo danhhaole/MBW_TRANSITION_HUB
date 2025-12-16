@@ -73,18 +73,19 @@ def run_birthday_test_for_pool(pool_name, subject, content):
 
     from mbw_mira.utils.birthday_utils import check_birthday
     from mbw_mira.utils.email import send_email
+    from frappe.utils import nowdate
 
-    # Find talents in pool
+    # Find talents in pool - get ALL fields for template replacement
     if frappe.db.exists("DocType", "Mira Talent Pool"):
         talents = frappe.db.sql("""
-            SELECT t.name, t.date_of_birth, t.email
+            SELECT t.*
             FROM `tabMira Talent` t
             INNER JOIN `tabMira Talent Pool` tp ON tp.talent_id = t.name
             WHERE tp.segment_id = %s
         """, (pool_name,), as_dict=True)
     else:
         # Fallback for dev env without Talent Pool doctype
-        talents = frappe.db.sql("SELECT name, date_of_birth, email FROM `tabMira Talent` WHERE date_of_birth IS NOT NULL", as_dict=True)
+        talents = frappe.db.sql("SELECT * FROM `tabMira Talent` WHERE date_of_birth IS NOT NULL", as_dict=True)
 
     sent_count = 0
     logs = []
@@ -94,17 +95,31 @@ def run_birthday_test_for_pool(pool_name, subject, content):
         is_eligible = check_birthday(t)
         if is_eligible and t.get('email'):
             try:
-                # Send the ACTUAL content from the editor
+                # Prepare context for template variables
+                context = t.copy()
+                context['today'] = nowdate()
+
+                # Convert EmailBuilder JSON to HTML if needed
+                msg_content = get_html_from_emailbuilder(content) if content else content
+
+                # Replace template variables - convert all values to string
+                for key, value in context.items():
+                    if value is not None:
+                        str_value = str(value)
+                        # Replace both {{ key }} and {{key}} formats
+                        msg_content = msg_content.replace('{{ ' + key + ' }}', str_value)
+                        msg_content = msg_content.replace('{{' + key + '}}', str_value)
+
                 # Determine as_html
                 as_html = True
-                if content and not ('<' in content and '>' in content):
-                     if '\n' in content:
-                         content = content.replace('\n', '<br>')
+                if msg_content and not ('<' in msg_content and '>' in msg_content):
+                     if '\n' in msg_content:
+                         msg_content = msg_content.replace('\n', '<br>')
 
                 send_email(
                     recipients=[t.get('email')],
                     subject=subject,
-                    content=content,
+                    content=msg_content,
                     as_html=as_html
                 )
                 sent_count += 1
@@ -194,10 +209,14 @@ def run_mass_email_for_pool(pool_name, subject, content=None, **kwargs):
                 # Convert EmailBuilder JSON to HTML with context
                 msg_content = get_html_from_emailbuilder(email_content)
 
-                # Replace template variables
+                # Replace template variables - convert all values to string
                 for key, value in context.items():
-                    if isinstance(value, str):
-                        msg_content = msg_content.replace('{{ ' + key + ' }}', value)
+                    if value is not None:
+                        # Convert value to string for replacement
+                        str_value = str(value)
+                        # Replace both {{ key }} and {{key}} formats
+                        msg_content = msg_content.replace('{{ ' + key + ' }}', str_value)
+                        msg_content = msg_content.replace('{{' + key + '}}', str_value)
 
                 # Send the email
                 send_email(
