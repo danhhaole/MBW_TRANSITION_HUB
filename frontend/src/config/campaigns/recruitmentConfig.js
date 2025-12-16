@@ -32,7 +32,7 @@ export const recruitmentTriggerTypes = [
   { label: __('Scheduled Time'), value: 'ON_SCHEDULED_TIME' },
   // Birthday & Email Engagement
   { label: __('Birthday'), value: 'ON_BIRTHDAY' },
-//   { label: __('No Email Click After N Days'), value: 'ON_NO_EMAIL_CLICK' },
+  { label: __('No Email Click After N Days'), value: 'ON_NO_EMAIL_CLICK' },
   // System Events
   { label: __('Send Success'), value: 'ON_SEND_SUCCESS' },
   { label: __('Send Failed'), value: 'ON_SEND_FAILED' },
