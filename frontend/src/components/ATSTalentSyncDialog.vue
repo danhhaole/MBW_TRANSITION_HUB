@@ -870,6 +870,121 @@ const fetchATSConnections = async () => {
 	}
 }
 
+// Clean filter conditions - remove empty/incomplete conditions
+const cleanFilterConditions = (conditions) => {
+	if (!conditions || conditions.length === 0) return []
+
+	const cleaned = []
+	
+	for (let i = 0; i < conditions.length; i++) {
+		const item = conditions[i]
+		
+		// If it's a conjunction (string), add it
+		if (typeof item === 'string' && (item === 'and' || item === 'or')) {
+			cleaned.push(item)
+			continue
+		}
+		
+		// If it's an array (condition or group)
+		if (Array.isArray(item)) {
+			// Check if it's a nested group
+			if (item.length > 0 && Array.isArray(item[0])) {
+				// Recursively clean nested group
+				const cleanedGroup = cleanFilterConditions(item)
+				if (cleanedGroup.length > 0) {
+					cleaned.push(cleanedGroup)
+				}
+			} else {
+				// It's a simple condition [field, operator, value]
+				const [field, operator, value] = item
+				
+				// Only include if field and value are present
+				if (field && value) {
+					cleaned.push(item)
+				}
+			}
+		}
+	}
+	
+	// Remove trailing conjunctions
+	while (cleaned.length > 0 && typeof cleaned[cleaned.length - 1] === 'string') {
+		cleaned.pop()
+	}
+	
+	// Remove leading conjunctions
+	while (cleaned.length > 0 && typeof cleaned[0] === 'string') {
+		cleaned.shift()
+	}
+	
+	return cleaned
+}
+
+// Convert frontend filter format to backend-friendly format
+const convertFiltersForBackend = (conditions) => {
+	if (!conditions || conditions.length === 0) return null
+	
+	const result = {
+		conditions: [],
+		logic: 'AND' // Default logic
+	}
+	
+	const processConditions = (items, parentLogic = 'AND') => {
+		const processed = []
+		let currentLogic = parentLogic
+		
+		for (let i = 0; i < items.length; i++) {
+			const item = items[i]
+			
+			// If it's a conjunction
+			if (typeof item === 'string' && (item === 'and' || item === 'or')) {
+				currentLogic = item.toUpperCase()
+				continue
+			}
+			
+			// If it's an array
+			if (Array.isArray(item)) {
+				// Check if it's a nested group
+				if (item.length > 0 && Array.isArray(item[0])) {
+					// Process nested group
+					const nestedResult = processConditions(item, currentLogic)
+					if (nestedResult.length > 0) {
+						processed.push({
+							type: 'group',
+							logic: currentLogic,
+							conditions: nestedResult
+						})
+					}
+				} else {
+					// Simple condition [field, operator, value]
+					const [field, operator, value] = item
+					
+					if (field && value) {
+						// Parse comma-separated values for IN operator
+						let parsedValue = value
+						if (operator === 'in' || operator === 'not in') {
+							parsedValue = value.split(',').map(v => v.trim()).filter(v => v)
+						}
+						
+						processed.push({
+							type: 'condition',
+							field: field,
+							operator: operator,
+							value: parsedValue,
+							logic: currentLogic
+						})
+					}
+				}
+			}
+		}
+		
+		return processed
+	}
+	
+	result.conditions = processConditions(conditions)
+	
+	return result.conditions.length > 0 ? result : null
+}
+
 const startSync = async () => {
 	if (!selectedConnection.value) {
 		showError(__('Please select a connection'))
@@ -878,8 +993,19 @@ const startSync = async () => {
 
 	syncing.value = true
 	try {
+		// Clean and convert filter conditions before sending
+		const cleanedFilters = cleanFilterConditions(filterConditions.value)
+		const backendFilters = convertFiltersForBackend(cleanedFilters)
+		
+		console.log('=== FILTER PROCESSING ===')
+		console.log('Original:', JSON.stringify(filterConditions.value, null, 2))
+		console.log('Cleaned:', JSON.stringify(cleanedFilters, null, 2))
+		console.log('Backend format:', JSON.stringify(backendFilters, null, 2))
+		console.log('========================')
+		
 		const response = await call('mbw_mira.api.sync_segment.sync_candidates', {
 			data_source_name: selectedConnection.value.name,
+			filters: backendFilters
 		})
 
 		if (response.status === 'success') {

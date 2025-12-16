@@ -129,6 +129,7 @@ import { filterableFieldsResource } from './filterableFields'
 import Link from '@/components/Controls/Link.vue'
 import SkillsTagsInput from './SkillsTagsInput.vue'
 import TagsSelector from './TagsSelector.vue'
+import MultiSelectInput from './MultiSelectInput.vue'
 
 const show = ref(false)
 
@@ -279,6 +280,19 @@ function getValueControl() {
           value: 'not set',
         },
       ],
+    })
+  } else if (['in', 'not in'].includes(operator) && typeSelect.includes(fieldtype)) {
+    // Special handling for Select fields with IN/NOT IN operator
+    const _options = getSelectOptions(options)
+    const helperText = _options.length > 5
+      ? `${_options.length} options available. Click to select.`
+      : `Available: ${_options.join(', ')}`
+    return h(MultiSelectInput, {
+      modelValue: props.condition[2],
+      options: _options,
+      placeholder: 'Select values...',
+      chipColor: 'blue',
+      'onUpdate:modelValue': (v) => updateValue(v),
     })
   } else if (['like', 'not like', 'in', 'not in'].includes(operator)) {
     return h(FormControl, { type: 'text' })

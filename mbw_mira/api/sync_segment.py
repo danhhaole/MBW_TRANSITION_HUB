@@ -1,4 +1,71 @@
 import frappe
+import json
+from frappe import _
+
+def build_filter_description(filter_obj):
+    """
+    Build human-readable description from filter object
+    
+    Args:
+        filter_obj: {
+            'conditions': [...],
+            'logic': 'AND'
+        }
+    
+    Returns:
+        str: Human-readable filter description
+    """
+    if not filter_obj or not filter_obj.get('conditions'):
+        return ""
+    
+    descriptions = []
+    
+    def process_condition(cond):
+        if cond['type'] == 'condition':
+            field = cond['field']
+            operator = cond['operator']
+            value = cond['value']
+            
+            # Format value
+            if isinstance(value, list):
+                value_str = ', '.join(str(v) for v in value)
+            else:
+                value_str = str(value)
+            
+            # Map operator to readable text
+            op_map = {
+                '==': '=',
+                '!=': '≠',
+                'in': 'IN',
+                'not in': 'NOT IN',
+                'like': 'LIKE',
+                'not like': 'NOT LIKE',
+                '>': '>',
+                '<': '<',
+                '>=': '≥',
+                '<=': '≤'
+            }
+            op_str = op_map.get(operator, operator)
+            
+            return f"{field} {op_str} ({value_str})"
+        
+        elif cond['type'] == 'group':
+            nested_descs = []
+            for nested_cond in cond['conditions']:
+                nested_descs.append(process_condition(nested_cond))
+            
+            logic = cond.get('logic', 'AND')
+            return f"({f' {logic} '.join(nested_descs)})"
+        
+        return ""
+    
+    for condition in filter_obj['conditions']:
+        desc = process_condition(condition)
+        if desc:
+            descriptions.append(desc)
+    
+    main_logic = filter_obj.get('logic', 'AND')
+    return f" {main_logic} ".join(descriptions)
 
 @frappe.whitelist()
 def sync_positions(data_source_name):
@@ -89,7 +156,7 @@ def sync_positions(data_source_name):
         }
 
 @frappe.whitelist()
-def sync_candidates(data_source_name):
+def sync_candidates(data_source_name, filters=None):
     """
     Queue candidates sync from ATS to Mira Talents
     
@@ -142,23 +209,36 @@ def sync_candidates(data_source_name):
             else:
                 frappe.throw(f"A sync log already exists for this connection with status '{status}'. Please use Retry to run sync again.")
         
+
+        # Parse filters if provided
+        parsed_filters = None
+        filter_description = ""
+        if filters:
+            parsed_filters = json.loads(filters) if isinstance(filters, str) else filters
+            filter_description = build_filter_description(parsed_filters)
+        
         # Create sync log with In Progress status (start immediately)
+        details = f"Sync started for {data_source.source_title} ({data_source.source_name})"
+        if filter_description:
+            details += f"\nFilters: {filter_description}"
+        
         sync_log = frappe.get_doc({
             "doctype": "Mira ATS Sync Log",
             "connection": data_source.name,
             "sync_type": "Candidate to Talent",
             "status": "In Progress",
             "start_time": frappe.utils.now(),
-            "details": f"Sync started for {data_source.source_title} ({data_source.source_name})"
+            "details": details
         })
         sync_log.insert(ignore_permissions=True)
         frappe.db.commit()
         
-        # Enqueue background job immediately
+        # Enqueue background job immediately with filters
         frappe.enqueue(
             "mbw_mira.workers.ats.fetch_mbw_ats_data.sync_data_source_candidates_background",
             data_source_name=data_source.name,
             sync_log_name=sync_log.name,
+            filters=parsed_filters,
             queue="short",
             timeout=3600  # 1 hour timeout
         )

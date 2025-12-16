@@ -565,13 +565,76 @@ def schedule_sync():
     sync_ats_positions_to_segments()
     sync_ats_candidates_to_talents()
 
-def sync_data_source_candidates_background(data_source_name, sync_log_name):
+def build_frappe_filters_from_conditions(filter_obj):
+    """
+    Convert frontend filter object to Frappe filters format
+    
+    Args:
+        filter_obj: {
+            'conditions': [...],
+            'logic': 'AND'
+        }
+    
+    Returns:
+        list: Frappe filters as list of lists [[field, operator, value], ...]
+    """
+    if not filter_obj or not filter_obj.get('conditions'):
+        return None
+    
+    # Use list format for Frappe get_all
+    frappe_filters = []
+    
+    def process_conditions(conditions, parent_logic='AND'):
+        """Recursively process conditions"""
+        result = []
+        
+        for condition in conditions:
+            if condition['type'] == 'condition':
+                field = condition['field']
+                operator = condition['operator']
+                value = condition['value']
+                
+                # Map operators to Frappe format
+                if operator == '==':
+                    result.append([field, '=', value])
+                elif operator == '!=':
+                    result.append([field, '!=', value])
+                elif operator == 'in':
+                    # value is already an array from frontend
+                    result.append([field, 'in', value])
+                elif operator == 'not in':
+                    result.append([field, 'not in', value])
+                elif operator == 'like':
+                    result.append([field, 'like', f'%{value}%'])
+                elif operator == 'not like':
+                    result.append([field, 'not like', f'%{value}%'])
+                elif operator in ['>', '<', '>=', '<=']:
+                    result.append([field, operator, value])
+                    
+            elif condition['type'] == 'group':
+                # Process nested group
+                nested = process_conditions(condition['conditions'], condition.get('logic', 'AND'))
+                if nested:
+                    # For OR logic within group, wrap in another list
+                    if condition.get('logic') == 'OR':
+                        result.append(nested)
+                    else:
+                        result.extend(nested)
+        
+        return result
+    
+    frappe_filters = process_conditions(filter_obj['conditions'])
+    
+    return frappe_filters if frappe_filters else None
+
+def sync_data_source_candidates_background(data_source_name, sync_log_name, filters=None):
     """
     Background version of sync_data_source_candidates that works with existing sync log
     
     Args:
         data_source_name: Name of Mira Data Source document
         sync_log_name: Name of existing Mira ATS Sync Log document
+        filters: Filter object from frontend {conditions: [...], logic: 'AND'}
     """
     try:
         # Get existing sync log
@@ -599,12 +662,193 @@ def sync_data_source_candidates_background(data_source_name, sync_log_name):
                 frappe.db.commit()
                 return
 
-            # Fetch candidates from ATS
-            candidates = provider.get_list(
-                "ATS_Candidate",
-                filters={},  # Có thể thêm filters như {"rejected": 0}
-                fields=["name"]  # Chỉ lấy name, chi tiết sẽ lấy trong loop
-            )
+            # Build Frappe filters from filter object
+            frappe_filters = None
+            if filters:
+                try:
+                    frappe.logger().info(f"Raw filters received: {json.dumps(filters)}")
+                    frappe_filters = build_frappe_filters_from_conditions(filters)
+                    if frappe_filters:
+                        frappe.logger().info(f"Built Frappe filters: {json.dumps(frappe_filters)}")
+                    else:
+                        frappe.logger().warning("No filters built from conditions")
+                except Exception as e:
+                    frappe.logger().error(f"Error building filters: {str(e)}")
+                    import traceback
+                    frappe.logger().error(traceback.format_exc())
+                    frappe_filters = None
+            
+            # Separate filters into direct fields and child table fields
+            direct_filters = []
+            child_table_filters = {}
+            
+            if frappe_filters:
+                # Map of special filter fields that need post-processing
+                special_filter_fields = {
+                    'skills': 'candidate_skill',  # Child table field
+                    'tags': 'candidate_tags',  # Child table field
+                    'minimum_required_fields': 'required_fields_check'  # Special validation filter
+                }
+                
+                for filter_item in frappe_filters:
+                    field_name = filter_item[0] if isinstance(filter_item, list) else None
+                    
+                    # Check if this is a special filter field that needs post-processing
+                    if field_name in special_filter_fields:
+                        child_table_filters[field_name] = filter_item
+                        frappe.logger().info(f"Special filter detected: {filter_item} - will apply post-fetch")
+                    else:
+                        direct_filters.append(filter_item)
+            
+            # Fetch candidates from ATS with direct filters only
+            try:
+                if direct_filters:
+                    frappe.logger().info(f"Fetching candidates with direct filters: {direct_filters}")
+                    candidates = provider.get_list(
+                        "ATS_Candidate",
+                        filters=direct_filters,
+                        fields=["name"]
+                    )
+                    frappe.logger().info(f"Found {len(candidates)} candidates with direct filters")
+                else:
+                    # No direct filters - fetch all
+                    frappe.logger().info("Fetching all candidates (no direct filters)")
+                    candidates = provider.get_list(
+                        "ATS_Candidate",
+                        fields=["name"]
+                    )
+                    frappe.logger().info(f"Found {len(candidates)} total candidates")
+            except Exception as e:
+                frappe.logger().error(f"Error fetching candidates: {str(e)}")
+                import traceback
+                frappe.logger().error(traceback.format_exc())
+                # Fallback: fetch all candidates without filters
+                frappe.logger().info("Falling back to fetch all candidates")
+                candidates = provider.get_list(
+                    "ATS_Candidate",
+                    fields=["name"]
+                )
+            
+            # Apply child table filters post-fetch if any
+            if child_table_filters and candidates:
+                frappe.logger().info(f"Applying post-fetch child table filters to {len(candidates)} candidates")
+                filtered_candidates = []
+                
+                for candidate in candidates:
+                    try:
+                        # Get full candidate doc to check child tables
+                        candidate_doc = provider.get_doc("ATS_Candidate", candidate.get('name'))
+                        
+                        # Debug: Log candidate structure
+                        frappe.logger().info(f"Checking candidate {candidate.get('name')}")
+                        if 'candidate_skill' in candidate_doc:
+                            frappe.logger().info(f"  candidate_skill: {candidate_doc.get('candidate_skill')}")
+                        
+                        # Check each special filter
+                        matches = True
+                        for field_name, filter_item in child_table_filters.items():
+                            operator = filter_item[1]
+                            value = filter_item[2]
+                            
+                            if field_name == 'minimum_required_fields':
+                                # Special filter: Check if required fields are not empty
+                                # Map display names to actual field names in ATS_Candidate
+                                field_mapping = {
+                                    'Full Name': 'can_full_name',
+                                    'Email': 'can_email',
+                                    'Phone': 'can_phone',
+                                    'Phone Number': 'can_phone',
+                                    'Source': 'candidatesource_id',
+                                    'Gender': 'can_gender',
+                                    'Date of Birth': 'can_dob',
+                                    'DOB': 'can_dob',
+                                    'Address': 'can_address',
+                                    'Region': 'can_region',
+                                    'Job Opening': 'job_opening_id',
+                                    'Status': 'status',
+                                    'Recruiter': 'can_recruiter',
+                                    'CV': 'can_cv'
+                                }
+                                
+                                required_fields = value if isinstance(value, list) else [value]
+                                frappe.logger().info(f"  Checking required fields: {required_fields}")
+                                
+                                # Check if all required fields have values
+                                for display_name in required_fields:
+                                    actual_field = field_mapping.get(display_name, display_name.lower().replace(' ', '_'))
+                                    field_value = candidate_doc.get(actual_field)
+                                    
+                                    # Check if field is empty
+                                    is_empty = (
+                                        field_value is None or 
+                                        field_value == '' or 
+                                        (isinstance(field_value, str) and field_value.strip() == '')
+                                    )
+                                    
+                                    if is_empty:
+                                        frappe.logger().info(f"  Required field '{display_name}' ({actual_field}) is empty")
+                                        matches = False
+                                        break
+                                    else:
+                                        frappe.logger().info(f"  Required field '{display_name}' ({actual_field}) = '{field_value}' ✓")
+                                
+                                if not matches:
+                                    break
+                            
+                            elif field_name == 'skills':
+                                # Check candidate_skill child table
+                                skill_data = candidate_doc.get('candidate_skill', [])
+                                frappe.logger().info(f"  Skill data type: {type(skill_data)}, length: {len(skill_data) if isinstance(skill_data, list) else 'N/A'}")
+                                
+                                if skill_data:
+                                    # Extract skills from candidate_skill child table
+                                    candidate_skills = []
+                                    for skill in skill_data:
+                                        frappe.logger().info(f"  Skill item: {skill}")
+                                        # Field name is 'can_skill_name' based on Candidate_Skill DocType
+                                        skill_name = skill.get('can_skill_name', '')
+                                        if skill_name:
+                                            # Normalize: lowercase and strip whitespace
+                                            candidate_skills.append(skill_name.strip().lower())
+                                    
+                                    frappe.logger().info(f"  Extracted skills: {candidate_skills}")
+                                    
+                                    if operator == '=':
+                                        # Check if any skill matches (case-insensitive)
+                                        search_value = value.strip().lower()
+                                        if search_value not in candidate_skills:
+                                            frappe.logger().info(f"  No match for '{search_value}' in {candidate_skills}")
+                                            matches = False
+                                            break
+                                    elif operator == 'in':
+                                        # Check if any of the values match (case-insensitive)
+                                        if isinstance(value, list):
+                                            search_values = [v.strip().lower() for v in value]
+                                        else:
+                                            search_values = [value.strip().lower()]
+                                        
+                                        if not any(sv in candidate_skills for sv in search_values):
+                                            frappe.logger().info(f"  No match for {search_values} in {candidate_skills}")
+                                            matches = False
+                                            break
+                                else:
+                                    # No skills data - doesn't match
+                                    frappe.logger().info(f"  No skill data - skipping")
+                                    matches = False
+                                    break
+                        
+                        if matches:
+                            frappe.logger().info(f"  ✓ Candidate {candidate.get('name')} matches filters")
+                            filtered_candidates.append(candidate)
+                        else:
+                            frappe.logger().info(f"  ✗ Candidate {candidate.get('name')} does not match filters")
+                            
+                    except Exception as e:
+                        frappe.logger().error(f"Error filtering candidate {candidate.get('name')}: {str(e)}")
+                        continue
+                
+                frappe.logger().info(f"After post-fetch filtering: {len(filtered_candidates)} candidates match")
+                candidates = filtered_candidates
 
             # Update total records
             sync_log.total_records = len(candidates)
