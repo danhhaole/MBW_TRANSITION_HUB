@@ -16,10 +16,9 @@ class MiraCampaign(Document):
 
 			self.update_status_social()
 
-			# Gửi email khi campaign chuyển sang ACTIVE
-			# Note: Email sending được gọi từ frontend (CampaignTable.vue) để tránh gửi 2 lần
-			# if self.status == 'ACTIVE':
-			#	self.trigger_campaign_emails()
+			# Không gửi tracking email khi ACTIVE - chỉ log
+			if self.status == 'ACTIVE':
+				frappe.logger("campaign").info(f"📋 Campaign {self.name} activated - tracking emails disabled")
 
 	def update_status_social(self):
 		is_active = 0
@@ -33,6 +32,37 @@ class MiraCampaign(Document):
 				frappe.db.set_value("Mira Campaign Social",scp,"is_active", is_active)
 
 			frappe.db.commit()
+
+	def trigger_tracking_emails(self):
+		"""
+		Gửi tracking email cho tất cả ứng viên trong campaign khi campaign chuyển sang ACTIVE
+		"""
+		try:
+			frappe.logger("campaign").info(f"🚀 [AUTO-TRIGGER] Starting tracking emails for campaign {self.name}")
+
+			# Gọi hàm gửi tracking email
+			from mbw_mira.api.email_tracking_test import test_send_tracked_email_to_pool
+			result = test_send_tracked_email_to_pool(
+				target_pool=self.target_pool,
+				subject=f"Chào mừng bạn tham gia chiến dịch {self.campaign_name}",
+				content=f"""
+Xin chào,
+
+Chúng tôi rất vui mừng thông báo bạn đã được chọn tham gia chiến dịch "{self.campaign_name}".
+
+Đây là email tracking để theo dõi mức độ quan tâm của bạn đối với chiến dịch này.
+
+Nếu bạn không tương tác với email này trong vòng 1 phút, hệ thống sẽ tự động dừng gửi email tiếp theo để tôn trọng sự riêng tư của bạn.
+
+Trân trọng,
+MOBIWORK Team
+"""
+			)
+
+			frappe.logger("campaign").info(f"✅ [AUTO-TRIGGER] Tracking email result: {result}")
+
+		except Exception as e:
+			frappe.logger("campaign").error(f"❌ [AUTO-TRIGGER] Error sending tracking emails: {str(e)}")
 
 	def trigger_campaign_emails(self):
 		"""

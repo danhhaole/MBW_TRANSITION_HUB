@@ -81,6 +81,7 @@
           v-else-if="currentStep === 3"
           :triggers="campaignData.triggers"
           :start-date="campaignData.start_date"
+          :target-pool="campaignData.target_pool"
           :show-error="showValidationError"
           @update:triggers="campaignData.triggers = $event"
           @update:start-date="campaignData.start_date = $event"

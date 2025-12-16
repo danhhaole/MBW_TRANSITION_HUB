@@ -56,7 +56,7 @@
             <div class="text-xs text-gray-500 mb-2">{{ __("Preview:") }}</div>
             <div
               class="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap overflow-hidden"
-              v-html="getPreviewContent(getContentForPreview())"
+              v-html="stripMJMLTables(getPreviewContent(getContentForPreview()))"
             >
             </div>
           </div>
@@ -437,6 +437,18 @@ const saveTemplate = async () => {
       emailSettings: exportData.emailSettings
     }
 
+    // Force left alignment
+    if (!emailBuilderFormat.emailSettings) {
+      emailBuilderFormat.emailSettings = {
+        backgroundColor: '#ffffff',
+        contentWidth: 600,
+        contentAlign: 'left',
+        fontFamily: 'Arial, sans-serif'
+      }
+    } else {
+      emailBuilderFormat.emailSettings.contentAlign = 'left'
+    }
+
     // Convert to HTML/CSS for storage in campaign template_content
     const htmlFormat = convertEmailBuilderToHtml(emailBuilderFormat)
 
@@ -495,6 +507,18 @@ const applyTemplate = (template) => {
 
       // NEW: Check for EmailBuilder format first
       if (design && design.blocks && Array.isArray(design.blocks)) {
+        // Force left alignment
+        if (!design.emailSettings) {
+          design.emailSettings = {
+            backgroundColor: '#ffffff',
+            contentWidth: 600,
+            contentAlign: 'left',
+            fontFamily: 'Arial, sans-serif'
+          }
+        } else {
+          design.emailSettings.contentAlign = 'left'
+        }
+
         // Convert and save all formats
         const htmlFormat = convertEmailBuilderToHtml(design)
         localContent.value.template_content = htmlFormat.html    // HTML for rendering
@@ -503,12 +527,24 @@ const applyTemplate = (template) => {
 
         dialogContent.value = design
         templateApplied = true
-        console.log('Applied EmailBuilder template:', design)
+        console.log('Applied EmailBuilder template with left alignment:', design)
       }
       // OLD: Validate it's a proper Unlayer design (must have body.rows)
       else if (design && design.body && Array.isArray(design.body.rows)) {
         // Convert Unlayer to EmailBuilder format
         const converted = convertHtmlToEmailBuilder(design.body?.rows?.[0]?.columns?.[0]?.contents?.[0]?.values?.text || '')
+
+        // Force left alignment
+        if (!converted.emailSettings) {
+          converted.emailSettings = {
+            backgroundColor: '#ffffff',
+            contentWidth: 600,
+            contentAlign: 'left',
+            fontFamily: 'Arial, sans-serif'
+          }
+        } else {
+          converted.emailSettings.contentAlign = 'left'
+        }
 
         // Convert and save all formats
         const htmlFormat = convertEmailBuilderToHtml(converted)
@@ -518,7 +554,7 @@ const applyTemplate = (template) => {
 
         dialogContent.value = converted
         templateApplied = true
-        console.log('Applied and converted Unlayer template (legacy):', design)
+        console.log('Applied and converted Unlayer template (legacy) with left alignment:', design)
         toast.info(__('Applied legacy template format. Converted to new format.'))
       } else {
         console.warn('Template is not valid EmailBuilder or Unlayer format')
@@ -558,6 +594,46 @@ const openTemplateSettings = () => {
     showSettings.value = true
     activeSettingsPage.value = 'Email Templates'
   })
+}
+
+// Strip MJML-generated tables and extract clean text content
+// When user has old MJML-generated HTML, this extracts readable text by removing table structure
+const stripMJMLTables = (html) => {
+  if (!html) return ''
+  
+  try {
+    // If it looks like HTML with tables (MJML output), extract text content
+    if (html.includes('<table') || html.includes('<td')) {
+      // Create a temp DOM element
+      const div = document.createElement('div')
+      div.innerHTML = html
+      
+      // Get all text nodes, preserving some structure
+      let text = ''
+      const nodes = div.querySelectorAll('*')
+      
+      for (const node of nodes) {
+        // Skip script and style tags
+        if (node.tagName === 'SCRIPT' || node.tagName === 'STYLE') continue
+        
+        // Get text from divs, p tags, and table cells
+        if (['DIV', 'P', 'TD', 'TH', 'SPAN'].includes(node.tagName)) {
+          const nodeText = node.textContent?.trim()
+          if (nodeText && !text.includes(nodeText)) {
+            text += nodeText + '\n'
+          }
+        }
+      }
+      
+      // If we extracted text, return it formatted; otherwise return original
+      return text.trim() || html
+    }
+    
+    return html
+  } catch (error) {
+    console.warn('Error stripping MJML tables:', error)
+    return html
+  }
 }
 
 // Get preview content (extract from EmailBuilder blocks or Unlayer design)

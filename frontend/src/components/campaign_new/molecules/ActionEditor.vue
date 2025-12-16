@@ -1424,7 +1424,7 @@ const handleActionTypeChange = () => {
 }
 
 // Methods
-const save = () => {
+const save = async () => {
   // Build action parameters based on action type
   const actionParams = {}
   
@@ -1441,9 +1441,23 @@ const save = () => {
       if (localAction.value.block_content) {
         try {
           const design = JSON.parse(localAction.value.block_content)
+          
+          // Force left alignment as per user request to match CampaignTable behavior
+          // Ensure emailSettings exists before setting contentAlign
+          if (!design.emailSettings) {
+            design.emailSettings = {
+              backgroundColor: '#ffffff',
+              contentWidth: 600,
+              contentAlign: 'left',
+              fontFamily: 'Arial, sans-serif'
+            }
+          } else {
+            design.emailSettings.contentAlign = 'left'
+          }
+          
           const htmlFormat = convertEmailBuilderToHtml(design)
           actionParams.email_content = htmlFormat.html  // Converted HTML
-          console.log('📧 [ActionEditor] Converted block_content to HTML for email_content')
+          console.log('📧 [ActionEditor] Converted block_content to HTML for email_content with left alignment')
         } catch (e) {
           console.warn('Failed to convert block_content to HTML:', e)
           actionParams.email_content = localAction.value.email_content || ''  // Fallback
@@ -1546,6 +1560,9 @@ const save = () => {
   // Set action parameters
   localAction.value.action_parameters = actionParams
 
+  // INTEGRATED TEST EMAIL LOGIC (User request)
+  // No prompt here anymore (User request: auto-send on save handled by parent or backend)
+  
   console.log('📤 ActionEditor saving action:', localAction.value)
   
   console.log('📤 ActionEditor emitting save:', {
@@ -1559,5 +1576,64 @@ const save = () => {
 
 const cancel = () => {
   emit('cancel')
+}
+
+const sendTestEmail = async () => {
+  if (localAction.value.action_type !== 'EMAIL') return
+
+  const subject = localAction.value.email_subject || 'Test Email'
+  // Build content similarly to save()
+  let content = ''
+  if (localAction.value.block_content) {
+    try {
+      const design = JSON.parse(localAction.value.block_content)
+      
+      // Force left alignment (same as save())
+      if (!design.emailSettings) {
+        design.emailSettings = {
+          backgroundColor: '#ffffff',
+          contentWidth: 600,
+          contentAlign: 'left',
+          fontFamily: 'Arial, sans-serif'
+        }
+      } else {
+        design.emailSettings.contentAlign = 'left'
+      }
+      
+      const htmlFormat = convertEmailBuilderToHtml(design)
+      content = htmlFormat.html
+    } catch (e) {
+      content = localAction.value.email_content || ''
+    }
+  } else {
+    content = localAction.value.email_content || ''
+  }
+
+  if (!content) {
+    // try fallback or show error
+    console.warn('No content to send')
+  }
+
+  // Ask for recipient
+  const userEmail = window.frappe?.session?.user_email || ''
+  const recipient = prompt(__('Enter email address to send test to:'), userEmail)
+  if (!recipient) return
+
+  try {
+    const res = await call('mbw_mira.api.campaign.send_test_email', {
+      recipient,
+      subject,
+      content
+    })
+    if (res.status === 'success') {
+      // Use frappe-ui toast if possible or console/alert
+      alert(res.message)
+    } else {
+      alert(res.message)
+    }
+  } catch (e) {
+    console.error(e)
+    alert('Failed to send test email')
+  }
 }
 </script>

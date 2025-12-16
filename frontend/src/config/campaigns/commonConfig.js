@@ -23,7 +23,10 @@ export const allTriggerTypes = [
   { label: __('Score Threshold Reached'), value: 'ON_SCORE_REACHED' },
   { label: __('Hard Bounce'), value: 'ON_EMAIL_BOUNCE' },
   { label: __('Inactivity Timeout'), value: 'ON_INACTIVITY_TIMEOUT' },
-  { label: __('Flow Step Completed'), value: 'ON_SEQUENCE_COMPLETED' }
+  { label: __('Flow Step Completed'), value: 'ON_SEQUENCE_COMPLETED' },
+  // Birthday & Email Engagement (2)
+  { label: __('Birthday'), value: 'ON_BIRTHDAY' },
+  { label: __('No Email Click After N Days'), value: 'ON_NO_EMAIL_CLICK' }
 ]
 
 /**
@@ -66,7 +69,10 @@ export const triggerIcons = {
   'ON_SCORE_REACHED': 'trending-up',
   'ON_EMAIL_BOUNCE': 'alert-circle',
   'ON_INACTIVITY_TIMEOUT': 'clock',
-  'ON_SEQUENCE_COMPLETED': 'check-circle'
+  'ON_SEQUENCE_COMPLETED': 'check-circle',
+  // Birthday & Email Engagement
+  'ON_BIRTHDAY': 'gift',
+  'ON_NO_EMAIL_CLICK': 'mouse-pointer'
 }
 
 /**
@@ -87,7 +93,10 @@ export const triggerDescriptions = {
   'ON_SCORE_REACHED': __('Talent engagement score reaches threshold'),
   'ON_EMAIL_BOUNCE': __('Email bounces (invalid email address)'),
   'ON_INACTIVITY_TIMEOUT': __('Talent shows no activity for set period'),
-  'ON_SEQUENCE_COMPLETED': __('Previous flow step is completed')
+  'ON_SEQUENCE_COMPLETED': __('Previous flow step is completed'),
+  // Birthday & Email Engagement
+  'ON_BIRTHDAY': __('Send birthday greeting email'),
+  'ON_NO_EMAIL_CLICK': __('After N days without email click - Stop nurturing or Send another email')
 }
 
 /**

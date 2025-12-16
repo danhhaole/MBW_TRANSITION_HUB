@@ -311,7 +311,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { FeatherIcon, Button, FormControl, Dialog, TextEditor, Popover, Autocomplete, call } from 'frappe-ui'
 import ActionEditor from '../molecules/ActionEditor.vue'
 import { 
@@ -345,6 +345,10 @@ const props = defineProps({
   showError: {
     type: Boolean,
     default: false
+  },
+  targetPool: {
+    type: String,
+    default: ''
   }
 })
 
@@ -375,12 +379,48 @@ const editingActionIndex = ref(null)
 const tags = ref([])
 const loadingTags = ref(false)
 
+// Birthday check state
+const poolHasBirthday = ref(false)
+const checkingBirthday = ref(false)
+
 // triggerTypeOptions imported from utils/triggerUtils.js
 
-// Filter out already added trigger types
+// Check if pool has talents with birthday today
+const checkPoolBirthday = async () => {
+  if (!props.targetPool) {
+    poolHasBirthday.value = false
+    return
+  }
+
+  try {
+    checkingBirthday.value = true
+    const result = await call('mbw_mira.api.campaign.check_pool_has_birthday', {
+      pool_name: props.targetPool
+    })
+    poolHasBirthday.value = result?.has_birthday || false
+    console.log(`🎂 Pool ${props.targetPool} has birthday talents:`, poolHasBirthday.value)
+  } catch (error) {
+    console.error('❌ Error checking pool birthday:', error)
+    poolHasBirthday.value = false
+  } finally {
+    checkingBirthday.value = false
+  }
+}
+
+// Filter out already added trigger types AND hide ON_BIRTHDAY if pool has no birthday talents
 const availableTriggerTypes = computed(() => {
   const existingTypes = localTriggers.value.map(t => t.trigger_type)
-  return triggerTypeOptions.filter(option => !existingTypes.includes(option.value))
+  return triggerTypeOptions.filter(option => {
+    // Filter out already added triggers
+    if (existingTypes.includes(option.value)) return false
+    
+    // ✨ Hide ON_BIRTHDAY if pool has no birthday talents
+    if (option.value === 'ON_BIRTHDAY' && !poolHasBirthday.value) {
+      return false
+    }
+    
+    return true
+  })
 })
 
 const statusOptions = [
@@ -508,6 +548,19 @@ const handleTriggerTagSelect = (triggerIndex, selectedValue) => {
 // Load tags on mount
 onMounted(() => {
   loadTags()
+  // Check birthday when component mounts
+  if (props.targetPool) {
+    checkPoolBirthday()
+  }
+})
+
+// Watch target pool changes and check birthday
+watch(() => props.targetPool, (newPool) => {
+  if (newPool) {
+    checkPoolBirthday()
+  } else {
+    poolHasBirthday.value = false
+  }
 })
 
 // Helper methods

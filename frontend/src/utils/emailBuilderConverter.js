@@ -1,4 +1,4 @@
-import { blocksToMJML } from '@/components/Settings/MiraEmailTemplate/EmailBuilder/utils.js'
+import { blocksToMJML, renderHTML } from '@/components/Settings/MiraEmailTemplate/EmailBuilder/utils.js'
 import mjml2html from 'mjml-browser'
 
 /**
@@ -13,22 +13,20 @@ export function convertEmailBuilderToHtml(emailBuilderData) {
 
   try {
     const { blocks, emailSettings } = emailBuilderData
+
+    // ✨ NEW: Use renderHTML from utils.js which builds clean HTML directly (no MJML bloat)
+    const html = renderHTML(blocks)
     
-    // Generate MJML from blocks
+    // Still generate MJML for reference/backwards compatibility
     const mjml = blocksToMJML(blocks, emailSettings)
-    
-    // Convert MJML to HTML
-    const { html, errors } = mjml2html(mjml)
-    
-    if (errors && errors.length > 0) {
-      console.warn('MJML conversion warnings:', errors)
-    }
-    
-    // Extract inline CSS from HTML (MJML generates inline styles)
+
+    // Extract inline CSS from HTML
     const cssExtracted = extractInlineStyles(html)
+
+    console.log('✅ Converted EmailBuilder to clean HTML (renderHTML method)')
     
     return {
-      html: cssExtracted.html,
+      html: html,  // Use clean HTML from renderHTML
       css: cssExtracted.css,
       mjml: mjml
     }
@@ -53,26 +51,26 @@ export function convertHtmlToEmailBuilder(html, css = '') {
     // Create a temporary DOM element to parse HTML
     const parser = new DOMParser()
     const doc = parser.parseFromString(html, 'text/html')
-    
+
     const blocks = []
     let blockId = Date.now()
-    
+
     // Extract email settings from body styles
     const emailSettings = extractEmailSettingsFromHtml(doc)
-    
+
     // Find main content container (usually mj-body or similar)
     const contentContainer = doc.querySelector('body') || doc.querySelector('[role="main"]') || doc
-    
+
     // Convert common HTML elements to blocks
     const elements = contentContainer.querySelectorAll('p, h1, h2, h3, h4, h5, h6, img, hr, div[style*="border"], table')
-    
+
     elements.forEach(element => {
       const block = convertElementToBlock(element, blockId++)
       if (block) {
         blocks.push(block)
       }
     })
-    
+
     // If no blocks found, create a basic text block with the content
     if (blocks.length === 0 && html.trim()) {
       blocks.push({
@@ -84,7 +82,7 @@ export function convertHtmlToEmailBuilder(html, css = '') {
         }
       })
     }
-    
+
     return { blocks, emailSettings }
   } catch (error) {
     console.error('Error converting HTML to EmailBuilder:', error)
@@ -114,21 +112,21 @@ function extractInlineStyles(html) {
 function extractEmailSettingsFromHtml(doc) {
   const body = doc.querySelector('body')
   const settings = getDefaultEmailSettings()
-  
+
   if (body) {
     // Extract background color
     const bgColor = body.style.backgroundColor || getComputedStyleValue(body, 'background-color')
     if (bgColor && bgColor !== 'rgba(0, 0, 0, 0)' && bgColor !== 'transparent') {
       settings.backgroundColor = bgColor
     }
-    
+
     // Extract font family from body or main container
     const fontFamily = body.style.fontFamily || getComputedStyleValue(body, 'font-family')
     if (fontFamily) {
       settings.fontFamily = fontFamily
     }
   }
-  
+
   // Try to detect content width from main container
   const mainContainer = doc.querySelector('[style*="width"]') || doc.querySelector('table[width]')
   if (mainContainer) {
@@ -140,7 +138,7 @@ function extractEmailSettingsFromHtml(doc) {
       }
     }
   }
-  
+
   return settings
 }
 
@@ -152,7 +150,7 @@ function extractEmailSettingsFromHtml(doc) {
  */
 function convertElementToBlock(element, id) {
   const tagName = element.tagName.toLowerCase()
-  
+
   switch (tagName) {
     case 'p':
     case 'h1':
@@ -175,7 +173,7 @@ function convertElementToBlock(element, id) {
         }
       }
       break
-      
+
     case 'img':
       return {
         id,
@@ -189,7 +187,7 @@ function convertElementToBlock(element, id) {
           ...getDefaultImageProps()
         }
       }
-      
+
     case 'hr':
       return {
         id,
@@ -200,7 +198,7 @@ function convertElementToBlock(element, id) {
         }
       }
   }
-  
+
   return null
 }
 
@@ -212,7 +210,7 @@ function convertElementToBlock(element, id) {
 function extractTextStyles(element) {
   const styles = {}
   const computedStyle = window.getComputedStyle ? window.getComputedStyle(element) : element.style
-  
+
   if (computedStyle.color) styles.color = computedStyle.color
   if (computedStyle.fontSize) styles.fontSize = parseInt(computedStyle.fontSize) || 16
   if (computedStyle.fontFamily) styles.fontFamily = computedStyle.fontFamily
@@ -221,7 +219,7 @@ function extractTextStyles(element) {
   if (computedStyle.backgroundColor && computedStyle.backgroundColor !== 'rgba(0, 0, 0, 0)') {
     styles.backgroundColor = computedStyle.backgroundColor
   }
-  
+
   return styles
 }
 
@@ -233,7 +231,7 @@ function extractTextStyles(element) {
 function extractImageStyles(element) {
   const styles = {}
   const computedStyle = window.getComputedStyle ? window.getComputedStyle(element) : element.style
-  
+
   if (computedStyle.textAlign) styles.align = computedStyle.textAlign
   if (computedStyle.border && computedStyle.border !== 'none') {
     styles.hasBorder = true
@@ -243,7 +241,7 @@ function extractImageStyles(element) {
   if (computedStyle.borderRadius) {
     styles.borderRadius = parseInt(computedStyle.borderRadius) || 0
   }
-  
+
   return styles
 }
 
@@ -255,11 +253,11 @@ function extractImageStyles(element) {
 function extractDividerStyles(element) {
   const styles = {}
   const computedStyle = window.getComputedStyle ? window.getComputedStyle(element) : element.style
-  
+
   if (computedStyle.height) styles.height = parseInt(computedStyle.height) || 4
   if (computedStyle.borderColor) styles.borderColor = computedStyle.borderColor
   if (computedStyle.borderStyle) styles.style = computedStyle.borderStyle
-  
+
   return styles
 }
 
@@ -284,7 +282,7 @@ function getDefaultEmailSettings() {
   return {
     backgroundColor: '#ffffff',
     contentWidth: 600,
-    contentAlign: 'center',
+    contentAlign: 'left',
     fontFamily: 'Arial, sans-serif'
   }
 }

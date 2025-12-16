@@ -164,6 +164,9 @@ scheduler_events = {
             "mbw_mira.schedulers.auto_segment_talent_profiles.run_enroll_talent_pool",
             "mbw_mira.schedulers.auto_segment_talent_profiles.run_disenroll_talent_pool",
         ],
+        # "0/5 * * * *": [
+        #     "mbw_mira.utils.email_tracking_scheduler.run_email_tracking_check",
+        # ],
         "0/2 * * * *": [
             "mbw_mira.schedulers.task_mira_flow.schedule_message_tasks",
             "mbw_mira.schedulers.task_mira_flow.schedule_sms_tasks",
@@ -180,11 +183,12 @@ scheduler_events = {
             "mbw_mira.schedulers.task_mira_flow.schedule_sent_notification_tasks",
             "mbw_mira.schedulers.task_mira_flow.schedule_unsubscribe_tasks",
 
-            
+
         ],
     },
     "daily": [
-        "mbw_mira.schedulers.task_talent_pool_cold.scan_talent_pool_interaction_cold"
+        "mbw_mira.schedulers.task_talent_pool_cold.scan_talent_pool_interaction_cold",
+        "mbw_mira.utils.birthday_scheduler.run_daily_birthday_check_scheduler"
     ],
     "hourly": [
         # "mbw_mira.schedulers.enroll_talent_campaign.run",

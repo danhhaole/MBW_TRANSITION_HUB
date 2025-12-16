@@ -103,12 +103,14 @@ def send_email(
                 print("DEBUG: Sending HTML email via Frappe...")
                 print(f"DEBUG: About to call frappe.sendmail with HTML content...")
                 print(f"DEBUG: Content preview: {content[:100]}...")
-                # Send as HTML email
+                # Send as HTML email using 'message' parameter to preserve HTML formatting
+                # 'content' parameter goes through template processing which can strip formatting
+                # 'message' parameter sends raw HTML as-is
                 result = frappe.sendmail(
                     recipients=recipients,
                     subject=subject,
                     sender=senderemail,
-                    content=content,
+                    message=content,  # Use 'message' instead of 'content' to preserve HTML
                     now=True
                 )
                 print(f"DEBUG: frappe.sendmail returned: {result}")
@@ -171,7 +173,7 @@ def send_email(
         )
         print(f"DEBUG: Email transaction logged")
         print(f"===== EMAIL SEND DEBUG END =====\n")
-        return True if status == "Fallback" else False
+        return status in ["Success", "Fallback"]
 
 def normalize_emails(emails):
     if not emails:

@@ -76,6 +76,8 @@
           v-else-if="currentStep === 3"
           :start-date="campaignData.start_date"
           :triggers="campaignData.step3_triggers"
+          :target-pool="targetPool"
+          :campaign-id="campaignData.name"
           @update:start-date="campaignData.start_date = $event"
           @update:triggers="campaignData.step3_triggers = $event"
         />
@@ -163,7 +165,7 @@ const initialCampaignData = ref(null)
 
 const hasUnsavedChanges = computed(() => {
   if (!initialCampaignData.value) return false
-  
+
   // Deep compare the two objects
   return JSON.stringify(campaignData.value) !== JSON.stringify(initialCampaignData.value)
 })
@@ -192,19 +194,19 @@ const canProceed = computed(() => {
     return campaignData.value.campaign_name?.trim()
     // config_data/conditions are optional
   }
-  
+
   if (currentStep.value === 2) {
     // Validate triggers
     if (!campaignData.value.triggers || campaignData.value.triggers.length === 0) {
       return false
     }
-    
+
     // Check each trigger has required fields
     return campaignData.value.triggers.every(trigger => {
       const hasChannel = !!trigger.channel
-      
+
       // Sender account is optional now
-      
+
       // Validate content based on channel
       let hasContent = false
       if (trigger.channel === 'email') {
@@ -216,7 +218,7 @@ const canProceed = computed(() => {
           trigger.content?.email_content?.trim()         // Legacy format
         )
         hasContent = hasSubject && hasEmailContent
-        
+
         console.log('📧 [Validation] Email trigger validation:', {
           hasSubject,
           hasEmailContent,
@@ -256,11 +258,11 @@ const canProceed = computed(() => {
           hasContent = !!(trigger.content?.message?.trim())
         }
       }
-      
+
       return hasChannel && hasContent
     })
   }
-  
+
   if (currentStep.value === 3) {
     // Step 3: Settings & Triggers - optional validation
     // Triggers are optional, but if present, should be valid
@@ -272,8 +274,14 @@ const canProceed = computed(() => {
     }
     return true // Triggers are optional
   }
-  
+
   return true
+})
+
+const targetPool = computed(() => {
+  const pool = campaignData.value.config_data?.selectedSegment?.value || campaignData.value.config_data?.selectedSegment || null
+  console.log('🔍 Wizard: Computed targetPool:', pool)
+  return pool
 })
 
 const handleValidate = (isValid) => {
@@ -320,11 +328,11 @@ const loadTriggers = async () => {
 const loadCampaignFlows = async (campaignId) => {
   try {
     console.log('🔀 Loading flows for campaign:', campaignId)
-    
+
     const result = await call('mbw_mira.api.campaign_flow.get_campaign_flows', {
       campaign_id: campaignId
     })
-    
+
     if (result.success && result.data) {
       campaignData.value.step3_triggers = result.data
       console.log('✅ Loaded step3 triggers from flows:', result.data)
@@ -352,23 +360,23 @@ watch(currentStep, async (newStep, oldStep) => {
 const loadCampaignTags = async (campaignId) => {
   try {
     console.log('🏷️ Loading campaign tags:', campaignId)
-    
+
     // Get campaign document with _user_tags field
     const campaign = await call('frappe.client.get', {
       doctype: 'Mira Campaign',
       name: campaignId,
       fields: ['_user_tags']
     })
-    
+
     if (campaign && campaign._user_tags) {
       // Parse _user_tags string format: ",test,abc" -> ["test", "abc"]
       const tagTitles = campaign._user_tags
         .split(',')
         .map(tag => tag.trim())
         .filter(tag => tag.length > 0) // Remove empty strings
-      
+
       console.log('📋 Parsed tags from _user_tags:', tagTitles)
-      
+
       if (tagTitles.length > 0) {
         // Get tag colors from Mira Tag doctype
         const colorResponse = await call('frappe.client.get_list', {
@@ -376,19 +384,19 @@ const loadCampaignTags = async (campaignId) => {
           fields: ['title', 'color'],
           filters: [['title', 'in', tagTitles]]
         })
-        
+
         const colorMap = {}
         for (const tag of colorResponse || []) {
           colorMap[tag.title] = tag.color
         }
-        
+
         // Map tags with colors
         campaignData.value.campaign_tags = tagTitles.map(tagTitle => ({
           label: tagTitle,
           value: tagTitle,
           color: colorMap[tagTitle] || '#6B7280'
         }))
-        
+
         console.log('✅ Campaign tags loaded:', campaignData.value.campaign_tags)
       } else {
         campaignData.value.campaign_tags = []
@@ -432,7 +440,7 @@ const nextStep = async () => {
   }
 
   showValidationError.value = false
-  
+
   // Only save if there are actual changes
   if (hasUnsavedChanges.value) {
     console.log('📝 Changes detected, saving before next step...')
@@ -440,7 +448,7 @@ const nextStep = async () => {
   } else {
     console.log('⏭️ No changes detected, skipping save')
   }
-  
+
   if (currentStep.value < totalSteps.value) {
     currentStep.value++
     // Update initial state after moving to next step
@@ -457,7 +465,7 @@ const saveDraft = async () => {
       // Extract target_pool from config_data
       console.log('Campaign config_data:', campaignData.value.config_data)
 const targetPool = campaignData.value.config_data?.selectedSegment?.value || campaignData.value.config_data?.selectedSegment || null
-      
+
       const result = await campaignStore.submitNewCampaign({
         campaign_name: campaignData.value.campaign_name,
         description: campaignData.value.description,
@@ -471,7 +479,7 @@ const targetPool = campaignData.value.config_data?.selectedSegment?.value || cam
       if (result.success && result.data?.name) {
         campaignData.value.name = result.data.name
         toast.success(__('Campaign created successfully'))
-        
+
         // Add tags if any were selected before campaign was created
         if (campaignData.value.campaign_tags && campaignData.value.campaign_tags.length > 0) {
           console.log('🏷️ Adding tags to newly created campaign:', campaignData.value.campaign_tags)
@@ -489,7 +497,7 @@ const targetPool = campaignData.value.config_data?.selectedSegment?.value || cam
             // Don't fail the whole process if tags fail
           }
         }
-        
+
         // Emit event to refresh campaign list
         emit('campaign-created', { name: result.data.name })
       } else {
@@ -502,7 +510,7 @@ const targetPool = campaignData.value.config_data?.selectedSegment?.value || cam
         // Extract target_pool from config_data
         console.log('Campaign config_data:', campaignData.value.config_data)
         const targetPool = campaignData.value.config_data?.selectedSegment?.value || campaignData.value.config_data?.selectedSegment || null
-        
+
         await call('frappe.client.set_value', {
           doctype: 'Mira Campaign',
           name: campaignData.value.name,
@@ -528,8 +536,8 @@ const targetPool = campaignData.value.config_data?.selectedSegment?.value || cam
         // Prepare triggers data - extract sender_account value
         const triggersData = campaignData.value.triggers.map(trigger => ({
           ...trigger,
-          sender_account: typeof trigger.sender_account === 'object' 
-            ? trigger.sender_account?.value 
+          sender_account: typeof trigger.sender_account === 'object'
+            ? trigger.sender_account?.value
             : trigger.sender_account
         }))
 
@@ -563,11 +571,11 @@ const targetPool = campaignData.value.config_data?.selectedSegment?.value || cam
             start_date: campaignData.value.start_date
           }
         })
-        
+
         // Save step3 triggers separately if needed
         if (campaignData.value.step3_triggers && campaignData.value.step3_triggers.length > 0) {
           console.log('💾 Saving Step3 triggers:', campaignData.value.step3_triggers)
-          
+
           try {
             // Use same API as timeline triggers but with different trigger types
             const result = await call('mbw_mira.api.campaign_social.save_nurturing_campaign_triggers', {
@@ -589,7 +597,7 @@ const targetPool = campaignData.value.config_data?.selectedSegment?.value || cam
         } else {
           console.log('📝 No Step3 triggers to save')
         }
-        
+
         console.log('✅ Settings saved')
       } catch (error) {
         console.error('❌ Error saving settings:', error)
@@ -599,7 +607,7 @@ const targetPool = campaignData.value.config_data?.selectedSegment?.value || cam
     }
 
     // Don't show toast for auto-save
-    
+
     // Update initial state after successful save
     initialCampaignData.value = JSON.parse(JSON.stringify(campaignData.value))
   } catch (error) {
@@ -620,7 +628,7 @@ const finalizeCampaign = async () => {
   finalizing.value = true
   try {
     console.log('🚀 Finalizing campaign...')
-    
+
     // Step 1: Ensure campaign is saved
     if (!campaignData.value.name) {
       toast.error(__('Campaign must be saved first'))
@@ -648,20 +656,20 @@ const finalizeCampaign = async () => {
     // Step 3: Sync all flows with triggers in one API call
     try {
       console.log('🔄 Syncing flows with triggers...')
-      
+
       // Combine both timeline triggers (Step 2) and event triggers (Step 3)
       const allTriggers = [
         ...(campaignData.value.triggers || []),        // Step 2: Timeline triggers
         ...(campaignData.value.step3_triggers || [])   // Step 3: Event triggers
       ]
-      
+
       console.log('📊 All triggers to sync:', allTriggers)
-      
+
       const result = await call('mbw_mira.api.campaign_flow.sync_campaign_flows', {
         campaign_id: campaignData.value.name,
         triggers: allTriggers
       })
-      
+
       if (result && result.success) {
         console.log(`✅ Flows synced: ${result.created || 0} created, ${result.updated || 0} updated, ${result.deleted || 0} deleted`)
       }
@@ -671,18 +679,18 @@ const finalizeCampaign = async () => {
 
     // Step 4: Reload campaign data to get updated flow status
     await loadCampaignData(campaignData.value.name)
-    
+
     // Step 5: Campaign finalized - Reset wizard
     toast.success(__('Campaign saved successfully!'))
     console.log('✅ Campaign finalized')
-    
+
     // Reset wizard to step 1
     currentStep.value = 1
     resetCampaignData()
-    
+
     // Clear unsaved changes flag before closing
     initialCampaignData.value = JSON.parse(JSON.stringify(campaignData.value))
-    
+
     emit('success', { name: campaignData.value.name })
     emit('close')
   } catch (error) {
@@ -697,17 +705,17 @@ const finalizeCampaign = async () => {
 const loadCampaignData = async (campaignId) => {
   try {
     console.log('📂 Loading nurturing campaign data:', campaignId)
-    
+
     const result = await call('frappe.client.get', {
       doctype: 'Mira Campaign',
       name: campaignId
     })
-    
+
     if (result) {
       // Parse config data and conditions from separate fields
       let configData = {}
       let conditions = []
-      
+
       // Build config_data from target_pool
       if (result.target_pool) {
         // Get segment details to rebuild config_data
@@ -716,7 +724,7 @@ const loadCampaignData = async (campaignId) => {
             doctype: 'Mira Segment',
             name: result.target_pool
           })
-          
+
           if (segmentResult) {
             configData = {
               selectedSegment: {
@@ -739,7 +747,7 @@ const loadCampaignData = async (campaignId) => {
         // Fallback to old format
         configData = result.config_data ? JSON.parse(result.config_data) : {}
       }
-      
+
       // Parse condition_filter for filter conditions
       if (result.condition_filter) {
         try {
@@ -762,7 +770,7 @@ const loadCampaignData = async (campaignId) => {
           }
         }
       }
-      
+
       campaignData.value = {
         name: result.name,
         campaign_name: result.campaign_name || '',
@@ -781,12 +789,12 @@ const loadCampaignData = async (campaignId) => {
         step3_triggers: [], // TODO: Load step3 triggers from backend
         triggers: [] // Will be loaded separately in Step 2
       }
-      
+
       console.log('✅ Campaign data loaded:', campaignData.value)
-      
+
       // Load campaign tags
       await loadCampaignTags(campaignId)
-      
+
       // Save initial state after loading
       initialCampaignData.value = JSON.parse(JSON.stringify(campaignData.value))
     }

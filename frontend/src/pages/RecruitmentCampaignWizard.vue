@@ -68,7 +68,7 @@
           :job-info="campaignData.job_info"
           :show-error="showValidationError"
           @update:selected-channels="campaignData.selected_channels = $event"
-          @update:email-content="campaignData.email_content = $event"
+          @update:email-content="campaignData.email_content = { ...campaignData.email_content, ...$event }"
           @update:facebook-content="campaignData.facebook_content = $event"
           @update:zalo-content="campaignData.zalo_content = $event"
           @update:ladipage-url="campaignData.ladipage_url = $event"
@@ -80,6 +80,7 @@
           v-else-if="currentStep === 3"
           :start-date="campaignData.start_date"
           :triggers="campaignData.triggers"
+          :target-pool="campaignData.target_pool"
           @update:start-date="campaignData.start_date = $event"
           @update:triggers="campaignData.triggers = $event"
         />

@@ -6,6 +6,226 @@ import qrcode
 import io
 import base64
 import re
+from mbw_mira.utils.birthday_utils import check_birthday_in_pool
+
+@frappe.whitelist()
+def check_pool_has_birthday(pool_name):
+    """
+    Check if the pool has any talent with upcoming birthday.
+    This is used by the frontend to conditionally show/hide Birthday triggers.
+    """
+    if not pool_name:
+        return {"has_birthday": False, "logs": []}
+
+    has_match, debug_logs = check_birthday_in_pool(pool_name)
+    return {
+        "has_birthday": has_match,
+        "logs": debug_logs
+    }
+
+@frappe.whitelist()
+def send_test_email(recipient, subject, content):
+    """
+    Send a test email with the provided content.
+    Used by ActionEditor options to verify email configuration.
+    """
+    if not recipient:
+        frappe.throw(_("Recipient email is required"))
+
+    if not subject:
+        frappe.throw(_("Subject is required"))
+
+    try:
+        from mbw_mira.utils.email import send_email
+
+        # Determine if content is HTML
+        as_html = True
+        # Simple heuristic: if it doesn't look like HTML, treat as plain text converted to HTML
+        if content and not ('<' in content and '>' in content):
+             if '\n' in content:
+                 content = content.replace('\n', '<br>')
+
+        send_email(
+            recipients=[recipient],
+            subject=f"[TEST] {subject}",
+            content=content,
+            as_html=as_html
+        )
+
+        return {"status": "success", "message": f"Test email sent to {recipient}"}
+    except Exception as e:
+        frappe.log_error(f"Test email failed: {e}")
+        return {"status": "error", "message": f"Failed to send email: {str(e)}"}
+
+@frappe.whitelist()
+def run_birthday_test_for_pool(pool_name, subject, content):
+    """
+    Run a test birthday check for the given pool and send the provided email content
+    to any eligible candidates (whose birthday matches logic).
+
+    Args:
+        pool_name (str): The talent pool ID/Name
+        subject (str): Email subject from the action editor
+        content (str): Email HTML content from the action editor
+    """
+    if not pool_name:
+        return {"status": "error", "message": "Target Pool is required"}
+
+    from mbw_mira.utils.birthday_utils import check_birthday
+    from mbw_mira.utils.email import send_email
+
+    # Find talents in pool
+    if frappe.db.exists("DocType", "Mira Talent Pool"):
+        talents = frappe.db.sql("""
+            SELECT t.name, t.date_of_birth, t.email
+            FROM `tabMira Talent` t
+            INNER JOIN `tabMira Talent Pool` tp ON tp.talent_id = t.name
+            WHERE tp.segment_id = %s
+        """, (pool_name,), as_dict=True)
+    else:
+        # Fallback for dev env without Talent Pool doctype
+        talents = frappe.db.sql("SELECT name, date_of_birth, email FROM `tabMira Talent` WHERE date_of_birth IS NOT NULL", as_dict=True)
+
+    sent_count = 0
+    logs = []
+
+    for t in talents:
+        # Check eligibility
+        is_eligible = check_birthday(t)
+        if is_eligible and t.get('email'):
+            try:
+                # Send the ACTUAL content from the editor
+                # Determine as_html
+                as_html = True
+                if content and not ('<' in content and '>' in content):
+                     if '\n' in content:
+                         content = content.replace('\n', '<br>')
+
+                send_email(
+                    recipients=[t.get('email')],
+                    subject=subject,
+                    content=content,
+                    as_html=as_html
+                )
+                sent_count += 1
+                logs.append(f"Sent to {t.get('email')} (DOB: {t.get('date_of_birth')})")
+            except Exception as e:
+                logs.append(f"Failed to send to {t.get('email')}: {e}")
+        else:
+             # Log why not sent
+             if not is_eligible:
+                 logs.append(f"  > Skipped {t.get('email')} (DOB: {t.get('date_of_birth')}) - Not today.")
+             elif not t.get('email'):
+                 logs.append(f"  > Skipped {t.get('name')} - No Email.")
+
+    return {
+        "status": "success",
+        "sent_count": sent_count,
+        "logs": logs,
+        "message": f"Test run complete. Sent {sent_count} emails to eligible talents."
+    }
+
+@frappe.whitelist()
+def run_mass_email_for_pool(pool_name, subject, content):
+    """
+    Send email to ALL talents in the pool (for testing non-birthday triggers).
+    """
+    if not pool_name:
+        return {"status": "error", "message": "Target Pool is required"}
+
+    from mbw_mira.utils.email import send_email
+
+    # Find talents in pool
+    if frappe.db.exists("DocType", "Mira Talent Pool"):
+        talents = frappe.db.sql("""
+            SELECT t.name, t.email
+            FROM `tabMira Talent` t
+            INNER JOIN `tabMira Talent Pool` tp ON tp.talent_id = t.name
+            WHERE tp.segment_id = %s
+        """, (pool_name,), as_dict=True)
+    else:
+        # Fallback for dev env without Talent Pool doctype
+        talents = frappe.db.sql("SELECT name, email FROM `tabMira Talent` WHERE email IS NOT NULL", as_dict=True)
+
+    sent_count = 0
+    logs = []
+
+    for t in talents:
+        # No condition check, just send to everyone with email
+        if t.get('email'):
+            try:
+                # Send the ACTUAL content from the editor
+                # Determine as_html
+                as_html = True
+                # Helper to ensure line breaks if plain text
+                msg_content = content
+                if msg_content and not ('<' in msg_content and '>' in msg_content):
+                     if '\n' in msg_content:
+                         msg_content = msg_content.replace('\n', '<br>')
+
+                send_email(
+                    recipients=[t.get('email')],
+                    subject=subject,
+                    content=msg_content,
+                    as_html=as_html
+                )
+                sent_count += 1
+                logs.append(f"Sent to {t.get('email')}")
+            except Exception as e:
+                logs.append(f"Failed to send to {t.get('email')}: {e}")
+
+    return {
+        "status": "success",
+        "sent_count": sent_count,
+        "logs": logs,
+        "message": f"Mass email sent. Sent {sent_count} emails to pool members."
+    }
+
+@frappe.whitelist()
+def test_check_no_email_open_trigger(test_mode=False):
+    """
+    Test API để chạy thủ công job kiểm tra email không được mở quá N ngày.
+    Dùng để test logic trước khi chạy scheduled job tự động.
+
+    Args:
+        test_mode: Nếu True, dùng MINUTES thay vì DAYS (để test trên localhost)
+                   Ví dụ: days_without_click=5 sẽ là 5 PHÚT thay vì 5 NGÀY
+
+    Returns:
+        dict: Kết quả test với số campaigns đã xử lý và số talents đã trigger
+
+    Usage:
+        # Test với 5 phút (localhost)
+        frappe.call('mbw_mira.api.campaign.test_check_no_email_open_trigger', {'test_mode': True})
+
+        # Test với ngày thật (production)
+        frappe.call('mbw_mira.api.campaign.test_check_no_email_open_trigger', {'test_mode': False})
+    """
+    try:
+        from mbw_mira.utils.email_tracking import check_no_email_open_trigger
+
+        # Convert string to boolean
+        if isinstance(test_mode, str):
+            test_mode = test_mode.lower() in ('true', '1', 'yes')
+
+        result = check_no_email_open_trigger(test_mode=test_mode)
+
+        mode_text = "TEST MODE (minutes)" if test_mode else "PRODUCTION MODE (days)"
+
+        return {
+            "status": "success",
+            "message": f"Test completed successfully in {mode_text}",
+            "data": result,
+            "test_mode": test_mode
+        }
+    except Exception as e:
+        frappe.log_error(f"Test check_no_email_open_trigger failed: {e}")
+        return {
+            "status": "error",
+            "message": f"Test failed: {str(e)}"
+        }
+
+
 
 def get_html_from_emailbuilder(content):
     """
@@ -157,6 +377,9 @@ def create_campaign(**kwargs):
             source_config = None
     doc.source_config = source_config
 
+    # Map target_segment (old) or target_pool (new) to target_pool field
+    doc.target_pool = kwargs.get("target_pool") or kwargs.get("target_segment") or None
+
     select_pages = kwargs.get("select_pages")
     # Campaign DocType field may not accept list directly -> store as JSON string
     if isinstance(select_pages, (list, dict)):
@@ -172,7 +395,8 @@ def create_campaign(**kwargs):
     doc.select_pages = select_pages
 
     # Optional links
-    doc.target_segment = kwargs.get("target_segment") or None
+    # doc.target_pool is already set above
+
 
     # Social media fields
     doc.social_page_id = kwargs.get("social_page_id") or ""
@@ -315,8 +539,10 @@ def update_campaign(**kwargs):
         doc.select_pages = select_pages
 
     # Optional links
-    if "target_segment" in kwargs:
-        doc.target_segment = kwargs.get("target_segment") or None
+    if "target_pool" in kwargs:
+        doc.target_pool = kwargs.get("target_pool") or None
+    elif "target_segment" in kwargs:
+        doc.target_pool = kwargs.get("target_segment") or None
 
     if "job_opening" in kwargs:
         doc.job_opening = kwargs.get("job_opening") or None
@@ -1128,6 +1354,129 @@ def create_talent_campaigns_from_pool(campaign_id):
 		return {"success": False, "error": str(e), "created": 0}
 
 
+def strip_mjml_tables(html_content):
+	"""
+	Remove MJML-generated nested table structure and ALL styling constraints.
+	MJML creates complex <table><tr><td> structures that don't format well in emails.
+	This function removes tables, max-width, padding, and centering constraints.
+
+	Args:
+		html_content (str): HTML content that may contain MJML tables
+
+	Returns:
+		str: Cleaned HTML or plain text
+	"""
+	import re
+
+	if not html_content:
+		return html_content
+
+	try:
+		cleaned = html_content
+
+		# Remove ALL table-related tags (MJML creates nested table bloat)
+		cleaned = re.sub(r'</?table[^>]*>', '', cleaned, flags=re.IGNORECASE)
+		cleaned = re.sub(r'</?tbody[^>]*>', '', cleaned, flags=re.IGNORECASE)
+		cleaned = re.sub(r'</?tr[^>]*>', '', cleaned, flags=re.IGNORECASE)
+		cleaned = re.sub(r'</?td[^>]*>', '', cleaned, flags=re.IGNORECASE)
+		cleaned = re.sub(r'</?th[^>]*>', '', cleaned, flags=re.IGNORECASE)
+
+		frappe.log_error(f"🔥 Removed MJML table structure (before: {len(html_content)}, after: {len(cleaned)})")
+
+		# 🔥 AGGRESSIVE: Remove ALL inline styling constraints that limit email width/padding
+		# Remove max-width constraints (both CSS and attributes)
+		cleaned = re.sub(r'\bmax-width\s*:\s*[^;]+;?', '', cleaned, flags=re.IGNORECASE)
+		cleaned = re.sub(r'\s+max-width=["\']?[^"\'>\s]+["\']?', '', cleaned, flags=re.IGNORECASE)
+
+		# Remove padding attributes/styles (user wants NO padding)
+		cleaned = re.sub(r'\bpadding\s*:\s*[^;]+;?', '', cleaned, flags=re.IGNORECASE)
+		cleaned = re.sub(r'\s+padding=["\']?[^"\'>\s]+["\']?', '', cleaned, flags=re.IGNORECASE)
+
+		# Remove margin constraints that center content
+		cleaned = re.sub(r'\bmargin\s*:\s*[^;]*auto[^;]*;?', 'margin:0;', cleaned, flags=re.IGNORECASE)
+		cleaned = re.sub(r'\s+margin=["\']?[^"\'>\s]+["\']?', '', cleaned, flags=re.IGNORECASE)
+
+		# Force width to 100%
+		cleaned = re.sub(r'\bwidth\s*:\s*[0-9]+px', 'width:100%', cleaned, flags=re.IGNORECASE)
+
+		# Remove ALL align="center" attributes
+		cleaned = re.sub(r'\s+align\s*=\s*["\']?center["\']?', ' align="left"', cleaned, flags=re.IGNORECASE)
+
+		# Override centering in CSS
+		cleaned = re.sub(r'text-align\s*:\s*center', 'text-align:left !important', cleaned, flags=re.IGNORECASE)
+
+		# Add aggressive CSS override to force clean layout
+		aggressive_css = '''<style type="text/css">
+body, table, tr, td, div, p, span, h1, h2, h3, h4, h5, h6 {
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: left !important;
+  width: 100% !important;
+  max-width: none !important;
+}
+.email-container, .email-body {
+  background-color: #ffffff !important;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+</style>'''
+
+		# Insert style tag at beginning or replace existing one
+		if '<style' in cleaned.lower():
+			# Replace first style tag with aggressive version
+			cleaned = re.sub(r'<style[^>]*>.*?</style>', aggressive_css, cleaned, flags=re.IGNORECASE | re.DOTALL)
+		elif '<head' in cleaned.lower():
+			# Insert after <head
+			cleaned = re.sub(r'<head', f'<head>{aggressive_css}', cleaned, flags=re.IGNORECASE)
+		else:
+			# Prepend to content
+			cleaned = aggressive_css + '\n' + cleaned
+
+		frappe.log_error(f"� CLEANED: Removed all padding, max-width, and centering from email HTML")
+		return cleaned
+
+	except Exception as e:
+		frappe.log_error(f"⚠️ Error stripping MJML tables: {e}")
+		return html_content
+
+
+def ensure_clean_html(html_content):
+	"""
+	Ensure HTML is clean - add DOCTYPE, body, and proper styling if missing.
+	This helps with email client compatibility.
+	"""
+	if not html_content:
+		return html_content
+
+	# If it's already a full HTML document (has <!DOCTYPE), use as-is with cleanup
+	if '<!DOCTYPE' in html_content:
+		return strip_mjml_tables(html_content)
+
+	# If it's just HTML fragments, wrap in proper document
+	if not html_content.strip().startswith('<html'):
+		# It's a fragment - wrap it properly
+		cleaned = strip_mjml_tables(html_content)
+		wrapped = f'''<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style type="text/css">
+    body {{ margin: 0 !important; padding: 0 !important; background-color: #ffffff; text-align: left !important; }}
+    div, p, span, table, td {{ text-align: left !important; margin: 0 !important; }}
+  </style>
+</head>
+<body>
+{cleaned}
+</body>
+</html>'''
+		return wrapped
+
+	return strip_mjml_tables(html_content)
+
+
 @frappe.whitelist()
 def send_campaign_welcome_emails(campaign_id):
 	"""
@@ -1146,328 +1495,437 @@ def send_campaign_welcome_emails(campaign_id):
 	try:
 		# Lấy campaign
 		campaign = frappe.get_doc("Mira Campaign", campaign_id)
+
+		# Print rõ ràng ra console
+		print("\n")
+		print("=" * 80)
+		print(f"🚀 EMAIL SEND PROCESS FOR CAMPAIGN: {campaign.name}")
+		print("=" * 80)
+		print(f"Campaign ID: {campaign_id}")
+		print(f"Campaign Type: {campaign.type}")
+		print(f"Target Pool: {campaign.target_pool}")
+		print("=" * 80)
+		print("\n")
+
 		logger.info(f"🚀 Starting email send for campaign: {campaign.name}")
+		logger.info(f"📋 Campaign details - ID: {campaign_id}, Type: {campaign.type}, Target Pool: {campaign.target_pool}")
 
 		# Bước 1: Tạo Mira Talent Campaign từ Pool nếu chưa có
 		talent_campaign_count = frappe.db.count(
 			"Mira Talent Campaign",
 			{"campaign_id": campaign_id}
 		)
+		logger.info(f"📊 Existing Talent Campaigns for this campaign: {talent_campaign_count}")
+
+		print(f"\n📊 STEP 1: Check Mira Talent Campaigns")
+		print(f"   Existing count: {talent_campaign_count}")
 
 		if talent_campaign_count == 0:
 			logger.info(f"📝 Creating talent campaigns from pool...")
 			create_result = create_talent_campaigns_from_pool(campaign_id)
 			if create_result.get("created", 0) > 0:
 				logger.info(f"✅ Created {create_result['created']} talent campaigns")
+				print(f"   ✅ Created {create_result['created']} new talent campaigns")
 			else:
 				logger.warning(f"⚠️ No talent campaigns created")
+				print(f"   ⚠️ No talent campaigns created from pool!")
+		else:
+			logger.info(f"✅ Already have {talent_campaign_count} talent campaigns")
+			print(f"   ✅ Already have {talent_campaign_count} talent campaigns\n")
 
-		# Lấy tất cả Mira Campaign Social của campaign này
+		# Initializes counters
+		total_sent = 0
+		total_failed = 0
+		messages = []
+
+		# --- PART 1: Check for Birthday Triggers (Always run this check) ---
+		birthday_flows = frappe.get_all("Mira Flow", filters={"campaign_id": campaign_id, "status": "Active"}, fields=["name"])
+		logger.info(f"🎂 Found {len(birthday_flows)} Active flows for campaign")
+		has_birthday_trigger = False
+
+		for flow_info in birthday_flows:
+			try:
+				flow = frappe.get_doc("Mira Flow", flow_info.name)
+				logger.info(f"📍 Checking flow: {flow.name}, has triggers: {bool(flow.trigger_id)}")
+				if not flow.trigger_id:
+					logger.info(f"⏭️ Flow {flow.name} has no triggers, skipping")
+					continue
+
+				for trigger in flow.trigger_id:
+					logger.info(f"   📌 Trigger type: {trigger.trigger_type}")
+					if trigger.trigger_type == 'ON_BIRTHDAY':
+						has_birthday_trigger = True
+						logger.info(f"🎂 Found Birthday Trigger in flow: {flow.name}. Executing birthday check...")
+
+						for action in flow.action_id:
+							logger.info(f"      🔧 Action type: {action.action_type}")
+							if action.action_type == 'EMAIL':
+								try:
+									params = json.loads(action.action_parameters) if isinstance(action.action_parameters, str) else action.action_parameters
+									subject = params.get('email_subject') or "Happy Birthday"
+									content = params.get('content') or params.get('email_content') or ""
+									logger.info(f"      📧 Email Subject: {subject[:50]}...")
+
+									# Run birthday check
+									from mbw_mira.api.campaign import run_birthday_test_for_pool
+									target_pool = campaign.target_pool
+									logger.info(f"      🎯 Target pool: {target_pool}")
+									if target_pool:
+										res = run_birthday_test_for_pool(target_pool, subject, content)
+										sent = res.get("sent_count", 0)
+										total_sent += sent
+										logger.info(f"      ✅ Birthday check result: Sent {sent}")
+										if sent > 0:
+											messages.append(f"Birthday: Sent {sent}")
+										else:
+											messages.append("Birthday: No eligible candidates today")
+									else:
+										logger.warning(f"      ⚠️ No target pool found!")
+										messages.append("Birthday: No target pool")
+								except Exception as e:
+									logger.error(f"❌ Error executing birthday action: {e}")
+									total_failed += 1
+						break # One birthday trigger per flow is enough
+			except Exception as e:
+				logger.error(f"❌ Error processing flow {flow_info.name}: {e}")
+
+		if has_birthday_trigger:
+			logger.info("✅ Birthday trigger processing complete")
+
+		# --- PART 2: Check for Campaign Socials (Welcome Emails) ---
+		print(f"\n[DEBUG] About to query Campaign Socials...")
+		print(f"[DEBUG] Query filter: campaign_id = {campaign_id}")
+
 		campaign_socials = frappe.get_all(
 			"Mira Campaign Social",
 			filters={"campaign_id": campaign_id},
 			fields=["name", "subject", "template_content", "block_content"]
 		)
 
-		if not campaign_socials:
-			logger.warning(f"⚠️ No campaign socials found for campaign {campaign_id}")
-			return {"success": False, "message": "No campaign socials found", "sent": 0, "failed": 0}
+		print(f"[DEBUG] Query returned: {type(campaign_socials)} with {len(campaign_socials) if campaign_socials else 0} items")
 
-		logger.info(f"📊 Found {len(campaign_socials)} campaign socials")
+		logger.info(f"🔍 Looking for Campaign Socials with campaign_id: {campaign_id}")
 
-		# Lấy tất cả talent campaign của campaign này
-		talent_campaigns = frappe.get_all(
-			"Mira Talent Campaign",
-			filters={"campaign_id": campaign_id},
-			fields=["name", "talent_id"]
-		)
+		print(f"\n📧 STEP 2: Check Campaign Socials")
+		print(f"   Query: campaign_id = {campaign_id}")
+		print(f"   Found: {len(campaign_socials)} campaign socials")
 
-		if not talent_campaigns:
-			logger.warning(f"⚠️ No talent campaigns found for campaign {campaign_id}")
-			return {"success": False, "message": "No talent campaigns found", "sent": 0, "failed": 0}
+		if campaign_socials:
+			print(f"   ✅ Campaign Socials Found:")
+			for idx, social in enumerate(campaign_socials, 1):
+				subject = social.get('subject') or 'N/A'
+				subject_preview = subject[:50] if subject and subject != 'N/A' else 'N/A'
+				print(f"      [{idx}] {social.get('name')} - Subject: {subject_preview}")
+				print(f"          Has template_content: {bool(social.get('template_content'))}")
+				print(f"          Has block_content: {bool(social.get('block_content'))}")
+		else:
+			print(f"   ⚠️ NO Campaign Socials found!")
 
-		logger.info(f"📋 Found {len(talent_campaigns)} talent campaigns")
+		if campaign_socials:
+			logger.info(f"📊 Found {len(campaign_socials)} campaign socials. Processing welcome emails...")
 
-		sent_count = 0
-		failed_count = 0
+			# Get talent campaigns
+			talent_campaigns = frappe.get_all(
+				"Mira Talent Campaign",
+				filters={"campaign_id": campaign_id},
+				fields=["name", "talent_id"]
+			)
 
-		# Gửi email trực tiếp cho mỗi talent campaign
-		for tc in talent_campaigns:
-			try:
-				talent_id = tc["talent_id"]
+			# Debug: Check all Mira Talent Campaigns
+			all_tc = frappe.get_all("Mira Talent Campaign", fields=["name", "campaign_id", "talent_id"])
+			print(f"\n   DEBUG: Total Mira Talent Campaigns in DB: {len(all_tc)}")
 
-				# Lấy talent profile
-				talent = frappe.get_doc("Mira Talent", talent_id)
-				logger.info(f"📧 Processing talent: {talent.name} ({talent.email})")
+			logger.info(f"👥 Found {len(talent_campaigns)} talent campaigns for this campaign")
 
-				# Kiểm tra email hợp lệ
-				if not talent.email:
-					logger.warning(f"⚠️ Talent {talent.name} has no email")
-					failed_count += 1
-					continue
+			print(f"\n👥 STEP 3: Get Talent Campaigns")
+			print(f"   Query Filter: campaign_id = {campaign_id}")
+			print(f"   Found: {len(talent_campaigns)} talent campaigns")
 
-				if talent.email_opt_out:
-					logger.warning(f"⚠️ Talent {talent.name} has unsubscribed")
-					failed_count += 1
-					continue
+			if len(talent_campaigns) == 0 and len(all_tc) > 0:
+				print(f"   ⚠️ WARNING: No talent campaigns found with filter, but {len(all_tc)} exist in DB")
+				print(f"   Checking first 5 records in DB:")
+				for idx, tc in enumerate(all_tc[:5], 1):
+					print(f"      [{idx}] {tc.get('name')} - campaign_id: {tc.get('campaign_id')}, talent_id: {tc.get('talent_id')}")
 
-				# Lấy campaign social đầu tiên
-				email_social = campaign_socials[0]
+			if talent_campaigns:
+				print(f"\n📅 STEP 4: Process Talents")
+				print(f"   Campaign Type: {campaign.type}")
+				print(f"   Today's date: {frappe.utils.today()}")
 
-				logger.info(f"📧 Using campaign social: {email_social['name']}")
+				# Determine if we should check birthday (only for ATTRACTION campaigns)
+				should_check_birthday = (campaign.type == "ATTRACTION")
+				print(f"   Should check birthday: {should_check_birthday}")
 
-				# Lấy subject và content từ fields
-				subject = email_social.get("subject", "Chào mừng")
-				# Ưu tiên template_content (HTML đã render), sau đó block_content (JSON render sẵn)
-				content = email_social.get("template_content") or email_social.get("block_content", "")
-				# Chuẩn hoá đường dẫn ảnh để không dùng localhost dev server
-				try:
-					if content:
-						site_url = get_url()
-						# /files/... -> {site_url}/files/...
-						content = content.replace('src="/files/', f'src="{site_url}/files/')
-						# Bất kỳ URL localhost dev nào -> domain hireos.fastwork.vn
-						content = content.replace('http://localhost:8080/', 'https://hireos.fastwork.vn/')
-				except Exception:
-					pass
+				for idx, tc in enumerate(talent_campaigns, 1):
+					try:
+						talent_id = tc["talent_id"]
+						talent = frappe.get_doc("Mira Talent", talent_id)
 
-				# Log lại các ảnh trong content để debug
-				try:
-					if content:
-						import re
-						img_tags = re.findall(r"<img[^>]+>", content)
-						logger.info(f"🖼 Email HTML image tags for {talent.email}: {img_tags}")
-						srcs = re.findall(r"src=\"([^\"]+)\"", content)
-						logger.info(f"🖼 Email image src list for {talent.email}: {srcs}")
-				except Exception as e:
-					logger.warning(f"⚠️ Failed to log image tags: {e}")
+						print(f"   [{idx}/{len(talent_campaigns)}] Talent: {talent.name}")
+						print(f"       Email: {talent.email}")
+						print(f"       DOB: {talent.date_of_birth}")
+						print(f"       Email Opt-out: {talent.email_opt_out}")
 
-				sender = ""  # Sẽ dùng default sender từ Email Account
+						logger.info(f"   [{idx}] Processing talent: {talent.name}")
+						logger.info(f"       Email: {talent.email}, DOB: {talent.date_of_birth}, OptOut: {talent.email_opt_out}")
 
-				if not subject or not content:
-					logger.warning(f"⚠️ Missing email content for {talent.name}")
-					logger.warning(f"⚠️ Subject: {subject}, Content length: {len(content) if content else 0}")
-					failed_count += 1
-					continue
+						if not talent.email:
+							print(f"       ❌ SKIP - No email")
+							logger.warning(f"       ⚠️ No email found, SKIPPING")
+							continue
 
-				# Gửi email
-				try:
-					print(f"\n===== CAMPAIGN EMAIL DEBUG START =====")
-					print(f"DEBUG: Sending email to {talent.email}")
-					print(f"DEBUG: Content type before conversion: {type(content)}")
-					print(f"DEBUG: Content starts with JSON: {content.startswith('{') if content else False}")
+						if talent.email_opt_out:
+							print(f"       ❌ SKIP - Email opt-out enabled")
+							logger.warning(f"       ⚠️ Email opt-out enabled, SKIPPING")
+							continue
 
-					# Convert EmailBuilder JSON to HTML if needed
-					if content and (content.startswith('{') or content.startswith('[')):
-						print("DEBUG: Content is JSON, converting to HTML...")
-						print(f"DEBUG: Raw JSON content preview: {content[:200]}...")
-						# If content is JSON, convert it to HTML using get_html_from_emailbuilder
-						content = get_html_from_emailbuilder(content)
-						print(f"DEBUG: Converted to HTML length: {len(content)}")
-						print(f"DEBUG: Converted HTML preview: {content[:200]}...")
-					else:
-						print("DEBUG: Content is already HTML, using as-is")
-						print(f"DEBUG: HTML content preview: {content[:200]}...")
+						# ✅ CHECK BIRTHDAY - ONLY FOR ATTRACTION CAMPAIGNS
+						if should_check_birthday:
+							# For ATTRACTION campaigns: only send if birthday is today
+							if not talent.date_of_birth:
+								print(f"       ❌ SKIP - No date of birth")
+								logger.warning(f"       ⚠️ No date of birth, SKIPPING")
+								continue
 
-					# Remove problematic inline styles that cause width limitation
-					if content:
-						import re
-						# Remove style="margin:0px auto;max-width:600px;" and variations
-						content = re.sub(r'style="[^"]*margin:\s*0px\s*auto;[^"]*max-width:\s*600px;[^"]*"', 'style="width:100%;margin:0;"', content)
-						content = re.sub(r'style="[^"]*max-width:\s*600px;[^"]*margin:\s*0px\s*auto;[^"]*"', 'style="width:100%;margin:0;"', content)
-						content = re.sub(r'style="[^"]*max-width:\s*600px;[^"]*"', 'style="width:100%;"', content)
-						content = re.sub(r'style="[^"]*margin:\s*0px\s*auto;[^"]*"', 'style="margin:0;"', content)
-						print("DEBUG: Removed width-limiting inline styles")
+							try:
+								# Manually check birthday - compare month and day
+								from frappe.utils import getdate, nowdate
+								today_date = getdate(nowdate())
+								dob_date = getdate(talent.date_of_birth)
+								is_birthday = (dob_date.month == today_date.month and dob_date.day == today_date.day)
 
+								print(f"       📅 DOB: {dob_date}, Today: {today_date}, Is Birthday: {is_birthday}")
+								logger.info(f"       📅 DOB: {dob_date}, Today: {today_date}, Is Birthday: {is_birthday}")
+							except Exception as check_error:
+								print(f"       ❌ Birthday check failed: {str(check_error)}")
+								logger.error(f"       ❌ Birthday check failed: {str(check_error)}")
+								is_birthday = False
 
-					# Process content to ensure proper line breaks
-					if content:
-						# Check if content is plain text (no HTML tags)
-						if not ('<' in content and '>' in content):
-							print("DEBUG: Content is plain text, converting line breaks to HTML")
-							# Replace double newlines with <p> tags for proper paragraph spacing
-							# content = content.replace('\n', '<p>')
-							# Wrap in paragraph tags if not already wrapped
-							if not content.strip().startswith('<p>') and not content.strip().startswith('<div>'):
-								content = f'<p>{content}</p>'
+							if not is_birthday:
+								print(f"       ⏭️ SKIP - Not birthday today")
+								logger.info(f"       ⏭️ Not birthday today, SKIPPING")
+								continue
+
+							print(f"       🎉 BIRTHDAY FOUND - Sending birthday email!")
+							subject = "🎂 Chúc mừng sinh nhật!"
+							use_birthday_template = True
 						else:
-							print("DEBUG: Content already has HTML, ensuring proper line break formatting")
-							# For HTML content, ensure line breaks are preserved
-							# Convert any remaining newlines to <br> tags if they're not already in HTML
-							if not ('<br>' in content or '<br/>' in content or '<p>' in content):
-								content = content.replace('\n', '<p>')
-						print("DEBUG: Processed line breaks in content")
+							# For NURTURING campaigns: send to all talents
+							print(f"       ✅ Processing for NURTURING campaign (no birthday check)")
+							use_birthday_template = False
+							subject = None
 
-					# Check if content already has HTML tags
-					if content and ('<' in content and '>' in content):
-						print("DEBUG: Content already has HTML tags")
-					else:
-						print("DEBUG: Content does not have HTML tags")
+						print(f"       ✅ Ready to send email")
+						logger.info(f"       ✅ Ready to send email")
 
-					# Check if content is already a complete HTML email
-					if content and (content.strip().startswith('<!DOCTYPE') or
-									content.strip().startswith('<html>') or
-									'<title>' in content or
-									'<!--[if' in content):
-						print("DEBUG: Content is already a complete HTML email, adding CSS for better formatting...")
-						# Add CSS to improve formatting for inline content
-						css_fix = """
-<style>
-	div[style*="font-family:Arial"] {
-		line-height: 1.6 !important;
-		margin-bottom: 8px !important;
-	}
-	div[style*="font-family:Arial"] img {
-		margin-right: 8px !important;
-		vertical-align: middle !important;
-	}
-	div[style*="font-family:Arial"] br {
-		line-height: 1.6 !important;
-	}
-	p {
-		margin-bottom: 8px !important;
-		line-height: 1.6 !important;
-		word-wrap: break-word !important;
-	}
-	br {
-		line-height: 1.6 !important;
-		display: block !important;
-		content: "" !important;
-		margin-bottom: 4px !important;
-	}
-	/* Remove all empty paragraphs with any content */
-	p:empty,
-	p:empty,
-	p:not(:has(img, span, div, a, strong, em, b, i, u, table, td, tr)),
-	p[style*="margin:1em 0!important"]:empty,
-	p[style*="margin:1em 0!important"]:not(:has(img, span, div, a, strong, em, b, i, u, table, td, tr)) {
-		display: none !important;
-		height: 0 !important;
-		margin: 0 !important;
-		padding: 0 !important;
-	}
-	/* Also hide paragraphs with only whitespace */
-	p:has(> :empty),
-	p:has(> text():empty),
-	p:has(> text():only-child):not(:has(> text():not(:empty)) {
-		display: none !important;
-		height: 0 !important;
-		margin: 0 !important;
-		padding: 0 !important;
-	}
-</style>
-"""
-						# Insert CSS after <head> tag
-						if '<head>' in content:
-							content = content.replace('<head>', f'<head>{css_fix}')
-						elif '<head>' in content.lower():
-							content = content.replace('<head>', f'<head>{css_fix}')
-						print("DEBUG: CSS formatting added to complete HTML email")
-						# Don't wrap complete HTML emails
-					elif content and not content.strip().startswith('<!DOCTYPE') and not content.strip().startswith('<html'):
-						print("DEBUG: Wrapping content in HTML structure...")
-						content = f"""
-<!DOCTYPE html>
+						# Get email subject and content
+						if use_birthday_template:
+							# Use birthday template for ATTRACTION
+							email_subject = "🎂 Chúc mừng sinh nhật!"
+
+							# Create beautiful birthday email content
+							birthday_content = f"""
 <html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{subject}</title>
-    <style>
-        body {{
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }}
-        .container {{
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }}
-        /* Proper spacing for paragraphs and line breaks */
-        p {{
-            margin-bottom: 8px !important;
-            line-height: 1.6 !important;
-            word-wrap: break-word !important;
-        }}
-        br {{
-            line-height: 1.6 !important;
-            display: block !important;
-            content: "" !important;
-            margin-bottom: 4px !important;
-        }}
-        div[style*="font-family:Arial"] {{
-            line-height: 1.6 !important;
-            margin-bottom: 8px !important;
-            word-wrap: break-word !important;
-        }}
-        div[style*="font-family:Arial"] img {{
-            margin-right: 8px !important;
-            vertical-align: middle !important;
-        }}
-        div[style*="font-family:Arial"] br {{
-            line-height: 1.6 !important;
-            display: block !important;
-            content: "" !important;
-            margin-bottom: 4px !important;
-        }}
-        /* Remove empty paragraphs */
-        p:empty {{
-            display: none !important;
-        }}
-    </style>
+	<style>
+		body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }}
+		.container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+		.card {{ background: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); overflow: hidden; }}
+		.header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;  text-align: center; }}
+		.header h1 {{ margin: 0; font-size: 32px; font-weight: 700; }}
+		.header p {{ margin: 10px 0 0 0; font-size: 16px; opacity: 0.9; }}
+		.content {{ padding: 40px; text-align: center; }}
+		.emoji {{ font-size: 60px; margin-bottom: 20px; }}
+		.greeting {{ font-size: 24px; color: #333; font-weight: 600; margin-bottom: 15px; }}
+		.message {{ font-size: 16px; color: #666; line-height: 1.6; margin: 20px 0; }}
+		.cta {{ display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600 }}
+		.footer {{ text-align: center; font-size: 12px; color: #999; }}
+	</style>
 </head>
 <body>
-    <div class="container">
-        {content}
-    </div>
+	<div class="container">
+		<div class="card">
+			<div class="header">
+				<div class="emoji">🎂🎉🎊</div>
+				<h1>Chúc mừng sinh nhật</h1>
+				<p>Một ngày đặc biệt dành cho bạn</p>
+			</div>
+			<div class="content">
+				<p class="greeting">Xin chào {talent.name},</p>
+				<div class="message">
+					<p>Hôm nay là ngày đặc biệt của bạn! 🎈</p>
+					<p>Chúng tôi xin gửi lời chúc mừng sinh nhật chân thành nhất. Hy vọng ngày này sẽ mang đến cho bạn những khoảnh khắc tuyệt vời, những tràng cười vui vẻ và những điều kỳ diệu.</p>
+					<p>Cảm ơn bạn vì đã là một phần của chúng tôi. Chúng tôi trân trọng sự hợp tác và tin tưởng của bạn.</p>
+					<p>Chúc bạn một năm mới tràn đầy sức khỏe, hạnh phúc và thành công! 🌟</p>
+				</div>
+			</div>
+			<div class="footer">
+				<p>© 2025 MOBIWORK. All rights reserved.</p>
+			</div>
+		</div>
+	</div>
 </body>
 </html>
 """
-						print("DEBUG: Content wrapped in HTML structure")
+							email_content = birthday_content
+							email_type = "Birthday"
+						else:
+							# For NURTURING: use Campaign Social content
+							email_social = campaign_socials[0] if campaign_socials else None
+							if not email_social:
+								print(f"       ⏭️ SKIP - No campaign social found")
+								logger.warning(f"       ⚠️ No campaign social found, SKIPPING")
+								continue
 
-					print(f"DEBUG: Final content length: {len(content)}")
-					print(f"DEBUG: Final content starts with <!DOCTYPE: {content.startswith('<!DOCTYPE')}")
+							email_subject = email_social.get("subject", "Chào mừng")
+							email_content = email_social.get("template_content") or email_social.get("block_content", "")
+							email_type = "Welcome"
 
-					result = send_email(
-						recipients=[talent.email],
-						subject=subject,
-						content=content,
-						sender=sender,
-						as_html=True,
-						debug=True,
-						inline_css=True
-					)
-					print(f"DEBUG: Email send result: {result}")
-					print("===== CAMPAIGN EMAIL DEBUG END =====\n")
-					sent_count += 1
-					logger.info(f"✅ Email sent to {talent.email}")
-				except Exception as e:
-					failed_count += 1
-					logger.error(f"❌ Error sending email to {talent.email}: {str(e)}")
+							if not email_subject or not email_content:
+								print(f"       ⏭️ SKIP - No subject or content in social")
+								logger.warning(f"       ⚠️ No subject or content in social, SKIPPING")
+								continue
 
-			except Exception as e:
-				failed_count += 1
-				logger.error(f"❌ Error processing talent {tc.get('talent_id')}: {str(e)}")
-				frappe.log_error(f"Error processing talent {tc.get('talent_id')}: {str(e)}")
+						logger.info(f"       📧 Using {email_type} email template")
+						logger.info(f"       📝 Subject: {email_subject if email_subject else 'N/A'}")
+						logger.info(f"       📄 Content length: {len(email_content) if email_content else 0}")
 
-		logger.info(f"📊 Email send complete: {sent_count} sent, {failed_count} failed")
+						print(f"       📧 {email_type} Email Template")
+						print(f"       📝 Subject: {email_subject if email_subject else 'N/A'}")
+						print(f"       📄 Content length: {len(email_content) if email_content else 0}")
+
+						# Queue email (or send directly)
+						# Here we send directly as per original code
+						if email_subject:
+							logger.info(f"       🚀 SENDING EMAIL to {talent.email}")
+							logger.info(f"          Subject: {email_subject}")
+							logger.info(f"          Content length: {len(email_content) if email_content else 0} chars")
+							print(f"       🚀 ATTEMPTING TO SEND EMAIL...")
+							print(f"          To: {talent.email}")
+							print(f"          Subject: {email_subject}")
+							print(f"          Content length: {len(email_content) if email_content else 0}")
+							try:
+								print(f"       [BEFORE SEND] Recipients: {[talent.email]}")
+								print(f"       [BEFORE SEND] Subject: {email_subject}")
+								print(f"       [BEFORE SEND] Content type: {type(email_content).__name__}")
+								print(f"       [BEFORE SEND] as_html: True")
+
+								# Create email tracking for nurturing campaigns
+								tracking_result = None
+								if campaign.type == "NURTURING":
+									try:
+										from mbw_mira.api.email_tracking import create_email_tracking
+										tracking_result = create_email_tracking(
+											talent_id=talent.name,
+											campaign_id=campaign_id,
+											email_subject=email_subject,
+											email_content=email_content if email_content else email_subject
+										)
+										print(f"       📊 Email tracking created: {tracking_result.get('tracking_id')}")
+									except Exception as tracking_error:
+										print(f"       ⚠️ Email tracking creation failed: {str(tracking_error)}")
+
+								# Add tracking link to email content if tracking was created
+								final_content = email_content if email_content else f"<p>{email_subject}</p>"
+								if tracking_result and tracking_result.get("tracking_url"):
+									if use_birthday_template:
+										# For plain text birthday emails, add simple tracking
+										final_content += f"\n\n---\nClick here to confirm receipt: {tracking_result['tracking_url']}"
+									else:
+										# For HTML emails, add invisible tracking pixel
+										final_content += f'<img src="{tracking_result["tracking_url"]}" width="1" height="1" style="display:none;" />'
+
+								result = send_email(
+									recipients=[talent.email],
+									subject=email_subject,
+									content=final_content,
+									as_html=True
+								)
+
+								print(f"       [AFTER SEND] Result: {result}")
+								logger.info(f"       ✅ EMAIL SENT SUCCESS to {talent.email}")
+								print(f"       ✅ EMAIL SENT SUCCESSFULLY")
+								total_sent += 1
+							except Exception as send_error:
+								logger.error(f"       ❌ EMAIL SEND FAILED: {str(send_error)}")
+								logger.error(f"          Exception type: {type(send_error).__name__}")
+								print(f"       ❌ EMAIL SEND FAILED")
+								print(f"          Error: {str(send_error)}")
+								print(f"          Type: {type(send_error).__name__}")
+								import traceback
+								tb_text = traceback.format_exc()
+								logger.error(f"          Traceback: {tb_text}")
+								print(f"          Traceback: {tb_text}")
+								total_failed += 1
+						else:
+							logger.warning(f"       ⚠️ No subject, cannot send email")
+							print(f"       ❌ SKIP - No subject")
+							total_failed += 1
+
+					except Exception as e:
+						logger.error(f"       ❌ Exception processing talent {talent_id}: {e}")
+						logger.error(f"          Exception type: {type(e).__name__}")
+						import traceback
+						logger.error(f"          Traceback: {traceback.format_exc()}")
+						total_failed += 1
+
+				logger.info(f"📧 Welcome Email Summary: Sent {total_sent}, Failed {total_failed}")
+				if total_sent > 0 or total_failed > 0:
+					messages.append(f"Welcome: Sent {total_sent}, Failed {total_failed}")
+			else:
+				logger.warning(f"⚠️ No talent campaigns found for welcome emails")
+				print(f"\n   ⚠️ NO TALENT CAMPAIGNS FOUND")
+		else:
+			logger.info("ℹ️ No campaign socials found (skipping welcome emails)")
+			logger.info("   To send welcome emails, create a Mira Campaign Social record")
+			print(f"\n   ⚠️ NO CAMPAIGN SOCIALS FOUND - Need to create Mira Campaign Social")
+			print(f"      Steps:")
+			print(f"      1. Go to Campaign: {campaign_id}")
+			print(f"      2. Create a new 'Mira Campaign Social' record")
+			print(f"      3. Add email subject and template content")
+			print(f"      4. Change campaign status to ACTIVE again")
+
+		# --- Final Result ---
+		# Success if we did *something* (Birthday check ran OR Socials found)
+		success = has_birthday_trigger or (len(campaign_socials) > 0)
+
+		print(f"\n{'='*80}")
+		print(f"📊 FINAL SUMMARY")
+		print(f"{'='*80}")
+		print(f"Total Sent: {total_sent}")
+		print(f"Total Failed: {total_failed}")
+		print(f"Success: {success}")
+		print(f"{'='*80}\n")
+
+		logger.info(f"\n{'='*70}")
+		logger.info(f"📊 FINAL SUMMARY FOR CAMPAIGN: {campaign_id}")
+		logger.info(f"   Total Sent: {total_sent}")
+		logger.info(f"   Total Failed: {total_failed}")
+		logger.info(f"   Messages: {messages}")
+		logger.info(f"   Success: {success}")
+		logger.info(f"{'='*70}\n")
+
+		final_msg = ", ".join(messages) if messages else "No actions performed"
+		if success and not messages:
+			final_msg = "Checks executed (no emails sent)"
 
 		return {
-			"success": True,
-			"sent": sent_count,
-			"failed": failed_count,
-			"message": f"Sent {sent_count} emails, {failed_count} failed"
+			"success": success,
+			"sent": total_sent,
+			"failed": total_failed,
+			"message": final_msg
 		}
-
 	except Exception as e:
-		logger.error(f"❌ Error in send_campaign_welcome_emails: {str(e)}")
 		import traceback
-		logger.error(traceback.format_exc())
-		frappe.log_error(f"Error in send_campaign_welcome_emails: {str(e)}")
+		tb = traceback.format_exc()
+		logger.error(f"❌ Error in send_campaign_welcome_emails: {str(e)}")
+		logger.error(tb)
+		frappe.log_error(f"Error in send_campaign_welcome_emails: {str(e)}\n{tb}")
+		print(f"\n{'='*80}")
+		print(f"❌ CRITICAL ERROR IN SEND_CAMPAIGN_WELCOME_EMAILS")
+		print(f"{'='*80}")
+		print(f"Error: {str(e)}")
+		print(f"\nFull Traceback:")
+		print(tb)
+		print(f"{'='*80}\n")
 		return {"success": False, "error": str(e), "sent": 0, "failed": 0}

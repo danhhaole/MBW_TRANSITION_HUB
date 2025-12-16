@@ -435,6 +435,9 @@ const toggleEditor = (channelType) => {
 // Content update handlers
 const updateEmailContent = (content) => {
   localEmailContent.value = content
+  console.log('📧 Email content updated:', content)
+  // ✅ IMPORTANT: Emit to parent so wizard receives updated content with template_content
+  emit('update:email-content', content)
 }
 
 const updateEmailScheduleTime = (scheduleTime) => {
