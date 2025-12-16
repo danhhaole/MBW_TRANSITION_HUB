@@ -66,6 +66,7 @@
            :name="campaignData.name"
           :ladipage-url="campaignData.ladipage_url"
           :ladipage-id="campaignData.ladipage_id"
+          :target-pool="targetPool"
           @update:triggers="campaignData.triggers = $event"
           @update:ladipage-url="campaignData.ladipage_url = $event"
           @update:ladipage-id="campaignData.ladipage_id = $event"

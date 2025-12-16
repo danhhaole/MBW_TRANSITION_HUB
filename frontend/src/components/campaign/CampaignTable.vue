@@ -309,18 +309,6 @@ const handleStatusChange = async (campaign, newStatus) => {
 
     console.log(`✅ Status updated to ${newStatus}`)
 
-    // If status is ACTIVE, trigger email sending
-    if (newStatus === 'ACTIVE') {
-      console.log('📧 Triggering email send for campaign:', campaign.name)
-      try {
-        const result = await call('mbw_mira.api.campaign.send_campaign_welcome_emails', {
-          campaign_id: campaign.name
-        })
-        console.log('📧 Email send result:', result)
-      } catch (emailError) {
-        console.error('❌ Error sending emails:', emailError)
-      }
-    }
   } catch (error) {
     console.error('❌ Error updating status:', error)
     // Revert on error

@@ -47,7 +47,7 @@ def send_test_email(recipient, subject, content):
 
         send_email(
             recipients=[recipient],
-            subject=f"[TEST] {subject}",
+            subject=f"{subject}",
             content=content,
             as_html=as_html
         )
@@ -125,60 +125,97 @@ def run_birthday_test_for_pool(pool_name, subject, content):
         "message": f"Test run complete. Sent {sent_count} emails to eligible talents."
     }
 
+def get_test_email_template():
+    """
+    Returns a default test email template in EmailBuilder JSON format
+    """
+    return {
+        "blocks": [
+            {
+                "id": "test_block_1",
+                "type": "text",
+                "props": {
+                    "content": "Xin chào {{ full_name }},\n\nĐây là email kiểm tra từ hệ thống.\n\nThông tin chi tiết:\n- Email: {{ email }}\n- Ngày gửi: {{ today }}\n\nTrân trọng,\nBan quản trị",
+                    "textType": "paragraph",
+                    "fontFamily": "Arial, sans-serif",
+                    "fontSize": 14,
+                    "color": "#333333",
+                    "lineHeight": 1.6,
+                    "textAlign": "left"
+                }
+            }
+        ],
+        "emailSettings": {
+            "backgroundColor": "#ffffff",
+            "contentWidth": 600,
+            "contentAlign": "left",
+            "fontFamily": "Arial, sans-serif"
+        }
+    }
+
 @frappe.whitelist()
-def run_mass_email_for_pool(pool_name, subject, content):
+def run_mass_email_for_pool(pool_name, subject, content=None, **kwargs):
     """
     Send email to ALL talents in the pool (for testing non-birthday triggers).
+    If no content is provided, uses a default test template.
     """
     if not pool_name:
         return {"status": "error", "message": "Target Pool is required"}
 
     from mbw_mira.utils.email import send_email
+    from frappe.utils import nowdate
+    import json
 
     # Find talents in pool
     if frappe.db.exists("DocType", "Mira Talent Pool"):
         talents = frappe.db.sql("""
-            SELECT t.name, t.email
+            SELECT t.*
             FROM `tabMira Talent` t
             INNER JOIN `tabMira Talent Pool` tp ON tp.talent_id = t.name
             WHERE tp.segment_id = %s
         """, (pool_name,), as_dict=True)
     else:
         # Fallback for dev env without Talent Pool doctype
-        talents = frappe.db.sql("SELECT name, email FROM `tabMira Talent` WHERE email IS NOT NULL", as_dict=True)
+        talents = frappe.db.sql("SELECT * FROM `tabMira Talent` WHERE email IS NOT NULL", as_dict=True)
 
     sent_count = 0
     logs = []
 
+    # Use provided content or default test template
+    email_content = content if content else json.dumps(get_test_email_template())
+
     for t in talents:
-        # No condition check, just send to everyone with email
         if t.get('email'):
             try:
-                # Send the ACTUAL content from the editor
-                # Determine as_html
-                as_html = True
-                # Helper to ensure line breaks if plain text
-                msg_content = content
-                if msg_content and not ('<' in msg_content and '>' in msg_content):
-                     if '\n' in msg_content:
-                         msg_content = msg_content.replace('\n', '<br>')
+                # Prepare context for template variables
+                context = t.copy()
+                context['today'] = nowdate()
 
+                # Convert EmailBuilder JSON to HTML with context
+                msg_content = get_html_from_emailbuilder(email_content)
+
+                # Replace template variables
+                for key, value in context.items():
+                    if isinstance(value, str):
+                        msg_content = msg_content.replace('{{ ' + key + ' }}', value)
+
+                # Send the email
                 send_email(
                     recipients=[t.get('email')],
-                    subject=subject,
+                    subject=f"{subject}",
                     content=msg_content,
-                    as_html=as_html
+                    as_html=True
                 )
                 sent_count += 1
                 logs.append(f"Sent to {t.get('email')}")
             except Exception as e:
-                logs.append(f"Failed to send to {t.get('email')}: {e}")
+                logs.append(f"Failed to send to {t.get('email')}: {str(e)}")
 
     return {
         "status": "success",
         "sent_count": sent_count,
         "logs": logs,
-        "message": f"Mass email sent. Sent {sent_count} emails to pool members."
+        "message": f"Test email sent to {sent_count} pool members."
     }
 
 @frappe.whitelist()
@@ -244,12 +281,13 @@ def get_html_from_emailbuilder(content):
             preview_html = ''
 
             for block in design['blocks']:
-                # Handle text blocks - preserve HTML content and convert newlines
+                # Handle text blocks - wrap in paragraph tags for proper spacing
                 if block.get('type') == 'text' and block.get('props', {}).get('content'):
                     block_content = block['props']['content']
                     # Convert newlines to <br> tags for proper email formatting
                     block_content = block_content.replace('\n', '<br>')
-                    preview_html += block_content
+                    # Wrap in paragraph tag để xuống dòng giữa các đoạn
+                    preview_html += '<p>' + block_content + '</p>'
 
                 # Handle nested blocks in layout columns
                 if 'children' in block and isinstance(block['children'], list):
@@ -260,7 +298,8 @@ def get_html_from_emailbuilder(content):
                                     child_content = child_block['props']['content']
                                     # Convert newlines to <br> tags
                                     child_content = child_content.replace('\n', '<br>')
-                                    preview_html += child_content
+                                    # Wrap in paragraph tag
+                                    preview_html += '<p>' + child_content + '</p>'
 
             # Limit preview length if too long (but preserve HTML)
             if len(preview_html) > 2000:

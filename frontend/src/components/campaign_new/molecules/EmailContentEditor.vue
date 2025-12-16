@@ -1,10 +1,14 @@
 <template>
   <div class="email-content-editor">
-    <EmailEditor
+        <EmailEditor
       :content="localContent"
       :readonly="readonly"
       @update:content="handleContentUpdate"
-    />
+    >
+      <template #actions>
+        <slot name="actions"></slot>
+      </template>
+    </EmailEditor>
   </div>
 </template>
 
@@ -51,11 +55,11 @@ const handleContentUpdate = (content) => {
   if (isUpdatingFromProps.value) {
     return
   }
-  
+
   console.log('📧 [EmailContentEditor] Received content update:', content)
   localContent.value = { ...localContent.value, ...content }
   console.log('📧 [EmailContentEditor] Emitting updated content:', localContent.value)
-  
+
   emit('update:content', localContent.value)
 }
 

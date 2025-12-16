@@ -169,7 +169,7 @@ If you don't click the link above within 5 minutes, a follow-up email will be se
         # Send email
         send_result = send_email(
             recipients=[talent_email],
-            subject=f"[TEST] {subject}",
+            subject=subject,
             content=final_content,
             as_html=False
         )

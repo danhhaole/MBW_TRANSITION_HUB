@@ -28,7 +28,7 @@
         <h4 class="text-sm font-semibold text-gray-900">
           {{ __('Posting Channels') }}
         </h4>
-        
+
         <!-- Add Channel Dropdown (only show if there are available channels) -->
         <Dropdown v-if="availableChannelOptions.length > 0" :options="availableChannelOptions">
           <template v-slot="{ open }">
@@ -46,7 +46,7 @@
             </Button>
           </template>
         </Dropdown>
-        
+
         <!-- All channels added message -->
         <div v-else class="text-xs text-gray-500 flex items-center">
           <FeatherIcon name="check-circle" class="h-4 w-4 text-green-600 mr-1" />
@@ -92,8 +92,8 @@
                 {{ localEmailContent.subject ? __('Content added') : __('Click to add content') }}
               </p>
             </div>
-            <FeatherIcon 
-              :name="expandedEditors.email ? 'chevron-up' : 'chevron-down'" 
+            <FeatherIcon
+              :name="expandedEditors.email ? 'chevron-up' : 'chevron-down'"
               class="h-5 w-5 text-gray-400 mr-3"
             />
           </button>
@@ -129,7 +129,16 @@
           <EmailContentEditor
             :content="localEmailContent"
             @update:content="updateEmailContent"
-          />
+          >
+            <template #actions>
+              <Button @click="sendTestEmail" variant="solid" theme="blue" size="sm">
+                <template #prefix>
+                  <FeatherIcon name="send" class="h-4 w-4" />
+                </template>
+                {{ __('Send Email') }}
+              </Button>
+            </template>
+          </EmailContentEditor>
         </div>
       </div>
 
@@ -151,8 +160,8 @@
                 {{ localFacebookContent.content ? __('Content added') : __('Click to add content') }}
               </p>
             </div>
-            <FeatherIcon 
-              :name="expandedEditors.facebook ? 'chevron-up' : 'chevron-down'" 
+            <FeatherIcon
+              :name="expandedEditors.facebook ? 'chevron-up' : 'chevron-down'"
               class="h-5 w-5 text-gray-400 mr-3"
             />
           </button>
@@ -218,8 +227,8 @@
                 {{ localZaloContent.content ? __('Content added') : __('Click to add content') }}
               </p>
             </div>
-            <FeatherIcon 
-              :name="expandedEditors.zalo ? 'chevron-up' : 'chevron-down'" 
+            <FeatherIcon
+              :name="expandedEditors.zalo ? 'chevron-up' : 'chevron-down'"
               class="h-5 w-5 text-gray-400 mr-3"
             />
           </button>
@@ -268,6 +277,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useToast } from '@/composables/useToast'
 import { FeatherIcon, Button, Dropdown, FormControl, call } from 'frappe-ui'
 import EmailContentEditor from '../molecules/EmailContentEditor.vue'
 import FacebookContentEditor from '../molecules/FacebookContentEditor.vue'
@@ -404,11 +414,11 @@ const allChannelOptions = [
 
 // Available channel options (not yet selected)
 const availableChannelOptions = computed(() => {
-  return allChannelOptions.filter(option => 
+  return allChannelOptions.filter(option =>
     !localSelectedChannels.value.includes(option.value)
   )
 })
-
+const toast = useToast()
 // Channel selection helpers
 const isEmailSelected = computed(() => localSelectedChannels.value.includes('email'))
 const isFacebookSelected = computed(() => localSelectedChannels.value.includes('facebook'))
@@ -477,7 +487,7 @@ const loadFacebookPages = async () => {
   try {
     loadingPages.value = true
     const result = await call('mbw_mira.api.external_connection.get_facebook_pages')
-    
+
     if (result.success && result.data) {
       facebookPages.value = result.data.map(page => ({
         label: page.page_name,
@@ -497,7 +507,7 @@ const loadZaloAccounts = async () => {
   try {
     loadingZaloAccounts.value = true
     const result = await call('mbw_mira.api.external_connection.get_zalo_accounts')
-    
+
     if (result.success && result.data) {
       zaloAccounts.value = result.data.map(account => ({
         label: account.oa_name,
@@ -518,6 +528,82 @@ onMounted(() => {
   loadFacebookPages()
   loadZaloAccounts()
 })
+
+const sendTestEmail = async () => {
+  console.log('Attempting to send email...')
+  if (!props.name) {
+    toast.error(__('Campaign ID is not set. Cannot send emails.'))
+    console.error('sendTestEmail failed: Campaign ID (props.name) is missing.')
+    return
+  }
+
+  if (!localEmailContent.value) {
+    toast.error(__('Email content is not configured.'))
+    console.error('sendTestEmail failed: Email content (localEmailContent) is missing.')
+    return
+  }
+
+  try {
+    console.log(`Fetching campaign document for ID: ${props.name}`)
+    const campaignDoc = await call('frappe.client.get', {
+      doctype: 'Mira Campaign',
+      name: props.name
+    })
+    console.log('Fetched campaign document:', campaignDoc)
+
+    const candidatePool = campaignDoc.target_pool || props.name
+    if (!candidatePool) {
+      toast.error(__('Target pool or Campaign ID is not available.'))
+      console.error('sendTestEmail failed: Neither target_pool nor props.name is available.')
+      return
+    }
+    console.log(`Using pool: ${candidatePool}`)
+
+    const subject = localEmailContent.value.subject || 'Welcome to the Campaign'
+    console.log(`Email subject: ${subject}`)
+
+    let content = ''
+    if (localEmailContent.value.block_content) {
+      content = localEmailContent.value.block_content
+    } else if (localEmailContent.value.template_content) {
+      content = localEmailContent.value.template_content
+    } else if (localEmailContent.value.email_content) {
+      content = localEmailContent.value.email_content
+    } else if (localEmailContent.value.mjml_content) {
+      content = localEmailContent.value.mjml_content
+    } else if (localEmailContent.value.content) {
+      content = localEmailContent.value.content
+    } else if (localEmailContent.value) {
+      content = typeof localEmailContent.value === 'string' ? localEmailContent.value : JSON.stringify(localEmailContent.value)
+    }
+
+    if (!content) {
+      toast.error(__('Email content is empty.'))
+      console.error('sendTestEmail failed: Email content is empty after processing.')
+      return
+    }
+    console.log('Final email content (first 100 chars):', content.substring(0, 100))
+
+    console.log('Calling API: mbw_mira.api.campaign.run_mass_email_for_pool')
+    const result = await call('mbw_mira.api.campaign.run_mass_email_for_pool', {
+      pool_name: candidatePool,
+      subject: `${subject}`,
+      content: content
+    })
+    console.log('API call result:', result)
+
+    if (result && result.status === 'success') {
+      toast.success(__('The email has been successfully sent.'))
+    } else {
+      const errorMsg = result?.message || 'Unknown error occurred'
+      toast.error(__('Failed to send email: ') + errorMsg)
+      console.error('API returned an error:', errorMsg)
+    }
+  } catch (error) {
+    toast.error(__('Failed to send email.'))
+    console.error('An exception occurred in sendTestEmail:', error)
+  }
+}
 
 </script>
 

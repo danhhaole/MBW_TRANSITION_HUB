@@ -97,7 +97,7 @@ def test_email_sending(test_email=None):
 
         result = send_email(
             recipients=[test_email],
-            subject="[TEST] " + template["subject"],
+            subject=template["subject"],
             content=content,
             as_html=True
         )

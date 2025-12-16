@@ -63,14 +63,46 @@
         </div>
       </div>
 
-      <!-- File Attachments -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">
-          {{ __("File Attachments") }}
-        </label>
+      <!-- Attachments and Actions Footer -->
+      <div class="pt-4 mt-4 border-t">
+        <div class="flex justify-between items-center">
+          <!-- Left Side: File Attachments -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              {{ __("File Attachments") }}
+            </label>
+            <FileUploader
+              v-if="!readonly"
+              :fileTypes="['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png']"
+               :upload-args="{
+                doctype: 'Mira Campaign',
+                docname: 'temp',
+                private: false,
+              }"
+              @success="handleFileUploadSuccess"
+              @error="handleFileUploadError"
+            >
+              <template v-slot="{ openFileSelector }">
+                <button
+                  @click="openFileSelector()"
+                  class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  type="button"
+                >
+                  <FeatherIcon name="paperclip" class="h-4 w-4 mr-2" />
+                  {{ __("Add File Attachment") }}
+                </button>
+              </template>
+            </FileUploader>
+          </div>
+
+          <!-- Right Side: Action Slot -->
+          <div>
+            <slot name="actions"></slot>
+          </div>
+        </div>
 
         <!-- Uploaded Files List -->
-        <div v-if="localContent.attachments && localContent.attachments.length > 0" class="mb-4 space-y-2">
+        <div v-if="localContent.attachments && localContent.attachments.length > 0" class="mt-4 space-y-2">
           <div
             v-for="(file, index) in localContent.attachments"
             :key="index"
@@ -98,30 +130,6 @@
             </button>
           </div>
         </div>
-
-        <!-- File Uploader -->
-        <FileUploader
-          v-if="!readonly"
-          :fileTypes="['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png']"
-          :upload-args="{
-            doctype: 'Mira Campaign',
-            docname: 'temp',
-            private: false,
-          }"
-          @success="handleFileUploadSuccess"
-          @error="handleFileUploadError"
-        >
-          <template v-slot="{ openFileSelector }">
-            <button
-              @click="openFileSelector()"
-              class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              type="button"
-            >
-              <FeatherIcon name="paperclip" class="h-4 w-4 mr-2" />
-              {{ __("Add File Attachment") }}
-            </button>
-          </template>
-        </FileUploader>
       </div>
     </div>
 
@@ -600,22 +608,22 @@ const openTemplateSettings = () => {
 // When user has old MJML-generated HTML, this extracts readable text by removing table structure
 const stripMJMLTables = (html) => {
   if (!html) return ''
-  
+
   try {
     // If it looks like HTML with tables (MJML output), extract text content
     if (html.includes('<table') || html.includes('<td')) {
       // Create a temp DOM element
       const div = document.createElement('div')
       div.innerHTML = html
-      
+
       // Get all text nodes, preserving some structure
       let text = ''
       const nodes = div.querySelectorAll('*')
-      
+
       for (const node of nodes) {
         // Skip script and style tags
         if (node.tagName === 'SCRIPT' || node.tagName === 'STYLE') continue
-        
+
         // Get text from divs, p tags, and table cells
         if (['DIV', 'P', 'TD', 'TH', 'SPAN'].includes(node.tagName)) {
           const nodeText = node.textContent?.trim()
@@ -624,11 +632,11 @@ const stripMJMLTables = (html) => {
           }
         }
       }
-      
+
       // If we extracted text, return it formatted; otherwise return original
       return text.trim() || html
     }
-    
+
     return html
   } catch (error) {
     console.warn('Error stripping MJML tables:', error)
@@ -648,8 +656,8 @@ const getPreviewContent = (content) => {
       let previewHtml = ''
       design.blocks.forEach(block => {
         if (block.type === 'text' && block.props?.content) {
-          // Giữ nguyên HTML để preview hiển thị đúng xuống dòng / định dạng
-          previewHtml += block.props.content + ' '
+          // Wrap each block in paragraph tag để xuống dòng
+          previewHtml += '<p>' + block.props.content + '</p>'
         }
         // Handle nested blocks in layout columns
         if (block.children && Array.isArray(block.children)) {
@@ -657,7 +665,7 @@ const getPreviewContent = (content) => {
             if (Array.isArray(column)) {
               column.forEach(childBlock => {
                 if (childBlock.type === 'text' && childBlock.props?.content) {
-                  previewHtml += childBlock.props.content + ' '
+                  previewHtml += '<p>' + childBlock.props.content + '</p>'
                 }
               })
             }

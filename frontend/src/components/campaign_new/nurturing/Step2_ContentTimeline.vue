@@ -20,7 +20,7 @@
             {{ __("Create a series of messages to nurture your candidates over time") }}
           </p>
         </div>
-        
+
         <!-- Add Message Dropdown -->
         <Dropdown :options="channelDropdownOptions">
           <template v-slot="{ open }">
@@ -56,7 +56,7 @@
     <!-- Timeline Container -->
     <div v-else class="relative">
       <!-- Timeline Line -->
-      <div class="absolute left-32 top-0 bottom-0 w-0.5 bg-gray-300" 
+      <div class="absolute left-32 top-0 bottom-0 w-0.5 bg-gray-300"
            v-if="localTriggers.length > 0"></div>
 
       <!-- Timeline Items -->
@@ -68,7 +68,7 @@
         >
           <!-- Timeline Left Side - Delay Info -->
           <div class="absolute left-0 top-6 w-32 text-right pr-4">
-            <button 
+            <button
               v-if="index === 0"
               @click="openScheduleEditor(index)"
               class="inline-flex flex-col items-end cursor-pointer group"
@@ -81,8 +81,8 @@
                 {{ formatScheduleTime(trigger.schedule_time) }}
               </div>
             </button>
-            <button 
-              v-else 
+            <button
+              v-else
               @click="openDelayEditor(index)"
               class="inline-flex flex-col items-end cursor-pointer group"
               :title="__('Click to edit delay')"
@@ -112,13 +112,13 @@
                     <!-- Channel Icon -->
                     <div class="flex items-center justify-center w-10 h-10 rounded-full"
                          :class="trigger.channel === 'email' ? 'bg-blue-100' : 'bg-green-100'">
-                      <FeatherIcon 
-                        :name="trigger.channel === 'email' ? 'mail' : 'message-circle'" 
+                      <FeatherIcon
+                        :name="trigger.channel === 'email' ? 'mail' : 'message-circle'"
                         class="h-5 w-5"
                         :class="trigger.channel === 'email' ? 'text-blue-600' : 'text-green-600'"
                       />
                     </div>
-                    
+
                     <div>
                       <h5 class="text-sm font-semibold text-gray-900">
                         {{ __("Message") }} #{{ index + 1 }} - {{ getChannelLabel(trigger.channel) }}
@@ -228,13 +228,22 @@
 
                 <!-- Content Editor -->
                 <div class="space-y-2">
-                  
+
                   <!-- Email Editor -->
-                  <EmailContentEditor
+                                                      <EmailContentEditor
                     v-if="trigger.channel === 'email'"
                     :content="trigger.content"
                     @update:content="updateTriggerContent(index, $event)"
-                  />
+                  >
+                    <template #actions>
+                      <Button @click="sendTestEmail(trigger)" variant="solid" theme="blue" size="sm">
+                        <template #prefix>
+                          <FeatherIcon name="send" class="h-4 w-4" />
+                        </template>
+                        {{ __('Send Email') }}
+                      </Button>
+                    </template>
+                  </EmailContentEditor>
 
                   <!-- Zalo Editor -->
                   <ZaloContentEditor
@@ -253,7 +262,10 @@
                     />
                   </div>
                 </div>
+
+
               </div>
+
             </div>
           </div>
         </div>
@@ -292,7 +304,7 @@
           <p class="text-sm text-gray-600">
             {{ __('Set the delay after the previous message') }}
           </p>
-          
+
           <DelaySelector
             v-model="editingDelay"
             :label="__('Delay Time')"
@@ -300,7 +312,7 @@
           />
         </div>
       </template>
-      
+
       <template #actions>
         <div class="flex items-center justify-end gap-2">
           <Button variant="outline" theme="gray" @click="showDelayEditor = false">
@@ -326,7 +338,7 @@
           <p class="text-sm text-gray-600">
             {{ __('When should the first message be sent?') }}
           </p>
-          
+
           <div class="space-y-2">
             <label class="block text-sm font-medium text-gray-700">
               {{ __("Schedule Time") }} <span class="text-red-500">*</span>
@@ -339,7 +351,7 @@
           </div>
         </div>
       </template>
-      
+
       <template #actions>
         <div class="flex items-center justify-end gap-2">
           <Button variant="outline" theme="gray" @click="showScheduleEditor = false">
@@ -356,6 +368,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
+import { useToast } from '@/composables/useToast'
 import { FeatherIcon, Button, FormControl, Autocomplete, Dropdown, Dialog, call } from 'frappe-ui'
 import DelaySelector from '../molecules/DelaySelector.vue'
 import EmailContentEditor from '../molecules/EmailContentEditor.vue'
@@ -386,9 +399,14 @@ const props = defineProps({
   doctype: {
     type: String,
     default: 'Mira Campaign' // 'Mira Campaign' or 'Mira Campaign Template'
+  },
+  targetPool: {
+    type: String,
+    default: null
   }
 })
 const emit = defineEmits(['update:triggers', 'update:ladipageUrl', 'update:ladipageId'])
+const toast = useToast()
 
 // Available channels for nurturing (no Facebook posts)
 const availableChannels = [
@@ -450,41 +468,42 @@ const initializeTriggers = () => {
 
 // Add new trigger
 const addTrigger = (channel = 'email') => {
-  let content = {}
-  
-  // Set content structure based on channel
+  let content = {};
+  let sender_account = null;
+
+  // Always create a new empty template for the trigger
   if (channel === 'email') {
     content = {
       email_subject: '',
-      email_content: '',        // Legacy field
-      block_content: '',        // EmailBuilder format
-      template_content: '',     // HTML format
-      mjml_content: '',         // MJML format
+      email_content: '',
+      block_content: '',
+      template_content: '',
+      mjml_content: '',
       attachments: []
-    }
+    };
   } else if (channel === 'zalo') {
     content = {
       message: '',
       image: null
-    }
+    };
   } else if (channel === 'messenger') {
     content = {
       message: ''
-    }
+    };
   }
-  
+
   const newTrigger = {
     id: Date.now(),
     channel: channel,
     schedule_time: null,
     delay_minutes: localTriggers.value.length === 0 ? 0 : 1440, // First message: immediate, others: 1 day default
-    sender_account: null,
+    sender_account: sender_account,
     content: content,
     expanded: true
-  }
-  
+  };
+
   localTriggers.value.push(newTrigger)
-  
+
   // Collapse other triggers
   localTriggers.value.forEach((t, i) => {
     if (i !== localTriggers.value.length - 1) {
@@ -510,10 +529,10 @@ const toggleExpand = (index) => {
 const updateTriggerContent = (index, content) => {
   console.log('🔄 [Step2] Updating trigger content:', { index, content })
   localTriggers.value[index].content = content
-  
+
   // Debug: Log the updated trigger
   console.log('✅ [Step2] Updated trigger:', localTriggers.value[index])
-  
+
   // Emit updated triggers to parent
   emit('update:triggers', localTriggers.value)
 }
@@ -521,7 +540,7 @@ const updateTriggerContent = (index, content) => {
 // Get content preview for email
 const getContentPreview = (content) => {
   if (!content) return ''
-  
+
   // Try block_content first (EmailBuilder format)
   if (content.block_content) {
     try {
@@ -542,7 +561,7 @@ const getContentPreview = (content) => {
       console.warn('Failed to parse block_content:', e)
     }
   }
-  
+
   // Fallback to template_content (HTML)
   if (content.template_content) {
     const div = document.createElement('div')
@@ -550,7 +569,7 @@ const getContentPreview = (content) => {
     const text = div.textContent || div.innerText || ''
     return text.trim().substring(0, 100) + (text.length > 100 ? '...' : '')
   }
-  
+
   // Fallback to email_content (legacy)
   if (content.email_content) {
     if (typeof content.email_content === 'string' && content.email_content.startsWith('{')) {
@@ -575,14 +594,14 @@ const getContentPreview = (content) => {
       return text.trim().substring(0, 100) + (text.length > 100 ? '...' : '')
     }
   }
-  
+
   return ''
 }
 
 // Get content preview for Zalo
 const getZaloPreview = (content) => {
   if (!content) return ''
-  
+
   if (content.blocks && Array.isArray(content.blocks)) {
     let previewText = ''
     content.blocks.forEach(block => {
@@ -592,12 +611,12 @@ const getZaloPreview = (content) => {
     })
     return previewText.trim().substring(0, 100) + (previewText.length > 100 ? '...' : '')
   }
-  
+
   // Fallback to simple message
   if (content.message) {
     return content.message.substring(0, 100) + (content.message.length > 100 ? '...' : '')
   }
-  
+
   return ''
 }
 
@@ -650,18 +669,18 @@ const formatScheduleTime = (scheduleTime) => {
 // Calculate schedule time for subsequent messages
 const getCalculatedScheduleTime = (index) => {
   if (index === 0) return null
-  
+
   const firstTrigger = localTriggers.value[0]
   if (!firstTrigger.schedule_time) return null
-  
+
   let baseTime = new Date(firstTrigger.schedule_time)
-  
+
   // Add up all delays from first message to current
   for (let i = 1; i <= index; i++) {
     const delayMinutes = localTriggers.value[i].delay_minutes || 0
     baseTime = new Date(baseTime.getTime() + delayMinutes * 60000)
   }
-  
+
   return baseTime.toISOString()
 }
 
@@ -694,30 +713,30 @@ const getTimingLabel = (trigger, index) => {
 // Format delay
 const formatDelay = (minutes) => {
   if (minutes === 0) return __('Immediately')
-  
+
   const weeks = Math.floor(minutes / 10080)
   const days = Math.floor((minutes % 10080) / 1440)
   const hours = Math.floor((minutes % 1440) / 60)
   const mins = minutes % 60
-  
+
   const parts = []
   if (weeks > 0) parts.push(`${weeks} ${weeks === 1 ? __('week') : __('weeks')}`)
   if (days > 0) parts.push(`${days} ${days === 1 ? __('day') : __('days')}`)
   if (hours > 0) parts.push(`${hours} ${hours === 1 ? __('hour') : __('hours')}`)
   if (mins > 0) parts.push(`${mins} ${mins === 1 ? __('minute') : __('minutes')}`)
-  
+
   return parts.join(', ')
 }
 
 // Format delay short (for timeline left side)
 const formatDelayShort = (minutes) => {
   if (minutes === 0) return '0m'
-  
+
   const weeks = Math.floor(minutes / 10080)
   const days = Math.floor((minutes % 10080) / 1440)
   const hours = Math.floor((minutes % 1440) / 60)
   const mins = minutes % 60
-  
+
   if (weeks > 0) return `${weeks}w`
   if (days > 0) return `${days}d`
   if (hours > 0) return `${hours}h`
@@ -728,12 +747,12 @@ const formatDelayShort = (minutes) => {
 const getTotalDuration = () => {
   if (localTriggers.value.length === 0) return __('No messages')
   if (localTriggers.value.length === 1) return __('Single message')
-  
+
   let totalMinutes = 0
   for (let i = 1; i < localTriggers.value.length; i++) {
     totalMinutes += localTriggers.value[i].delay_minutes || 0
   }
-  
+
   return formatDelay(totalMinutes)
 }
 
@@ -800,7 +819,7 @@ const loadZaloAccounts = async () => {
       fields: ['name', 'platform_type'],
       limit_page_length: 100
     })
-    
+
     // Then get accounts from child table for each connection
     const accounts = []
     for (const conn of connections || []) {
@@ -815,7 +834,7 @@ const loadZaloAccounts = async () => {
           fields: ['name', 'external_account_id', 'account_name', 'is_primary'],
           limit_page_length: 100
         })
-        
+
         for (const account of childAccounts || []) {
           accounts.push({
             name: conn.name, // External connection name
@@ -829,7 +848,7 @@ const loadZaloAccounts = async () => {
         console.error('Error loading child accounts for', conn.name, childError)
       }
     }
-    
+
     zaloAccounts.value = accounts
   } catch (error) {
     console.error('Error loading Zalo accounts:', error)
@@ -853,7 +872,7 @@ const loadMessengerAccounts = async () => {
       fields: ['name', 'platform_type'],
       limit_page_length: 100
     })
-    
+
     // Then get accounts from child table for each connection
     const accounts = []
     for (const conn of connections || []) {
@@ -868,7 +887,7 @@ const loadMessengerAccounts = async () => {
           fields: ['name', 'external_account_id', 'account_name', 'is_primary'],
           limit_page_length: 100
         })
-        
+
         for (const account of childAccounts || []) {
           accounts.push({
             name: conn.name, // External connection name
@@ -882,7 +901,7 @@ const loadMessengerAccounts = async () => {
         console.error('Error loading child accounts for', conn.name, childError)
       }
     }
-    
+
     messengerAccounts.value = accounts
   } catch (error) {
     console.error('Error loading Messenger accounts:', error)
@@ -905,7 +924,7 @@ watch(localTriggers, (newTriggers) => {
 // Watch for props changes
 watch(() => props.triggers, (newTriggers) => {
   isUpdatingFromProps.value = true
-  
+
   if (newTriggers && newTriggers.length > 0) {
     localTriggers.value = newTriggers.map(t => ({
       ...t,
@@ -914,7 +933,7 @@ watch(() => props.triggers, (newTriggers) => {
   } else {
     localTriggers.value = []
   }
-  
+
   setTimeout(() => {
     isUpdatingFromProps.value = false
   }, 0)
@@ -925,6 +944,71 @@ initializeTriggers()
 loadEmailAccounts()
 loadZaloAccounts()
 loadMessengerAccounts()
+
+const sendTestEmail = async (trigger) => {
+  if (!props.targetPool) {
+    toast.error(__('Target pool is not set. Cannot send emails.'));
+    return;
+  }
+
+  if (trigger.channel !== 'email') {
+    toast.error(__('This function is only for email channels.'));
+    return;
+  }
+
+  try {
+    console.log('Trigger content:', JSON.stringify(trigger.content, null, 2));
+
+    const subject = trigger.content?.email_subject || 'Welcome to the Campaign';
+
+    // Try to get content in order of preference
+    let content = '';
+    if (trigger.content?.block_content) {
+      content = trigger.content.block_content;
+      console.log('Using block_content');
+    } else if (trigger.content?.template_content) {
+      content = trigger.content.template_content;
+      console.log('Using template_content');
+    } else if (trigger.content?.email_content) {
+      content = trigger.content.email_content;
+      console.log('Using email_content');
+    } else if (trigger.content?.mjml_content) {
+      content = trigger.content.mjml_content;
+      console.log('Using mjml_content');
+    } else if (trigger.content?.content) {
+      content = trigger.content.content;
+      console.log('Using content');
+    } else if (trigger.content) {
+      // If we can't find a specific content field, try to stringify the whole content object
+      content = typeof trigger.content === 'string' ? trigger.content : JSON.stringify(trigger.content);
+      console.log('Using full content object');
+    }
+
+    if (!content) {
+      toast.error(__('Email content is empty.'));
+      return;
+    }
+
+    const result = await call('mbw_mira.api.campaign.run_mass_email_for_pool', {
+      pool_name: props.targetPool,
+      subject: `${subject}`,
+      content: content
+    });
+
+    console.log('Email send result:', result);
+
+    if (result && result.status === 'success') {
+      toast.success(__('The email has been successfully sent.'));
+    } else {
+      const errorMsg = result?.message || 'Unknown error occurred';
+      console.error('Email send failed:', errorMsg);
+      toast.error(__('Failed to send test email: ') + errorMsg);
+    }
+  } catch (error) {
+    console.error('Error sending test email:', error);
+    toast.error(__('Failed to send test email.'));
+  }
+};
 
 </script>
 
