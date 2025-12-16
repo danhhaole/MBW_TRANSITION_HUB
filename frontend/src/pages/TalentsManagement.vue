@@ -104,6 +104,19 @@
 								</template>
 								{{ __('Refresh') }}
 							</Button>
+							<!-- Export Excel Button -->
+							<Button variant="outline" @click="showExportModal = true">
+								<template #prefix>
+									<FeatherIcon name="download" class="w-4 h-4" />
+								</template>
+								{{ __('Export Excel') }}
+							</Button>
+							<Button variant="outline" @click="showSyncHistoryModal = true">
+								<template #prefix>
+									<FeatherIcon name="clock" class="w-4 h-4" />
+								</template>
+								{{ __('View History') }}
+							</Button>
 						</div>
 					</div>
 					
@@ -1177,6 +1190,14 @@
 			<!-- Sync History Modal -->
 			<SyncHistoryModal v-model="showSyncHistoryModal" />
 
+			<!-- Export Talent Modal -->
+			<ExportTalentModal
+				v-model="showExportModal"
+				:filters="buildExportFilters()"
+				:total-records="talentPoolStore.pagination.total"
+				@close="showExportModal = false"
+			/>
+
 			<!-- Delete Talent Confirmation Dialog -->
 			<Dialog
 				v-model="showDeleteDialog"
@@ -1365,6 +1386,7 @@ import UploadExcelTalentModal from '@/components/UploadExcelTalentModal.vue'
 import BulkCVUploadModal from '@/components/BulkCVUploadModal.vue'
 import ATSTalentSyncDialog from '@/components/ATSTalentSyncDialog.vue'
 import SyncHistoryModal from '@/components/SyncHistoryModal.vue'
+import ExportTalentModal from '@/components/ExportTalentModal.vue'
 import { usePermissionStore } from "@/stores/permission";
 
 const permission = usePermissionStore()
@@ -1669,6 +1691,7 @@ const showUploadModal = ref(false)
 const showBulkUploadModal = ref(false)
 const showATSTalentSyncDialog = ref(false)
 const showSyncHistoryModal = ref(false)
+const showExportModal = ref(false)
 const showDeleteDialog = ref(false)
 const talentToDelete = ref(null)
 const isDeleting = ref(false)
@@ -2310,6 +2333,33 @@ const cleanupSocketListeners = () => {
 		$socket.off('bulk_remove_talent_complete')
 		$socket.off('candidate_sync_complete')
 	}
+}
+
+// Build filters for export
+const buildExportFilters = () => {
+	const exportFilters = {}
+	
+	// Add search filter
+	if (talentPoolStore.filters.search) {
+		exportFilters.search = talentPoolStore.filters.search
+	}
+	
+	// Add skills filter
+	if (talentPoolStore.filters.skills) {
+		exportFilters.skills = talentPoolStore.filters.skills
+	}
+	
+	// Add source filter
+	if (talentPoolStore.filters.source) {
+		exportFilters.source = talentPoolStore.filters.source
+	}
+	
+	// Add crm_status filter
+	if (talentPoolStore.filters.crm_status) {
+		exportFilters.crm_status = talentPoolStore.filters.crm_status
+	}
+	
+	return exportFilters
 }
 
 onMounted(async () => {
