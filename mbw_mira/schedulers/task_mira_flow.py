@@ -12,7 +12,7 @@ def enqueue_for_action(action_type, queue_name):
             "scheduled_at": ("<=", now_datetime())
         },
         fields=["name"],
-        order_by="order_task asc"
+        order_by="scheduled_at asc"
     )
     print("task",tasks)
     #from mbw_mira.workers.task_runner import process_task
