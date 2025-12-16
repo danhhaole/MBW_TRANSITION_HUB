@@ -26,7 +26,7 @@ export const allTriggerTypes = [
   { label: __('Flow Step Completed'), value: 'ON_SEQUENCE_COMPLETED' },
   // Birthday & Email Engagement (2)
   { label: __('Birthday'), value: 'ON_BIRTHDAY' },
-  { label: __('No Email Click After N Days'), value: 'ON_NO_EMAIL_CLICK' }
+//   { label: __('No Email Click After N Days'), value: 'ON_NO_EMAIL_CLICK' }
 ]
 
 /**
@@ -96,7 +96,7 @@ export const triggerDescriptions = {
   'ON_SEQUENCE_COMPLETED': __('Previous flow step is completed'),
   // Birthday & Email Engagement
   'ON_BIRTHDAY': __('Send birthday greeting email'),
-  'ON_NO_EMAIL_CLICK': __('After N days without email click - Stop nurturing or Send another email')
+//   'ON_NO_EMAIL_CLICK': __('After N days without email click - Stop nurturing or Send another email')
 }
 
 /**
