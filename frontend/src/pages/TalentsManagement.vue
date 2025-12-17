@@ -120,58 +120,17 @@
 						</div>
 					</div>
 					
-					<!-- Filter Panel -->
+					<!-- Filter Panel with ConditionsBuilder -->
 					<div v-if="showFilters" class="bg-white rounded-lg border border-gray-200 mb-4 p-4">
-						<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-							<!-- Skills Filter -->
-							<div>
-								<label class="block text-sm font-medium text-gray-700 mb-2">
-									{{ __('Skills') }}
-								</label>
-								<Input
-									v-model="filters.skills"
-									type="text"
-									:placeholder="__('e.g. Python, JavaScript, React')"
-									class="!h-[32px] text-sm"
-								>
-									<template #prefix>
-										<FeatherIcon name="code" class="w-4 h-4 text-gray-400" />
-									</template>
-								</Input>
-							</div>
-							
-							<!-- Source Filter -->
-							<div>
-								<label class="block text-sm font-medium text-gray-700 mb-2">
-									{{ __('Source') }}
-								</label>
-								<select
-									v-model="filters.source"
-									class="w-full h-8 px-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-								>
-									<option value="">{{ __('All Sources') }}</option>
-									<option v-for="source in sourceOptions" :key="source" :value="source">
-										{{ source }}
-									</option>
-								</select>
-							</div>
-							
-							<!-- CRM Status Filter -->
-							<div>
-								<label class="block text-sm font-medium text-gray-700 mb-2">
-									{{ __('CRM Status') }}
-								</label>
-								<select
-									v-model="filters.crm_status"
-									class="w-full h-8 px-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-								>
-									<option value="">{{ __('All Statuses') }}</option>
-									<option v-for="status in crmStatusOptions" :key="status" :value="status">
-										{{ status }}
-									</option>
-								</select>
-							</div>
-						</div>
+						<ConditionsBuilder
+							v-model="filterConditions"
+							doctype="Mira Talent"
+							:title="__('Filter Talents')"
+							:description="__('Build advanced filters to find talents matching your criteria')"
+							:show-preview="false"
+							:validate-on-change="false"
+							@change="onConditionsChange"
+						/>
 						
 						<!-- Filter Actions -->
 						<div class="flex items-center justify-end mt-4 pt-4 border-t border-gray-200">
@@ -1195,6 +1154,7 @@
 				v-model="showExportModal"
 				:filters="buildExportFilters()"
 				:total-records="talentPoolStore.pagination.total"
+				:current-page-size="talentPoolStore.talents.length"
 				@close="showExportModal = false"
 			/>
 
@@ -1387,6 +1347,7 @@ import BulkCVUploadModal from '@/components/BulkCVUploadModal.vue'
 import ATSTalentSyncDialog from '@/components/ATSTalentSyncDialog.vue'
 import SyncHistoryModal from '@/components/SyncHistoryModal.vue'
 import ExportTalentModal from '@/components/ExportTalentModal.vue'
+import ConditionsBuilder from '@/components/ConditionsFilter/ConditionsBuilder.vue'
 import { usePermissionStore } from "@/stores/permission";
 
 const permission = usePermissionStore()
@@ -1448,6 +1409,7 @@ const crmStatusOptions = ref([
 
 // Filter state
 const showFilters = ref(false)
+const filterConditions = ref([])
 const filters = ref({
 	skills: '',
 	source: '',
@@ -1624,50 +1586,37 @@ const toggleFilters = () => {
 	showFilters.value = !showFilters.value
 }
 
-// Skills input handler removed - filters now only apply when Apply Filters button is clicked
+// Handle conditions change
+const onConditionsChange = (conditions) => {
+	console.log('Conditions changed:', conditions)
+	filterConditions.value = conditions
+}
 
-
+// Apply filters with conditions
 const applyFilters = async () => {
 	// Reset to first page when applying filters
 	talentPoolStore.pagination.page = 1
 	
-	// Clear all filters first to avoid keeping old values
+	// Clear all filters first
 	talentPoolStore.clearFilters()
 	
-	// Build filter object for the store
-	const filterParams = {}
+	// Set conditions in store
+	talentPoolStore.setConditions(filterConditions.value)
 	
-	// Only add skills filter if it has a value
-	if (filters.value.skills && filters.value.skills.trim()) {
-		filterParams.skills = filters.value.skills.trim()
-	}
-	
-	// Only add source filter if it has a value
-	if (filters.value.source && filters.value.source !== '') {
-		filterParams.source = filters.value.source
-	}
-	
-	// Only add crm_status filter if it has a value
-	if (filters.value.crm_status && filters.value.crm_status !== '') {
-		filterParams.crm_status = filters.value.crm_status
-	}
-	
-	// Apply filters to the store
-	talentPoolStore.setFilters(filterParams)
-	
-	// Separate skills from other filters (skills will be handled via or_filters in store)
-	const { skills, ...otherFilters } = filterParams
-	
-	// Fetch talents with new filters (exclude skills from filters, it will be handled in store)
+	// Fetch talents with new conditions
 	await talentPoolStore.fetchTalents({
 		page: 1,
 		limit: talentPoolStore.pagination.limit,
-		filters: otherFilters
+		conditions: filterConditions.value
 	})
 }
 
+// Clear all filters
 const clearFilters = async () => {
-	// Reset filter values
+	// Reset conditions
+	filterConditions.value = []
+	
+	// Reset old filter values for backward compatibility
 	filters.value = {
 		skills: '',
 		source: '',
@@ -1709,15 +1658,31 @@ const isEmailValid = computed(() => {
 
 // Filter computed properties
 const hasActiveFilters = computed(() => {
-	return filters.value.skills || filters.value.source || filters.value.crm_status
+	return filterConditions.value.length > 0
 })
 
 const activeFilterCount = computed(() => {
-	let count = 0
-	if (filters.value.skills) count++
-	if (filters.value.source) count++
-	if (filters.value.crm_status) count++
-	return count
+	// Count actual filter conditions (exclude conjunction strings like 'and', 'or')
+	const countConditions = (conditions) => {
+		let count = 0
+		for (const item of conditions) {
+			if (typeof item === 'string') {
+				// Skip conjunction strings ('and', 'or')
+				continue
+			} else if (Array.isArray(item)) {
+				if (item.length === 3 && typeof item[0] === 'string' && item[0] !== '') {
+					// This is a valid condition triplet [field, operator, value]
+					count++
+				} else {
+					// This is a nested group, count recursively
+					count += countConditions(item)
+				}
+			}
+		}
+		return count
+	}
+	
+	return countConditions(filterConditions.value)
 })
 
 const processSkills = (skills) => {

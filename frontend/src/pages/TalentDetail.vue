@@ -1162,12 +1162,26 @@ const downloadAttachment = (attachment) => {
 
 // Edit form helper functions
 const addSkill = () => {
-  const skill = skillInput.value.trim()
-  if (skill && !skillTags.value.includes(skill)) {
-    skillTags.value.push(skill)
-    editForm.value.skills = [...skillTags.value]
-    skillInput.value = ''
-  }
+  if (!skillInput.value.trim()) return
+
+  // Split by comma and trim each skill
+  const skillsToAdd = skillInput.value
+    .split(',')
+    .map((skill) => skill.trim())
+    .filter((skill) => skill !== '')
+
+  // Add each skill if it doesn't already exist
+  skillsToAdd.forEach((skill) => {
+    if (skill && !skillTags.value.includes(skill)) {
+      skillTags.value.push(skill)
+    }
+  })
+
+  // Update the editForm
+  editForm.value.skills = [...skillTags.value]
+  
+  // Clear input
+  skillInput.value = ''
 }
 
 const removeSkill = (index) => {

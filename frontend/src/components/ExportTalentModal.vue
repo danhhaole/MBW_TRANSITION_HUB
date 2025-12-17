@@ -1,12 +1,7 @@
 <template>
     <Dialog v-model="internalShow" :options="{ size: '3xl' }">
         <template #body-title>
-            <div class="flex items-center justify-between">
-                <span>{{ __("Export") }}</span>
-                <button @click="closeModal" class="text-gray-400 hover:text-gray-600">
-                    <FeatherIcon name="x" class="h-5 w-5" />
-                </button>
-            </div>
+            <span>{{ __("Export") }}</span>
         </template>
         <template #body-content>
             <div class="space-y-6">
@@ -139,6 +134,10 @@ const props = defineProps({
     totalRecords: {
         type: Number,
         default: 0
+    },
+    currentPageSize: {
+        type: Number,
+        default: 10
     }
 })
 
@@ -276,9 +275,9 @@ const handleExport = async () => {
         const filters = JSON.stringify(exportFilters)
         
         // Determine page length
-        let pageLength = props.totalRecords
+        let pageLength = props.currentPageSize // Export current page records only
         if (exportAll.value) {
-            pageLength = 0 // Export all records
+            pageLength = 0 // Export all records (0 means no limit)
         }
         
         // Build URL with proper parameters

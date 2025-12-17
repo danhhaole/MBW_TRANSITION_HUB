@@ -791,6 +791,38 @@
 			</div>
 		</div>
 
+		<!-- Remove Talent Confirmation Dialog -->
+		<Dialog v-model="showRemoveDialog" :options="{ title: __('Remove Talent from Pool'), size: 'sm' }">
+			<template #body-content>
+				<div class="space-y-4">
+					<div class="flex items-start gap-3">
+						<div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+							<FeatherIcon name="alert-triangle" class="w-5 h-5 text-red-600" />
+						</div>
+						<div class="flex-1">
+							<p class="text-sm text-gray-600">
+								{{ __('Are you sure you want to remove this talent from the segment?') }}
+							</p>
+							<div v-if="talentToRemove" class="mt-3 bg-gray-50 rounded-lg p-3">
+								<div class="font-medium text-gray-900">{{ talentToRemove.full_name }}</div>
+								<div class="text-sm text-gray-500">{{ talentToRemove.email }}</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</template>
+			<template #actions>
+				<div class="flex gap-2 justify-end">
+					<Button variant="outline" @click="showRemoveDialog = false" :disabled="isRemoving">
+						{{ __('Cancel') }}
+					</Button>
+					<Button variant="solid" theme="red" @click="confirmRemoveFromSegment" :loading="isRemoving">
+						{{ __('Remove') }}
+					</Button>
+				</div>
+			</template>
+		</Dialog>
+
 		<!-- Add Candidate Modal -->
 		<Dialog v-model="showAddCandidateModal" :options="addCandidateDialogOptions">
 			<template #body>
@@ -1316,6 +1348,9 @@ const qualitySourceData = ref([])
 const showAddCandidateModal = ref(false)
 const showCampaignWizard = ref(false)
 const showEditTalentSegmentModal = ref(false)
+const showRemoveDialog = ref(false)
+const talentToRemove = ref(null)
+const isRemoving = ref(false)
 const editingSegmentData = ref(null)
 const savingCandidates = ref(false)
 const showAnalytics = ref(false)
@@ -1757,23 +1792,43 @@ const contactCandidate = (candidate) => {
 	console.log('Contact candidate:', candidate)
 }
 
-const removeFromSegment = async (candidate) => {
-	if (confirm('Are you sure you want to remove this candidate from the segment?')) {
-		try {
-			// Delete the Mira Talent Pool relationship
-			if (candidate.candidate_segment_id) {
-				const result = await miraTalentPoolStore.deleteTalentPool(
-					candidate.candidate_segment_id,
-				)
-				if (result.success) {
-					await loadCandidates()
-					// Update the segment's candidate count
-					await loadTalentSegment()
-				}
-			}
-		} catch (error) {
-			console.error('Error removing candidate:', error)
+const removeFromSegment = (candidate) => {
+	talentToRemove.value = candidate
+	showRemoveDialog.value = true
+}
+
+const confirmRemoveFromSegment = async () => {
+	if (!talentToRemove.value) return
+	
+	isRemoving.value = true
+	try {
+		// Delete the Mira Talent Pool relationship
+		if (talentToRemove.value.candidate_segment_id) {
+			await miraTalentPoolStore.deleteTalentPool(
+				talentToRemove.value.candidate_segment_id,
+			)
+			
+			// If no error thrown, delete was successful
+			// Remove from local array immediately for instant UI update
+			candidates.value = candidates.value.filter(
+				c => c.candidate_segment_id !== talentToRemove.value.candidate_segment_id
+			)
+			
+			// Show success message
+			showSuccess(__('Talent removed from pool successfully'))
+			
+			// Close dialog
+			showRemoveDialog.value = false
+			talentToRemove.value = null
+			
+			// Update the segment's candidate count in background
+			await loadTalentSegment()
 		}
+	} catch (error) {
+		console.error('Error removing candidate:', error)
+		showError(__('An error occurred while removing talent'))
+	} finally {
+		isRemoving.value = false
 	}
 }
 

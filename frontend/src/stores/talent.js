@@ -24,6 +24,7 @@ export const useTalentStore = defineStore('talent', {
 			source: '',
 			crm_status: '',
 		},
+		conditions: [], // Advanced filter conditions
 		statistics: {
 			total: 0,
 			active: 0,
@@ -101,8 +102,14 @@ export const useTalentStore = defineStore('talent', {
 					_cache_bust: Date.now(),
 				}
 
-				// Add filters
-				if (options.filters) {
+				// Add conditions if provided (advanced filter)
+				if (options.conditions && options.conditions.length > 0) {
+					params.filters = this.convertConditionsToFilters(options.conditions)
+				} else if (this.conditions && this.conditions.length > 0) {
+					// Use stored conditions if not provided in options
+					params.filters = this.convertConditionsToFilters(this.conditions)
+				} else if (options.filters) {
+					// Fallback to old filters format
 					params.filters = options.filters
 				}
 
@@ -656,6 +663,10 @@ export const useTalentStore = defineStore('talent', {
 			this.filters.crm_status = crmStatus
 		},
 
+		getConditions() {
+			return this.conditions
+		},
+
 		setFilters(filterObj) {
 			Object.keys(filterObj).forEach(key => {
 				if (this.filters.hasOwnProperty(key)) {
@@ -685,6 +696,86 @@ export const useTalentStore = defineStore('talent', {
 				source: '',
 				crm_status: '',
 			}
+			this.conditions = []
+		},
+
+		setConditions(conditions) {
+			this.conditions = conditions || []
+		},
+
+		// Convert ConditionsBuilder format to Frappe filters
+		convertConditionsToFilters(conditions) {
+			if (!conditions || conditions.length === 0) {
+				return {}
+			}
+
+			// Simple conversion: extract field-operator-value triplets
+			const filters = {}
+			const processCondition = (condition) => {
+				if (Array.isArray(condition) && condition.length === 3) {
+					const [field, operator, value] = condition
+					
+					// Skip empty conditions
+					if (!field || !operator || value === '' || value === null || value === undefined) {
+						return
+					}
+
+					// Map operators to Frappe format
+					const operatorMap = {
+						'=': '=',
+						'!=': '!=',
+						'>': '>',
+						'<': '<',
+						'>=': '>=',
+						'<=': '<=',
+						'like': 'like',
+						'not like': 'not like',
+						'in': 'in',
+						'not in': 'not in',
+						'is': 'is',
+						'is not': 'is not',
+					}
+
+					const mappedOperator = operatorMap[operator] || '='
+					
+					// For 'like' operator, add wildcards if not present
+					let processedValue = value
+					if (mappedOperator === 'like' && typeof value === 'string') {
+						if (!value.includes('%')) {
+							processedValue = `%${value}%`
+						}
+					}
+
+					// Simple filters: field = value
+					if (mappedOperator === '=') {
+						filters[field] = processedValue
+					} else {
+						// Complex filters: [field, operator, value]
+						filters[field] = [mappedOperator, processedValue]
+					}
+				}
+			}
+
+			// Process all conditions recursively
+			const processAll = (items) => {
+				for (const item of items) {
+					if (typeof item === 'string') {
+						// Skip conjunction strings ('and', 'or')
+						continue
+					} else if (Array.isArray(item)) {
+						if (item.length === 3 && typeof item[0] === 'string') {
+							// This is a condition triplet
+							processCondition(item)
+						} else {
+							// This is a nested group
+							processAll(item)
+						}
+					}
+				}
+			}
+
+			processAll(conditions)
+			return filters
 		},
 	},
 })
