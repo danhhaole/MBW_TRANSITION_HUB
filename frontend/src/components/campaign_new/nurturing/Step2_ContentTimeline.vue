@@ -240,7 +240,7 @@
                         <template #prefix>
                           <FeatherIcon name="send" class="h-4 w-4" />
                         </template>
-                        {{ __('Send Email') }}
+                        {{ __('Send Email To Check') }}
                       </Button>
                     </template>
                   </EmailContentEditor>
