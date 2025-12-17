@@ -421,18 +421,32 @@ def find_candidates_fuzzy(
         # Convert min_score to float
         min_score = float(min_score) if float(min_score) >= 0 else 55.0
         
-        # --- Load conditions từ segment ---
+        # --- Load conditions và budget từ segment ---
         conditions = []
+        segment_min_budget = None
+        segment_max_budget = None
+        
         if segment_name:
-            conditions_str = frappe.db.get_value(
-                "Mira Segment", segment_name, "criteria"
+            segment_data = frappe.db.get_value(
+                "Mira Segment", 
+                segment_name, 
+                ["criteria", "min_budget", "max_budget"],
+                as_dict=True
             )
-            if conditions_str:
-                try:
-                    conditions = json.loads(conditions_str or "[]")
-                except Exception as e:
-                    frappe.log_error(f"Lỗi khi đọc conditions JSON: {e}")
-                    return []
+            
+            if segment_data:
+                # Parse conditions
+                conditions_str = segment_data.get("criteria")
+                if conditions_str:
+                    try:
+                        conditions = json.loads(conditions_str or "[]")
+                    except Exception as e:
+                        frappe.log_error(f"Lỗi khi đọc conditions JSON: {e}")
+                        return []
+                
+                # Get budget range
+                segment_min_budget = segment_data.get("min_budget")
+                segment_max_budget = segment_data.get("max_budget")
 
         if not conditions or len(conditions) == 0:
             frappe.throw(f"Không tìm thấy điều kiện trong segment '{segment_name}'")
@@ -441,12 +455,19 @@ def find_candidates_fuzzy(
         criteria_skills = []
         criteria_tags = []
         criteria_filters = {}
+        conjunction = "and"  # Default conjunction (and/or)
 
         print(f"\n=== PARSING CONDITIONS ===")
         print(f"Total conditions: {len(conditions)}")
 
         for condition in conditions:
-            if len(condition) < 3:
+            # Check for conjunction ("and" or "or")
+            if isinstance(condition, str) and condition.lower() in ["and", "or"]:
+                conjunction = condition.lower()
+                print(f"  → Conjunction: {conjunction.upper()}")
+                continue
+            
+            if not isinstance(condition, list) or len(condition) < 3:
                 continue
 
             field, operator, value = condition[0], condition[1], condition[2]
@@ -489,6 +510,17 @@ def find_candidates_fuzzy(
         print(f"Skills: {criteria_skills}")
         print(f"Tags: {criteria_tags}")
         print(f"Filters: {criteria_filters}")
+        print(f"Conjunction: {conjunction.upper()}")
+        
+        # Count total number of conditions (for single vs multiple condition logic)
+        total_conditions = 0
+        if criteria_skills:
+            total_conditions += 1  # skills counts as 1 condition
+        if criteria_tags:
+            total_conditions += 1  # tags counts as 1 condition
+        total_conditions += len(criteria_filters)  # each filter is 1 condition
+        
+        print(f"Total conditions count: {total_conditions}")
 
         if not criteria_skills and not criteria_tags and not criteria_filters:
             frappe.throw(
@@ -516,6 +548,7 @@ def find_candidates_fuzzy(
                     "talent_id.internal_rating",
                     "talent_id.soft_skills",
                     "talent_id.cultural_fit",
+                    "talent_id.expected_salary",
                 ],
             )  # , "enroll_type":"Automatic"
         else:
@@ -523,7 +556,7 @@ def find_candidates_fuzzy(
             talent_profiles = frappe.get_all(
                 "Mira Talent",
                 # filters={"status": "NEW"},
-                fields=["*"],
+                fields=["*"],  # This includes expected_salary
             )
 
         results = []
@@ -616,43 +649,93 @@ def find_candidates_fuzzy(
                     candidate_tags = cleaned_tags
                 print(f"Candidate tags: {candidate_tags}")
 
-            # --- Tính điểm fuzzy ---
-            total_score = 0
+            # --- Tính điểm matching ---
+            # Logic mới: 
+            # - Nếu chỉ có 1 condition: match 1 trong nhiều giá trị → 100 điểm
+            # - Nếu có nhiều conditions: tính điểm theo tỷ lệ match của từng condition
+            
+            condition_scores = []  # List of scores for each condition
             score_breakdown = []
+            
+            # Calculate skills score
             if criteria_skills:
                 print(f"Checking skills...")
+                # Count how many criteria skills the talent has
+                matched_skills = 0
                 for crit_skill in criteria_skills:
-                    try:
-                        best_score = max(
-                            [
-                                fuzz.token_sort_ratio(crit_skill, cand_skill) or 0
-                                for cand_skill in candidate_skills
-                            ],
-                            default=0,
+                    # Check exact match (case-insensitive)
+                    is_matched = any(
+                        crit_skill.lower() == cand_skill.lower() 
+                        for cand_skill in candidate_skills
+                    )
+                    if is_matched:
+                        matched_skills += 1
+                        print(f"  Skill '{crit_skill}' → MATCHED")
+                    else:
+                        # Try fuzzy match with high threshold (>= 85)
+                        best_fuzzy = max(
+                            [fuzz.token_sort_ratio(crit_skill, cand_skill) for cand_skill in candidate_skills],
+                            default=0
                         )
-                        total_score += best_score
-                        score_breakdown.append(f"Skill '{crit_skill}': {best_score}")
-                        print(
-                            f"  Skill '{crit_skill}' → best match score: {best_score}"
-                        )
-                    except Exception as e:
-                        print(f"  Error matching skill: {e}")
+                        if best_fuzzy >= 85:
+                            matched_skills += 1
+                            print(f"  Skill '{crit_skill}' → FUZZY MATCHED ({best_fuzzy}%)")
+                        else:
+                            print(f"  Skill '{crit_skill}' → NOT MATCHED")
+                
+                # Calculate skill score for this condition
+                if total_conditions == 1:
+                    # Single condition: match any 1 skill → 100 points
+                    skill_score = 100 if matched_skills >= 1 else 0
+                    print(f"  Single condition mode: matched {matched_skills}/{len(criteria_skills)} → {skill_score} points")
+                else:
+                    # Multiple conditions: score based on match ratio
+                    skill_score = round((matched_skills / len(criteria_skills)) * 100)
+                    print(f"  Multiple conditions mode: matched {matched_skills}/{len(criteria_skills)} → {skill_score} points")
+                
+                condition_scores.append(skill_score)
+                score_breakdown.append(f"Skills: {matched_skills}/{len(criteria_skills)} matched → {skill_score}")
 
+            # Calculate tags score
             if criteria_tags:
                 print(f"Checking tags...")
+                # Count how many criteria tags the talent has
+                matched_tags = 0
                 for criteria_tag in criteria_tags:
-                    best_score = max(
-                        [
-                            fuzz.token_sort_ratio(criteria_tag, candidate_tag)
-                            for candidate_tag in candidate_tags
-                        ],
-                        default=0,
+                    # Check exact match (case-insensitive)
+                    is_matched = any(
+                        criteria_tag.lower() == cand_tag.lower() 
+                        for cand_tag in candidate_tags
                     )
-                    total_score += best_score
-                    score_breakdown.append(f"Tag '{criteria_tag}': {best_score}")
-                    print(f"  Tag '{criteria_tag}' → best match score: {best_score}")
+                    if is_matched:
+                        matched_tags += 1
+                        print(f"  Tag '{criteria_tag}' → MATCHED")
+                    else:
+                        # Try fuzzy match with high threshold (>= 85)
+                        best_fuzzy = max(
+                            [fuzz.token_sort_ratio(criteria_tag, cand_tag) for cand_tag in candidate_tags],
+                            default=0
+                        )
+                        if best_fuzzy >= 85:
+                            matched_tags += 1
+                            print(f"  Tag '{criteria_tag}' → FUZZY MATCHED ({best_fuzzy}%)")
+                        else:
+                            print(f"  Tag '{criteria_tag}' → NOT MATCHED")
+                
+                # Calculate tag score for this condition
+                if total_conditions == 1:
+                    # Single condition: match any 1 tag → 100 points
+                    tag_score = 100 if matched_tags >= 1 else 0
+                    print(f"  Single condition mode: matched {matched_tags}/{len(criteria_tags)} → {tag_score} points")
+                else:
+                    # Multiple conditions: score based on match ratio
+                    tag_score = round((matched_tags / len(criteria_tags)) * 100)
+                    print(f"  Multiple conditions mode: matched {matched_tags}/{len(criteria_tags)} → {tag_score} points")
+                
+                condition_scores.append(tag_score)
+                score_breakdown.append(f"Tags: {matched_tags}/{len(criteria_tags)} matched → {tag_score}")
 
-            # Check other filters
+            # Check other filters (each filter is a separate condition)
             if criteria_filters:
                 print(f"Checking filters...")
                 for field, filter_data in criteria_filters.items():
@@ -660,40 +743,99 @@ def find_candidates_fuzzy(
                     value = filter_data.get("value")
                     talent_value = c.get(field)
 
+                    filter_score = 0
                     if not talent_value:
-                        print(f"  Filter '{field}': No value in candidate")
-                        continue
+                        print(f"  Filter '{field}': No value in candidate → 0 points")
+                    else:
+                        # Simple matching
+                        matched = False
+                        if operator in ["==", "equals"]:
+                            if str(talent_value).lower() == str(value).lower():
+                                filter_score = 100
+                                matched = True
+                        elif operator in ["like", "contains"]:
+                            if str(value).lower() in str(talent_value).lower():
+                                filter_score = 100
+                                matched = True
+                        
+                        print(f"  Filter '{field}' {operator} '{value}' → {'MATCH (100)' if matched else 'NO MATCH (0)'}")
+                    
+                    condition_scores.append(filter_score)
+                    score_breakdown.append(f"Filter '{field}': {filter_score}")
 
-                    # Simple matching for now
-                    matched = False
-                    if operator in ["==", "equals"]:
-                        if str(talent_value).lower() == str(value).lower():
-                            total_score += 100
-                            matched = True
-                    elif operator in ["like", "contains"]:
-                        if str(value).lower() in str(talent_value).lower():
-                            total_score += 100
-                            matched = True
+            # Check salary/budget matching (as a separate condition)
+            if segment_min_budget is not None or segment_max_budget is not None:
+                talent_expected_salary = c.get("expected_salary")
+                salary_score = 0
+                
+                print(f"Checking salary/budget matching...")
+                print(f"  Segment budget range: {segment_min_budget} - {segment_max_budget}")
+                print(f"  Talent expected salary: {talent_expected_salary}")
+                
+                if talent_expected_salary:
+                    try:
+                        expected_salary = float(talent_expected_salary)
+                        min_budget = float(segment_min_budget) if segment_min_budget else 0
+                        max_budget = float(segment_max_budget) if segment_max_budget else float('inf')
+                        
+                        # Perfect match: expected salary within budget range
+                        if min_budget <= expected_salary <= max_budget:
+                            salary_score = 100
+                            print(f"  ✓ PERFECT MATCH: Salary within budget range → 100 points")
+                        
+                        # Partial match: calculate proximity score
+                        else:
+                            # If salary is below min_budget
+                            if expected_salary < min_budget:
+                                diff_percent = ((min_budget - expected_salary) / min_budget) * 100
+                                if diff_percent <= 20:
+                                    salary_score = round(100 - (diff_percent * 2.5))
+                                    print(f"  ~ PARTIAL MATCH: {diff_percent:.1f}% below min → {salary_score} points")
+                                else:
+                                    salary_score = 0
+                                    print(f"  ✗ TOO LOW: {diff_percent:.1f}% below min → 0 points")
+                            
+                            # If salary is above max_budget
+                            elif expected_salary > max_budget:
+                                diff_percent = ((expected_salary - max_budget) / max_budget) * 100
+                                if diff_percent <= 20:
+                                    salary_score = round(100 - (diff_percent * 2.5))
+                                    print(f"  ~ PARTIAL MATCH: {diff_percent:.1f}% above max → {salary_score} points")
+                                else:
+                                    salary_score = 0
+                                    print(f"  ✗ TOO HIGH: {diff_percent:.1f}% above max → 0 points")
+                        
+                    except (ValueError, TypeError) as e:
+                        print(f"  Error parsing salary values: {e}")
+                        salary_score = 0
+                else:
+                    print(f"  No expected salary data → 0 points")
+                
+                condition_scores.append(salary_score)
+                score_breakdown.append(f"Salary: {salary_score}")
 
-                    score_breakdown.append(
-                        f"Filter '{field}' {operator} '{value}': {100 if matched else 0}"
-                    )
-                    print(
-                        f"  Filter '{field}' {operator} '{value}' → {'MATCH' if matched else 'NO MATCH'}"
-                    )
-
-            # Calculate average score
-            total_criteria = (
-                len(criteria_skills) + len(criteria_tags) + len(criteria_filters)
-            )
-            if total_criteria == 0:
+            # Calculate final score based on conjunction (AND/OR)
+            if len(condition_scores) == 0:
+                print(f"No conditions matched, skipping candidate")
                 continue
 
-            avg_score = total_score / total_criteria
-
-            print(
-                f"Total score: {total_score} / {total_criteria} criteria = {avg_score:.2f}"
-            )
+            if conjunction == "or":
+                # OR logic: if ANY condition matches (score > 0), give 100 points
+                # Otherwise, take the max score
+                if any(score > 0 for score in condition_scores):
+                    avg_score = 100
+                else:
+                    avg_score = 0
+                print(f"\n=== SCORE CALCULATION (OR mode) ===")
+                print(f"Condition scores: {condition_scores}")
+                print(f"Any match found: {any(score > 0 for score in condition_scores)} → {avg_score}")
+            else:
+                # AND logic: average of all condition scores
+                avg_score = round(sum(condition_scores) / len(condition_scores))
+                print(f"\n=== SCORE CALCULATION (AND mode) ===")
+                print(f"Condition scores: {condition_scores}")
+                print(f"Average: ({' + '.join(map(str, condition_scores))}) / {len(condition_scores)} = {avg_score}")
+            
             print(f"Min score required: {min_score}")
             print(f"Result: {'✓ PASS' if avg_score >= min_score else '✗ FAIL'}")
 
@@ -707,7 +849,8 @@ def find_candidates_fuzzy(
                         "tags": candidate_tags,
                         "criteria_skills": criteria_skills,
                         "criteria_tags": criteria_tags,
-                        "score": round(avg_score, 2),
+                        "score": avg_score,  # Already rounded integer
+                        "score_breakdown": score_breakdown,
                     }
                 )
 

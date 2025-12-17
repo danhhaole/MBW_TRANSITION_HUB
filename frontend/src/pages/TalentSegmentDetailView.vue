@@ -847,12 +847,12 @@
 						<!-- Min Score Slider -->
 						<div>
 							<label class="block text-sm font-medium text-gray-700 mb-3">
-								{{ __('Minimum Match Score') }}: {{ minScore }}%
+								{{ __('Minimum Match Score') }}: {{ minScore }}
 							</label>
 							<div class="flex justify-between text-xs text-gray-500 mt-1">
-								<span>0%</span>
-								<span>50%</span>
-								<span>100%</span>
+								<span>0</span>
+								<span>50</span>
+								<span>100</span>
 							</div>
 							<div class="slider-wrapper">
 								<div
@@ -990,7 +990,7 @@
 																getEngagementColor(candidate.score)
 															"
 														>
-															{{ candidate.score }}%
+															{{ candidate.score }}
 														</span>
 													</span>
 												</div>
