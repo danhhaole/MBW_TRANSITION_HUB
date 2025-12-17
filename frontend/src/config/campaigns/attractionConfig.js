@@ -40,6 +40,7 @@ export const attractionTriggerTypes = [
 export const attractionActionTypes = [
   // Communication Actions - Focus on initial outreach
   { label: __('Send Email'), value: 'EMAIL' },
+  { label: __('Send Zalo/SMS Message'), value: 'MESSAGE' },
   { label: __('Send Facebook Message'), value: 'FACEBOOK' },
   { label: __('Send SMS'), value: 'SMS' },
   { label: __('Send Zalo Message'), value: 'ZALO' },
@@ -51,10 +52,12 @@ export const attractionActionTypes = [
   { label: __('Update Field Value'), value: 'UPDATE_FIELD_VALUE' },
   // Status & Tracking
   { label: __('Change Status'), value: 'CHANGE_STATUS' },
+  { label: __('Stop Tracking'), value: 'STOP_TRACKING' },
   { label: __('Unsubscribe'), value: 'UNSUBSCRIBE' },
   // Notifications
   { label: __('Send Notification'), value: 'SENT_NOTIFICATION' },
-  { label: __('Internal Notification'), value: 'INTERNAL_NOTIFICATION' }
+  { label: __('Internal Notification'), value: 'INTERNAL_NOTIFICATION' },
+  { label: __('Handoff to ATS'), value: 'HANDOFF_TO_ATS' }
 ]
 
 /**
@@ -108,6 +111,7 @@ export const attractionTriggerDescriptions = {
  */
 export const attractionActionIcons = {
   'EMAIL': 'mail',
+  'MESSAGE': 'message-circle',
   'FACEBOOK': 'facebook',
   'SMS': 'smartphone',
   'ZALO': 'message-square',
@@ -116,9 +120,11 @@ export const attractionActionIcons = {
   'ADD_CUSTOM_FIELD': 'edit-3',
   'UPDATE_FIELD_VALUE': 'edit',
   'CHANGE_STATUS': 'toggle-right',
+  'STOP_TRACKING': 'user-minus',
   'UNSUBSCRIBE': 'user-x',
   'SENT_NOTIFICATION': 'bell',
-  'INTERNAL_NOTIFICATION': 'bell-ring'
+  'INTERNAL_NOTIFICATION': 'bell-ring',
+  'HANDOFF_TO_ATS': 'send'
 }
 
 /**
@@ -126,6 +132,7 @@ export const attractionActionIcons = {
  */
 export const attractionActionDescriptions = {
   'EMAIL': __('Send marketing email to talent'),
+  'MESSAGE': __('Send Zalo/SMS message to talent'),
   'FACEBOOK': __('Send Facebook Messenger outreach'),
   'SMS': __('Send SMS marketing message'),
   'ZALO': __('Send Zalo marketing message'),
@@ -134,7 +141,9 @@ export const attractionActionDescriptions = {
   'ADD_CUSTOM_FIELD': __('Add custom tracking field'),
   'UPDATE_FIELD_VALUE': __('Update tracking field value'),
   'CHANGE_STATUS': __('Change talent status'),
+  'STOP_TRACKING': __('Stop tracking this talent'),
   'UNSUBSCRIBE': __('Unsubscribe from marketing'),
   'SENT_NOTIFICATION': __('Send notification to talent'),
-  'INTERNAL_NOTIFICATION': __('Notify marketing team')
+  'INTERNAL_NOTIFICATION': __('Notify marketing team'),
+  'HANDOFF_TO_ATS': __('Transfer talent to ATS system')
 }

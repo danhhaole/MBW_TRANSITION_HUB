@@ -33,7 +33,6 @@ export const nurturingTriggerTypes = [
   { label: __('Scheduled Time'), value: 'ON_SCHEDULED_TIME' },
   // Birthday & Email Engagement
   { label: __('Birthday'), value: 'ON_BIRTHDAY' },
-  { label: __('No Email Click After N Days'), value: 'ON_NO_EMAIL_CLICK' },
   // System Events
   { label: __('Send Success'), value: 'ON_SEND_SUCCESS' },
   { label: __('Send Failed'), value: 'ON_SEND_FAILED' },
@@ -47,7 +46,7 @@ export const nurturingTriggerTypes = [
 export const nurturingActionTypes = [
   // Communication Actions - Full suite for nurturing
   { label: __('Send Email'), value: 'EMAIL' },
-  { label: __('Send Message'), value: 'MESSAGE' },
+  { label: __('Send Zalo/SMS Message'), value: 'MESSAGE' },
   { label: __('Send Facebook Message'), value: 'FACEBOOK' },
   { label: __('Send SMS'), value: 'SMS' },
   { label: __('Send Zalo Message'), value: 'ZALO' },
@@ -97,7 +96,6 @@ export const nurturingTriggerIcons = {
   'ON_SEQUENCE_COMPLETED': 'check-circle',
   'ON_SCHEDULED_TIME': 'calendar',
   'ON_BIRTHDAY': 'gift',
-  'ON_NO_EMAIL_CLICK': 'mouse-pointer',
   'ON_SEND_SUCCESS': 'check',
   'ON_SEND_FAILED': 'x-circle',
   'ON_USER_RESPONSE': 'message-square',
@@ -125,7 +123,6 @@ export const nurturingTriggerDescriptions = {
   'ON_SEQUENCE_COMPLETED': __('Nurturing sequence step completed'),
   'ON_SCHEDULED_TIME': __('Scheduled nurturing time reached'),
   'ON_BIRTHDAY': __('Send birthday greeting email'),
-  'ON_NO_EMAIL_CLICK': __('After N days without email click - Stop nurturing or Send another email'),
   'ON_SEND_SUCCESS': __('Nurturing message delivered'),
   'ON_SEND_FAILED': __('Nurturing message failed'),
   'ON_USER_RESPONSE': __('Talent responds to nurturing'),

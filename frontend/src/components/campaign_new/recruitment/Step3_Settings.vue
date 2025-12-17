@@ -331,7 +331,20 @@ const CAMPAIGN_TYPE = CAMPAIGN_TYPES.RECRUITMENT
 
 // Get campaign-specific trigger and action types
 const triggerTypeOptions = getTriggerTypes(CAMPAIGN_TYPE)
-const actionTypeOptions = getActionTypes(CAMPAIGN_TYPE)
+
+const allowedActions = [
+  'EMAIL',
+  'MESSAGE',
+  'UPDATE_FIELD_VALUE',
+  'ADD_TAG',
+  'REMOVE_TAG',
+  'CHANGE_STATUS',
+  'STOP_TRACKING',
+  'INTERNAL_NOTIFICATION',
+  'HANDOFF_TO_ATS',
+]
+
+const actionTypeOptions = getActionTypes(CAMPAIGN_TYPE).filter(action => allowedActions.includes(action.value))
 
 const props = defineProps({
   triggers: {
@@ -379,7 +392,7 @@ const loadingTags = ref(false)
 const availableTriggerTypes = computed(() => {
   const existingTypes = localTriggers.value.map(t => t.trigger_type)
   // Hide Birthday and No Email Click triggers for Recruitment campaigns
-  const hiddenTriggers = ['ON_BIRTHDAY', 'ON_NO_EMAIL_CLICK']
+  const hiddenTriggers = ['ON_BIRTHDAY', 'ON_INACTIVITY_TIMEOUT']
 
   return triggerTypeOptions.filter(option =>
     !existingTypes.includes(option.value) &&

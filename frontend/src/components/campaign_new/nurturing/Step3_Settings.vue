@@ -159,9 +159,9 @@
             </div>
           </div>
 
-          <!-- Days Configuration for ON_NO_EMAIL_CLICK trigger -->
-          <!-- <div
-            v-if="trigger.trigger_type === 'ON_NO_EMAIL_CLICK'"
+          <!-- Days Configuration for ON_INACTIVITY_TIMEOUT trigger -->
+          <div
+            v-if="trigger.trigger_type === 'ON_INACTIVITY_TIMEOUT'"
             class="ml-10 mt-3 mb-4"
           >
             <div class="bg-orange-50 border border-orange-200 rounded-lg p-3">
@@ -169,55 +169,30 @@
                 <FeatherIcon name="clock" class="h-4 w-4 text-orange-600 mt-0.5 flex-shrink-0" />
                 <div class="flex-1">
                   <p class="text-xs font-medium text-orange-900 mb-2">
-                    {{ __('After how many minutes without email click? (For testing: 5 minutes = 5 days in production)') }}
+                    {{ __('After how many days of no interaction?') }}
                   </p>
 
                   <div class="mb-2">
                     <FormControl
                       type="number"
-                      :modelValue="getTriggerDays(trigger)"
-                      @update:modelValue="(value) => handleTriggerDaysChange(index, value)"
-                      :placeholder="__('Enter number of minutes for testing...')"
-                      :min="1"
-                      :max="1440"
+                      :modelValue="getTriggerInactivityDays(trigger)"
+                      @update:modelValue="(value) => handleTriggerInactivityDaysChange(index, value)"
+                      :placeholder="__('Enter number of days...')"
+                      :min="0"
+                      :readonly="false"
                     />
                   </div>
 
-                  <div v-if="getTriggerDays(trigger)" class="flex items-center space-x-2 bg-white border border-orange-200 rounded px-2 py-1.5 mb-2">
+                  <div v-if="getTriggerInactivityDays(trigger)" class="flex items-center space-x-2 bg-white border border-orange-200 rounded px-2 py-1.5 mb-2">
                     <FeatherIcon name="alert-circle" class="h-3 w-3 text-orange-600" />
                     <span class="text-xs font-medium text-gray-900">
-                      {{ __('Trigger after {0} minute without email click', [getTriggerDays(trigger)]) }}
+                      {{ __('Trigger after {0} days of no interaction', [getTriggerInactivityDays(trigger)]) }}
                     </span>
                   </div>
-
-                  <div class="flex gap-2 mt-4">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      :loading="testingEmail"
-                      @click="testSendTrackedEmail"
-                    >
-                      <Mail class="w-4 h-4 mr-2" />
-                      Send Test Email
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      :loading="testingTrigger"
-                      @click="testTriggerNow"
-                    >
-                      <Zap class="w-4 h-4 mr-2" />
-                      Test Trigger Now
-                    </Button>
-                  </div>
-
-                  <p class="text-xs text-gray-500 mt-2">
-                    {{ __('Actions will be triggered if candidate does not click any email within this period (1 minute for testing).') }}
-                  </p>
                 </div>
               </div>
             </div>
-          </div> -->
+          </div>
 
           <!-- Trigger Actions -->
           <div class="ml-10 mt-3">
@@ -392,18 +367,34 @@ const CAMPAIGN_TYPE = CAMPAIGN_TYPES.NURTURING
 
 // Get campaign-specific trigger and action types
 const triggerTypeOptions = getTriggerTypes(CAMPAIGN_TYPE)
-const baseActionTypeOptions = getActionTypes(CAMPAIGN_TYPE)
+
+const allowedActions = [
+  'EMAIL',
+  'MESSAGE',
+  'UPDATE_FIELD_VALUE',
+  'ADD_TAG',
+  'REMOVE_TAG',
+  'CHANGE_STATUS',
+  'STOP_TRACKING',
+  'INTERNAL_NOTIFICATION',
+  'HANDOFF_TO_ATS',
+]
+
+const baseActionTypeOptions = getActionTypes(CAMPAIGN_TYPE).filter(action => allowedActions.includes(action.value))
 
 // Function to get action types based on trigger type
 const getActionTypesForTrigger = (triggerType) => {
-  if (triggerType === 'ON_NO_EMAIL_CLICK') {
-    // For ON_NO_EMAIL_CLICK trigger, include the special action
-    return baseActionTypeOptions
+  if (triggerType === 'ON_BIRTHDAY') {
+    // For ON_BIRTHDAY trigger, only allow EMAIL and MESSAGE
+    return baseActionTypeOptions.filter(action => ['EMAIL', 'MESSAGE'].includes(action.value));
+  } else if (triggerType === 'ON_INACTIVITY_TIMEOUT') {
+    // For ON_INACTIVITY_TIMEOUT trigger, allow EMAIL, MESSAGE, and STOP_TRACKING
+    return baseActionTypeOptions.filter(action => ['EMAIL', 'MESSAGE', 'STOP_TRACKING'].includes(action.value));
   } else {
     // For other triggers, exclude the special action
-    return baseActionTypeOptions.filter(action => action.value !== 'STOP_NURTURING_AND_EMAIL')
+    return baseActionTypeOptions.filter(action => action.value !== 'STOP_NURTURING_AND_EMAIL');
   }
-}
+};
 
 const toast = useToast()
 
@@ -585,6 +576,7 @@ const loadTags = async () => {
   }
 }
 
+
 // Helper methods to get/set tag in trigger conditions
 const getTriggerTagId = (trigger) => {
   if (!trigger.conditions) return null
@@ -637,25 +629,25 @@ const handleTriggerTagSelect = (triggerIndex, selectedValue) => {
   }
 }
 
-// Helper methods for ON_NO_EMAIL_CLICK days configuration
-const getTriggerDays = (trigger) => {
-  if (!trigger.conditions) return 1 // Default to 1 minute for testing
+// Helper methods for ON_INACTIVITY_TIMEOUT days configuration
+const getTriggerInactivityDays = (trigger) => {
+  if (!trigger.conditions) return '' // Default to 7 days
 
   try {
     const conditions = typeof trigger.conditions === 'string'
       ? JSON.parse(trigger.conditions)
       : trigger.conditions
-    return conditions?.days_without_click || 1
+    return conditions?.days_of_inactivity || ''
   } catch (e) {
-    return 1
+    return ''
   }
 }
 
-const handleTriggerDaysChange = (triggerIndex, days) => {
-  console.log('📅 Days changed:', days, 'for trigger index:', triggerIndex)
+const handleTriggerInactivityDaysChange = (triggerIndex, days) => {
+  console.log('📅 Inactivity days changed:', days, 'for trigger index:', triggerIndex)
 
-  // Ensure days is a valid number
-  const daysValue = parseInt(days) || 1
+  const parsedDays = parseInt(days, 10);
+  const daysValue = !isNaN(parsedDays) ? parsedDays : '';
 
   // Get the trigger from sorted array
   const sortedTrigger = localTriggers.value[triggerIndex]
@@ -667,12 +659,12 @@ const handleTriggerDaysChange = (triggerIndex, days) => {
   if (originalIndex !== -1) {
     // Store days in conditions field as formatted JSON
     const conditions = {
-      days_without_click: daysValue
+      days_of_inactivity: daysValue
     }
 
     // Format with indent for better readability
     triggers[originalIndex].conditions = JSON.stringify(conditions, null, 2)
-    console.log('✅ Trigger days updated:', triggers[originalIndex].conditions)
+    console.log('✅ Trigger inactivity days updated:', triggers[originalIndex].conditions)
     emit('update:triggers', triggers)
   }
 }
@@ -835,9 +827,9 @@ const createTrigger = (triggerType) => {
   }
 
   // Set default conditions for specific trigger types
-  if (triggerType === 'ON_NO_EMAIL_CLICK') {
+  if (triggerType === 'ON_INACTIVITY_TIMEOUT') {
     newTrigger.conditions = JSON.stringify({
-      days_without_click: 1  // 1 phút trong test mode để test nhanh
+      days_of_inactivity: ''
     }, null, 2)
   }
 
@@ -1062,7 +1054,7 @@ const handleActionSave = async (updatedAction) => {
     if (finalAction.action_type === 'STOP_NURTURING_AND_EMAIL') {
         const poolName = props.targetPool
         const campaignId = props.campaignId
-        
+
         if (poolName && campaignId) {
             try {
                 const subject = finalAction.email_subject || 'Final Nurturing Email'
@@ -1071,11 +1063,29 @@ const handleActionSave = async (updatedAction) => {
                 toast.info(__('Stopping nurturing and sending final emails...'))
 
                 // Call API to stop nurturing and send final email
-                const res = await call('mbw_mira.api.campaign.stop_nurturing_and_send_email', {
+                // First, we need to get the talent IDs from the pool
+                const talents = await call('mbw_mira.api.campaign.get_talents_in_pool', {
                     campaign_id: campaignId,
-                    pool_name: poolName,
-                    subject: subject,
-                    content: content
+                    pool_name: poolName
+                })
+
+                if (!talents || talents.length === 0) {
+                    // Log more details for debugging
+                    console.log('No talents found in pool. Campaign ID:', campaignId, 'Pool:', poolName)
+                    throw new Error('No talents found in the selected pool. Please check if the pool has any talents.')
+                }
+
+                // For now, just take the first talent (you may want to loop through all talents in the future)
+                const talent = talents[0]
+                if (!talent || !talent.talent) {
+                    throw new Error('Invalid talent data received from server')
+                }
+
+                const res = await call('mbw_mira.api.campaign.stop_nurturing_and_send_email', {
+                    talent_id: talent.talent,  // Use the talent field which contains the talent ID
+                    campaign_id: campaignId,
+                    email_subject: subject,
+                    email_content: content
                 })
 
                 if (res && res.status === 'success') {
@@ -1085,7 +1095,11 @@ const handleActionSave = async (updatedAction) => {
                 }
             } catch (e) {
                 console.error("Stop nurturing failed", e)
-                toast.error(__('Failed to stop nurturing and send email: {0}', [e.message]))
+                // More detailed error message
+                const errorMessage = e.message.includes('ValidationError')
+                    ? __('Invalid request. Please check the parameters and try again.')
+                    : e.message
+                toast.error(__('Failed to stop nurturing and send email: {0}', [errorMessage]))
             }
         } else {
             toast.error(__('Missing campaign ID or pool name for stop nurturing action'))
