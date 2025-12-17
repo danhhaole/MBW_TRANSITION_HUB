@@ -1102,7 +1102,7 @@ import { ref, reactive, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { call } from 'frappe-ui'
 import { useCampaignStore } from '@/stores/campaign'
-import { useCandidateStore } from '@/stores/candidate'
+import { useTalentStore } from '@/stores/talent'
 import { useTalentSegmentStore } from '@/stores/talentSegment'
 import { useMiraTalentPoolStore } from '@/stores/miraTalentPool'
 import { usersStore } from '@/stores/users'
@@ -1117,7 +1117,42 @@ import RecruitmentPriorityBubbleChart from '@/components/charts/RecruitmentPrior
 import SalaryAlignmentDonutChart from '@/components/charts/SalaryAlignmentDonutChart.vue'
 import TalentUpdateTable from '@/components/charts/TalentUpdateTable.vue'
 import QualitySourceBarChart from '@/components/charts/QualitySourceBarChart.vue'
-import { processSkills } from '@/stores/candidate'
+// Process skills helper function
+const processSkills = (skillsStr) => {
+	if (!skillsStr) return []
+	
+	// If it's already an array, return it
+	if (Array.isArray(skillsStr)) {
+		return skillsStr.map(skill => String(skill).trim()).filter(skill => skill.length > 0)
+	}
+	
+	// Convert to string if it's not
+	const str = String(skillsStr).trim()
+	
+	// Try to parse as JSON first
+	try {
+		const parsed = JSON.parse(str)
+		if (Array.isArray(parsed)) {
+			return parsed.map(skill => String(skill).trim()).filter(skill => skill.length > 0)
+		}
+	} catch (e) {
+		// Not JSON, continue with other parsing methods
+	}
+	
+	// Try bracket format like '[skill1, skill2]'
+	if (str.startsWith('[') && str.endsWith(']')) {
+		try {
+			const content = str.slice(1, -1)
+			const items = content.split(',').map(s => s.trim().replace(/^["']|["']$/g, '')).filter(s => s.length > 0)
+			return items
+		} catch (e) {
+			// Continue with comma split
+		}
+	}
+	
+	// Simple comma-separated string
+	return str.split(',').map(skill => skill.trim()).filter(skill => skill.length > 0)
+}
 import moment from 'moment'
 import { usePermissionStore } from '@/stores/permission'
 
@@ -1128,7 +1163,7 @@ const canDelete = permission.can('Mira Segment', 'delete')
 const canCreate = permission.can('Mira Campaign', 'create')
 // Store initialization
 const campaignStore = useCampaignStore()
-const candidateStore = useCandidateStore()
+const talentStore = useTalentStore()
 const talentSegmentStore = useTalentSegmentStore()
 const miraTalentPoolStore = useMiraTalentPoolStore()
 const { getUser } = usersStore()
@@ -1547,17 +1582,18 @@ const loadCandidates = async () => {
 			console.log('Mira Talent Pool records found:', candidateSegmentResult)
 			console.log('Extracted talent_ids:', candidateIds)
 
-			// Then get the actual candidate data using universal service
-			const candidateResult = await candidateStore.fetchCandidates({
+			// Then get the actual talent data
+			const talentResult = await call('frappe.client.get_list', {
+				doctype: 'Mira Talent',
 				filters: { name: ['in', candidateIds] },
-				limit: 1000,
+				limit_page_length: 1000,
 				fields: ['name', 'full_name', 'email', 'phone', 'skills'],
 			})
-			console.log('Mira Contact API result:>>>>>>>>>>>>>>>>>:  ', candidateResult)
+			console.log('Mira Talent API result:>>>>>>>>>>>>>>>>>:  ', talentResult)
 
-			if (candidateResult && candidateResult.data && candidateResult.data.length) {
-				// Merge the data - add segment relationship info to candidate data
-				candidates.value = candidateResult.data.map((candidate) => {
+			if (talentResult && Array.isArray(talentResult) && talentResult.length > 0) {
+				// Merge the data - add segment relationship info to talent data
+				candidates.value = talentResult.map((candidate) => {
 					const segmentRelation = candidateSegmentResult.find(
 						(cs) => cs.talent_id === candidate.name,
 					)
