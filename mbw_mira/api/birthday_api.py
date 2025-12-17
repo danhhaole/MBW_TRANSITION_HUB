@@ -4,7 +4,7 @@ Birthday API - API endpoints cho birthday reminder system từ talent pools
 
 import frappe
 from frappe.utils import nowdate
-from mbw_mira.utils.birthday_scheduler import run_daily_birthday_check, run_migration_birthday_check, get_birthday_dashboard_stats
+from mbw_mira.schedulers.birthday_scheduler import run_daily_birthday_check, run_migration_birthday_check, get_birthday_dashboard_stats
 
 @frappe.whitelist()
 def trigger_birthday_check(migration_run=False):

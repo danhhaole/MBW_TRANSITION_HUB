@@ -90,7 +90,7 @@ def test_email_sending(test_email=None):
     print(f"\n📧 Testing email sending to: {test_email}")
 
     try:
-        from mbw_mira.utils.birthday_scheduler import get_birthday_email_template
+        from mbw_mira.schedulers.birthday_scheduler import get_birthday_email_template
         template = get_birthday_email_template()
 
         content = template["content"].replace("{talent_name}", "Test User")
@@ -189,7 +189,7 @@ def run_birthday_test():
 
     # 4. Chạy birthday check
     print("\n4️⃣ Running birthday check...")
-    from mbw_mira.utils.birthday_scheduler import run_daily_birthday_check
+    from mbw_mira.schedulers.birthday_scheduler import run_daily_birthday_check
     birthday_result = run_daily_birthday_check(migration_run=True)
 
     print("\n" + "="*80)
