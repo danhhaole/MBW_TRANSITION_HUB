@@ -87,7 +87,7 @@ add_to_apps_screen = [
 
 # before_install = "mbw_mira.install.before_install"
 after_install = "mbw_mira.install.after_install"
-after_migrate = "mbw_mira.install.seed_mbw_mira_features_if_ready"
+# after_migrate = "mbw_mira.install.seed_mbw_mira_features_if_ready"
 
 # Uninstallation
 # ------------
@@ -188,7 +188,8 @@ scheduler_events = {
     },
     "daily": [
         "mbw_mira.schedulers.task_talent_pool_cold.scan_talent_pool_interaction_cold",
-        "mbw_mira.schedulers.birthday_scheduler.run_daily_birthday_check_scheduler"
+        "mbw_mira.schedulers.birthday_scheduler.run_daily_birthday_check_scheduler",
+        "mbw_mira.schedulers.trigger_birthday.run_trigger_birhday"
     ],
     "hourly": [
         # "mbw_mira.schedulers.enroll_talent_campaign.run",

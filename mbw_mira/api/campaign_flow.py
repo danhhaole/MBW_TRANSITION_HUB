@@ -2,6 +2,64 @@ import frappe
 import json
 from frappe import _
 
+trigger_type_map = {
+            # Legacy mapping for old attraction campaigns
+            "MESSAGE_RECEIVED": "ON_USER_RESPONSE",
+            "LINK_CLICKED": "ON_LINK_CLICK",
+            "COMMENT_RECEIVED": "ON_USER_RESPONSE",
+            # All trigger types - pass through as-is
+            "ON_CREATE": "ON_CREATE",
+            "ON_UPDATE": "ON_UPDATE",
+            "ON_FORM_SUBMISSION": "ON_FORM_SUBMISSION",
+            "ON_LINK_CLICK": "ON_LINK_CLICK",
+            "ON_EMAIL_OPEN": "ON_EMAIL_OPEN",
+            "ON_EMAIL_REPLY": "ON_EMAIL_REPLY",
+            "ON_EMAIL_BOUNCE": "ON_EMAIL_BOUNCE",
+            "ON_JOB_APPLICATION": "ON_JOB_APPLICATION",
+            "ON_UNSUBSCRIBE": "ON_UNSUBSCRIBE",
+            "ON_TAG_ADDED": "ON_TAG_ADDED",
+            "ON_TAG_REMOVED": "ON_TAG_REMOVED",
+            "ON_STATUS_CHANGED": "ON_STATUS_CHANGED",
+            "ON_SCORE_REACHED": "ON_SCORE_REACHED",
+            "ON_INACTIVITY_TIMEOUT": "ON_INACTIVITY_TIMEOUT",
+            "ON_SEQUENCE_COMPLETED": "ON_SEQUENCE_COMPLETED",
+            "ON_SCHEDULED_TIME": "ON_SCHEDULED_TIME",
+            "ON_SEND_SUCCESS": "ON_SEND_SUCCESS",
+            "ON_SEND_FAILED": "ON_SEND_FAILED",
+            "ON_USER_RESPONSE": "ON_USER_RESPONSE",
+            "CUSTOM_EVENT": "CUSTOM_EVENT",
+            "ON_BIRTHDAY": "ON_BIRTHDAY"
+}
+
+labels = {
+        # Legacy trigger types
+        "MESSAGE_RECEIVED": "Message Received",
+        "LINK_CLICKED": "Link Clicked",
+        "COMMENT_RECEIVED": "Comment on Post",
+        # All trigger types
+        "ON_CREATE": "Talent Created",
+        "ON_UPDATE": "Talent Updated",
+        "ON_FORM_SUBMISSION": "Form Submission",
+        "ON_LINK_CLICK": "Link Click",
+        "ON_EMAIL_OPEN": "Email Open",
+        "ON_EMAIL_REPLY": "Email Reply",
+        "ON_EMAIL_BOUNCE": "Email Bounce",
+        "ON_JOB_APPLICATION": "Job Application",
+        "ON_UNSUBSCRIBE": "Unsubscribe",
+        "ON_TAG_ADDED": "Tag Added",
+        "ON_TAG_REMOVED": "Tag Removed",
+        "ON_STATUS_CHANGED": "Status Changed",
+        "ON_SCORE_REACHED": "Score Reached",
+        "ON_INACTIVITY_TIMEOUT": "Inactivity Timeout",
+        "ON_SEQUENCE_COMPLETED": "Sequence Completed",
+        "ON_SCHEDULED_TIME": "Scheduled Time",
+        "ON_SEND_SUCCESS": "Send Success",
+        "ON_SEND_FAILED": "Send Failed",
+        "ON_USER_RESPONSE": "User Response",
+        "CUSTOM_EVENT": "Custom Event",
+        "ON_BIRTHDAY": "Birthday"
+    }
+
 @frappe.whitelist()
 def create_flow_from_trigger(campaign_id, trigger):
     """
@@ -40,33 +98,6 @@ def create_flow_from_trigger(campaign_id, trigger):
         # Map trigger type - Support both old format and new direct format
         # Old format (Attraction campaign legacy): MESSAGE_RECEIVED, LINK_CLICKED, COMMENT_RECEIVED
         # New format (All campaigns): Complete trigger type list
-        trigger_type_map = {
-            # Legacy mapping for old attraction campaigns
-            "MESSAGE_RECEIVED": "ON_USER_RESPONSE",
-            "LINK_CLICKED": "ON_LINK_CLICK",
-            "COMMENT_RECEIVED": "ON_USER_RESPONSE",
-            # All trigger types - pass through as-is
-            "ON_CREATE": "ON_CREATE",
-            "ON_UPDATE": "ON_UPDATE",
-            "ON_FORM_SUBMISSION": "ON_FORM_SUBMISSION",
-            "ON_LINK_CLICK": "ON_LINK_CLICK",
-            "ON_EMAIL_OPEN": "ON_EMAIL_OPEN",
-            "ON_EMAIL_REPLY": "ON_EMAIL_REPLY",
-            "ON_EMAIL_BOUNCE": "ON_EMAIL_BOUNCE",
-            "ON_JOB_APPLICATION": "ON_JOB_APPLICATION",
-            "ON_UNSUBSCRIBE": "ON_UNSUBSCRIBE",
-            "ON_TAG_ADDED": "ON_TAG_ADDED",
-            "ON_TAG_REMOVED": "ON_TAG_REMOVED",
-            "ON_STATUS_CHANGED": "ON_STATUS_CHANGED",
-            "ON_SCORE_REACHED": "ON_SCORE_REACHED",
-            "ON_INACTIVITY_TIMEOUT": "ON_INACTIVITY_TIMEOUT",
-            "ON_SEQUENCE_COMPLETED": "ON_SEQUENCE_COMPLETED",
-            "ON_SCHEDULED_TIME": "ON_SCHEDULED_TIME",
-            "ON_SEND_SUCCESS": "ON_SEND_SUCCESS",
-            "ON_SEND_FAILED": "ON_SEND_FAILED",
-            "ON_USER_RESPONSE": "ON_USER_RESPONSE",
-            "CUSTOM_EVENT": "CUSTOM_EVENT"
-        }
         
         # Create Flow
         flow = frappe.new_doc("Mira Flow")
@@ -136,33 +167,6 @@ def create_flow_from_trigger(campaign_id, trigger):
 
 def get_trigger_label(trigger_type):
     """Get human-readable label for trigger type"""
-    labels = {
-        # Legacy trigger types
-        "MESSAGE_RECEIVED": "Message Received",
-        "LINK_CLICKED": "Link Clicked",
-        "COMMENT_RECEIVED": "Comment on Post",
-        # All trigger types
-        "ON_CREATE": "Talent Created",
-        "ON_UPDATE": "Talent Updated",
-        "ON_FORM_SUBMISSION": "Form Submission",
-        "ON_LINK_CLICK": "Link Click",
-        "ON_EMAIL_OPEN": "Email Open",
-        "ON_EMAIL_REPLY": "Email Reply",
-        "ON_EMAIL_BOUNCE": "Email Bounce",
-        "ON_JOB_APPLICATION": "Job Application",
-        "ON_UNSUBSCRIBE": "Unsubscribe",
-        "ON_TAG_ADDED": "Tag Added",
-        "ON_TAG_REMOVED": "Tag Removed",
-        "ON_STATUS_CHANGED": "Status Changed",
-        "ON_SCORE_REACHED": "Score Reached",
-        "ON_INACTIVITY_TIMEOUT": "Inactivity Timeout",
-        "ON_SEQUENCE_COMPLETED": "Sequence Completed",
-        "ON_SCHEDULED_TIME": "Scheduled Time",
-        "ON_SEND_SUCCESS": "Send Success",
-        "ON_SEND_FAILED": "Send Failed",
-        "ON_USER_RESPONSE": "User Response",
-        "CUSTOM_EVENT": "Custom Event"
-    }
     return labels.get(trigger_type, trigger_type.replace("_", " ").title())
 
 
@@ -297,33 +301,6 @@ def create_or_update_flow(campaign_id, trigger):
         
         # Map trigger type to flow trigger type
         # Map trigger type - Support both old format and new direct format
-        trigger_type_map = {
-            # Legacy mapping for old attraction campaigns
-            "MESSAGE_RECEIVED": "ON_USER_RESPONSE",
-            "LINK_CLICKED": "ON_LINK_CLICK",
-            "COMMENT_RECEIVED": "ON_USER_RESPONSE",
-            # All trigger types - pass through as-is
-            "ON_CREATE": "ON_CREATE",
-            "ON_UPDATE": "ON_UPDATE",
-            "ON_FORM_SUBMISSION": "ON_FORM_SUBMISSION",
-            "ON_LINK_CLICK": "ON_LINK_CLICK",
-            "ON_EMAIL_OPEN": "ON_EMAIL_OPEN",
-            "ON_EMAIL_REPLY": "ON_EMAIL_REPLY",
-            "ON_EMAIL_BOUNCE": "ON_EMAIL_BOUNCE",
-            "ON_JOB_APPLICATION": "ON_JOB_APPLICATION",
-            "ON_UNSUBSCRIBE": "ON_UNSUBSCRIBE",
-            "ON_TAG_ADDED": "ON_TAG_ADDED",
-            "ON_TAG_REMOVED": "ON_TAG_REMOVED",
-            "ON_STATUS_CHANGED": "ON_STATUS_CHANGED",
-            "ON_SCORE_REACHED": "ON_SCORE_REACHED",
-            "ON_INACTIVITY_TIMEOUT": "ON_INACTIVITY_TIMEOUT",
-            "ON_SEQUENCE_COMPLETED": "ON_SEQUENCE_COMPLETED",
-            "ON_SCHEDULED_TIME": "ON_SCHEDULED_TIME",
-            "ON_SEND_SUCCESS": "ON_SEND_SUCCESS",
-            "ON_SEND_FAILED": "ON_SEND_FAILED",
-            "ON_USER_RESPONSE": "ON_USER_RESPONSE",
-            "CUSTOM_EVENT": "CUSTOM_EVENT"
-        }
         flow_trigger_type = trigger_type_map.get(trigger_type, trigger_type)
         
         # Find existing flow for this campaign and trigger type
@@ -442,34 +419,6 @@ def sync_campaign_flows(campaign_id, triggers):
             triggers = json.loads(triggers)
         
         # Map trigger types - Support both old format and new direct format
-        trigger_type_map = {
-            # Legacy mapping for old attraction campaigns
-            "MESSAGE_RECEIVED": "ON_USER_RESPONSE",
-            "LINK_CLICKED": "ON_LINK_CLICK",
-            "COMMENT_RECEIVED": "ON_USER_RESPONSE",
-            # All trigger types - pass through as-is
-            "ON_CREATE": "ON_CREATE",
-            "ON_UPDATE": "ON_UPDATE",
-            "ON_FORM_SUBMISSION": "ON_FORM_SUBMISSION",
-            "ON_LINK_CLICK": "ON_LINK_CLICK",
-            "ON_EMAIL_OPEN": "ON_EMAIL_OPEN",
-            "ON_EMAIL_REPLY": "ON_EMAIL_REPLY",
-            "ON_EMAIL_BOUNCE": "ON_EMAIL_BOUNCE",
-            "ON_JOB_APPLICATION": "ON_JOB_APPLICATION",
-            "ON_UNSUBSCRIBE": "ON_UNSUBSCRIBE",
-            "ON_TAG_ADDED": "ON_TAG_ADDED",
-            "ON_TAG_REMOVED": "ON_TAG_REMOVED",
-            "ON_STATUS_CHANGED": "ON_STATUS_CHANGED",
-            "ON_SCORE_REACHED": "ON_SCORE_REACHED",
-            "ON_INACTIVITY_TIMEOUT": "ON_INACTIVITY_TIMEOUT",
-            "ON_SEQUENCE_COMPLETED": "ON_SEQUENCE_COMPLETED",
-            "ON_SCHEDULED_TIME": "ON_SCHEDULED_TIME",
-            "ON_SEND_SUCCESS": "ON_SEND_SUCCESS",
-            "ON_SEND_FAILED": "ON_SEND_FAILED",
-            "ON_USER_RESPONSE": "ON_USER_RESPONSE",
-            "CUSTOM_EVENT": "CUSTOM_EVENT"
-        }
-        
         # Get existing flows
         existing_flows = frappe.get_all(
             "Mira Flow",
@@ -481,6 +430,7 @@ def sync_campaign_flows(campaign_id, triggers):
         current_trigger_types = set()
         for trigger in triggers:
             trigger_type = trigger.get('trigger_type')
+            print('========================= trigger_type: ', trigger_type, flush=True)
             if trigger_type:
                 # Use trigger_type directly if not in map (instead of CUSTOM_EVENT)
                 flow_trigger_type = trigger_type_map.get(trigger_type, trigger_type)

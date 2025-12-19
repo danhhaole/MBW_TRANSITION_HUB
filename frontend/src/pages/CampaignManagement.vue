@@ -197,6 +197,33 @@
             placeholder="All Tags"
           />
 
+          <!-- Test Birthday Button -->
+          <!-- <Button
+            variant="outline"
+            theme="blue"
+            @click="testBirthdayTrigger"
+            :loading="testingBirthday"
+            class="flex items-center py-4"
+          >
+            <template #prefix>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"
+                />
+              </svg>
+            </template>
+            {{ __("Test Birthday") }}
+          </Button> -->
+
           <!-- Refresh Button -->
           <Button
             variant="outline"
@@ -955,6 +982,7 @@ const birthdayStats = ref({
 const showBirthdayStats = ref(false);
 const loadingBirthdayStats = ref(false);
 const birthdayPools = ref([]);
+const testingBirthday = ref(false);
 
 // Load birthday statistics
 const loadBirthdayStats = async () => {
@@ -1049,6 +1077,41 @@ Debug Test Complete:
     showToast('Lỗi khi chạy debug test', 'error');
   }
 };
+
+// Test Birthday Trigger - Manually trigger birthday check
+// const testBirthdayTrigger = async () => {
+//   try {
+//     testingBirthday.value = true;
+//     showToast('🎂 Đang kiểm tra chiến dịch sinh nhật...', 'info');
+
+//     const result = await call('mbw_mira.schedulers.trigger_birthday.run_daily_birthday_check', {
+//       migration_run: false
+//     });
+
+//     console.log('🎂 Birthday check result:', result);
+
+//     if (result && result.success) {
+//       const message = `
+// ✅ Kiểm tra sinh nhật hoàn tất!
+// 📊 Chiến dịch đã quét: ${result.campaigns_processed || 0}
+// 👥 Ứng viên đã kiểm tra: ${result.total_checked || 0}
+// 🎉 Sinh nhật tìm thấy: ${result.birthday_found || 0}
+// 📧 Email đã gửi: ${result.emails_sent || 0}
+// ❌ Email thất bại: ${result.emails_failed || 0}
+// ⏱️ Thời gian: ${result.execution_time || 0}s
+//       `.trim();
+//       showToast(message, 'success', 8000);
+//     } else {
+//       const errorMsg = result?.message || result?.error || 'Không có chiến dịch ACTIVE với trigger ON_BIRTHDAY';
+//       showToast(`⚠️ ${errorMsg}`, 'info', 5000);
+//     }
+//   } catch (error) {
+//     console.error('❌ Error testing birthday trigger:', error);
+//     showToast('❌ Lỗi khi kiểm tra sinh nhật: ' + error.message, 'error');
+//   } finally {
+//     testingBirthday.value = false;
+//   }
+// };
 
 // Kịch bản Thu hút - Chúc mừng sinh nhật
 const runAttractionBirthdayScenario = async (poolName) => {

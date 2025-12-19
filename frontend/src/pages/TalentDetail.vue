@@ -814,12 +814,12 @@
                   <div class="flex items-center">
                     <FeatherIcon name="file-text" class="h-4 w-4 text-gray-500 mr-2" />
                     <span class="text-sm text-gray-900 truncate max-w-xs">
-                      {{ editForm.resume }}
+                      {{ editForm.resume.split('/').pop() }}
                     </span>
                   </div>
                   <div class="flex space-x-1">
                     <a
-                      :href="editForm.resume"
+                      :href="editForm.resume.startsWith('/private/files/') ? editForm.resume : '/private/files/' + editForm.resume.split('/').pop()"
                       target="_blank"
                       class="p-1 text-gray-500 hover:text-blue-600"
                       title="View file"
@@ -843,7 +843,7 @@
                 :upload-args="{
                   doctype: 'Mira Talent',
                   docname: talentName,
-                  private: false,
+                  private: true,
                 }"
                 @success="handleFileUploadSuccess"
                 @error="handleFileUploadError"
