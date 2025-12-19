@@ -23,10 +23,6 @@ def check_birthday(talent_doc):
 
         # Chỉ cần so sánh tháng và ngày
         is_today = (dob_date.month == today.month and dob_date.day == today.day)
-
-        # Log thông tin chi tiết
-        frappe.log_error(f"Birthday check - Talent: {talent_doc.get('name')}, DOB: {dob_date}, Today: {today}, Is today: {is_today}")
-
         return is_today
 
     except Exception as e:

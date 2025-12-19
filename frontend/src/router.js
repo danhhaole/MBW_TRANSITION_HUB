@@ -22,6 +22,7 @@ const routes = [
 	{ alias: '/settings', path: '/settings', name: 'Settings', component: () => import('@/pages/Settings.vue') },
 	{ path: '/:invalidpath', name: 'Invalid Page', component: () => import('@/pages/InvalidPage.vue') },
 	{ path: '/my-actions', name: 'MyActions', component: () => import('@/pages/MyActions.vue') },
+	{ path: '/shortlinks', name: 'ShortlinkManagement', component: () => import('@/pages/ShortlinkManagement.vue') },
 
 	// Talent Segment
 	{ path: '/talent-segments', name: 'TalentSegments', component: ()=>import('@/pages/Talents.vue') },
@@ -88,8 +89,8 @@ const routes = [
 	{ path: '/recruitment/new', name: 'RecruitmentCampaignWizard', component: ()=>import('@/pages/RecruitmentCampaignWizard.vue'), props: { campaignType: 'RECRUITMENT' } },
 
 	// Mira Ladi Page Management
-	// { 
-	// 	path: '/ladi-pages', 
+	// {
+	// 	path: '/ladi-pages',
 	// 	name: 'ladi-pages',
 	// 	component: () => import('@/pages/Ladi/LadiPageManagement.vue'),
 	// 	meta: {
@@ -97,8 +98,8 @@ const routes = [
 	// 		title: 'Ladi Page Management'
 	// 	}
 	// },
-	// { 
-	// 	path: '/ladi-pages/:id/edit', 
+	// {
+	// 	path: '/ladi-pages/:id/edit',
 	// 	name: 'ladi-page-editor',
 	// 	component: ()=>import('@/pages/LadiPageEditor.vue'),
 	// 	meta: {
@@ -106,13 +107,13 @@ const routes = [
 	// 		title: 'Ladi Page Editor'
 	// 	}
 	// },
-	// { 
-	// 	path: '/ladi-pages/:id/view', 
+	// {
+	// 	path: '/ladi-pages/:id/view',
 	// 	name: 'ladi-page-view',
 	// 	component: ()=>import('@/pages/LadiPageView.vue'),
 	// 	meta: {
 	// 		requiresAuth: true,
-	// 		title: 'Ladi Page View' 
+	// 		title: 'Ladi Page View'
 	// 	}
 	// },
 	// Email Template

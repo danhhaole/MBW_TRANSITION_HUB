@@ -45,11 +45,11 @@ function injectStyleToHead(cssContent) {
 function sanitizeCSS(css) {
   // Remove any potential conflicts with existing styles
   let sanitized = css
-  
+
   // Add scoping to prevent global conflicts
   sanitized = sanitized.replace(/body\s*{/g, '.ladi-page-content {')
   sanitized = sanitized.replace(/html\s*{/g, '.ladi-page-content {')
-  
+
   // Ensure navbar styles are preserved
   sanitized += `
     /* Ensure navbar functionality */
@@ -60,26 +60,26 @@ function sanitizeCSS(css) {
       z-index: 1000 !important;
     }
   `
-  
+
   return sanitized
 }
 
 // Function to extract and clean HTML content
 function extractCleanHTML(htmlString) {
   if (!htmlString) return ''
-  
+
   // If it's a full HTML document, extract only body content
   const bodyMatch = htmlString.match(/<body[^>]*>([\s\S]*?)<\/body>/i)
   if (bodyMatch) {
     return bodyMatch[1]
   }
-  
+
   // If it contains DOCTYPE, extract everything after head
   const docMatch = htmlString.match(/<!DOCTYPE[^>]*>[\s\S]*?<\/head>\s*([\s\S]*?)(?:<\/html>)?$/i)
   if (docMatch) {
     return docMatch[1].replace(/<\/?body[^>]*>/gi, '')
   }
-  
+
   // Otherwise return as is
   return htmlString
 }
@@ -87,15 +87,40 @@ function extractCleanHTML(htmlString) {
 // Function to extract CSS from HTML
 function extractCSS(htmlString) {
   if (!htmlString) return ''
-  
+
   const cssMatches = htmlString.match(/<style[^>]*>([\s\S]*?)<\/style>/gi)
   if (cssMatches) {
     return cssMatches
       .map(match => match.replace(/<\/?style[^>]*>/gi, ''))
       .join('\n')
   }
-  
+
   return ''
+}
+
+// Xử lý URL rút gọn - chuyển đổi ?s=abc123 sang URL đầy đủ với UTM
+function handleShortUrlRedirect() {
+  if (typeof window === 'undefined') return
+
+  try {
+    const urlParams = new URLSearchParams(window.location.search)
+    const shortCode = urlParams.get('s')
+
+    if (shortCode) {
+      // Lấy URL gốc từ localStorage
+      const longUrl = localStorage.getItem(`s_${shortCode}`)
+
+      if (longUrl) {
+        // Redirect về URL đầy đủ với UTM parameters
+        console.log('✅ Chuyển hướng từ URL rút gọn sang URL đầy đủ:', longUrl)
+        window.location.replace(longUrl)
+      } else {
+        console.warn('⚠️ Không tìm thấy URL gốc cho mã:', shortCode)
+      }
+    }
+  } catch (e) {
+    console.error('Lỗi xử lý URL rút gọn:', e)
+  }
 }
 
 // Cleanup function
@@ -107,24 +132,27 @@ function cleanup() {
 }
 
 onMounted(async () => {
+  // Xử lý URL rút gọn trước khi load page
+  handleShortUrlRedirect()
+
   try {
     const slug = route.params.slug || 'default-slug'
     console.log('Loading page with slug:', slug)
-    
+
     const res = await call('mbw_mira.api.get_landing_page_html', { slug })
-    
+
     // Debug response structure
     console.log('API Response:', res)
-    
+
     if (res && (res.html || res.content)) {
       const rawHTML = res.content || res.html || ''
-      
+
       // Extract CSS from HTML if not provided separately
       let cssContent = res.css || extractCSS(rawHTML)
-      
+
       // Extract clean HTML content
       const cleanHTML = extractCleanHTML(rawHTML)
-      
+
       console.log('Processed data:', {
         hasCSS: !!cssContent,
         hasHTML: !!cleanHTML,
@@ -136,19 +164,19 @@ onMounted(async () => {
         content: cleanHTML,
         css: cssContent
       }
-      
+
       // Wait for DOM update then inject CSS
       await nextTick()
-      
+
       if (cssContent) {
         console.log('Injecting CSS to head')
         injectStyleToHead(cssContent)
       }
-      
+
       // Additional DOM fixes after render
       await nextTick()
       fixNavbarAfterRender()
-      
+
     } else {
       console.log('No page data found for slug:', slug)
       pageData.value = null
@@ -168,7 +196,7 @@ function fixNavbarAfterRender() {
   setTimeout(() => {
     const container = document.querySelector('.ladi-page-content')
     if (!container) return
-    
+
     // Fix navbar layout issues
     const navElements = container.querySelectorAll('nav, header')
     navElements.forEach(nav => {
@@ -179,7 +207,7 @@ function fixNavbarAfterRender() {
         nav.style.alignItems = 'center'
         nav.style.justifyContent = 'space-between'
       }
-      
+
       // Fix navigation links
       const navLinks = nav.querySelector('.nav-links, ul')
       if (navLinks) {
@@ -191,7 +219,7 @@ function fixNavbarAfterRender() {
         navLinks.style.padding = '0'
       }
     })
-    
+
     console.log('Navbar fixes applied')
   }, 100)
 }

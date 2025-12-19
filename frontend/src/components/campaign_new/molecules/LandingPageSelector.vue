@@ -21,10 +21,10 @@
           {{ __('Choose Landing Page') }}
           <span class="text-red-500">*</span>
         </label>
-        
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <!-- Select Existing Page -->
-          <div 
+          <div
             @click="loadPublishedPages"
             class="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-purple-400 hover:bg-purple-50 cursor-pointer transition-colors"
           >
@@ -40,7 +40,7 @@
           </div>
 
           <!-- Create New Page -->
-          <div 
+          <div
             @click="openCreateModal"
             class="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-purple-400 hover:bg-purple-50 cursor-pointer transition-colors"
           >
@@ -84,7 +84,7 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Create Error -->
       <div v-if="createError" class="mb-3">
         <div class="border border-red-200 rounded-lg p-4 bg-red-50">
@@ -110,7 +110,7 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Selected Page Display -->
       <div v-if="selectedPage">
         <div class="border border-green-200 rounded-lg p-4 bg-green-50">
@@ -139,7 +139,7 @@
               </p>
             </div>
           </div>
-          
+
           <!-- Page Actions -->
           <div class="flex gap-2 pt-3 border-t border-green-200">
             <div class="flex gap-2">
@@ -153,6 +153,16 @@
                 </template>
                 {{ __('Preview') }}
               </Button>
+			   <Button
+              @click="openShareModal"
+              variant="solid"
+              size="sm"
+            >
+              <template #prefix>
+                <FeatherIcon name="share-2" class="h-3 w-3" />
+              </template>
+              {{ __('Share') }}
+            </Button>
               <Button
                 @click="handleEditPageInfo"
                 variant="outline"
@@ -206,7 +216,7 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Template Selection Modal -->
       <TemplateSelectionModal
         :show="showModal"
@@ -217,7 +227,7 @@
         @select="(template, data) => handleTemplateSelect(template, data)"
         @retry="fetchTemplates"
       />
-      
+
       <!-- Company Info Modal -->
       <CompanyInfoModal
         :show="showCompanyInfoModal"
@@ -231,6 +241,13 @@
         @submit="handleCompanyInfoSubmit"
       />
 
+      <!-- Share Page Modal -->
+      <SharePageModal
+        v-model:show="showShareModal"
+        :page-data="sharePageData"
+        @close="showShareModal = false"
+      />
+
     </div>
   </div>
 </template>
@@ -242,6 +259,7 @@ import { useToast } from '@/composables/useToast'
 import TemplateSelectionModal from './TemplateSelectionModal.vue'
 import PublishedPageSelectionModal from './PublishedPageSelectionModal.vue'
 import CompanyInfoModal from './CompanyInfoModal.vue'
+import SharePageModal from './SharePageModal.vue'
 
 const props = defineProps({
   ladipageUrl: {
@@ -277,22 +295,22 @@ const buildBuilderUrl = (pageBuilderIdOrPath) => {
     console.warn('⚠️ No page builder ID provided')
     return ''
   }
-  
+
   console.log('🔗 Building builder URL from:', pageBuilderIdOrPath)
-  
+
   // If it's already a full URL, return as is
   if (pageBuilderIdOrPath.startsWith('http://') || pageBuilderIdOrPath.startsWith('https://')) {
     console.log('✅ Already full URL:', pageBuilderIdOrPath)
     return pageBuilderIdOrPath
   }
-  
+
   // If it's a path starting with /builder, prepend domain
   if (pageBuilderIdOrPath.startsWith('/builder/')) {
     const url = `https://hireos.fastwork.vn${pageBuilderIdOrPath}`
     console.log('✅ Built URL from path:', url)
     return url
   }
-  
+
   // If it's just the page builder ID (e.g., 'page-123' or just '123'), build the URL
   const url = `https://hireos.fastwork.vn/builder/page/${pageBuilderIdOrPath}`
   console.log('✅ Built URL from ID:', url)
@@ -316,6 +334,8 @@ const showCompanyInfoModal = ref(false)
 const selectedTemplateData = ref(null)
 const isEditMode = ref(false)
 const editingPageData = ref(null)
+const showShareModal = ref(false)
+const sharePageData = ref(null)
 
 // Load page details for edit mode
 const loadPageDetails = async (pageId) => {
@@ -324,15 +344,15 @@ const loadPageDetails = async (pageId) => {
     const response = await call('mbw_mira.integrations.cms_page.get_page_details', {
       page_id: pageId
     })
-    
+
     console.log('📦 Page details response:', response)
-    
+
     if (response?.message?.status === 'success' && response?.message?.data) {
       const page = response.message.data
       const builderPage = page.page_builder_id || page.builder_page || page.builder_url || ''
-      
+
       console.log('🏗️ Builder page value:', builderPage)
-      
+
       selectedPage.value = {
         id: pageId,
         title: page.page_title || page.title || '',
@@ -340,7 +360,7 @@ const loadPageDetails = async (pageId) => {
         isPublished: page.published || false,
         builderUrl: buildBuilderUrl(builderPage)
       }
-      
+
       console.log('✅ Selected page:', selectedPage.value)
     }
   } catch (error) {
@@ -353,10 +373,10 @@ const loadPublishedPages = async () => {
   loadingPages.value = true
   publishedPagesError.value = null
   showPublishedPagesModal.value = true
-  
+
   try {
     const response = await call('mbw_mira.integrations.cms_page.get_page_public')
-    
+
     if (response?.message?.status === 'success' && response?.message?.data) {
       publishedPages.value = response.message.data
     } else {
@@ -375,7 +395,7 @@ const selectPublishedPage = async (page) => {
   console.log('📄 Selecting published page:', page)
   const builderPage = page.page_builder_id || page.builder_page || page.builder_url || ''
   console.log('🏗️ Builder page from published:', builderPage)
-  
+
   selectedPage.value = {
     id: page.name,
     title: page.title,
@@ -383,13 +403,13 @@ const selectPublishedPage = async (page) => {
     isPublished: true,
     builderUrl: buildBuilderUrl(builderPage)
   }
-  
+
   console.log('✅ Selected published page:', selectedPage.value)
-  
+
   // Emit updates
   emit('update:ladipageUrl', page.router)
   emit('update:ladipageId', page.name)
-  
+
   // Save to campaign database if campaignId is provided
   if (props.campaignId) {
     try {
@@ -407,7 +427,7 @@ const selectPublishedPage = async (page) => {
       // Don't show error toast as this is not critical for UX
     }
   }
-  
+
   // Save to builder page storage (DocType) - minimal info for published page
   try {
     console.log('💾 Saving published page to builder storage...')
@@ -424,7 +444,7 @@ const selectPublishedPage = async (page) => {
     console.error('❌ Error saving to builder storage:', error)
     // Don't fail the whole process if storage save fails
   }
-  
+
   toast.success(__('Published page selected'))
 }
 
@@ -451,7 +471,7 @@ const fetchTemplates = async () => {
   error.value = null
   try {
     const response = await call('mbw_mira.integrations.cms_page.get_templates')
-    
+
     if (response?.message?.status === 'success' && response?.message?.data) {
       templates.value = response.message.data
     } else {
@@ -472,7 +492,7 @@ const handleTemplateSelect = async (template, data) => {
 
   console.log('Selected template:', template)
   console.log('Selected template data:', data)
-  
+
   // Store template data and show company info modal
   selectedTemplateData.value = {
     template_id: template,
@@ -485,41 +505,41 @@ const handleTemplateSelect = async (template, data) => {
 const handleCompanyInfoSubmit = async (companyInfo) => {
   creatingPage.value = true
   createError.value = null
-  
+
   try {
     if (isEditMode.value) {
       // Update existing page
       if (!selectedPage.value?.id) return
-      
+
       console.log('✏️ Updating page:', selectedPage.value.id)
       console.log('📝 Update data:', companyInfo)
-      
+
       const payload = {
         page_id: selectedPage.value.id,
         ...companyInfo
       }
-      
+
       console.log('📤 Sending update payload to API:', payload)
       console.log('🕐 Timestamp:', new Date().toISOString())
-      
+
       const response = await call('mbw_mira.integrations.cms_page.update_recruitment_page', payload)
-      
+
       console.log('📥 Update response:', response)
       console.log('📥 Response type:', typeof response)
       console.log('📥 Response keys:', response ? Object.keys(response) : 'null')
       console.log('🕐 Response received at:', new Date().toISOString())
-      
+
       // Check both direct and nested response structures
       const status = response?.status || response?.message?.status
       const responseMessage = response?.message?.message || response?.message || 'No message'
-      
+
       console.log('✅ Parsed status:', status)
       console.log('📝 Parsed message:', responseMessage)
-      
+
       if (status === 'success') {
         // Update local selected page data
         selectedPage.value.title = companyInfo.page_title || selectedPage.value.title
-        
+
         // Update builder page storage (DocType)
         try {
           console.log('💾 Updating builder page storage...')
@@ -533,10 +553,10 @@ const handleCompanyInfoSubmit = async (companyInfo) => {
           console.error('❌ Error updating builder page storage:', error)
           // Don't fail the whole process if storage update fails
         }
-        
+
         console.log('✅ Page updated successfully')
         toast.success(__('Page updated successfully'))
-        
+
         // Close modal and reset state on success
         showCompanyInfoModal.value = false
         isEditMode.value = false
@@ -547,42 +567,42 @@ const handleCompanyInfoSubmit = async (companyInfo) => {
     } else {
       // Create new page
       if (!selectedTemplateData.value) return
-      
+
       console.log('📝 Creating new page')
       console.log('📝 Company info:', companyInfo)
       console.log('📋 Template data:', selectedTemplateData.value)
-      
+
       // Extract receive_data_configs from companyInfo to handle separately
       const { receive_data_configs, ...otherCompanyInfo } = companyInfo
-      
+
       const payload = {
         template_id: selectedTemplateData.value.template_id,
         published: 1,
         ...otherCompanyInfo
       }
-      
+
       // Always include receive_data_configs, even if empty array
       const configs = receive_data_configs || []
       payload.receive_data_configs = configs
-      
+
       console.log('📧 receive_data_configs extracted:', configs)
       console.log('📧 receive_data_configs in payload:', payload.receive_data_configs || 'NOT INCLUDED')
       console.log('📤 Sending create payload to API:', payload)
-      
+
       const response = await call('mbw_mira.integrations.cms_page.create_page_by_template', payload)
-      
+
       console.log('📥 Create response:', response)
-      
+
       if (response?.message?.status === 'success' && response?.message?.data) {
         const page = response.message.data
-        
+
         // Check if page is published (has url_public_page)
         const publicUrl = page.url_public_page || ''
         const builderPage = page.page_builder_id || page.builder_page || page.builder_url || ''
-        
+
         console.log('🏗️ Builder page from response:', builderPage)
         console.log('📧 Receive data configs from response:', page.receive_data_configs)
-        
+
         selectedPage.value = {
           id: page.page_id,
           title: page.page_title || companyInfo.page_title,
@@ -592,13 +612,13 @@ const handleCompanyInfoSubmit = async (companyInfo) => {
           formConfigId: page.form_config_id,
           receiveDataConfigs: page.receive_data_configs || []
         }
-        
+
         console.log('✅ Page created:', selectedPage.value)
-        
+
         // Emit updates based on publish status
         emit('update:ladipageUrl', publicUrl)
         emit('update:ladipageId', page.page_id)
-        
+
         // Save to campaign/template database
         if (props.campaignId) {
           try {
@@ -615,7 +635,7 @@ const handleCompanyInfoSubmit = async (companyInfo) => {
             console.error(`❌ Error saving page to ${props.doctype}:`, error)
           }
         }
-        
+
         // Save to builder page storage (DocType)
         try {
           console.log('💾 Saving to builder page storage...')
@@ -633,9 +653,9 @@ const handleCompanyInfoSubmit = async (companyInfo) => {
           console.error('❌ Error saving to builder page storage:', error)
           // Don't fail the whole process if storage save fails
         }
-        
+
         toast.success(__('Page created successfully'))
-        
+
         // Close modal and reset state on success
         showCompanyInfoModal.value = false
         showModal.value = false
@@ -665,20 +685,20 @@ const handleCompanyInfoModalClose = () => {
 // Handle edit page info
 const handleEditPageInfo = async () => {
   if (!selectedPage.value?.id) return
-  
+
   console.log('✏️ Loading page details for editing:', selectedPage.value.id)
-  
+
   try {
     // Load from local DocType storage first
     const response = await call('mbw_mira.integrations.cms_page_storage.get_builder_page_data', {
       page_id: selectedPage.value.id
     })
-    
+
     console.log('📥 Builder page data response:', response)
-    
+
     if (response?.status === 'success' && response?.data) {
       const pageData = response.data
-      
+
       // Map API response to form data format
       editingPageData.value = {
         page_title: pageData.page_title || '',
@@ -710,7 +730,7 @@ const handleEditPageInfo = async () => {
         company_youtube: pageData.company_youtube || '',
         company_zalo_oa: pageData.company_zalo_oa || '',
         company_tiktok: pageData.company_tiktok || '',
-        
+
         // Form configuration
         form_config_id: pageData.form_config_id || null,
         receive_data_configs: pageData.receive_data_configs || [],
@@ -719,7 +739,7 @@ const handleEditPageInfo = async () => {
 
       console.log('Loaded page data:', editingPageData.value);
       console.log('Template ID:', editingPageData.value.template_id);
-      
+
       isEditMode.value = true;
       showCompanyInfoModal.value = true;
     } else {
@@ -755,6 +775,19 @@ const openBuilder = () => {
   }
 }
 
+// Open share modal
+const openShareModal = () => {
+  if (!selectedPage.value) return
+
+  // Prepare enhanced page data for sharing with realistic fake data
+  sharePageData.value = {
+    ...selectedPage.value,
+    campaignName: props.campaignName,
+  }
+
+  showShareModal.value = true
+}
+
 // Copy to clipboard
 const copyToClipboard = async (text) => {
   try {
@@ -769,22 +802,22 @@ const copyToClipboard = async (text) => {
 // Publish page
 const publishPage = async () => {
   if (!selectedPage.value?.id) return
-  
+
   try {
     const response = await call('mbw_mira.integrations.cms_page.publish_page', {
       page_id: selectedPage.value.id
     })
-    
+
     if (response?.message?.status === 'success') {
       selectedPage.value.isPublished = true
-      
+
       // Get public URL from response (prioritize url_public_page over router)
       const publicUrl = response?.message?.data?.url_public_page || response?.message?.data?.router || ''
-      
+
       if (publicUrl) {
         selectedPage.value.url = publicUrl
         emit('update:ladipageUrl', publicUrl)
-        
+
         // Save to campaign/template database
         if (props.campaignId) {
           try {
@@ -802,7 +835,7 @@ const publishPage = async () => {
           }
         }
       }
-      
+
       toast.success(__('Page published successfully'))
     } else {
       throw new Error(response?.message || 'Failed to publish page')
@@ -819,7 +852,7 @@ const getFieldsByTemplate = async (templateId) => {
     const response = await call('mbw_mira.integrations.cms_page.get_fields_by_template', {
       template_id: templateId
     })
-    
+
     if (response?.message?.status === 'success' && response?.message?.data) {
       return response.message.data
     } else {
@@ -839,7 +872,7 @@ const createReceiveDataConfig = async (formConfigId, receiveDataConfig) => {
       form_config_id: formConfigId,
       receive_data_config: receiveDataConfig
     })
-    
+
     if (response?.message?.status === 'success') {
       toast.success(__('Receive data config created successfully'))
       return response.message.data
@@ -859,7 +892,7 @@ const updateReceiveDataConfig = async (receiveDataConfig) => {
     const response = await call('mbw_mira.integrations.cms_page.update_link_account', {
       receive_data_config: receiveDataConfig
     })
-    
+
     if (response?.message?.status === 'success') {
       toast.success(__('Receive data config updated successfully'))
       return response.message.data
@@ -879,7 +912,7 @@ const deleteReceiveDataConfig = async (receiveDataConfigId) => {
     const response = await call('mbw_mira.integrations.cms_page.delete_link_account', {
       receive_data_config_id: receiveDataConfigId
     })
-    
+
     if (response?.message?.status === 'success') {
       toast.success(__('Receive data config deleted successfully'))
       return true
