@@ -1,5 +1,9 @@
 import frappe
 from frappe import _
+import logging
+
+# Get a logger instance
+log = logging.getLogger(__name__)
 
 @frappe.whitelist(allow_guest=True)
 def redirect_short_url():
@@ -8,40 +12,40 @@ def redirect_short_url():
     Hỗ trợ format: /short.x.y
     """
     try:
-        # Lấy path từ request
+        log.warning("--- SHORT URL REDIRECT TRIGGERED ---")
         path = frappe.request.path
+        log.warning(f"Request path received: {path}")
 
-        # Parse short code từ path /short.x.y
         if '/short.' in path:
-            # Tách phần sau /short.
             parts = path.split('/short.')
             if len(parts) > 1:
-                # Lấy x.y và ghép lại thành short_code
-                code_parts = parts[1].split('.')
-                if len(code_parts) >= 2:
-                    short_code = code_parts[0] + code_parts[1]
-                else:
-                    short_code = code_parts[0]
+                raw_code = parts[1]
+                short_code = raw_code.replace('.', '')
+                log.warning(f"Extracted short_code: {short_code}")
 
-                # Tìm long URL từ database
                 short_url_doc = frappe.db.get_value(
                     "Mira Short URL",
                     {"short_code": short_code},
-                    ["long_url", "name"],
+                    ["long_url"],
                     as_dict=True
                 )
 
                 if short_url_doc and short_url_doc.long_url:
-                    # Redirect về long URL
+                    log.warning(f"SUCCESS: Found long_url: {short_url_doc.long_url}")
                     frappe.local.response["type"] = "redirect"
                     frappe.local.response["location"] = short_url_doc.long_url
                     return
+                else:
+                    log.error(f"ERROR: Short code '{short_code}' not found in database.")
+        else:
+            log.error(f"ERROR: Path '{path}' does not contain '/short.'.")
 
-        # Nếu không tìm thấy, trả về 404
+        # Fallback to 404
         frappe.local.response.http_status_code = 404
         return "<h1>404 - Short URL not found</h1>"
 
     except Exception as e:
+        log.error(f"CRITICAL ERROR in redirect_short_url: {str(e)}", exc_info=True)
         frappe.log_error(f"Short URL redirect error: {str(e)}")
-        frappe.local.response.http_status_code = 404
-        return "<h1>404 - Error processing short URL</h1>"
+        frappe.local.response.http_status_code = 500
+        return "<h1>500 - Internal Server Error</h1>"

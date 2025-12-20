@@ -124,7 +124,7 @@
                         class="font-medium text-sm text-blue-600 hover:text-blue-800 cursor-pointer underline"
                         @click="handleShortLinkClick(item)"
                       >
-                        {{ getFullShortUrl(item.short_code) }}
+                        {{ getShortUrlDisplay(item.short_url || `${item.short_code}`) }}
                       </div>
                     </td>
 
@@ -252,12 +252,14 @@
             <div class="flex items-center gap-2">
               <div class="flex-1">
                 <dt class="text-sm font-medium text-gray-500 mb-1">{{ __('Short Code') }}</dt>
-                <dd
-                  class="text-sm font-mono text-blue-600 hover:text-blue-800 cursor-pointer underline"
-                  @click="handleModalShortLinkClick(viewData)"
+                <a
+                  :href="viewData.short_url"
+                  target="_blank"
+                  class="text-sm font-mono text-blue-600 hover:underline"
+                  @click.prevent="handleModalShortLinkClick(viewData)"
                 >
-                  {{ getFullShortUrl(viewData.short_code) }}
-                </dd>
+                  {{ getShortUrlDisplay(viewData.short_url) }}
+                </a>
               </div>
             </div>
           </div>
@@ -484,6 +486,7 @@ async function handleRefresh() {
 async function loadShortlinks() {
   loading.value = true
   try {
+    console.log('🔍 Loading shortlinks...')
     const data = await call('frappe.client.get_list', {
       doctype: 'Mira Short URL',
       fields: [
@@ -496,10 +499,11 @@ async function loadShortlinks() {
       order_by: 'creation desc',
       limit: 1000 // Increase limit to handle pagination client-side
     })
-    shortlinks.value = data
+    console.log('✅ Shortlinks loaded:', data)
+    shortlinks.value = data || []
   } catch (error) {
-    console.error('Error loading shortlinks:', error)
-    toast.error(__('Failed to load shortlinks'))
+    console.error('❌ Error loading shortlinks:', error)
+    toast.error(__('Failed to load shortlinks: ') + (error.message || 'Unknown error'))
   } finally {
     loading.value = false
   }
@@ -550,33 +554,17 @@ function getStatusIcon(status) {
   return iconMap[status] || 'circle'
 }
 
-function getFullShortUrl(shortCode) {
-  if (!shortCode) return ''
-  // Nếu shortCode đã là URL đầy đủ, trả về nguyên bản
-  if (shortCode.startsWith('http://') || shortCode.startsWith('https://')) {
-    return shortCode
-  }
-  // Chia short code thành 2 phần
-  const part1 = shortCode.substring(0, 3);
-  const part2 = shortCode.substring(3);
-  // Tạo URL với định dạng short.x.y
-  return `${getBaseUrl()}/short.${part1}.${part2}`
+function getShortUrlDisplay(shortUrl) {
+  if (!shortUrl) return ''
+  const maxLength = 40
+  return shortUrl.length > maxLength
+    ? `${shortUrl.substring(0, maxLength)}...`
+    : shortUrl
 }
 
-function getShortUrlDisplay(shortCode) {
-  if (!shortCode) return ''
-  const maxLength = 30
-  return shortCode.length > maxLength
-    ? `${shortCode.substring(0, maxLength)}...`
-    : shortCode
-}
-
-// Handle short link click - open in new tab
+// Handle short link click - open the actual short link in a new tab
 function handleShortLinkClick(item) {
-  if (item.long_url) {
-    // Open long URL in new tab
-    window.open(item.long_url, '_blank')
-  }
+    window.open(item.short_code, '_blank')
 }
 
 function getBaseUrl() {
@@ -686,7 +674,7 @@ async function createShortlink() {
     showCreateDialog.value = false
 
     // Show success message with copy button
-    const shortUrl = getFullShortUrl(result.short_code)
+    const shortUrl = result.short_url || `Generated: ${result.short_code}`
     toast.success(__('Shortlink created successfully'), 'Success', {
       action: {
         label: __('Copy'),

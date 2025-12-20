@@ -166,39 +166,30 @@ const platformToUtmSource = {
   'Zalo': 'zalo'
 }
 
-// Tạo URL ngắn với query parameter ngắn gọn
+// Tạo URL ngắn sử dụng Is.gd API (miễn phí, không cần API key)
 const generateShortUrl = async (longUrl) => {
   if (!longUrl) return '';
 
   try {
-    // Lấy domain từ URL gốc (trước khi có UTM parameters)
-    const baseUrl = props.pageData?.url || longUrl;
-    const originalUrl = new URL(baseUrl);
+    // Sử dụng Is.gd API để tạo short URL
+    const apiUrl = `https://is.gd/create.php?format=json&url=${encodeURIComponent(longUrl)}`;
 
-    // Tạo mã hash ngắn 6 ký tự từ URL
-    let hash = 0;
-    for (let i = 0; i < longUrl.length; i++) {
-      const char = longUrl.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash;
-    }
-    const shortCode = Math.abs(hash).toString(36).substring(0, 6);
-    // Tạo short code dạng x.y (chia đôi short code)
-    const part1 = shortCode.substring(0, 3);
-    const part2 = shortCode.substring(3);
-    const formattedShortCode = `short.${part1}.${part2}`;
+    const response = await fetch(apiUrl);
+    const data = await response.json();
 
-    // Tạo URL ngắn với định dạng short.x.y
-    const shortUrl = new URL(`${originalUrl.origin}/${formattedShortCode}`);
-
-    // Lưu vào localStorage để sử dụng tạm thời
-    if (typeof window !== 'undefined' && window.localStorage) {
-      localStorage.setItem(`s_${shortCode}`, longUrl);
+    if (data.shorturl) {
+      console.log('✅ Short URL created:', data.shorturl);
+      return data.shorturl;
+    } else if (data.errormessage) {
+      console.error('❌ Is.gd API error:', data.errormessage);
+      toast.error(__('Error creating short URL: ') + data.errormessage);
+      return longUrl;
     }
 
-    return shortUrl.toString();
+    return longUrl;
   } catch (e) {
-    console.error('Lỗi tạo URL ngắn:', e);
+    console.error('❌ Error creating short URL:', e);
+    toast.error(__('Failed to create short URL'));
     return longUrl;
   }
 }
@@ -266,9 +257,9 @@ const copyToClipboard = async (text) => {
   }
 }
 
-// Save short URL to database
+// Save short URL to database (optional - for tracking purposes)
 const saveShortUrl = async () => {
-  if (!generatedUrl.value) {
+  if (!generatedUrl.value || !shortUrl.value) {
     toast.error(__('No URL to save'))
     return
   }
@@ -276,26 +267,21 @@ const saveShortUrl = async () => {
   isSaving.value = true
 
   try {
-    // Debug: Log URLs before sending
-    console.log('=== DEBUG SAVE URL ===')
-    console.log('generatedUrl.value (long_url):', generatedUrl.value)
-    console.log('shortUrl.value (short_url):', shortUrl.value)
+    console.log('=== SAVING SHORT URL ===')
+    console.log('Long URL:', generatedUrl.value)
+    console.log('Short URL:', shortUrl.value)
 
     const result = await call('mbw_mira.mbw_mira.doctype.mira_short_url.mira_short_url.shorten_url', {
       long_url: generatedUrl.value,
       short_url: shortUrl.value
     })
 
-    console.log('Backend result:', result)
-
     if (result) {
       if (result.existing) {
-        // Short URL đã tồn tại
-        toast.warning(__('Short URL already exists in system'))
+        toast.warning(__('Short URL already exists: ') + result.message)
       } else {
-        // Lưu thành công
         savedShortUrlData.value = result
-        toast.success(__('Short URL saved successfully!'))
+        toast.success(__('Short URL saved for tracking!'))
       }
     }
   } catch (error) {
