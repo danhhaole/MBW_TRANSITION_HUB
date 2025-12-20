@@ -1448,7 +1448,7 @@ const loadingSuggestedCandidates = ref(false)
 
 // Pagination
 const currentPage = ref(1)
-const itemsPerPage = ref(1)
+const itemsPerPage = ref(10)
 
 // Computed
 const filteredCandidates = computed(() => {
@@ -1756,6 +1756,7 @@ const loadCandidates = async () => {
 			doctype: 'Mira Talent Pool',
 			filters: { segment_id: route.params.id },
 			fields: ['name', 'talent_id', 'added_at', 'added_by', 'match_score'],
+			limit_page_length: 1000,
 		})
 		console.log('Mira Talent Pool API result:', candidateSegmentResult)
 
