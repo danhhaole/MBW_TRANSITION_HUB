@@ -167,7 +167,7 @@ const platformToUtmSource = {
 }
 
 // Tạo URL ngắn với query parameter ngắn gọn
-const generateShortUrl = (longUrl) => {
+const generateShortUrl = async (longUrl) => {
   if (!longUrl) return '';
 
   try {
@@ -183,14 +183,31 @@ const generateShortUrl = (longUrl) => {
       hash = hash & hash;
     }
     const shortCode = Math.abs(hash).toString(36).substring(0, 6);
+    // Tạo short code dạng x.y (chia đôi short code)
+    const part1 = shortCode.substring(0, 3);
+    const part2 = shortCode.substring(3);
+    const formattedShortCode = `short.${part1}.${part2}`;
 
-    // Lưu mapping vào localStorage
+    // Tạo URL ngắn với định dạng short.x.y
+    const shortUrl = new URL(`${originalUrl.origin}/${formattedShortCode}`);
+
+    // Lưu vào database
+    try {
+      await call('mbw_mira.mbw_mira.doctype.mira_short_url.mira_short_url.shorten_url', {
+        long_url: longUrl,
+        short_url: shortCode
+      });
+    } catch (error) {
+      // Nếu đã tồn tại thì bỏ qua lỗi
+      if (!error.message?.includes('đã tồn tại')) {
+        console.error('Error saving short URL:', error);
+      }
+    }
+
+    // Vẫn lưu vào localStorage để backward compatibility
     if (typeof window !== 'undefined' && window.localStorage) {
       localStorage.setItem(`s_${shortCode}`, longUrl);
     }
-
-    // Tạo URL ngắn với path /s/:short_code, sử dụng domain từ URL gốc
-    const shortUrl = new URL(`${originalUrl.origin}/s/${shortCode}`);
 
     return shortUrl.toString();
   } catch (e) {

@@ -556,8 +556,11 @@ function getFullShortUrl(shortCode) {
   if (shortCode.startsWith('http://') || shortCode.startsWith('https://')) {
     return shortCode
   }
-  // Nếu không, tạo URL từ baseUrl
-  return `${getBaseUrl()}/s/${shortCode}`
+  // Chia short code thành 2 phần
+  const part1 = shortCode.substring(0, 3);
+  const part2 = shortCode.substring(3);
+  // Tạo URL với định dạng short.x.y
+  return `${getBaseUrl()}/short.${part1}.${part2}`
 }
 
 function getShortUrlDisplay(shortCode) {

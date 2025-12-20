@@ -292,5 +292,9 @@ website_route_rules = [
     },
     {"from_route": "/track/event", "to_route": "mbw_mira.api.interaction.track"},
     {"from_route": "/unsubscribe", "to_route": "mbw_mira.api.email.unsubscribe"},
+    {
+        "from_route": "/short.<path:short_path>",
+        "to_route": "mbw_mira.api.shorturl_redirect.redirect_short_url",
+    },
 ]
 

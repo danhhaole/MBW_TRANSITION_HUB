@@ -98,13 +98,28 @@ function extractCSS(htmlString) {
   return ''
 }
 
-// Xử lý URL rút gọn - chuyển đổi ?s=abc123 sang URL đầy đủ với UTM
+// Xử lý URL rút gọn - hỗ trợ cả 2 định dạng:
+// 1. Dạng cũ: /?s=abc123
+// 2. Dạng mới: /short.abc123
 function handleShortUrlRedirect() {
   if (typeof window === 'undefined') return
 
   try {
-    const urlParams = new URLSearchParams(window.location.search)
-    const shortCode = urlParams.get('s')
+    let shortCode = ''
+
+    // Kiểm tra dạng mới: /short.abc123
+    const pathParts = window.location.pathname.split('.')
+    if (pathParts.length > 1 && pathParts[0].endsWith('/short')) {
+      // Lấy phần mã từ URL dạng short.x.y
+      const part1 = pathParts[1] || ''
+      const part2 = pathParts[2] || ''
+      shortCode = part1 + part2
+    }
+    // Kiểm tra dạng cũ: ?s=abc123
+    else {
+      const urlParams = new URLSearchParams(window.location.search)
+      shortCode = urlParams.get('s') || ''
+    }
 
     if (shortCode) {
       // Lấy URL gốc từ localStorage
