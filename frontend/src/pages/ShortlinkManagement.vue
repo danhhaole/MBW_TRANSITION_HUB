@@ -124,7 +124,7 @@
                         class="font-medium text-sm text-blue-600 hover:text-blue-800 cursor-pointer underline"
                         @click="handleShortLinkClick(item)"
                       >
-                        {{ getShortUrlDisplay(item.short_url || `${item.short_code}`) }}
+                        {{ getShortUrlDisplay(getShortUrlFromCode(item.short_code)) }}
                       </div>
                     </td>
 
@@ -251,14 +251,13 @@
           <div class="py-4 px-6">
             <div class="flex items-center gap-2">
               <div class="flex-1">
-                <dt class="text-sm font-medium text-gray-500 mb-1">{{ __('Short Code') }}</dt>
+                <dt class="text-sm font-medium text-gray-500 mb-1">{{ __('Short URL') }}</dt>
                 <a
-                  :href="viewData.short_url"
+                  :href="getShortUrlFromCode(viewData.short_code)"
                   target="_blank"
                   class="text-sm font-mono text-blue-600 hover:underline"
-                  @click.prevent="handleModalShortLinkClick(viewData)"
                 >
-                  {{ getShortUrlDisplay(viewData.short_url) }}
+                  {{ getShortUrlFromCode(viewData.short_code) }}
                 </a>
               </div>
             </div>
@@ -267,16 +266,15 @@
           <!-- Long URL -->
           <div class="py-4 px-6">
             <dt class="text-sm font-medium text-gray-500 mb-1">{{ __('Long URL') }}</dt>
-            <dd class="text-sm text-gray-900 break-all">
+            <dd class="text-sm text-gray-900">
               <div class="flex items-center gap-2">
                 <div class="flex-1">
                   <a
                     :href="viewData.long_url"
                     target="_blank"
-                    class="text-blue-600 hover:underline inline-flex items-start gap-1"
+                    class="text-blue-600 hover:underline block"
                   >
-                    <span>{{ viewData.long_url }}</span>
-                    <FeatherIcon name="external-link" class="h-3 w-3 mt-0.5 flex-shrink-0" />
+                    {{ truncateUrl(viewData.long_url, 120) }}
                   </a>
                 </div>
               </div>
@@ -562,16 +560,24 @@ function getShortUrlDisplay(shortUrl) {
     : shortUrl
 }
 
+// Generate short URL from short code (fallback for display)
+function getShortUrlFromCode(shortCode) {
+  if (!shortCode) return ''
+  // For Is.gd format, we can reconstruct the URL
+  return `${shortCode}`
+}
+
 // Handle short link click - open the actual short link in a new tab
 function handleShortLinkClick(item) {
-    window.open(item.short_code, '_blank')
+    const shortUrl = getShortUrlFromCode(item.short_code)
+    window.open(shortUrl, '_blank')
 }
 
 function getBaseUrl() {
   return `${window.location.protocol}//${window.location.host}`
 }
 
-function truncateUrl(url, maxLength = 40) {
+function truncateUrl(url, maxLength = 70) {
   if (!url) return ''
   if (url.length <= maxLength) return url
 
