@@ -627,14 +627,14 @@
 										</div>
 									</td>
 								</tr>
-								<tr v-else-if="filteredCandidates.length === 0">
+								<tr v-else-if="paginatedCandidates.length === 0">
 									<td colspan="6" class="px-6 py-4 text-center text-gray-500">
 										{{ __('No talents found') }}
 									</td>
 								</tr>
 								<tr
 									v-else
-									v-for="candidate in filteredCandidates"
+									v-for="candidate in paginatedCandidates"
 									:key="candidate.name"
 									class="hover:bg-gray-50"
 								>
@@ -786,6 +786,90 @@
 								</tr>
 							</tbody>
 						</table>
+					</div>
+
+					<!-- Pagination -->
+					<div v-if="totalPages > 1" class="px-6 py-4 border-t border-gray-200 bg-white">
+						<div class="flex items-center justify-between">
+							<div class="flex-1 flex justify-between sm:hidden">
+								<Button
+									variant="outline"
+									theme="gray"
+									:disabled="currentPage === 1"
+									@click="prevPage"
+								>
+									{{ __('Previous') }}
+								</Button>
+								<Button
+									variant="outline"
+									theme="gray"
+									:disabled="currentPage === totalPages"
+									@click="nextPage"
+								>
+									{{ __('Next') }}
+								</Button>
+							</div>
+							<div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+								<div>
+									<p class="text-sm text-gray-700">
+										{{ __('Showing') }}
+										<span class="font-medium">{{ paginationInfo.start }}</span>
+										{{ __('to') }}
+										<span class="font-medium">{{ paginationInfo.end }}</span>
+										{{ __('of') }}
+										<span class="font-medium">{{ paginationInfo.total }}</span>
+										{{ __('results') }}
+									</p>
+								</div>
+								<div>
+									<nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+										<button
+											@click="prevPage"
+											:disabled="currentPage === 1"
+											class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+										>
+											<span class="sr-only">{{ __('Previous') }}</span>
+											<svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+												<path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+											</svg>
+										</button>
+										
+										<!-- Page numbers -->
+										<template v-for="page in totalPages" :key="page">
+											<button
+												v-if="page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)"
+												@click="goToPage(page)"
+												:class="[
+													page === currentPage
+														? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+														: 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50',
+													'relative inline-flex items-center px-4 py-2 border text-sm font-medium'
+												]"
+											>
+												{{ page }}
+											</button>
+											<span
+												v-else-if="page === currentPage - 2 || page === currentPage + 2"
+												class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700"
+											>
+												...
+											</span>
+										</template>
+										
+										<button
+											@click="nextPage"
+											:disabled="currentPage === totalPages"
+											class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+										>
+											<span class="sr-only">{{ __('Next') }}</span>
+											<svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+												<path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+											</svg>
+										</button>
+									</nav>
+								</div>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -1362,11 +1446,42 @@ const suggestedCandidates = ref([])
 const selectedCandidates = ref([])
 const loadingSuggestedCandidates = ref(false)
 
+// Pagination
+const currentPage = ref(1)
+const itemsPerPage = ref(20)
+
 // Computed
 const filteredCandidates = computed(() => {
-	// For now, just return all candidates since we removed the search functionality
-	// from the main candidates table
-	return candidates.value
+	let filtered = candidates.value
+	
+	// Apply search filter if search term exists
+	if (candidateSearch.value && candidateSearch.value.trim()) {
+		const searchTerm = candidateSearch.value.toLowerCase().trim()
+		filtered = filtered.filter(candidate => {
+			const fullName = (candidate.full_name || '').toLowerCase()
+			const email = (candidate.email || '').toLowerCase()
+			return fullName.includes(searchTerm) || email.includes(searchTerm)
+		})
+	}
+	
+	return filtered
+})
+
+const totalPages = computed(() => {
+	return Math.ceil(filteredCandidates.value.length / itemsPerPage.value)
+})
+
+const paginatedCandidates = computed(() => {
+	const start = (currentPage.value - 1) * itemsPerPage.value
+	const end = start + itemsPerPage.value
+	return filteredCandidates.value.slice(start, end)
+})
+
+const paginationInfo = computed(() => {
+	const start = (currentPage.value - 1) * itemsPerPage.value + 1
+	const end = Math.min(currentPage.value * itemsPerPage.value, filteredCandidates.value.length)
+	const total = filteredCandidates.value.length
+	return { start, end, total }
 })
 
 // Computed property to calculate New Talents (added within last 30 days)
@@ -1445,7 +1560,26 @@ watch(
 // Methods
 const handleSearchInput = (event) => {
 	console.log('Search input event:', event.target.value)
-	// Currently disabled - search functionality removed from main table
+	// Reset to first page when searching
+	currentPage.value = 1
+}
+
+const goToPage = (page) => {
+	if (page >= 1 && page <= totalPages.value) {
+		currentPage.value = page
+	}
+}
+
+const nextPage = () => {
+	if (currentPage.value < totalPages.value) {
+		currentPage.value++
+	}
+}
+
+const prevPage = () => {
+	if (currentPage.value > 1) {
+		currentPage.value--
+	}
 }
 
 const handleMinScoreChange = () => {
