@@ -789,9 +789,9 @@
 					</div>
 
 					<!-- Pagination -->
-					<div v-if="totalPages > 1" class="px-6 py-4 border-t border-gray-200 bg-white">
+					<div v-if="filteredCandidates.length > 0" class="px-6 py-4 border-t border-gray-200 bg-white">
 						<div class="flex items-center justify-between">
-							<div class="flex-1 flex justify-between sm:hidden">
+							<div v-if="totalPages > 1" class="flex-1 flex justify-between sm:hidden">
 								<Button
 									variant="outline"
 									theme="gray"
@@ -821,7 +821,7 @@
 										{{ __('results') }}
 									</p>
 								</div>
-								<div>
+								<div v-if="totalPages > 1">
 									<nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
 										<button
 											@click="prevPage"
@@ -1448,7 +1448,7 @@ const loadingSuggestedCandidates = ref(false)
 
 // Pagination
 const currentPage = ref(1)
-const itemsPerPage = ref(20)
+const itemsPerPage = ref(1)
 
 // Computed
 const filteredCandidates = computed(() => {
@@ -1468,13 +1468,27 @@ const filteredCandidates = computed(() => {
 })
 
 const totalPages = computed(() => {
-	return Math.ceil(filteredCandidates.value.length / itemsPerPage.value)
+	const total = Math.ceil(filteredCandidates.value.length / itemsPerPage.value)
+	console.log('totalPages computed:', {
+		filteredCount: filteredCandidates.value.length,
+		itemsPerPage: itemsPerPage.value,
+		totalPages: total
+	})
+	return total
 })
 
 const paginatedCandidates = computed(() => {
 	const start = (currentPage.value - 1) * itemsPerPage.value
 	const end = start + itemsPerPage.value
-	return filteredCandidates.value.slice(start, end)
+	const paginated = filteredCandidates.value.slice(start, end)
+	console.log('paginatedCandidates computed:', {
+		currentPage: currentPage.value,
+		start,
+		end,
+		paginatedCount: paginated.length,
+		totalFiltered: filteredCandidates.value.length
+	})
+	return paginated
 })
 
 const paginationInfo = computed(() => {
@@ -1833,18 +1847,16 @@ const loadRelatedCampaigns = async () => {
 					...new Set(candidateCampaignResult.map((cc) => cc.campaign_id)),
 				]
 
-				// Get the actual campaign data
-				const campaignResult = await campaignStore.fetchCampaigns({
-					limit: 1000,
-					page: 1,
+				// Get the actual campaign data directly
+				const campaignResult = await call('frappe.client.get_list', {
+					doctype: 'Mira Campaign',
+					filters: { name: ['in', campaignIds] },
+					fields: ['*'],
+					limit_page_length: 1000,
 				})
 
-				if (campaignResult && campaignResult.data) {
-					// Filter campaigns by the campaignIds we need
-					const filteredCampaigns = campaignResult.data.filter((campaign) =>
-						campaignIds.includes(campaign.name),
-					)
-					relatedCampaigns.value = filteredCampaigns
+				if (campaignResult && Array.isArray(campaignResult)) {
+					relatedCampaigns.value = campaignResult
 				}
 			}
 		} else {
