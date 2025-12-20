@@ -191,20 +191,7 @@ const generateShortUrl = async (longUrl) => {
     // Tạo URL ngắn với định dạng short.x.y
     const shortUrl = new URL(`${originalUrl.origin}/${formattedShortCode}`);
 
-    // Lưu vào database
-    try {
-      await call('mbw_mira.mbw_mira.doctype.mira_short_url.mira_short_url.shorten_url', {
-        long_url: longUrl,
-        short_url: shortCode
-      });
-    } catch (error) {
-      // Nếu đã tồn tại thì bỏ qua lỗi
-      if (!error.message?.includes('đã tồn tại')) {
-        console.error('Error saving short URL:', error);
-      }
-    }
-
-    // Vẫn lưu vào localStorage để backward compatibility
+    // Lưu vào localStorage để sử dụng tạm thời
     if (typeof window !== 'undefined' && window.localStorage) {
       localStorage.setItem(`s_${shortCode}`, longUrl);
     }
@@ -243,8 +230,8 @@ const updateUrl = async () => {
   const newUrl = `${baseUrl}${separator}${params.toString()}`;
   generatedUrl.value = newUrl;
 
-  // Generate short URL (synchronously)
-  shortUrl.value = generateShortUrl(newUrl);
+  // Generate short URL (await the async function)
+  shortUrl.value = await generateShortUrl(newUrl);
 }
 
 // Watch for modal open to initialize
