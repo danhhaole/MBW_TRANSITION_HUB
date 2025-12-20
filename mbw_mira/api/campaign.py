@@ -38,6 +38,19 @@ def send_test_email(recipient, subject, content):
     try:
         from mbw_mira.utils.email import send_email
 
+        # Replace localhost URLs and relative paths with production domain
+        if content:
+            import re
+            # Replace absolute localhost URLs
+            content = content.replace('http://localhost:8080', 'https://hireos.fastwork.vn')
+            content = content.replace('http://localhost:8000', 'https://hireos.fastwork.vn')
+            content = content.replace('http://127.0.0.1:8080', 'https://hireos.fastwork.vn')
+            content = content.replace('http://127.0.0.1:8000', 'https://hireos.fastwork.vn')
+
+            # Replace relative paths like /files/... with full domain
+            content = re.sub(r'src="/files/', 'src="https://hireos.fastwork.vn/files/', content)
+            content = re.sub(r'href="/files/', 'href="https://hireos.fastwork.vn/files/', content)
+
         # Determine if content is HTML
         as_html = True
         # Simple heuristic: if it doesn't look like HTML, treat as plain text converted to HTML

@@ -1135,10 +1135,10 @@ const wrapEmailContent = (html) => {
   // center aligned single column table 600px with white background
   return `<!DOCTYPE html><html><head><meta charset='utf-8'></head>
   <body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,sans-serif;">
-    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background:#f5f5f5;padding:40px 0;">
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:separate !important;background:#f5f5f5;padding:40px 0;">
       <tr>
         <td align="center">
-          <table role="presentation" cellpadding="0" cellspacing="0" width="600" align="center" style="margin:0 auto;background:#ffffff;border-radius:8px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.05);font-size:14px;line-height:1.6;color:#000000;">
+          <table role="presentation" cellpadding="0" cellspacing="0" width="600" align="center" style="border-collapse:separate !important;margin:0 auto;background:#ffffff;border-radius:8px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.05);font-size:14px;line-height:1.6;color:#000000;">
             <tr><td>${html}</td></tr>
           </table>
         </td>
@@ -1152,7 +1152,29 @@ const sendEmail = async (trigger, recipient) => {
   try {
     const subject = trigger.content?.email_subject || 'Test Email';
     let rawContent = getPreviewHtml(trigger.content);
-    rawContent = rawContent.replace(/{{full_name}}/g, recipient);
+    // Replace placeholders with actual values (handle both with and without spaces)
+    rawContent = rawContent.replace(/\{\{\s*full_name\s*\}\}/g, recipient);
+
+    // Replace localhost URLs and relative paths with production domain
+    console.log('🔍 Before replace:', rawContent);
+
+    // Replace absolute localhost URLs
+    rawContent = rawContent.replaceAll('http://localhost:8080', 'https://hireos.fastwork.vn');
+    rawContent = rawContent.replaceAll('http://localhost:8000', 'https://hireos.fastwork.vn');
+    rawContent = rawContent.replaceAll('http://127.0.0.1:8080', 'https://hireos.fastwork.vn');
+    rawContent = rawContent.replaceAll('http://127.0.0.1:8000', 'https://hireos.fastwork.vn');
+
+    // Replace relative paths like /files/... with full domain
+    rawContent = rawContent.replace(/src="\/files\//g, 'src="https://hireos.fastwork.vn/files/');
+    rawContent = rawContent.replace(/href="\/files\//g, 'href="https://hireos.fastwork.vn/files/');
+
+    console.log('✅ After replace:', rawContent);
+
+    // Check if replacement worked
+    if (rawContent.includes('localhost')) {
+      console.warn('⚠️ WARNING: localhost still found in content after replacement!');
+    }
+
     const content = wrapEmailContent(rawContent);
 
     const result = await call('mbw_mira.api.campaign.send_test_email', {
