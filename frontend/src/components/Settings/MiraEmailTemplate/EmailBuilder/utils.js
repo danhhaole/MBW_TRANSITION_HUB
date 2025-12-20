@@ -77,9 +77,9 @@ export function blockToMJML(block) {
 
       return `<mj-section css-class="compact-section" ${backgroundColor ? `background-color="${backgroundColor}"` : ''}>
         <mj-column css-class="compact-column">
-          <mj-text 
-            font-size="${block.props.fontSize}px" 
-            color="${block.props.color}" 
+          <mj-text
+            font-size="${block.props.fontSize}px"
+            color="${block.props.color}"
             padding="${padding}"
             line-height="${block.props.lineHeight || '1.4'}"
             font-family="${block.props.fontFamily || 'Arial, sans-serif'}"
@@ -101,9 +101,9 @@ export function blockToMJML(block) {
 
       return `<mj-section css-class="compact-section">
         <mj-column css-class="compact-column">
-          <mj-button 
-            href="${block.props.href}" 
-            background-color="${block.props.backgroundColor || '#3b82f6'}" 
+          <mj-button
+            href="${block.props.href}"
+            background-color="${block.props.backgroundColor || '#3b82f6'}"
             color="${block.props.color || '#ffffff'}"
             padding="${buttonPadding}"
             font-family="${block.props.fontFamily || 'Arial, sans-serif'}"
@@ -134,8 +134,8 @@ export function blockToMJML(block) {
 
       return `<mj-section css-class="compact-section" ${dividerBgColor ? `background-color="${dividerBgColor}"` : ''}>
         <mj-column css-class="compact-column">
-          <mj-divider 
-            border-color="${block.props.borderColor || '#e5e7eb'}" 
+          <mj-divider
+            border-color="${block.props.borderColor || '#e5e7eb'}"
             border-width="${block.props.height || 4}px"
             border-style="${block.props.style || 'solid'}"
             width="${dividerWidth}"
@@ -197,21 +197,19 @@ export function blocksToMJML(blocks, emailSettings = {}) {
     // Override MJML default centering
     customCss += `
           /* Force left alignment for main container and inner wrappers */
-          body > div, div[style*="max-width"], .mj-container { 
-            margin-left: 0 !important; 
-            margin-right: auto !important; 
-            max-width: 100% !important; 
-            width: 100% !important; 
+          body > div, div[style*="max-width"], .mj-container {
+            max-width: 100% !important;
+            width: 100% !important;
           }
           /* Ensure text is left aligned if not overridden */
-          .mj-column-per-100 { 
-            vertical-align: top; 
-            display: inline-block; 
-            direction: ltr; 
-            font-size: 13px; 
-            text-align: left; 
-            width: 100% !important; 
-            max-width: 100% !important; 
+          .mj-column-per-100 {
+            vertical-align: top;
+            display: inline-block;
+            direction: ltr;
+            font-size: 13px;
+            text-align: left;
+            width: 100% !important;
+            max-width: 100% !important;
           }
           /* Reset table widths just in case */
           table { width: 100% !important; }
@@ -257,9 +255,9 @@ export function renderHTML(blocks) {
   try {
     // 🔧 SIMPLE APPROACH: Build clean HTML directly from blocks instead of using MJML
     // MJML adds too much complexity with nested tables, making emails hard to read
-    
+
     const html = buildCleanHTML(blocks)
-    
+
     console.log('[EMAIL] HTML built and cleaned successfully')
     return html
   } catch (error) {
@@ -283,10 +281,10 @@ function buildCleanHTML(blocks) {
         const fontSize = block.props.fontSize || 14
         const color = block.props.color || '#333333'
         const textAlign = block.props.textAlign || 'left'
-        
+
         // Split by newlines and wrap each line in proper formatting
         const lines = text.split('\n').filter(line => line.trim())
-        
+
         if (lines.length > 0) {
           // Use simple divs with left-align forced with !important
           // NO padding - just margin for spacing between blocks
@@ -305,7 +303,7 @@ function buildCleanHTML(blocks) {
         const btnBg = block.props.backgroundColor || '#3b82f6'
         const btnColor = block.props.color || '#ffffff'
         const btnAlign = block.props.align || 'center'
-        
+
         bodyContent += `<div style="text-align: ${btnAlign}; margin: 24px 0; padding: 0;"><a href="${btnUrl}" style="display: inline-block; background-color: ${btnBg}; color: ${btnColor}; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; text-align: center !important;">${btnText}</a></div>\n`
         break
 
@@ -313,7 +311,7 @@ function buildCleanHTML(blocks) {
         const imgSrc = block.props.src || ''
         const imgAlt = block.props.alt || 'Image'
         const imgWidth = block.props.width || 'auto'
-        
+
         if (imgSrc) {
           bodyContent += `<div style="margin: 20px 0; padding: 0; text-align: left !important;"><img src="${imgSrc}" alt="${imgAlt}" style="max-width: 100%; width: ${imgWidth}px; height: auto; display: block;" /></div>\n`
         }
@@ -322,7 +320,7 @@ function buildCleanHTML(blocks) {
       case 'divider':
         const borderColor = block.props.borderColor || '#e5e7eb'
         const borderWidth = block.props.borderWidth || 1
-        
+
         bodyContent += `<div style="margin: 20px 0; padding: 0;"><hr style="border: none; border-top: ${borderWidth}px solid ${borderColor}; margin: 0; padding: 0;" /></div>\n`
         break
 
@@ -365,10 +363,8 @@ function buildCleanHTML(blocks) {
     /* Force left alignment everywhere */
     body, table, td, div, p, span, h1, h2, h3, h4, h5, h6 {
       text-align: left !important;
-      margin-left: 0 !important;
-      margin-right: 0 !important;
     }
-    
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
       font-size: 14px;
@@ -379,7 +375,7 @@ function buildCleanHTML(blocks) {
       background-color: #ffffff;
       text-align: left !important;
     }
-    
+
     .email-container {
       background-color: #ffffff;
       width: 100%;
@@ -389,7 +385,7 @@ function buildCleanHTML(blocks) {
       box-shadow: none;
       text-align: left !important;
     }
-    
+
     .email-body {
       text-align: left !important;
       color: #333333;
@@ -397,7 +393,7 @@ function buildCleanHTML(blocks) {
       padding: 0;
       line-height: 1.8;
     }
-    
+
     .email-body div {
       text-align: left !important;
       margin: 0;
@@ -405,7 +401,7 @@ function buildCleanHTML(blocks) {
       width: 100%;
       display: block;
     }
-    
+
     .email-body p {
       text-align: left !important;
       margin: 10px 0 !important;
@@ -414,12 +410,12 @@ function buildCleanHTML(blocks) {
       word-wrap: break-word;
       word-break: break-word;
     }
-    
+
     a {
       color: #0066cc;
       text-decoration: none;
     }
-    
+
     a:hover {
       text-decoration: underline;
     }
@@ -447,10 +443,10 @@ function renderSingleBlock(block) {
       const fontSize = block.props?.fontSize || 14
       const color = block.props?.color || '#333333'
       const textAlign = block.props?.textAlign || 'left'
-      
+
       const lines = text.split('\n').filter(line => line.trim())
       if (lines.length === 0) return ''
-      
+
       let html = `<div style="font-size: ${fontSize}px; color: ${color}; text-align: ${textAlign}; line-height: 1.6; margin: 12px 0;">`
       lines.forEach((line) => {
         html += `<p style="margin: 8px 0;">${line}</p>`
@@ -463,7 +459,7 @@ function renderSingleBlock(block) {
       const btnUrl = block.props?.href || '#'
       const btnBg = block.props?.backgroundColor || '#3b82f6'
       const btnColor = block.props?.color || '#ffffff'
-      
+
       return `<div style="text-align: center; margin: 16px 0;"><a href="${btnUrl}" style="display: inline-block; background-color: ${btnBg}; color: ${btnColor}; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">${btnText}</a></div>`
 
     case 'image':

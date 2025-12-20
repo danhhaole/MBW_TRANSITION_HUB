@@ -236,7 +236,7 @@
                     @update:content="updateTriggerContent(index, $event)"
                   >
                     <template #actions>
-                      <Button @click="sendTestEmail(trigger)" variant="solid" theme="blue" size="sm">
+                      <Button @click="openTestEmailModal(trigger)" variant="solid" theme="blue" size="sm">
                         <template #prefix>
                           <FeatherIcon name="send" class="h-4 w-4" />
                         </template>
@@ -363,6 +363,58 @@
         </div>
       </template>
     </Dialog>
+
+    <!-- Test Email Dialog -->
+    <Dialog
+      v-model="showTestEmailModal"
+      :options="{
+        title: __('Test Email Configuration'),
+        size: '3xl'
+      }"
+    >
+      <template #body-content>
+        <div class="space-y-4">
+          <div class="space-y-1">
+            <label class="block text-sm font-medium text-gray-700">
+              {{ __('Email') }} <span class="text-red-500">*</span>
+            </label>
+            <FormControl
+              type="email"
+              v-model="testEmailAddress"
+              :placeholder="__('Enter email address')"
+            />
+          </div>
+		   <label class="block text-sm font-medium text-gray-700">
+              {{ __('Content') }}
+            </label>
+          <div class="border rounded overflow-hidden">
+            <iframe
+              class="w-full p-2 h-80 bg-white"
+              :srcdoc="getPreviewIframeDoc(testEmailTrigger?.content)"
+              scrolling="auto"
+            ></iframe>
+          </div>
+        </div>
+      </template>
+
+      <template #actions>
+        <div class="flex items-center justify-end gap-2">
+          <Button variant="outline" theme="gray" @click="showTestEmailModal = false">
+            {{ __('Cancel') }}
+          </Button>
+          <Button
+            variant="solid"
+            theme="blue"
+            @click="confirmSendTestEmail"
+            :disabled="!isTestEmailValid || isSendingEmail"
+            :loading="isSendingEmail"
+          >
+            {{ isSendingEmail ? __('Sending...') : __('Send Email') }}
+          </Button>
+        </div>
+      </template>
+    </Dialog>
+
   </div>
 </template>
 
@@ -1007,6 +1059,155 @@ const sendTestEmail = async (trigger) => {
   } catch (error) {
     console.error('Error sending test email:', error);
     toast.error(__('Failed to send test email.'));
+  }
+};
+
+const showTestEmailModal = ref(false)
+const testEmailTrigger = ref(null)
+const testEmailAddress = ref('')
+const isSendingEmail = ref(false)
+
+const openTestEmailModal = (trigger) => {
+  testEmailTrigger.value = trigger
+  testEmailAddress.value = ''
+  showTestEmailModal.value = true
+}
+
+const stripHtml = (html) => {
+  const div = document.createElement('div')
+  div.innerHTML = html
+  return div.textContent || div.innerText || ''
+}
+
+const getPreviewIframeDoc = (content) => {
+  const html = getPreviewHtml(content)
+  // Basic doc with Tailwind CDN stripped to avoid conflicts
+  return `<!DOCTYPE html><html><head><meta charset='utf-8'><style>body, p, div, span{font-family: Arial, sans-serif;font-size:14px;margin:0;padding:12px;color:#3c414b;font-weight:400;}</style></head><body>${html}</body></html>`
+}
+
+const getPreviewPlainText = (content) => {
+  if (!content) return ''
+  if (content.template_content) return stripHtml(content.template_content)
+  if (content.email_content) return stripHtml(content.email_content)
+  if (content.block_content) {
+    try {
+      const design = JSON.parse(content.block_content)
+      let text = ''
+      design.blocks?.forEach(block => {
+        if (block.type === 'text' && block.props?.content) {
+          text += stripHtml(block.props.content) + '\n'
+        }
+      })
+      return text.trim()
+    } catch (e) {
+      return stripHtml(content.block_content)
+    }
+  }
+  return typeof content === 'string' ? content : JSON.stringify(content)
+}
+
+// old function kept for other uses
+const getPreviewHtml = (content) => {
+  if (!content) return ''
+  if (content.template_content) return content.template_content
+  if (content.email_content) return content.email_content
+  if (content.block_content) {
+    try {
+      const design = JSON.parse(content.block_content)
+      let html = ''
+      design.blocks?.forEach(block => {
+        if (block.type === 'text' && block.props?.content) {
+          html += block.props.content
+        }
+      })
+      return html
+    } catch (e) {
+      return content.block_content
+    }
+  }
+  return typeof content === 'string' ? content : JSON.stringify(content)
+}
+
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const isTestEmailValid = computed(() => emailPattern.test(testEmailAddress.value))
+
+const wrapEmailContent = (html) => {
+  // center aligned single column table 600px with white background
+  return `<!DOCTYPE html><html><head><meta charset='utf-8'></head>
+  <body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,sans-serif;">
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background:#f5f5f5;padding:40px 0;">
+      <tr>
+        <td align="center">
+          <table role="presentation" cellpadding="0" cellspacing="0" width="600" align="center" style="margin:0 auto;background:#ffffff;border-radius:8px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.05);font-size:14px;line-height:1.6;color:#000000;">
+            <tr><td>${html}</td></tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body></html>`
+}
+
+const sendEmail = async (trigger, recipient) => {
+  isSendingEmail.value = true;
+  try {
+    const subject = trigger.content?.email_subject || 'Test Email';
+    let rawContent = getPreviewHtml(trigger.content);
+    rawContent = rawContent.replace(/{{full_name}}/g, recipient);
+    const content = wrapEmailContent(rawContent);
+
+    const result = await call('mbw_mira.api.campaign.send_test_email', {
+      recipient: recipient,
+      subject,
+      content
+    });
+
+    if (result && result.status === 'success') {
+      toast.success(__('The email has been successfully sent.'));
+      showTestEmailModal.value = false;
+    } else {
+      toast.error(__('Failed to send email'));
+    }
+  } catch (error) {
+    console.error('Error sending email:', error);
+    let errorMessage = __('Failed to send email');
+    if (error.message) {
+      errorMessage += `: ${error.message}`;
+    } else if (error.exc_type) {
+      errorMessage += `: ${error.exc_type}`;
+      if (error.exception) {
+        errorMessage += ` - ${error.exception}`;
+      }
+    }
+    toast.error(errorMessage);
+  } finally {
+    isSendingEmail.value = false;
+  }
+};
+
+const confirmSendTestEmail = async () => {
+  if (!isTestEmailValid.value) {
+    toast.error(__('Please enter a valid email address'));
+    return;
+  }
+
+  const trigger = testEmailTrigger.value;
+  if (!trigger) return;
+
+  const scheduleTime = trigger.schedule_time ? new Date(trigger.schedule_time) : null;
+  const now = new Date();
+
+  if (scheduleTime && scheduleTime > now) {
+    const delay = scheduleTime.getTime() - now.getTime();
+    toast.info(`Email scheduled to be sent at ${formatScheduleTime(trigger.schedule_time)}`);
+    showTestEmailModal.value = false;
+
+    setTimeout(() => {
+      sendEmail(trigger, testEmailAddress.value);
+    }, delay);
+
+  } else {
+    toast.info(__('Sending email...'));
+    await sendEmail(trigger, testEmailAddress.value);
   }
 };
 

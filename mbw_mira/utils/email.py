@@ -114,6 +114,24 @@ def send_email(
                     now=True
                 )
                 print(f"DEBUG: frappe.sendmail returned: {result}")
+                # Verify immediate delivery
+                try:
+                    queue_name = getattr(result, "name", None) or str(result)
+                    if queue_name:
+                        import time
+                        for _ in range(5):  # wait up to ~5 seconds (5*1s)
+                            q_status = frappe.db.get_value('Email Queue', queue_name, 'status')
+                            if q_status == 'Sent':
+                                print(f"DEBUG: EmailQueue {queue_name} status=Sent ✅")
+                                break
+                            elif q_status in ('Error', 'Cancelled'):
+                                raise Exception(f"EmailQueue {queue_name} status={q_status}")
+                            time.sleep(1)
+                        else:
+                            raise Exception(f"EmailQueue {queue_name} not sent within timeout")
+                except Exception as verify_err:
+                    print(f"DEBUG: Verification failed: {verify_err}")
+                    raise
                 print("DEBUG: HTML email sent via Frappe successfully!")
             else:
                 print("DEBUG: Sending plain text email via Frappe...")
