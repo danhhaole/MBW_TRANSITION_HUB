@@ -3,25 +3,25 @@
     <!-- Content Editors -->
     <div>
       <!-- Email Editor -->
-      <EmailEditor 
-        v-if="interaction_type === 'EMAIL'" 
+      <EmailEditor
+        v-if="interaction_type === 'EMAIL'"
         :content="content"
         :readonly="readonly"
         @update:content="handleContentUpdate"
         @save="handleSave"
         @preview="handlePreview"
       />
-      
+
       <!-- Zalo Editor (for both ZNS and ZALO_CARE) -->
-      <ZaloEditor 
-        v-else-if="interaction_type === 'ZALO_ZNS' || interaction_type === 'ZALO_CARE'" 
+      <ZaloEditor
+        v-else-if="interaction_type === 'ZALO_ZNS' || interaction_type === 'ZALO_CARE'"
         :content="content"
         :readonly="readonly"
         @update:content="handleContentUpdate"
         @save="handleSave"
         @preview="handlePreview"
       />
-      
+
       <!-- Fallback for unknown interaction type -->
       <div v-else class="text-center py-8">
         <div class="text-gray-500">
@@ -75,15 +75,15 @@ const content = ref({
   email_subject: '',
   email_content: '',
   attachments: [],
-  
+
   // Zalo fields (using blocks structure)
   blocks: [],
   image_url: '',
-  
+
   // Common fields
   success_action: '',
   failure_action: '',
-  
+
   ...props.modelValue
 })
 
@@ -102,31 +102,31 @@ let contentUpdateTimer = null
 // Handle content updates from child components
 const handleContentUpdate = (updatedContent) => {
   console.log('📝 CampaignContentEditor received update:', updatedContent)
-  
+
   // Prevent recursive updates
   if (isUpdating.value) {
     console.log('⏭️ Skipping handleContentUpdate - already updating')
     return
   }
-  
+
   // Set flag immediately
   isUpdating.value = true
-  
+
   // Update local content immediately for responsive UI
   content.value = { ...content.value, ...updatedContent }
   console.log('📝 Updated content.value:', content.value)
-  
+
   // Clear previous timer
   if (contentUpdateTimer) {
     clearTimeout(contentUpdateTimer)
   }
-  
+
   // Debounce emit to avoid too many updates during typing
   contentUpdateTimer = setTimeout(() => {
     console.log('📤 Emitting update:modelValue:', content.value)
     emit('update:modelValue', content.value)
   }, 500) // Wait 500ms after user stops typing
-  
+
   // Reset flag after debounce period + buffer
   setTimeout(() => {
     isUpdating.value = false
@@ -135,16 +135,20 @@ const handleContentUpdate = (updatedContent) => {
 
 // Handle save action
 const handleSave = () => {
-  console.log('💾 Saving content:', content.value)
-  
+  console.log('💾 [CampaignContentEditor] Received save event from child editor')
+  console.log('💾 [CampaignContentEditor] Content to save:', content.value)
+
   // Clear any pending debounce timers
   if (contentUpdateTimer) {
     clearTimeout(contentUpdateTimer)
     contentUpdateTimer = null
   }
-  
+
   // Emit immediately when saving
+  console.log('📤 [CampaignContentEditor] Emitting update:modelValue to parent...')
   emit('update:modelValue', content.value)
+
+  console.log('💾 [CampaignContentEditor] Emitting save event to parent...')
   emit('save', content.value)
 }
 
@@ -164,28 +168,28 @@ const handleAdditionalActionsUpdate = (actions) => {
     console.log('⏭️ Skipping handleAdditionalActionsUpdate - already updating')
     return
   }
-  
+
   // Set flag immediately
   isUpdating.value = true
-  
+
   // Update local state immediately
   additionalActions.value = actions
-  const updatedContent = { 
-    ...content.value, 
-    additional_actions: actions 
+  const updatedContent = {
+    ...content.value,
+    additional_actions: actions
   }
   content.value = updatedContent
-  
+
   // Clear previous timer
   if (additionalActionsTimer) {
     clearTimeout(additionalActionsTimer)
   }
-  
+
   // Debounce emit to avoid rapid updates
   additionalActionsTimer = setTimeout(() => {
     emit('update:modelValue', updatedContent)
   }, 500) // Wait 500ms after changes
-  
+
   // Reset flag after debounce period + buffer
   setTimeout(() => {
     isUpdating.value = false
@@ -198,7 +202,7 @@ watch(() => props.modelValue, (newValue) => {
     console.log('⏭️ Skipping props sync - currently updating')
     return
   }
-  
+
   // Update content
   content.value = {
     email_subject: '',
@@ -210,10 +214,10 @@ watch(() => props.modelValue, (newValue) => {
     failure_action: '',
     ...newValue
   }
-  
+
   // Update additional actions separately to ensure clean state
   additionalActions.value = newValue.additional_actions || {}
-  
+
   console.log('🔄 Synced from props:', { content: content.value, additionalActions: additionalActions.value })
 }, { deep: true })
 </script>

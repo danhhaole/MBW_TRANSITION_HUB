@@ -44,7 +44,7 @@
                   <p class="text-sm text-gray-600">
                     {{ __("Choose the interaction method you want to use with the candidate (only one type can be selected)") }}
                   </p>
-                 
+
                 </div>
 
                 <!-- Interaction Methods -->
@@ -56,7 +56,7 @@
                       campaignData.interaction_method === 'EMAIL'
                         ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
                         : 'border-gray-200',
-                      canEditInteractionMethod 
+                      canEditInteractionMethod
                         ? 'cursor-pointer hover:border-gray-300 hover:shadow-md'
                         : 'cursor-not-allowed opacity-60'
                     ]"
@@ -96,7 +96,7 @@
                       campaignData.interaction_method === 'ZALO_ZNS'
                         ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
                         : 'border-gray-200',
-                      canEditInteractionMethod 
+                      canEditInteractionMethod
                         ? 'cursor-pointer hover:border-gray-300 hover:shadow-md'
                         : 'cursor-not-allowed opacity-60'
                     ]"
@@ -136,7 +136,7 @@
                       campaignData.interaction_method === 'ZALO_CARE'
                         ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
                         : 'border-gray-200',
-                      canEditInteractionMethod 
+                      canEditInteractionMethod
                         ? 'cursor-pointer hover:border-gray-300 hover:shadow-md'
                         : 'cursor-not-allowed opacity-60'
                     ]"
@@ -248,7 +248,7 @@
                   }"
                 />
                 <!-- Warning when draft is created -->
-               
+
               </div>
             </div>
 
@@ -262,7 +262,7 @@
                 :campaign-id="draftCampaign?.name"
                 @update:model-value="nurturingFlows = $event"
               />
-              
+
               <!-- ATTRACTION/RECRUITMENT: Single content editor -->
               <CampaignSingleContentEditor
                 v-else
@@ -296,11 +296,11 @@
                   <p class="text-sm text-gray-600 mb-4">
                     {{ __("Which candidates do you want to send this campaign to?") }}
                   </p>
-                  
+
                   <!-- Segment Options -->
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <!-- Choose Candidates (Segment) -->
-                    <div 
+                    <div
                       class="border rounded-lg p-4 bg-white cursor-pointer transition-colors"
                       :class="segmentSelectionMode === 'segment' ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' : 'border-gray-200 hover:border-blue-300'"
                       @click="segmentSelectionMode = 'segment'"
@@ -321,7 +321,7 @@
                     </div>
 
                     <!-- Custom Conditions -->
-                    <div 
+                    <div
                       class="border rounded-lg p-4 bg-white cursor-pointer transition-colors"
                       :class="segmentSelectionMode === 'conditions' ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' : 'border-gray-200 hover:border-blue-300'"
                       @click="segmentSelectionMode = 'conditions'"
@@ -387,7 +387,7 @@
 
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- Send Now -->
-                    <div 
+                    <div
                       class="border rounded-lg p-4 bg-white cursor-pointer transition-colors"
                       :class="sendingStrategy === 'now' ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' : 'border-gray-200 hover:border-gray-300'"
                       @click="sendingStrategy = 'now'"
@@ -408,7 +408,7 @@
                     </div>
 
                     <!-- Schedule Send -->
-                    <div 
+                    <div
                       class="border rounded-lg p-4 bg-white cursor-pointer transition-colors"
                       :class="sendingStrategy === 'scheduled' ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' : 'border-gray-200 hover:border-gray-300'"
                       @click="sendingStrategy = 'scheduled'"
@@ -484,22 +484,22 @@
         <h3 class="text-lg font-medium text-gray-900 mb-4">
           {{ editingConditionIndex >= 0 ? __('Edit Condition') : __('Add Condition') }}
         </h3>
-        
+
         <div class="space-y-4">
           <!-- Field Selection -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">
               {{ __('Field') }}
             </label>
-            <select 
+            <select
               v-model="editingCondition.field"
               @change="updateFieldType"
               class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             >
               <option value="">{{ __('Select field...') }}</option>
-              <option 
-                v-for="field in conditionFields" 
-                :key="field.value" 
+              <option
+                v-for="field in conditionFields"
+                :key="field.value"
                 :value="field.value"
               >
                 {{ field.label }}
@@ -512,13 +512,13 @@
             <label class="block text-sm font-medium text-gray-700 mb-2">
               {{ __('Operator') }}
             </label>
-            <select 
+            <select
               v-model="editingCondition.operator"
               class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             >
-              <option 
-                v-for="operator in getOperatorsForField(editingCondition.fieldType)" 
-                :key="operator.value" 
+              <option
+                v-for="operator in getOperatorsForField(editingCondition.fieldType)"
+                :key="operator.value"
                 :value="operator.value"
               >
                 {{ operator.label }}
@@ -531,7 +531,7 @@
             <label class="block text-sm font-medium text-gray-700 mb-2">
               {{ __('Value') }}
             </label>
-            
+
             <!-- Text Input -->
             <input
               v-if="editingCondition.fieldType === 'text'"
@@ -540,7 +540,7 @@
               class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               :placeholder="__('Enter value...')"
             />
-            
+
             <!-- Number Input -->
             <input
               v-else-if="editingCondition.fieldType === 'number'"
@@ -549,7 +549,7 @@
               class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               :placeholder="__('Enter number...')"
             />
-            
+
             <!-- Date Input -->
             <input
               v-else-if="editingCondition.fieldType === 'date'"
@@ -557,7 +557,7 @@
               v-model="editingCondition.value"
               class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
-            
+
             <!-- Select Input -->
             <select
               v-else-if="editingCondition.fieldType === 'select'"
@@ -565,9 +565,9 @@
               class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             >
               <option value="">{{ __('Select option...') }}</option>
-              <option 
-                v-for="option in getFieldOptions(editingCondition.field)" 
-                :key="option.value" 
+              <option
+                v-for="option in getFieldOptions(editingCondition.field)"
+                :key="option.value"
                 :value="option.value"
               >
                 {{ option.label }}
@@ -678,7 +678,7 @@ const canEditInteractionMethod = computed(() => {
   return !isEditMode.value && !isDraftCreated.value;
 });
 const canEditDescription = computed(() => {
-  // Block nếu đang edit mode HOẶC đã tạo draft campaign  
+  // Block nếu đang edit mode HOẶC đã tạo draft campaign
   return !isEditMode.value && !isDraftCreated.value;
 });
 const canEditSource = computed(() => !isDraftCreated.value && (!isEditMode.value || editingCampaignData.value?.status === 'DRAFT'));
@@ -784,10 +784,10 @@ async function fetchRecords(page = 1) {
   searchLoading.value = true;
   try {
     const startIndex = (page - 1) * pageSize.value;
-    
+
     if (searchSource.value === "mira_talent") {
       let filters = [];
-      
+
       // Nếu có segment thì lọc theo segment
       if (selectedSegment.value) {
         // Lấy talent_id từ Mira Talent Pool
@@ -797,39 +797,39 @@ async function fetchRecords(page = 1) {
           filters: { segment_id: selectedSegment.value },
           limit_page_length: 1000,
         });
-        
+
         const talentIds = poolRes.map(r => r.talent_id);
         if (!talentIds.length) {
           records.value = [];
           totalRecords.value = 0;
           return;
         }
-        
+
         filters.push(["name", "in", talentIds]);
       }
-      
+
       // Thêm filter tìm kiếm nếu có
       if (searchKeyword.value) {
         filters.push(["full_name", "like", `%${searchKeyword.value}%`]);
       }
-      
+
       // Advanced filters for talents
       if (advancedFilters.skills) {
         filters.push(["skills", "like", `%${advancedFilters.skills}%`]);
       }
-      
+
       if (advancedFilters.tags) {
         filters.push(["tags", "like", `%${advancedFilters.tags}%`]);
       }
-      
+
       if (advancedFilters.minExperienceYears !== null) {
         filters.push(["experience_years", ">=", advancedFilters.minExperienceYears]);
       }
-      
+
       if (advancedFilters.maxExperienceYears !== null) {
         filters.push(["experience_years", "<=", advancedFilters.maxExperienceYears]);
       }
-      
+
       const res = await call("frappe.client.get_list", {
         doctype: "Mira Talent",
         fields: ["name", "full_name", "email", "phone", "skills", "tags", "experience_years"],
@@ -837,33 +837,33 @@ async function fetchRecords(page = 1) {
         limit_start: startIndex,
         limit_page_length: pageSize.value,
       });
-      
+
       // Get total count
       const countRes = await call("frappe.client.get_count", {
         doctype: "Mira Talent",
         filters: filters,
       });
-      
+
       records.value = page === 1 ? res : [...records.value, ...res];
       totalRecords.value = countRes;
 
     } else if (searchSource.value === "mira_contact") {
       let filters = [];
-      
+
       // Add search filter if exists
       if (searchKeyword.value) {
         filters.push(["full_name", "like", `%${searchKeyword.value}%`]);
       }
-      
+
       // Advanced filters for contacts
       if (advancedFilters.missingEmail) {
         filters.push(["email", "in", ["", null]]);
       }
-      
+
       if (advancedFilters.missingPhone) {
         filters.push(["phone", "in", ["", null]]);
       }
-      
+
       const res = await call("frappe.client.get_list", {
         doctype: "Mira Contact",
         fields: ["name", "full_name", "email", "phone"],
@@ -871,17 +871,17 @@ async function fetchRecords(page = 1) {
         limit_start: startIndex,
         limit_page_length: pageSize.value,
       });
-      
+
       // Get total count
       const countRes = await call("frappe.client.get_count", {
         doctype: "Mira Contact",
         filters: filters,
       });
-      
+
       records.value = page === 1 ? res : [...records.value, ...res];
       totalRecords.value = countRes;
     }
-    
+
     currentPage.value = page;
   } catch (e) {
     console.error("Error fetching records", e);
@@ -901,7 +901,7 @@ function loadMoreRecords() {
   if (searchLoading.value) return;
   const nextPage = currentPage.value + 1;
   const maxPages = Math.ceil(totalRecords.value / pageSize.value);
-  
+
   if (nextPage <= maxPages) {
     fetchRecords(nextPage);
   }
@@ -941,7 +941,7 @@ watch(searchSource, () => {
   currentPage.value = 1;
   totalRecords.value = 0;
   miraTalentCampaign.value = { type: searchSource.value, records: [] };
-  
+
   // Reset advanced filters
   Object.keys(advancedFilters).forEach(key => {
     if (typeof advancedFilters[key] === 'boolean') {
@@ -1067,12 +1067,12 @@ const computedCandidateCount = computed(() => {
   if (segmentSelectionMode.value === 'segment' && configData.value.candidateCount !== undefined) {
     return configData.value.candidateCount;
   }
-  
+
   // If search mode with records loaded
   if (selectedSource.value === 'search' && miraTalentCampaign.value.records) {
     return miraTalentCampaign.value.records.length || 0;
   }
-  
+
   // For other sources, we might need to implement specific logic
   return candidateCount.value;
 });
@@ -1107,7 +1107,7 @@ const editCondition = (condition, index) => {
 
 const saveCondition = () => {
   if (!editingCondition.value.field) return;
-  
+
   if (editingConditionIndex.value >= 0) {
     // Edit existing condition
     customConditions.value[editingConditionIndex.value] = { ...editingCondition.value };
@@ -1115,7 +1115,7 @@ const saveCondition = () => {
     // Add new condition
     customConditions.value.push({ ...editingCondition.value });
   }
-  
+
   showConditionModal.value = false;
   editingCondition.value = null;
   editingConditionIndex.value = -1;
@@ -1396,7 +1396,7 @@ const step1Valid = computed(() => {
   if (isEditMode.value) {
     return !!campaignData.value.campaign_name;
   }
-  
+
   // In create mode, require all fields
   return !!(
     campaignData.value.campaign_name &&
@@ -1418,6 +1418,10 @@ const isLastStep = computed(() => {
 const contentEditorData = computed(() => ({
   email_subject: campaignData.value.email_subject,
   email_content: campaignData.value.email_content,
+  template_content: campaignData.value.template_content,  // HTML content
+  css_content: campaignData.value.css_content,  // CSS content
+  mjml_content: campaignData.value.mjml_content,  // MJML content
+  block_content: campaignData.value.block_content,  // Block content
   attachments: campaignData.value.attachments || [],
   blocks: campaignData.value.blocks || [],
   image_url: campaignData.value.image_url,
@@ -1438,7 +1442,7 @@ const createNurturingFlows = async (campaignId) => {
 
   for (let i = 0; i < nurturingFlows.value.length; i++) {
     const flow = nurturingFlows.value[i];
-    
+
     // Create Mira Flow document
     const flowPayload = {
       doctype: 'Mira Flow',
@@ -1517,7 +1521,7 @@ const loadDataSources = async () => {
       filters: { is_active: 1 },
       fields: [
         'name',
-        'source_name', 
+        'source_name',
         'source_title',
         'notes',
         'source_type',
@@ -1834,7 +1838,7 @@ const editManualStep = (step) => {
 
 const handleStepFormSubmit = (event) => {
   const { stepData, isEditing, editingStepId } = event;
-  
+
   // Attach selected social page to step metadata (kept in action_config)
   if (
     selectedSource.value === "datasource" &&
@@ -1924,7 +1928,7 @@ const nextStep = async () => {
 
   // In edit mode, max step is 3. In create mode, max step is 4
   const maxStep = isEditMode.value ? 3 : 4;
-  
+
   if (currentStep.value < maxStep) {
     currentStep.value++;
   }
@@ -2085,7 +2089,7 @@ const createCampaignRecords = async (campaignName) => {
   const recordType = miraTalentCampaign.value.type;
   let doctype = '';
   let recordField = '';
-  
+
   if (recordType === 'mira_talent') {
     doctype = 'Mira Talent Campaign';
     recordField = 'talent_id';
@@ -2098,7 +2102,7 @@ const createCampaignRecords = async (campaignName) => {
   }
 
   console.log(`Creating ${doctype} records for campaign:`, campaignName);
-  
+
   try {
     // Use bulk insert API for better performance
     const bulkData = miraTalentCampaign.value.records.map(recordId => ({
@@ -2106,22 +2110,22 @@ const createCampaignRecords = async (campaignName) => {
       campaign_id: campaignName,
       [recordField]: recordId,
       status: 'ACTIVE',
-      ...(recordType === 'mira_talent' && miraTalentCampaign.value.segment_id 
-        ? { segment: miraTalentCampaign.value.segment_id } 
+      ...(recordType === 'mira_talent' && miraTalentCampaign.value.segment_id
+        ? { segment: miraTalentCampaign.value.segment_id }
         : {})
     }));
-    
+
     // Call custom bulk insert API
     const result = await call('mbw_mira.api.campaign.bulk_create_campaign_records', {
       records: bulkData,
       doctype: doctype
     });
-    
+
     console.log(`Successfully created ${result.length || bulkData.length} ${doctype} records`);
     return result;
   } catch (error) {
     console.error(`Error creating ${doctype} records:`, error);
-    
+
     // Fallback to individual inserts if bulk fails
     console.log('Falling back to individual inserts...');
     try {
@@ -2130,11 +2134,11 @@ const createCampaignRecords = async (campaignName) => {
           campaign_id: campaignName,
           [recordField]: recordId,
           status: 'ACTIVE',
-          ...(recordType === 'mira_talent' && miraTalentCampaign.value.segment_id 
-            ? { segment: miraTalentCampaign.value.segment_id } 
+          ...(recordType === 'mira_talent' && miraTalentCampaign.value.segment_id
+            ? { segment: miraTalentCampaign.value.segment_id }
             : {})
         };
-        
+
         return await call('frappe.client.insert', {
           doc: {
             doctype: doctype,
@@ -2142,7 +2146,7 @@ const createCampaignRecords = async (campaignName) => {
           }
         });
       });
-      
+
       const results = await Promise.all(promises);
       console.log(`Successfully created ${results.length} ${doctype} records via fallback`);
       return results;
@@ -2201,16 +2205,16 @@ const finalizeCampaign = async () => {
           socialPages.value.find(
             (p) => p.external_account_id === configData.value.socialConfig?.page_id
           )?.account_name || "",
-        post_schedule_time: configData.value.socialConfig?.scheduled_at 
+        post_schedule_time: configData.value.socialConfig?.scheduled_at
           ? formatDateForDatabase(configData.value.socialConfig.scheduled_at)
           : "",
         template_content: configData.value.socialConfig?.template_content || "",
-        social_media_images: configData.value.socialConfig?.image 
-          ? (Array.isArray(configData.value.socialConfig.image) 
-              ? JSON.stringify(configData.value.socialConfig.image) 
+        social_media_images: configData.value.socialConfig?.image
+          ? (Array.isArray(configData.value.socialConfig.image)
+              ? JSON.stringify(configData.value.socialConfig.image)
               : configData.value.socialConfig.image)
           : "",
-        
+
       };
 
       // Save or update campaign steps
@@ -2425,7 +2429,7 @@ const finalizeCampaign = async () => {
             : []
       ),
     };
-    
+
     // Add file data if source is file
     if (selectedSource.value === "file" && configData.value.sourceTarget) {
       campaignUpdatePayload.source_target = configData.value.sourceTarget;
@@ -2508,7 +2512,7 @@ const debouncedAutoSave = () => {
   if (autoSaveTimer.value) {
     clearTimeout(autoSaveTimer.value);
   }
-  
+
   autoSaveTimer.value = setTimeout(async () => {
     await autoSave();
   }, 2000); // Auto-save after 2 seconds of inactivity
@@ -2526,7 +2530,7 @@ const stringifyIfNeeded = (value) => {
 const autoSave = async () => {
   try {
     const campaignId = draftCampaign.value?.data?.name || editingCampaignData.value?.name;
-    
+
     if (!campaignId || isAutoSaving.value) return;
 
     // Set flags to prevent infinite loop
@@ -2577,22 +2581,22 @@ const autoSave = async () => {
         mira_talent_campaign: JSON.stringify(miraTalentCampaignConfig)
       })
     };
-    
+
     await campaignStore.updateCampaignData(campaignId, updateData);
     console.log('✅ Auto-saved successfully');
     if (miraTalentCampaignConfig) {
       console.log('📝 Auto-saved mira_talent_campaign config:', miraTalentCampaignConfig);
     }
-    
+
     // Show success indicator
     lastSaveSuccess.value = true;
     showSaveSuccess.value = true;
-    
+
     // Hide success indicator after 3 seconds
     setTimeout(() => {
       showSaveSuccess.value = false;
     }, 3000);
-    
+
   } catch (error) {
     console.error('❌ Auto-save error:', error);
     lastSaveSuccess.value = false;
@@ -2612,15 +2616,15 @@ const validateCurrentStep = () => {
   if (currentStep.value === 1) {
     // Step 1: Validate campaign info
     const errors = [];
-    
+
     if (!campaignData.value.campaign_name?.trim()) {
       errors.push(__("Campaign name is required"));
     }
-    
+
     if (!campaignData.value.interaction_method) {
       errors.push(__("Please select an interaction method"));
     }
-    
+
     if (errors.length > 0) {
       // Hiển thị từng lỗi riêng biệt
       errors.forEach(error => {
@@ -2628,22 +2632,22 @@ const validateCurrentStep = () => {
       });
       return false;
     }
-    
+
     return true;
   }
-  
+
   if (currentStep.value === 2) {
     // Step 2: Validate target segment selection
     // Add validation if needed
     return true;
   }
-  
+
   if (currentStep.value === 3) {
     // Step 3: Validate content design
     // Add validation if needed
     return true;
   }
-  
+
   // Other steps - add validation as needed
   return true;
 };
@@ -2656,14 +2660,14 @@ const createOrUpdateCampaignFlow = async (campaignId) => {
 const saveCurrentStepData = async () => {
   try {
     const campaignId = draftCampaign.value?.data?.name || editingCampaignData.value?.name;
-    
+
     if (!campaignId) {
       console.warn('⚠️ No campaign ID available for saving');
       return;
     }
 
     console.log('💾 Saving current step data for campaign:', campaignId);
-    
+
     // For step 2, save content to Mira Flow instead of JSON
     if (currentStep.value === 2) {
       const flowResult = await createOrUpdateCampaignFlow(campaignId);
@@ -2672,7 +2676,7 @@ const saveCurrentStepData = async () => {
       }
       console.log('✅ Campaign flow saved successfully');
     }
-    
+
     // Update basic campaign info
     const updateData = {
       campaign_name: campaignData.value.campaign_name,
@@ -2681,15 +2685,15 @@ const saveCurrentStepData = async () => {
       start_date: formatDateForDatabase(campaignData.value.start_date),
       end_date: formatDateForDatabase(campaignData.value.end_date)
     };
-    
+
     await campaignStore.updateCampaignData(campaignId, updateData);
-    
+
     // Show success indicator
     lastSaveSuccess.value = true;
     setTimeout(() => {
       lastSaveSuccess.value = false;
     }, 2000);
-    
+
     console.log('✅ Current step data saved successfully');
   } catch (error) {
     console.error('❌ Error saving step data:', error);
@@ -2705,15 +2709,15 @@ const handleContentUpdate = (updatedContent) => {
     console.log('⏭️ Skipping content update - auto-save cycle in progress');
     return;
   }
-  
+
   // Update campaign data with content from editor
   Object.assign(campaignData.value, updatedContent);
-  
+
   // Store additional_actions as-is (don't convert to follow_up_actions/automation_rules)
   if (updatedContent.additional_actions) {
     campaignData.value.additional_actions = updatedContent.additional_actions;
   }
-  
+
   console.log('📝 Content updated:', updatedContent);
   console.log('📝 campaignData after update:', {
     interaction_method: campaignData.value.interaction_method,
@@ -2722,7 +2726,7 @@ const handleContentUpdate = (updatedContent) => {
     blocks: campaignData.value.blocks,
     additional_actions: campaignData.value.additional_actions
   });
-  
+
   // Auto-save when content is updated in step 2
   if (currentStep.value === 2 && draftCampaign.value?.data?.name) {
     // Debounced auto-save to avoid too many API calls
@@ -2731,8 +2735,33 @@ const handleContentUpdate = (updatedContent) => {
 };
 
 const handleContentSave = async () => {
-  console.log('💾 Saving content from editor');
-  await saveCurrentStepData();
+  console.log('💾 [CampaignWizard] Received save event from content editor');
+  console.log('💾 [CampaignWizard] Current contentEditorData:', contentEditorData.value);
+
+  try {
+    const campaignId = draftCampaign.value?.data?.name || editingCampaignData.value?.name;
+
+    if (!campaignId) {
+      console.warn('⚠️ [CampaignWizard] No campaign ID available for saving content');
+      toast.error(__('Campaign not found. Please try again.'));
+      return;
+    }
+
+    console.log('💾 [CampaignWizard] Saving content for campaign:', campaignId);
+
+    // Save content to campaign flow
+    const flowResult = await createOrUpdateCampaignFlow(campaignId);
+    if (!flowResult.success) {
+      throw new Error(flowResult.error || 'Failed to save campaign content');
+    }
+
+    console.log('✅ [CampaignWizard] Campaign content saved successfully');
+    toast.success(__('Content saved successfully'));
+
+  } catch (error) {
+    console.error('❌ [CampaignWizard] Failed to save content:', error);
+    toast.error(__('Failed to save content: ') + error.message);
+  }
 };
 
 const handleContentPreview = (content) => {
@@ -2777,13 +2806,13 @@ const saveEditCampaign = async () => {
       socialPages.value.find(
         (p) => p.external_account_id === configData.value.socialConfig?.page_id
       )?.account_name || "",
-    post_schedule_time: configData.value.socialConfig?.scheduled_at 
+    post_schedule_time: configData.value.socialConfig?.scheduled_at
       ? formatDateForDatabase(configData.value.socialConfig.scheduled_at)
       : "",
     template_content: configData.value.socialConfig?.template_content || "",
-    social_media_images: configData.value.socialConfig?.image 
-      ? (Array.isArray(configData.value.socialConfig.image) 
-          ? JSON.stringify(configData.value.socialConfig.image) 
+    social_media_images: configData.value.socialConfig?.image
+      ? (Array.isArray(configData.value.socialConfig.image)
+          ? JSON.stringify(configData.value.socialConfig.image)
           : configData.value.socialConfig.image)
       : "",
   };
@@ -2930,7 +2959,7 @@ const closeWizard = () => {
   pageSize.value = 20;
   totalRecords.value = 0;
   searchLoading.value = false;
-  
+
   // Reset nurturing flows
   nurturingFlows.value = [];
 };
@@ -2951,10 +2980,10 @@ const createDraftCampaign = async () => {
     console.log("🔧 Creating draft campaign with user input...");
     // Map selectedSource to source_type (DataSource | File | Search)
     const sourceTypeMap = { datasource: "DataSource", file: "File", search: "Search" };
-    const mappedSourceType = selectedSource.value 
+    const mappedSourceType = selectedSource.value
       ? sourceTypeMap[selectedSource.value] || campaignData.value.source_type || "Search"
       : "Gathering"; // Không chọn nguồn thì để Gathering
-    
+
     console.log("🔍 Draft campaign source_type mapping:");
     console.log("  - selectedSource:", selectedSource.value);
     console.log("  - campaignData.source_type:", campaignData.value.source_type);
@@ -3002,18 +3031,18 @@ const createDraftCampaign = async () => {
         : {}),
     };
     console.log("🔍 draftPayload>>>>>>>>>>>>>>>>>>>>>>>>>>:", draftPayload);
-    
+
     // Test API connection first
     const connectionOk = await campaignStore.testApiConnection();
     if (!connectionOk) {
       throw new Error('API connection failed. Please check your network connection.');
     }
-    
+
     try {
       // Try custom API first, then fallback to standard method
       console.log("🔄 Attempting to create campaign via custom API...")
       let result;
-      
+
       try {
         result = await campaignStore.createCampaignViaCustomAPI(draftPayload);
         console.log("✅ Custom API success:", result);
@@ -3022,9 +3051,9 @@ const createDraftCampaign = async () => {
         result = await campaignStore.submitNewCampaign(draftPayload);
         console.log("✅ Standard API success:", result);
       }
-      
+
       console.log("🔍 Final result:", result);
-      
+
       if (result && result.success && result.data) {
         draftCampaign.value = { data: result.data };
         console.log("✅ Draft campaign created:", result.data.name);
@@ -3084,16 +3113,16 @@ watch(
     }));
 
     campaignData.value.source_file = cfg?.selectedFile?.name || ""; // để BE biết file
-    
+
     // Ensure source_type is set correctly for file
     campaignData.value.source_type = "File";
-    
+
     console.log('📁 Updated source_file:', campaignData.value.source_file);
     console.log('🎯 Updated source_type:', campaignData.value.source_type);
-    
+
     // Determine doctype based on sourceTarget
     const metaDoctype = cfg?.sourceTarget === 'talent' ? 'Mira Talent' : 'Mira Contact';
-    
+
     campaignData.value.source_config = JSON.stringify({
       file_name: cfg?.selectedFile?.name || "",
       meta_doctype: metaDoctype,
@@ -3187,7 +3216,7 @@ watch(show, async (newVal) => {
         campaignData.value.description = ec.description || "";
         campaignData.value.type = ec.type || "MARKETING";
         campaignData.value.status = ec.status || campaignData.value.status;
-        
+
         // Load interaction_method from Flow if not in campaign
         let interactionMethod = ec.interaction_method
         if (!interactionMethod) {
@@ -3203,11 +3232,11 @@ watch(show, async (newVal) => {
           }
         }
         campaignData.value.interaction_method = interactionMethod || "EMAIL"
-        
+
         campaignData.value.target_segment =
           ec.target_segment || campaignData.value.target_segment || "";
         campaignData.value.criteria = ec.criteria || ""; // Load criteria from database
-        
+
         // Parse and restore custom conditions if exists
         if (ec.criteria) {
           try {
@@ -3234,13 +3263,13 @@ watch(show, async (newVal) => {
         campaignData.value.start_date =
           ec.start_date || campaignData.value.start_date || "";
         campaignData.value.end_date = ec.end_date || campaignData.value.end_date || "";
-        
+
         // Load content from Mira Flow using store method
         try {
           console.log('🔍 Loading flow for campaign:', ec.name, 'interaction_method:', campaignData.value.interaction_method);
           const flowResult = await campaignStore.loadCampaignFlow(ec.name, campaignData.value.interaction_method);
           console.log('🔍 Flow result:', flowResult);
-          
+
           if (flowResult.success && flowResult.data) {
             // Apply loaded data to campaignData
             console.log('🔍 Data to apply:', flowResult.data);
@@ -3284,13 +3313,13 @@ watch(show, async (newVal) => {
             campaignData.value.action_buttons = [];
           }
         }
-        
+
         // Load mira_talent_campaign config if exists (legacy)
         if (ec.mira_talent_campaign) {
           try {
             const miraTalentConfig = JSON.parse(ec.mira_talent_campaign);
             console.log('📝 Loading mira_talent_campaign config:', miraTalentConfig);
-            
+
             // Restore content config if available
             if (miraTalentConfig.content_config) {
               const contentConfig = miraTalentConfig.content_config;
@@ -3303,7 +3332,7 @@ watch(show, async (newVal) => {
               campaignData.value.success_action = contentConfig.success_action || campaignData.value.success_action;
               campaignData.value.failure_action = contentConfig.failure_action || campaignData.value.failure_action;
             }
-            
+
             // Restore additional actions if available
             if (miraTalentConfig.additional_actions) {
               campaignData.value.additional_actions = miraTalentConfig.additional_actions;
@@ -3311,13 +3340,13 @@ watch(show, async (newVal) => {
               campaignData.value.follow_up_actions = miraTalentConfig.additional_actions.follow_up_actions || [];
               campaignData.value.automation_rules = miraTalentConfig.additional_actions.automation_rules || [];
             }
-            
+
             console.log('✅ Successfully loaded mira_talent_campaign config');
           } catch (e) {
             console.warn('Failed to parse mira_talent_campaign:', e);
           }
         }
-        
+
         // Source hints
         if (ec.source_type) {
           campaignData.value.source_type = ec.source_type;
@@ -3381,7 +3410,7 @@ watch(show, async (newVal) => {
         campaignData.value.type = props.campaignType;
         console.log('🎯 Set campaign type from route:', props.campaignType);
       }
-      
+
       if (!campaignData.value.start_date) {
         const now = new Date();
         campaignData.value.start_date = toLocalDatetimeInput(now);
@@ -3534,26 +3563,26 @@ const confirmSocialConfig = async () => {
         configData.value.socialConfig.template_content = "";
       }
     }
-    
+
     // Create Mira Campaign Social when social config is confirmed
     if (draftCampaign.value?.data?.name && configData.value.socialConfig) {
       try {
         console.log('🔧 Creating Mira Campaign Social from social config...');
         // Get external_connection from selected data source in wizard mode
-        const selectedConnection = configData.value.selectedDataSource?.name || 
+        const selectedConnection = configData.value.selectedDataSource?.name ||
                                  configData.value.socialConfig.external_connection || '';
-        
+
         // Ensure social pages are loaded
         if (socialPages.value.length === 0 && configData.value.selectedDataSource) {
           console.log('🔄 Social pages not loaded, loading now...');
           await loadSocialPages();
         }
-        
+
         // Find selected page info
         const selectedPage = socialPages.value.find(
           (p) => p.external_account_id === configData.value.socialConfig.page_id
         );
-        
+
         console.log('🔍 Creating social post with data:', {
           page_id: configData.value.socialConfig.page_id,
           socialPages: socialPages.value,
@@ -3565,7 +3594,7 @@ const confirmSocialConfig = async () => {
           draftCampaign.value.data.name,
           {
             external_connection: selectedConnection,
-            platform: configData.value.selectedDataSource?.platform_type || 
+            platform: configData.value.selectedDataSource?.platform_type ||
                      externalConnections.value.find(
                        (conn) => conn.name === selectedConnection
                      )?.platform_type || '',
@@ -3578,7 +3607,7 @@ const confirmSocialConfig = async () => {
         );
 
         console.log('✅ Mira Campaign Social created from social config:', result);
-        
+
         // Store the social post ID for editing
         if (result && result.name) {
           editingSocialId.value = result.name;
@@ -3609,24 +3638,24 @@ const openSocialConfigEditor = async () => {
     if (jobOpeningsList.value.length === 0) {
       await loadJobOpenings();
     }
-    
+
     // Set external_connection from selectedDataSource
     if (!configData.value.socialConfig) {
       configData.value.socialConfig = {};
     }
     configData.value.socialConfig.external_connection = configData.value.selectedDataSource?.name || '';
-    
+
     if (!configData.value.socialConfig?.scheduled_at) {
       const now = new Date();
       const plus30m = new Date(now.getTime() + 30 * 60 * 1000);
       configData.value.socialConfig.scheduled_at = toLocalDatetimeInput(plus30m);
     }
-    
+
     // Clear editing ID when opening for new creation
     if (!editingSocialId.value) {
       editingSocialId.value = null;
     }
-    
+
     showSocialConfigModal.value = true;
   }
 };

@@ -234,6 +234,7 @@
                     v-if="trigger.channel === 'email'"
                     :content="trigger.content"
                     @update:content="updateTriggerContent(index, $event)"
+                    @saved="handleEmailSaved(index, $event)"
                   >
                     <template #actions>
                       <Button @click="openTestEmailModal(trigger)" variant="solid" theme="blue" size="sm">
@@ -369,7 +370,7 @@
       v-model="showTestEmailModal"
       :options="{
         title: __('Test Email Configuration'),
-        size: '3xl'
+        size: '5xl'
       }"
     >
       <template #body-content>
@@ -387,11 +388,14 @@
 		   <label class="block text-sm font-medium text-gray-700">
               {{ __('Content') }}
             </label>
-          <div class="border rounded overflow-hidden">
+          <div class="overflow-hidden">
             <iframe
-              class="w-full p-2 h-80 bg-white"
-              :srcdoc="getPreviewIframeDoc(testEmailTrigger?.content)"
+              ref="testEmailPreviewIframe"
+              class="w-full h-80 bg-white border-0 test-email-preview-iframe"
+              :srcdoc="testEmailPreviewHtml"
               scrolling="auto"
+              style="border: none; outline: none;"
+              @load="onPreviewIframeLoad"
             ></iframe>
           </div>
         </div>
@@ -419,7 +423,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { useToast } from '@/composables/useToast'
 import { FeatherIcon, Button, FormControl, Autocomplete, Dropdown, Dialog, call } from 'frappe-ui'
 import DelaySelector from '../molecules/DelaySelector.vue'
@@ -518,19 +522,82 @@ const initializeTriggers = () => {
   // Don't create default trigger - start empty
 }
 
+// Get default email template (same as NewMiraEmailTemplate.vue)
+const getDefaultEmailTemplate = () => {
+  return `
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="font-family: Arial, sans-serif;">
+            <tr>
+                <td style="background-color: #f4f4f4; padding: 20px;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="margin: 0 auto; background: #ffffff;">
+                        <!-- Header -->
+                        <tr>
+                            <td style="background-color: #ffffff; padding: 30px 20px; text-align: center;">
+                                <h1 style="margin: 0; color: #333333; font-size: 28px; font-weight: bold;">Welcome to Our Company</h1>
+                            </td>
+                        </tr>
+                        
+                        <!-- Main Content -->
+                        <tr>
+                            <td style="padding: 30px 20px;">
+                                <p style="margin: 0 0 15px 0; font-size: 16px; line-height: 1.5; color: #333333;">Dear {{candidate_name}},</p>
+                                <p style="margin: 0 0 15px 0; font-size: 16px; line-height: 1.5; color: #333333;">Thank you for your application for the position of {{job_title}}. We have received your application and will review it carefully.</p>
+                                <p style="margin: 0 0 25px 0; font-size: 16px; line-height: 1.5; color: #333333;">We will contact you within 5-7 business days regarding the next steps in our hiring process.</p>
+                                
+                                <!-- Button -->
+                                <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto;">
+                                    <tr>
+                                        <td style="background-color: #007bff; border-radius: 4px;">
+                                            <a href="#" style="background-color: #007bff; border: none; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-size: 16px;">
+                                                View Application Status
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        
+                        <!-- Signature -->
+                        <tr>
+                            <td style="padding: 20px; font-size: 16px; line-height: 1.5; color: #333333;">
+                                <p style="margin: 0 0 10px 0;">Best regards,</p>
+                                <p style="margin: 0; font-weight: bold;">HR Team</p>
+                                <p style="margin: 5px 0 0 0; color: #666666; font-size: 14px;">{{company_name}}</p>
+                            </td>
+                        </tr>
+                        
+                        <!-- Footer -->
+                        <tr>
+                            <td style="background-color: #343a40; color: white; padding: 30px 20px; text-align: center;">
+                                <p style="margin: 0 0 10px 0; font-size: 14px;">© 2024 {{company_name}}. All rights reserved.</p>
+                                <p style="margin: 0; font-size: 12px;">
+                                    <a href="#" style="color: #adb5bd; text-decoration: none;">Unsubscribe</a> | 
+                                    <a href="#" style="color: #adb5bd; text-decoration: none;">Privacy Policy</a>
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    `;
+};
+
 // Add new trigger
 const addTrigger = (channel = 'email') => {
   let content = {};
   let sender_account = null;
 
-  // Always create a new empty template for the trigger
+  // Always create a new template for the trigger
   if (channel === 'email') {
+    // Use default email template for new emails
+    const defaultTemplate = getDefaultEmailTemplate();
     content = {
       email_subject: '',
       email_content: '',
       block_content: '',
-      template_content: '',
+      template_content: defaultTemplate.trim(), // Set default template content
       mjml_content: '',
+      css_content: '', // Initialize css_content as empty string
       attachments: []
     };
   } else if (channel === 'zalo') {
@@ -579,14 +646,41 @@ const toggleExpand = (index) => {
 
 // Update trigger content
 const updateTriggerContent = (index, content) => {
-  console.log('🔄 [Step2] Updating trigger content:', { index, content })
   localTriggers.value[index].content = content
-
-  // Debug: Log the updated trigger
-  console.log('✅ [Step2] Updated trigger:', localTriggers.value[index])
-
   // Emit updated triggers to parent
   emit('update:triggers', localTriggers.value)
+}
+
+// Handle email saved event - auto-save to doctype
+const handleEmailSaved = async (index, content) => {
+  // Update trigger content first
+  localTriggers.value[index].content = content
+  emit('update:triggers', localTriggers.value)
+
+  // Auto-save to doctype if campaign is already created
+  if (props.name && props.doctype === 'Mira Campaign') {
+    try {
+      // Prepare triggers data - extract sender_account value
+      const triggersData = localTriggers.value.map(trigger => ({
+        ...trigger,
+        sender_account: typeof trigger.sender_account === 'object'
+          ? trigger.sender_account?.value
+          : trigger.sender_account
+      }))
+
+      const result = await call('mbw_mira.api.campaign_social.save_nurturing_campaign_triggers', {
+        campaign_id: props.name,
+        triggers: triggersData
+      })
+
+      if (result.success) {
+        toast.success(__('Template saved to campaign'))
+      }
+    } catch (error) {
+      console.error('[Step2] Error auto-saving triggers:', error)
+      toast.error(__('Failed to auto-save template'))
+    }
+  }
 }
 
 // Get content preview for email
@@ -1067,6 +1161,38 @@ const testEmailTrigger = ref(null)
 const testEmailAddress = ref('')
 const isSendingEmail = ref(false)
 
+// Computed property for test email preview HTML to ensure reactivity
+const testEmailPreviewHtml = computed(() => {
+  if (!testEmailTrigger.value?.content) {
+    return ''
+  }
+  return getPreviewIframeDoc(testEmailTrigger.value.content)
+})
+
+// Watch for changes in testEmailTrigger content to force iframe update
+watch(() => testEmailTrigger.value?.content, (newContent) => {
+  if (newContent && showTestEmailModal.value) {
+    nextTick(() => {
+      const iframe = document.querySelector('.test-email-preview-iframe')
+      if (iframe && testEmailPreviewHtml.value) {
+        iframe.srcdoc = testEmailPreviewHtml.value
+      }
+    })
+  }
+}, { deep: true })
+
+const onPreviewIframeLoad = () => {
+  // Force iframe to reload CSS by checking if CSS is actually loaded
+  const iframe = document.querySelector('.test-email-preview-iframe')
+  if (iframe && iframe.contentDocument) {
+    const iframeDoc = iframe.contentDocument
+    const styleTags = iframeDoc.querySelectorAll('style[id="email-css-content"]')
+    if (styleTags.length === 0) {
+      console.warn('[Step2] No CSS style tag found in iframe')
+    }
+  }
+}
+
 const openTestEmailModal = (trigger) => {
   testEmailTrigger.value = trigger
   testEmailAddress.value = ''
@@ -1080,9 +1206,86 @@ const stripHtml = (html) => {
 }
 
 const getPreviewIframeDoc = (content) => {
-  const html = getPreviewHtml(content)
-  // Basic doc with Tailwind CDN stripped to avoid conflicts
-  return `<!DOCTYPE html><html><head><meta charset='utf-8'><style>body, p, div, span{font-family: Arial, sans-serif;font-size:14px;margin:0;padding:12px;color:#3c414b;font-weight:400;}</style></head><body>${html}</body></html>`
+  if (!content) {
+    return wrapEmailContent('', true, '')
+  }
+  
+  let html = getPreviewHtml(content)
+  let cssContent = content?.css_content || ''
+  
+  // Ensure css_content is a string, not undefined
+  if (!cssContent || typeof cssContent !== 'string') {
+    cssContent = ''
+  }
+  
+  // Extract body content if needed
+  if (html && (html.includes('<html') || html.includes('<HTML') || html.trim().startsWith('<body') || html.trim().startsWith('<BODY'))) {
+    // Check if HTML starts with <body> tag directly
+    if (html.trim().startsWith('<body') || html.trim().startsWith('<BODY')) {
+      const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i)
+      if (bodyMatch && bodyMatch[1]) {
+        html = bodyMatch[1]
+      } else {
+        const bodyStart = html.indexOf('<body')
+        if (bodyStart !== -1) {
+          const bodyTagEnd = html.indexOf('>', bodyStart) + 1
+          html = html.substring(bodyTagEnd)
+        }
+      }
+    }
+    // Extract body content if HTML has <body> tag (inside full document)
+    else if (html.includes('<body') || html.includes('<BODY')) {
+      const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i)
+      if (bodyMatch && bodyMatch[1]) {
+        html = bodyMatch[1]
+      } else {
+        const bodyStart = html.indexOf('<body')
+        if (bodyStart !== -1) {
+          const bodyTagEnd = html.indexOf('>', bodyStart) + 1
+          html = html.substring(bodyTagEnd)
+        }
+      }
+    } else {
+      // If HTML has <html> but no <body>, try to extract content after </head> or <html>
+      if (html.includes('</head>') || html.includes('</HEAD>')) {
+        const headEnd = html.indexOf('</head>') + 7
+        html = html.substring(headEnd)
+      } else if (html.includes('<html') || html.includes('<HTML')) {
+        const htmlStart = html.indexOf('<html')
+        if (htmlStart !== -1) {
+          const htmlTagEnd = html.indexOf('>', htmlStart) + 1
+          html = html.substring(htmlTagEnd)
+          html = html.replace(/<\/html>$/i, '').trim()
+        }
+      }
+    }
+    
+    // Remove any remaining head tags and body tags from extracted content
+    html = html
+      .replace(/<head[^>]*>[\s\S]*?<\/head>/gi, '')
+      .replace(/<body[^>]*>/gi, '')
+      .replace(/<\/body>/gi, '')
+      .replace(/<meta[^>]*>/gi, '')
+      .replace(/<title[^>]*>[\s\S]*?<\/title>/gi, '')
+      .replace(/<link[^>]*>/gi, '')
+      .trim()
+  }
+  
+  // Remove existing <style> tags from HTML
+  if (html) {
+    html = html.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+  }
+  
+  // Final cleanup - Remove any remaining <body> tags
+  if (html) {
+    html = html
+      .replace(/<body[^>]*>/gi, '')
+      .replace(/<\/body>/gi, '')
+      .trim()
+  }
+  
+  // Use wrapEmailContent for preview, passing CSS separately
+  return wrapEmailContent(html || '', true, cssContent || '')
 }
 
 const getPreviewPlainText = (content) => {
@@ -1109,42 +1312,150 @@ const getPreviewPlainText = (content) => {
 // old function kept for other uses
 const getPreviewHtml = (content) => {
   if (!content) return ''
-  if (content.template_content) return content.template_content
-  if (content.email_content) return content.email_content
+  
+  // Priority 1: Use template_content directly (full HTML with structure)
+  if (content.template_content) {
+    return content.template_content
+  }
+  
+  // Priority 2: Use email_content (legacy format)
+  if (content.email_content) {
+    // Check if it's JSON format
+    if (typeof content.email_content === 'string' && content.email_content.startsWith('{')) {
+      try {
+        const design = JSON.parse(content.email_content)
+        if (design.html) {
+          return design.html
+        }
+      } catch (e) {
+        // Not JSON, treat as HTML
+        return content.email_content
+      }
+    }
+    return content.email_content
+  }
+  
+  // Priority 3: Extract from block_content (EmailBuilder format)
   if (content.block_content) {
     try {
-      const design = JSON.parse(content.block_content)
+      const design = typeof content.block_content === 'string' 
+        ? JSON.parse(content.block_content) 
+        : content.block_content
+      
+      // If design has html property, use it
+      if (design.html) {
+        return design.html
+      }
+      
+      // Otherwise, extract from blocks
       let html = ''
       design.blocks?.forEach(block => {
         if (block.type === 'text' && block.props?.content) {
           html += block.props.content
         }
       })
-      return html
+      return html || ''
     } catch (e) {
-      return content.block_content
+      // If parsing fails, treat as HTML string
+      return typeof content.block_content === 'string' ? content.block_content : ''
     }
   }
+  
   return typeof content === 'string' ? content : JSON.stringify(content)
 }
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const isTestEmailValid = computed(() => emailPattern.test(testEmailAddress.value))
 
-const wrapEmailContent = (html) => {
-  // center aligned single column table 600px with white background
-  return `<!DOCTYPE html><html><head><meta charset='utf-8'></head>
-  <body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,sans-serif;">
-    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:separate !important;background:#f5f5f5;padding:40px 0;">
-      <tr>
-        <td align="center">
-          <table role="presentation" cellpadding="0" cellspacing="0" width="600" align="center" style="border-collapse:separate !important;margin:0 auto;background:#ffffff;border-radius:8px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.05);font-size:14px;line-height:1.6;color:#000000;">
-            <tr><td>${html}</td></tr>
-          </table>
-        </td>
-      </tr>
-    </table>
-  </body></html>`
+const wrapEmailContent = (html, forPreview = false, externalCss = '') => {
+  // Priority: Use externalCss if provided, otherwise extract from HTML
+  let cssContent = (externalCss && typeof externalCss === 'string') ? externalCss : ''
+  let htmlBody = html || ''
+  
+  // Extract CSS from HTML if no external CSS provided
+  if (!cssContent && html) {
+    const styleMatch = html.match(/<style[^>]*>([\s\S]*?)<\/style>/gi)
+    if (styleMatch && styleMatch.length > 0) {
+      cssContent = styleMatch.map(match => {
+        const contentMatch = match.match(/<style[^>]*>([\s\S]*?)<\/style>/i)
+        return contentMatch ? contentMatch[1] : ''
+      }).join('\n')
+      htmlBody = html.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    } else {
+      htmlBody = html
+    }
+  } else if (html) {
+    htmlBody = html.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+  }
+  
+  // Clean up HTML body - remove head tags
+  htmlBody = htmlBody
+    .replace(/<meta[^>]*>/gi, '')
+    .replace(/<title[^>]*>[\s\S]*?<\/title>/gi, '')
+    .replace(/<link[^>]*>/gi, '')
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    .trim()
+  
+  // Create full HTML document
+  if (forPreview) {
+    const cssStyleTag = (cssContent && typeof cssContent === 'string' && cssContent.trim().length > 0)
+      ? `<style type="text/css" id="email-css-content">${cssContent}</style>`
+      : ''
+    
+    return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <style type="text/css" id="email-reset-styles">
+    html, body { 
+      margin: 0; 
+      padding: 0; 
+      background-color: #ffffff; 
+      width: 100%;
+      height: 100%;
+    }
+    * { 
+      box-sizing: border-box; 
+    }
+    table { 
+      border-collapse: collapse; 
+      mso-table-lspace: 0pt; 
+      mso-table-rspace: 0pt; 
+    }
+    img { 
+      border: 0; 
+      height: auto; 
+      line-height: 100%; 
+      outline: none; 
+      text-decoration: none; 
+      -ms-interpolation-mode: bicubic; 
+    }
+    a { 
+      text-decoration: none; 
+    }
+  </style>
+  ${cssStyleTag}
+</head>
+<body style="margin: 0; padding: 0; background-color: #ffffff; font-family: Arial, sans-serif;">
+  ${htmlBody}
+</body>
+</html>`
+  } else {
+    return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  ${cssContent ? `<style type="text/css">${cssContent}</style>` : ''}
+</head>
+<body style="margin:0;padding:0;background-color:#ffffff;">
+  ${htmlBody}
+</body>
+</html>`
+  }
 }
 
 const sendEmail = async (trigger, recipient) => {
@@ -1152,11 +1463,23 @@ const sendEmail = async (trigger, recipient) => {
   try {
     const subject = trigger.content?.email_subject || 'Test Email';
     let rawContent = getPreviewHtml(trigger.content);
+    
+    // Get CSS content from trigger
+    const cssContent = trigger.content?.css_content || ''
+    console.log('🎨 [sendEmail] CSS content check:')
+    console.log('   css_content exists:', !!cssContent)
+    console.log('   css_content length:', cssContent?.length || 0)
+    
+    // Remove existing <style> tags from HTML to avoid duplicates
+    if (rawContent) {
+      rawContent = rawContent.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    }
+    
     // Replace placeholders with actual values (handle both with and without spaces)
     rawContent = rawContent.replace(/\{\{\s*full_name\s*\}\}/g, recipient);
 
     // Replace localhost URLs and relative paths with production domain
-    console.log('🔍 Before replace:', rawContent);
+    console.log('🔍 [sendEmail] Before replace:', rawContent.substring(0, 200) + '...');
 
     // Replace absolute localhost URLs
     rawContent = rawContent.replaceAll('http://localhost:8080', 'https://hireos.fastwork.vn');
@@ -1168,14 +1491,18 @@ const sendEmail = async (trigger, recipient) => {
     rawContent = rawContent.replace(/src="\/files\//g, 'src="https://hireos.fastwork.vn/files/');
     rawContent = rawContent.replace(/href="\/files\//g, 'href="https://hireos.fastwork.vn/files/');
 
-    console.log('✅ After replace:', rawContent);
+    console.log('✅ [sendEmail] After replace, content length:', rawContent.length);
 
     // Check if replacement worked
     if (rawContent.includes('localhost')) {
       console.warn('⚠️ WARNING: localhost still found in content after replacement!');
     }
 
-    const content = wrapEmailContent(rawContent);
+    // Wrap email content with CSS injected into <head>
+    const content = wrapEmailContent(rawContent, false, cssContent); // false = for actual email, cssContent = external CSS
+
+    console.log('✅ [sendEmail] Final content length:', content.length)
+    console.log('✅ [sendEmail] CSS in content:', content.includes(cssContent?.substring(0, 50) || ''))
 
     const result = await call('mbw_mira.api.campaign.send_test_email', {
       recipient: recipient,

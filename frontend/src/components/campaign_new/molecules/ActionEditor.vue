@@ -900,6 +900,86 @@ import EmailContentEditor from './EmailContentEditor.vue'
 import { allActionTypes, actionIcons, actionDescriptions } from '../../../config/campaigns/commonConfig'
 import { convertEmailBuilderToHtml } from '@/utils/emailBuilderConverter.js'
 
+// Default email template HTML (same as NewMiraEmailTemplate.vue)
+const getDefaultEmailTemplate = () => {
+  return `
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="font-family: Arial, sans-serif;">
+            <tr>
+                <td style="background-color: #f4f4f4; padding: 20px;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="margin: 0 auto; background: #ffffff;">
+                        <!-- Header -->
+                        <tr>
+                            <td style="background-color: #ffffff; padding: 30px 20px; text-align: center;">
+                                <h1 style="margin: 0; color: #333333; font-size: 28px; font-weight: bold;">Welcome to Our Company</h1>
+                            </td>
+                        </tr>
+                        
+                        <!-- Main Content -->
+                        <tr>
+                            <td style="padding: 30px 20px;">
+                                <p style="margin: 0 0 15px 0; font-size: 16px; line-height: 1.5; color: #333333;">Dear {{candidate_name}},</p>
+                                <p style="margin: 0 0 15px 0; font-size: 16px; line-height: 1.5; color: #333333;">Thank you for your application for the position of {{job_title}}. We have received your application and will review it carefully.</p>
+                                <p style="margin: 0 0 25px 0; font-size: 16px; line-height: 1.5; color: #333333;">We will contact you within 5-7 business days regarding the next steps in our hiring process.</p>
+                                
+                                <!-- Button -->
+                                <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto;">
+                                    <tr>
+                                        <td style="background-color: #007bff; border-radius: 4px;">
+                                            <a href="#" style="background-color: #007bff; border: none; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-size: 16px;">
+                                                View Application Status
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        
+                        <!-- Signature -->
+                        <tr>
+                            <td style="padding: 20px; font-size: 16px; line-height: 1.5; color: #333333;">
+                                <p style="margin: 0 0 10px 0;">Best regards,</p>
+                                <p style="margin: 0; font-weight: bold;">HR Team</p>
+                                <p style="margin: 5px 0 0 0; color: #666666; font-size: 14px;">{{company_name}}</p>
+                            </td>
+                        </tr>
+                        
+                        <!-- Footer -->
+                        <tr>
+                            <td style="background-color: #343a40; color: white; padding: 30px 20px; text-align: center;">
+                                <p style="margin: 0 0 10px 0; font-size: 14px;">© 2024 {{company_name}}. All rights reserved.</p>
+                                <p style="margin: 0; font-size: 12px;">
+                                    <a href="#" style="color: #adb5bd; text-decoration: none;">Unsubscribe</a> | 
+                                    <a href="#" style="color: #adb5bd; text-decoration: none;">Privacy Policy</a>
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    `;
+}
+
+// Helper: detect old "email-default-css" wrapper CSS that should NOT be used as css_content
+const isLegacyWrapperCss = (css) => {
+  if (!css || typeof css !== 'string') return false
+  const trimmed = css.trim()
+  if (!trimmed) return false
+  // Heuristic: legacy wrapper CSS always contains these snippets
+  return trimmed.includes('background-color: #f4f4f4; color: #111111; font-family: Arial, sans-serif;')
+    && trimmed.includes('table { border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt; }')
+}
+
+// Helper: strip <style id="email-default-css">...</style> from HTML template_content
+const stripEmailDefaultStyleTag = (html) => {
+  if (!html || typeof html !== 'string') return html
+  try {
+    return html.replace(/<style[^>]*id=["']email-default-css["'][^>]*>[\s\S]*?<\/style>/i, '').trim()
+  } catch (e) {
+    return html
+  }
+}
+
 const props = defineProps({
   show: {
     type: Boolean,
@@ -975,15 +1055,41 @@ const emailContent = computed(() => ({
   email_subject: localAction.value.email_subject || '',
   email_content: localAction.value.email_content || localAction.value.content || '',  // Legacy field
   block_content: localAction.value.block_content || '',        // EmailBuilder format
-  template_content: localAction.value.template_content || '',  // HTML format
+  // IMPORTANT: strip legacy <style id="email-default-css"> from HTML before sending to EmailBuilder
+  template_content: stripEmailDefaultStyleTag(
+    localAction.value.template_content || getDefaultEmailTemplate().trim()
+  ),
   mjml_content: localAction.value.mjml_content || '',          // MJML format
+  // css_content: ignore legacy wrapper CSS; let EmailBuilder manage real block CSS (like Step2)
+  css_content: isLegacyWrapperCss(localAction.value.css_content)
+    ? ''
+    : (localAction.value.css_content || ''),
   attachments: localAction.value.attachments || [],
   sender_account: localAction.value.sender_account || null
 }))
 
+// Helper: extract CSS inside <style>...</style> from an HTML string
+const extractCssFromHtml = (html) => {
+  if (!html || typeof html !== 'string') return ''
+  try {
+    const match = html.match(/<style[^>]*>([\s\S]*?)<\/style>/i)
+    if (match && match[1]) {
+      return match[1].trim()
+    }
+  } catch (e) {
+    // ignore parse errors
+  }
+  return ''
+}
+
 // Handle email content update from EmailContentEditor
 const handleEmailContentUpdate = (content) => {
   console.log('📧 [ActionEditor] Email content updated:', content)
+  console.log('📧 [ActionEditor] CSS content in update:', {
+    hasCss: !!content.css_content,
+    cssLength: content.css_content?.length || 0,
+    cssPreview: content.css_content?.substring(0, 100) + '...'
+  })
   
   // Save all content formats
   localAction.value.email_subject = content.email_subject
@@ -991,6 +1097,7 @@ const handleEmailContentUpdate = (content) => {
   localAction.value.block_content = content.block_content        // EmailBuilder format
   localAction.value.template_content = content.template_content  // HTML format
   localAction.value.mjml_content = content.mjml_content          // MJML format
+  localAction.value.css_content = content.css_content || ''      // CSS content for styling
   localAction.value.attachments = content.attachments
   localAction.value.sender_account = content.sender_account
   
@@ -998,7 +1105,9 @@ const handleEmailContentUpdate = (content) => {
     email_subject: localAction.value.email_subject,
     block_content: localAction.value.block_content?.substring(0, 100) + '...',
     template_content: localAction.value.template_content?.substring(0, 100) + '...',
-    mjml_content: localAction.value.mjml_content?.substring(0, 100) + '...'
+    mjml_content: localAction.value.mjml_content?.substring(0, 100) + '...',
+    css_content: localAction.value.css_content?.substring(0, 100) + '...',
+    cssLength: localAction.value.css_content?.length || 0
   })
 }
 
@@ -1319,6 +1428,18 @@ watch(() => props.action, (newAction) => {
   if (newAction) {
     localAction.value = { ...newAction }
     
+    // If action is EMAIL, seed default HTML only when really empty.
+    // CSS will be managed by EmailEditor/EmailBuilder (getCss) like in Step2.
+    if (localAction.value.action_type === 'EMAIL') {
+      const hasTemplate = localAction.value.template_content && localAction.value.template_content.trim() !== ''
+      const hasBlock = localAction.value.block_content && localAction.value.block_content.trim() !== ''
+      if (!hasTemplate && !hasBlock) {
+        localAction.value.template_content = getDefaultEmailTemplate().trim()
+        localAction.value.css_content = ''
+        console.log('🎨 [ActionEditor] Seeded default email template HTML for empty EMAIL action (no css_content)')
+      }
+    }
+    
     // Unpack action_parameters into top-level fields for form binding
     if (newAction.action_parameters) {
       const params = typeof newAction.action_parameters === 'string'
@@ -1328,6 +1449,14 @@ watch(() => props.action, (newAction) => {
       // Merge parameters into localAction for easier form binding
       Object.assign(localAction.value, params)
       
+      // Ensure EMAIL still has css_content after params merge
+      if (localAction.value.action_type === 'EMAIL') {
+        if (!localAction.value.css_content || !localAction.value.css_content.trim()) {
+          localAction.value.css_content = getDefaultEmailTemplateCss()
+          console.log('🎨 [ActionEditor] Applied default CSS after params merge')
+        }
+      }
+
       console.log('📦 Unpacked action_parameters:', params)
     }
     
@@ -1418,6 +1547,15 @@ const handleActionTypeChange = () => {
   // Set default channel based on action type
   if (actionType === 'EMAIL') {
     localAction.value.channel_type = 'Email'
+    // Seed default template when switching to EMAIL without existing content
+    const hasTemplate = localAction.value.template_content && localAction.value.template_content.trim() !== ''
+    const hasBlock = localAction.value.block_content && localAction.value.block_content.trim() !== ''
+    if (!hasTemplate && !hasBlock) {
+      localAction.value.template_content = getDefaultEmailTemplate()
+      localAction.value.css_content = ''
+      localAction.value.email_content = ''
+      localAction.value.block_content = ''
+    }
   } else if (actionType === 'MESSAGE') {
     localAction.value.channel_type = 'Zalo'
   }
@@ -1434,6 +1572,7 @@ const save = async () => {
       actionParams.block_content = localAction.value.block_content        // EmailBuilder format
       actionParams.template_content = localAction.value.template_content  // HTML format
       actionParams.mjml_content = localAction.value.mjml_content          // MJML format
+      actionParams.css_content = localAction.value.css_content || ''      // CSS content for styling
       actionParams.attachments = localAction.value.attachments || []
       actionParams.sender_account = localAction.value.sender_account || null
       

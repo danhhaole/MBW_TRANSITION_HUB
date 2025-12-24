@@ -52,12 +52,16 @@
           </div>
 
           <!-- Content Preview -->
-          <div v-if="hasAnyContent" class="mt-4 p-3 bg-white rounded border">
-            <div class="text-xs text-gray-500 mb-2">{{ __("Preview:") }}</div>
-            <div
-              class="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap overflow-hidden"
-              v-html="stripMJMLTables(getPreviewContent(getContentForPreview()))"
-            >
+          <div v-if="hasAnyContent" class="mt-4 bg-white rounded border">
+            <div class="text-xs text-gray-500 mb-2 px-3 pt-3">{{ __("Preview:") }}</div>
+            <div class="email-preview-wrapper" style="max-width: 100%; max-height: 600px; overflow-y: auto; overflow-x: hidden; border: 1px solid #e5e7eb; border-radius: 8px; background: #f4f4f4; padding: 8px;">
+              <iframe
+                ref="previewIframe"
+                :srcdoc="previewHtml"
+                style="width: 100%; min-height: 400px; border: none; background: #ffffff; border-radius: 4px; display: block;"
+                frameborder="0"
+                scrolling="yes"
+              ></iframe>
             </div>
           </div>
         </div>
@@ -145,7 +149,7 @@
     <Dialog
       v-model="showTemplateDialog"
       :options="{
-        title: __('Email Template Editor'),
+        title: __('Create Email Template'),
         size: '7xl'
       }"
     >
@@ -153,15 +157,8 @@
         <div class="space-y-6">
           <!-- Template Options -->
           <div class="flex items-center justify-between">
-            <h4 class="text-lg font-semibold">{{ __("Create Email Template") }}</h4>
+            <h4 class="text-lg font-semibold"></h4>
             <div class="flex space-x-2">
-              <Button
-                :label="__('Generate with AI')"
-                icon-left="zap"
-                variant="outline"
-                :loading="aiGenerating"
-                @click="generateWithAI"
-              />
               <Button
                 :label="__('Use Template')"
                 icon-left="layout"
@@ -171,28 +168,6 @@
             </div>
           </div>
 
-          <!-- Insert Fields Autocomplete -->
-          <div class="flex items-center justify-between mb-2">
-            <label class="text-sm font-medium text-gray-700">
-              {{ __("Insert Fields") }}
-            </label>
-            <Autocomplete
-              v-model="selectedDialogField"
-              :options="fieldAutocompleteOptions"
-              :placeholder="__('Search fields...')"
-              class="w-64"
-            >
-              <template #target="{ togglePopover }">
-                <Button
-                  :label="__('Insert Field')"
-                  icon-left="plus-circle"
-                  variant="outline"
-                  size="sm"
-                  @click="togglePopover"
-                />
-              </template>
-            </Autocomplete>
-          </div>
 
           <!-- Unlayer Email Editor -->
           <div class="relative">
@@ -210,8 +185,11 @@
             <EmailBuilder
               ref="emailBuilderEditor"
               v-model="dialogContent"
+              :initial-content="getInitialContentForEditor"
+              :initial-css="dialogCss"
               height="600px"
               @ready="onEditorReady"
+              @css-change="handleCssChange"
             />
 
             <!-- OLD Unlayer Editor - COMMENTED OUT -->
@@ -271,6 +249,7 @@ const localContent = ref({
   block_content: '',        // EmailBuilder format for editing
   template_content: '',     // HTML format for campaign storage/rendering
   mjml_content: '',         // MJML format for email services
+  css_content: '',          // CSS content for styling
   attachments: [],
   ...props.content
 })
@@ -278,15 +257,65 @@ const localContent = ref({
 const showTemplateDialog = ref(false)
 const showTemplateSelectorModal = ref(false)
 const dialogContent = ref('')
+// IMPORTANT: Initialize dialogCss from localContent.css_content if available
+const dialogCss = ref(localContent.value.css_content || '')
 const aiGenerating = ref(false)
 const emailBuilderEditor = ref(null)
 // OLD REF - COMMENTED OUT
 // const unlayerEditor = ref(null)
 const selectedDialogField = ref(null)
 const editorLoading = ref(false)
+const previewIframe = ref(null)
 const toast = useToast()
 
 const __ = (text) => text
+
+// Computed property to get initial content for EmailBuilder
+const getInitialContentForEditor = computed(() => {
+  // Priority 1: Use dialogContent if it's a string (HTML)
+  if (typeof dialogContent.value === 'string' && dialogContent.value.trim() !== '') {
+    return dialogContent.value
+  }
+  
+  // Priority 2: Convert dialogContent object to HTML if it exists
+  if (typeof dialogContent.value === 'object' && dialogContent.value !== null) {
+    // IMPORTANT: Extract CSS from object if available and set dialogCss
+    if (dialogContent.value.css && dialogContent.value.css.trim() !== '') {
+      dialogCss.value = dialogContent.value.css
+    }
+    
+    // IMPORTANT: If object has html field and blocks is empty, use html directly
+    if (dialogContent.value.html && dialogContent.value.html.trim() !== '') {
+      const blocksCount = dialogContent.value.blocks?.length || 0
+      if (blocksCount === 0) {
+        return dialogContent.value.html
+      }
+    }
+    
+    // Try to convert from blocks if blocks exist
+    try {
+      const htmlFormat = convertEmailBuilderToHtml(dialogContent.value)
+      const html = htmlFormat.html || ''
+      if (html && html.trim() !== '' && !html.includes('No content')) {
+        return html
+      } else if (dialogContent.value.html && dialogContent.value.html.trim() !== '') {
+        return dialogContent.value.html
+      }
+    } catch (e) {
+      if (dialogContent.value.html && dialogContent.value.html.trim() !== '') {
+        return dialogContent.value.html
+      }
+    }
+  }
+  
+  // Priority 3: Fallback to localContent.template_content
+  const fallback = localContent.value.template_content || ''
+  if (fallback && fallback.trim() !== '') {
+    return fallback
+  }
+  
+  return ''
+})
 
 // Check if there's any content to preview
 const hasAnyContent = computed(() => {
@@ -379,7 +408,68 @@ const openTemplateEditor = () => {
 
   editorLoading.value = true
 
-  // Load existing design if available - prioritize block_content
+  // IMPORTANT: Load CSS first from localContent.css_content to ensure it's available
+  if (localContent.value.css_content && localContent.value.css_content.trim() !== '') {
+    dialogCss.value = localContent.value.css_content
+  }
+
+  // Check if template_content has actual HTML elements (not just CSS/meta)
+  const hasHtmlElements = (content) => {
+    if (!content) return false
+    // Remove CSS, meta, and whitespace, then check if there's actual HTML content
+    const cleanContent = content
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+      .replace(/<meta[^>]*>/gi, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+    return cleanContent.length > 100 && /<[^>]+>/.test(cleanContent)
+  }
+
+  if (localContent.value.block_content && localContent.value.block_content.trim()) {
+    try {
+      const blockData = JSON.parse(localContent.value.block_content)
+      
+      // IMPORTANT: Load block_content even if blocks is empty, as long as it has html or css
+      const hasBlocks = blockData?.blocks && Array.isArray(blockData.blocks) && blockData.blocks.length > 0
+      const hasHtml = blockData?.html && blockData.html.trim() !== ''
+      const hasCss = blockData?.css && blockData.css.trim() !== ''
+      
+      if (hasBlocks || hasHtml || hasCss) {
+        // IMPORTANT: Always load CSS from blockData.css first (highest priority)
+        if (blockData.css && blockData.css.trim() !== '') {
+          dialogCss.value = blockData.css
+          if (!localContent.value.css_content || localContent.value.css_content.trim() === '') {
+            localContent.value.css_content = blockData.css
+          }
+        } else if (localContent.value.css_content && localContent.value.css_content.trim() !== '') {
+          dialogCss.value = localContent.value.css_content
+          blockData.css = localContent.value.css_content
+          localContent.value.block_content = JSON.stringify(blockData)
+        }
+        
+        // IMPORTANT: Use blockData.html if available, otherwise use blockData object
+        if (hasHtml) {
+          dialogContent.value = blockData.html
+        } else {
+          dialogContent.value = blockData
+        }
+        
+        // IMPORTANT: Ensure CSS is set from blockData if available
+        if (blockData.css && blockData.css.trim() !== '') {
+          dialogCss.value = blockData.css
+        } else if (localContent.value.css_content && localContent.value.css_content.trim() !== '') {
+          dialogCss.value = localContent.value.css_content
+        }
+        
+        showTemplateDialog.value = true
+        return
+      }
+    } catch (e) {
+      console.error('[EmailEditor] Error parsing block_content:', e)
+    }
+  }
+
+  // Fallback to JSON formats
   const contentToLoad = localContent.value.block_content || localContent.value.email_content
 
   if (contentToLoad) {
@@ -388,93 +478,478 @@ const openTemplateEditor = () => {
       if (typeof contentToLoad === 'string' && contentToLoad.trim().startsWith('{')) {
         const design = JSON.parse(contentToLoad)
 
-        // NEW: Check for EmailBuilder format first
+        // Extract HTML content from blocks if available
+        if (design.blocks && design.blocks.length > 0) {
+          const htmlBlock = design.blocks.find(block => block.type === 'html' && block.props && block.props.content)
+          if (htmlBlock && htmlBlock.props.content) {
+            dialogContent.value = htmlBlock.props.content
+
+            // Get CSS - Priority: css_content > extract from HTML
+            let finalCss = localContent.value.css_content || ''
+            if (!finalCss && localContent.value.template_content) {
+              const cssMatch = localContent.value.template_content.match(/<style[^>]*>([\s\S]*?)<\/style>/i)
+              if (cssMatch && cssMatch[1]) {
+                finalCss = cssMatch[1].trim()
+              }
+            }
+            if (!finalCss && htmlBlock.props.content) {
+              const htmlCssMatch = htmlBlock.props.content.match(/<style[^>]*>([\s\S]*?)<\/style>/i)
+              if (htmlCssMatch && htmlCssMatch[1]) {
+                finalCss = htmlCssMatch[1].trim()
+              }
+            }
+            dialogCss.value = finalCss
+            showTemplateDialog.value = true
+            return
+          }
+        }
+
+        // Check for EmailBuilder format
         if (design && design.blocks && Array.isArray(design.blocks)) {
-          dialogContent.value = design
-          console.log('Loading EmailBuilder format:', design)
+          // Priority 1: Use design.css if available
+          if (design.css && design.css.trim() !== '') {
+            dialogCss.value = design.css
+          } else if (localContent.value.css_content && localContent.value.css_content.trim() !== '') {
+            dialogCss.value = localContent.value.css_content
+          }
+
+          // If design.html exists, use it for GrapesJS
+          if (design.html && design.html.trim() !== '') {
+            dialogContent.value = design.html
+            if (design.css && design.css.trim() !== '') {
+              dialogCss.value = design.css
+            } else if (localContent.value.css_content && localContent.value.css_content.trim() !== '') {
+              dialogCss.value = localContent.value.css_content
+            }
+          }
+          // If blocks exist, extract HTML content
+          else if (design.blocks.length > 0) {
+            const htmlContent = design.blocks
+              .filter(block => block.type === 'html' && block.props && block.props.content)
+              .map(block => block.props.content)
+              .join('')
+
+            if (htmlContent) {
+              dialogContent.value = htmlContent
+
+              // Get CSS
+              let finalCss = localContent.value.css_content || ''
+              if (!finalCss && localContent.value.template_content) {
+                const cssMatch = localContent.value.template_content.match(/<style[^>]*>([\s\S]*?)<\/style>/i)
+                if (cssMatch && cssMatch[1]) {
+                  finalCss = cssMatch[1].trim()
+                }
+              }
+              if (!finalCss && htmlContent) {
+                const htmlCssMatch = htmlContent.match(/<style[^>]*>([\s\S]*?)<\/style>/i)
+                if (htmlCssMatch && htmlCssMatch[1]) {
+                  finalCss = htmlCssMatch[1].trim()
+                }
+              }
+              if (finalCss && finalCss.trim() !== '' && !dialogCss.value) {
+                dialogCss.value = finalCss
+              }
+            }
+          }
+          // If no blocks and no design.html, set dialogContent to design object
+          else if (!design.html) {
+            dialogContent.value = design
+            if (design.css && design.css.trim() !== '') {
+              dialogCss.value = design.css
+            } else if (localContent.value.css_content && localContent.value.css_content.trim() !== '') {
+              dialogCss.value = localContent.value.css_content
+            }
+          }
         }
         // OLD: Validate it's a proper Unlayer design (backward compatibility)
         else if (design && design.body && Array.isArray(design.body.rows)) {
           dialogContent.value = design
-          console.log('Loading Unlayer format (legacy):', design)
           toast.info(__('Loading legacy email format. Consider recreating with new editor.'))
         } else {
-          console.warn('Email content is not valid JSON format, starting with empty canvas')
           dialogContent.value = null
         }
       }
       // Handle HTML format - convert to EmailBuilder
       else if (isHtmlFormat(contentToLoad)) {
-        console.log('Converting HTML to EmailBuilder format')
         const converted = convertHtmlToEmailBuilder(contentToLoad)
         dialogContent.value = converted
-        toast.info(__('Converted HTML content to visual editor format'))
-      }
-      // Handle plain text or other formats
-      else {
-        console.warn('Unknown content format, starting with empty canvas')
+        
+        if (converted && converted.css && converted.css.trim() !== '') {
+          dialogCss.value = converted.css
+        } else if (localContent.value.css_content && localContent.value.css_content.trim() !== '') {
+          dialogCss.value = localContent.value.css_content
+        }
+      } else {
         dialogContent.value = null
+        toast.info(__('Starting with blank canvas. Previous content was in old format.'))
       }
-    } catch (e) {
-      console.warn('Failed to parse email_content, starting with empty canvas:', e)
+    } catch (error) {
+      console.error('[EmailEditor] Error parsing content:', error)
       dialogContent.value = null
-      toast.info(__('Starting with blank canvas. Previous content was in old format.'))
     }
   } else {
-    dialogContent.value = null
+    // IMPORTANT: If no block_content or email_content, use template_content if available
+    if (localContent.value.template_content && localContent.value.template_content.trim() !== '') {
+      dialogContent.value = localContent.value.template_content
+    } else {
+      // No content found - load default template for new email
+      const defaultTemplate = getDefaultEmailTemplate()
+      const defaultCss = getDefaultEmailTemplateCss()
+      
+      dialogContent.value = defaultTemplate
+      dialogCss.value = defaultCss
+      
+      localContent.value.template_content = defaultTemplate
+      localContent.value.css_content = defaultCss
+    }
+  }
+
+  // IMPORTANT: Ensure CSS is always set - check multiple sources
+  // Priority 1: dialogContent object css field (if dialogContent is object)
+  if (typeof dialogContent.value === 'object' && dialogContent.value !== null) {
+    if (dialogContent.value.css && dialogContent.value.css.trim() !== '') {
+      dialogCss.value = dialogContent.value.css
+    }
+  }
+  
+  // Priority 2: localContent.css_content (fallback)
+  if (!dialogCss.value && localContent.value.css_content && localContent.value.css_content.trim() !== '') {
+    dialogCss.value = localContent.value.css_content
   }
 
   showTemplateDialog.value = true
 }
 
 // Save template from dialog
-const saveTemplate = async () => {
+async function saveTemplate() {
+  console.log('💾 [EmailEditor] ========== SAVE TEMPLATE START ==========')
+  
   if (!emailBuilderEditor.value) {
-    toast.error(__('Editor not ready'))
-    return
+    toast.error(__('Editor not ready'));
+    return;
   }
 
   try {
-    // Export design from EmailBuilder
-    const exportData = emailBuilderEditor.value.exportHtml()
-    const blocks = emailBuilderEditor.value.getBlocks()
+    const editorInstance = emailBuilderEditor.value.editor || emailBuilderEditor.value;
 
-    // Create EmailBuilder format for internal use
-    const emailBuilderFormat = {
-      blocks,
-      emailSettings: exportData.emailSettings
-    }
+    // Log current CSS state
+    console.log('🎨 [EmailEditor] Current CSS state before save:')
+    console.log('   dialogCss.value exists:', !!dialogCss.value)
+    console.log('   dialogCss.value length:', dialogCss.value?.length || 0)
+    console.log('   dialogCss.value preview:', dialogCss.value?.substring(0, 200) + '...')
+    console.log('   localContent.value.css_content exists:', !!localContent.value.css_content)
+    console.log('   localContent.value.css_content length:', localContent.value.css_content?.length || 0)
+    console.log('   localContent.value.css_content preview:', localContent.value.css_content?.substring(0, 200) + '...')
 
-    // Force left alignment
-    if (!emailBuilderFormat.emailSettings) {
-      emailBuilderFormat.emailSettings = {
-        backgroundColor: '#ffffff',
-        contentWidth: 600,
-        contentAlign: 'left',
-        fontFamily: 'Arial, sans-serif'
+    if (!editorInstance) {
+      if (dialogContent.value) {
+        const htmlFormat = convertEmailBuilderToHtml(dialogContent.value);
+        const finalCss = dialogCss.value || localContent.value.css_content || htmlFormat.css || ''
+        
+        console.log('🎨 [EmailEditor] Path 1: No editorInstance, using dialogContent')
+        console.log('   finalCss source:', dialogCss.value ? 'dialogCss (PRIORITY 1)' : (localContent.value.css_content ? 'localContent.css_content (PRIORITY 2)' : (htmlFormat.css ? 'htmlFormat.css (PRIORITY 3)' : 'empty')))
+        console.log('   finalCss length:', finalCss.length)
+        console.log('   dialogCss.value length:', dialogCss.value?.length || 0)
+        console.log('   localContent.value.css_content length:', localContent.value.css_content?.length || 0)
+        console.log('   htmlFormat.css length:', htmlFormat.css?.length || 0)
+        
+        // Ensure CSS is in block_content
+        let blockData = dialogContent.value
+        if (typeof blockData === 'object' && blockData !== null) {
+          blockData = { ...blockData, css: finalCss, html: htmlFormat.html || blockData.html || '' }
+        }
+        
+        localContent.value = {
+          ...localContent.value,
+          template_content: htmlFormat.html,
+          css_content: finalCss,
+          block_content: JSON.stringify(blockData)
+        };
+        
+        console.log('✅ [EmailEditor] Saved css_content (Path 1), length:', finalCss.length)
+        console.log('   Saved to localContent.value.css_content:', !!localContent.value.css_content)
+        console.log('   Saved to block_content.css:', blockData.css ? 'yes' : 'no')
+      } else {
+        throw new Error('Editor not available');
       }
     } else {
-      emailBuilderFormat.emailSettings.contentAlign = 'left'
+      const hasGetHtml = typeof editorInstance.getHtml === 'function';
+      const hasGetCss = typeof editorInstance.getCss === 'function';
+
+      if (!hasGetHtml || !hasGetCss) {
+        const exportData = editorInstance.exportHtml ? editorInstance.exportHtml() : null;
+        if (exportData) {
+          // IMPORTANT: Priority dialogCss (contains CSS from imported template) > localContent.css_content > exportData.css
+          const finalCss = dialogCss.value || localContent.value.css_content || exportData.css || ''
+          
+          console.log('🎨 [EmailEditor] Path 2: Using exportHtml')
+          console.log('   finalCss source:', dialogCss.value ? 'dialogCss (PRIORITY 1)' : (localContent.value.css_content ? 'localContent.css_content (PRIORITY 2)' : (exportData.css ? 'exportData.css (PRIORITY 3)' : 'empty')))
+          console.log('   finalCss length:', finalCss.length)
+          console.log('   dialogCss.value length:', dialogCss.value?.length || 0)
+          console.log('   localContent.value.css_content length:', localContent.value.css_content?.length || 0)
+          console.log('   exportData.css length:', exportData.css?.length || 0)
+          
+          // Ensure CSS is in exportData
+          exportData.css = finalCss
+          
+          localContent.value = {
+            ...localContent.value,
+            template_content: exportData.html,
+            css_content: finalCss,
+            block_content: JSON.stringify(exportData)
+          };
+          
+          console.log('✅ [EmailEditor] Saved css_content (Path 2), length:', finalCss.length)
+          console.log('   Saved to localContent.value.css_content:', !!localContent.value.css_content)
+          console.log('   Saved to exportData.css:', !!exportData.css)
+        } else {
+          throw new Error('No valid export method found');
+        }
+      } else {
+        const html = editorInstance.getHtml();
+        const editorCss = editorInstance.getCss ? editorInstance.getCss() : '';
+        const design = editorInstance.getProjectData ? editorInstance.getProjectData() : dialogContent.value || { blocks: [] };
+
+        // IMPORTANT: Compare old CSS vs new CSS from editor
+        const oldCss = localContent.value.css_content || ''
+        const oldCssLength = oldCss.length
+        const newCssFromEditor = editorCss || ''
+        const newCssFromEditorLength = newCssFromEditor.length
+        const dialogCssLength = dialogCss.value?.length || 0
+        
+        console.log('🔄 [EmailEditor] ========== CSS COMPARISON ==========')
+        console.log('   Old CSS (localContent.value.css_content):')
+        console.log('     - Length:', oldCssLength)
+        console.log('     - Preview:', oldCss.substring(0, 200) + '...')
+        console.log('   New CSS from editor (getCss()):')
+        console.log('     - Length:', newCssFromEditorLength)
+        console.log('     - Preview:', newCssFromEditor.substring(0, 200) + '...')
+        console.log('   dialogCss.value (current dialog CSS):')
+        console.log('     - Length:', dialogCssLength)
+        console.log('     - Preview:', dialogCss.value?.substring(0, 200) + '...')
+        console.log('   CSS changed:', oldCss !== newCssFromEditor && newCssFromEditorLength > 0)
+        console.log('   dialogCss changed:', dialogCss.value !== newCssFromEditor && newCssFromEditorLength > 0)
+
+        // IMPORTANT: Priority CSS from editor (newest) > dialogCss (from template) > localContent (old) > design
+        // This ensures we always save the latest CSS that user edited in GrapesJS
+        let finalCss = ''
+        if (newCssFromEditor && newCssFromEditor.trim() !== '') {
+          // PRIORITY 1: Use CSS from editor (getCss()) - this is the latest CSS user edited
+          finalCss = newCssFromEditor
+          console.log('🎨 [EmailEditor] Path 3: Using NEW CSS from editor.getCss() (PRIORITY 1), length:', finalCss.length)
+          console.log('   ✅ Using NEW CSS from editor (user edited)')
+        } else if (dialogCss.value && dialogCss.value.trim() !== '') {
+          // PRIORITY 2: Use dialogCss (CSS from imported template or initial load)
+          finalCss = dialogCss.value
+          console.log('🎨 [EmailEditor] Path 3: Using dialogCss.value (PRIORITY 2), length:', finalCss.length)
+          console.log('   ⚠️ Using dialogCss (may be old CSS from template)')
+        } else if (oldCss && oldCss.trim() !== '') {
+          // PRIORITY 3: Use old CSS from localContent (fallback)
+          finalCss = oldCss
+          console.log('🎨 [EmailEditor] Path 3: Using localContent.value.css_content (PRIORITY 3), length:', finalCss.length)
+          console.log('   ⚠️ Using OLD CSS from localContent (fallback)')
+        } else if (design && design.css && design.css.trim() !== '') {
+          // PRIORITY 4: Use CSS from design object
+          finalCss = design.css
+          console.log('🎨 [EmailEditor] Path 3: Using design.css (PRIORITY 4), length:', finalCss.length)
+        } else {
+          console.log('⚠️ [EmailEditor] Path 3: No CSS found from any source')
+        }
+        
+        console.log('🎨 [EmailEditor] Path 3: Final CSS determined')
+        console.log('   finalCss length:', finalCss.length)
+        console.log('   finalCss preview:', finalCss.substring(0, 200) + '...')
+        console.log('   CSS will be saved:', finalCss !== oldCss ? '✅ YES (CSS changed)' : '⚠️ NO (same as old CSS)')
+        console.log('🔄 [EmailEditor] ========== END CSS COMPARISON ==========')
+
+        // Check if design has blocks - if not, convert HTML to block_content
+        const hasBlocks = design && design.blocks && Array.isArray(design.blocks) && design.blocks.length > 0
+        if (!hasBlocks && html && html.trim() !== '') {
+          console.log('🔄 [EmailEditor] Path 3a: No blocks, converting HTML to block_content')
+          try {
+            const converted = convertHtmlToEmailBuilder(html)
+            const cssToSave = finalCss || converted.css || ''
+            const blockContentToSave = {
+              ...converted,
+              css: cssToSave,
+              html: html
+            }
+            
+            localContent.value = {
+              ...localContent.value,
+              template_content: html,
+              block_content: JSON.stringify(blockContentToSave),
+              css_content: cssToSave
+            }
+            
+            console.log('✅ [EmailEditor] Saved css_content (Path 3a - converted), length:', cssToSave.length)
+          } catch (error) {
+            console.log('⚠️ [EmailEditor] Path 3a: Conversion failed, using fallback')
+            // Fallback: create minimal block_content
+            const blockContentToSave = {
+              blocks: [],
+              emailSettings: {
+                backgroundColor: '#ffffff',
+                contentWidth: 600,
+                contentAlign: 'left',
+                fontFamily: 'Arial, sans-serif'
+              },
+              css: finalCss,
+              html: html
+            }
+            
+            localContent.value = {
+              ...localContent.value,
+              template_content: html,
+              block_content: JSON.stringify(blockContentToSave),
+              css_content: finalCss
+            }
+            
+            console.log('✅ [EmailEditor] Saved css_content (Path 3a - fallback), length:', finalCss.length)
+          }
+        } else {
+          console.log('🔄 [EmailEditor] Path 3b: Design has blocks or is valid object')
+          // Design has blocks or is valid object - ensure CSS is saved
+          let blockContentToSave = design
+          if (design && typeof design === 'object') {
+            blockContentToSave = {
+              ...design,
+              css: finalCss || design.css || '',
+              html: html || design.html || ''
+            }
+          } else {
+            blockContentToSave = {
+              blocks: [],
+              emailSettings: {
+                backgroundColor: '#ffffff',
+                contentWidth: 600,
+                contentAlign: 'left',
+                fontFamily: 'Arial, sans-serif'
+              },
+              css: finalCss,
+              html: html || ''
+            }
+          }
+
+          localContent.value = {
+            ...localContent.value,
+            template_content: html,
+            block_content: JSON.stringify(blockContentToSave),
+            css_content: finalCss
+          }
+          
+          console.log('✅ [EmailEditor] Saved css_content (Path 3b), length:', finalCss.length)
+          console.log('   Saved to localContent.value.css_content:', !!localContent.value.css_content)
+          console.log('   Saved to blockContentToSave.css:', blockContentToSave.css ? 'yes' : 'no')
+        }
+      }
     }
 
-    // Convert to HTML/CSS for storage in campaign template_content
-    const htmlFormat = convertEmailBuilderToHtml(emailBuilderFormat)
+    // Log final saved state
+    console.log('💾 [EmailEditor] Final saved state:')
+    console.log('   localContent.value.css_content exists:', !!localContent.value.css_content)
+    console.log('   localContent.value.css_content length:', localContent.value.css_content?.length || 0)
+    console.log('   localContent.value.css_content preview:', localContent.value.css_content?.substring(0, 200) + '...')
+    console.log('   localContent.value.block_content exists:', !!localContent.value.block_content)
+    
+    // Check if CSS is in block_content
+    if (localContent.value.block_content) {
+      try {
+        const blockData = typeof localContent.value.block_content === 'string'
+          ? JSON.parse(localContent.value.block_content)
+          : localContent.value.block_content
+        console.log('   block_content.css exists:', !!blockData.css)
+        console.log('   block_content.css length:', blockData.css?.length || 0)
+      } catch (e) {
+        console.log('   block_content parse error:', e.message)
+      }
+    }
 
-    // Save all formats for different use cases
-    localContent.value.template_content = htmlFormat.html    // HTML for rendering
-    localContent.value.mjml_content = htmlFormat.mjml        // MJML for email services
-    localContent.value.block_content = JSON.stringify(emailBuilderFormat)  // EmailBuilder for editing
+    editorLoading.value = true;
 
-    console.log('💾 Saved formats:')
-    console.log('   template_content (HTML):', htmlFormat.html.substring(0, 100) + '...')
-    console.log('   mjml_content (MJML):', htmlFormat.mjml.substring(0, 100) + '...')
-    console.log('   block_content (EmailBuilder):', JSON.stringify(emailBuilderFormat).substring(0, 100) + '...')
+    console.log('📤 [EmailEditor] Emitting saved event with css_content length:', localContent.value.css_content?.length || 0)
+    emit('saved', { ...localContent.value });
+    emit('update:content', { ...localContent.value });
 
-    showTemplateDialog.value = false
-    toast.success(__('Email template saved successfully'))
+    console.log('✅ [EmailEditor] ========== SAVE TEMPLATE SUCCESS ==========')
+    toast.success(__('Template saved successfully'));
+    showTemplateDialog.value = false;
+
   } catch (error) {
-    console.error('Failed to save template:', error)
-    toast.error(__('Failed to save template'))
+    console.error('[EmailEditor] Error saving template:', error);
+    toast.error(__('Failed to save template: ') + (error.message || 'Unknown error'));
+  } finally {
+    editorLoading.value = false;
+  }
+}
+// Load current content into the editor
+const loadContentIntoEditor = () => {
+  if (localContent.value.block_content) {
+    try {
+      const blockData = typeof localContent.value.block_content === 'string'
+        ? JSON.parse(localContent.value.block_content)
+        : localContent.value.block_content;
+
+      // Set the HTML content
+      if (blockData.html) {
+        dialogContent.value = blockData.html;
+      }
+
+      // Set the CSS content - Priority: blockData.css > localContent.css_content > extract from HTML
+      let finalCss = ''
+      
+      if (blockData.css && blockData.css.trim() !== '') {
+        finalCss = blockData.css;
+      } else if (localContent.value.css_content && localContent.value.css_content.trim() !== '') {
+        finalCss = localContent.value.css_content;
+      } else if (blockData.html) {
+        const htmlCssMatch = blockData.html.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
+        if (htmlCssMatch && htmlCssMatch[1]) {
+          finalCss = htmlCssMatch[1].trim();
+        }
+      } else if (localContent.value.template_content) {
+        const templateCssMatch = localContent.value.template_content.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
+        if (templateCssMatch && templateCssMatch[1]) {
+          finalCss = templateCssMatch[1].trim();
+        }
+      }
+      
+      if (finalCss && finalCss.trim() !== '') {
+        dialogCss.value = finalCss;
+        localContent.value.css_content = finalCss;
+      }
+
+      // Update editor directly if available
+      if (emailBuilderEditor.value) {
+        if (blockData.html) {
+          emailBuilderEditor.value.setComponents(blockData.html);
+        }
+        if (finalCss && finalCss.trim() !== '') {
+          emailBuilderEditor.value.setStyle(finalCss);
+        }
+      }
+    } catch (error) {
+      console.error('[EmailEditor] Error parsing block_content:', error);
+    }
+  } else if (localContent.value.template_content) {
+    dialogContent.value = localContent.value.template_content;
+    
+    // Extract CSS from template_content if available
+    if (localContent.value.template_content) {
+      const templateCssMatch = localContent.value.template_content.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
+      if (templateCssMatch && templateCssMatch[1]) {
+        const extractedCss = templateCssMatch[1].trim();
+        dialogCss.value = extractedCss;
+        if (!localContent.value.css_content) {
+          localContent.value.css_content = extractedCss;
+        }
+      }
+    }
+    
+    // Also check css_content field
+    if (localContent.value.css_content && localContent.value.css_content.trim() !== '') {
+      dialogCss.value = localContent.value.css_content;
+    }
   }
 }
 
@@ -497,6 +972,15 @@ const useTemplate = () => {
 
 // Apply selected template
 const applyTemplate = (template) => {
+  console.log('📥 [EmailEditor] ========== APPLY TEMPLATE START ==========')
+  console.log('📥 [EmailEditor] Template name:', template.template_name || template.name)
+  console.log('📥 [EmailEditor] Template CSS sources:')
+  console.log('   template.css_content exists:', !!template.css_content)
+  console.log('   template.css_content length:', template.css_content?.length || 0)
+  console.log('   template.block_content exists:', !!template.block_content)
+  console.log('   template.email_design_json exists:', !!template.email_design_json)
+  console.log('   template.html_content exists:', !!template.html_content)
+  
   editorLoading.value = true
 
   if (template.subject) {
@@ -504,17 +988,83 @@ const applyTemplate = (template) => {
   }
 
   let templateApplied = false
+  let finalCss = '' // CSS to use for this template
 
-  // Use email_design_json field (EmailBuilder or Unlayer design) instead of message (HTML export)
-  if (template.email_design_json) {
+  // Priority 1: Check for block_content (EmailBuilder format stored directly)
+  if (template.block_content) {
     try {
-      // Parse template design JSON if it's string
+      const blockData = typeof template.block_content === 'string'
+        ? JSON.parse(template.block_content)
+        : template.block_content
+
+      if (blockData && (blockData.blocks || blockData.html)) {
+        // Get CSS - Priority: template.css_content > blockData.css
+        if (template.css_content && template.css_content.trim() !== '') {
+          finalCss = template.css_content
+          console.log('🎨 [EmailEditor] Priority 1: Using template.css_content, length:', finalCss.length)
+        } else if (blockData.css && blockData.css.trim() !== '') {
+          finalCss = blockData.css
+          console.log('🎨 [EmailEditor] Priority 1: Using blockData.css, length:', finalCss.length)
+        } else {
+          console.log('⚠️ [EmailEditor] Priority 1: No CSS found in template or blockData')
+        }
+        
+        // Force left alignment
+        if (!blockData.emailSettings) {
+          blockData.emailSettings = {
+            backgroundColor: '#ffffff',
+            contentWidth: 600,
+            contentAlign: 'left',
+            fontFamily: 'Arial, sans-serif'
+          }
+        } else {
+          blockData.emailSettings.contentAlign = 'left'
+        }
+
+        // Ensure CSS is in blockData
+        blockData.css = finalCss
+
+        // Convert and save all formats
+        const htmlFormat = convertEmailBuilderToHtml(blockData)
+        localContent.value.template_content = template.html_content || htmlFormat.html || template.message || ''
+        localContent.value.mjml_content = htmlFormat.mjml || ''
+        localContent.value.css_content = finalCss
+        localContent.value.block_content = JSON.stringify(blockData)
+
+        dialogContent.value = blockData.html || blockData
+        // IMPORTANT: Always set dialogCss even if finalCss is empty (to clear old CSS)
+        dialogCss.value = finalCss
+        
+        console.log('✅ [EmailEditor] Priority 1: Applied template from block_content')
+        console.log('   Set localContent.value.css_content, length:', finalCss.length)
+        console.log('   Set dialogCss.value, length:', dialogCss.value.length)
+        templateApplied = true
+      }
+    } catch (e) {
+      console.error('[EmailEditor] Failed to parse block_content:', e)
+    }
+  }
+
+  // Priority 2: Use email_design_json field (EmailBuilder or Unlayer design)
+  if (!templateApplied && template.email_design_json) {
+    try {
       const design = typeof template.email_design_json === 'string'
         ? JSON.parse(template.email_design_json)
         : template.email_design_json
 
-      // NEW: Check for EmailBuilder format first
-      if (design && design.blocks && Array.isArray(design.blocks)) {
+      // Check for EmailBuilder format first
+      if (design && design.blocks && Array.isArray(design.blocks) && design.blocks.length > 0) {
+        // Get CSS - Priority: template.css_content > design.css
+        if (template.css_content && template.css_content.trim() !== '') {
+          finalCss = template.css_content
+          console.log('🎨 [EmailEditor] Priority 2: Using template.css_content, length:', finalCss.length)
+        } else if (design.css && design.css.trim() !== '') {
+          finalCss = design.css
+          console.log('🎨 [EmailEditor] Priority 2: Using design.css, length:', finalCss.length)
+        } else {
+          console.log('⚠️ [EmailEditor] Priority 2: No CSS found in template or design')
+        }
+        
         // Force left alignment
         if (!design.emailSettings) {
           design.emailSettings = {
@@ -527,18 +1077,32 @@ const applyTemplate = (template) => {
           design.emailSettings.contentAlign = 'left'
         }
 
+        // Ensure CSS is in design
+        design.css = finalCss
+
         // Convert and save all formats
         const htmlFormat = convertEmailBuilderToHtml(design)
-        localContent.value.template_content = htmlFormat.html    // HTML for rendering
-        localContent.value.mjml_content = htmlFormat.mjml        // MJML for email services
-        localContent.value.block_content = JSON.stringify(design)  // EmailBuilder for editing
+        localContent.value.template_content = template.html_content || htmlFormat.html || template.message || ''
+        localContent.value.mjml_content = htmlFormat.mjml || ''
+        localContent.value.css_content = finalCss
+        localContent.value.block_content = JSON.stringify(design)
 
-        dialogContent.value = design
+        dialogContent.value = design.html || design
+        // IMPORTANT: Always set dialogCss even if finalCss is empty (to clear old CSS)
+        dialogCss.value = finalCss
+        
+        console.log('✅ [EmailEditor] Priority 2: Applied template from email_design_json')
+        console.log('   Set localContent.value.css_content, length:', finalCss.length)
+        console.log('   Set dialogCss.value, length:', dialogCss.value.length)
         templateApplied = true
-        console.log('Applied EmailBuilder template with left alignment:', design)
       }
       // OLD: Validate it's a proper Unlayer design (must have body.rows)
       else if (design && design.body && Array.isArray(design.body.rows)) {
+        // Get CSS from template
+        if (template.css_content && template.css_content.trim() !== '') {
+          finalCss = template.css_content
+        }
+        
         // Convert Unlayer to EmailBuilder format
         const converted = convertHtmlToEmailBuilder(design.body?.rows?.[0]?.columns?.[0]?.contents?.[0]?.values?.text || '')
 
@@ -554,29 +1118,108 @@ const applyTemplate = (template) => {
           converted.emailSettings.contentAlign = 'left'
         }
 
+        // Ensure CSS is in converted
+        converted.css = finalCss
+
         // Convert and save all formats
         const htmlFormat = convertEmailBuilderToHtml(converted)
-        localContent.value.template_content = htmlFormat.html    // HTML for rendering
-        localContent.value.mjml_content = htmlFormat.mjml        // MJML for email services
-        localContent.value.block_content = JSON.stringify(converted)  // EmailBuilder for editing
+        localContent.value.template_content = template.html_content || htmlFormat.html || template.message || ''
+        localContent.value.mjml_content = htmlFormat.mjml || ''
+        localContent.value.css_content = finalCss
+        localContent.value.block_content = JSON.stringify(converted)
 
-        dialogContent.value = converted
+        dialogContent.value = converted.html || converted
+        // IMPORTANT: Always set dialogCss even if finalCss is empty (to clear old CSS)
+        dialogCss.value = finalCss
+        
         templateApplied = true
-        console.log('Applied and converted Unlayer template (legacy) with left alignment:', design)
         toast.info(__('Applied legacy template format. Converted to new format.'))
-      } else {
-        console.warn('Template is not valid EmailBuilder or Unlayer format')
       }
     } catch (e) {
-      console.warn('Template email_design_json is not valid JSON:', e)
+      console.error('[EmailEditor] Failed to parse email_design_json:', e)
     }
   }
 
-  // If template couldn't be applied (old format or missing design JSON)
+  // Priority 3: If template has html_content or message, use it directly
+  if (!templateApplied && (template.html_content || template.message)) {
+    try {
+      const htmlContent = template.html_content || template.message || ''
+      
+      // Get CSS - Priority: template.css_content > extract from HTML
+      if (template.css_content && template.css_content.trim() !== '') {
+        finalCss = template.css_content
+        console.log('🎨 [EmailEditor] Priority 3: Using template.css_content, length:', finalCss.length)
+      } else if (htmlContent) {
+        // Try to extract CSS from <style> tags in HTML
+        const styleMatch = htmlContent.match(/<style[^>]*>([\s\S]*?)<\/style>/gi)
+        if (styleMatch && styleMatch.length > 0) {
+          finalCss = styleMatch.map(match => {
+            const contentMatch = match.match(/<style[^>]*>([\s\S]*?)<\/style>/i)
+            return contentMatch ? contentMatch[1] : ''
+          }).join('\n')
+          console.log('🎨 [EmailEditor] Priority 3: Extracted CSS from HTML, length:', finalCss.length)
+        } else {
+          console.log('⚠️ [EmailEditor] Priority 3: No CSS found in template or HTML')
+        }
+      }
+
+      // Use HTML content directly
+      dialogContent.value = htmlContent
+
+      // Set all content fields
+      localContent.value.template_content = htmlContent
+      localContent.value.css_content = finalCss
+      
+      // Create minimal block_content with CSS
+      const minimalBlockContent = {
+        blocks: [],
+        emailSettings: {
+          backgroundColor: '#ffffff',
+          contentWidth: 600,
+          contentAlign: 'left',
+          fontFamily: 'Arial, sans-serif'
+        },
+        css: finalCss,
+        html: htmlContent
+      }
+      localContent.value.block_content = JSON.stringify(minimalBlockContent)
+
+      // Convert to MJML format if needed (optional)
+      try {
+        const converted = convertHtmlToEmailBuilder(htmlContent)
+        const htmlFormat = convertEmailBuilderToHtml(converted)
+        localContent.value.mjml_content = htmlFormat.mjml || ''
+      } catch (e) {
+        localContent.value.mjml_content = ''
+      }
+
+      // IMPORTANT: Always set dialogCss even if finalCss is empty (to clear old CSS)
+      dialogCss.value = finalCss
+      
+      console.log('✅ [EmailEditor] Priority 3: Applied template from html_content')
+      console.log('   Set localContent.value.css_content, length:', finalCss.length)
+      console.log('   Set dialogCss.value, length:', dialogCss.value.length)
+      templateApplied = true
+    } catch (e) {
+      console.error('[EmailEditor] Failed to process html_content:', e)
+    }
+  }
+
+  // If template couldn't be applied (truly no design data)
   if (!templateApplied) {
-    dialogContent.value = null
+    if (localContent.value.template_content && localContent.value.template_content.trim() !== '') {
+      dialogContent.value = localContent.value.template_content
+    } else {
+      dialogContent.value = null
+    }
     toast.warning(__('This template does not have a valid design. Please create a new design with the visual editor.'))
     editorLoading.value = false
+  } else {
+    // IMPORTANT: Ensure dialogCss is set from finalCss before opening dialog
+    if (finalCss && finalCss.trim() !== '') {
+      dialogCss.value = finalCss
+      console.log('[EmailEditor] Template applied, CSS length:', finalCss.length)
+    }
   }
 
   showTemplateSelectorModal.value = false
@@ -584,11 +1227,55 @@ const applyTemplate = (template) => {
   // Ensure editor dialog stays open
   nextTick(() => {
     showTemplateDialog.value = true
+    
+    // IMPORTANT: Update editor with new CSS and content after template is applied
+    if (templateApplied && emailBuilderEditor.value) {
+      nextTick(() => {
+        // Update CSS in editor
+        if (finalCss && finalCss.trim() !== '') {
+          try {
+            const editor = emailBuilderEditor.value
+            if (editor && typeof editor.setStyle === 'function') {
+              editor.setStyle(finalCss)
+            }
+          } catch (error) {
+            console.error('[EmailEditor] Error setting CSS after template apply:', error)
+          }
+        }
+        
+        // Update content in editor if needed
+        if (dialogContent.value) {
+          try {
+            const editor = emailBuilderEditor.value
+            if (editor && typeof editor.setComponents === 'function') {
+              const htmlContent = typeof dialogContent.value === 'string' 
+                ? dialogContent.value 
+                : (dialogContent.value.html || '')
+              if (htmlContent) {
+                editor.setComponents(htmlContent)
+              }
+            }
+          } catch (error) {
+            console.error('[EmailEditor] Error setting content after template apply:', error)
+          }
+        }
+      })
+    }
   })
 
   if (templateApplied) {
+    console.log('✅ [EmailEditor] Template applied successfully')
+    console.log('📥 [EmailEditor] Final state after apply:')
+    console.log('   localContent.value.css_content length:', localContent.value.css_content?.length || 0)
+    console.log('   dialogCss.value length:', dialogCss.value?.length || 0)
+    console.log('   localContent.value.block_content exists:', !!localContent.value.block_content)
     toast.success(__('Template applied successfully'))
+  } else {
+    console.log('⚠️ [EmailEditor] Template was not applied')
   }
+  
+  console.log('📥 [EmailEditor] ========== APPLY TEMPLATE END ==========')
+  editorLoading.value = false
 }
 
 // Open template settings
@@ -642,6 +1329,87 @@ const stripMJMLTables = (html) => {
     console.warn('Error stripping MJML tables:', error)
     return html
   }
+}
+
+// Get default email template (same as NewMiraEmailTemplate.vue)
+const getDefaultEmailTemplate = () => {
+  return `
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="font-family: Arial, sans-serif;">
+            <tr>
+                <td style="background-color: #f4f4f4; padding: 20px;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="margin: 0 auto; background: #ffffff;">
+                        <!-- Header -->
+                        <tr>
+                            <td style="background-color: #ffffff; padding: 30px 20px; text-align: center;">
+                                <h1 style="margin: 0; color: #333333; font-size: 28px; font-weight: bold;">Welcome to Our Company</h1>
+                            </td>
+                        </tr>
+                        
+                        <!-- Main Content -->
+                        <tr>
+                            <td style="padding: 30px 20px;">
+                                <p style="margin: 0 0 15px 0; font-size: 16px; line-height: 1.5; color: #333333;">Dear {{candidate_name}},</p>
+                                <p style="margin: 0 0 15px 0; font-size: 16px; line-height: 1.5; color: #333333;">Thank you for your application for the position of {{job_title}}. We have received your application and will review it carefully.</p>
+                                <p style="margin: 0 0 25px 0; font-size: 16px; line-height: 1.5; color: #333333;">We will contact you within 5-7 business days regarding the next steps in our hiring process.</p>
+                                
+                                <!-- Button -->
+                                <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto;">
+                                    <tr>
+                                        <td style="background-color: #007bff; border-radius: 4px;">
+                                            <a href="#" style="background-color: #007bff; border: none; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-size: 16px;">
+                                                View Application Status
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        
+                        <!-- Signature -->
+                        <tr>
+                            <td style="padding: 20px; font-size: 16px; line-height: 1.5; color: #333333;">
+                                <p style="margin: 0 0 10px 0;">Best regards,</p>
+                                <p style="margin: 0; font-weight: bold;">HR Team</p>
+                                <p style="margin: 5px 0 0 0; color: #666666; font-size: 14px;">{{company_name}}</p>
+                            </td>
+                        </tr>
+                        
+                        <!-- Footer -->
+                        <tr>
+                            <td style="background-color: #343a40; color: white; padding: 30px 20px; text-align: center;">
+                                <p style="margin: 0 0 10px 0; font-size: 14px;">© 2024 {{company_name}}. All rights reserved.</p>
+                                <p style="margin: 0; font-size: 12px;">
+                                    <a href="#" style="color: #adb5bd; text-decoration: none;">Unsubscribe</a> | 
+                                    <a href="#" style="color: #adb5bd; text-decoration: none;">Privacy Policy</a>
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    `;
+}
+
+// Get default CSS for email template (same as plugin-mira-blocks.js)
+const getDefaultEmailTemplateCss = () => {
+  return `
+    body { margin: 0; padding: 0; background-color: #f4f4f4; }
+    table { border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    td { padding: 0; vertical-align: top; }
+    p { margin: 0; padding: 0; }
+    h1, h2, h3, h4, h5, h6 { margin: 0; padding: 0; }
+    a { text-decoration: none; }
+    .button { display: inline-block; background-color: #007bff; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 4px; }
+    * { box-sizing: border-box; }
+    img { border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; }
+    table { border-collapse: collapse !important; }
+    body { height: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
+    @media screen and (max-width: 600px) {
+      .email-container { width: 100% !important; max-width: 100% !important; }
+      .desktop-padding { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  `;
 }
 
 // Get preview content (extract from EmailBuilder blocks or Unlayer design)
@@ -714,11 +1482,191 @@ const getPreviewContent = (content) => {
   return content
 }
 
+// Get preview with CSS injected - Convert to computed property for reactivity
+const previewHtml = computed(() => {
+  const content = getContentForPreview()
+  let htmlContent = ''
+  
+  // Priority 1: Use template_content directly (already HTML with full structure)
+  if (localContent.value.template_content) {
+    htmlContent = localContent.value.template_content
+  } 
+  // Priority 2: Extract from block_content or email_content
+  else if (content) {
+    htmlContent = getPreviewContent(content)
+    // If getPreviewContent returns empty or too short, try to use content as HTML directly
+    if ((!htmlContent || htmlContent.length < 50) && typeof content === 'string' && !content.startsWith('{')) {
+      htmlContent = content
+    }
+  }
+  
+  // Get CSS content - use default CSS if not available
+  let cssContent = localContent.value.css_content || ''
+  if (!cssContent || cssContent.trim() === '') {
+    cssContent = getDefaultEmailTemplateCss()
+  }
+  
+  // IMPORTANT: Create complete HTML document for iframe preview (like Step2_ContentTimeline)
+  if (htmlContent && htmlContent.trim() !== '') {
+    // Check if HTML already has full document structure
+    const hasDoctype = htmlContent.trim().startsWith('<!DOCTYPE') || htmlContent.trim().startsWith('<!doctype')
+    const hasHtmlTag = htmlContent.includes('<html') || htmlContent.includes('<HTML')
+    const hasHeadTag = htmlContent.includes('<head') || htmlContent.includes('<HEAD')
+    const hasBodyTag = htmlContent.includes('<body') || htmlContent.includes('<BODY')
+    
+    // If already a complete HTML document, just inject CSS into head
+    if (hasDoctype && hasHtmlTag && hasHeadTag) {
+      // Remove existing style tags to avoid duplicates
+      let cleanHtml = htmlContent.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+      
+      // Inject CSS into head
+      const headEndMatch = cleanHtml.match(/<\/head>/i)
+      if (headEndMatch) {
+        const cssStyleTag = cssContent ? `\n  <style type="text/css">${cssContent}</style>` : ''
+        cleanHtml = cleanHtml.replace(/<\/head>/i, `${cssStyleTag}\n</head>`)
+      } else {
+        // If no </head> tag, try to inject before </html> or at end
+        const htmlEndMatch = cleanHtml.match(/<\/html>/i)
+        if (htmlEndMatch) {
+          const cssStyleTag = cssContent ? `\n  <style type="text/css">${cssContent}</style>` : ''
+          cleanHtml = cleanHtml.replace(/<\/html>/i, `${cssStyleTag}\n</html>`)
+        } else {
+          // Just prepend CSS as style tag
+          const cssStyleTag = cssContent ? `<style type="text/css">${cssContent}</style>\n` : ''
+          cleanHtml = cssStyleTag + cleanHtml
+        }
+      }
+      
+      return cleanHtml
+    }
+    
+    // Otherwise, extract body content and create full HTML document
+    // Remove existing <style> tags from HTML to avoid duplicates
+    let cleanHtml = htmlContent.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    
+    // Extract body content if HTML has <body> tag
+    let bodyContent = cleanHtml
+    if (cleanHtml.includes('<body')) {
+      const bodyMatch = cleanHtml.match(/<body[^>]*>([\s\S]*?)<\/body>/i)
+      if (bodyMatch && bodyMatch[1]) {
+        bodyContent = bodyMatch[1]
+      } else {
+        // If <body> tag exists but no closing tag, extract everything after <body>
+        const bodyStart = cleanHtml.indexOf('<body')
+        if (bodyStart !== -1) {
+          const bodyTagEnd = cleanHtml.indexOf('>', bodyStart) + 1
+          bodyContent = cleanHtml.substring(bodyTagEnd)
+        }
+      }
+    }
+    
+    // Remove <meta>, <title>, and other head tags from body content
+    bodyContent = bodyContent
+      .replace(/<meta[^>]*>/gi, '')
+      .replace(/<title[^>]*>[\s\S]*?<\/title>/gi, '')
+      .replace(/<link[^>]*>/gi, '')
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+      .trim()
+    
+    // Create complete HTML document with CSS in <head> for iframe preview
+    // IMPORTANT: Reset styles FIRST (low priority), then css_content (high priority)
+    // This ensures css_content styles override reset styles and browser defaults
+    const fullHtml = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <style type="text/css" id="email-reset-styles">
+    /* Minimal reset styles - only override browser defaults, NOT email CSS */
+    /* These styles have LOW priority - CSS from css_content will override them */
+    html, body { 
+      margin: 0; 
+      padding: 0; 
+      background-color: #f4f4f4; 
+      width: 100%;
+      height: 100%;
+    }
+    * { 
+      box-sizing: border-box; 
+    }
+    table { 
+      border-collapse: collapse; 
+      mso-table-lspace: 0pt; 
+      mso-table-rspace: 0pt; 
+    }
+    img { 
+      border: 0; 
+      height: auto; 
+      line-height: 100%; 
+      outline: none; 
+      text-decoration: none; 
+      -ms-interpolation-mode: bicubic; 
+    }
+    a { 
+      text-decoration: none; 
+    }
+  </style>
+  ${cssContent ? `<style type="text/css" id="email-css-content">${cssContent}</style>` : ''}
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif;">
+  ${bodyContent}
+</body>
+</html>`
+    
+    return fullHtml
+  }
+  
+  // Return HTML without CSS if no HTML available, but still strip MJML tables
+  const fallbackContent = htmlContent ? stripMJMLTables(htmlContent) : stripMJMLTables(getPreviewContent(content))
+  if (fallbackContent && cssContent) {
+    return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>${cssContent}</style>
+</head>
+<body style="margin: 0; padding: 0; background: #ffffff; font-family: Arial, sans-serif;">
+  ${fallbackContent}
+</body>
+</html>`
+  }
+  return fallbackContent || ''
+})
+
+// Handle CSS change from EmailBuilder (similar to EmailBuilder.vue)
+const handleCssChange = (newCss) => {
+  console.log('🎨 [EmailEditor] CSS changed from editor:')
+  console.log('   Old dialogCss.value length:', dialogCss.value?.length || 0)
+  console.log('   New CSS length:', newCss?.length || 0)
+  console.log('   CSS changed:', dialogCss.value !== newCss)
+  
+  if (newCss && newCss.trim() !== '') {
+    // IMPORTANT: Update dialogCss when CSS changes from editor
+    // This ensures we save the latest CSS from GrapesJS editor
+    dialogCss.value = newCss
+    console.log('✅ [EmailEditor] Updated dialogCss.value with new CSS from editor')
+  }
+}
+
 // Editor ready callback
 const onEditorReady = (editor) => {
   // Hide loading indicator when editor is fully ready
   setTimeout(() => {
     editorLoading.value = false
+    
+    // IMPORTANT: Apply CSS when editor is ready if dialogCss is set
+    if (dialogCss.value && dialogCss.value.trim() !== '') {
+      try {
+        if (emailBuilderEditor.value && typeof emailBuilderEditor.value.setStyle === 'function') {
+          emailBuilderEditor.value.setStyle(dialogCss.value)
+        }
+      } catch (error) {
+        console.error('[EmailEditor] Error applying CSS on editor ready:', error)
+      }
+    }
   }, 100)
 }
 
@@ -730,6 +1678,21 @@ watch(selectedDialogField, (newValue) => {
     setTimeout(() => {
       selectedDialogField.value = null
     }, 100)
+  }
+})
+
+// Watch dialogCss to update editor when CSS changes (e.g., after applying template)
+watch(dialogCss, (newCss) => {
+  if (newCss && newCss.trim() !== '' && emailBuilderEditor.value) {
+    nextTick(() => {
+      try {
+        if (emailBuilderEditor.value && typeof emailBuilderEditor.value.setStyle === 'function') {
+          emailBuilderEditor.value.setStyle(newCss)
+        }
+      } catch (error) {
+        console.error('[EmailEditor] Error updating CSS from dialogCss watch:', error)
+      }
+    })
   }
 })
 
@@ -784,9 +1747,47 @@ const formatFileSize = (bytes) => {
 
 watch(localContent, (newContent) => {
   emit('update:content', newContent)
+  
+  // IMPORTANT: Update dialogCss when localContent.css_content changes
+  if (newContent.css_content && newContent.css_content.trim() !== '') {
+    if (dialogCss.value !== newContent.css_content) {
+      dialogCss.value = newContent.css_content
+    }
+  }
+  
+  // Force iframe to update when content changes
+  if (previewIframe.value) {
+    nextTick(() => {
+      if (previewIframe.value) {
+        previewIframe.value.srcdoc = previewHtml.value
+      }
+    })
+  }
 }, { deep: true })
 
 watch(() => props.content, (newContent) => {
-  localContent.value = { ...localContent.value, ...newContent }
+  localContent.value = { 
+    ...localContent.value, 
+    ...newContent,
+    // Ensure css_content is always a string, not undefined
+    css_content: newContent?.css_content !== undefined ? newContent.css_content : (localContent.value.css_content || '')
+  }
+  // Force iframe to update when props content changes
+  if (previewIframe.value) {
+    nextTick(() => {
+      if (previewIframe.value) {
+        previewIframe.value.srcdoc = previewHtml.value
+      }
+    })
+  }
 }, { deep: true })
+
+// Watch previewHtml computed property to update iframe
+watch(previewHtml, (newHtml) => {
+  if (previewIframe.value && newHtml) {
+    previewIframe.value.srcdoc = newHtml
+  }
+})
+
 </script>
+

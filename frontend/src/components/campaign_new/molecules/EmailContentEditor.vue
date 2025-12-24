@@ -4,6 +4,7 @@
       :content="localContent"
       :readonly="readonly"
       @update:content="handleContentUpdate"
+      @saved="handleSaved"
     >
       <template #actions>
         <slot name="actions"></slot>
@@ -25,6 +26,7 @@ const props = defineProps({
       block_content: '',        // EmailBuilder format
       template_content: '',     // HTML format
       mjml_content: '',         // MJML format
+      css_content: '',          // CSS content for styling
       attachments: [],
       sender_account: null
     })
@@ -35,7 +37,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['update:content'])
+const emit = defineEmits(['update:content', 'saved'])
 
 const localContent = ref({
   email_subject: '',
@@ -43,10 +45,12 @@ const localContent = ref({
   block_content: '',        // EmailBuilder format
   template_content: '',     // HTML format
   mjml_content: '',         // MJML format
+  css_content: '',          // CSS content for styling
   attachments: [],
   sender_account: null,
   ...props.content
 })
+
 
 // Flag to prevent recursive updates
 const isUpdatingFromProps = ref(false)
@@ -56,10 +60,7 @@ const handleContentUpdate = (content) => {
     return
   }
 
-  console.log('📧 [EmailContentEditor] Received content update:', content)
   localContent.value = { ...localContent.value, ...content }
-  console.log('📧 [EmailContentEditor] Emitting updated content:', localContent.value)
-
   emit('update:content', localContent.value)
 }
 
@@ -70,6 +71,12 @@ watch(() => props.content, (newContent) => {
     isUpdatingFromProps.value = false
   }, 0)
 }, { deep: true })
+
+// Handle saved event from EmailEditor
+const handleSaved = (content) => {
+  localContent.value = { ...localContent.value, ...content }
+  emit('saved', localContent.value)
+}
 </script>
 
 <style scoped>
