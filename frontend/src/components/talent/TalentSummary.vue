@@ -178,9 +178,20 @@
 					<template v-if="parsedResumeExtract.skills?.length">
 						<h4 class="text-sm font-medium text-gray-800 mt-6 mb-3">Skills</h4>
 						<div class="flex flex-wrap gap-2">
-							<span v-for="(skill, idx) in parsedResumeExtract.skills" :key="'skill-'+idx"
-								class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-								{{ skill }}
+							<span
+								v-for="(skill, idx) in parsedResumeExtract.skills"
+								:key="'skill-' + idx"
+								class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
+							>
+								<span class="font-semibold">
+									{{ getSkillName(skill) }}
+								</span>
+								<span
+									v-if="getSkillDetails(skill)"
+									class="ml-1 text-[11px] font-normal text-gray-600"
+								>
+									- {{ getSkillDetails(skill) }}
+								</span>
 							</span>
 						</div>
 					</template>
@@ -438,6 +449,17 @@ const parsedResumeExtract = computed(() => {
 		return null;
 	}
 });
+
+// Helpers to safely read skill data which may be a string or an object
+const getSkillName = (skill) => {
+	if (!skill) return '';
+	return typeof skill === 'string' ? skill : skill.name || '';
+};
+
+const getSkillDetails = (skill) => {
+	if (!skill || typeof skill === 'string') return '';
+	return skill.details || '';
+};
 
 // Fetch data khi component mount
 onMounted(() => {
