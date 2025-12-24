@@ -42,6 +42,8 @@ const templates = createResource({
       'subject',
       'message',
       'email_design_json',
+      'html_content',
+      'css_content',
       'is_active',
       'default_template',
       'auto_send',

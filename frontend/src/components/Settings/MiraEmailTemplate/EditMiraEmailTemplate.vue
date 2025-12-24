@@ -144,9 +144,16 @@
       <EmailBuilder
         ref="emailBuilderRef"
         v-model="emailDesignJson"
+        :initial-content="template.html_content || template.message || ''"
+        :initial-css="template.css_content || ''"
         :height="isFullscreen ? 'calc(100vh - 250px)' : '400px'"
         @ready="onEmailBuilderReady"
       />
+      <!-- Debug: Log what we're passing to EmailBuilder -->
+      <div v-if="false" class="hidden">
+        Initial Content Length: {{ (template.html_content || template.message || '').length }}
+        Initial CSS Length: {{ (template.css_content || '').length }}
+      </div>
 
       <!-- OLD Unlayer Email Editor - COMMENTED OUT -->
       <!--
@@ -335,10 +342,22 @@ watch(selectedMergeTag, (newValue) => {
   }
 })
 
+// Watch for template.css_content changes to debug CSS loading
+watch(() => template.value.css_content, (newCss, oldCss) => {
+  console.log('👀 [EditTemplate] template.css_content changed')
+  console.log('👀 [EditTemplate] Old CSS length:', oldCss?.length || 0)
+  console.log('👀 [EditTemplate] New CSS length:', newCss?.length || 0)
+  console.log('👀 [EditTemplate] New CSS preview:', newCss?.substring(0, 200) + '...')
+  console.log('👀 [EditTemplate] New CSS full:', newCss)
+}, { immediate: true })
+
 // NEW EmailBuilder ready callback
 const onEmailBuilderReady = (builderMethods) => {
   console.log('🎉 [Parent] EmailBuilder ready callback')
   console.log('   Template message:', template.value.message?.substring(0, 50))
+  console.log('   Template html_content:', template.value.html_content?.substring(0, 50))
+  console.log('   Template css_content:', template.value.css_content?.substring(0, 50))
+  console.log('   Template css_content length:', template.value.css_content?.length || 0)
   console.log('   Email design JSON:', emailDesignJson.value ? 'exists' : 'null')
 
   // Mark as changed when design updates
@@ -388,7 +407,9 @@ const onUnlayerReady = (editor) => {
 */
 
 const updateTemplate = async () => {
+  console.log('🔄 [UpdateTemplate] Starting save process...')
   errorMessage.value = ''
+
   if (!template.value.template_name) {
     errorMessage.value = __('Template Name is required')
     return
@@ -399,27 +420,56 @@ const updateTemplate = async () => {
   }
 
   // Save design from EmailBuilder
+  console.log('📝 [UpdateTemplate] Checking emailBuilderRef:', emailBuilderRef.value)
   if (!emailBuilderRef.value) {
     errorMessage.value = __('Email editor not ready')
     return
   }
 
   try {
+    console.log('📤 [UpdateTemplate] Calling exportHtml()...')
     const exportData = emailBuilderRef.value.exportHtml()
-    const blocks = emailBuilderRef.value.getBlocks()
-    const mjml = emailBuilderRef.value.getMJML()
+    console.log('📤 [UpdateTemplate] Export data:', exportData)
 
-    // Store blocks, HTML and MJML
+    console.log('📦 [UpdateTemplate] Calling getBlocks()...')
+    const blocks = emailBuilderRef.value.getBlocks()
+    console.log('📦 [UpdateTemplate] Blocks:', blocks)
+
+    console.log('📄 [UpdateTemplate] Calling getMJML()...')
+    const mjml = emailBuilderRef.value.getMJML()
+    console.log('📄 [UpdateTemplate] MJML:', mjml)
+
+    // Get CSS content from editor
+    const css = emailBuilderRef.value.getCss()
+
+    // Store blocks, HTML, CSS and MJML
     emailDesignJson.value = { blocks, emailSettings: exportData.emailSettings }
-    template.value.message = exportData.html
+    template.value.html_content = exportData.html    // Save HTML content
+    template.value.css_content = css                 // Save CSS content
+    template.value.message = exportData.html         // Keep for backward compatibility
     template.value.email_design_json = JSON.stringify(emailDesignJson.value)
+
+    console.log('💾 [Mira] Saving content:')
+    console.log('   html_content:', exportData.html?.substring(0, 100) + '...')
+    console.log('   css_content:', css?.substring(0, 100) + '...')
+    console.log('   css_content length:', css?.length || 0)
+
+    // Log full HTML and CSS content for debugging
+    console.log('📄 [UpdateTemplate] Full HTML content:', exportData.html)
+    console.log('🎨 [UpdateTemplate] Full CSS content:', css)
+
+    console.log('✅ [UpdateTemplate] Design saved successfully')
+    console.log('   HTML length:', exportData.html?.length || 0)
+    console.log('   CSS length:', css?.length || 0)
+    console.log('   Design JSON length:', template.value.email_design_json?.length || 0)
   } catch (error) {
-    console.error('Error saving design:', error)
+    console.error('❌ [UpdateTemplate] Error saving design:', error)
     errorMessage.value = __('Failed to save email design')
     return
   }
 
   if (!template.value.message) {
+    console.log('⚠️ [UpdateTemplate] No message content found')
     errorMessage.value = __('Message is required')
     return
   }
@@ -429,7 +479,9 @@ const updateTemplate = async () => {
     template_name: template.value.template_name,
     template_type: template.value.template_type,
     subject: template.value.subject,
-    message: template.value.message,
+    html_content: template.value.html_content,        // Save HTML content
+    css_content: template.value.css_content,          // Save CSS content
+    message: template.value.message,                  // Keep for backward compatibility
     email_design_json: template.value.email_design_json || null,
     is_active: template.value.is_active ? 1 : 0,
     default_template: template.value.default_template ? 1 : 0,
@@ -516,12 +568,28 @@ const dirty = computed(() => {
 onMounted(() => {
   console.log('🚀 [EditTemplate] Component mounted')
   console.log('   Template data:', props.templateData)
+  console.log('🎨 [EditTemplate] CSS content check:')
+  console.log('   css_content:', props.templateData.css_content?.substring(0, 200) + '...')
+  console.log('   css_content length:', props.templateData.css_content?.length || 0)
+  console.log('   html_content:', props.templateData.html_content?.substring(0, 200) + '...')
+  console.log('   html_content length:', props.templateData.html_content?.length || 0)
+  console.log('   message:', props.templateData.message?.substring(0, 200) + '...')
+  console.log('   message length:', props.templateData.message?.length || 0)
 
   template.value = { ...props.templateData }
   // Convert to boolean for switches
   template.value.is_active = Boolean(template.value.is_active)
   template.value.default_template = Boolean(template.value.default_template)
   template.value.auto_send = Boolean(template.value.auto_send)
+
+  // Log after setting template.value to see what we're passing to EmailBuilder
+  console.log('📋 [EditTemplate] Template value after mount:')
+  console.log('   template.css_content:', template.value.css_content?.substring(0, 200) + '...')
+  console.log('   template.css_content length:', template.value.css_content?.length || 0)
+  console.log('   template.html_content:', template.value.html_content?.substring(0, 200) + '...')
+  console.log('   template.html_content length:', template.value.html_content?.length || 0)
+  console.log('   template.message:', template.value.message?.substring(0, 200) + '...')
+  console.log('   template.message length:', template.value.message?.length || 0)
 
   // Load existing design if available
   if (template.value.email_design_json) {

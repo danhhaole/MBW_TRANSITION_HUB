@@ -644,3 +644,31 @@ def get_landing_page_html():
         }
     else:
         return None
+
+@frappe.whitelist(allow_guest=True)
+def upload_image():
+    """
+    Upload image for GrapesJS editor
+    Returns file URL for editor
+    """
+    files = frappe.request.files.getlist("files[]")
+
+    if not files:
+        frappe.throw("No file uploaded")
+
+    uploaded = []
+
+    for f in files:
+        file_doc = frappe.get_doc({
+            "doctype": "File",
+            "file_name": f.filename,
+            "content": f.stream.read(),
+            "is_private": 0
+        }).insert(ignore_permissions=True)
+
+        uploaded.append({
+            "src": frappe.utils.get_url(file_doc.file_url),
+            "name": file_doc.file_name
+        })
+
+    return uploaded

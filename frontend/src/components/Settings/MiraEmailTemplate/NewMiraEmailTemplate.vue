@@ -143,7 +143,7 @@
               <FeatherIcon name="code" class="h-4 w-4 text-gray-500" />
             </template>
           </Autocomplete>
-          
+
           <!-- Fullscreen Toggle Button -->
           <Button
             :label="isFullscreen ? __('Exit Fullscreen') : __('Fullscreen')"
@@ -158,6 +158,7 @@
       <EmailBuilder
         ref="emailBuilderRef"
         v-model="emailDesignJson"
+        :initial-content="initialEmailContent"
         :height="isFullscreen ? 'calc(100vh - 250px)' : '400px'"
         @ready="onEmailBuilderReady"
       />
@@ -165,13 +166,13 @@
         {{ __('Drag blocks from the sidebar to design your email. Click merge tags above to copy and paste into content.') }}
       </p>
     </div>
-    
+
     <!-- Email Preview Dialog -->
     <EmailPreview
       v-model="showPreview"
       :templateData="template"
     />
-    
+
     <div v-if="errorMessage">
       <div class="rounded-md bg-red-50 p-4">
         <div class="flex">
@@ -222,6 +223,7 @@ const selectedField = ref(null)
 const selectedMergeTag = ref(null)
 const emailBuilderRef = ref(null)
 const emailDesignJson = ref(null)
+const initialEmailContent = ref('')
 // OLD REF - COMMENTED OUT
 // const unlayerEditorRef = ref(null)
 
@@ -341,7 +343,7 @@ const templates = inject('templates')
 
 const onUnlayerReady = (editor) => {
   console.log('Unlayer editor ready in new template')
-  
+
   // If switching to advanced editor with existing HTML but no design JSON
   if (template.value.message && !emailDesignJson.value) {
     const basicDesign = createUnlayerDesignFromHtml(template.value.message)
@@ -363,30 +365,25 @@ const createTemplate = async () => {
     errorMessage.value = __('Subject is required')
     return
   }
-  
-  // Save design from EmailBuilder
+
+  // Get HTML, CSS and project data from EmailBuilder
   if (!emailBuilderRef.value) {
     errorMessage.value = __('Email editor not ready')
     return
   }
-  
+
   try {
+    const html = emailBuilderRef.value.getHtml()
+    const css = emailBuilderRef.value.getCss()
     const exportData = emailBuilderRef.value.exportHtml()
-    const blocks = emailBuilderRef.value.getBlocks()
-    const mjml = emailBuilderRef.value.getMJML()
-    
-    // Store blocks, HTML and MJML
-    emailDesignJson.value = { blocks, emailSettings: exportData.emailSettings }
-    template.value.message = exportData.html
-    template.value.email_design_json = JSON.stringify(emailDesignJson.value)
+
+    template.value.html_content = html
+    template.value.css_content = css
+    template.value.project_data = JSON.stringify(exportData)
+    template.value.message = html // Keep for backward compatibility
   } catch (error) {
-    console.error('Error saving design:', error)
-    errorMessage.value = __('Failed to save email design')
-    return
-  }
-  
-  if (!template.value.message) {
-    errorMessage.value = __('Message is required')
+    console.error('Error getting content from EmailBuilder:', error)
+    errorMessage.value = __('Failed to get email content')
     return
   }
 
@@ -395,6 +392,9 @@ const createTemplate = async () => {
     template_type: template.value.template_type,
     subject: template.value.subject,
     message: template.value.message,
+    html_content: template.value.html_content,
+    css_content: template.value.css_content,
+    project_data: template.value.project_data,
     email_design_json: template.value.email_design_json || null,
     is_active: template.value.is_active ? 1 : 0,
     default_template: template.value.default_template ? 1 : 0,
@@ -415,10 +415,10 @@ const createTemplate = async () => {
 
 function insertFieldToSubject(option) {
   if (!option) return
-  
+
   const fieldPlaceholder = `{{ ${option.value} }}`
   const input = subjectRef.value?.$el?.querySelector('input')
-  
+
   if (input) {
     const start = input.selectionStart || 0
     const end = input.selectionEnd || 0
@@ -432,24 +432,84 @@ function insertFieldToSubject(option) {
   } else {
     template.value.subject = (template.value.subject || '') + fieldPlaceholder
   }
-  
+
   toast.success(`Inserted field: ${option.label}`)
 }
 
 function insertFieldToMessage(option) {
   if (!option) return
-  
+
   const fieldPlaceholder = `{{ ${option.value} }}`
-  
+
   // Insert into Rich Text Editor
   if (content.value?.editor) {
     content.value.editor.commands.insertContent(fieldPlaceholder)
   } else {
     template.value.message += fieldPlaceholder
   }
-  
+
   toast.success(`Inserted field: ${option.label}`)
 }
+
+// Get default email template
+const getDefaultEmailTemplate = () => {
+  return `
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="font-family: Arial, sans-serif;">
+            <tr>
+                <td style="background-color: #f4f4f4; padding: 20px;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="margin: 0 auto; background: #ffffff;">
+                        <!-- Header -->
+                        <tr>
+                            <td style="background-color: #ffffff; padding: 30px 20px; text-align: center;">
+                                <h1 style="margin: 0; color: #333333; font-size: 28px; font-weight: bold;">Welcome to Our Company</h1>
+                            </td>
+                        </tr>
+                        
+                        <!-- Main Content -->
+                        <tr>
+                            <td style="padding: 30px 20px;">
+                                <p style="margin: 0 0 15px 0; font-size: 16px; line-height: 1.5; color: #333333;">Dear {{candidate_name}},</p>
+                                <p style="margin: 0 0 15px 0; font-size: 16px; line-height: 1.5; color: #333333;">Thank you for your application for the position of {{job_title}}. We have received your application and will review it carefully.</p>
+                                <p style="margin: 0 0 25px 0; font-size: 16px; line-height: 1.5; color: #333333;">We will contact you within 5-7 business days regarding the next steps in our hiring process.</p>
+                                
+                                <!-- Button -->
+                                <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto;">
+                                    <tr>
+                                        <td style="background-color: #007bff; border-radius: 4px;">
+                                            <a href="#" style="background-color: #007bff; border: none; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-size: 16px;">
+                                                View Application Status
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        
+                        <!-- Signature -->
+                        <tr>
+                            <td style="padding: 20px; font-size: 16px; line-height: 1.5; color: #333333;">
+                                <p style="margin: 0 0 10px 0;">Best regards,</p>
+                                <p style="margin: 0; font-weight: bold;">HR Team</p>
+                                <p style="margin: 5px 0 0 0; color: #666666; font-size: 14px;">{{company_name}}</p>
+                            </td>
+                        </tr>
+                        
+                        <!-- Footer -->
+                        <tr>
+                            <td style="background-color: #343a40; color: white; padding: 30px 20px; text-align: center;">
+                                <p style="margin: 0 0 10px 0; font-size: 14px;">© 2024 {{company_name}}. All rights reserved.</p>
+                                <p style="margin: 0; font-size: 12px;">
+                                    <a href="#" style="color: #adb5bd; text-decoration: none;">Unsubscribe</a> | 
+                                    <a href="#" style="color: #adb5bd; text-decoration: none;">Privacy Policy</a>
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    `;
+};
 
 // EmailBuilder ready callback
 function onEmailBuilderReady(builderMethods) {
@@ -459,10 +519,23 @@ function onEmailBuilderReady(builderMethods) {
 
 onMounted(() => {
   if (props.templateData?.name) {
+    // Duplicate template - use existing content
     Object.assign(template.value, props.templateData)
     template.value.template_name = template.value.template_name + ' - Copy'
     template.value.is_active = false
     template.value.default_template = false
+    
+    // Set initial content from template data
+    if (props.templateData.html_content || props.templateData.message) {
+      initialEmailContent.value = props.templateData.html_content || props.templateData.message
+    }
+  } else {
+    // New template - set default content
+    const defaultContent = getDefaultEmailTemplate()
+    template.value.message = defaultContent
+    template.value.html_content = defaultContent
+    initialEmailContent.value = defaultContent
+    console.log('✅ [NewTemplate] Default email template set for new template')
   }
 })
 </script>

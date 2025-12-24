@@ -42,9 +42,54 @@ def send_email_job(task_id, action):
     if hasattr(action, "action_parameters"):
         condition = json.loads(action.action_parameters)
     temp = condition
-    message = render_template(temp.get("email_content"), context)
+    
+    # Get email content and render with template
+    # Priority: template_content (full HTML) > email_content > block_content
+    email_content = temp.get("template_content") or temp.get("email_content") or temp.get("block_content") or ""
+    message = render_template(email_content, context)
+    
+    # IMPORTANT: Inject CSS into email content before sending
+    # Try to get CSS from multiple sources
+    css_content = temp.get("css_content") or ""
+    
+    # If no CSS in action_parameters, try to get from Mira Campaign Social if available
+    if not css_content and hasattr(action, "campaign_social_id"):
+        try:
+            campaign_social = frappe.get_doc("Mira Campaign Social", action.campaign_social_id)
+            if hasattr(campaign_social, "css_content") and campaign_social.css_content:
+                css_content = campaign_social.css_content
+                logger.info(f"[EMAIL] Got CSS from Mira Campaign Social: {len(css_content)} chars")
+        except Exception as e:
+            logger.warning(f"[EMAIL] Could not get CSS from campaign_social: {e}")
+    
+    if css_content and message:
+        # Remove existing <style> tags from message to avoid duplicates
+        message = re.sub(r'<style[^>]*>[\s\S]*?</style>', '', message, flags=re.IGNORECASE)
+        
+        # Inject CSS at the beginning of HTML (before <body> or at the start)
+        # Check if message already has <html> or <body> tags
+        if '<html>' in message.lower() or '<body>' in message.lower():
+            # Insert CSS into <head> if exists, otherwise before <body>
+            if '<head>' in message.lower():
+                message = re.sub(r'<head[^>]*>', f'<head>\\n<style>{css_content}</style>', message, flags=re.IGNORECASE)
+            elif '<body>' in message.lower():
+                message = re.sub(r'<body[^>]*>', f'<head>\\n<style>{css_content}</style>\\n</head>\\n<body>', message, flags=re.IGNORECASE)
+            else:
+                message = f"<style>{css_content}</style>{message}"
+        else:
+            # No HTML structure, just inject CSS at the beginning
+            message = f"<style>{css_content}</style>{message}"
+        logger.info(f"[EMAIL] Injected CSS into email content, CSS length: {len(css_content)}")
+    elif not css_content:
+        logger.warning(f"[EMAIL] No CSS content found for task {task_id}, email will be sent without CSS")
+    
+    # Ensure base64 images and image URLs are preserved
+    # Replace localhost image URLs with production domain
+    message = re.sub(r'src="http://localhost[^"]*"', lambda m: m.group(0).replace('localhost:8080', 'hireos.fastwork.vn').replace('localhost:8000', 'hireos.fastwork.vn'), message)
+    message = re.sub(r'src="http://127\.0\.0\.1[^"]*"', lambda m: m.group(0).replace('127.0.0.1:8080', 'hireos.fastwork.vn').replace('127.0.0.1:8000', 'hireos.fastwork.vn'), message)
+    
     subject = "Thông báo"
-    if condition and hasattr(temp, "email_subject"):
+    if condition and temp.get("email_subject"):
         subject = render_template(temp.get("email_subject"), context)
     talent_email = talentprofiles.email
     template = None
@@ -135,9 +180,47 @@ def send_email_action(talentprofile_id, action_id):
     if hasattr(social, "action_parameters"):
         condition = json.loads(social.action_parameters)
     temp = condition
-    message = render_template(temp.get("email_content"), context)
+    
+    # Get email content - prioritize template_content (full HTML) > email_content
+    email_content = temp.get("template_content") or temp.get("email_content") or ""
+    message = render_template(email_content, context)
+    
+    # IMPORTANT: Inject CSS into email content before sending
+    css_content = temp.get("css_content") or ""
+    
+    # If no CSS in action_parameters, try to get from Mira Campaign Social
+    if not css_content and hasattr(social, "css_content") and social.css_content:
+        css_content = social.css_content
+        logger.info(f"[EMAIL] Got CSS from Mira Campaign Social: {len(css_content)} chars")
+    
+    if css_content and message:
+        # Remove existing <style> tags from message to avoid duplicates
+        message = re.sub(r'<style[^>]*>[\s\S]*?</style>', '', message, flags=re.IGNORECASE)
+        
+        # Inject CSS at the beginning of HTML (before <body> or at the start)
+        # Check if message already has <html> or <body> tags
+        if '<html>' in message.lower() or '<body>' in message.lower():
+            # Insert CSS into <head> if exists, otherwise before <body>
+            if '<head>' in message.lower():
+                message = re.sub(r'<head[^>]*>', f'<head>\\n<style>{css_content}</style>', message, flags=re.IGNORECASE)
+            elif '<body>' in message.lower():
+                message = re.sub(r'<body[^>]*>', f'<head>\\n<style>{css_content}</style>\\n</head>\\n<body>', message, flags=re.IGNORECASE)
+            else:
+                message = f"<style>{css_content}</style>{message}"
+        else:
+            # No HTML structure, just inject CSS at the beginning
+            message = f"<style>{css_content}</style>{message}"
+        logger.info(f"[EMAIL] Injected CSS into email content, CSS length: {len(css_content)}")
+    elif not css_content:
+        logger.warning(f"[EMAIL] No CSS content found for action {action_id}, email will be sent without CSS")
+    
+    # Ensure base64 images and image URLs are preserved
+    # Replace localhost image URLs with production domain
+    message = re.sub(r'src="http://localhost[^"]*"', lambda m: m.group(0).replace('localhost:8080', 'hireos.fastwork.vn').replace('localhost:8000', 'hireos.fastwork.vn'), message)
+    message = re.sub(r'src="http://127\.0\.0\.1[^"]*"', lambda m: m.group(0).replace('127.0.0.1:8080', 'hireos.fastwork.vn').replace('127.0.0.1:8000', 'hireos.fastwork.vn'), message)
+    
     subject = "Thông báo"
-    if condition and hasattr(temp, "email_subject"):
+    if condition and temp.get("email_subject"):
         subject = render_template(temp.get("email_subject"), context)
     talent_email = talentprofiles.email
     template = None

@@ -33,6 +33,14 @@
         <Button variant="outline" theme="gray" @click="openAIModal">
           {{ __("Generate With AI") }}
         </Button>
+        <Button 
+          v-if="!isEditMode"
+          variant="outline" 
+          theme="green" 
+          @click="showTemplateSelectorModal = true"
+        >
+          {{ __('Use Template') }}
+        </Button>
         <!-- <Button 
 					variant="outline" 
 					theme="green" 
@@ -163,6 +171,12 @@
     :emailType="getEmailTypeDisplay()"
     :templateType="route.params.templateType"
     @generated="handleAIGenerated"
+  />
+
+  <!-- Email Template Selector Modal -->
+  <EmailTemplateSelectorModal
+    v-model="showTemplateSelectorModal"
+    @apply="handleTemplateApplied"
   />
 
   <!-- Preview Modal -->
@@ -388,6 +402,7 @@ import Link from "@/components/Controls/Link.vue";
 import { getRandom } from "../../utils";
 import EmailAIModal from "@/components/Modals/EmailAIModal.vue";
 import EmailEditor from "@/components/EmailEditor/EmailEditor.vue";
+import EmailTemplateSelectorModal from "@/components/Modals/EmailTemplateSelectorModal.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -409,6 +424,7 @@ const sendPreviewMode = ref("desktop");
 const sampleData = ref({});
 const sendingEmail = ref(false);
 const hasAutoPreviewed = ref(false);
+const showTemplateSelectorModal = ref(false);
 // const previewEmail = ref({
 //     to: '',
 //     fromName: 'HR Team'
@@ -441,8 +457,14 @@ const loadTemplateData = async () => {
       _template.value = data;
 
       // Set initial content for editor
-      editorInitialContent.value = data?.mjml_content || data?.message || "";
-      editorInitialCss.value = data?.css || "";
+      editorInitialContent.value = data?.html_content || data?.mjml_content || data?.message || "";
+      editorInitialCss.value = data?.css_content || data?.css || "";
+      
+      console.log('📋 [MIRA_Email_Template_Detail] Loaded template data:')
+      console.log('   html_content length:', data?.html_content?.length || 0)
+      console.log('   css_content length:', data?.css_content?.length || 0)
+      console.log('   message length:', data?.message?.length || 0)
+      console.log('   css_content preview:', data?.css_content?.substring(0, 200) + '...')
 
       return data;
     }
@@ -625,9 +647,15 @@ const saveContent = async () => {
     const html = emailEditor.value.getHtml();
     const css = emailEditor.value.getCss();
 
-    // Update template data
-    _template.value.message = html;
-    _template.value.mjml_content = html;
+    console.log('💾 [MIRA_Email_Template_Detail] Saving content:')
+    console.log('   HTML length:', html?.length || 0)
+    console.log('   CSS length:', css?.length || 0)
+
+    // Update template data - save to all required fields
+    _template.value.message = html;           // Backward compatibility
+    _template.value.mjml_content = html;      // Legacy field
+    _template.value.html_content = html;      // New HTML field
+    _template.value.css_content = css;        // CSS field
 
     if (isEditMode.value) {
       await call("frappe.client.set_value", {
@@ -636,6 +664,8 @@ const saveContent = async () => {
         fieldname: {
           ..._template.value,
           subject: convertPlaceholderToJinja(_template.value.subject),
+          html_content: html,
+          css_content: css,
         },
       });
     }
@@ -677,8 +707,15 @@ const exportHtml = async () => {
     const html = emailEditor.value.getHtml();
     const css = emailEditor.value.getCss();
 
-    _template.value.message = html;
-    _template.value.mjml_content = html;
+    console.log('💾 [MIRA_Email_Template_Detail] Exporting content:')
+    console.log('   HTML length:', html?.length || 0)
+    console.log('   CSS length:', css?.length || 0)
+
+    // Update template data - save to all required fields
+    _template.value.message = html;           // Backward compatibility
+    _template.value.mjml_content = html;      // Legacy field
+    _template.value.html_content = html;      // New HTML field
+    _template.value.css_content = css;        // CSS field
 
     if (isEditMode.value) {
       // Update existing template
@@ -688,6 +725,8 @@ const exportHtml = async () => {
         fieldname: {
           ..._template.value,
           subject: convertPlaceholderToJinja(_template.value.subject),
+          html_content: html,
+          css_content: css,
         },
       });
 
@@ -1018,6 +1057,100 @@ const sendTestEmail = async () => {
     });
   } finally {
     sendingEmail.value = false;
+  }
+};
+
+// Handle template applied from selector modal
+const handleTemplateApplied = async (template) => {
+  try {
+    console.log('📋 [MIRA_Email_Template_Detail] Template applied:', template);
+    
+    if (!emailEditor.value) {
+      createToast({
+        title: "Error",
+        text: "Editor not initialized",
+        icon: "x",
+        iconClasses: "text-red-600",
+      });
+      return;
+    }
+
+    // Update template info from selected template
+    if (template.template_name) {
+      _template.value.template_name = template.template_name;
+    }
+    if (template.subject) {
+      _template.value.subject = template.subject;
+    }
+    if (template.template_type) {
+      _template.value.template_type = template.template_type;
+    }
+    if (template.is_active !== undefined) {
+      _template.value.is_active = template.is_active;
+    }
+    if (template.auto_send !== undefined) {
+      _template.value.auto_send = template.auto_send;
+    }
+    
+    // IMPORTANT: Set default_template = 1 when using a template
+    _template.value.default_template = 1;
+    console.log('📋 [MIRA_Email_Template_Detail] Set default_template = 1 for template:', template.template_name || template.name);
+
+    // Load template content into editor
+    // Priority: html_content > mjml_content > message
+    const htmlContent = template.html_content || template.mjml_content || template.message || '';
+    const cssContent = template.css_content || template.css || '';
+
+    console.log('📋 [MIRA_Email_Template_Detail] Loading template content:')
+    console.log('   html_content length:', template.html_content?.length || 0)
+    console.log('   css_content length:', template.css_content?.length || 0)
+    console.log('   message length:', template.message?.length || 0)
+
+    if (htmlContent) {
+      // Update local template values
+      _template.value.message = htmlContent;
+      _template.value.mjml_content = htmlContent;
+      _template.value.html_content = htmlContent;
+      
+      // Update initial content for editor reload
+      editorInitialContent.value = htmlContent;
+      
+      // Reload editor with new content
+      if (emailEditor.value && emailEditor.value.reload) {
+        await emailEditor.value.reload();
+      }
+    }
+
+    if (cssContent) {
+      // Update local template values
+      _template.value.css_content = cssContent;
+      
+      // Update initial CSS for editor reload
+      editorInitialCss.value = cssContent;
+      
+      // Reload editor with new CSS
+      if (emailEditor.value && emailEditor.value.reload) {
+        await emailEditor.value.reload();
+      }
+    }
+
+    // Close modal
+    showTemplateSelectorModal.value = false;
+
+    createToast({
+      title: "Success",
+      text: "Template applied successfully",
+      icon: "check",
+      iconClasses: "text-green-600",
+    });
+  } catch (error) {
+    console.error("Error applying template:", error);
+    createToast({
+      title: "Error",
+      text: "Failed to apply template",
+      icon: "x",
+      iconClasses: "text-red-600",
+    });
   }
 };
 </script>

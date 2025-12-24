@@ -46,7 +46,7 @@ export const useCampaignStore = defineStore('campaign', {
       let filtered = state.campaigns
 
       if (state.searchText) {
-        filtered = filtered.filter(campaign => 
+        filtered = filtered.filter(campaign =>
           campaign.campaign_name.toLowerCase().includes(state.searchText.toLowerCase()) ||
           campaign.description?.toLowerCase().includes(state.searchText.toLowerCase())
         )
@@ -102,12 +102,12 @@ export const useCampaignStore = defineStore('campaign', {
 
         const { status, type, isActive, searchText, page = 1, limit = 20 } = filterOptions
         let filters = {}
-        
+
         if (status && status !== 'all') {
           filters.status = status
         }
         if (type && type !== 'all') {
-          filters.type = type  
+          filters.type = type
         }
         if (isActive !== undefined) {
           filters.is_active = isActive
@@ -139,21 +139,21 @@ export const useCampaignStore = defineStore('campaign', {
             limit_start: options.start,
             order_by: 'creation desc'
           })
-          
+
           if (result && result.success && Array.isArray(result.data)) {
             // Add computed fields
             this.campaigns = result.data.map(campaign => ({
               ...campaign,
               displayStatus: this.getCampaignStatusByDate(
-                campaign.start_date, 
-                campaign.end_date, 
+                campaign.start_date,
+                campaign.end_date,
                 campaign.status,
                 campaign.is_active
               ),
               formattedStartDate: this.formatCampaignDate(campaign.start_date),
               formattedEndDate: this.formatCampaignDate(campaign.end_date)
             }))
-            
+
             // Update pagination info with correct total count
             const total = result.count || 0
             this.pagination = {
@@ -166,14 +166,14 @@ export const useCampaignStore = defineStore('campaign', {
               showing_from: total > 0 ? (page - 1) * limit + 1 : 0,
               showing_to: Math.min(page * limit, total)
             }
-            
+
             return { data: result.data, pagination: this.pagination, count: result.count }
           } else {
             throw new Error('New API returned invalid response')
           }
         } catch (newApiError) {
           console.warn('New API failed, falling back to old API:', newApiError.message)
-          
+
           // Fallback to old separate API calls
           const [response, countResult] = await Promise.all([
             call('frappe.client.get_list', {
@@ -197,15 +197,15 @@ export const useCampaignStore = defineStore('campaign', {
             this.campaigns = response.map(campaign => ({
               ...campaign,
               displayStatus: this.getCampaignStatusByDate(
-                campaign.start_date, 
-                campaign.end_date, 
+                campaign.start_date,
+                campaign.end_date,
                 campaign.status,
                 campaign.is_active
               ),
               formattedStartDate: this.formatCampaignDate(campaign.start_date),
               formattedEndDate: this.formatCampaignDate(campaign.end_date)
             }))
-            
+
             // Update pagination info with correct total count
             const total = countResult || 0
             this.pagination = {
@@ -218,7 +218,7 @@ export const useCampaignStore = defineStore('campaign', {
               showing_from: total > 0 ? (page - 1) * limit + 1 : 0,
               showing_to: Math.min(page * limit, total)
             }
-            
+
             return { data: response, pagination: this.pagination, count: countResult }
           }
         }
@@ -238,7 +238,7 @@ export const useCampaignStore = defineStore('campaign', {
       try {
         this.loading = true
         this.error = null
-        
+
         const response = await call('frappe.client.get', {
           doctype: "Mira Campaign",
           name: name
@@ -248,8 +248,8 @@ export const useCampaignStore = defineStore('campaign', {
           const campaign = {
             ...response,
             displayStatus: this.getCampaignStatusByDate(
-              response.start_date, 
-              response.end_date, 
+              response.start_date,
+              response.end_date,
               response.status,
               response.is_active
             ),
@@ -362,7 +362,7 @@ export const useCampaignStore = defineStore('campaign', {
             response: apiError?.response,
             status: apiError?.status
           })
-          
+
           // Handle different types of errors
           if (apiError?.message?.includes('exc_type')) {
             throw new Error('Server error occurred: ' + apiError.message)
@@ -402,10 +402,10 @@ export const useCampaignStore = defineStore('campaign', {
     // Alternative create method using custom API endpoint
     async createCampaignViaCustomAPI(formData) {
       this.setLoading(true)
-      
+
       try {
         console.log('🔄 Using custom API endpoint...')
-        
+
         const response = await debugApiCall('mbw_mira.api.campaign.create_campaign', {
           campaign_data: {
             campaign_name: formData.campaign_name?.trim(),
@@ -424,7 +424,7 @@ export const useCampaignStore = defineStore('campaign', {
         })
 
         console.log('✅ Custom API response:', response)
-        
+
         if (response && (response.name || response.success)) {
           this.success = true
           return {
@@ -446,7 +446,7 @@ export const useCampaignStore = defineStore('campaign', {
     // Update campaign
     async updateCampaignData(name, formData) {
       console.log('📋 updateCampaignData received formData:', formData)
-      
+
       try {
         this.loading = true
         this.error = null
@@ -505,14 +505,14 @@ export const useCampaignStore = defineStore('campaign', {
           name: name,
           fieldname: updateData
         })
-        
+
         if (response) {
           this.success = true
           return response
         } else {
           throw new Error('Không thể cập nhật campaign')
         }
-        
+
       } catch (error) {
         this.error = error.message
         console.error('❌ Failed to update campaign:', error)
@@ -525,7 +525,7 @@ export const useCampaignStore = defineStore('campaign', {
     // Update campaign basic info (for CampaignForm modal)
     async updateCampaignBasicInfo(name, formData) {
       console.log('📋 updateCampaignBasicInfo received formData:', formData)
-      
+
       try {
         this.loading = true
         this.error = null
@@ -563,14 +563,14 @@ export const useCampaignStore = defineStore('campaign', {
           name: name,
           fieldname: updateData
         })
-        
+
         if (response) {
           this.success = true
           return response
         } else {
           throw new Error('Không thể cập nhật campaign')
         }
-        
+
       } catch (error) {
         this.error = error.message
         console.error('❌ Failed to update campaign basic info:', error)
@@ -591,7 +591,7 @@ export const useCampaignStore = defineStore('campaign', {
           campaign_name: name,
           force_delete: false
         })
-        
+
         if (response && response.status === 'success') {
           return response
         } else if (response && response.error_type === 'LinkExistsError') {
@@ -622,7 +622,7 @@ export const useCampaignStore = defineStore('campaign', {
           campaign_name: name,
           force_delete: true
         })
-        
+
         if (response && response.status === 'success') {
           return response
         } else {
@@ -655,12 +655,12 @@ export const useCampaignStore = defineStore('campaign', {
               result.data.forEach(item => {
                 // Use displayStatus logic to get accurate status
                 const displayStatus = this.getCampaignStatusByDate(
-                  item.start_date, 
-                  item.end_date, 
+                  item.start_date,
+                  item.end_date,
                   item.status,
                   item.is_active
                 ).toLowerCase()
-                
+
                 if (statusCounts.hasOwnProperty(displayStatus)) {
                   statusCounts[displayStatus]++
                 }
@@ -677,7 +677,7 @@ export const useCampaignStore = defineStore('campaign', {
           }
         } catch (newApiError) {
           console.warn('New API failed for statistics, falling back to old API:', newApiError.message)
-          
+
           // Fallback to old separate API calls
           const [totalResult, activeResult, draftResult, pausedResult, archivedResult] = await Promise.all([
             call('frappe.client.get_count', { doctype: 'Mira Campaign' }),
@@ -711,13 +711,13 @@ export const useCampaignStore = defineStore('campaign', {
           this.getTalentSegmentOptions(),
           this.getJobOpeningOptions()
         ])
-        
+
         this.users = usersData.map(user => ({
           label: user.full_name || user.name,
           value: user.name,
           subtitle: user.email
         }))
-        
+
         this.talentSegments = segmentsData.map(segment => ({
           label: segment.title || segment.name,
           value: segment.name
@@ -783,11 +783,11 @@ export const useCampaignStore = defineStore('campaign', {
     // Utility functions
     formatCampaignDate(dateString) {
       if (!dateString) return 'Chưa xác định'
-      
+
       const date = new Date(dateString)
       return date.toLocaleDateString('vi-VN', {
         year: 'numeric',
-        month: '2-digit', 
+        month: '2-digit',
         day: '2-digit'
       })
     },
@@ -796,30 +796,30 @@ export const useCampaignStore = defineStore('campaign', {
       if (!isActive) return 'PAUSED'
       if (currentStatus === 'DRAFT') return 'DRAFT'
       if (currentStatus === 'ARCHIVED') return 'ARCHIVED'
-      
+
       const now = new Date()
       const start = startDate ? new Date(startDate) : null
       const end = endDate ? new Date(endDate) : null
-      
+
       if (start && end) {
         if (now < start) return 'DRAFT' // Chưa đến ngày bắt đầu
         if (now > end) return 'ARCHIVED' // Đã qua ngày kết thúc
         return 'ACTIVE' // Đang trong thời gian hoạt động
       }
-      
+
       return currentStatus
     },
 
     // Validate campaign form data
     validateCampaignForm(formData) {
       const errors = {}
-      
+
       if (!formData.campaign_name || !formData.campaign_name.trim()) {
         errors.campaign_name = 'Tên chiến dịch là bắt buộc'
       } else if (formData.campaign_name.length < 3) {
         errors.campaign_name = 'Tên chiến dịch phải có ít nhất 3 ký tự'
       }
-      
+
       if (formData.start_date && formData.end_date) {
         const startDate = new Date(formData.start_date)
         const endDate = new Date(formData.end_date)
@@ -827,7 +827,7 @@ export const useCampaignStore = defineStore('campaign', {
           errors.end_date = 'Ngày kết thúc phải sau ngày bắt đầu'
         }
       }
-      
+
       return errors
     },
 
@@ -836,101 +836,101 @@ export const useCampaignStore = defineStore('campaign', {
       try {
         // Mock data - same as in service
         const mockCandidates = [
-          { 
-            id: 'c1', 
-            name: 'Nguyễn Văn An', 
-            title: 'Senior React Developer', 
-            source: 'Nguồn nhân tài', 
+          {
+            id: 'c1',
+            name: 'Nguyễn Văn An',
+            title: 'Senior React Developer',
+            source: 'Nguồn nhân tài',
             email: 'an.nguyen@email.com',
             experience: 5,
             skills: ['React', 'JavaScript', 'TypeScript']
           },
-          { 
-            id: 'c2', 
-            name: 'Trần Thị Bình', 
-            title: 'Fullstack Engineer', 
-            source: 'ATS', 
+          {
+            id: 'c2',
+            name: 'Trần Thị Bình',
+            title: 'Fullstack Engineer',
+            source: 'ATS',
             email: 'binh.tran@email.com',
             experience: 3,
             skills: ['Node.js', 'React', 'MongoDB']
           },
-          { 
-            id: 'c3', 
-            name: 'Lê Hoàng Cường', 
-            title: 'Data Scientist', 
-            source: 'Web', 
+          {
+            id: 'c3',
+            name: 'Lê Hoàng Cường',
+            title: 'Data Scientist',
+            source: 'Web',
             email: 'cuong.le@email.com',
             experience: 4,
             skills: ['Python', 'Machine Learning', 'SQL']
           },
-          { 
-            id: 'c4', 
-            name: 'Phạm Thị Dung', 
-            title: 'React Native Developer', 
-            source: 'Nguồn nhân tài', 
+          {
+            id: 'c4',
+            name: 'Phạm Thị Dung',
+            title: 'React Native Developer',
+            source: 'Nguồn nhân tài',
             email: 'dung.pham@email.com',
             experience: 2,
             skills: ['React Native', 'JavaScript', 'iOS']
           },
-          { 
-            id: 'c5', 
-            name: 'Hoàng Minh Tú', 
-            title: 'Backend Engineer', 
-            source: 'ATS', 
+          {
+            id: 'c5',
+            name: 'Hoàng Minh Tú',
+            title: 'Backend Engineer',
+            source: 'ATS',
             email: 'tu.hoang@email.com',
             experience: 6,
             skills: ['Java', 'Spring Boot', 'PostgreSQL']
           },
-          { 
-            id: 'c6', 
-            name: 'Võ Thị Hương', 
-            title: 'Frontend Developer', 
-            source: 'Web', 
+          {
+            id: 'c6',
+            name: 'Võ Thị Hương',
+            title: 'Frontend Developer',
+            source: 'Web',
             email: 'huong.vo@email.com',
             experience: 3,
             skills: ['Vue.js', 'CSS', 'Figma']
           }
         ]
-        
+
         // Filter based on source
         const sourceMap = {
           'pool': 'Nguồn nhân tài',
-          'ats': 'ATS', 
+          'ats': 'ATS',
           'web': 'Web'
         }
-        
+
         let filteredCandidates = mockCandidates
-        
+
         // Filter by source
         if (source && sourceMap[source]) {
-          filteredCandidates = filteredCandidates.filter(candidate => 
+          filteredCandidates = filteredCandidates.filter(candidate =>
             candidate.source === sourceMap[source]
           )
         }
-        
+
         // Apply config filters for pool source
         if (source === 'pool' && configData) {
           if (configData.skills) {
             const searchSkills = configData.skills.toLowerCase().split(',').map(s => s.trim())
             filteredCandidates = filteredCandidates.filter(candidate =>
-              candidate.skills.some(skill => 
-                searchSkills.some(searchSkill => 
+              candidate.skills.some(skill =>
+                searchSkills.some(searchSkill =>
                   skill.toLowerCase().includes(searchSkill)
                 )
               )
             )
           }
-          
+
           if (configData.experience) {
             const minExp = parseInt(configData.experience)
             if (!isNaN(minExp)) {
-              filteredCandidates = filteredCandidates.filter(candidate => 
+              filteredCandidates = filteredCandidates.filter(candidate =>
                 candidate.experience >= minExp
               )
             }
           }
         }
-        
+
         return filteredCandidates
       } catch (error) {
         console.error('Store error searching candidates:', error)
@@ -951,13 +951,13 @@ export const useCampaignStore = defineStore('campaign', {
           fields: ['name'],
           limit: 1
         })
-        
+
         const flowExists = existingFlows && existingFlows.length > 0
         const flowId = flowExists ? existingFlows[0].name : null
-        
+
         // Prepare action parameters based on interaction method
         const actionParameters = {}
-        
+
         console.log('🔍 Preparing action parameters for:', campaignData.interaction_method)
         console.log('🔍 campaignData:', {
           message_content: campaignData.message_content,
@@ -965,11 +965,21 @@ export const useCampaignStore = defineStore('campaign', {
           email_subject: campaignData.email_subject,
           email_content: campaignData.email_content
         })
-        
+
         if (campaignData.interaction_method === 'EMAIL') {
           actionParameters.subject = campaignData.email_subject || ''
           actionParameters.content = campaignData.email_content || ''
+          actionParameters.template_content = campaignData.template_content || ''  // HTML content
+          actionParameters.css_content = campaignData.css_content || ''  // CSS content
+          actionParameters.mjml_content = campaignData.mjml_content || ''  // MJML content
+          actionParameters.block_content = campaignData.block_content || ''  // Block content
           actionParameters.attachments = campaignData.attachments || []
+
+          console.log('💾 [Store] Saving EMAIL content:')
+          console.log('   email_content:', (campaignData.email_content || '').substring(0, 100) + '...')
+          console.log('   template_content:', (campaignData.template_content || '').substring(0, 100) + '...')
+          console.log('   css_content:', (campaignData.css_content || '').substring(0, 100) + '...')
+          console.log('   css_content length:', (campaignData.css_content || '').length)
         } else if (campaignData.interaction_method === 'ZALO_ZNS' || campaignData.interaction_method === 'SMS') {
           // ZNS and SMS use blocks structure from ZaloEditor
           actionParameters.blocks = campaignData.blocks || []
@@ -979,9 +989,9 @@ export const useCampaignStore = defineStore('campaign', {
           actionParameters.blocks = campaignData.blocks || []
           actionParameters.image_url = campaignData.image_url || ''
         }
-        
+
         console.log('🔍 Final actionParameters:', actionParameters)
-        
+
         // Helper to convert interaction method to channel
         const getChannelFromInteractionMethod = (method) => {
           const channelMap = {
@@ -993,7 +1003,7 @@ export const useCampaignStore = defineStore('campaign', {
           }
           return channelMap[method] || 'Email'
         }
-        
+
         // Helper to convert trigger key to trigger_type
         const getTriggerTypeFromKey = (key) => {
           const typeMap = {
@@ -1005,11 +1015,11 @@ export const useCampaignStore = defineStore('campaign', {
           }
           return typeMap[key] || 'CUSTOM_EVENT'
         }
-        
+
         // Helper to convert action type to backend format
         const normalizeActionType = (type) => {
           if (!type) return ''
-          
+
           // Map frontend action types to backend enum values
           const actionTypeMap = {
             'add_tag': 'ADD_TAG',
@@ -1042,7 +1052,7 @@ export const useCampaignStore = defineStore('campaign', {
             'sent_notification': 'SENT_NOTIFICATION',
             'send_notification': 'SENT_NOTIFICATION' // Send notification maps to SENT_NOTIFICATION
           }
-          
+
           // If already uppercase, check if it needs mapping
           if (type === type.toUpperCase()) {
             // Check common uppercase variations
@@ -1055,12 +1065,12 @@ export const useCampaignStore = defineStore('campaign', {
             }
             return upperMap[type] || type
           }
-          
+
           // Convert to lowercase for lookup
           const lowerType = type.toLowerCase()
           return actionTypeMap[lowerType] || type.toUpperCase()
         }
-        
+
         // Prepare flow data
         const flowData = {
           title: campaignData.campaign_name || 'Campaign Flow',
@@ -1071,7 +1081,7 @@ export const useCampaignStore = defineStore('campaign', {
           // Action will be set later (reuse existing or create new)
           action_id: []
         }
-        
+
         // Prepare new action data
         const newAction = {
           doctype: 'Mira Flow Action',
@@ -1080,7 +1090,7 @@ export const useCampaignStore = defineStore('campaign', {
           action_parameters: JSON.stringify(actionParameters),
           order: 0
         }
-        
+
         // Convert additional_actions to triggers and their actions
         if (campaignData.additional_actions && Object.keys(campaignData.additional_actions).length > 0) {
           // Create triggers (without action data in conditions)
@@ -1091,7 +1101,7 @@ export const useCampaignStore = defineStore('campaign', {
             channel: flowData.channel,
             conditions: null // Don't store action data here anymore
           }))
-          
+
           // Create actions for each trigger (if configured)
           flowData.trigger_actions = Object.entries(campaignData.additional_actions)
             .filter(([triggerKey, actionData]) => actionData.configured && actionData.type)
@@ -1103,7 +1113,7 @@ export const useCampaignStore = defineStore('campaign', {
               action_parameters: JSON.stringify(actionData.data || {}),
               order: 0
             }))
-          
+
           console.log('🔍 Converted additional_actions to triggers:', flowData.trigger_id)
           console.log('🔍 Converted additional_actions to trigger actions:', flowData.trigger_actions)
         } else {
@@ -1112,7 +1122,7 @@ export const useCampaignStore = defineStore('campaign', {
           flowData.trigger_actions = []
           console.log('🔍 No additional_actions, will delete all triggers and actions')
         }
-        
+
         let result
         if (flowExists) {
           // Update existing flow
@@ -1120,11 +1130,11 @@ export const useCampaignStore = defineStore('campaign', {
             doctype: 'Mira Flow',
             name: flowId
           })
-          
+
           console.log('🔍 Existing flow:', existingFlow)
           console.log('🔍 Existing action_id:', existingFlow.action_id)
           console.log('🔍 Existing trigger_id:', existingFlow.trigger_id)
-          
+
           // STEP 1: Prepare main action (campaign email/zalo action)
           let mainAction
           const existingMainAction = (existingFlow.action_id || []).find(a => !a.trigger_id)
@@ -1139,20 +1149,20 @@ export const useCampaignStore = defineStore('campaign', {
             console.log('✨ Creating new main action')
             mainAction = newAction
           }
-          
+
           // STEP 2: Create map of existing triggers by trigger_type
           const existingTriggerMap = {}
           ;(existingFlow.trigger_id || []).forEach(trigger => {
             existingTriggerMap[trigger.trigger_type] = trigger
           })
-          
+
           // STEP 3: Process triggers - separate new and existing
           const finalTriggers = []
           const newTriggersToCreate = []
-          
+
           ;(flowData.trigger_id || []).forEach((newTrigger) => {
             const existingTrigger = existingTriggerMap[newTrigger.trigger_type]
-            
+
             if (existingTrigger) {
               // Reuse existing trigger
               console.log('♻️ Reusing existing trigger:', existingTrigger.name, newTrigger.trigger_type)
@@ -1168,7 +1178,7 @@ export const useCampaignStore = defineStore('campaign', {
               newTriggersToCreate.push(newTrigger.trigger_type)
             }
           })
-          
+
           // STEP 4: First save - update triggers
           const updatedDoc = {
             ...existingFlow,
@@ -1182,54 +1192,54 @@ export const useCampaignStore = defineStore('campaign', {
             // Update triggers
             trigger_id: finalTriggers
           }
-          
+
           console.log('📝 Step 1: Saving triggers first')
           console.log('📝 Triggers to save:', finalTriggers)
-          
+
           console.log('📝 Updating flow with data:', updatedDoc)
           console.log('📝 Action parameters:', actionParameters)
           console.log('📝 action_id to save (combined):', updatedDoc.action_id)
           console.log('📝 Number of actions:', updatedDoc.action_id.length)
-          
+
           result = await call('frappe.client.save', {
             doc: updatedDoc
           })
-          
+
           console.log('✅ Step 1 complete - Triggers saved:', result)
-          
+
           // STEP 5: Get updated flow to get trigger names (especially for new triggers)
           const updatedFlow = await call('frappe.client.get', {
             doctype: 'Mira Flow',
             name: flowId
           })
-          
+
           console.log('🔍 Updated flow with trigger names:', updatedFlow.trigger_id)
-          
+
           // STEP 6: Build trigger map with names
           const updatedTriggerMap = {}
           ;(updatedFlow.trigger_id || []).forEach(trigger => {
             updatedTriggerMap[trigger.trigger_type] = trigger
           })
-          
+
           // STEP 7: Process actions - link with triggers
           const finalActions = [mainAction] // Start with main action
-          
+
           // Get list of trigger types that should have actions (configured ones)
           const configuredTriggerTypes = (flowData.trigger_actions || []).map(a => a.trigger_type)
-          
+
           // Keep existing trigger actions that still have triggers (even if not in flowData.trigger_actions)
           // This prevents deleting actions when user just adds a new trigger without configuring it
           ;(updatedFlow.action_id || []).forEach(existingAction => {
             if (existingAction.trigger_id) {
               // Find the trigger for this action
               const trigger = (updatedFlow.trigger_id || []).find(t => t.name === existingAction.trigger_id)
-              
+
               if (trigger) {
                 // Check if this trigger type is being updated
                 const newActionData = (flowData.trigger_actions || []).find(
                   a => a.trigger_type === trigger.trigger_type
                 )
-                
+
                 if (newActionData) {
                   // Update existing action with new data
                   console.log('♻️ Updating existing trigger action:', existingAction.name, trigger.trigger_type)
@@ -1250,19 +1260,19 @@ export const useCampaignStore = defineStore('campaign', {
               }
             }
           })
-          
+
           // Add new trigger actions (for triggers that don't have actions yet)
           ;(flowData.trigger_actions || []).forEach((triggerAction) => {
             const trigger = updatedTriggerMap[triggerAction.trigger_type]
-            
+
             if (!trigger) {
               console.warn('⚠️ No trigger found for action:', triggerAction.trigger_type)
               return
             }
-            
+
             // Check if we already processed this action above
             const alreadyProcessed = finalActions.some(a => a.trigger_id === trigger.name)
-            
+
             if (!alreadyProcessed) {
               console.log('✨ Creating new trigger action for:', triggerAction.trigger_type)
               const action = {
@@ -1273,23 +1283,23 @@ export const useCampaignStore = defineStore('campaign', {
               finalActions.push(action)
             }
           })
-          
+
           // STEP 8: Final save - update actions
           console.log('📝 Step 2: Saving actions with trigger_id links')
           console.log('📝 Final actions:', finalActions)
-          
+
           result = await call('frappe.client.save', {
             doc: {
               ...updatedFlow,
               action_id: finalActions
             }
           })
-          
+
           console.log('✅ Step 2 complete - Actions saved with trigger links')
         } else {
           // Create new flow
           console.log('✨ Creating new flow')
-          
+
           // First, create flow with main action and triggers
           result = await call('frappe.client.insert', {
             doc: {
@@ -1299,25 +1309,25 @@ export const useCampaignStore = defineStore('campaign', {
               trigger_id: flowData.trigger_id || []
             }
           })
-          
+
           console.log('✅ Created new flow:', result)
-          
+
           // If there are trigger actions, update flow to add them with trigger_id links
           if (flowData.trigger_actions && flowData.trigger_actions.length > 0) {
             console.log('🔗 Linking trigger actions to triggers')
-            
+
             // Get the created flow to get trigger names
             const createdFlow = await call('frappe.client.get', {
               doctype: 'Mira Flow',
               name: result.name
             })
-            
+
             // Create map of triggers by trigger_type
             const triggerMap = {}
             ;(createdFlow.trigger_id || []).forEach(trigger => {
               triggerMap[trigger.trigger_type] = trigger
             })
-            
+
             // Create actions with trigger_id links
             const triggerActions = flowData.trigger_actions.map(action => {
               const trigger = triggerMap[action.trigger_type]
@@ -1328,9 +1338,9 @@ export const useCampaignStore = defineStore('campaign', {
               delete linkedAction.trigger_type // Remove temporary key
               return linkedAction
             })
-            
+
             console.log('📝 Trigger actions to add:', triggerActions)
-            
+
             // Update flow with trigger actions
             result = await call('frappe.client.save', {
               doc: {
@@ -1338,11 +1348,11 @@ export const useCampaignStore = defineStore('campaign', {
                 action_id: [...createdFlow.action_id, ...triggerActions]
               }
             })
-            
+
             console.log('✅ Updated flow with trigger actions')
           }
         }
-        
+
         console.log('✅ Campaign flow saved:', result)
         return { success: true, data: result }
       } catch (error) {
@@ -1363,61 +1373,61 @@ export const useCampaignStore = defineStore('campaign', {
           fields: ['name'],
           limit: 1
         })
-        
+
         if (!flows || flows.length === 0) {
           return { success: false, message: 'No flow found' }
         }
-        
+
         const flowDoc = await call('frappe.client.get', {
           doctype: 'Mira Flow',
           name: flows[0].name
         })
-        
+
         console.log('📖 Loading content from Flow:', flowDoc)
         console.log('📖 Flow action_id:', flowDoc.action_id)
-        
+
         const contentData = {}
-        
+
         // Parse action parameters
         if (flowDoc.action_id && flowDoc.action_id.length > 0) {
           const mainAction = flowDoc.action_id[0]
           console.log('📖 Main action:', mainAction)
           console.log('📖 Action parameters (raw):', mainAction.action_parameters)
-          
+
           // Use action_type from flow if interactionMethod is not provided
           const methodToUse = interactionMethod || mainAction.action_type
           console.log('📖 Interaction method (param):', interactionMethod)
           console.log('📖 Action type (from flow):', mainAction.action_type)
           console.log('📖 Method to use:', methodToUse)
-          
+
           // Return interaction_method so caller can use it
           contentData.interaction_method = mainAction.action_type
-          
+
           try {
             const params = JSON.parse(mainAction.action_parameters || '{}')
             console.log('📖 Parsed params:', params)
-            
+
             if (methodToUse === 'EMAIL') {
               contentData.email_subject = params.subject || ''
               contentData.email_content = params.content || ''
               contentData.attachments = params.attachments || []
-              console.log('📖 Set email data:', { 
-                email_subject: contentData.email_subject, 
-                email_content: contentData.email_content 
+              console.log('📖 Set email data:', {
+                email_subject: contentData.email_subject,
+                email_content: contentData.email_content
               })
             } else if (methodToUse === 'ZALO_ZNS' || methodToUse === 'SMS') {
               // ZNS and SMS use blocks structure
               contentData.blocks = params.blocks || []
-              console.log('📖 Set ZNS/SMS data:', { 
-                blocks: contentData.blocks 
+              console.log('📖 Set ZNS/SMS data:', {
+                blocks: contentData.blocks
               })
             } else if (methodToUse === 'ZALO_CARE') {
               // ZALO_CARE uses blocks structure
               contentData.blocks = params.blocks || []
               contentData.image_url = params.image_url || ''
-              console.log('📖 Set Zalo Care data:', { 
+              console.log('📖 Set Zalo Care data:', {
                 blocks: contentData.blocks,
-                image_url: contentData.image_url 
+                image_url: contentData.image_url
               })
             }
           } catch (e) {
@@ -1425,11 +1435,11 @@ export const useCampaignStore = defineStore('campaign', {
             console.error('❌ Raw action_parameters:', mainAction.action_parameters)
           }
         }
-        
+
         // Parse triggers and their actions to additional_actions
         if (flowDoc.trigger_id && flowDoc.trigger_id.length > 0) {
           const additionalActions = {}
-          
+
           // Helper to convert trigger_type back to key
           const getTriggerKeyFromType = (triggerType) => {
             const keyMap = {
@@ -1441,7 +1451,7 @@ export const useCampaignStore = defineStore('campaign', {
             }
             return keyMap[triggerType]
           }
-          
+
           // Helper to convert action_type back to frontend format
           const denormalizeActionType = (type) => {
             const typeMap = {
@@ -1468,7 +1478,7 @@ export const useCampaignStore = defineStore('campaign', {
             }
             return typeMap[type] || type.toLowerCase()
           }
-          
+
           // Create map of actions by trigger_id
           const actionsByTriggerId = {}
           ;(flowDoc.action_id || []).forEach(action => {
@@ -1476,9 +1486,9 @@ export const useCampaignStore = defineStore('campaign', {
               actionsByTriggerId[action.trigger_id] = action
             }
           })
-          
+
           console.log('📖 Actions by trigger_id:', actionsByTriggerId)
-          
+
           // Build additional_actions from triggers and their actions
           flowDoc.trigger_id.forEach(trigger => {
             try {
@@ -1487,20 +1497,20 @@ export const useCampaignStore = defineStore('campaign', {
                 console.warn('⚠️ Unknown trigger type:', trigger.trigger_type)
                 return
               }
-              
+
               // Find action for this trigger
               const triggerAction = actionsByTriggerId[trigger.name]
-              
+
               if (triggerAction) {
                 // Parse action parameters
                 const actionParams = JSON.parse(triggerAction.action_parameters || '{}')
-                
+
                 additionalActions[triggerKey] = {
                   type: denormalizeActionType(triggerAction.action_type),
                   data: actionParams,
                   configured: true // If action exists, it's configured
                 }
-                
+
                 console.log('✅ Loaded trigger action:', triggerKey, additionalActions[triggerKey])
               } else {
                 // Trigger exists but no action configured yet
@@ -1509,18 +1519,18 @@ export const useCampaignStore = defineStore('campaign', {
                   data: {},
                   configured: false
                 }
-                
+
                 console.log('⚠️ Trigger without action:', triggerKey)
               }
             } catch (e) {
               console.error('❌ Failed to parse trigger:', trigger, e)
             }
           })
-          
+
           contentData.additional_actions = additionalActions
           console.log('📖 Final additional_actions:', additionalActions)
         }
-        
+
         console.log('✅ Content loaded from Flow')
         console.log('✅ Final contentData:', contentData)
         return { success: true, data: contentData }

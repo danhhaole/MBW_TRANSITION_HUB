@@ -25,7 +25,8 @@
   "response_data",
   "is_active",
   "mjml_content",
-  "block_content"
+  "block_content",
+  "css_content"
  ],
  "fields": [
   {
@@ -52,7 +53,7 @@
   },
   {
    "fieldname": "template_content",
-   "fieldtype": "Long Text",
+   "fieldtype": "Code",
    "label": "Post Content"
   },
   {
@@ -91,7 +92,7 @@
   },
   {
    "fieldname": "error_message",
-   "fieldtype": "Long Text",
+   "fieldtype": "Code",
    "label": "Error Message"
   },
   {
@@ -128,18 +129,23 @@
   },
   {
    "fieldname": "mjml_content",
-   "fieldtype": "Long Text",
+   "fieldtype": "Code",
    "label": "Mjml Content"
   },
   {
    "fieldname": "block_content",
-   "fieldtype": "Long Text",
+   "fieldtype": "Code",
    "label": "Block Content"
+  },
+  {
+   "fieldname": "css_content",
+   "fieldtype": "Code",
+   "label": "CSS Content"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-24 09:58:04.827609",
+ "modified": "2025-12-22 15:56:33.178911",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Campaign Social",

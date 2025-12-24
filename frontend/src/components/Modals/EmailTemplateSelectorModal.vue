@@ -31,7 +31,7 @@
           v-for="template in filteredTemplates"
           :key="template.name"
           class="flex h-80 cursor-pointer flex-col gap-2 rounded-lg border p-3 hover:bg-gray-100 transition-colors"
-          @click.stop="emit('apply', template)"
+          @click.stop="handleTemplateClick(template)"
         >
           <div class="flex items-center justify-between border-b pb-2">
             <div class="text-base font-semibold truncate">
@@ -82,10 +82,11 @@
               <!-- HTML Preview (scaled, top portion only) -->
               <div class="w-full h-full overflow-hidden relative bg-gray-50/50">
                 <iframe
-                  :srcdoc="template.message"
+                  :srcdoc="getPreviewHtml(template)"
                   class="w-full border-0 pointer-events-none origin-top-left"
                   style="width: 600px; height: 1200px; transform: scale(0.42); transform-origin: top left;"
                   sandbox="allow-same-origin"
+                  loading="lazy"
                 />
               </div>
             </div>
@@ -164,6 +165,8 @@ const templates = createListResource({
     'template_type',
     'subject',
     'message',
+    'html_content',
+    'css_content',
     'email_design_json',
     'is_active',
     'default_template',
@@ -220,6 +223,57 @@ const getPreviewText = (html) => {
     .trim()
 }
 
+// Get preview HTML with CSS injected
+const getPreviewHtml = (template) => {
+  // Priority: html_content > message
+  let htmlContent = template.html_content || template.message || ''
+  const cssContent = template.css_content || ''
+  
+  if (!htmlContent) return ''
+  
+  // Remove script tags to avoid sandbox errors (we only need visual preview)
+  htmlContent = htmlContent.replace(/<script[\s\S]*?<\/script>/gi, '')
+  htmlContent = htmlContent.replace(/<script[^>]*>/gi, '')
+  
+  // Clean up HTML - remove <body> tags if present (we'll wrap it properly)
+  const hasBodyTag = htmlContent.includes('<body')
+  if (hasBodyTag) {
+    // Extract content inside <body> tags
+    const bodyMatch = htmlContent.match(/<body[^>]*>([\s\S]*?)<\/body>/i)
+    if (bodyMatch && bodyMatch[1]) {
+      htmlContent = bodyMatch[1]
+    } else {
+      // Remove <body> opening tag if no closing tag
+      htmlContent = htmlContent.replace(/<body[^>]*>/i, '')
+    }
+  }
+  
+  // Build complete HTML document with CSS
+  let fullHtml = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Preview</title>`
+  
+  // Inject CSS into <head>
+  if (cssContent && cssContent.trim() !== '') {
+    fullHtml += `
+  <style>
+${cssContent}
+  </style>`
+  }
+  
+  fullHtml += `
+</head>
+<body style="margin: 0; padding: 0;">
+${htmlContent}
+</body>
+</html>`
+  
+  return fullHtml
+}
+
 // Get stats from Unlayer design JSON
 const getDesignStats = (jsonString) => {
   try {
@@ -265,6 +319,29 @@ const getDesignPreviewText = (jsonString) => {
   } catch (e) {
     return 'Email template design'
   }
+}
+
+const handleTemplateClick = (template) => {
+  console.log('🖱️ [EmailTemplateSelectorModal] Template clicked:', {
+    templateName: template.template_name || template.name,
+    templateId: template.name,
+    hasHtmlContent: !!template.html_content,
+    htmlContentLength: template.html_content?.length || 0,
+    hasCssContent: !!template.css_content,
+    cssContentLength: template.css_content?.length || 0,
+    hasMessage: !!template.message,
+    messageLength: template.message?.length || 0,
+    hasBlockContent: !!template.block_content,
+    blockContentLength: template.block_content?.length || 0,
+    hasEmailDesignJson: !!template.email_design_json,
+    emailDesignJsonLength: template.email_design_json?.length || 0,
+    subject: template.subject,
+    templateType: template.template_type,
+    fullTemplate: template
+  })
+  
+  console.log('📤 [EmailTemplateSelectorModal] Emitting apply event with template')
+  emit('apply', template)
 }
 
 const openSettings = () => {

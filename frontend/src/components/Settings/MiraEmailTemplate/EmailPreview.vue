@@ -76,9 +76,10 @@
 
             <!-- Email Body -->
             <div class="p-6">
+              <!-- Render HTML content with CSS injected -->
               <div
-                class="prose prose-sm max-w-none max-h-[calc(55vh-200px)] overflow-auto"
-                v-html="renderedRichTextContent"
+                class="email-preview-content max-w-none max-h-[calc(55vh-200px)] overflow-auto"
+                v-html="renderedEmailWithCss"
               />
             </div>
 
@@ -123,6 +124,7 @@ const sampleData = ref({
   campaign_name: 'Tech Talent Recruitment 2025',
   campaign_type: 'RECRUITMENT',
   campaign_description: 'Recruiting senior developers for new projects',
+  jo_position: 'Senior Software Engineer', // Job position
   // Talent fields
   full_name: 'John Doe',
   email: 'john.doe@example.com',
@@ -167,6 +169,7 @@ function loadSampleData() {
     campaign_name: 'Tech Talent Recruitment 2025',
     campaign_type: 'RECRUITMENT',
     campaign_description: 'Recruiting senior developers for new projects',
+    jo_position: 'Senior Software Engineer', // Job position
     // Talent fields
     full_name: 'John Doe',
     email: 'john.doe@example.com',
@@ -213,12 +216,54 @@ const renderedSubject = computed(() => {
   return renderTemplate(props.templateData.subject)
 })
 
-const renderedRichTextContent = computed(() => {
-  const content = renderTemplate(props.templateData.message)
-  // Convert line breaks to <br> and wrap in paragraphs
+// Get CSS content from template
+const templateCss = computed(() => {
+  const css = props.templateData.css_content || ''
+  console.log('🎨 [EmailPreview] CSS content:', css?.substring(0, 200) + '...')
+  console.log('🎨 [EmailPreview] CSS length:', css?.length || 0)
+  return css
+})
+
+// Get HTML content - prefer html_content over message
+const templateHtml = computed(() => {
+  // Priority: html_content > message
+  const html = props.templateData.html_content || props.templateData.message || ''
+  console.log('📄 [EmailPreview] HTML content source:', props.templateData.html_content ? 'html_content' : 'message')
+  console.log('📄 [EmailPreview] HTML length:', html?.length || 0)
+  return html
+})
+
+// Render email content with merge tags replaced
+const renderedEmailContent = computed(() => {
+  let content = templateHtml.value
+  
+  if (!content) {
+    return '<p class="text-gray-500 italic">No content available</p>'
+  }
+  
+  // Replace all {{ fieldname }} with actual values
+  content = renderTemplate(content)
+  
+  console.log('✅ [EmailPreview] Rendered content length:', content.length)
+  console.log('✅ [EmailPreview] Has CSS:', !!templateCss.value)
+  
   return content
-    .split('\n\n')
-    .map((para) => `<p>${para.replace(/\n/g, '<br>')}</p>`)
-    .join('')
+})
+
+// Render email with CSS injected
+const renderedEmailWithCss = computed(() => {
+  let html = renderedEmailContent.value
+  
+  // Inject CSS if available
+  if (templateCss.value && templateCss.value.trim() !== '') {
+    // Wrap CSS in style tag and prepend to HTML
+    const styleTag = `<style type="text/css">${templateCss.value}</style>`
+    html = styleTag + html
+    console.log('✅ [EmailPreview] CSS injected, total length:', html.length)
+  } else {
+    console.log('⚠️ [EmailPreview] No CSS to inject')
+  }
+  
+  return html
 })
 </script>
