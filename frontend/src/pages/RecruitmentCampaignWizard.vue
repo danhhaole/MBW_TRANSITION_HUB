@@ -677,10 +677,22 @@ const loadSocialPosts = async (campaignId) => {
           block_content: post.block_content || '',        // EmailBuilder format (primary for editing)
           template_content: post.template_content || '',  // HTML format
           mjml_content: post.mjml_content || '',          // MJML format
+          css_content: post.css_content || '',            // CSS content for styling
           attachments: [],
           sender_account: post.sender_account || null,
           schedule_time: post.post_schedule_time || null
         }
+        
+        console.log('📧 [loadSocialPosts] Email content loaded:')
+        console.log('   css_content exists:', !!post.css_content)
+        console.log('   css_content length:', post.css_content?.length || 0)
+        console.log('   template_content exists:', !!post.template_content)
+        console.log('   template_content length:', post.template_content?.length || 0)
+        console.log('   block_content exists:', !!post.block_content)
+        console.log('   block_content length:', post.block_content?.length || 0)
+        console.log('   block_content preview:', post.block_content?.substring(0, 200) + '...')
+        console.log('   mjml_content exists:', !!post.mjml_content)
+        console.log('   mjml_content length:', post.mjml_content?.length || 0)
         if (!campaignData.value.selected_channels?.includes('email')) {
           campaignData.value.selected_channels = campaignData.value.selected_channels || []
           campaignData.value.selected_channels.push('email')
@@ -751,10 +763,21 @@ const saveSocialPosts = async () => {
         template_content: emailContent.template_content || emailContent.email_content || '',  // HTML format
         block_content: emailContent.block_content || '',        // EmailBuilder format
         mjml_content: emailContent.mjml_content || '',          // MJML format
+        css_content: emailContent.css_content || '',            // CSS content for styling
         sender_account: emailContent.sender_account || null,
         status: 'Pending',
         post_schedule_time: emailContent.schedule_time || null
       })
+      
+      console.log('📧 [saveSocialPosts] Email content being saved:')
+      console.log('   css_content exists:', !!emailContent.css_content)
+      console.log('   css_content length:', emailContent.css_content?.length || 0)
+      console.log('   template_content length:', emailContent.template_content?.length || 0)
+      console.log('   block_content exists:', !!emailContent.block_content)
+      console.log('   block_content length:', emailContent.block_content?.length || 0)
+      console.log('   block_content preview:', emailContent.block_content?.substring(0, 200) + '...')
+      console.log('   mjml_content exists:', !!emailContent.mjml_content)
+      console.log('   mjml_content length:', emailContent.mjml_content?.length || 0)
     }
     
     // Facebook post

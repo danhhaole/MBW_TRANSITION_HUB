@@ -868,8 +868,30 @@ async function saveTemplate() {
     editorLoading.value = true;
 
     console.log('📤 [EmailEditor] Emitting saved event with css_content length:', localContent.value.css_content?.length || 0)
+    console.log('   block_content length:', localContent.value.block_content?.length || 0)
+    console.log('   template_content length:', localContent.value.template_content?.length || 0)
+    console.log('   template_content preview:', localContent.value.template_content?.substring(0, 200) + '...')
+    
+    // IMPORTANT: Force trigger reactivity by creating new object reference
+    localContent.value = { ...localContent.value }
+    
     emit('saved', { ...localContent.value });
     emit('update:content', { ...localContent.value });
+
+    // IMPORTANT: Force update preview iframe after saving to show the latest saved content
+    // Use multiple nextTick to ensure DOM and computed properties are updated
+    nextTick(() => {
+      nextTick(() => {
+        if (previewIframe.value) {
+          const newPreviewHtml = previewHtml.value
+          previewIframe.value.srcdoc = newPreviewHtml
+          console.log('✅ [EmailEditor] Preview iframe updated after save')
+          console.log('   Preview HTML length:', newPreviewHtml?.length || 0)
+          console.log('   Preview HTML preview:', newPreviewHtml?.substring(0, 200) + '...')
+          console.log('   template_content in preview:', newPreviewHtml?.includes(localContent.value.template_content?.substring(0, 50) || ''))
+        }
+      })
+    })
 
     console.log('✅ [EmailEditor] ========== SAVE TEMPLATE SUCCESS ==========')
     toast.success(__('Template saved successfully'));
@@ -1223,6 +1245,34 @@ const applyTemplate = (template) => {
   }
 
   showTemplateSelectorModal.value = false
+
+  // IMPORTANT: Emit update:content immediately after applying template
+  // This ensures parent component receives the updated block_content, template_content, and css_content
+  if (templateApplied) {
+    console.log('📤 [EmailEditor] Emitting update:content after template applied')
+    console.log('   block_content exists:', !!localContent.value.block_content)
+    console.log('   block_content length:', localContent.value.block_content?.length || 0)
+    console.log('   template_content exists:', !!localContent.value.template_content)
+    console.log('   template_content length:', localContent.value.template_content?.length || 0)
+    console.log('   css_content exists:', !!localContent.value.css_content)
+    console.log('   css_content length:', localContent.value.css_content?.length || 0)
+    
+    // IMPORTANT: Force emit update:content to ensure parent receives the new template
+    // Use nextTick to ensure all updates are complete
+    nextTick(() => {
+      emit('update:content', { ...localContent.value })
+      
+      // IMPORTANT: Force preview iframe to update immediately
+      if (previewIframe.value) {
+        nextTick(() => {
+          if (previewIframe.value) {
+            previewIframe.value.srcdoc = previewHtml.value
+            console.log('✅ [EmailEditor] Preview iframe updated after template applied')
+          }
+        })
+      }
+    })
+  }
 
   // Ensure editor dialog stays open
   nextTick(() => {
@@ -1755,39 +1805,70 @@ watch(localContent, (newContent) => {
     }
   }
   
-  // Force iframe to update when content changes
+  // Force iframe to update when content changes (especially after save)
   if (previewIframe.value) {
     nextTick(() => {
-      if (previewIframe.value) {
-        previewIframe.value.srcdoc = previewHtml.value
-      }
+      nextTick(() => {
+        if (previewIframe.value) {
+          const newPreviewHtml = previewHtml.value
+          previewIframe.value.srcdoc = newPreviewHtml
+          console.log('🔄 [EmailEditor] Preview iframe updated from localContent watch')
+          console.log('   Preview HTML length:', newPreviewHtml?.length || 0)
+          console.log('   template_content in preview:', newPreviewHtml?.includes(newContent.template_content?.substring(0, 50) || ''))
+        }
+      })
     })
   }
 }, { deep: true })
 
 watch(() => props.content, (newContent) => {
+  if (!newContent) return
+  
+  console.log('🔄 [EmailEditor] Props content changed')
+  console.log('   template_content length:', newContent?.template_content?.length || 0)
+  console.log('   template_content preview:', newContent?.template_content?.substring(0, 200) + '...')
+  console.log('   block_content length:', newContent?.block_content?.length || 0)
+  console.log('   css_content length:', newContent?.css_content?.length || 0)
+  
+  // IMPORTANT: Force trigger reactivity by creating new object
   localContent.value = { 
     ...localContent.value, 
     ...newContent,
     // Ensure css_content is always a string, not undefined
-    css_content: newContent?.css_content !== undefined ? newContent.css_content : (localContent.value.css_content || '')
+    css_content: newContent?.css_content !== undefined ? newContent.css_content : (localContent.value.css_content || ''),
+    // Explicitly ensure all fields are updated
+    block_content: newContent?.block_content !== undefined ? newContent.block_content : localContent.value.block_content,
+    template_content: newContent?.template_content !== undefined ? newContent.template_content : localContent.value.template_content
   }
-  // Force iframe to update when props content changes
+  
+  console.log('✅ [EmailEditor] Updated localContent from props')
+  console.log('   localContent.template_content length:', localContent.value.template_content?.length || 0)
+  console.log('   localContent.template_content preview:', localContent.value.template_content?.substring(0, 200) + '...')
+  
+  // Force iframe to update when props content changes (especially after save)
   if (previewIframe.value) {
     nextTick(() => {
-      if (previewIframe.value) {
-        previewIframe.value.srcdoc = previewHtml.value
-      }
+      nextTick(() => {
+        if (previewIframe.value) {
+          const newPreviewHtml = previewHtml.value
+          previewIframe.value.srcdoc = newPreviewHtml
+          console.log('✅ [EmailEditor] Preview iframe updated from props.content watch')
+          console.log('   Preview HTML length:', newPreviewHtml?.length || 0)
+          console.log('   Preview HTML preview:', newPreviewHtml?.substring(0, 200) + '...')
+          console.log('   template_content in preview:', newPreviewHtml?.includes(localContent.value.template_content?.substring(0, 50) || ''))
+        }
+      })
     })
   }
-}, { deep: true })
+}, { deep: true, immediate: false })
 
 // Watch previewHtml computed property to update iframe
 watch(previewHtml, (newHtml) => {
   if (previewIframe.value && newHtml) {
     previewIframe.value.srcdoc = newHtml
+    console.log('🔄 [EmailEditor] Preview iframe updated from watch, HTML length:', newHtml?.length || 0)
   }
-})
+}, { immediate: true })
 
 </script>
 
