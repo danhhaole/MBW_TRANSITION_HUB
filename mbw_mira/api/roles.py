@@ -1,4 +1,5 @@
 import frappe
+from frappe import _
 from frappe.core.doctype.doctype.doctype import validate_permissions_for_doctype
 try:
 	from mbw_admin.api.api import get_user_feature_permissions as _get_user_features
@@ -464,3 +465,44 @@ def get_user_features(user=None):
     )
 
     return {"features": active_features}
+
+@frappe.whitelist()
+def get_users_with_doctype_access(doctype):
+    """
+    Lấy danh sách users có quyền đọc trên một doctype cụ thể.
+    """
+    if not doctype:
+        frappe.throw(_("DocType is required"))
+
+    # Lấy tất cả các vai trò có quyền đọc trên doctype này
+    roles_with_read_access = frappe.get_all(
+        "DocPerm",
+        filters={"parent": doctype, "read": 1},
+        fields=["role"],
+        distinct=True
+    )
+    roles = [r.role for r in roles_with_read_access]
+
+    if not roles:
+        return []
+
+    # Lấy tất cả users thuộc các vai trò này
+    users = frappe.get_all(
+        "Has Role",
+        filters={"role": ["in", roles]},
+        fields=["parent as user_name"],
+        distinct=True
+    )
+    user_names = [u.user_name for u in users]
+
+    if not user_names:
+        return []
+
+    # Lấy thông tin chi tiết của user
+    user_details = frappe.get_all(
+        "User",
+        filters={"name": ["in", user_names], "enabled": 1},
+        fields=["name", "full_name", "email"]
+    )
+
+    return user_details

@@ -1808,14 +1808,14 @@ watch(localContent, (newContent) => {
   // Force iframe to update when content changes (especially after save)
   if (previewIframe.value) {
     nextTick(() => {
-      nextTick(() => {
-        if (previewIframe.value) {
+    nextTick(() => {
+      if (previewIframe.value) {
           const newPreviewHtml = previewHtml.value
           previewIframe.value.srcdoc = newPreviewHtml
           console.log('🔄 [EmailEditor] Preview iframe updated from localContent watch')
           console.log('   Preview HTML length:', newPreviewHtml?.length || 0)
           console.log('   template_content in preview:', newPreviewHtml?.includes(newContent.template_content?.substring(0, 50) || ''))
-        }
+      }
       })
     })
   }
@@ -1848,15 +1848,15 @@ watch(() => props.content, (newContent) => {
   // Force iframe to update when props content changes (especially after save)
   if (previewIframe.value) {
     nextTick(() => {
-      nextTick(() => {
-        if (previewIframe.value) {
+    nextTick(() => {
+      if (previewIframe.value) {
           const newPreviewHtml = previewHtml.value
           previewIframe.value.srcdoc = newPreviewHtml
           console.log('✅ [EmailEditor] Preview iframe updated from props.content watch')
           console.log('   Preview HTML length:', newPreviewHtml?.length || 0)
           console.log('   Preview HTML preview:', newPreviewHtml?.substring(0, 200) + '...')
           console.log('   template_content in preview:', newPreviewHtml?.includes(localContent.value.template_content?.substring(0, 50) || ''))
-        }
+      }
       })
     })
   }

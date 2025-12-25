@@ -1,70 +1,87 @@
 import frappe
-from frappe.query_builder import Order
+import json
 
 
 @frappe.whitelist()
-def get_notifications():
-    Notification = frappe.qb.DocType("Mira Notification")
-    query = (
-        frappe.qb.from_(Notification)
-        .select("*")
-        .where(Notification.to_user == frappe.session.user)
-        .orderby("creation", order=Order.desc)
+def get_notifications(filters=None):
+    """
+    Get notifications from Notification Log doctype.
+    Similar to mbw_ats.api.notifications.get_notifications
+    """
+    # Parse filters if it's a string
+    if isinstance(filters, str):
+        filters = json.loads(filters)
+    
+    if not filters:
+        filters = {}
+    
+    # Get current user
+    current_user = frappe.session.user
+    
+    # Try for_user first, then fallback to owner
+    for_user_filters = {**filters, "for_user": current_user}
+    notifications = frappe.get_all(
+        "Notification Log",
+        filters=for_user_filters,
+        fields=["subject", "from_user", "link", "read", "name", "creation", "type", "document_type", "document_name"],
+        order_by="creation desc",
     )
-    notifications = query.run(as_dict=True)
-
-    _notifications = []
-    for notification in notifications:
-        _notifications.append(
-            {
-                "creation": notification.creation,
-                "from_user": {
-                    "name": notification.from_user,
-                    "full_name": frappe.get_value(
-                        "User", notification.from_user, "full_name"
-                    ),
-                },
-                "type": notification.type,
-                "to_user": notification.to_user,
-                "read": notification.read,
-                "hash": get_hash(notification),
-                "notification_text": notification.notification_text,
-                "notification_type_doctype": notification.notification_type_doctype,
-                "notification_type_doc": notification.notification_type_doc,
-                "reference_doctype": notification.reference_doctype,
-                "reference_name": notification.reference_name,
-                "route_name": "",
-            }
+    
+    # If no results with for_user, try with owner
+    if not notifications:
+        owner_filters = {**filters, "owner": current_user}
+        # Remove for_user if it was in original filters
+        owner_filters.pop("for_user", None)
+        notifications = frappe.get_all(
+            "Notification Log",
+            filters=owner_filters,
+            fields=["subject", "from_user", "link", "read", "name", "creation", "type", "document_type", "document_name"],
+            order_by="creation desc",
         )
 
-    return _notifications
+    for notification in notifications:
+        if notification.from_user:
+            from_user_details = frappe.db.get_value(
+                "User", notification.from_user, ["full_name", "user_image"], as_dict=1
+            )
+            if from_user_details:
+                notification.update(from_user_details)
+
+    return notifications
 
 
 @frappe.whitelist()
-def mark_as_read(user=None, doc=None):
-    user = user or frappe.session.user
-    filters = {"to_user": user, "read": False}
-    or_filters = []
-    if doc:
-        or_filters = [
-            {"comment": doc},
-            {"notification_type_doc": doc},
-        ]
-    for n in frappe.get_all("Mira Notification", filters=filters, or_filters=or_filters):
-        d = frappe.get_doc("Mira Notification", n.name)
-        d.read = True
-        d.save()
+def mark_as_read(name):
+    """
+    Mark a notification as read.
+    Similar to mbw_ats.api.notifications.mark_as_read
+    """
+    doc = frappe.get_doc("Notification Log", name)
+    doc.read = 1
+    doc.save(ignore_permissions=True)
+    return {"success": True}
 
-def get_hash(notification):
-    _hash = ""
-    if notification.type == "Mention" and notification.notification_type_doc:
-        _hash = "#" + notification.notification_type_doc
 
-    if notification.type == "WhatsApp":
-        _hash = "#whatsapp"
+@frappe.whitelist()
+def mark_all_as_read():
+    """
+    Mark all unread notifications as read for current user.
+    Similar to mbw_ats.api.notifications.mark_all_as_read
+    """
+    current_user = frappe.session.user
+    
+    # Try for_user first
+    notifications = frappe.get_all(
+        "Notification Log", {"for_user": current_user, "read": 0}, pluck="name"
+    )
+    
+    # If no results, try owner
+    if not notifications:
+        notifications = frappe.get_all(
+            "Notification Log", {"owner": current_user, "read": 0}, pluck="name"
+        )
 
-    if notification.type == "Assignment" and notification.notification_type_doctype == "CRM Task":
-        _hash = "#tasks"
-        if "has been removed by" in notification.message:
-            _hash = ""
-    return _hash
+    for notification in notifications:
+        mark_as_read(notification)
+    
+    return {"success": True, "marked": len(notifications)}

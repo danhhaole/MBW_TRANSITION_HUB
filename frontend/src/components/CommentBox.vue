@@ -91,10 +91,11 @@ import SmileIcon from '@/components/Icons/SmileIcon.vue'
 import AttachmentIcon from '@/components/Icons/AttachmentIcon.vue'
 import AttachmentItem from '@/components/AttachmentItem.vue'
 import { usersStore } from '@/stores/users'
-import { TextEditorBubbleMenu, TextEditor, FileUploader } from 'frappe-ui'
+import { sessionStore } from '@/stores/session'
+import { TextEditorBubbleMenu, TextEditor, FileUploader, createResource } from 'frappe-ui'
 import { capture } from '@/telemetry'
 import { EditorContent } from '@tiptap/vue-3'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 const props = defineProps({
   placeholder: {
@@ -107,7 +108,7 @@ const props = defineProps({
   },
   doctype: {
     type: String,
-    default: 'CRM Lead',
+    default: 'Mira Campaign',
   },
   editorProps: {
     type: Object,
@@ -121,13 +122,18 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  hiringCommittee: {
+    type: Array,
+    default: () => [],
+  },
 })
 
 const modelValue = defineModel()
 const attachments = defineModel('attachments')
 const content = defineModel('content')
 
-const { users: usersList } = usersStore()
+const { users: usersList, getUser } = usersStore()
+const session = sessionStore()
 
 const textEditor = ref(null)
 const emoji = ref('')
@@ -147,16 +153,61 @@ function removeAttachment(attachment) {
   attachments.value = attachments.value.filter((a) => a !== attachment)
 }
 
+const allowedUsersResource = createResource({
+	url: "mbw_mira.api.roles.get_users_with_doctype_access",
+	cache: ["allowed_users", props.doctype],
+  auto: true,
+	makeParams(values) {
+		return {
+			doctype: props.doctype,
+		};
+	},
+});
+
+watch(
+	() => props.doctype,
+	(newVal) => {
+		if (newVal) {
+			allowedUsersResource.fetch({ doctype: newVal });
+		}
+	},
+	{ immediate: true },
+);
+
 const users = computed(() => {
-  return (
-    usersList.data?.crmUsers
-      ?.filter((user) => user.enabled)
-      .map((user) => ({
-        label: user.full_name.trimEnd(),
-        value: user.name,
-      })) || []
-  )
-})
+	const currentUser = session.user; // User name hiện tại (ví dụ: "Administrator")
+	const currentUserObj = getUser();
+	const currentUserEmail = currentUserObj?.email; // Email của user hiện tại
+
+	// Ưu tiên dùng hiringCommittee nếu có (trong Job Opening)
+	if (props.hiringCommittee && props.hiringCommittee.length > 0) {
+		return props.hiringCommittee
+			.filter((member) => {
+				// Bỏ qua user hiện tại (so sánh cả name và email)
+				return member.user !== currentUser && member.user !== currentUserEmail;
+			})
+			.map((member) => ({
+				label: getUser(member.user)?.full_name?.trimEnd() || member.user,
+				value: member.user,
+			}));
+	}
+
+	// Filter users theo danh sách từ backend
+	if (allowedUsersResource.data) {
+		return allowedUsersResource.data
+			.filter((user) => {
+				// Bỏ qua user hiện tại (so sánh cả name và email)
+				return user.name !== currentUser && user.name !== currentUserEmail && 
+				       user.email !== currentUser && user.email !== currentUserEmail;
+			})
+			.map((user) => ({
+				label: user.full_name?.trimEnd() || user.name,
+				value: user.name,
+			}));
+	}
+
+	return [];
+});
 
 defineExpose({ editor })
 

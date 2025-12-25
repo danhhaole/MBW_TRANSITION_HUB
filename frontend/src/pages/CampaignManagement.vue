@@ -812,8 +812,8 @@ const handleCreateFromSidebar = (section) => {
 };
 
 const openEditDialog = (campaign) => {
-  selectedCampaign.value = campaign;
-  showEditWizard.value = true;
+  // Navigate to campaign detail view for editing
+  router.push(`/campaigns/${campaign.name}`);
 };
 
 const openViewDialog = (campaign) => {

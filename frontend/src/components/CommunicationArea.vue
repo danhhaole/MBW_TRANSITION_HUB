@@ -82,6 +82,7 @@
       v-model="doc.data"
       v-model:attachments="attachments"
       :doctype="doctype"
+      :hiringCommittee="hiringCommittee"
       :placeholder="__('@John, can you please check this?')"
     />
   </div>
@@ -102,7 +103,11 @@ import { ref, watch, computed } from 'vue'
 const props = defineProps({
   doctype: {
     type: String,
-    default: 'CRM Lead',
+    default: 'Mira Campaign',
+  },
+  hiringCommittee: {
+    type: Array,
+    default: () => [],
   },
 })
 
@@ -207,16 +212,16 @@ async function sendMail() {
 }
 
 async function sendComment() {
-  let comment = await call('frappe.desk.form.utils.add_comment', {
+  let comment = await call('mbw_mira.api.comment.add_comment', {
     reference_doctype: props.doctype,
-    reference_name: doc.value.data.name,
+    reference_name: doc.value?.data?.name || doc.value?.name,
     content: newComment.value,
     comment_email: getUser().email,
     comment_by: getUser()?.full_name || undefined,
   })
   if (comment && attachments.value.length) {
     capture('comment_attachments_added')
-    await call('crm.api.comment.add_attachments', {
+    await call('mbw_mira.api.comment.add_attachments', {
       name: comment.name,
       attachments: attachments.value.map((x) => x.name),
     })

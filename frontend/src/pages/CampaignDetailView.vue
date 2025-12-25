@@ -102,7 +102,7 @@
 									d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
 								/>
 							</svg>
-							<!-- Users Icon for Assigned Profiles (Talent Campaign) -->
+							<!-- User Icon for Detail Talent -->
 							<svg
 								v-else-if="tab.key === 'candidates'"
 								class="w-5 h-5 mr-2"
@@ -114,7 +114,7 @@
 									stroke-linecap="round"
 									stroke-linejoin="round"
 									stroke-width="2"
-									d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
+									d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
 								/>
 							</svg>
 
@@ -165,6 +165,11 @@
 									d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
 								/>
 							</svg>
+							<!-- Comment Icon for Comments -->
+							<CommentIcon
+								v-else-if="tab.key === 'comments'"
+								class="w-5 h-5 mr-2"
+							/>
 							<!-- Chart Icon for Analytics -->
 							<svg
 								v-else
@@ -435,6 +440,17 @@
 								</tbody>
 							</table>
 						</div>
+					</div>
+
+					<!-- Comments Tab -->
+					<div v-else-if="activeTab === 'comments'" class="flex flex-col h-full overflow-hidden">
+						<Activities
+							ref="activities"
+							doctype="Mira Campaign"
+							:tabs="[{ name: 'Comments', label: __('Comments') }]"
+							v-model:tabIndex="activitiesTabIndex"
+							v-model="campaignDoc"
+						/>
 					</div>
 
 					<!-- Social Posts Tab -->
@@ -890,7 +906,7 @@
 									<div class="p-4">
 										<iframe
 											v-if="selectedPost.template_content"
-											:srcdoc="selectedPost.template_content"
+											:srcdoc="getEmailPreviewContent(selectedPost)"
 											class="w-full h-96 border-0"
 											sandbox="allow-same-origin"
 										></iframe>
@@ -1276,6 +1292,8 @@ import CampaignForm from '@/components/campaign/CampaignForm.vue'
 import CampaignSocialList from '@/components/campaign/CampaignSocialList.vue'
 import CampaignOverview from '@/components/campaign/CampaignOverview.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
+import Activities from '@/components/Activities/Activities.vue'
+import CommentIcon from '@/components/Icons/CommentIcon.vue'
 
 // Campaign Wizards based on type
 import AttractionCampaignWizard from '@/pages/AttractionCampaignWizard.vue'
@@ -1296,6 +1314,7 @@ const talentSegmentStore = useTalentSegmentStore()
 
 // State
 const activeTab = ref('overview')
+const activitiesTabIndex = ref(0) // For Activities component's internal tab management
 const loading = ref(false)
 const showEditWizard = ref(false)
 const loadingSteps = ref(false)
@@ -1304,6 +1323,12 @@ const loadingActions = ref(false)
 
 // Campaign data
 const campaign = ref({})
+const campaignDoc = computed(() => ({
+	data: {
+		name: campaign.value.name || route.params.id
+	},
+	name: campaign.value.name || route.params.id
+}))
 const targetSegment = ref(null)
 const campaignSteps = ref([])
 const candidateCampaigns = ref([])
@@ -1603,6 +1628,11 @@ const tabs = computed(() => {
 			label: __('Social Posts'),
 			count: socialPosts.value.length,
 		},
+		{
+			key: 'comments',
+			label: __('Comments'),
+			count: 0,
+		},
 	]
 
 	return baseTabs
@@ -1799,15 +1829,17 @@ const loadCampaignSteps = async () => {
 const loadCandidateCampaigns = async () => {
 	loadingCandidates.value = true
 	try {
-		const result = await miraTalentPoolStore.getList({
+		const result = await call('frappe.client.get_list', {
+			doctype: 'Mira Talent Campaign',
 			filters: { campaign_id: route.params.id },
 			fields: ['name', 'talent_id', 'status', 'current_step_order', 'enrolled_at'],
 		})
-		if (result.success) {
-			candidateCampaigns.value = result.data
+		if (result) {
+			candidateCampaigns.value = result || []
 		}
 	} catch (error) {
 		console.error('Error loading candidate campaigns:', error)
+		candidateCampaigns.value = []
 	} finally {
 		loadingCandidates.value = false
 	}
@@ -1816,20 +1848,23 @@ const loadCandidateCampaigns = async () => {
 const loadActions = async () => {
 	loadingActions.value = true
 	try {
-		const candidateCampaignsResult = await miraTalentPoolStore.getList({
+		const candidateCampaignsResult = await call('frappe.client.get_list', {
+			doctype: 'Mira Talent Campaign',
 			filters: { campaign_id: route.params.id },
 			fields: ['name'],
 		})
-		if (candidateCampaignsResult.success && candidateCampaignsResult.data.length > 0) {
-			const candidateCampaignIds = candidateCampaignsResult.data.map((cc) => cc.name)
-			const result = await call(
-				getList({
-					filters: { candidate_campaign_id: ['in', candidateCampaignIds] },
-					fields: ['name', 'campaign_step', 'status', 'scheduled_at', 'executed_at'],
-				}),
-			)
-			if (result.success) {
-				actions.value = result.data
+		if (candidateCampaignsResult && candidateCampaignsResult.length > 0) {
+			const candidateCampaignIds = candidateCampaignsResult.map((cc) => cc.name)
+			// Use correct field name: talent_campaign_id (not candidate_campaign_id) and campaign_social (not campaign_step)
+			const result = await call('frappe.client.get_list', {
+				doctype: 'Mira Action',
+				filters: { talent_campaign_id: ['in', candidateCampaignIds] },
+				fields: ['name', 'campaign_social', 'action_type', 'status', 'scheduled_at', 'executed_at', 'talent_campaign_id'],
+			})
+			if (result) {
+				actions.value = result || []
+			} else {
+				actions.value = []
 			}
 		} else {
 			actions.value = []
@@ -1846,43 +1881,47 @@ const loadAvailableCandidates = async () => {
 	try {
 		if (!campaign.value.target_segment) {
 			// If no target segment, show all candidates
-			const result = await candidateStore.getList({
+			const result = await call('frappe.client.get_list', {
+				doctype: 'Mira Talent',
 				fields: ['name', 'full_name'],
-				page_length: 1000,
+				limit_page_length: 1000,
 			})
-			if (result.success) {
-				availableCandidates.value = result.data.map((item) => ({
+			if (result) {
+				availableCandidates.value = result.map((item) => ({
 					label: item.full_name || item.name,
 					value: item.name,
 				}))
 			}
 		} else {
 			// Get candidates from target segment through Mira Talent Pool
-			const candidateSegmentResult = await miraTalentPoolStore.getList({
+			const candidateSegmentResult = await call('frappe.client.get_list', {
+				doctype: 'Mira Talent Pool',
 				filters: { segment_id: campaign.value.target_segment },
 				fields: ['talent_id'],
 			})
-			if (candidateSegmentResult.success && candidateSegmentResult.data.length > 0) {
-				const candidateIds = candidateSegmentResult.data.map((cs) => cs.talent_id)
+			if (candidateSegmentResult && candidateSegmentResult.length > 0) {
+				const candidateIds = candidateSegmentResult.map((cs) => cs.talent_id).filter(Boolean)
 				// Get candidates already in this campaign
-				const existingCandidateCampaigns = await miraTalentPoolStore.getList({
+				const existingCandidateCampaigns = await call('frappe.client.get_list', {
+					doctype: 'Mira Talent Campaign',
 					filters: { campaign_id: route.params.id },
 					fields: ['talent_id'],
 				})
-				const existingCandidateIds = existingCandidateCampaigns.success
-					? existingCandidateCampaigns.data.map((cc) => cc.talent_id)
+				const existingCandidateIds = existingCandidateCampaigns
+					? existingCandidateCampaigns.map((cc) => cc.talent_id).filter(Boolean)
 					: []
 				// Filter out candidates already in campaign
 				const availableCandidateIds = candidateIds.filter(
 					(id) => !existingCandidateIds.includes(id),
 				)
 				if (availableCandidateIds.length > 0) {
-					const candidateResult = await candidateStore.getList({
+					const candidateResult = await call('frappe.client.get_list', {
+						doctype: 'Mira Talent',
 						filters: { name: ['in', availableCandidateIds] },
 						fields: ['name', 'full_name'],
 					})
-					if (candidateResult.success) {
-						availableCandidates.value = candidateResult.data.map((item) => ({
+					if (candidateResult) {
+						availableCandidates.value = candidateResult.map((item) => ({
 							label: item.full_name + ' (' + item.name + ')',
 							value: item.name,
 						}))
@@ -1896,6 +1935,7 @@ const loadAvailableCandidates = async () => {
 		}
 	} catch (error) {
 		console.error('Error loading candidates:', error)
+		availableCandidates.value = []
 	}
 }
 
@@ -2350,25 +2390,17 @@ const loadMiraCandidates = async () => {
 const loadInteractions = async () => {
 	loadingInteractions.value = true
 	try {
-		const res = await call('frappe.client.get_list', {
-			doctype: 'Mira Interaction',
-			fields: [
-				'name',
-				'talent_id',
-				'contact_id',
-				'campaign_id',
-				'interaction_type',
-				'action',
-				'url',
-				'description',
-				'creation',
-				'modified',
-			],
-			filters: { campaign_id: route.params.id },
-			order_by: 'creation desc',
-			limit_page_length: 100,
+		// Use backend API endpoint for safer query
+		const response = await call('mbw_mira.api.interaction.get_campaign_interactions', {
+			campaign_id: route.params.id,
+			limit: 100
 		})
-		interactions.value = res || []
+		
+		if (response && response.status === 'success') {
+			interactions.value = response.interactions || []
+		} else {
+			interactions.value = []
+		}
 	} catch (err) {
 		console.error('Error loading interactions:', err)
 		interactions.value = []
@@ -2393,6 +2425,7 @@ const loadSocialPosts = async () => {
 				'post_schedule_time',
 				'executed_at',
 				'template_content',
+				'css_content',
 				'subject',
 				'social_media_images',
 				'status',
@@ -2446,10 +2479,21 @@ watch(
 		const tabKeys = newTabs.map((tab) => tab.key)
 		if (!tabKeys.includes(activeTab.value)) {
 			// Nếu activeTab hiện tại không còn tồn tại, chuyển về tab đầu tiên
-			activeTab.value = tabKeys[0] || 'steps'
+			activeTab.value = tabKeys[0] || 'overview'
 		}
 	},
 	{ immediate: true },
+)
+
+// Watch route hash to switch to comments tab
+watch(
+	() => route.hash,
+	(newHash) => {
+		if (newHash === '#comments') {
+			activeTab.value = 'comments'
+		}
+	},
+	{ immediate: true }
 )
 
 // Load initial data
@@ -2532,6 +2576,36 @@ const stripHtml = (html) => {
 	// Create a temporary element to decode HTML entities
 	const doc = new DOMParser().parseFromString(html, 'text/html')
 	return doc.body.textContent || ''
+}
+
+// Combine css_content and template_content for email preview
+const getEmailPreviewContent = (post) => {
+	if (!post) return ''
+	
+	const templateContent = post.template_content || ''
+	const cssContent = post.css_content || ''
+	
+	// If no CSS content, return template content as is
+	if (!cssContent) {
+		return templateContent
+	}
+	
+	// Combine CSS and HTML content
+	return `
+		<!DOCTYPE html>
+		<html>
+		<head>
+			<meta charset="UTF-8">
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+			<style>
+				${cssContent}
+			</style>
+		</head>
+		<body>
+			${templateContent}
+		</body>
+		</html>
+	`
 }
 
 // Open post preview modal

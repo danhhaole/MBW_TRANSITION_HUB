@@ -62,16 +62,20 @@ export function getFormat(
 ) {
   if (!date) return ''
   let dateFormat =
-    window.sysdefaults.date_format
-      .replace('mm', 'MM')
-      .replace('yyyy', 'YYYY')
-      .replace('dd', 'DD') || 'YYYY-MM-DD'
-  let timeFormat = window.sysdefaults.time_format || 'HH:mm:ss'
+    window.sysdefaults?.date_format
+      ?.replace(/dd/i, 'DD')
+      ?.replace(/mm/i, 'MM')
+      ?.replace(/yyyy/i, 'YYYY') || 'DD/MM/YYYY'
+  let timeFormat = window.sysdefaults?.time_format || 'HH:mm:ss'
   format = format || 'ddd, MMM D, YYYY h:mm a'
 
-  if (onlyDate) format = dateFormat
-  if (onlyTime) format = timeFormat
-  if (onlyTime && onlyDate) format = `${dateFormat} ${timeFormat}`
+  if (onlyDate && onlyTime) {
+    format = `${dateFormat} ${timeFormat}`
+  } else if (onlyDate) {
+    format = dateFormat
+  } else if (onlyTime) {
+    format = timeFormat
+  }
 
   if (withDate) {
     return dayjs(date).format(format)

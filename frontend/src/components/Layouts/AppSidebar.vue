@@ -7,7 +7,7 @@
 			<UserDropdown class="p-2" :isCollapsed="isSidebarCollapsed" />
 		</div>
 		<div class="flex-1 overflow-y-auto">
-			<div class="mb-3 flex flex-col">
+			<div class="flex flex-col">
 				<SidebarLink
 					id="notifications-btn"
 					:label="__('Notifications')"
@@ -17,14 +17,15 @@
 					class="relative mx-2 my-0.5"
 				>
 					<template #right>
-						<Badge
+						<div
 							v-if="!isSidebarCollapsed && unreadNotificationsCount"
-							:label="unreadNotificationsCount"
-							variant="subtle"
-						/>
+							class="flex items-center justify-center min-w-[20px] h-5 px-1.5 ml-3 rounded-full bg-blue-500 text-white text-xs font-semibold"
+						>
+							{{ unreadNotificationsCount }}
+						</div>
 						<div
 							v-else-if="unreadNotificationsCount"
-							class="absolute -left-1.5 top-1 z-20 h-[5px] w-[5px] translate-x-6 translate-y-1 rounded-full bg-surface-gray-6 ring-1 ring-white"
+							class="absolute -left-1.5 top-1 z-20 h-[5px] w-[5px] translate-x-6 translate-y-1 rounded-full bg-blue-500 ring-1 ring-white"
 						/>
 					</template>
 				</SidebarLink>
