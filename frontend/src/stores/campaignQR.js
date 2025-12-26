@@ -14,13 +14,11 @@ export const useCampaignQRStore = defineStore('campaignQR', () => {
     return qrCodes.value.filter(qr => qr.campaign_id === campaignId)
   })
 
-  // Removed getActiveQRCodes - all QR codes are active (delete if not needed)
-
   // Actions
   const fetchQRCodesByCampaign = async (campaignId) => {
     loading.value = true
     error.value = null
-    
+
     try {
       const result = await call('frappe.client.get_list', {
         doctype: 'Mira Campaign QR',
@@ -48,7 +46,7 @@ export const useCampaignQRStore = defineStore('campaignQR', () => {
         qrCodes.value = result
         return { success: true, data: result }
       }
-      
+
       return { success: false, error: 'No data returned' }
     } catch (err) {
       error.value = parseError(err)
@@ -62,7 +60,7 @@ export const useCampaignQRStore = defineStore('campaignQR', () => {
   const fetchQRCodeById = async (qrId) => {
     loading.value = true
     error.value = null
-    
+
     try {
       const result = await call('frappe.client.get', {
         doctype: 'Mira Campaign QR',
@@ -73,7 +71,7 @@ export const useCampaignQRStore = defineStore('campaignQR', () => {
         currentQR.value = result
         return { success: true, data: result }
       }
-      
+
       return { success: false, error: 'No data returned' }
     } catch (err) {
       error.value = parseError(err)
@@ -87,7 +85,7 @@ export const useCampaignQRStore = defineStore('campaignQR', () => {
   const createQRCode = async (qrData) => {
     loading.value = true
     error.value = null
-    
+
     try {
       // Validate required fields
       if (!qrData.campaign_id) {
@@ -119,7 +117,7 @@ export const useCampaignQRStore = defineStore('campaignQR', () => {
         qrCodes.value.unshift(result)
         return { success: true, data: result }
       }
-      
+
       return { success: false, error: 'Failed to create QR code' }
     } catch (err) {
       error.value = parseError(err)
@@ -133,7 +131,7 @@ export const useCampaignQRStore = defineStore('campaignQR', () => {
   const updateQRCode = async (qrId, qrData) => {
     loading.value = true
     error.value = null
-    
+
     try {
       const result = await call('frappe.client.set_value', {
         doctype: 'Mira Campaign QR',
@@ -147,14 +145,14 @@ export const useCampaignQRStore = defineStore('campaignQR', () => {
         if (index !== -1) {
           qrCodes.value[index] = { ...qrCodes.value[index], ...qrData }
         }
-        
+
         if (currentQR.value && currentQR.value.name === qrId) {
           currentQR.value = { ...currentQR.value, ...qrData }
         }
-        
+
         return { success: true, data: result }
       }
-      
+
       return { success: false, error: 'Failed to update QR code' }
     } catch (err) {
       error.value = parseError(err)
@@ -168,7 +166,7 @@ export const useCampaignQRStore = defineStore('campaignQR', () => {
   const deleteQRCode = async (qrId) => {
     loading.value = true
     error.value = null
-    
+
     try {
       await call('frappe.client.delete', {
         doctype: 'Mira Campaign QR',
@@ -177,11 +175,11 @@ export const useCampaignQRStore = defineStore('campaignQR', () => {
 
       // Remove from local state
       qrCodes.value = qrCodes.value.filter(qr => qr.name !== qrId)
-      
+
       if (currentQR.value && currentQR.value.name === qrId) {
         currentQR.value = null
       }
-      
+
       return { success: true }
     } catch (err) {
       error.value = parseError(err)
@@ -195,7 +193,7 @@ export const useCampaignQRStore = defineStore('campaignQR', () => {
   const generateQRCode = async (qrId, landingPageUrl, utmParams) => {
     loading.value = true
     error.value = null
-    
+
     try {
       const result = await call('mbw_mira.api.create_landing_page_qrcode', {
         landing_page_url: landingPageUrl,
@@ -212,10 +210,10 @@ export const useCampaignQRStore = defineStore('campaignQR', () => {
           qr_url: result.data.url,
           qr_data: result.data
         })
-        
+
         return { success: true, data: result.data }
       }
-      
+
       return { success: false, error: 'Failed to generate QR code' }
     } catch (err) {
       error.value = parseError(err)
@@ -255,10 +253,10 @@ export const useCampaignQRStore = defineStore('campaignQR', () => {
     currentQR,
     loading,
     error,
-    
+
     // Getters
     getQRCodesByCampaign,
-    
+
     // Actions
     fetchQRCodesByCampaign,
     fetchQRCodeById,

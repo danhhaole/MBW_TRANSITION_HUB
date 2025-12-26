@@ -10,8 +10,22 @@ class CMSAPI:
         self.provider = APIProvider()
 
     # --- 1. Templates ---
-    def get_templates(self):
-        return self.provider.get("mbw_cms.api.page_api.get_templates")
+    def get_templates(self, project_folder=None, fields=None, start=0, limit_page_length=50, order_by=None, search_query=None):
+        params = {
+            "start": start,
+            "limit_page_length": limit_page_length
+        }
+        
+        if project_folder:
+            params["project_folder"] = project_folder
+        if fields:
+            params["fields"] = fields
+        if order_by:
+            params["order_by"] = order_by
+        if search_query:
+            params["search_query"] = search_query
+            
+        return self.provider.get("mbw_cms.api.page_api.get_templates", params=params)
 
     # --- 2. Page từ template ---
     def create_page_by_template(self, template_id, page_title, **kwargs):
@@ -19,7 +33,11 @@ class CMSAPI:
         frappe_internal_fields = ['cmd', 'doctype', 'name', 'owner', 'modified_by']
         filtered_kwargs = {k: v for k, v in kwargs.items() if k not in frappe_internal_fields}
         
-        data = {"template_id": template_id, "page_title": page_title}
+        data = {
+            "template_id": template_id, 
+            "page_title": page_title,
+            "project_folder": "MBW_MIRA"  # Hardcoded to save pages in correct folder
+        }
         data.update(filtered_kwargs)
         
         # Special handling for receive_data_configs
@@ -105,13 +123,32 @@ class CMSAPI:
     def get_page_details(self, page_id):
         return self.provider.get("mbw_cms.api.page_api.get_page_details", params={"page_id": page_id})
 
-    # --- 8. Get page details ---
-    def get_page_public(self,query="published=1"):
-        return self.provider.get(f"mbw_cms.api.page_api.get_pages?{query}")
+    # --- 8. Get pages (public/published) ---
+    def get_page_public(self, published=1, fields=None, start=0, limit_page_length=20, order_by=None, search_query=None, project_folder="MBW_ATS"):
+        params = {
+            "published": published,
+            "start": start,
+            "limit_page_length": limit_page_length,
+            "project_folder": project_folder  # Hardcoded to MBW_MIRA
+        }
+        
+        if fields:
+            params["fields"] = fields
+        if order_by:
+            params["order_by"] = order_by
+        if search_query:
+            params["search_query"] = search_query
+            
+        return self.provider.get("mbw_cms.api.page_api.get_pages", params=params)
 
     # --- 9. Get fields by template ---
     def get_fields_by_template(self, template_id):
         return self.provider.get("mbw_cms.api.page_api.get_fields_by_template", params={"template_id": template_id})
+
+    # --- 9b. Get fields mapping (new API for field mapping) ---
+    def get_fields_mapping(self):
+        """Get fields available for mapping in receive data configs"""
+        return self.provider.get("mbw_cms.api.page_api.get_fields_mapping")
 
     # --- 10. Create link account (receive data config) ---
     def create_link_account(self, form_config_id, receive_data_config):
@@ -179,14 +216,31 @@ def example_usage():
 # ============================================
 
 @frappe.whitelist(allow_guest=True)
-def get_templates():
-    """Lấy danh sách templates từ CMS"""
+def get_templates(project_folder=None, fields=None, start=0, limit_page_length=50, order_by=None, search_query=None):
+    """Lấy danh sách templates từ CMS
+    
+    Args:
+        project_folder: Filter by project folder (optional)
+        fields: Comma-separated list of fields to return (optional)
+        start: Starting index for pagination (default: 0)
+        limit_page_length: Number of records per page (default: 50)
+        order_by: Field to order by (optional)
+        search_query: Search query string (optional)
+    """
     try:
         cms = CMSAPI()
-        return cms.get_templates()
+        return cms.get_templates(
+            project_folder=project_folder,
+            fields=fields,
+            start=int(start) if start else 0,
+            limit_page_length=int(limit_page_length) if limit_page_length else 50,
+            order_by=order_by,
+            search_query=search_query
+        )
     except Exception as e:
-        frappe.log_error(f"Error getting templates: {str(e)}")
-        return {"status": "error", "message": str(e)}
+        error_msg = str(e)[:100]  # Truncate to prevent CharacterLengthExceededError
+        frappe.log_error(title="CMS get_templates error", message=str(e))
+        return {"status": "error", "message": error_msg}
 
 
 @frappe.whitelist()
@@ -328,11 +382,29 @@ def get_page_details(page_id):
 
 
 @frappe.whitelist(allow_guest=True)
-def get_page_public(query="published=1"):
-    """Lấy page public"""
+def get_page_public(published=1, fields=None, start=0, limit_page_length=20, order_by=None, search_query=None, project_folder=None):
+    """Lấy danh sách pages đã publish
+    
+    Args:
+        published: Filter by publish status (1=published, 0=draft, None=all)
+        fields: Comma-separated list of fields to return (optional)
+        start: Starting index for pagination (default: 0)
+        limit_page_length: Number of records per page (default: 20)
+        order_by: Field to order by (optional)
+        search_query: Search query string (optional)
+        project_folder: Filter by project folder (default: MBW_ATS)
+    """
     try:
         cms = CMSAPI()
-        return cms.get_page_public(query)
+        return cms.get_page_public(
+            published=int(published) if published is not None else None,
+            fields=fields,
+            start=int(start) if start else 0,
+            limit_page_length=int(limit_page_length) if limit_page_length else 20,
+            order_by=order_by,
+            search_query=search_query,
+            project_folder=project_folder or "MBW_MIRA"
+        )
     except Exception as e:
         frappe.log_error(f"Error getting page public: {str(e)}")
         return {"status": "error", "message": str(e)}
@@ -350,6 +422,53 @@ def get_fields_by_template(template_id):
     except Exception as e:
         frappe.log_error(f"Error getting fields by template: {str(e)}")
         return {"status": "error", "message": str(e)}
+
+
+@frappe.whitelist()
+def get_fields_mapping():
+    """Lấy danh sách các trường có thể mapping cho receive data configs
+    
+    Returns danh sách fields với format:
+    {
+        "status": "success",
+        "data": [
+            {"label": "Full Name", "fieldname": "full_name", "fieldtype": "Data"},
+            ...
+        ]
+    }
+    """
+    try:
+        cms = CMSAPI()
+        return cms.get_fields_mapping()
+    except Exception as e:
+        error_msg = str(e)[:100]  # Truncate to prevent CharacterLengthExceededError
+        frappe.log_error(title="CMS get_fields_mapping error", message=str(e)[:500])
+        
+        # Return fallback fields if CMS API is not available yet
+        fallback_fields = [
+            {"label": "Full Name", "fieldname": "full_name", "fieldtype": "Data"},
+            {"label": "Primary Email", "fieldname": "primary_email", "fieldtype": "Data"},
+            {"label": "Phone Number", "fieldname": "phone_number", "fieldtype": "Data"},
+            {"label": "LinkedIn URL", "fieldname": "linkedin_url", "fieldtype": "Data"},
+            {"label": "CV Upload", "fieldname": "cv_upload", "fieldtype": "Attach"},
+            {"label": "Date of Birth", "fieldname": "date_of_birth", "fieldtype": "Date"},
+            {"label": "Form ID", "fieldname": "form_id", "fieldtype": "Data"},
+            {"label": "Page ID", "fieldname": "page_id", "fieldtype": "Data"},
+            {"label": "Acquisition Date", "fieldname": "acquisition_date", "fieldtype": "Date"},
+            {"label": "UTM Source", "fieldname": "utm_source", "fieldtype": "Data"},
+            {"label": "UTM Medium", "fieldname": "utm_medium", "fieldtype": "Data"},
+            {"label": "UTM Campaign", "fieldname": "utm_campaign", "fieldtype": "Data"},
+            {"label": "UTM Term", "fieldname": "utm_term", "fieldtype": "Data"},
+            {"label": "UTM Content", "fieldname": "utm_content", "fieldtype": "Data"},
+            {"label": "Form URL", "fieldname": "form_url", "fieldtype": "Data"},
+            {"label": "Custom Field", "fieldname": "custom_field", "fieldtype": "Data"}
+        ]
+        
+        return {
+            "status": "success",
+            "message": "Using fallback fields (CMS API not available)",
+            "data": fallback_fields
+        }
 
 
 @frappe.whitelist()

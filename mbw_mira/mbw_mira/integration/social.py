@@ -22,7 +22,7 @@ def get_linkedin_auth_url():
         frappe.throw(frappe._("Client Secret Require"))
     scope = "profile w_member_social"
     host_url = frappe.request.host_url  # remove trailing slash nếu có
-    redirect_uri = f"{host_url}api/method/mbw_mira.integration.social.linkedin_oauth_callback"
+    redirect_uri = f"{host_url}api/method/mbw_mira.integrations.social.linkedin_oauth_callback"
     
      # KHÔNG ENCODE redirect_uri ở đây!
     auth_url = (
@@ -44,7 +44,7 @@ def linkedin_oauth_callback(code=None):
 
     client_id = frappe.request.args.get("client_id")
     client_secret = frappe.request.args.get("client_secret")
-    redirect_uri = f"{frappe.request.host_url}api/method/mbw_mira.integration.social.linkedin_oauth_callback"
+    redirect_uri = f"{frappe.request.host_url}api/method/mbw_mira.integrations.social.linkedin_oauth_callback"
 
     # 1. Exchange code for token
     token_res = requests.post("https://www.linkedin.com/oauth/v2/accessToken", data={
@@ -251,7 +251,7 @@ def get_facebook_auth_url():
         frappe.throw(frappe._("Client ID Require"))
     if not client_secret:
         frappe.throw(frappe._("Client Secret Require"))
-    redirect_uri = f"{frappe.request.host_url}/api/method/mbw_mira.integration.social.facebook_callback"
+    redirect_uri = f"{frappe.request.host_url}/api/method/mbw_mira.integrations.social.facebook_callback"
     scope = "public_profile,email,pages_manage_posts,pages_read_engagement,pages_show_list"
 
     query = urllib.parse.urlencode({

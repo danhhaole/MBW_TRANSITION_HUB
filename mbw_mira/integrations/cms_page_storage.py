@@ -79,6 +79,10 @@ def save_builder_page_data(page_id, campaign_id=None, template_id=None, created_
             if kwargs.get(field):
                 setattr(doc, field, kwargs.get(field))
         
+        # Update form_config_id if provided
+        if kwargs.get('form_config_id'):
+            doc.form_config_id = kwargs.get('form_config_id')
+        
         doc.save()
         frappe.db.commit()
         
@@ -127,31 +131,80 @@ def get_builder_page_data(page_id):
         
         # Get receive data configs from CMS API
         receive_data_configs = []
-        form_config_id = None
+        # First try to get form_config_id from local DocType
+        form_config_id = doc.form_config_id if hasattr(doc, 'form_config_id') else None
         
         try:
             from mbw_mira.integrations.cms_page import get_link_accounts_by_page
+            print(f"📧 Doc: {doc.page_id}")
             link_accounts_response = get_link_accounts_by_page(doc.page_id)
             
-            frappe.logger().info(f"📧 Link accounts response: {link_accounts_response}")
+            print(f"📧 Link accounts response: {link_accounts_response}")
+            print(f"📧 Response type: {type(link_accounts_response)}")
             
-            if (link_accounts_response and 
-                link_accounts_response.get('message', {}).get('status') == 'success' and 
-                link_accounts_response.get('message', {}).get('data')):
+            # Handle different response structures from CMS API
+            # Structure 1: {'message': {'status': 'success', 'data': [...]}}
+            # Structure 2: {'message': {'message': {'status': 'success', 'data': [...]}}}
+            
+            response_data = None
+            if link_accounts_response:
+                # Try nested message structure first
+                nested_msg = link_accounts_response.get('message', {})
+                if isinstance(nested_msg, dict):
+                    inner_msg = nested_msg.get('message', {})
+                    if isinstance(inner_msg, dict) and inner_msg.get('status') == 'success':
+                        response_data = inner_msg.get('data')
+                        print(f"📧 Using nested message structure, data: {response_data}")
+                    elif nested_msg.get('status') == 'success':
+                        response_data = nested_msg.get('data')
+                        print(f"📧 Using direct message structure, data: {response_data}")
+            
+            # response_data could be a list or a dict with form_configs
+            if response_data:
+                print(f"📧 response_data type: {type(response_data)}, value: {response_data}")
                 
-                accounts_data = link_accounts_response['message']['data']
-                if accounts_data and len(accounts_data) > 0:
+                if isinstance(response_data, list) and len(response_data) > 0:
                     # Get first account's data
-                    account = accounts_data[0]
-                    form_config_id = account.get('form_config_id')
-                    receive_data_configs = account.get('receive_data_configs', [])
+                    account = response_data[0]
+                    print(f"📧 First account: {account}")
                     
-                    frappe.logger().info(f"✅ Found form_config_id: {form_config_id}")
-                    frappe.logger().info(f"✅ Found {len(receive_data_configs)} receive data configs")
+                    # Only update form_config_id from API if not already set from DocType
+                    if not form_config_id:
+                        form_config_id = account.get('form_config_id')
+                    
+                    # Get receive_data_configs - try different field names
+                    receive_data_configs = account.get('receive_data_configs', [])
+                    if not receive_data_configs:
+                        receive_data_configs = account.get('link_accounts', [])
+                    if not receive_data_configs:
+                        receive_data_configs = account.get('configs', [])
+                    
+                    print(f"✅ Found form_config_id: {form_config_id}")
+                    print(f"✅ Found {len(receive_data_configs)} receive data configs: {receive_data_configs}")
+                    
+                elif isinstance(response_data, dict):
+                    # Response is a dict with page_id and form_configs
+                    print(f"📧 Response is dict: {response_data}")
+                    
+                    # Get form_configs from dict
+                    form_configs = response_data.get('form_configs', [])
+                    if form_configs and len(form_configs) > 0:
+                        # Each form_config has form_config_id and receive_data_configs
+                        first_config = form_configs[0]
+                        if not form_config_id:
+                            form_config_id = first_config.get('form_config_id') or first_config.get('id')
+                        receive_data_configs = first_config.get('receive_data_configs', [])
+                        if not receive_data_configs:
+                            receive_data_configs = first_config.get('link_accounts', [])
+                        
+                        print(f"✅ From form_configs - form_config_id: {form_config_id}")
+                        print(f"✅ From form_configs - receive_data_configs: {receive_data_configs}")
+                    else:
+                        print("⚠️ form_configs is empty in response")
                 else:
-                    frappe.logger().info("⚠️ No accounts data found")
+                    print(f"⚠️ Unexpected response_data type: {type(response_data)}")
             else:
-                frappe.logger().info("⚠️ Failed to get link accounts or no data")
+                print("⚠️ No accounts data found in response")
                 
         except Exception as e:
             frappe.logger().error(f"❌ Error getting receive data configs: {str(e)}")

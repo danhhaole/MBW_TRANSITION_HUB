@@ -18,6 +18,7 @@
   "url_public_page",
   "column_break_basic",
   "page_builder_id",
+  "form_config_id",
   "section_company",
   "company_name",
   "company_logo",
@@ -134,6 +135,12 @@
    "fieldname": "page_builder_id",
    "fieldtype": "Data",
    "label": "Builder Page ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "form_config_id",
+   "fieldtype": "Data",
+   "label": "Form Config ID",
    "read_only": 1
   },
   {

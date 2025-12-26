@@ -330,11 +330,10 @@ def create_landing_page_qrcode():
     # Add campaign ID as UTM parameter
     utm_params.append(f"utm_content={campaign_id}")
     
-    # Construct final URL
+    # Construct final URL (direct to landing page without redirect wrapper)
     separator = "&" if "?" in landing_page_url else "?"
     final_url = f"{landing_page_url}{separator}{'&'.join(utm_params)}"
 
-    final_url = f"{_get_base_url()}/api/method/mbw_mira.api.interaction.click_redirect?url={final_url}"
     # Tạo QR code
     qr = qrcode.QRCode(
         version=2,

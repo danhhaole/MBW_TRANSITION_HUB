@@ -332,7 +332,7 @@ const handleLinkeIn = async () => {
 
 };
 const auth_LinkedIn = createResource({
-    url: 'mbw_mira.integration.social.get_linkedin_auth_url',
+    url: 'mbw_mira.integrations.social.get_linkedin_auth_url',
     auto: false,
     validate(params) {
         if (!params.client_id) {
@@ -360,7 +360,7 @@ const handleFacebook = async () => {
     })
 };
 const auth_Facebook = createResource({
-    url: 'mbw_mira.integration.social.get_facebook_auth_url',
+    url: 'mbw_mira.integrations.social.get_facebook_auth_url',
     auto: false,
     validate(params) {
         if (!params.client_id) {
@@ -388,7 +388,7 @@ const disconnectLinkedIn = (platform) => {
 }
 
 const disconnect_linkedin = createResource({
-    url: 'mbw_mira.integration.social.disconnect_platform',
+    url: 'mbw_mira.integrations.social.disconnect_platform',
     auto: false
 })
 
@@ -412,7 +412,7 @@ const setting_Source = createResource({
 })
 
 const checkConnect = createResource({
-    url: "mbw_mira.integration.social.check_social_media_connection",
+    url: "mbw_mira.integrations.social.check_social_media_connection",
     auto: false,
     onSuccess(data) {
         if (data.connected) {
@@ -437,7 +437,7 @@ const checkConnect = createResource({
 
 //connect topcv
 const connect_topcv = createResource({
-    url: 'mbw_mira.integration.topcv.connect_topcv',
+    url: 'mbw_mira.integrations.topcv.connect_topcv',
     validate(params) {
         if (!params.access_token_topcv) {
             // return a string message to throw an error
@@ -467,7 +467,7 @@ const shareJobPost = () => {
 }
 //Post Job
 const post_job = createResource({
-    url: 'mbw_mira.integration.social.share_job_post_on_social_media',
+    url: 'mbw_mira.integrations.social.share_job_post_on_social_media',
     makeParams: () => ({
         job_post_id: "Tuyển dụng Lập trình Python",
         platform: 'linkedin'
@@ -477,7 +477,7 @@ const post_job = createResource({
 
 //disconnect topcv
 const disconnect_topcv = createResource({
-    url: 'mbw_mira.integration.topcv.disconnect_topcv',
+    url: 'mbw_mira.integrations.topcv.disconnect_topcv',
     method: "PUT",
     auto: false
 })

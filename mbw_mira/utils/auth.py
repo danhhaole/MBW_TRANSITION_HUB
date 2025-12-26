@@ -96,10 +96,64 @@ def generate_api_token(user: str, application: str = None, doctype: str = None, 
 
     return token
 
+def generate_user_token(user_email: str, regenerate: bool = False):
+    """
+    Generate API key and secret for a user using Frappe's built-in authentication.
+    
+    Args:
+        user_email: Email of the user to generate token for
+        regenerate: If True, regenerate even if token already exists
+        
+    Returns:
+        dict: {"api_key": ..., "api_secret": ...}
+        
+    Usage in header:
+        Authorization: token <api_key>:<api_secret>
+    """
+    user = frappe.get_doc("User", user_email)
+    
+    # Only regenerate if needed
+    if regenerate or not user.api_key or not user.api_secret:
+        user.api_key = frappe.generate_hash(length=15)
+        user.api_secret = frappe.generate_hash(length=32)
+        user.save(ignore_permissions=True)
+        frappe.db.commit()
+    
+    return {
+        "api_key": user.api_key,
+        "api_secret": user.get_password("api_secret")
+    }
+
+@frappe.whitelist()
+def get_user_api_credentials(user_email: str = None):
+    """
+    API endpoint để lấy hoặc tạo API credentials cho user.
+    Chỉ Admin hoặc user đó mới được phép.
+    """
+    if not user_email:
+        user_email = frappe.session.user
+        
+    # Chỉ cho phép admin hoặc chính user đó
+    if frappe.session.user != user_email and "System Manager" not in frappe.get_roles():
+        frappe.throw(_("Not permitted"), frappe.PermissionError)
+    
+    credentials = generate_user_token(user_email, regenerate=False)
+    
+    return {
+        "status": "success",
+        "message": "API credentials retrieved",
+        "data": {
+            "api_key": credentials["api_key"],
+            "api_secret": credentials["api_secret"],
+            "usage": "Authorization: token <api_key>:<api_secret>"
+        }
+    }
+
 def require_api_token(doctype_name: str, action: str):
     """Decorator để xác thực API Token"""
     def wrapper(fn):
         def inner(*args, **kwargs):
+            
             auth_header = frappe.get_request_header("Authorization")
             if not auth_header or not auth_header.startswith("Bearer "):
                 frappe.throw(_("Missing or invalid Authorization header"), frappe.PermissionError)

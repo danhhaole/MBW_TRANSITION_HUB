@@ -31,10 +31,10 @@
               <img
                 :src="qr.qr_image"
                 alt="QR Code"
-                class="w-32 h-32 border border-gray-200 rounded"
+                class="w-24 h-24 border border-gray-200 rounded"
               />
             </div>
-            <div v-else class="flex-shrink-0 w-32 h-32 bg-gray-100 border border-gray-200 rounded flex items-center justify-center">
+            <div v-else class="flex-shrink-0 w-24 h-24 bg-gray-100 border border-gray-200 rounded flex items-center justify-center">
               <FeatherIcon name="image" class="h-6 w-6 text-gray-400" />
             </div>
 
@@ -147,7 +147,7 @@
             />
           </div>
 
-          <div class="grid grid-cols-1 gap-4">
+          <div class="grid grid-cols-2 gap-4">
             <!-- UTM Source -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -160,7 +160,7 @@
             </div>
 
             <!-- UTM Medium -->
-            <!-- <div>
+            <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">
                 {{ __('UTM Medium') }} <span class="text-red-500">*</span>
               </label>
@@ -168,7 +168,7 @@
                 v-model="newQRData.utm_medium"
                 :placeholder="__('e.g., qr, print, offline')"
               />
-            </div> -->
+            </div>
           </div>
 
           <!-- Preview if QR exists -->
@@ -280,8 +280,8 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { FeatherIcon, FormControl, Button, Dialog, call } from 'frappe-ui'
-import { useCampaignQRStore } from '@/stores/campaignQR'
 import { useToast } from '@/composables/useToast'
+import { useCampaignQRStore } from '@/stores/campaignQR'
 
 const props = defineProps({
   content: {
@@ -336,7 +336,7 @@ const qrData = computed(() => localContent.value.qr_data)
 // Generate QR Code
 const generateQR = async () => {
   if (!props.landingPageUrl || !props.campaignId) {
-    error.value = 'Missing landing page URL or campaign ID'
+    error.value = 'Missing landing page URL or job opening ID'
     return
   }
   
@@ -349,7 +349,8 @@ const generateQR = async () => {
       campaign_id: props.campaignId,
       utm_source: localContent.value.utm_source,
       utm_medium: localContent.value.utm_medium,
-      utm_campaign: props.campaignId
+      utm_content: props.campaignId,
+      utm_campaign: props.campaignId,
     })
     
     if (response?.status === 'success' && response?.data) {
@@ -415,7 +416,7 @@ onMounted(async () => {
   }
 })
 
-// Load QR codes for campaign
+// Load QR codes for job opening
 const loadQRCodes = async () => {
   if (!props.campaignId) return
   
@@ -564,7 +565,7 @@ watch(() => props.landingPageUrl, (newUrl) => {
   }
 })
 
-// Watch campaign ID changes
+// Watch job opening ID changes
 watch(() => props.campaignId, (newId) => {
   if (newId) {
     loadQRCodes()

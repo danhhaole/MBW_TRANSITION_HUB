@@ -155,12 +155,23 @@
                 <div class="md:col-span-2">
                   <label class="block text-sm font-medium text-gray-700 mb-2">
                     {{ __('API Endpoint') }}
+                    <span class="text-xs text-green-600 ml-1">({{ __('Auto-generated') }})</span>
                   </label>
-                  <FormControl
-                    v-model="newConfig.end_point"
-                    type="url"
-                    :placeholder="__('Enter API endpoint URL')"
-                  />
+                  <div class="flex items-center gap-2 px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg">
+                    <FeatherIcon name="link" class="h-4 w-4 text-gray-500 flex-shrink-0" />
+                    <span class="text-sm text-gray-700 break-all">{{ newConfig.end_point || generatedEndpoint }}</span>
+                    <Button
+                      @click="copyEndpoint"
+                      variant="ghost"
+                      size="sm"
+                      class="ml-auto flex-shrink-0"
+                    >
+                      <FeatherIcon name="copy" class="h-3 w-3" />
+                    </Button>
+                  </div>
+                  <p class="text-xs text-gray-500 mt-1">
+                    {{ __('This endpoint will receive candidate data from landing page form') }}
+                  </p>
                 </div>
 
                 <div>
@@ -253,13 +264,13 @@
                   </div>
                   <div class="space-y-2">
                     <div 
-                      v-for="(mapping, mappingIndex) in newConfig.field_mappings" 
-                      :key="mappingIndex"
+                      v-for="(mapping, visibleIndex) in visibleFieldMappings" 
+                      :key="visibleIndex"
                       class="flex gap-2"
                     >
                       <div class="flex-1">
                         <FormControl
-                          v-model="mapping.form_field"
+                          v-model="newConfig.field_mappings[getOriginalMappingIndex(visibleIndex)].form_field"
                           type="select"
                           :options="templateFieldOptions"
                           :placeholder="__('Select template field')"
@@ -270,14 +281,14 @@
                       </div>
                       <div class="flex-1">
                         <FormControl
-                          v-model="mapping.api_field"
+                          v-model="newConfig.field_mappings[getOriginalMappingIndex(visibleIndex)].api_field"
                           type="select"
                           :options="miraTalentFieldOptions"
                           :placeholder="__('Select Mira Talent field')"
                         />
                       </div>
                       <Button
-                        @click="removeMapping(mappingIndex)"
+                        @click="removeMapping(getOriginalMappingIndex(visibleIndex))"
                         variant="ghost"
                         size="sm"
                         class="text-red-600"
@@ -286,23 +297,37 @@
                       </Button>
                     </div>
                     
-                    <!-- Show message if no mappings yet -->
-                    <div v-if="newConfig.field_mappings.length === 0" class="text-sm text-gray-500 italic p-3 border border-dashed border-gray-300 rounded">
+                    <!-- Show message if no visible mappings yet -->
+                    <div v-if="visibleFieldMappings.length === 0" class="text-sm text-gray-500 italic p-3 border border-dashed border-gray-300 rounded">
                       {{ __('No field mappings yet. Click "Add Mapping" to create one.') }}
                     </div>
                     
                     <!-- Add Mapping button -->
-                    <Button
-                      @click="addMapping"
-                      variant="outline"
-                      size="sm"
-                      class="text-blue-600"
-                    >
-                    <div class="flex items-center">
-                      <FeatherIcon name="plus" class="h-3 w-3 mr-1" />
-                      {{ __('Add Mapping') }}
+                    <div class="flex gap-2">
+                      <Button
+                        @click="addMapping"
+                        variant="outline"
+                        size="sm"
+                        class="text-blue-600"
+                      >
+                        <div class="flex items-center">
+                          <FeatherIcon name="plus" class="h-3 w-3 mr-1" />
+                          {{ __('Add Mapping') }}
+                        </div>
+                      </Button>
+                      <Button
+                        @click="applyDefaultMappings"
+                        variant="outline"
+                        size="sm"
+                        class="text-green-600"
+                        :disabled="templateFields.length === 0"
+                      >
+                        <div class="flex items-center">
+                          <FeatherIcon name="zap" class="h-3 w-3 mr-1" />
+                          {{ __('Auto Map') }}
+                        </div>
+                      </Button>
                     </div>
-                    </Button>
                   </div>
                 </div>
               </template>
@@ -346,12 +371,23 @@
             <div class="md:col-span-2">
               <label class="block text-sm font-medium text-gray-700 mb-2">
                 {{ __('API Endpoint') }}
+                <span class="text-xs text-green-600 ml-1">({{ __('Auto-generated') }})</span>
               </label>
-              <FormControl
-                v-model="newConfig.end_point"
-                type="url"
-                :placeholder="__('Enter API endpoint URL')"
-              />
+              <div class="flex items-center gap-2 px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg">
+                <FeatherIcon name="link" class="h-4 w-4 text-gray-500 flex-shrink-0" />
+                <span class="text-sm text-gray-700 break-all">{{ newConfig.end_point || generatedEndpoint }}</span>
+                <Button
+                  @click="copyEndpoint"
+                  variant="ghost"
+                  size="sm"
+                  class="ml-auto flex-shrink-0"
+                >
+                  <FeatherIcon name="copy" class="h-3 w-3" />
+                </Button>
+              </div>
+              <p class="text-xs text-gray-500 mt-1">
+                {{ __('This endpoint will receive candidate data from landing page form') }}
+              </p>
             </div>
 
             <div>
@@ -442,15 +478,15 @@
                 {{ miraTalentFields.length === 0 ? 'Loading Mira Talent fields...' : '' }}
               </div>
               <div class="space-y-2">
-                <!-- Show existing mappings -->
+                <!-- Show existing mappings (excluding hidden metadata fields) -->
                 <div 
-                  v-for="(mapping, index) in newConfig.field_mappings" 
-                  :key="index"
+                  v-for="(mapping, visibleIndex) in visibleFieldMappings" 
+                  :key="visibleIndex"
                   class="flex gap-2"
                 >
                   <div class="flex-1">
                     <FormControl
-                      v-model="mapping.form_field"
+                      v-model="newConfig.field_mappings[getOriginalMappingIndex(visibleIndex)].form_field"
                       type="select"
                       :options="templateFieldOptions"
                       :placeholder="__('Select template field')"
@@ -461,14 +497,14 @@
                   </div>
                   <div class="flex-1">
                     <FormControl
-                      v-model="mapping.api_field"
+                      v-model="newConfig.field_mappings[getOriginalMappingIndex(visibleIndex)].api_field"
                       type="select"
                       :options="miraTalentFieldOptions"
-                      :placeholder="__('Select Mira Talent field')"
+                      :placeholder="__('Select Candidate field')"
                     />
                   </div>
                   <Button
-                    @click="removeMapping(index)"
+                    @click="removeMapping(getOriginalMappingIndex(visibleIndex))"
                     variant="ghost"
                     size="sm"
                     class="text-red-600"
@@ -477,23 +513,37 @@
                   </Button>
                 </div>
                 
-                <!-- Show message if no mappings yet -->
-                <div v-if="newConfig.field_mappings.length === 0" class="text-sm text-gray-500 italic p-3 border border-dashed border-gray-300 rounded">
+                <!-- Show message if no visible mappings yet -->
+                <div v-if="visibleFieldMappings.length === 0" class="text-sm text-gray-500 italic p-3 border border-dashed border-gray-300 rounded">
                   {{ __('No field mappings yet. Click "Add Mapping" to create one.') }}
                 </div>
                 
                 <!-- Add Mapping button -->
-                <Button
-                  @click="addMapping"
-                  variant="outline"
-                  size="sm"
-                  class="text-blue-600"
-                >
-                <div class="flex items-center">
-                  <FeatherIcon name="plus" class="h-3 w-3 mr-1" />
-                  {{ __('Add Mapping') }}
+                <div class="flex gap-2">
+                  <Button
+                    @click="addMapping"
+                    variant="outline"
+                    size="sm"
+                    class="text-blue-600"
+                  >
+                    <div class="flex items-center">
+                      <FeatherIcon name="plus" class="h-3 w-3 mr-1" />
+                      {{ __('Add Mapping') }}
+                    </div>
+                  </Button>
+                  <Button
+                    @click="applyDefaultMappings"
+                    variant="outline"
+                    size="sm"
+                    class="text-green-600"
+                    :disabled="templateFields.length === 0"
+                  >
+                    <div class="flex items-center">
+                      <FeatherIcon name="zap" class="h-3 w-3 mr-1" />
+                      {{ __('Auto Map') }}
+                    </div>
+                  </Button>
                 </div>
-                </Button>
               </div>
             </div>
           </template>
@@ -522,6 +572,8 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { FeatherIcon, Button, FormControl, call } from 'frappe-ui'
 import { useToast } from '@/composables/useToast'
 
+const toast = useToast()
+
 const props = defineProps({
   templateId: {
     type: String,
@@ -539,7 +591,6 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue'])
 
-const toast = useToast()
 
 // State
 const expanded = ref(false)
@@ -576,12 +627,88 @@ const contentTypeOptions = [
   { label: 'Multipart (multipart/form-data)', value: 'multipart/form-data' }
 ]
 
+// Default field mappings - common fields that should be auto-mapped
+// Format: { templateFieldPattern: miraTalentFieldname }
+// Template fields từ CMS: full_name, primary_email, phone_number, linkedin_url, expected_salary, cv_upload, utm_*
+// Mira Talent fields: full_name, email, phone, resume, linkedin_profile, etc.
+const DEFAULT_FIELD_MAPPINGS = {
+  // Full name variations → full_name
+  'full_name': 'full_name',
+  'fullname': 'full_name',
+  'name': 'full_name',
+  'ho_ten': 'full_name',
+  'hoten': 'full_name',
+  'candidate_name': 'full_name',
+  
+  // Email variations → email
+  'email': 'email',
+  'primary_email': 'email',
+  'email_address': 'email',
+  'candidate_email': 'email',
+  
+  // Phone variations → phone
+  'phone': 'phone',
+  'phone_number': 'phone',
+  'mobile': 'phone',
+  'so_dien_thoai': 'phone',
+  'dien_thoai': 'phone',
+  'contact_number': 'phone',
+  
+  // CV/Resume variations → resume
+  'cv': 'resume',
+  'cv_upload': 'resume',
+  'cv_attachment': 'resume',
+  'resume': 'resume',
+  'file_cv': 'resume',
+  'cv_file': 'resume',
+  'attachment': 'resume',
+  
+  // LinkedIn/Other links → linkedin_profile
+  'linkedin': 'linkedin_profile',
+  'linkedin_url': 'linkedin_profile',
+  'other_links': 'linkedin_profile',
+  'portfolio': 'linkedin_profile',
+  'website': 'linkedin_profile',
+  
+  // Address → current_city
+  'address': 'current_city',
+  'dia_chi': 'current_city',
+  
+  // Profile/Cover letter → notes
+  'profile': 'notes',
+  'cover_letter': 'notes',
+  'thu_xin_viec': 'notes',
+  'message': 'notes',
+  'introduction': 'notes',
+  
+  // Last workplace → latest_company
+  'last_workplace': 'latest_company',
+  'current_company': 'latest_company',
+  'company': 'latest_company',
+  'cong_ty': 'latest_company',
+  
+  // Referral → source
+  'referral': 'source',
+  'nguoi_gioi_thieu': 'source',
+  'referred_by': 'source'
+}
+
+// System/metadata fields that should be hidden from dropdown selection
+// These are auto-included and don't need user selection
+const SYSTEM_FIELDS = [
+  'form_id', 'page_id', 'form_url', 'custom_field',
+  'utm_source', 'utm_medium', 'utm_content', 'utm_campaign'
+]
+
 // Computed
 const templateFieldOptions = computed(() => {
-  return templateFields.value.map(field => ({
-    label: field.label || field.fieldname,
-    value: field.fieldname
-  }))
+  // Filter out system fields from template field options
+  return templateFields.value
+    .filter(field => !SYSTEM_FIELDS.includes(field.fieldname))
+    .map(field => ({
+      label: field.label || field.fieldname,
+      value: field.fieldname
+    }))
 })
 
 const miraTalentFieldOptions = computed(() => {
@@ -591,14 +718,47 @@ const miraTalentFieldOptions = computed(() => {
   }))
 })
 
+// Auto-generated endpoint URL
+const generatedEndpoint = computed(() => {
+  const siteUrl = window.location.origin
+  const apiPath = '/api/method/mbw_mira.api.v1.talent.create'
+  return `${siteUrl}${apiPath}`
+})
+
 const canAddConfig = computed(() => {
   if (newConfig.value.type === 'Email') {
     return newConfig.value.email && newConfig.value.email.includes('@')
   } else if (newConfig.value.type === 'API') {
-    return newConfig.value.end_point && newConfig.value.content_type
+    // Endpoint is auto-generated, just need content_type
+    return newConfig.value.content_type
   }
   return false
 })
+
+// Hidden metadata fields - these are auto-added but not displayed in UI
+// Should match SYSTEM_FIELDS above
+const HIDDEN_METADATA_FIELDS = [
+  'form_id', 'page_id', 'form_url', 'custom_field',
+  'utm_source', 'utm_medium', 'utm_content', 'utm_campaign', 'utm_term'
+]
+
+// Filter visible field mappings (hide metadata fields)
+const visibleFieldMappings = computed(() => {
+  return (newConfig.value.field_mappings || []).filter(
+    mapping => !HIDDEN_METADATA_FIELDS.includes(mapping.form_field)
+  )
+})
+
+// Get the actual index in original array for a visible mapping
+const getOriginalMappingIndex = (visibleIndex) => {
+  const visibleMappings = visibleFieldMappings.value
+  if (visibleIndex >= visibleMappings.length) return -1
+  
+  const targetMapping = visibleMappings[visibleIndex]
+  return newConfig.value.field_mappings.findIndex(
+    m => m.form_field === targetMapping.form_field && m.api_field === targetMapping.api_field
+  )
+}
 
 // Methods
 const toggleSection = () => {
@@ -618,21 +778,13 @@ const loadAllFields = async () => {
 }
 
 const loadTemplateFields = async () => {
-  console.log('🔍 loadTemplateFields called with templateId:', props.templateId)
-  
-  if (!props.templateId) {
-    console.log('⚠️ No template ID provided')
-    return
-  }
+  console.log('🔍 loadTemplateFields called - using get_fields_mapping API')
   
   try {
-    console.log('🔍 Loading template fields for:', props.templateId)
+    // Use new get_fields_mapping API (doesn't require template_id)
+    const response = await call('mbw_mira.integrations.cms_page.get_fields_mapping')
     
-    const response = await call('mbw_mira.integrations.cms_page.get_fields_by_template', {
-      template_id: props.templateId
-    })
-    
-    console.log('📥 Template fields API response:', response)
+    console.log('📥 Fields mapping API response:', response)
     
     // Handle nested response structure
     let fieldsData = null
@@ -640,23 +792,44 @@ const loadTemplateFields = async () => {
       fieldsData = response.message.message.data
     } else if (response?.message?.status === 'success' && response?.message?.data) {
       fieldsData = response.message.data
+    } else if (response?.status === 'success' && response?.data) {
+      fieldsData = response.data
     }
     
     if (fieldsData && Array.isArray(fieldsData)) {
-      // Convert array of strings to objects with fieldname and label
-      templateFields.value = fieldsData.map(fieldname => ({
-        fieldname: fieldname,
-        label: fieldname.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) // Convert snake_case to Title Case
+      // Fields already have label, fieldname, fieldtype format
+      templateFields.value = fieldsData.map(field => ({
+        fieldname: field.fieldname,
+        label: field.label || field.fieldname.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+        fieldtype: field.fieldtype || 'Data'
       }))
       console.log('✅ Template fields loaded:', templateFields.value)
     } else {
       console.log('⚠️ No template fields found or invalid format')
-      templateFields.value = []
+      // Fallback to common fields
+      templateFields.value = [
+        { fieldname: 'full_name', label: 'Full Name', fieldtype: 'Data' },
+        { fieldname: 'primary_email', label: 'Primary Email', fieldtype: 'Data' },
+        { fieldname: 'phone_number', label: 'Phone Number', fieldtype: 'Data' },
+        { fieldname: 'linkedin_url', label: 'LinkedIn URL', fieldtype: 'Data' },
+        { fieldname: 'cv_upload', label: 'CV Upload', fieldtype: 'Attach' },
+        { fieldname: 'date_of_birth', label: 'Date of Birth', fieldtype: 'Date' },
+        { fieldname: 'utm_source', label: 'UTM Source', fieldtype: 'Data' },
+        { fieldname: 'utm_medium', label: 'UTM Medium', fieldtype: 'Data' },
+        { fieldname: 'utm_campaign', label: 'UTM Campaign', fieldtype: 'Data' }
+      ]
     }
   } catch (error) {
     console.error('❌ Error loading template fields:', error)
-    toast.error(__('Failed to load template fields'))
-    templateFields.value = []
+    // Use fallback fields on error
+    templateFields.value = [
+      { fieldname: 'full_name', label: 'Full Name', fieldtype: 'Data' },
+      { fieldname: 'primary_email', label: 'Primary Email', fieldtype: 'Data' },
+      { fieldname: 'phone_number', label: 'Phone Number', fieldtype: 'Data' },
+      { fieldname: 'linkedin_url', label: 'LinkedIn URL', fieldtype: 'Data' },
+      { fieldname: 'cv_upload', label: 'CV Upload', fieldtype: 'Attach' }
+    ]
+    toast.warning(__('Could not load template fields, using defaults'))
   }
 }
 
@@ -677,17 +850,17 @@ const loadMiraTalentFields = async () => {
       console.log('⚠️ Mira Talent API failed, using fallback fields')
       console.log('Response details:', response)
       
-      // Fallback to common fields if API fails
+      // Fallback to common fields if API fails (using actual Mira Talent field names)
       const fallbackFields = [
-        { fieldname: 'full_name', label: 'Họ và tên', fieldtype: 'Data' },
-        { fieldname: 'primary_email', label: 'Email chính', fieldtype: 'Data' },
-        { fieldname: 'phone', label: 'Số điện thoại', fieldtype: 'Data' },
-        { fieldname: 'skills', label: 'Kỹ năng', fieldtype: 'Long Text' },
-        { fieldname: 'experience_years', label: 'Số năm kinh nghiệm', fieldtype: 'Int' },
-        { fieldname: 'current_position', label: 'Vị trí hiện tại', fieldtype: 'Data' },
-        { fieldname: 'expected_salary', label: 'Mức lương mong muốn', fieldtype: 'Currency' },
-        { fieldname: 'cv_attachment', label: 'File CV', fieldtype: 'Attach' },
-        { fieldname: 'cover_letter', label: 'Thư xin việc', fieldtype: 'Long Text' }
+        { fieldname: 'full_name', label: 'Full Name', fieldtype: 'Data' },
+        { fieldname: 'email', label: 'Email', fieldtype: 'Data' },
+        { fieldname: 'phone', label: 'Phone Number', fieldtype: 'Data' },
+        { fieldname: 'resume', label: 'CV', fieldtype: 'Attach' },
+        { fieldname: 'current_city', label: 'Address', fieldtype: 'Data' },
+        { fieldname: 'linkedin_profile', label: 'Other Links', fieldtype: 'Data' },
+        { fieldname: 'notes', label: 'Candidate Profile', fieldtype: 'Text' },
+        { fieldname: 'latest_company', label: 'Last Workplace', fieldtype: 'Data' },
+        { fieldname: 'source', label: 'Referral', fieldtype: 'Data' }
       ]
       
       miraTalentFields.value = fallbackFields
@@ -697,17 +870,17 @@ const loadMiraTalentFields = async () => {
     console.error('❌ Error loading Mira Talent fields:', error)
     console.log('Error details:', error)
     
-    // Use fallback fields on error
+    // Use fallback fields on error (using actual Mira Talent field names)
     const fallbackFields = [
-      { fieldname: 'full_name', label: 'Họ và tên', fieldtype: 'Data' },
-      { fieldname: 'primary_email', label: 'Email chính', fieldtype: 'Data' },
-      { fieldname: 'phone', label: 'Số điện thoại', fieldtype: 'Data' },
-      { fieldname: 'skills', label: 'Kỹ năng', fieldtype: 'Long Text' },
-      { fieldname: 'experience_years', label: 'Số năm kinh nghiệm', fieldtype: 'Int' },
-      { fieldname: 'current_position', label: 'Vị trí hiện tại', fieldtype: 'Data' },
-      { fieldname: 'expected_salary', label: 'Mức lương mong muốn', fieldtype: 'Currency' },
-      { fieldname: 'cv_attachment', label: 'File CV', fieldtype: 'Attach' },
-      { fieldname: 'cover_letter', label: 'Thư xin việc', fieldtype: 'Long Text' }
+      { fieldname: 'full_name', label: 'Full Name', fieldtype: 'Data' },
+      { fieldname: 'email', label: 'Email', fieldtype: 'Data' },
+      { fieldname: 'phone', label: 'Phone Number', fieldtype: 'Data' },
+      { fieldname: 'resume', label: 'CV', fieldtype: 'Attach' },
+      { fieldname: 'current_city', label: 'Address', fieldtype: 'Data' },
+      { fieldname: 'linkedin_profile', label: 'Other Links', fieldtype: 'Data' },
+      { fieldname: 'notes', label: 'Candidate Profile', fieldtype: 'Text' },
+      { fieldname: 'latest_company', label: 'Last Workplace', fieldtype: 'Data' },
+      { fieldname: 'source', label: 'Referral', fieldtype: 'Data' }
     ]
     
     miraTalentFields.value = fallbackFields
@@ -723,6 +896,27 @@ const removeHeader = (index) => {
   newConfig.value.api_headers_list.splice(index, 1)
 }
 
+// Copy endpoint to clipboard
+const copyEndpoint = async () => {
+  const endpoint = newConfig.value.end_point || generatedEndpoint.value
+  
+  try {
+    await navigator.clipboard.writeText(endpoint)
+    toast.success(__('API endpoint copied to clipboard'))
+  } catch (err) {
+    console.error('Failed to copy:', err)
+    // Fallback for older browsers
+    const textArea = document.createElement('textarea')
+    textArea.value = endpoint
+    document.body.appendChild(textArea)
+    textArea.select()
+    document.execCommand('copy')
+    document.body.removeChild(textArea)
+    
+    toast.success(__('API endpoint copied to clipboard'))
+  }
+}
+
 const addMapping = () => {
   newConfig.value.field_mappings.push({ form_field: '', api_field: '' })
 }
@@ -730,6 +924,84 @@ const addMapping = () => {
 const removeMapping = (index) => {
   newConfig.value.field_mappings.splice(index, 1)
 }
+
+// Apply default field mappings based on template fields
+const applyDefaultMappings = () => {
+  if (templateFields.value.length === 0) {
+    console.log('⚠️ No template fields loaded yet, cannot apply default mappings')
+    return
+  }
+  
+  console.log('🔄 Applying default field mappings...')
+  console.log('📋 Available template fields:', templateFields.value.map(f => f.fieldname))
+  
+  const newMappings = []
+  const mappedMiraTalentFields = new Set() // Track which ATS fields are already mapped
+  
+  // Go through each template field and try to find a matching ATS field
+  for (const templateField of templateFields.value) {
+    const fieldName = templateField.fieldname.toLowerCase()
+    
+    // Check if this template field matches any default mapping pattern
+    for (const [pattern, miraTalentField] of Object.entries(DEFAULT_FIELD_MAPPINGS)) {
+      if (fieldName === pattern || fieldName.includes(pattern) || pattern.includes(fieldName)) {
+        // Check if this ATS field is already mapped
+        if (!mappedMiraTalentFields.has(miraTalentField)) {
+          // Verify the ATS field exists in our available fields
+          const miraTalentFieldExists = miraTalentFields.value.some(f => f.fieldname === miraTalentField)
+          
+          if (miraTalentFieldExists) {
+            newMappings.push({
+              form_field: templateField.fieldname,
+              api_field: miraTalentField
+            })
+            mappedMiraTalentFields.add(miraTalentField)
+            console.log(`✅ Mapped: ${templateField.fieldname} → ${miraTalentField}`)
+            break // Move to next template field
+          }
+        }
+      }
+    }
+  }
+  
+  if (newMappings.length > 0) {
+    newConfig.value.field_mappings = newMappings
+    console.log(`🎉 Applied ${newMappings.length} default mappings`)
+    
+    toast.success(__('🤖 {0} đã tự động được map, vui lòng kiểm tra lại!', [newMappings.length]))
+  } else {
+    console.log('⚠️ No default mappings could be applied')
+    // Add one empty mapping for user to fill
+    newConfig.value.field_mappings = [{ form_field: '', api_field: '' }]
+  }
+}
+
+// Watch for type change to auto-apply default mappings when selecting API
+watch(() => newConfig.value.type, async (newType, oldType) => {
+  console.log('🔄 Config type changed from:', oldType, 'to:', newType)
+  
+  if (newType === 'API') {
+    // Auto-set endpoint URL
+    if (!newConfig.value.end_point) {
+      newConfig.value.end_point = generatedEndpoint.value
+      console.log('🔗 Auto-set endpoint:', newConfig.value.end_point)
+    }
+    
+    // Load fields if not loaded yet
+    if (templateFields.value.length === 0 || miraTalentFields.value.length === 0) {
+      console.log('📥 Loading fields before applying default mappings...')
+      await loadAllFields()
+    }
+    
+    // Apply default mappings if field_mappings is empty
+    if (newConfig.value.field_mappings.length === 0) {
+      // Give a small delay to ensure fields are rendered
+      setTimeout(() => {
+        applyDefaultMappings()
+      }, 100)
+    }
+  }
+})
 
 const addConfig = async () => {
   if (!canAddConfig.value) return

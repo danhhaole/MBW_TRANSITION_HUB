@@ -18,8 +18,30 @@
     </template>
 
     <template #body-content>
+      <!-- Search Bar -->
+      <div class="mb-4 px-1">
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <FeatherIcon name="search" class="h-4 w-4 text-gray-400" />
+          </div>
+          <input
+            v-model="searchQuery"
+            type="text"
+            :placeholder="__('Search templates...')"
+            class="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+            @input="handleSearchInput"
+          />
+          <button
+            v-if="searchQuery"
+            @click="clearSearch"
+            class="absolute inset-y-0 right-0 pr-3 flex items-center"
+          >
+            <FeatherIcon name="x" class="h-4 w-4 text-gray-400 hover:text-gray-600" />
+          </button>
+        </div>
+      </div>
 
-      <div class="overflow-y-auto max-h-[70vh] p-1">
+      <div class="overflow-y-auto max-h-[60vh] p-1">
         <!-- Loading State -->
         <div v-if="loading" class="flex flex-col items-center justify-center py-12">
           <FeatherIcon name="loader" class="h-12 w-12 text-blue-600 animate-spin mb-4" />
@@ -31,7 +53,7 @@
           <FeatherIcon name="alert-circle" class="h-12 w-12 text-red-600 mb-4" />
           <p class="text-red-600 mb-4">{{ error }}</p>
           <Button
-            @click="$emit('retry')"
+            @click="handleRetry"
             variant="solid"
           >
             {{ __('Retry') }}
@@ -101,7 +123,53 @@
         <!-- Empty State -->
         <div v-else class="flex flex-col items-center justify-center py-12">
           <FeatherIcon name="inbox" class="h-12 w-12 text-gray-400 mb-4" />
-          <p class="text-gray-600">{{ __('No templates available') }}</p>
+          <p class="text-gray-600">
+            {{ searchQuery ? __('No templates found matching your search') : __('No templates available') }}
+          </p>
+          <Button
+            v-if="searchQuery"
+            @click="clearSearch"
+            variant="outline"
+            class="mt-4"
+          >
+            {{ __('Clear Search') }}
+          </Button>
+        </div>
+      </div>
+
+      <!-- Pagination Controls -->
+      <div v-if="!loading && !error && totalPages > 1" class="mt-4 px-1 pt-4 border-t border-gray-200">
+        <div class="flex items-center justify-between">
+          <div class="text-sm text-gray-600">
+            {{ __('Page {0} of {1}', [currentPage, totalPages]) }}
+            <span class="ml-2 text-gray-500">
+              ({{ __('Showing {0}-{1} of {2}', [startIndex + 1, endIndex, totalTemplates]) }})
+            </span>
+          </div>
+          <div class="flex gap-2">
+            <Button
+              @click="goToPage(currentPage - 1)"
+              :disabled="currentPage === 1"
+              variant="outline"
+              size="sm"
+            >
+              <template #prefix>
+                <FeatherIcon name="chevron-left" class="h-4 w-4" />
+              </template>
+              {{ __('Previous') }}
+            </Button>
+            <Button
+              @click="goToPage(currentPage + 1)"
+              :disabled="!hasMore && currentPage >= totalPages"
+              variant="outline"
+              size="sm"
+            >
+              {{ __('Next') }}
+              <template #suffix>
+                <FeatherIcon name="chevron-right" class="h-4 w-4" />
+              </template>
+            </Button>
+          </div>
         </div>
       </div>
     </template>
@@ -137,7 +205,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { Dialog, Button, FeatherIcon } from 'frappe-ui'
 
 const props = defineProps({
@@ -160,24 +228,63 @@ const props = defineProps({
   modelValue: {
     type: String,
     default: ''
+  },
+  // Pagination props
+  currentPage: {
+    type: Number,
+    default: 1
+  },
+  pageSize: {
+    type: Number,
+    default: 12
+  },
+  totalTemplates: {
+    type: Number,
+    default: 0
+  },
+  hasMore: {
+    type: Boolean,
+    default: false
   }
 })
 
-const emit = defineEmits(['close', 'select', 'retry', 'update:modelValue'])
+const emit = defineEmits(['close', 'select', 'retry', 'update:modelValue', 'search', 'page-change'])
 
 const isOpen = ref(props.show)
 const selectedTemplate = ref(props.modelValue)
 const dataSelectedTemplate = ref(null)
+const searchQuery = ref('')
+let searchTimeout = null
+
+// Computed properties for pagination
+const totalPages = computed(() => {
+  return Math.ceil(props.totalTemplates / props.pageSize) || 1
+})
+
+const startIndex = computed(() => {
+  return (props.currentPage - 1) * props.pageSize
+})
+
+const endIndex = computed(() => {
+  return Math.min(startIndex.value + props.templates.length, props.totalTemplates)
+})
 
 // Watch show prop to sync with isOpen
 watch(() => props.show, (newVal) => {
   isOpen.value = newVal
+  if (newVal) {
+    // Reset search when modal opens
+    searchQuery.value = ''
+  }
 })
 
 // Watch isOpen to emit close event
 watch(isOpen, (newVal) => {
   if (!newVal) {
     emit('close')
+    // Reset selection when closing
+    selectedTemplate.value = ''
+    dataSelectedTemplate.value = null
   }
 })
 
@@ -206,6 +313,36 @@ const openPreview = (template) => {
 
 const handleImageError = (event) => {
   event.target.style.display = 'none'
+}
+
+// Search functionality
+const handleSearchInput = () => {
+  // Debounce search to avoid too many API calls
+  if (searchTimeout) {
+    clearTimeout(searchTimeout)
+  }
+  
+  searchTimeout = setTimeout(() => {
+    console.log('🔍 Searching for:', searchQuery.value)
+    emit('search', searchQuery.value)
+  }, 500) // Wait 500ms after user stops typing
+}
+
+const clearSearch = () => {
+  searchQuery.value = ''
+  emit('search', '')
+}
+
+const handleRetry = () => {
+  emit('retry')
+}
+
+// Pagination functionality
+const goToPage = (page) => {
+  if (page >= 1 && page <= totalPages.value) {
+    console.log('📄 Going to page:', page)
+    emit('page-change', page)
+  }
 }
 </script>
 

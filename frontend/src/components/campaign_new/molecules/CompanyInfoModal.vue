@@ -693,6 +693,9 @@ watch(() => props.show, (newVal) => {
     } else {
       // Initialize with campaign name as default page title
       formData.value.page_title = props.campaignName || ''
+      
+      // Initialize default receive_data_configs so customer sees it pre-configured
+      initializeDefaultReceiveDataConfig()
     }
     // Load company profiles when modal opens
     loadCompanyProfiles()
@@ -819,6 +822,70 @@ const resetForm = () => {
     template_id: ''
   }
   selectedCompanyProfile.value = ''
+}
+
+// Initialize default receive_data_configs with API webhook
+const initializeDefaultReceiveDataConfig = async () => {
+  console.log('🤖 Initializing default receive_data_configs...')
+  
+  const siteUrl = window.location.origin
+  const apiPath = '/api/method/mbw_mira.api.v1.talent.create'
+  const defaultEndpoint = `${siteUrl}${apiPath}`
+  
+  // Default field mappings - common fields that should be auto-mapped (displayed in UI)
+  // Using Mira Talent field names
+  const visibleMappings = [
+    { form_field: 'full_name', api_field: 'full_name' },
+    { form_field: 'primary_email', api_field: 'email' },
+    { form_field: 'phone_number', api_field: 'phone' },
+    { form_field: 'cv_upload', api_field: 'resume' },
+    { form_field: 'linkedin_url', api_field: 'linkedin_profile' }
+  ]
+  
+  // Hidden metadata fields from CMS - auto-added but NOT displayed in UI
+  const hiddenMetadataMappings = [
+    { form_field: 'form_id', api_field: 'form_id' },
+    { form_field: 'page_id', api_field: 'page_id' },
+    { form_field: 'form_url', api_field: 'form_url' },
+    { form_field: 'utm_source', api_field: 'utm_source' },
+    { form_field: 'utm_medium', api_field: 'utm_medium' },
+    { form_field: 'utm_content', api_field: 'utm_content' },
+    { form_field: 'utm_campaign', api_field: 'utm_campaign' },
+    { form_field: 'utm_term', api_field: 'utm_term' },
+    { form_field: 'custom_field', api_field: 'custom_field' }
+  ]
+  
+  // Combine for the full mapping
+  const defaultMappings = [...visibleMappings, ...hiddenMetadataMappings]
+  
+  // Fetch API credentials for current user
+  let apiHeaders = {}
+  try {
+    console.log('🔑 Fetching API credentials...')
+    const credResponse = await call('mbw_mira.utils.auth.get_user_api_credentials')
+    
+    if (credResponse?.status === 'success' && credResponse?.data) {
+      const { api_key, api_secret } = credResponse.data
+      apiHeaders = {
+        'Authorization': `token ${api_key}:${api_secret}`
+      }
+      console.log('✅ API credentials fetched successfully')
+    }
+  } catch (error) {
+    console.error('⚠️ Could not fetch API credentials:', error)
+    // Continue without auth headers - user can add manually
+  }
+  
+  const defaultConfig = {
+    type: 'API',
+    end_point: defaultEndpoint,
+    content_type: 'application/json',
+    api_headers: apiHeaders,
+    field_mappings: defaultMappings
+  }
+  
+  formData.value.receive_data_configs = [defaultConfig]
+  console.log('✅ Default receive_data_configs initialized:', defaultConfig)
 }
 
 const closeDialog = () => {
