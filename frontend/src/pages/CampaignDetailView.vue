@@ -1381,13 +1381,31 @@ const filterCounts = ref({
 	spam: 0,
 })
 
-const breadcrumbs = computed(() => [
-	{ label: __('Campaigns'), route: { name: 'CampaignManagement' } },
-	{
-		label: campaign.value.campaign_name || __('Loading...'),
-		route: { name: 'CampaignDetailView' },
-	},
-])
+// Get campaign type route name based on campaign type
+const getCampaignTypeRoute = (type) => {
+	const routeMap = {
+		'ATTRACTION': 'AttractionCampaign',
+		'NURTURING': 'NurtureCampaign',
+		'RECRUITMENT': 'RecruitmentCampaign'
+	}
+	return routeMap[type] || 'CampaignManagement'
+}
+
+const breadcrumbs = computed(() => {
+	// Get campaign type from storage or campaign object
+	const campaignType = campaign.value?.type || localStorage.getItem(`campaign_${route.params.id}_type`)
+	
+	// Determine route name based on campaign type
+	const campaignsRouteName = campaignType ? getCampaignTypeRoute(campaignType) : 'CampaignManagement'
+	
+	return [
+		{ label: __('Campaigns'), route: { name: campaignsRouteName } },
+		{
+			label: campaign.value.campaign_name || __('Loading...'),
+			route: { name: 'CampaignDetailView' },
+		},
+	]
+})
 
 console.log(campaign)
 
@@ -1783,6 +1801,12 @@ const loadCampaign = async () => {
 		const result = await campaignStore.getCampaignDetails(route.params.id)
 		if (result) {
 			Object.assign(campaign.value, result)
+			
+			// Save campaign type to localStorage for breadcrumb navigation
+			if (campaign.value.type) {
+				localStorage.setItem(`campaign_${route.params.id}_type`, campaign.value.type)
+			}
+			
 			// Load target segment if exists
 			if (campaign.value.target_segment) {
 				await loadTargetSegment()

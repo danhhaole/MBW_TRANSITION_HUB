@@ -338,6 +338,7 @@ import EmailContentEditor from '../molecules/EmailContentEditor.vue'
 import FacebookContentEditor from '../molecules/FacebookContentEditor.vue'
 import ZaloContentEditor from '../molecules/ZaloContentEditor.vue'
 import LandingPageSelector from '../molecules/LandingPageSelector.vue'
+import { getDefaultEmailTemplate } from '@/utils/emailTemplates'
 
 const props = defineProps({
   selectedChannels: {
@@ -480,64 +481,6 @@ const isFacebookSelected = computed(() => localSelectedChannels.value.includes('
 const isZaloSelected = computed(() => localSelectedChannels.value.includes('zalo'))
 
 // Get default email template (same as Step2_ContentTimeline.vue)
-const getDefaultEmailTemplate = () => {
-  return `
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="font-family: Arial, sans-serif;">
-            <tr>
-                <td style="background-color: #f4f4f4; padding: 20px;">
-                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="margin: 0 auto; background: #ffffff;">
-                        <!-- Header -->
-                        <tr>
-                            <td style="background-color: #ffffff; padding: 30px 20px; text-align: center;">
-                                <h1 style="margin: 0; color: #333333; font-size: 28px; font-weight: bold;">Welcome to Our Company</h1>
-                            </td>
-                        </tr>
-                        
-                        <!-- Main Content -->
-                        <tr>
-                            <td style="padding: 30px 20px;">
-                                <p style="margin: 0 0 15px 0; font-size: 16px; line-height: 1.5; color: #333333;">Dear {{candidate_name}},</p>
-                                <p style="margin: 0 0 15px 0; font-size: 16px; line-height: 1.5; color: #333333;">Thank you for your application for the position of {{job_title}}. We have received your application and will review it carefully.</p>
-                                <p style="margin: 0 0 25px 0; font-size: 16px; line-height: 1.5; color: #333333;">We will contact you within 5-7 business days regarding the next steps in our hiring process.</p>
-                                
-                                <!-- Button -->
-                                <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto;">
-                                    <tr>
-                                        <td style="background-color: #007bff; border-radius: 4px;">
-                                            <a href="#" style="background-color: #007bff; border: none; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-size: 16px;">
-                                                View Application Status
-                                            </a>
-                                        </td>
-                                    </tr>
-                                </table>
-                            </td>
-                        </tr>
-                        
-                        <!-- Signature -->
-                        <tr>
-                            <td style="padding: 20px; font-size: 16px; line-height: 1.5; color: #333333;">
-                                <p style="margin: 0 0 10px 0;">Best regards,</p>
-                                <p style="margin: 0; font-weight: bold;">HR Team</p>
-                                <p style="margin: 5px 0 0 0; color: #666666; font-size: 14px;">{{company_name}}</p>
-                            </td>
-                        </tr>
-                        
-                        <!-- Footer -->
-                        <tr>
-                            <td style="background-color: #343a40; color: white; padding: 30px 20px; text-align: center;">
-                                <p style="margin: 0 0 10px 0; font-size: 14px;">© 2024 {{company_name}}. All rights reserved.</p>
-                                <p style="margin: 0; font-size: 12px;">
-                                    <a href="#" style="color: #adb5bd; text-decoration: none;">Unsubscribe</a> | 
-                                    <a href="#" style="color: #adb5bd; text-decoration: none;">Privacy Policy</a>
-                                </p>
-                            </td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-        </table>
-    `;
-};
 
 // Channel management
 const addChannel = (channelType) => {
