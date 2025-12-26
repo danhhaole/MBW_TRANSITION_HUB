@@ -668,6 +668,27 @@ const loadData = async () => {
         ['sender', 'like', `%${search.value}%`]
       ]
     }
+    
+    // Build filter list for get_count
+    const filterList = []
+    Object.keys(apiFilters).forEach(key => {
+      if (apiFilters[key] && apiFilters[key] !== '') {
+        filterList.push([key, '=', apiFilters[key]])
+      }
+    })
+    
+    // Get total count first
+    const countParams = {
+      doctype: 'Mira Email Log',
+      filters: filterList.length > 0 ? filterList : undefined,
+      or_filters: or_filters
+    }
+    
+    const totalCount = await call('frappe.client.get_count', countParams)
+    pagination.total = totalCount || 0
+    pagination.pages = Math.ceil(pagination.total / pagination.limit) || 1
+    
+    // Get list data
     const params = {
       filters: apiFilters,
       or_filters,
@@ -682,22 +703,90 @@ const loadData = async () => {
       ...params
     })
     
-    if (result && result.length) {
-      items.value = result
+    if (result) {
+      items.value = result || []
       
-      // Update stats
-      stats.total = result.length
-      stats.success = result.filter(item => item.status === 'Success').length || 0
-      stats.failed = result.filter(item => item.status === 'Failed').length || 0
+      // Update pagination showing range
+      pagination.showing_from = items.value.length > 0 ? (pagination.page - 1) * pagination.limit + 1 : 0
+      pagination.showing_to = pagination.showing_from + items.value.length - 1
+      
+      // Load stats separately (total counts, not just current page)
+      await loadStats()
     } else {
-      console.error('Error loading data:', result?.error)
       items.value = []
+      pagination.showing_from = 0
+      pagination.showing_to = 0
     }
   } catch (error) {
     console.error('Error loading data:', error)
     items.value = []
+    pagination.total = 0
+    pagination.pages = 0
+    pagination.showing_from = 0
+    pagination.showing_to = 0
   } finally {
     loading.value = false
+  }
+}
+
+// Load stats (total counts across all records, not just current page)
+const loadStats = async () => {
+  try {
+    // Prepare filters for stats
+    const apiFilters = {}
+    Object.keys(filters).forEach(key => {
+      if (filters[key] && filters[key] !== '') {
+        apiFilters[key] = filters[key]
+      }
+    })
+    
+    // Prepare search conditions
+    let or_filters = undefined
+    if (search.value && search.value.trim() !== '') {
+      or_filters = [
+        ['subject', 'like', `%${search.value}%`],
+        ['recipients', 'like', `%${search.value}%`],
+        ['sender', 'like', `%${search.value}%`]
+      ]
+    }
+    
+    // Build filter list
+    const filterList = []
+    Object.keys(apiFilters).forEach(key => {
+      if (apiFilters[key] && apiFilters[key] !== '') {
+        filterList.push([key, '=', apiFilters[key]])
+      }
+    })
+    
+    // Get total count
+    const totalCountParams = {
+      doctype: 'Mira Email Log',
+      filters: filterList.length > 0 ? filterList : undefined,
+      or_filters: or_filters
+    }
+    stats.total = await call('frappe.client.get_count', totalCountParams) || 0
+    
+    // For success and failed counts, we need to combine filters properly
+    // Build combined filters for success
+    const successFilters = filterList.length > 0 ? [...filterList, ['status', '=', 'Success']] : [['status', '=', 'Success']]
+    const successCountParams = {
+      doctype: 'Mira Email Log',
+      filters: successFilters,
+      or_filters: or_filters
+    }
+    stats.success = await call('frappe.client.get_count', successCountParams) || 0
+    
+    // Build combined filters for failed
+    const failedFilters = filterList.length > 0 ? [...filterList, ['status', '=', 'Failed']] : [['status', '=', 'Failed']]
+    const failedCountParams = {
+      doctype: 'Mira Email Log',
+      filters: failedFilters,
+      or_filters: or_filters
+    }
+    stats.failed = await call('frappe.client.get_count', failedCountParams) || 0
+  } catch (error) {
+    console.error('Error loading stats:', error)
+    // Keep current stats on error
   }
 }
 
@@ -752,12 +841,25 @@ const saveForm = async () => {
 
   saving.value = true
   try {
-    const result = await call(save(formData, formData.name))
-    
-    if (result.success) {
-      closeFormModal()
-      loadData()
+    if (formData.name) {
+      // Update existing record
+      await call('frappe.client.set_value', {
+        doctype: 'Mira Email Log',
+        name: formData.name,
+        fieldname: formData
+      })
+    } else {
+      // Create new record
+      await call('frappe.client.insert', {
+        doc: {
+          doctype: 'Mira Email Log',
+          ...formData
+        }
+      })
     }
+    
+    closeFormModal()
+    await loadData()
   } catch (error) {
     console.error('Error saving:', error)
   } finally {

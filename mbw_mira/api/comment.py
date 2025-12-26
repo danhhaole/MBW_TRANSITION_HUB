@@ -53,49 +53,49 @@ def handle_comment_refetch_resource(doc, _method=None):
 
 @frappe.whitelist()
 def add_attachments(name: str, attachments: Iterable[str | dict]) -> None:
-	"""Add attachments to the given Comment
+    """Add attachments to the given Comment
 
-	:param name: Comment name
-	:param attachments: File names or dicts with keys "fname" and "fcontent"
-	"""
-	# loop through attachments
-	for a in attachments:
-		if isinstance(a, str):
-			attach = frappe.db.get_value("File", {"name": a}, ["file_url", "is_private"], as_dict=1)
-			file_args = {
-				"file_url": attach.file_url,
-				"is_private": attach.is_private,
-			}
-		elif isinstance(a, dict) and "fcontent" in a and "fname" in a:
-			# dict returned by frappe.attach_print()
-			file_args = {
-				"file_name": a["fname"],
-				"content": a["fcontent"],
-				"is_private": 1,
-			}
-		else:
-			continue
+    :param name: Comment name
+    :param attachments: File names or dicts with keys "fname" and "fcontent"
+    """
+    # loop through attachments
+    for a in attachments:
+        if isinstance(a, str):
+            attach = frappe.db.get_value("File", {"name": a}, ["file_url", "is_private"], as_dict=1)
+            file_args = {
+                "file_url": attach.file_url,
+                "is_private": attach.is_private,
+            }
+        elif isinstance(a, dict) and "fcontent" in a and "fname" in a:
+            # dict returned by frappe.attach_print()
+            file_args = {
+                "file_name": a["fname"],
+                "content": a["fcontent"],
+                "is_private": 1,
+            }
+        else:
+            continue
 
-		file_args.update(
-			{
-				"attached_to_doctype": "Comment",
-				"attached_to_name": name,
-				"folder": "Home/Attachments",
-			}
-		)
+        file_args.update(
+            {
+                "attached_to_doctype": "Comment",
+                "attached_to_name": name,
+                "folder": "Home/Attachments",
+            }
+        )
 
-		_file = frappe.new_doc("File")
-		_file.update(file_args)
-		_file.save(ignore_permissions=True)
+        _file = frappe.new_doc("File")
+        _file.update(file_args)
+        _file.save(ignore_permissions=True)
 
-	try:
-		comment_doc = frappe.get_doc("Comment", name)
-		handle_comment_refetch_resource(comment_doc)
-	except Exception as e:
-		frappe.log_error(
-			title="Error publishing refetch_resource after comment attachments",
-			message=str(e),
-		)               
+    try:
+        comment_doc = frappe.get_doc("Comment", name)
+        handle_comment_refetch_resource(comment_doc)
+    except Exception as e:
+        frappe.log_error(
+            title="Error publishing refetch_resource after comment attachments",
+            message=str(e),
+        )               
 
 
 @frappe.whitelist()

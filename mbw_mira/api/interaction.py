@@ -402,7 +402,7 @@ def get_campaign_stats(campaign_id):
         # Kiểm tra campaign có tồn tại không
         if not frappe.db.exists("Mira Campaign", campaign_id):
             frappe.throw(_("Campaign not found"))
-    
+        
         # Lấy tất cả interactions của campaign này
         interactions = frappe.get_all(
             "Mira Interaction",
@@ -482,31 +482,31 @@ def get_campaign_stats(campaign_id):
             return f"{round((count / base) * 100, 1)}%"
         
         return {
-        "status": "success",
-        "campaign_id": campaign_id,
-        "stats": {
-            "sent": sent if sent > 0 else total_recipients,
-            "delivered": delivered,
-            "delivered_percent": calc_rate(delivered, base),
-            "open_rate": calc_rate(opened, base),
-            "open_count": opened,
-            "click_rate": calc_rate(clicked, base),
-            "click_count": clicked,
-            "unsubscribe_rate": calc_rate(unsubscribed, base),
-            "unsubscribe_count": unsubscribed,
-            "bounce_rate": calc_rate(bounced, base),
-            "bounce_count": bounced,
-            "reply_rate": calc_rate(replied, base),
-            "reply_count": replied,
-            "error_rate": calc_rate(failed, base),
-            "error_count": failed,
-            "total_recipients": total_recipients,
-            "total_talents": total_talents,
-            "total_contacts": total_contacts
-        },
-        "raw_counts": counts,
-        "action_status": action_status
-    }
+            "status": "success",
+            "campaign_id": campaign_id,
+            "stats": {
+                "sent": sent if sent > 0 else total_recipients,
+                "delivered": delivered,
+                "delivered_percent": calc_rate(delivered, base),
+                "open_rate": calc_rate(opened, base),
+                "open_count": opened,
+                "click_rate": calc_rate(clicked, base),
+                "click_count": clicked,
+                "unsubscribe_rate": calc_rate(unsubscribed, base),
+                "unsubscribe_count": unsubscribed,
+                "bounce_rate": calc_rate(bounced, base),
+                "bounce_count": bounced,
+                "reply_rate": calc_rate(replied, base),
+                "reply_count": replied,
+                "error_rate": calc_rate(failed, base),
+                "error_count": failed,
+                "total_recipients": total_recipients,
+                "total_talents": total_talents,
+                "total_contacts": total_contacts
+            },
+            "raw_counts": counts,
+            "action_status": action_status
+        }
     except Exception as e:
         frappe.log_error(f"Error in get_campaign_stats: {str(e)}", "get_campaign_stats")
         return {
@@ -532,7 +532,7 @@ def get_campaign_stats(campaign_id):
                 "total_talents": 0,
                 "total_contacts": 0
             }
-        }
+    }
 
 
 @frappe.whitelist()
@@ -732,19 +732,19 @@ def get_campaign_filter_counts(campaign_id):
             total_contacts = 0
         
         return {
-        "status": "success",
-        "campaign_id": campaign_id,
-        "filter_counts": {
-            "sent": counts.get('EMAIL_SENT', 0) or (total_talents + total_contacts),
-            "delivered": counts.get('EMAIL_DELIVERED', 0),
-            "opened": counts.get('EMAIL_OPENED', 0),
-            "clicked": counts.get('ON_LINK_CLICK', 0),
-            "failed": len(failed_talent_ids),
-            "bounced": counts.get('EMAIL_BOUNCED', 0),
-            "spam": counts.get('EMAIL_SPAM', 0) or 0
-        },
-        "total_recipients": total_talents + total_contacts
-    }
+            "status": "success",
+            "campaign_id": campaign_id,
+            "filter_counts": {
+                "sent": counts.get('EMAIL_SENT', 0) or (total_talents + total_contacts),
+                "delivered": counts.get('EMAIL_DELIVERED', 0),
+                "opened": counts.get('EMAIL_OPENED', 0),
+                "clicked": counts.get('ON_LINK_CLICK', 0),
+                "failed": len(failed_talent_ids),
+                "bounced": counts.get('EMAIL_BOUNCED', 0),
+                "spam": counts.get('EMAIL_SPAM', 0) or 0
+            },
+            "total_recipients": total_talents + total_contacts
+        }
     except Exception as e:
         frappe.log_error(f"Error in get_campaign_filter_counts: {str(e)}", "get_campaign_filter_counts")
         return {

@@ -200,9 +200,9 @@ const users = computed(() => {
 				return user.name !== currentUser && user.name !== currentUserEmail && 
 				       user.email !== currentUser && user.email !== currentUserEmail;
 			})
-			.map((user) => ({
+      .map((user) => ({
 				label: user.full_name?.trimEnd() || user.name,
-				value: user.name,
+        value: user.name,
 			}));
 	}
 

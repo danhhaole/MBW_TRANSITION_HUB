@@ -194,7 +194,7 @@ function getRoute(notification) {
     const docname = notification.document_name
     
     if (doctype === 'Mira Campaign') {
-      return {
+  return {
         name: 'CampaignDetailView',
         params: { id: docname },
         hash: '#comments',
