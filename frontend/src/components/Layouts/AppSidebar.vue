@@ -369,11 +369,6 @@ const links = [
 		to: { name: 'MyActions' },
 	},
 	{
-		label: 'Shortlinks',
-		icon: ExternalLinkIcon,
-		to: { name: 'ShortlinkManagement' },
-	},
-	{
 		label: 'Report',
 		icon: NoteIcon,
 		to: 'Report',

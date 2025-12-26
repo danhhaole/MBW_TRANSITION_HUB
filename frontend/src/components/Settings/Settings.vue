@@ -61,12 +61,14 @@ import Email2Icon from '@/components/Icons/Email2Icon.vue'
 import TagIcon from '@/components/Icons/TagIcon.vue'
 import BlacklistIcon from '@/components/Icons/BlacklistIcon.vue'
 import ExternalLinkIcon from '@/components/Icons/ExternalLinkIcon.vue'
+import LinkIcon from '@/components/Icons/LinkIcon.vue'
 import NoteIcon from '@/components/Icons/NoteIcon.vue'
 import CampaignTemplateSettings from '@/components/Settings/CampaignTemplateSettings.vue'
 import TagSettings from '@/components/Settings/TagSettings.vue'
 import BlacklistSettings from '@/components/Settings/BlacklistSettings.vue'
 import ConnectorSettings from '@/components/Settings/ConnectorSettings.vue'
 import MiraEmailTemplateSettings from '@/components/Settings/MiraEmailTemplateSettings.vue'
+import ShortlinkSettings from '@/components/Settings/ShortlinkSettings.vue'
 import SidebarLink from '@/components/SidebarLink.vue'
 import { usersStore } from '@/stores/users'
 import {
@@ -131,6 +133,11 @@ const tabs = computed(() => {
           label: __('Email Templates'),
           icon: Email2Icon,
           component: markRaw(MiraEmailTemplateSettings),
+        },
+        {
+          label: __('Shortlinks'),
+          icon: LinkIcon,
+          component: markRaw(ShortlinkSettings),
         },
       ],
     },

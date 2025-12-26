@@ -129,6 +129,7 @@ import { ref, onMounted, nextTick, watch, computed } from 'vue'
 import { Dialog, Button, FeatherIcon, TextEditor, call } from 'frappe-ui'
 import { useToast } from '@/composables/useToast'
 
+
 const props = defineProps({
   show: {
     type: Boolean,
@@ -166,27 +167,27 @@ const platformToUtmSource = {
   'Zalo': 'zalo'
 }
 
-// Tạo URL ngắn sử dụng Is.gd API (miễn phí, không cần API key)
+
+// Tạo URL ngắn sử dụng gdshortener qua backend API
 const generateShortUrl = async (longUrl) => {
   if (!longUrl) return '';
 
   try {
-    // Sử dụng Is.gd API để tạo short URL
-    const apiUrl = `https://is.gd/create.php?format=json&url=${encodeURIComponent(longUrl)}`;
+    // Gọi API backend sử dụng gdshortener
+    const result = await call('mbw_mira.mbw_mira.doctype.mira_short_url.mira_short_url.create_short_url_with_gdshortener', {
+      long_url: longUrl
+    });
 
-    const response = await fetch(apiUrl);
-    const data = await response.json();
-
-    if (data.shorturl) {
-      console.log('✅ Short URL created:', data.shorturl);
-      return data.shorturl;
-    } else if (data.errormessage) {
-      console.error('❌ Is.gd API error:', data.errormessage);
-      toast.error(__('Error creating short URL: ') + data.errormessage);
+    if (result && result.success && result.short_url) {
+      // Loại bỏ dấu phẩy và khoảng trắng ở đầu/cuối
+      const cleanShortUrl = String(result.short_url).trim().replace(/,$/, '');
+      console.log('✅ Short URL created with gdshortener:', cleanShortUrl);
+      return cleanShortUrl;
+    } else {
+      console.error('❌ gdshortener API error:', result?.message || 'Unknown error');
+      toast.error(__('Error creating short URL: ') + (result?.message || 'Unknown error'));
       return longUrl;
     }
-
-    return longUrl;
   } catch (e) {
     console.error('❌ Error creating short URL:', e);
     toast.error(__('Failed to create short URL'));
@@ -246,14 +247,41 @@ onMounted(() => {
   }
 });
 
-// Copy to clipboard
+// Copy to clipboard với fallback method
 const copyToClipboard = async (text) => {
   try {
-    await navigator.clipboard.writeText(text)
-    toast.success(__('Link copied to clipboard'))
+    // Thử dùng Clipboard API hiện đại (yêu cầu HTTPS hoặc localhost)
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(text)
+      toast.success(__('Link copied to clipboard'))
+      return
+    }
+    
+    // Fallback: Sử dụng method cũ (hoạt động trên mọi trình duyệt)
+    const textArea = document.createElement('textarea')
+    textArea.value = text
+    textArea.style.position = 'fixed'
+    textArea.style.left = '-999999px'
+    textArea.style.top = '-999999px'
+    document.body.appendChild(textArea)
+    textArea.focus()
+    textArea.select()
+    
+    try {
+      const successful = document.execCommand('copy')
+      if (successful) {
+        toast.success(__('Link copied to clipboard'))
+      } else {
+        throw new Error('execCommand failed')
+      }
+    } catch (err) {
+      throw new Error('Copy command failed')
+    } finally {
+      document.body.removeChild(textArea)
+    }
   } catch (error) {
     console.error('Error copying to clipboard:', error)
-    toast.error(__('Failed to copy link'))
+    toast.error(__('Failed to copy link. Please copy manually.'))
   }
 }
 

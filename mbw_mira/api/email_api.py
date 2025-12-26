@@ -7,7 +7,7 @@ import json
 import base64
 import os
 from frappe.core.doctype.file.file import create_new_folder
-from mbw_mira.api.mail import send_email
+from mbw_mira.utils.email import send_email
 
 @frappe.whitelist()
 def get_email_templates(unit_name=None, template_type=None, is_active=1):

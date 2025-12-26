@@ -141,7 +141,7 @@
   )
   
   const filterOptions = createResource({
-    url: 'mbw_ats.api.mail.search_emails',
+    url: 'mbw_mira.api.mail.search_emails',
     method: 'POST',
     cache: [text.value, 'Contact'],
     params: { txt: text.value },
