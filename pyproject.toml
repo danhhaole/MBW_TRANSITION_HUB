@@ -13,7 +13,9 @@ dependencies = [
     "rapidfuzz~=3.13.0",
     "pandas~=2.3.1",
     "qrcode[pil]~=8.2",
-    "scikit-learn~=1.7.2"
+    "scikit-learn~=1.7.2",
+    "gdshortener~=1.0.1"
+
 ]
 
 [build-system]
