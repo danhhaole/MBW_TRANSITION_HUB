@@ -174,6 +174,16 @@
                 {{ __('Preview') }}
               </Button>
               <Button
+                @click="openShareModal"
+                variant="solid"
+                size="sm"
+              >
+                <template #prefix>
+                  <FeatherIcon name="share-2" class="h-3 w-3" />
+                </template>
+                {{ __('Share') }}
+              </Button>
+              <Button
                 @click="handleEditPageInfo"
                 variant="outline"
               >
@@ -257,6 +267,14 @@
         @submit="handleCompanyInfoSubmit"
       />
 
+            <!-- Share Page Modal -->
+      <SharePageModal
+        v-model:show="showShareModal"
+        :page-data="sharePageData"
+        @close="showShareModal = false"
+      />
+
+
     </div>
   </div>
 </template>
@@ -268,6 +286,7 @@ import { useToast } from '@/composables/useToast'
 import TemplateSelectionModal from './TemplateSelectionModal.vue'
 import PublishedPageSelectionModal from './PublishedPageSelectionModal.vue'
 import CompanyInfoModal from './CompanyInfoModal.vue'
+import SharePageModal from './SharePageModal.vue'
 
 const toast = useToast()
 
@@ -357,6 +376,9 @@ const publishedPagesSize = ref(12)
 const totalPublishedPages = ref(0)
 const publishedPagesSearchQuery = ref('')
 const hasMorePublishedPages = ref(false)
+
+const showShareModal = ref(false)
+const sharePageData = ref(null)
 
 // Load page details for edit mode
 const loadPageDetails = async (pageId) => {
@@ -850,6 +872,19 @@ const handleCompanyInfoSubmit = async (companyInfo) => {
   } finally {
     creatingPage.value = false
   }
+}
+
+// Open share modal
+const openShareModal = () => {
+  if (!selectedPage.value) return
+
+  // Prepare enhanced page data for sharing with realistic fake data
+  sharePageData.value = {
+    ...selectedPage.value,
+    campaignName: props.campaignName,
+  }
+
+  showShareModal.value = true
 }
 
 // Handle company info modal close
