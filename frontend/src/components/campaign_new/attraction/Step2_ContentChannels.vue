@@ -579,7 +579,6 @@ const testShareJobPosting = async () => {
 
   testingShare.value = true
   
-  
   try {
     // Find the connection ID for the selected Facebook page
     const selectedPage = facebookPages.value.find(page => page.value === localFacebookContent.value.page_id)
@@ -592,19 +591,37 @@ const testShareJobPosting = async () => {
       throw new Error('Facebook page connection ID not found. Please reconnect your Facebook account.')
     }
 
-    // Strip HTML tags from content before sending to Facebook
+    // Strip HTML tags from content before sending to Facebook (message body)
     const cleanMessage = stripHtmlTags(localFacebookContent.value.content)
     console.log('Original content:', localFacebookContent.value.content)
     console.log('Clean message:', cleanMessage)
 
+    // Prefer using short link (if present in content) as the URL sent to backend.
+    // This ensures the actual Facebook post shows the short URL (e.g. is.gd/xxxx),
+    // while Facebook will still redirect to the full landing page behind the scenes.
+    let shareUrl = props.ladipageUrl
+    try {
+      // Simple URL extraction from raw HTML/text (first URL found)
+      const urlMatch = (localFacebookContent.value.content || '').match(/https?:\/\/[^\s<>"']+/i)
+      if (urlMatch && urlMatch[0]) {
+        shareUrl = urlMatch[0]
+        console.log('🔗 Using short URL for Facebook share:', shareUrl)
+      } else {
+        console.log('ℹ️ No explicit URL found in content; falling back to ladipageUrl:', shareUrl)
+      }
+    } catch (e) {
+      console.warn('⚠️ Error detecting URL from content, using ladipageUrl instead:', e)
+    }
+
     const result = await call('mbw_mira.api.external_connections.share_job_posting', {
       connection_id: selectedPage.connection_id,
       job_id: props.name || 'test_job_id',
-      message: cleanMessage,  // ← Sửa: Dùng cleanMessage thay vì raw HTML
+      message: cleanMessage,  // Dùng text sạch cho nội dung post
       schedule_type: 'now',
       image_url: localFacebookContent.value.image || '',
       campaign_id: props.name,
-      ladipage_url: props.ladipageUrl,
+      // Gửi short URL (nếu có) thay vì luôn dùng ladipageUrl dài
+      ladipage_url: shareUrl,
       platform_type: selectedPage.platform_type || 'facebook',
       scheduled_time: localFacebookContent.value.schedule_time
     })
