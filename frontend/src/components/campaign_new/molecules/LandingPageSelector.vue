@@ -889,14 +889,44 @@ const handleCompanyInfoSubmit = async (companyInfo) => {
   }
 }
 
+// Load campaign ID (instead of campaign_name)
+const loadCampaignName = async () => {
+  console.log('🔍 [loadCampaignName] Starting to load campaign ID...')
+  console.log('   campaignId:', props.campaignId)
+  console.log('   doctype:', props.doctype)
+  console.log('   props.campaignName (fallback):', props.campaignName)
+  
+  // Return campaignId directly if available
+  if (props.campaignId && props.doctype === 'Mira Campaign') {
+    console.log('✅ [loadCampaignName] Using campaignId directly:', props.campaignId)
+    return props.campaignId
+  }
+  
+  // Fallback: try to get campaign ID from campaign object if campaignName is actually an ID
+  if (props.campaignName) {
+    console.log('🔄 [loadCampaignName] Using fallback campaignName as ID:', props.campaignName)
+    return props.campaignName
+  }
+  
+  console.warn('⚠️ [loadCampaignName] No campaignId available')
+  return ''
+}
+
 // Open share modal
-const openShareModal = () => {
+const openShareModal = async () => {
   if (!selectedPage.value) return
+
+  // Load campaign_name from campaignId
+  const actualCampaignName = await loadCampaignName()
+  console.log('🪪 [LandingPageSelector] Open Share modal', {
+    campaignId: props.campaignId,
+    campaignName: actualCampaignName,
+  })
 
   // Prepare enhanced page data for sharing with realistic fake data
   sharePageData.value = {
     ...selectedPage.value,
-    campaignName: props.campaignName,
+    campaignName: actualCampaignName, // Use campaign_name instead of name
   }
 
   showShareModal.value = true
