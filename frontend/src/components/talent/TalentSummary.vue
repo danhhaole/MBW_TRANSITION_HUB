@@ -114,9 +114,9 @@
 		</div>
 
 		<!-- CV Extract Section -->
-		<div v-if="talent.resume_extract" class="bg-white rounded-lg border border-gray-200 p-6 mt-6">
-			<div class="flex items-center justify-between mb-4">
-				<h3 class="text-lg font-medium text-gray-900">CV Details</h3>
+		<div v-if="talent.resume_extract" class="bg-white rounded-lg border border-gray-200 p-6 mt-6 shadow-sm">
+			<div class="flex items-center justify-between mb-6">
+				<h3 class="text-lg font-semibold text-gray-900">CV Details</h3>
 				<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
 					<FeatherIcon name="file-text" class="w-3 h-3 mr-1" />
 					Extracted from CV
@@ -127,48 +127,122 @@
 				<template v-if="parsedResumeExtract">
 					<!-- Personal Info -->
 					<template v-if="parsedResumeExtract.personal_info">
-						<h4 class="text-sm font-medium text-gray-800 mb-2">Personal Information</h4>
-						<div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600 mb-4">
-							<template v-if="parsedResumeExtract.personal_info.name">
-								<div>Full Name:</div>
-								<div class="font-medium">{{ parsedResumeExtract.personal_info.name }}</div>
-							</template>
-							<template v-if="parsedResumeExtract.personal_info.email">
-								<div>Email:</div>
-								<div>{{ parsedResumeExtract.personal_info.email }}</div>
-							</template>
-							<template v-if="parsedResumeExtract.personal_info.phone">
-								<div>Phone:</div>
-								<div>{{ parsedResumeExtract.personal_info.phone }}</div>
-							</template>
+						<div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 mb-6">
+							<h4 class="text-sm font-semibold text-gray-900 mb-3 flex items-center">
+								<FeatherIcon name="user" class="w-4 h-4 mr-2 text-blue-600" />
+								Personal Information
+							</h4>
+							<div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+								<template v-if="getPersonalInfo(parsedResumeExtract.personal_info, 'name')">
+									<div class="flex items-start">
+										<span class="text-gray-500 font-medium min-w-[100px]">Full Name:</span>
+										<span class="text-gray-900 font-semibold">{{ getPersonalInfo(parsedResumeExtract.personal_info, 'name') }}</span>
+									</div>
+								</template>
+								<template v-if="getPersonalInfo(parsedResumeExtract.personal_info, 'email')">
+									<div class="flex items-start">
+										<span class="text-gray-500 font-medium min-w-[100px]">Email:</span>
+										<a :href="'mailto:' + getPersonalInfo(parsedResumeExtract.personal_info, 'email')" 
+										   class="text-blue-600 hover:text-blue-800 hover:underline">
+											{{ getPersonalInfo(parsedResumeExtract.personal_info, 'email') }}
+										</a>
+									</div>
+								</template>
+								<template v-if="getPersonalInfo(parsedResumeExtract.personal_info, 'phone')">
+									<div class="flex items-start">
+										<span class="text-gray-500 font-medium min-w-[100px]">Phone:</span>
+										<a :href="'tel:' + getPersonalInfo(parsedResumeExtract.personal_info, 'phone')" 
+										   class="text-gray-900 hover:text-blue-600">
+											{{ getPersonalInfo(parsedResumeExtract.personal_info, 'phone') }}
+										</a>
+									</div>
+								</template>
+								<template v-if="getPersonalInfo(parsedResumeExtract.personal_info, 'job_title')">
+									<div class="flex items-start">
+										<span class="text-gray-500 font-medium min-w-[100px]">Job Title:</span>
+										<span class="text-gray-900">{{ getPersonalInfo(parsedResumeExtract.personal_info, 'job_title') }}</span>
+									</div>
+								</template>
+								<template v-if="getPersonalInfo(parsedResumeExtract.personal_info, 'address')">
+									<div class="flex items-start md:col-span-2">
+										<span class="text-gray-500 font-medium min-w-[100px]">Address:</span>
+										<span class="text-gray-900">{{ getPersonalInfo(parsedResumeExtract.personal_info, 'address') }}</span>
+									</div>
+								</template>
+							</div>
 						</div>
 					</template>
 
 					<!-- Work Experience -->
 					<template v-if="parsedResumeExtract.work_experience?.length">
-						<h4 class="text-sm font-medium text-gray-800 mt-6 mb-3">Work Experience</h4>
-						<div class="space-y-4">
-							<div v-for="(exp, idx) in parsedResumeExtract.work_experience" :key="'exp-'+idx" class="border-l-2 border-gray-200 pl-4">
-								<div class="font-medium">{{ exp.position || 'Unspecified Position' }}</div>
-								<div class="text-sm text-blue-600">{{ exp.company || 'Unspecified Company' }}</div>
-								<div class="text-xs text-gray-500 mb-2">
-									{{ formatDateRange(exp.start_date, exp.end_date) }}
+						<div class="mb-6">
+							<h4 class="text-sm font-semibold text-gray-900 mb-4 flex items-center">
+								<FeatherIcon name="briefcase" class="w-4 h-4 mr-2 text-green-600" />
+								Work Experience
+							</h4>
+							<div class="space-y-4">
+								<div v-for="(exp, idx) in parsedResumeExtract.work_experience" :key="'exp-'+idx" 
+									class="border-l-4 border-green-500 pl-4 py-2 bg-green-50/30 rounded-r-lg hover:bg-green-50/50 transition-colors">
+									<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-2">
+										<div>
+											<div class="font-semibold text-gray-900 text-base">
+												{{ getWorkExpField(exp, 'position') || 'Unspecified Position' }}
+											</div>
+											<div class="text-sm text-blue-600 font-medium mt-1">
+												{{ getWorkExpField(exp, 'company') || 'Unspecified Company' }}
+											</div>
+										</div>
+										<div class="text-xs text-gray-500 mt-1 md:mt-0 md:text-right">
+											{{ formatDateRange(getWorkExpField(exp, 'start_date'), getWorkExpField(exp, 'end_date')) }}
+										</div>
+									</div>
+									<!-- Responsibilities -->
+									<template v-if="exp.responsibilities && exp.responsibilities.length > 0">
+										<ul class="mt-3 space-y-1.5">
+											<li v-for="(resp, respIdx) in exp.responsibilities" :key="'resp-'+idx+'-'+respIdx" 
+												class="text-sm text-gray-700 flex items-start">
+												<FeatherIcon name="check-circle" class="w-3 h-3 mr-2 mt-0.5 text-green-600 flex-shrink-0" />
+												<span>{{ resp }}</span>
+											</li>
+										</ul>
+									</template>
+									<p v-else-if="exp.summary || exp.descriptions" class="text-sm text-gray-600 mt-2">
+										{{ exp.summary || exp.descriptions }}
+									</p>
 								</div>
-								<p v-if="exp.summary" class="text-sm text-gray-600 mt-1">{{ exp.summary }}</p>
 							</div>
 						</div>
 					</template>
 
 					<!-- Education -->
 					<template v-if="parsedResumeExtract.education?.length">
-						<h4 class="text-sm font-medium text-gray-800 mt-6 mb-3">Education</h4>
-						<div class="space-y-3">
-							<div v-for="(edu, idx) in parsedResumeExtract.education" :key="'edu-'+idx" class="text-sm">
-								<div class="font-medium">{{ edu.degree || 'Unspecified Degree' }}</div>
-								<div class="text-gray-600">{{ edu.institution || 'Unspecified Institution' }}</div>
-								<div class="text-xs text-gray-500">
-									{{ formatDateRange(edu.start_date, edu.end_date) }}
-									<span v-if="edu.gpa"> • GPA: {{ edu.gpa }}</span>
+						<div class="mb-6">
+							<h4 class="text-sm font-semibold text-gray-900 mb-4 flex items-center">
+								<FeatherIcon name="graduation-cap" class="w-4 h-4 mr-2 text-purple-600" />
+								Education
+							</h4>
+							<div class="space-y-3">
+								<div v-for="(edu, idx) in parsedResumeExtract.education" :key="'edu-'+idx" 
+									class="bg-purple-50/30 rounded-lg p-3 border border-purple-100">
+									<div class="flex flex-col md:flex-row md:items-center md:justify-between">
+										<div>
+											<div class="font-semibold text-gray-900">
+												{{ edu.degree || edu.major || 'Unspecified Degree' }}
+											</div>
+											<div class="text-sm text-gray-700 mt-1">
+												{{ edu.institution || 'Unspecified Institution' }}
+											</div>
+											<div v-if="edu.major && edu.degree" class="text-xs text-gray-600 mt-1">
+												Major: {{ edu.major }}
+											</div>
+										</div>
+										<div class="text-xs text-gray-500 mt-2 md:mt-0 md:text-right">
+											{{ formatDateRange(edu.start_date, edu.end_date) }}
+											<span v-if="edu.gpa" class="block md:inline md:ml-2 mt-1 md:mt-0">
+												• GPA: <span class="font-semibold text-purple-600">{{ edu.gpa }}</span>
+											</span>
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -176,23 +250,39 @@
 
 					<!-- Skills -->
 					<template v-if="parsedResumeExtract.skills?.length">
-						<h4 class="text-sm font-medium text-gray-800 mt-6 mb-3">Skills</h4>
-						<div class="flex flex-wrap gap-2">
-							<span
-								v-for="(skill, idx) in parsedResumeExtract.skills"
-								:key="'skill-' + idx"
-								class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
-							>
-								<span class="font-semibold">
-									{{ getSkillName(skill) }}
+						<div class="mb-6">
+							<h4 class="text-sm font-semibold text-gray-900 mb-4 flex items-center">
+								<FeatherIcon name="zap" class="w-4 h-4 mr-2 text-orange-600" />
+								Skills
+							</h4>
+							<div class="space-y-3">
+								<div v-for="(skill, idx) in parsedResumeExtract.skills" :key="'skill-' + idx"
+									class="bg-orange-50/30 rounded-lg p-3 border border-orange-100">
+									<div class="font-semibold text-gray-900 text-sm mb-1">
+										{{ getSkillName(skill) }}
+									</div>
+									<div v-if="getSkillDetails(skill)" class="text-xs text-gray-600 mt-1">
+										{{ getSkillDetails(skill) }}
+									</div>
+								</div>
+							</div>
+						</div>
+					</template>
+
+					<!-- Certificates -->
+					<template v-if="parsedResumeExtract.certificates?.length">
+						<div class="mb-6">
+							<h4 class="text-sm font-semibold text-gray-900 mb-4 flex items-center">
+								<FeatherIcon name="award" class="w-4 h-4 mr-2 text-yellow-600" />
+								Certificates
+							</h4>
+							<div class="flex flex-wrap gap-2">
+								<span v-for="(cert, idx) in parsedResumeExtract.certificates" :key="'cert-'+idx"
+									class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
+									{{ cert.title || cert.name }}
+									<span v-if="cert.year" class="ml-2 text-yellow-600">({{ cert.year }})</span>
 								</span>
-								<span
-									v-if="getSkillDetails(skill)"
-									class="ml-1 text-[11px] font-normal text-gray-600"
-								>
-									- {{ getSkillDetails(skill) }}
-								</span>
-							</span>
+							</div>
 						</div>
 					</template>
 				</template>
@@ -453,12 +543,41 @@ const parsedResumeExtract = computed(() => {
 // Helpers to safely read skill data which may be a string or an object
 const getSkillName = (skill) => {
 	if (!skill) return '';
-	return typeof skill === 'string' ? skill : skill.name || '';
+	if (typeof skill === 'string') return skill;
+	return skill.can_skill_name || skill.name || '';
 };
 
 const getSkillDetails = (skill) => {
 	if (!skill || typeof skill === 'string') return '';
 	return skill.details || '';
+};
+
+// Helper to get personal info field (handle both old and new format)
+const getPersonalInfo = (personalInfo, field) => {
+	if (!personalInfo) return '';
+	// Try new format first (can_full_name, can_email, etc.)
+	const newField = `can_${field === 'name' ? 'full_name' : field}`;
+	if (personalInfo[newField]) return personalInfo[newField];
+	// Fallback to old format
+	return personalInfo[field] || '';
+};
+
+// Helper to get work experience field (handle both old and new format)
+const getWorkExpField = (exp, field) => {
+	if (!exp) return '';
+	// Map field names
+	const fieldMap = {
+		'position': ['work_experience_role', 'position', 'role'],
+		'company': ['work_experience_place', 'company', 'place'],
+		'start_date': ['work_experience_start', 'start_date', 'start'],
+		'end_date': ['work_experience_end', 'end_date', 'end']
+	};
+	
+	const possibleFields = fieldMap[field] || [field];
+	for (const f of possibleFields) {
+		if (exp[f]) return exp[f];
+	}
+	return '';
 };
 
 // Fetch data khi component mount

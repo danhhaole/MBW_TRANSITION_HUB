@@ -9,7 +9,7 @@ from frappe.utils import get_files_path
 from frappe import _
 from frappe.utils.file_manager import save_file
 
-URL_AI_BASE_V2= frappe.conf.get("ai_baseurl_v2") or "https://aihub.fastwork.vn"
+URL_AI_BASE_V2= frappe.conf.get("ai_baseurl_v2") or "https://aiapi.fastwork.vn"
 
 AI_BASEURL = f"{URL_AI_BASE_V2}/hr_agent/"
 AI_BASEURL_V2 = f"{URL_AI_BASE_V2}/hr_agent/"
@@ -156,7 +156,10 @@ def extract_cv_backend(file_name):
     if not file_name:
         frappe.throw("Missing 'file_name' in request parameters.")
 
-    headers = {"x-api-key": "6Bwunlw3Fm1J23tGKZjb/WJXwBDI3gRY971+VUFOU+w="}
+    headers = {
+        "x-api-key": "6Bwunlw3Fm1J23tGKZjb/WJXwBDI3gRY971+VUFOU+w=",
+        "Authorization": "Bearer b8040c68-b18b-4e01-9d61-b03536c02fcb"
+    }
 
     try:
         file_url = frappe.db.get_value("File", {"name": file_name, "is_private":1}, "file_url")
