@@ -250,6 +250,7 @@
                   <ZaloContentEditor
                     v-else-if="trigger.channel === 'zalo'"
                     :content="trigger.content"
+                    :share-page-data="sharePageData"
                     @update:content="updateTriggerContent(index, $event)"
                   />
 
@@ -493,6 +494,15 @@ const localLadipageUrl = computed({
 const localLadipageId = computed({
   get: () => props.ladipageId,
   set: (value) => emit('update:ladipageId', value)
+})
+
+// Share page data for short link generation
+const sharePageData = computed(() => {
+  if (!localLadipageUrl.value) return null
+  return {
+    url: localLadipageUrl.value,
+    campaignName: props.campaignName
+  }
 })
 
 // Delay editor state
@@ -1446,11 +1456,17 @@ const sendEmail = async (trigger, recipient) => {
     console.log('✅ [sendEmail] Final content length:', content.length)
     console.log('✅ [sendEmail] CSS in content:', content.includes(cssContent?.substring(0, 50) || ''))
 
+    // Pass campaign_id để update status của Mira Campaign Social
+    console.log('📧 [sendEmail] Sending test email with campaign_id:', props.name);
     const result = await call('mbw_mira.api.campaign.send_test_email', {
       recipient: recipient,
       subject,
-      content
+      content,
+      campaign_id: props.name || null  // Pass campaign ID nếu có
     });
+    
+    console.log('📧 [sendEmail] Test email result:', result);
+    console.log('📧 [sendEmail] Campaign ID used:', props.name);
 
     if (result && result.status === 'success') {
       toast.success(__('The email has been successfully sent.'));

@@ -251,16 +251,36 @@
           <!-- Content Editor -->
           <FacebookContentEditor
             :content="localFacebookContent.content"
-            :campaign-name="campaignName"
             :image="localFacebookContent.image"
             :page-id="localFacebookContent.page_id"
             :page-options="facebookPages"
             :show-page-selector="true"
             :show-link-input="false"
+            :placeholder="__('Write your job post content here...')"
+            :share-page-data="sharePageData"
             @update:content="updateFacebookContent('content', $event)"
             @update:image="updateFacebookContent('image', $event)"
             @update:page-id="updateFacebookContent('page_id', $event)"
           />
+
+          <!-- Test Share Job Posting Button -->
+          <div class="mt-4 pt-4 border-t border-gray-200">
+            <Button
+              @click="testShareJobPosting"
+              :loading="testingShare"
+              variant="outline"
+              size="sm"
+              class="w-full"
+            >
+              <template #prefix>
+                <FeatherIcon name="send" class="h-4 w-4" />
+              </template>
+              {{ __('Test Share Job to Facebook') }}
+            </Button>
+            <p class="text-xs text-gray-500 mt-2 text-center">
+              {{ __('This will post the current content to your selected Facebook page') }}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -318,7 +338,7 @@
           <!-- Content Editor -->
           <ZaloContentEditor
             :content="localZaloContent"
-            :campaign-name="campaignName"
+            :share-page-data="sharePageData"
             :oa-options="zaloAccounts"
             :show-oa-selector="true"
             @update:content="updateZaloContent"
@@ -431,16 +451,20 @@ const localLadipageId = computed({
   set: (value) => emit('update:ladipageId', value)
 })
 
-// Editor expansion state
-const expandedEditors = ref({
-  email: true,
-  facebook: true,
-  zalo: true
+// Share page data for short link generation
+const sharePageData = computed(() => {
+  if (!localLadipageUrl.value) return null
+  return {
+    url: localLadipageUrl.value,
+    campaignName: props.campaignName
+  }
 })
+
 
 // Facebook pages from Mira External Connection
 const facebookPages = ref([])
 const loadingPages = ref(false)
+const testingShare = ref(false)
 
 // Zalo OA accounts from Mira External Connection
 const zaloAccounts = ref([])
@@ -480,6 +504,13 @@ const isEmailSelected = computed(() => localSelectedChannels.value.includes('ema
 const isFacebookSelected = computed(() => localSelectedChannels.value.includes('facebook'))
 const isZaloSelected = computed(() => localSelectedChannels.value.includes('zalo'))
 
+// Expanded editors state
+const expandedEditors = ref({
+  email: true,
+  facebook: true,
+  zalo: true
+})
+
 // Get default email template (same as Step2_ContentTimeline.vue)
 
 // Channel management
@@ -513,10 +544,6 @@ const addChannel = (channelType) => {
 const removeChannel = (channelType) => {
   localSelectedChannels.value = localSelectedChannels.value.filter(ch => ch !== channelType)
   expandedEditors.value[channelType] = false
-}
-
-const toggleEditor = (channelType) => {
-  expandedEditors.value[channelType] = !expandedEditors.value[channelType]
 }
 
 // Content update handlers
@@ -742,6 +769,101 @@ const updateZaloScheduleTime = (scheduleTime) => {
   }
 }
 
+// Helper function to strip HTML tags and convert to plain text with line breaks
+const stripHtmlTags = (html) => {
+  if (!html) return ''
+  
+  // Replace block-level HTML elements with newlines BEFORE stripping tags
+  let text = html
+    // Replace closing block tags with double newline (paragraph breaks)
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<\/div>/gi, '\n\n')
+    .replace(/<\/li>/gi, '\n')
+    .replace(/<\/h[1-6]>/gi, '\n\n')
+    // Replace BR tags with single newline
+    .replace(/<br\s*\/?>/gi, '\n')
+    // Replace list items with bullet points
+    .replace(/<li[^>]*>/gi, '\n• ')
+  
+  // Now strip all remaining HTML tags
+  const tmp = document.createElement('div')
+  tmp.innerHTML = text
+  text = tmp.textContent || tmp.innerText || ''
+  
+  // Clean up excessive newlines (more than 2 consecutive)
+  text = text.replace(/\n{3,}/g, '\n\n')
+  
+  // Trim each line but preserve the newlines
+  text = text
+    .split('\n')
+    .map(line => line.trim())
+    .join('\n')
+  
+  // Remove leading/trailing whitespace from the entire text
+  return text.trim()
+}
+
+// Test share job posting to Facebook
+const testShareJobPosting = async () => {
+  if (!localFacebookContent.value.page_id) {
+    toast.error(__('Please select a Facebook page first'))
+    return
+  }
+
+  if (!localFacebookContent.value.content) {
+    toast.error(__('Please add content to your Facebook post'))
+    return
+  }
+
+  testingShare.value = true
+  
+  try {
+    // Find the connection ID for the selected Facebook page
+    const selectedPage = facebookPages.value.find(page => page.value === localFacebookContent.value.page_id)
+    console.log('Selected Facebook page:', selectedPage)
+    if (!selectedPage) {
+      throw new Error('Selected Facebook page not found')
+    }
+
+    if (!selectedPage.connection_id) {
+      throw new Error('Facebook page connection ID not found. Please reconnect your Facebook account.')
+    }
+
+    // Strip HTML tags from content before sending to Facebook
+    const cleanMessage = stripHtmlTags(localFacebookContent.value.content)
+    console.log('Original content:', localFacebookContent.value.content)
+    console.log('Clean message:', cleanMessage)
+
+    const result = await call('mbw_mira.api.external_connections.share_job_posting', {
+      connection_id: selectedPage.connection_id,
+      job_id: props.name || 'test_job_id',
+      message: cleanMessage,
+      schedule_type: 'now',
+      image_url: localFacebookContent.value.image || '',
+      campaign_id: props.name,
+      ladipage_url: props.ladipageUrl,
+      platform_type: selectedPage.platform_type || 'facebook',
+      scheduled_time: localFacebookContent.value.schedule_time
+    })
+
+    if (result.status === 'success') {
+      toast.success(__('Job posted to Facebook successfully!'))
+      console.log('✅ Facebook post result:', result)
+    } else {
+      throw new Error(result.message || 'Failed to post to Facebook')
+    }
+  } catch (error) {
+    console.error('❌ Error sharing job to Facebook:', error)
+    toast.error(error.message || __('Failed to share job to Facebook'))
+  } finally {
+    testingShare.value = false
+  }
+}
+
+const toggleEditor = (channelType) => {
+  expandedEditors.value[channelType] = !expandedEditors.value[channelType]
+}
+
 // Load Facebook pages
 const loadFacebookPages = async () => {
   try {
@@ -751,7 +873,8 @@ const loadFacebookPages = async () => {
     if (result.success && result.data) {
       facebookPages.value = result.data.map(page => ({
         label: page.page_name,
-        value: page.page_id
+        value: page.page_id,
+        connection_id: page.connection_name // Use connection_name as connection_id
       }))
       console.log('✅ Loaded Facebook pages:', facebookPages.value)
     }
@@ -1117,11 +1240,17 @@ const sendEmail = async (content, recipient) => {
     console.log('✅ [sendEmail] Final content length:', finalContent.length)
     console.log('✅ [sendEmail] CSS in content:', finalContent.includes(cssContent?.substring(0, 50) || ''))
 
+    // Pass campaign_id để update status của Mira Campaign Social
+    console.log('📧 [sendEmail] Sending test email with campaign_id:', props.name)
     const result = await call('mbw_mira.api.campaign.send_test_email', {
       recipient: recipient,
       subject,
-      content: finalContent
+      content: finalContent,
+      campaign_id: props.name || null  // Pass campaign ID nếu có
     })
+    
+    console.log('📧 [sendEmail] Test email result:', result)
+    console.log('📧 [sendEmail] Campaign ID used:', props.name)
 
     if (result && result.status === 'success') {
       toast.success(__('The email has been successfully sent.'))

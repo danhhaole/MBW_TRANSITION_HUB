@@ -118,6 +118,28 @@
                 </div>
               </div>
 
+              <!-- Short Link -->
+              <div v-if="block.short_link !== undefined" class="space-y-2">
+                <label class="block text-xs font-medium text-gray-700">
+                  {{ __('Short Link') }}
+                </label>
+                <div class="flex space-x-2">
+                  <input
+                    v-model="block.short_link"
+                    :placeholder="__('https://is.gd/...')"
+                    type="url"
+                    class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
+                    @input="updateContent"
+                  />
+                  <button
+                    @click="removeAction(block, 'short_link')"
+                    class="text-red-500 hover:text-red-700 p-2"
+                  >
+                    <FeatherIcon name="x" class="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
               <!-- Add Action Buttons -->
               <div class="flex flex-wrap gap-2">
                 <button
@@ -135,6 +157,14 @@
                 >
                   <FeatherIcon name="phone" class="w-3 h-3 mr-1" />
                   {{ __('Add Phone') }}
+                </button>
+                <button
+                  v-if="block.short_link === undefined"
+                  @click="addShortLink(block)"
+                  class="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-xs font-medium text-gray-700 bg-white hover:bg-gray-50"
+                >
+                  <FeatherIcon name="link" class="w-3 h-3 mr-1" />
+                  {{ __('Add Short Link') }}
                 </button>
               </div>
             </div>
@@ -256,7 +286,7 @@
                     </div>
                     
                     <!-- Action Buttons in Preview -->
-                    <div v-if="block.website_url || block.phone_number" class="mt-2 pt-2 border-t border-gray-200 space-y-1">
+                    <div v-if="block.website_url || block.phone_number || block.short_link" class="mt-2 pt-2 border-t border-gray-200 space-y-1">
                       <a
                         v-if="block.website_url"
                         :href="block.website_url"
@@ -273,6 +303,15 @@
                       >
                         <FeatherIcon name="phone" class="w-3 h-3 mr-1" />
                         {{ block.phone_number }}
+                      </a>
+                      <a
+                        v-if="block.short_link"
+                        :href="block.short_link"
+                        target="_blank"
+                        class="flex items-center text-xs text-blue-600 hover:underline"
+                      >
+                        <FeatherIcon name="link" class="w-3 h-3 mr-1" />
+                        {{ block.short_link }}
                       </a>
                     </div>
                   </div>
@@ -329,7 +368,10 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { FeatherIcon, FileUploader } from 'frappe-ui'
+import { FeatherIcon, FileUploader, call } from 'frappe-ui'
+import { useToast } from '@/composables/useToast'
+
+const toast = useToast()
 
 const props = defineProps({
   content: {
@@ -343,10 +385,73 @@ const props = defineProps({
   oaOptions: {
     type: Array,
     default: () => []
+  },
+  sharePageData: {
+    type: Object,
+    default: null
   }
 })
 
 const emit = defineEmits(['update:content'])
+
+// Generate short URL using backend API (same as SharePageModal)
+const generateShortUrl = async (longUrl) => {
+  if (!longUrl) return ''
+
+  try {
+    const result = await call('mbw_mira.mbw_mira.doctype.mira_short_url.mira_short_url.create_short_url_with_gdshortener', {
+      long_url: longUrl
+    })
+
+    if (result && result.success && result.short_url) {
+      const cleanShortUrl = String(result.short_url).trim().replace(/,$/, '')
+      console.log('✅ Short URL created:', cleanShortUrl)
+      return cleanShortUrl
+    } else {
+      console.error('❌ Short URL API error:', result?.message || 'Unknown error')
+      toast.error(__('Error creating short URL: ') + (result?.message || 'Unknown error'))
+      return ''
+    }
+  } catch (e) {
+    console.error('❌ Error creating short URL:', e)
+    toast.error(__('Failed to create short URL'))
+    return ''
+  }
+}
+
+// Add short link action - create input field and generate short link automatically
+const addShortLink = async (block) => {
+  if (!props.sharePageData?.url) {
+    toast.error(__('Please select a landing page first'))
+    return
+  }
+
+  // Create input field first (like addAction)
+  block.short_link = ''
+  updateContent()
+
+  // Build URL with UTM parameters for Zalo
+  const baseUrl = props.sharePageData.url
+  const params = new URLSearchParams()
+  params.append('utm_source', 'zalo')
+  params.append('utm_medium', 'social')
+  
+  if (props.sharePageData.campaignName) {
+    params.append('utm_campaign', props.sharePageData.campaignName.trim())
+  }
+
+  const separator = baseUrl.includes('?') ? '&' : '?'
+  const urlWithUtm = `${baseUrl}${separator}${params.toString()}`
+
+  // Generate short link automatically (run in background)
+  const shortLink = await generateShortUrl(urlWithUtm)
+  
+  if (shortLink) {
+    block.short_link = shortLink
+    updateContent()
+    toast.success(__('Short link generated and added'))
+  }
+}
 
 // Local blocks state
 const localBlocks = ref([
@@ -469,6 +574,49 @@ watch(() => props.content, (newContent) => {
     localBlocks.value = newContent.blocks
   }
 }, { deep: true })
+
+// Watch for sharePageData changes (when template/URL changes)
+watch(() => props.sharePageData?.url, async (newUrl, oldUrl) => {
+  // Only regenerate if URL actually changed and we have blocks with short links
+  if (newUrl && newUrl !== oldUrl) {
+    console.log('🔄 URL changed, regenerating short links for existing blocks:', newUrl)
+    
+    // Find all blocks that have short_link
+    const blocksWithShortLink = localBlocks.value.filter(block => 
+      block.type === 'text' && block.short_link
+    )
+    
+    if (blocksWithShortLink.length > 0) {
+      // Regenerate short link for each block
+      for (const block of blocksWithShortLink) {
+        // Build URL with UTM parameters for Zalo
+        const baseUrl = newUrl
+        const params = new URLSearchParams()
+        params.append('utm_source', 'zalo')
+        params.append('utm_medium', 'social')
+        
+        if (props.sharePageData?.campaignName) {
+          params.append('utm_campaign', props.sharePageData.campaignName.trim())
+        }
+
+        const separator = baseUrl.includes('?') ? '&' : '?'
+        const urlWithUtm = `${baseUrl}${separator}${params.toString()}`
+
+        // Generate new short link
+        const newShortLink = await generateShortUrl(urlWithUtm)
+        
+        if (newShortLink) {
+          block.short_link = newShortLink
+          console.log('✅ Updated short link for block:', newShortLink)
+        }
+      }
+      
+      // Update content after regenerating all short links
+      updateContent()
+      toast.success(__('Short links updated for new template'))
+    }
+  }
+}, { immediate: false })
 </script>
 
 <style scoped>

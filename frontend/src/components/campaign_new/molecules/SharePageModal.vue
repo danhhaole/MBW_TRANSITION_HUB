@@ -138,10 +138,14 @@ const props = defineProps({
   pageData: {
     type: Object,
     default: null
+  },
+  platform: {
+    type: String,
+    default: 'Facebook' // 'Facebook' or 'Zalo'
   }
 })
 
-const emit = defineEmits(['close', 'update:show'])
+const emit = defineEmits(['close', 'update:show', 'short-link-generated'])
 
 const toast = useToast()
 
@@ -224,13 +228,21 @@ const updateUrl = async () => {
 
   // Generate short URL (await the async function)
   shortUrl.value = await generateShortUrl(newUrl);
+  
+  // Emit short link when generated
+  if (shortUrl.value) {
+    emit('short-link-generated', {
+      platform: selectedPlatform.value,
+      shortUrl: shortUrl.value
+    })
+  }
 }
 
 // Watch for modal open to initialize
 watch(() => props.show, (newShow) => {
   if (newShow && props.pageData) {
-    // Initialize with actual campaign data
-    selectedPlatform.value = 'Facebook'
+    // Initialize with platform from props or default to Facebook
+    selectedPlatform.value = props.platform || 'Facebook'
     campaignName.value = props.pageData.campaignName || 'campaign'
     contentValue.value = ''
     updateUrl()
@@ -240,7 +252,7 @@ watch(() => props.show, (newShow) => {
 // Initialize on mount if modal is already open
 onMounted(() => {
   if (props.show && props.pageData) {
-    selectedPlatform.value = 'Facebook';
+    selectedPlatform.value = props.platform || 'Facebook';
     campaignName.value = props.pageData.campaignName || 'campaign';
     contentValue.value = '';
     updateUrl();

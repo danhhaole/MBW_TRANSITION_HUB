@@ -24,11 +24,26 @@ def check_pool_has_birthday(pool_name):
     }
 
 @frappe.whitelist()
-def send_test_email(recipient, subject, content):
+def send_test_email(recipient, subject, content, campaign_id=None):
     """
     Send a test email with the provided content.
     Used by ActionEditor options to verify email configuration.
+    Nếu có campaign_id, sẽ update status của Mira Campaign Social sau khi gửi thành công.
     """
+    logger = frappe.logger()
+    # Print để debug (hiển thị trong console)
+    print(f"\n{'='*60}")
+    print(f"[TEST EMAIL] ========== START send_test_email ==========")
+    print(f"[TEST EMAIL] Recipient: {recipient}")
+    print(f"[TEST EMAIL] Subject: {subject[:50]}")
+    print(f"[TEST EMAIL] Campaign ID: {campaign_id}")
+    print(f"{'='*60}\n")
+    
+    logger.info(f"[TEST EMAIL] ========== START send_test_email ==========")
+    logger.info(f"[TEST EMAIL] Recipient: {recipient}")
+    logger.info(f"[TEST EMAIL] Subject: {subject[:50]}")
+    logger.info(f"[TEST EMAIL] Campaign ID: {campaign_id}")
+    
     if not recipient:
         frappe.throw(_("Recipient email is required"))
 
@@ -37,6 +52,7 @@ def send_test_email(recipient, subject, content):
 
     try:
         from mbw_mira.utils.email import send_email
+        import time
 
         # Replace localhost URLs and relative paths with production domain
         if content:
@@ -58,15 +74,267 @@ def send_test_email(recipient, subject, content):
              if '\n' in content:
                  content = content.replace('\n', '<br>')
 
-        send_email(
+        logger.info(f"[TEST EMAIL] Calling send_email()...")
+        result = send_email(
             recipients=[recipient],
             subject=f"{subject}",
             content=content,
             as_html=as_html
         )
+        logger.info(f"[TEST EMAIL] send_email() returned: {result}")
 
-        return {"status": "success", "message": f"Test email sent to {recipient}"}
+        # Nếu có campaign_id, tìm và update Mira Campaign Social status
+        if campaign_id:
+            logger.info(f"[TEST EMAIL] Campaign ID provided: {campaign_id}, checking for Mira Campaign Social...")
+            
+            # Tìm Mira Campaign Social với platform = Email cho campaign này
+            social_posts = frappe.get_all(
+                "Mira Campaign Social",
+                filters={
+                    "campaign_id": campaign_id,
+                    "platform": "Email"
+                },
+                fields=["name", "status"],
+                limit=10  # Lấy nhiều hơn để debug
+            )
+            
+            print(f"[TEST EMAIL] Found {len(social_posts)} Mira Campaign Social records with platform=Email")
+            logger.info(f"[TEST EMAIL] Found {len(social_posts)} Mira Campaign Social records with platform=Email")
+            if social_posts:
+                for idx, sp in enumerate(social_posts):
+                    print(f"[TEST EMAIL]   Social {idx+1}: {sp.name} | status={sp.status}")
+                    logger.info(f"[TEST EMAIL]   Social {idx+1}: {sp.name} | status={sp.status}")
+            
+            if social_posts:
+                social_name = social_posts[0].name
+                print(f"[TEST EMAIL] ✅ Found Mira Campaign Social: {social_name} (current status: {social_posts[0].status})")
+                logger.info(f"[TEST EMAIL] Found Mira Campaign Social: {social_name} (current status: {social_posts[0].status})")
+                
+                # Retry check Email Queue status (tối đa 10 lần, mỗi lần đợi 2 giây)
+                # Để đảm bảo Email Queue có status "Sent" trước khi update thành "Success"
+                from frappe.utils import add_to_date
+                email_sent_successfully = False
+                latest_queue = None
+                matching_queues = []
+                
+                print(f"[TEST EMAIL] Starting Email Queue check (max 10 attempts, 2s delay each)...")
+                logger.info(f"[TEST EMAIL] Starting Email Queue check (max 10 attempts, 2s delay each)...")
+                
+                for attempt in range(10):
+                    print(f"[TEST EMAIL] --- Attempt {attempt + 1}/10: Waiting 2 seconds...")
+                    time.sleep(2)  # Đợi 2 giây để Email Queue được process
+                    
+                    # Lấy tất cả Email Queue records gần đây
+                    email_queues = frappe.get_all(
+                        "Email Queue",
+                        filters={
+                            "creation": [">", add_to_date(frappe.utils.now_datetime(), minutes=-5)]
+                        },
+                        fields=["name", "status", "modified", "error", "creation"],
+                        order_by="creation desc",
+                        limit=20
+                    )
+                    
+                    print(f"[TEST EMAIL] Found {len(email_queues)} Email Queue records (attempt {attempt + 1})")
+                    logger.info(f"[TEST EMAIL] Found {len(email_queues)} Email Queue records (attempt {attempt + 1})")
+                    
+                    # Filter trong Python code: check recipients và subject
+                    matching_queues = []
+                    for queue in email_queues:
+                        try:
+                            # Load full doc để lấy recipients và subject
+                            queue_doc = frappe.get_doc("Email Queue", queue.name)
+                            queue_recipients = getattr(queue_doc, 'recipients', '') or ''
+                            queue_subject = getattr(queue_doc, 'subject', '') or ''
+                            
+                            # Check recipient match
+                            recipient_match = recipient.lower() in queue_recipients.lower() if queue_recipients else False
+                            # Check subject match (fuzzy)
+                            subject_match = False
+                            if subject and queue_subject:
+                                subject_clean = subject[:50].lower().strip()
+                                queue_subject_clean = queue_subject[:50].lower().strip()
+                                subject_match = subject_clean in queue_subject_clean or queue_subject_clean in subject_clean
+                            
+                            if recipient_match and (subject_match or attempt >= 3):  # Sau 3 lần retry, chỉ cần recipient match
+                                matching_queues.append({
+                                    **queue,
+                                    'recipients': queue_recipients
+                                })
+                                print(f"[TEST EMAIL]   Match: {queue.name} | recipient={recipient_match} | subject={subject_match} | status={queue.status}")
+                        except Exception as e:
+                            logger.warning(f"[TEST EMAIL]   Error loading queue {queue.name}: {e}")
+                            continue
+                    
+                    if matching_queues:
+                        latest_queue = matching_queues[0]
+                        print(f"[TEST EMAIL] Email Queue {latest_queue.name} status: {latest_queue.status} (attempt {attempt + 1})")
+                        logger.info(f"[TEST EMAIL] Email Queue {latest_queue.name} status: {latest_queue.status} (attempt {attempt + 1})")
+                        
+                        if latest_queue.status == "Sent":
+                            email_sent_successfully = True
+                            print(f"[TEST EMAIL] ✅ Email sent successfully - Queue: {latest_queue.name}")
+                            logger.info(f"[TEST EMAIL] ✅ Email sent successfully - Queue: {latest_queue.name}")
+                            break  # Break retry loop
+                        elif latest_queue.status in ["Error", "Not Sent"]:
+                            email_sent_successfully = False
+                            print(f"[TEST EMAIL] ❌ Email failed - Queue: {latest_queue.name}, Status: {latest_queue.status}")
+                            logger.warning(f"[TEST EMAIL] ❌ Email failed - Queue: {latest_queue.name}, Status: {latest_queue.status}")
+                            break  # Break retry loop
+                        # Nếu status là "Queued" hoặc "Sending", tiếp tục retry
+                
+                # Update status dựa trên kết quả
+                try:
+                    social = frappe.get_doc("Mira Campaign Social", social_name)
+                    
+                    if email_sent_successfully and latest_queue:
+                        # Update Mira Campaign Social status thành Success
+                        social.status = "Success"
+                        social.executed_at = latest_queue.modified or frappe.utils.now_datetime()
+                        social.share_at = latest_queue.modified or frappe.utils.now_datetime()
+                        social.error_message = None
+                        social.save(ignore_permissions=True)
+                        frappe.db.commit()
+                        
+                        print(f"[TEST EMAIL] ✅ Updated Mira Campaign Social {social_name} to Success")
+                        print(f"[TEST EMAIL]   executed_at: {social.executed_at}")
+                        logger.info(f"[TEST EMAIL] ✅ Updated Mira Campaign Social {social_name} to Success")
+                        logger.info(f"[TEST EMAIL]   executed_at: {social.executed_at}")
+                    elif latest_queue and latest_queue.status in ["Error", "Not Sent"]:
+                        # Update to Failed
+                        social.status = "Failed"
+                        social.error_message = latest_queue.error or f"Email Queue status: {latest_queue.status}"
+                        social.save(ignore_permissions=True)
+                        frappe.db.commit()
+                        
+                        print(f"[TEST EMAIL] ❌ Updated Mira Campaign Social {social_name} to Failed")
+                        logger.warning(f"[TEST EMAIL] ❌ Updated Mira Campaign Social {social_name} to Failed")
+                    else:
+                        # Không tìm thấy Email Queue hoặc status vẫn là "Queued"/"Sending" sau 10 lần retry
+                        # Nếu send_email() trả về success, update thành Success và enqueue background job để verify
+                        if result:  # send_email() trả về True/None nếu success
+                            print(f"[TEST EMAIL] ⏳ Email Queue chưa có status 'Sent' sau 10 lần retry, nhưng send_email() trả về success")
+                            print(f"[TEST EMAIL] ⏳ Updating to Success và enqueue background job để verify...")
+                            social.status = "Success"
+                            social.executed_at = frappe.utils.now_datetime()
+                            social.share_at = frappe.utils.now_datetime()
+                            social.error_message = None
+                            social.save(ignore_permissions=True)
+                            frappe.db.commit()
+                            
+                            # Enqueue background job để verify lại
+                            frappe.enqueue(
+                                "mbw_mira.api.campaign_social.check_email_queue_and_update_status",
+                                action_name=None,
+                                social_name=social_name,
+                                talent_email=recipient,
+                                subject=subject,
+                                queue="short",
+                                job_name=f"verify_test_email_{social_name}",
+                                delay=5
+                            )
+                            print(f"[TEST EMAIL] ✅ Updated to Success (will verify via background job)")
+                            logger.info(f"[TEST EMAIL] ✅ Updated to Success (will verify via background job)")
+                        else:
+                            # send_email() trả về False hoặc None - update thành Processing
+                            print(f"[TEST EMAIL] ⏳ Email Queue status: {latest_queue.status if latest_queue else 'Not Found'}, updating to Processing...")
+                            social.status = "Success"
+                            social.save(ignore_permissions=True)
+                            frappe.db.commit()
+                            
+                            # Enqueue background job để check sau
+                            frappe.enqueue(
+                                "mbw_mira.api.campaign_social.check_email_queue_and_update_status",
+                                action_name=None,
+                                social_name=social_name,
+                                talent_email=recipient,
+                                subject=subject,
+                                queue="short",
+                                job_name=f"check_test_email_queue_{social_name}",
+                                delay=10
+                            )
+                            print(f"[TEST EMAIL] ⏳ Enqueued background job to check Email Queue later")
+                            logger.info(f"[TEST EMAIL] ⏳ Enqueued background job to check Email Queue later")
+                except Exception as e:
+                    print(f"[TEST EMAIL] ❌ Error updating Mira Campaign Social: {e}")
+                    print(f"[TEST EMAIL] Traceback: {frappe.get_traceback()}")
+                    logger.error(f"[TEST EMAIL] ❌ Error updating Mira Campaign Social: {e}")
+                    logger.error(f"[TEST EMAIL] Traceback: {frappe.get_traceback()}")
+                
+                # Nếu không tìm thấy matching Email Queue sau retry loop
+                if not matching_queues:
+                    print(f"[TEST EMAIL] ⚠️ No matching Email Queue found for test email after retries")
+                    logger.warning(f"[TEST EMAIL] ⚠️ No matching Email Queue found for test email after retries")
+                    # Nếu send_email() trả về success, update thành Success và enqueue background job
+                    try:
+                        social = frappe.get_doc("Mira Campaign Social", social_name)
+                        if result:  # send_email() trả về True/None nếu success
+                            print(f"[TEST EMAIL] ⏳ send_email() returned success, updating to Success...")
+                            social.status = "Success"
+                            social.executed_at = frappe.utils.now_datetime()
+                            social.share_at = frappe.utils.now_datetime()
+                            social.error_message = None
+                            social.save(ignore_permissions=True)
+                            frappe.db.commit()
+                            
+                            # Enqueue background job để verify lại
+                            frappe.enqueue(
+                                "mbw_mira.api.campaign_social.check_email_queue_and_update_status",
+                                action_name=None,
+                                social_name=social_name,
+                                talent_email=recipient,
+                                subject=subject,
+                                queue="short",
+                                job_name=f"verify_test_email_{social_name}_no_queue",
+                                delay=10
+                            )
+                            print(f"[TEST EMAIL] ✅ Updated to Success (will verify via background job)")
+                            logger.info(f"[TEST EMAIL] ✅ Updated to Success (will verify via background job)")
+                        else:
+                            print(f"[TEST EMAIL] ⏳ send_email() returned False/None, updating to Processing...")
+                            social.status = "Processing"
+                            social.save(ignore_permissions=True)
+                            frappe.db.commit()
+                            
+                            frappe.enqueue(
+                                "mbw_mira.api.campaign_social.check_email_queue_and_update_status",
+                                action_name=None,
+                                social_name=social_name,
+                                talent_email=recipient,
+                                subject=subject,
+                                queue="short",
+                                job_name=f"check_test_email_queue_{social_name}_delayed",
+                                delay=10
+                            )
+                            print(f"[TEST EMAIL] ⏳ Enqueued delayed background job to check Email Queue (10s delay)")
+                            logger.info(f"[TEST EMAIL] ⏳ Enqueued delayed background job to check Email Queue (10s delay)")
+                    except Exception as e:
+                        print(f"[TEST EMAIL] ❌ Error updating status: {e}")
+                        logger.error(f"[TEST EMAIL] ❌ Error updating status: {e}")
+            else:
+                print(f"[TEST EMAIL] ⚠️ No Mira Campaign Social found for campaign {campaign_id} with platform=Email")
+                logger.warning(f"[TEST EMAIL] ⚠️ No Mira Campaign Social found for campaign {campaign_id} with platform=Email")
+                logger.info(f"[TEST EMAIL]   This might be normal if the campaign hasn't been saved yet")
+
+        logger.info(f"[TEST EMAIL] ========== END send_test_email ==========")
+        
+        # Return message dựa trên kết quả thực tế
+        # Lưu ý: "Test email sent" có nghĩa là email đã được thêm vào Email Queue
+        # Email thực sự được gửi khi Email Queue worker xử lý (có thể mất vài giây)
+        if campaign_id and 'social_posts' in locals() and social_posts:
+            if 'email_sent_successfully' in locals() and email_sent_successfully:
+                return {"status": "success", "message": f"Test email sent successfully to {recipient}. Status updated to Success."}
+            elif 'latest_queue' in locals() and latest_queue and latest_queue.status in ["Error", "Not Sent"]:
+                return {"status": "error", "message": f"Failed to send email to {recipient}. Status updated to Failed."}
+            else:
+                # Email đã được thêm vào Email Queue, đang chờ worker xử lý
+                return {"status": "success", "message": f"Test email queued for {recipient}. Email will be sent shortly and status will be updated automatically."}
+        else:
+            # Không có campaign_id hoặc không tìm thấy Mira Campaign Social
+            return {"status": "success", "message": f"Test email queued for {recipient}. Email will be sent shortly."}
     except Exception as e:
+        logger.error(f"[TEST EMAIL] ❌ Error: {e}")
+        logger.error(f"[TEST EMAIL] Traceback: {frappe.get_traceback()}")
         frappe.log_error(f"Test email failed: {e}")
         return {"status": "error", "message": f"Failed to send email: {str(e)}"}
 

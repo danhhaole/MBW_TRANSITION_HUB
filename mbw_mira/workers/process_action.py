@@ -10,6 +10,10 @@ def process_email_action(action_name):
     """
     Worker: thực hiện SEND_EMAIL action
     """
+    logger = frappe.logger()
+    logger.info(f"[EMAIL] ========== START process_email_action ==========")
+    logger.info(f"[EMAIL] Action name: {action_name}")
+    
     now = now_datetime()
     action = frappe.db.get_value(
         "Mira Action",
@@ -17,17 +21,28 @@ def process_email_action(action_name):
         ["name", "talent_campaign_id", "campaign_social"],
         as_dict=1,
     )
+    
+    if not action:
+        logger.error(f"[EMAIL] ❌ Action {action_name} not found!")
+        return False
+    
+    logger.info(f"[EMAIL] Action found: {action.name}")
+    logger.info(f"[EMAIL] Talent Campaign ID: {action.talent_campaign_id}")
+    logger.info(f"[EMAIL] Campaign Social: {action.campaign_social}")
+    
     try:
-
-        # TODO: Thực hiện gửi email ở đây
-        # Ví dụ:
-        # frappe.sendmail(recipients=..., subject=..., message=...)
         # Lấy talentprofile
         talent_id = frappe.db.get_value(
             "Mira Talent Campaign", action.talent_campaign_id, "talent_id"
         )
+        
+        logger.info(f"[EMAIL] Talent ID: {talent_id}")
+        
         if talent_id:
+            logger.info(f"[EMAIL] Calling send_email_action({talent_id}, {action_name})...")
             send_email_action(talent_id, action_name)
+            logger.info(f"[EMAIL] ✅ send_email_action completed")
+            
             frappe.publish_realtime(
                 "action_executed",
                 message={
@@ -35,9 +50,15 @@ def process_email_action(action_name):
                     "action": action_name,
                 },
             )
+        else:
+            logger.warning(f"[EMAIL] ⚠️ No talent_id found for talent_campaign_id: {action.talent_campaign_id}")
+        
+        logger.info(f"[EMAIL] ========== END process_email_action ==========")
         return True
 
     except Exception as e:
+        logger.error(f"[EMAIL] ❌ Error processing SEND_EMAIL action {action.name}: {e}")
+        logger.error(f"[EMAIL] Traceback: {frappe.get_traceback()}")
         frappe.log_error(f"Error processing SEND_EMAIL action {action.name}: {e}")
         return True
 

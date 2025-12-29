@@ -241,6 +241,14 @@ def send_email_action(talentprofile_id, action_id):
         return
 
     action.executed_at = now_datetime()
+    
+    # Log thông tin ban đầu
+    logger.info(f"[EMAIL] ========== START send_email_action ==========")
+    logger.info(f"[EMAIL] Action: {action.name}")
+    logger.info(f"[EMAIL] Social: {social.name} (current status: {social.status})")
+    logger.info(f"[EMAIL] Talent: {talentprofiles.name} ({talent_email})")
+    logger.info(f"[EMAIL] Subject: {subject[:50]}")
+    
     try:
         result = send_email(
             recipients=[talent_email],
@@ -250,19 +258,179 @@ def send_email_action(talentprofile_id, action_id):
             template_args=template_args,
             sender=sender
         )
+        
+        logger.info(f"[EMAIL] send_email() returned: {result}")
 
-        if result:
+        # Check Email Queue status thực tế sau khi gửi
+        # Đợi một chút để Email Queue được tạo và process
+        import time
+        email_sent_successfully = False
+        email_queue_status = None
+        email_queues = []  # Khai báo biến bên ngoài vòng lặp
+        latest_queue = None
+        
+        # Retry check Email Queue (tối đa 5 lần, mỗi lần đợi 2 giây)
+        logger.info(f"[EMAIL] Starting Email Queue check (max 5 attempts, 2s delay each)")
+        for attempt in range(5):
+            logger.info(f"[EMAIL] --- Attempt {attempt + 1}/5: Waiting 2 seconds...")
+            time.sleep(2)  # Đợi 2 giây để Email Queue được process
+            
+            # Tìm Email Queue record gần nhất - mở rộng filter để tìm chính xác hơn
+            from frappe.utils import add_to_date
+            # Tìm theo recipient và thời gian (không cần subject vì có thể bị encode)
+            time_filter = add_to_date(frappe.utils.now_datetime(), minutes=-10)
+            logger.info(f"[EMAIL] Searching Email Queue: recipient={talent_email}, creation > {time_filter}")
+            
+            # Lấy tất cả Email Queue records gần đây (chỉ lấy fields cơ bản)
+            email_queues = frappe.get_all(
+                "Email Queue",
+                filters={
+                    "creation": [">", time_filter]
+                },
+                fields=["name", "status", "modified", "error", "creation"],
+                order_by="creation desc",
+                limit=20
+            )
+            
+            logger.info(f"[EMAIL] Found {len(email_queues)} Email Queue records (attempt {attempt + 1}, last 10 minutes)")
+            
+            # Filter trong Python code: check recipients và subject
+            matching_queues = []
+            for queue in email_queues:
+                try:
+                    # Load full doc để lấy recipients và subject
+                    queue_doc = frappe.get_doc("Email Queue", queue.name)
+                    queue_recipients = getattr(queue_doc, 'recipients', '') or ''
+                    queue_subject = getattr(queue_doc, 'subject', '') or ''
+                    
+                    # Check recipient match
+                    recipient_match = talent_email.lower() in queue_recipients.lower() if queue_recipients else False
+                    # Check subject match (fuzzy)
+                    subject_match = False
+                    if subject and queue_subject:
+                        subject_clean = subject[:50].lower().strip()
+                        queue_subject_clean = queue_subject[:50].lower().strip()
+                        subject_match = subject_clean in queue_subject_clean or queue_subject_clean in subject_clean
+                    
+                    if recipient_match and (subject_match or attempt >= 2):  # Sau 2 retries, chỉ cần recipient match
+                        matching_queues.append({
+                            **queue,
+                            'recipients': queue_recipients
+                        })
+                except Exception as e:
+                    logger.warning(f"[EMAIL]   Error loading queue {queue.name}: {e}")
+                    continue
+            
+            logger.info(f"[EMAIL] Found {len(matching_queues)} matching Email Queue records (attempt {attempt + 1})")
+            if matching_queues:
+                for idx, q in enumerate(matching_queues[:3]):  # Log 3 records đầu
+                    # Load subject từ doc
+                    try:
+                        q_doc = frappe.get_doc("Email Queue", q.name)
+                        q_subject = getattr(q_doc, 'subject', '') or 'N/A'
+                        logger.info(f"[EMAIL]   Queue {idx+1}: {q.name} | status={q.status} | subject={q_subject[:30]}")
+                    except:
+                        logger.info(f"[EMAIL]   Queue {idx+1}: {q.name} | status={q.status} | subject=N/A")
+            
+            if matching_queues:
+                # Tìm queue phù hợp nhất (có subject tương tự hoặc gần nhất)
+                for queue in matching_queues:
+                    # Queue đã được filter theo recipient, chỉ cần check status
+                    latest_queue = queue
+                    email_queue_status = queue.status
+                    # Load subject từ doc để log
+                    try:
+                        queue_doc_subject = frappe.get_doc("Email Queue", queue.name)
+                        queue_subject_log = getattr(queue_doc_subject, 'subject', '') or 'N/A'
+                    except:
+                        queue_subject_log = 'N/A'
+                    logger.info(f"[EMAIL] Email Queue {queue.name} status: {email_queue_status} (attempt {attempt + 1})")
+                    logger.info(f"[EMAIL] Queue subject: {queue_subject_log[:50]}")
+                    
+                    if queue.status == "Sent":
+                        email_sent_successfully = True
+                        logger.info(f"[EMAIL] ✅ Email sent successfully - Queue: {queue.name}")
+                        break
+                    elif queue.status in ["Error", "Not Sent"]:
+                        email_sent_successfully = False
+                        logger.warning(f"[EMAIL] ❌ Email failed - Queue: {queue.name}, Status: {queue.status}")
+                        break
+                
+                if latest_queue and latest_queue.status == "Sent":
+                    break
+                # Nếu status là "Queued" hoặc "Sending", tiếp tục retry
+            else:
+                logger.info(f"[EMAIL] No matching Email Queue found yet (attempt {attempt + 1}/5)")
+        
+        # Nếu vẫn chưa có kết quả, enqueue background job để check sau
+        if not email_sent_successfully and email_queue_status not in ["Sent", "Error", "Not Sent"]:
+            frappe.enqueue(
+                "mbw_mira.api.campaign_social.check_email_queue_and_update_status",
+                action_name=action.name,
+                social_name=social.name,
+                talent_email=talent_email,
+                subject=subject,
+                queue="short",
+                job_name=f"check_email_queue_{action.name}"
+            )
+            logger.info(f"[EMAIL] Enqueued background job to check Email Queue later")
+        
+        # Fallback: nếu không tìm thấy Email Queue, dùng result từ send_email
+        if email_queue_status is None:
+            email_sent_successfully = result
+            email_queue_status = "Not Found"
+            logger.warning(f"[EMAIL] Email Queue not found, using send_email result: {result}")
+
+        # Lấy thông tin Email Queue nếu có
+        latest_queue_name = None
+        if latest_queue:
+            latest_queue_name = latest_queue.name
+            if email_sent_successfully and latest_queue.modified:
+                # Sử dụng modified từ Email Queue (thay vì sent_at vì sent_at không tồn tại)
+                social.executed_at = latest_queue.modified
+                social.share_at = latest_queue.modified
+                logger.info(f"[EMAIL] Set executed_at from Email Queue: {latest_queue.modified}")
+            elif email_sent_successfully:
+                # Nếu không có sent_at, dùng now
+                social.executed_at = now_datetime()
+                social.share_at = now_datetime()
+                logger.info(f"[EMAIL] Set executed_at to now: {now_datetime()}")
+        
+        logger.info(f"[EMAIL] ========== DECISION POINT ==========")
+        logger.info(f"[EMAIL] email_sent_successfully: {email_sent_successfully}")
+        logger.info(f"[EMAIL] email_queue_status: {email_queue_status}")
+        logger.info(f"[EMAIL] latest_queue: {latest_queue.name if latest_queue else 'None'}")
+        logger.info(f"[EMAIL] Current social.status: {social.status}")
+        logger.info(f"[EMAIL] Current social.executed_at: {social.executed_at}")
+        
+        if email_sent_successfully:
+            logger.info(f"[EMAIL] ✅ Setting status to Success...")
             action.status = "EXECUTED"
             social.status = "Success"
-            social.share_at = now_datetime()
+            # Đảm bảo executed_at và share_at được set
+            if not social.executed_at:
+                social.executed_at = now_datetime()
+                logger.info(f"[EMAIL] Set executed_at to now: {social.executed_at}")
+            if not social.share_at:
+                social.share_at = now_datetime()
+                logger.info(f"[EMAIL] Set share_at to now: {social.share_at}")
+            
+            logger.info(f"[EMAIL] ✅ Before save - social.status={social.status}, social.executed_at={social.executed_at}")
+            
             action.execution_result = {
                 "status": "Success",
                 "message": f"[EMAIL] Sent to {talentprofiles.name} — task: {action.name}",
+                "email_queue_status": email_queue_status,
+                "email_queue_name": latest_queue_name
             }
             social.response_data = {
                 "status": "Success",
                 "message": f"[EMAIL] Sent to {talentprofiles.name} — task: {action.name}",
+                "email_queue_status": email_queue_status,
+                "email_queue_name": latest_queue_name
             }
+            # Clear error message nếu có
+            social.error_message = None
             create_mira_interaction(
                 {
                     "talent_id": talentprofiles.name,
@@ -270,20 +438,66 @@ def send_email_action(talentprofile_id, action_id):
                     "source_action": action.name,
                 }
             )
+            logger.info(f"[EMAIL] ✅ Prepared data for save - social.status={social.status}, social.executed_at={social.executed_at}")
         else:
             action.status = "FAILED"
             social.status = "Failed"
+            error_msg = f"[EMAIL] Error Sent to {talent_email} — step: {action.name}"
+            if latest_queue and latest_queue.error:
+                error_msg += f" — Error: {latest_queue.error}"
             action.execution_result = {
-                "error": f"[EMAIL] Error Sent to {talent_email} — step: {action.name}",
+                "error": error_msg,
+                "email_queue_status": email_queue_status,
+                "email_queue_name": latest_queue_name,
                 "traceback": frappe.get_traceback(),
             }
             social.response_data = {
-                "error": f"[EMAIL] Error Sent to {talent_email} — step: {action.name}",
+                "error": error_msg,
+                "email_queue_status": email_queue_status,
+                "email_queue_name": latest_queue_name,
                 "traceback": frappe.get_traceback(),
             }
-        action.save(ignore_permissions=True)
-        social.save(ignore_permissions=True)
-        frappe.db.commit()
+            if latest_queue and latest_queue.error:
+                social.error_message = latest_queue.error
+            logger.warning(f"[EMAIL] ❌ Updated Mira Campaign Social {social.name} to Failed")
+        
+        # Save và commit ngay lập tức để đảm bảo status được update
+        logger.info(f"[EMAIL] ========== SAVING ==========")
+        logger.info(f"[EMAIL] Before save - Action status: {action.status}")
+        logger.info(f"[EMAIL] Before save - Social status: {social.status}")
+        logger.info(f"[EMAIL] Before save - Social executed_at: {social.executed_at}")
+        
+        try:
+            action.save(ignore_permissions=True)
+            logger.info(f"[EMAIL] ✅ Action saved: {action.name} status={action.status}")
+        except Exception as e:
+            logger.error(f"[EMAIL] ❌ Error saving action: {e}")
+            logger.error(f"[EMAIL] Traceback: {frappe.get_traceback()}")
+        
+        try:
+            social.save(ignore_permissions=True)
+            logger.info(f"[EMAIL] ✅ Social saved: {social.name} status={social.status}, executed_at={social.executed_at}")
+        except Exception as e:
+            logger.error(f"[EMAIL] ❌ Error saving social: {e}")
+            logger.error(f"[EMAIL] Traceback: {frappe.get_traceback()}")
+        
+        try:
+            frappe.db.commit()
+            logger.info(f"[EMAIL] ✅ Database committed")
+        except Exception as e:
+            logger.error(f"[EMAIL] ❌ Error committing: {e}")
+            logger.error(f"[EMAIL] Traceback: {frappe.get_traceback()}")
+        
+        # Verify sau khi save
+        try:
+            social_reload = frappe.get_doc("Mira Campaign Social", social.name)
+            logger.info(f"[EMAIL] ========== VERIFICATION ==========")
+            logger.info(f"[EMAIL] After save - Social status: {social_reload.status}")
+            logger.info(f"[EMAIL] After save - Social executed_at: {social_reload.executed_at}")
+            logger.info(f"[EMAIL] After save - Action status: {action.status}")
+            logger.info(f"[EMAIL] ========== END send_email_action ==========")
+        except Exception as e:
+            logger.error(f"[EMAIL] ❌ Error verifying: {e}")
     except Exception as e:
         frappe.log_error(frappe.get_traceback(), "[EMAIL ERROR] send_email_job")
         action.status = "FAILED"

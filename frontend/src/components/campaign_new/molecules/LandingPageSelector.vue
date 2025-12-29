@@ -272,6 +272,7 @@
         v-model:show="showShareModal"
         :page-data="sharePageData"
         @close="showShareModal = false"
+        @short-link-generated="handleShortLinkFromModal"
       />
 
 
@@ -379,6 +380,20 @@ const hasMorePublishedPages = ref(false)
 
 const showShareModal = ref(false)
 const sharePageData = ref(null)
+const currentShortLinks = ref({ facebook: '', zalo: '' })
+
+// Handle short link from SharePageModal
+const handleShortLinkFromModal = (data) => {
+  console.log('📥 [LandingPageSelector] Received short link from SharePageModal:', data)
+  if (data.platform === 'Facebook') {
+    currentShortLinks.value.facebook = data.shortUrl
+  } else if (data.platform === 'Zalo') {
+    currentShortLinks.value.zalo = data.shortUrl
+  }
+  
+  // Emit to parent component
+  emit('short-links-generated', { ...currentShortLinks.value })
+}
 
 // Load page details for edit mode
 const loadPageDetails = async (pageId) => {

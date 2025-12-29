@@ -19,6 +19,7 @@
       :company-info="companyInfo"
       :job-info="jobInfo"
       :doctype="doctype"
+      @short-links-generated="handleShortLinksGenerated"
     />
 
 
@@ -135,6 +136,7 @@
             :show-page-selector="true"
             :show-link-input="false"
             :placeholder="__('Write your job post content here...')"
+            :share-page-data="sharePageData"
             @update:content="updateFacebookContent('content', $event)"
             @update:image="updateFacebookContent('image', $event)"
             @update:page-id="updateFacebookContent('page_id', $event)"
@@ -216,6 +218,7 @@
           <!-- Content Editor -->
           <ZaloContentEditor
             :content="localZaloContent"
+            :share-page-data="sharePageData"
             @update:content="updateZaloContent($event)"
           />
         </div>
@@ -465,6 +468,15 @@ const availableChannelOptions = computed(() => {
       icon: channel.icon,
       onClick: () => addChannel(channel.id)
     }))
+})
+
+// Share page data for short link generation
+const sharePageData = computed(() => {
+  if (!localLadipageUrl.value) return null
+  return {
+    url: localLadipageUrl.value,
+    campaignName: props.campaignName
+  }
 })
 
 // Load pages on mount

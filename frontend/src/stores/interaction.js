@@ -85,14 +85,29 @@ export const useInteractionStore = defineStore('interaction', () => {
         ...params
       })
       
-      if (result && result.data) {
-        interactions.value = result.data.map(interaction => ({
+      console.log('[InteractionStore] fetchInteractions raw result:', result)
+      
+      // Handle different response formats
+      // Frappe can return: array directly, {data: array}, or {message: array}
+      let dataArray = []
+      if (Array.isArray(result)) {
+        dataArray = result
+      } else if (result?.data && Array.isArray(result.data)) {
+        dataArray = result.data
+      } else if (result?.message && Array.isArray(result.message)) {
+        dataArray = result.message
+      }
+      
+      console.log('[InteractionStore] fetchInteractions parsed dataArray:', dataArray)
+      
+      if (dataArray.length > 0 || (result && !result.error)) {
+        interactions.value = dataArray.map(interaction => ({
           ...interaction,
           type_color: getInteractionTypeColor(interaction.interaction_type),
           formatted_modified: formatDate(interaction.modified)
         }))
         
-        if (result.pagination) {
+        if (result?.pagination) {
           Object.assign(pagination.value, result.pagination)
         }
         
@@ -100,7 +115,11 @@ export const useInteractionStore = defineStore('interaction', () => {
         updateStatistics()
       }
       
-      return { success: true, data: interactions.value }
+      return { 
+        success: true, 
+        data: interactions.value,
+        pagination: result?.pagination || pagination.value
+      }
     } catch (err) {
       error.value = parseError(err)
       console.error('Error fetching interactions:', err)
@@ -143,42 +162,61 @@ export const useInteractionStore = defineStore('interaction', () => {
     error.value = null
     
     try {
-      const result = interactionData.name 
-        ? await call('frappe.client.set_value', {
+      let result
+
+      if (interactionData.name) {
+        // Update existing interaction
+        const { name, ...fieldsToUpdate } = interactionData
+
+        // Remove empty string values (keep null if intentional)
+        Object.keys(fieldsToUpdate).forEach((key) => {
+          if (fieldsToUpdate[key] === '') {
+            delete fieldsToUpdate[key]
+          }
+        })
+
+        result = await call('frappe.client.set_value', {
             doctype: 'Mira Interaction',
-            name: interactionData.name,
-            fieldname: interactionData
+          name,
+          fieldname: fieldsToUpdate
           })
-        : await call('frappe.client.insert', {
+      } else {
+        // Create new interaction
+        result = await call('frappe.client.insert', {
             doc: {
               doctype: 'Mira Interaction',
               ...interactionData
             }
           })
-      
-      if (result && result.success) {
+      }
+
+      console.log('[InteractionStore] saveInteraction raw result:', result)
+
+      // Frappe client usually returns the doc directly (sometimes under .data)
+      const doc = result?.data || result
+      if (!doc || !doc.name) {
+        return { success: false, error: 'Failed to save interaction (no document returned)' }
+      }
+
         const savedInteraction = {
-          ...result.data,
-          type_color: getInteractionTypeColor(result.data.interaction_type),
-          formatted_modified: formatDate(result.data.modified)
+        ...doc,
+        type_color: getInteractionTypeColor(doc.interaction_type),
+        formatted_modified: formatDate(doc.modified)
         }
         
         if (interactionData.name) {
-          // Update existing
-          const index = interactions.value.findIndex(interaction => interaction.name === interactionData.name)
+        // Update existing in local state
+        const index = interactions.value.findIndex((interaction) => interaction.name === interactionData.name)
           if (index !== -1) {
             interactions.value[index] = savedInteraction
           }
         } else {
-          // Add new
+        // Add new to local state
           interactions.value.unshift(savedInteraction)
         }
         
         updateStatistics()
         return { success: true, data: savedInteraction }
-      }
-      
-      return { success: false, error: result.error || 'Failed to save interaction' }
     } catch (err) {
       error.value = parseError(err)
       console.error('Error saving interaction:', err)
