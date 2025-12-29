@@ -1,6 +1,7 @@
 <template>
   <TextEditor
     ref="textEditor"
+    :key="`editor-${users.length}-${doctype}`"
     :editor-class="['prose-sm max-w-none', editable && 'min-h-[7rem]']"
     :content="content"
     @change="editable ? (content = $event) : null"
@@ -179,35 +180,116 @@ const users = computed(() => {
 	const currentUserObj = getUser();
 	const currentUserEmail = currentUserObj?.email; // Email của user hiện tại
 
+	console.log('🔍 [CommentBox] Computing users for @mention:');
+	console.log('   doctype:', props.doctype);
+	console.log('   currentUser:', currentUser);
+	console.log('   currentUserEmail:', currentUserEmail);
+	console.log('   hiringCommittee:', props.hiringCommittee);
+	console.log('   allowedUsersResource.data:', allowedUsersResource.data);
+	console.log('   allowedUsersResource.loading:', allowedUsersResource.loading);
+	console.log('   allowedUsersResource.error:', allowedUsersResource.error);
+
 	// Ưu tiên dùng hiringCommittee nếu có (trong Job Opening)
 	if (props.hiringCommittee && props.hiringCommittee.length > 0) {
-		return props.hiringCommittee
+		console.log('✅ [CommentBox] Using hiringCommittee');
+		const filtered = props.hiringCommittee
 			.filter((member) => {
 				// Bỏ qua user hiện tại (so sánh cả name và email)
 				return member.user !== currentUser && member.user !== currentUserEmail;
 			})
 			.map((member) => ({
+				id: member.user,
+				value: member.user, // Giữ cả value để compatibility
 				label: getUser(member.user)?.full_name?.trimEnd() || member.user,
-				value: member.user,
 			}));
+		console.log('   Result users:', filtered);
+		return filtered;
 	}
 
 	// Filter users theo danh sách từ backend
 	if (allowedUsersResource.data) {
-		return allowedUsersResource.data
+		console.log('✅ [CommentBox] Using allowedUsersResource.data');
+		console.log('   Total users from API:', allowedUsersResource.data.length);
+		const filtered = allowedUsersResource.data
 			.filter((user) => {
 				// Bỏ qua user hiện tại (so sánh cả name và email)
 				return user.name !== currentUser && user.name !== currentUserEmail && 
 				       user.email !== currentUser && user.email !== currentUserEmail;
 			})
       .map((user) => ({
+				id: user.email || user.name, // TipTap mentions thường dùng email làm id
+				value: user.name, // Giữ cả value để compatibility
 				label: user.full_name?.trimEnd() || user.name,
-        value: user.name,
 			}));
+		console.log('   Filtered users (after removing current user):', filtered.length);
+		console.log('   Result users:', filtered);
+		console.log('   Users format check:', filtered.length > 0 ? {
+			hasId: !!filtered[0].id,
+			hasLabel: !!filtered[0].label,
+			sample: filtered[0]
+		} : 'empty');
+		return filtered;
 	}
 
+	// Nếu đang loading, trả về empty array (không block UI)
+	if (allowedUsersResource.loading) {
+		console.log('⏳ [CommentBox] Still loading users...');
+		return [];
+	}
+
+	console.log('⚠️ [CommentBox] No users available - returning empty array');
 	return [];
 });
+
+// Watch users để debug và đảm bảo reactivity
+watch(
+	() => users.value,
+	(newUsers, oldUsers) => {
+		console.log('🔄 [CommentBox] Users changed:');
+		console.log('   Old users:', oldUsers?.length || 0);
+		console.log('   New users:', newUsers?.length || 0);
+		console.log('   New users data:', newUsers);
+		if (newUsers && newUsers.length > 0) {
+			console.log('   First user format:', {
+				id: newUsers[0].id,
+				label: newUsers[0].label,
+				hasValue: !!newUsers[0].value
+			});
+		}
+		if (textEditor.value?.editor) {
+			console.log('   ✅ TextEditor exists, mentions should update');
+			// Force update mentions trong editor nếu có
+			try {
+				const editor = textEditor.value.editor;
+				if (editor && editor.extensionManager) {
+					const mentionExt = editor.extensionManager.extensions.find(ext => ext.name === 'mention');
+					if (mentionExt) {
+						console.log('   ✅ Mention extension found');
+					} else {
+						console.log('   ⚠️ Mention extension not found');
+					}
+				}
+			} catch (e) {
+				console.log('   ⚠️ Error checking editor:', e);
+			}
+		} else {
+			console.log('   ⚠️ TextEditor not ready yet');
+		}
+	},
+	{ deep: true, immediate: true }
+);
+
+// Watch allowedUsersResource để đảm bảo fetch khi cần
+watch(
+	() => allowedUsersResource.data,
+	(newData) => {
+		console.log('📥 [CommentBox] allowedUsersResource.data changed:', newData?.length || 0);
+		if (newData) {
+			console.log('   Sample data:', newData.slice(0, 3));
+		}
+	},
+	{ immediate: true }
+);
 
 defineExpose({ editor })
 
