@@ -543,16 +543,61 @@
 									</svg>
 								</div>
 							</div>
-							<!-- <Button variant="solid" theme="gray" @click="showAddCandidateModal = true">
+
+							<!-- Filter toggle button -->
+							<Button variant="outline" @click="toggleFilters">
 								<template #prefix>
-									<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-										viewBox="0 0 24 24" stroke="currentColor">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-											d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-									</svg>
+									<FeatherIcon name="filter" class="w-4 h-4" />
 								</template>
-								{{ __('Add Talent') }}
-							</Button> -->
+								{{ __('Filter') }}
+								<template v-if="hasActiveFilters" #suffix>
+									<span
+										class="ml-1 bg-blue-500 text-white rounded-full text-xs px-1.5 py-0.5"
+									>
+										{{ activeFilterCount }}
+									</span>
+								</template>
+							</Button>
+						</div>
+					</div>
+
+					<!-- Advanced Filter Conditions (same logic as TargetSegmentSelector) -->
+					<div
+						v-if="showFilters"
+						class="mb-6 bg-white rounded-lg border border-gray-200 p-4"
+					>
+						<ConditionsBuilder
+							v-model="filterConditions"
+							doctype="Mira Talent"
+							:title="__('Filter Talents')"
+							:description="__('Define conditions to filter candidates who are in this pool')"
+							:show-preview="false"
+							:validate-on-change="false"
+							@change="onConditionsChange"
+						/>
+
+						<!-- Filter actions -->
+						<div
+							class="flex items-center justify-end mt-4 pt-4 border-t border-gray-200"
+						>
+							<div class="flex gap-2">
+								<Button
+									variant="outline"
+									size="sm"
+									@click="clearFilters"
+									:disabled="!hasActiveFilters"
+								>
+									{{ __('Clear All') }}
+								</Button>
+								<Button
+									variant="solid"
+									theme="gray"
+									size="sm"
+									@click="applyFilters"
+								>
+									{{ __('Apply Filters') }}
+								</Button>
+							</div>
 						</div>
 					</div>
 
@@ -1233,6 +1278,7 @@ import RecruitmentPriorityBubbleChart from '@/components/charts/RecruitmentPrior
 import SalaryAlignmentDonutChart from '@/components/charts/SalaryAlignmentDonutChart.vue'
 import TalentUpdateTable from '@/components/charts/TalentUpdateTable.vue'
 import QualitySourceBarChart from '@/components/charts/QualitySourceBarChart.vue'
+import ConditionsBuilder from '@/components/ConditionsFilter/ConditionsBuilder.vue'
 // Process skills helper function
 const processSkills = (skillsStr) => {
 	if (!skillsStr) return []
@@ -1445,6 +1491,8 @@ const minScore = ref(50)
 const suggestedCandidates = ref([])
 const selectedCandidates = ref([])
 const loadingSuggestedCandidates = ref(false)
+const filterConditions = ref([])
+const showFilters = ref(false)
 
 // Pagination
 const currentPage = ref(1)
@@ -1465,6 +1513,32 @@ const filteredCandidates = computed(() => {
 	}
 	
 	return filtered
+})
+
+// Filter computed properties (for badge on Filter button)
+const hasActiveFilters = computed(() => {
+	return getNormalizedConditions().length > 0
+})
+
+const activeFilterCount = computed(() => {
+	const conditions = getNormalizedConditions()
+	let count = 0
+
+	const countConditions = (items) => {
+		for (const item of items) {
+			if (typeof item === 'string') continue
+			if (Array.isArray(item)) {
+				if (item.length >= 3 && typeof item[0] === 'string' && item[0]) {
+					count++
+				} else {
+					countConditions(item)
+				}
+			}
+		}
+	}
+
+	countConditions(conditions)
+	return count
 })
 
 const totalPages = computed(() => {
@@ -1576,6 +1650,45 @@ const handleSearchInput = (event) => {
 	console.log('Search input event:', event.target.value)
 	// Reset to first page when searching
 	currentPage.value = 1
+}
+
+// Normalize conditions from ConditionsBuilder (handle both plain array and .value wrapper)
+const getNormalizedConditions = () => {
+	const raw = filterConditions.value
+	if (!raw) return []
+	// Sometimes ConditionsBuilder might return a ref-like object with .value
+	// (similar to how TargetSegmentSelector handles it)
+	// eslint-disable-next-line no-prototype-builtins
+	if (typeof raw === 'object' && raw !== null && raw.hasOwnProperty('value')) {
+		return raw.value || []
+	}
+	return raw
+}
+
+// Toggle filter panel
+const toggleFilters = () => {
+	showFilters.value = !showFilters.value
+}
+
+// Just update local conditions when editor changes (no API call yet)
+const onConditionsChange = (conditions) => {
+	console.log('Conditions changed (no apply yet):', conditions)
+	filterConditions.value = conditions
+}
+
+// Apply filters: reload candidates from server with current conditions
+const applyFilters = async () => {
+	console.log('Apply filters clicked with conditions:', filterConditions.value)
+	currentPage.value = 1
+	await loadCandidates()
+}
+
+// Clear all filters and reload
+const clearFilters = async () => {
+	filterConditions.value = []
+	currentPage.value = 1
+	console.log('Filters cleared')
+	await loadCandidates()
 }
 
 const goToPage = (page) => {
@@ -1746,6 +1859,62 @@ const loadTalentSegment = async () => {
 	}
 }
 
+// Convert conditions (from ConditionsBuilder) to Frappe filters
+// Logic mirrors mbw_mira.api.campaign.get_combined_candidate_count
+const convertConditionsToFiltersForTalent = (conditions) => {
+	const filters = {}
+	if (!conditions || conditions.length === 0) {
+		return filters
+	}
+
+	const normalized = getNormalizedConditions()
+
+	for (const condition of normalized) {
+		let field, operator, value
+
+		if (Array.isArray(condition) && condition.length >= 3) {
+			;[field, operator, value] = condition
+		} else if (condition && typeof condition === 'object') {
+			field = condition.field
+			operator = condition.operator || '='
+			value = condition.value
+		} else {
+			continue
+		}
+
+		if (!field) continue
+
+		// Map operators to Frappe format
+		// Special handling for comma-separated fields (skills, tags, etc.)
+		if (['skills', 'tags', 'soft_skills'].includes(field) && ['=', '=='].includes(operator)) {
+			filters[field] = ['like', `%${value}%`]
+		} else if (operator === '=' || operator === '==') {
+			filters[field] = value
+		} else if (operator === '!=' || operator === '<>') {
+			filters[field] = ['!=', value]
+		} else if (operator === 'in') {
+			filters[field] = ['in', value]
+		} else if (operator === 'not in') {
+			filters[field] = ['not in', value]
+		} else if (operator === 'like' || operator === 'LIKE') {
+			filters[field] = ['like', `%${value}%`]
+		} else if (operator === '>') {
+			filters[field] = ['>', value]
+		} else if (operator === '<') {
+			filters[field] = ['<', value]
+		} else if (operator === '>=') {
+			filters[field] = ['>=', value]
+		} else if (operator === '<=') {
+			filters[field] = ['<=', value]
+		} else {
+			filters[field] = value
+		}
+	}
+
+	console.log('Converted filters from conditions (TalentSegmentDetailView):', filters)
+	return filters
+}
+
 const loadCandidates = async () => {
 	loadingCandidates.value = true
 	console.log('loadCandidates called with segment ID:', route.params.id)
@@ -1766,10 +1935,21 @@ const loadCandidates = async () => {
 			console.log('Mira Talent Pool records found:', candidateSegmentResult)
 			console.log('Extracted talent_ids:', candidateIds)
 
+			// Build filters: always restrict to talents in this segment's pool
+			const filters = {
+				name: ['in', candidateIds],
+			}
+
+			// Apply additional filters from ConditionsBuilder, if any
+			const conditionFilters = convertConditionsToFiltersForTalent(filterConditions.value)
+			Object.assign(filters, conditionFilters)
+
+			console.log('Final filters for Mira Talent (detail view):', filters)
+
 			// Then get the actual talent data
 			const talentResult = await call('frappe.client.get_list', {
 				doctype: 'Mira Talent',
-				filters: { name: ['in', candidateIds] },
+				filters,
 				limit_page_length: 1000,
 				fields: ['name', 'full_name', 'email', 'phone', 'skills'],
 			})

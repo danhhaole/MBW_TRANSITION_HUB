@@ -7,10 +7,16 @@
  "engine": "InnoDB",
  "field_order": [
   "full_name",
+  "full_name_hash",
+  "full_name_enc",
   "gender",
   "date_of_birth",
   "email",
+  "email_hash",
+  "email_enc",
   "phone",
+  "phone_hash",
+  "phone_enc",
   "linkedin_profile",
   "facebook_profile",
   "zalo_profile",
@@ -24,6 +30,7 @@
   "certifications",
   "languages",
   "resume",
+  "resume_text_enc",
   "current_status",
   "notes",
   "desired_role",
@@ -247,7 +254,7 @@
    "fieldname": "recruitment_readiness",
    "fieldtype": "Select",
    "label": "Recruitment Readiness",
-   "options": "Cold\nWarm\nHot"
+   "options": "\nCold\nWarm\nHot"
   },
   {
    "fieldname": "last_interaction_date",
@@ -340,11 +347,53 @@
    "in_preview": 1,
    "label": "Resume Summary",
    "read_only": 1
+  },
+  {
+   "fieldname": "full_name_hash",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Full Name(Hash)"
+  },
+  {
+   "fieldname": "full_name_enc",
+   "fieldtype": "Text",
+   "hidden": 1,
+   "label": "Full Name(ENC)"
+  },
+  {
+   "fieldname": "email_hash",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Contact Email(Hash)"
+  },
+  {
+   "fieldname": "email_enc",
+   "fieldtype": "Text",
+   "hidden": 1,
+   "label": "Contact Email(ENC)"
+  },
+  {
+   "fieldname": "phone_hash",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Contact Phone(Hash)"
+  },
+  {
+   "fieldname": "phone_enc",
+   "fieldtype": "Text",
+   "hidden": 1,
+   "label": "Contact Phone(ENC)"
+  },
+  {
+   "fieldname": "resume_text_enc",
+   "fieldtype": "Long Text",
+   "hidden": 1,
+   "label": "Resume(ENC)"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-12-02 12:29:07.129400",
+ "modified": "2025-12-30 09:36:36.176447",
  "modified_by": "Administrator",
  "module": "MBW Mira",
  "name": "Mira Talent",

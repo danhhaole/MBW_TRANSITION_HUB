@@ -749,8 +749,8 @@ def find_candidates_fuzzy(
             frappe.throw(f"Không tìm thấy điều kiện trong segment '{segment_name}'")
 
         # --- Parse conditions thành criteria ---
-        criteria_skills = []
-        criteria_tags = []
+        criteria_skills = []  # Will store: {"values": [...], "operator": "==" or "in"}
+        criteria_tags = []    # Will store: {"values": [...], "operator": "==" or "in"}
         criteria_filters = {}
         conjunction = "and"  # Default conjunction (and/or)
 
@@ -770,33 +770,47 @@ def find_candidates_fuzzy(
             field, operator, value = condition[0], condition[1], condition[2]
             print(f"Condition: {field} {operator} {value}")
 
-            # Parse skills
+            # Parse skills - lưu cả operator và values
             if field == "skills" and value:
+                skill_values = []
                 if isinstance(value, str):
-                    criteria_skills = [
+                    skill_values = [
                         unquote(s.strip().lower())
                         for s in value.split(",")
                         if s.strip()
                     ]
                 elif isinstance(value, list):
-                    criteria_skills = [
+                    skill_values = [
                         unquote(s.strip().lower()) for s in value if s.strip()
                     ]
-                print(f"  → Parsed skills: {criteria_skills}")
+                
+                # Lưu cả operator và values
+                criteria_skills = {
+                    "values": skill_values,
+                    "operator": operator.lower() if operator else "in"  # Default to "in" if not specified
+                }
+                print(f"  → Parsed skills: {skill_values} (operator: {criteria_skills['operator']})")
 
-            # Parse tags
+            # Parse tags - lưu cả operator và values
             elif field == "tags" and value:
+                tag_values = []
                 if isinstance(value, str):
-                    criteria_tags = [
+                    tag_values = [
                         unquote(s.strip().lower())
                         for s in value.split(",")
                         if s.strip()
                     ]
                 elif isinstance(value, list):
-                    criteria_tags = [
+                    tag_values = [
                         unquote(s.strip().lower()) for s in value if s.strip()
                     ]
-                print(f"  → Parsed tags: {criteria_tags}")
+                
+                # Lưu cả operator và values
+                criteria_tags = {
+                    "values": tag_values,
+                    "operator": operator.lower() if operator else "in"  # Default to "in" if not specified
+                }
+                print(f"  → Parsed tags: {tag_values} (operator: {criteria_tags['operator']})")
 
             # Parse other fields
             else:
@@ -811,15 +825,15 @@ def find_candidates_fuzzy(
         
         # Count total number of conditions (for single vs multiple condition logic)
         total_conditions = 0
-        if criteria_skills:
+        if criteria_skills and criteria_skills.get("values"):
             total_conditions += 1  # skills counts as 1 condition
-        if criteria_tags:
+        if criteria_tags and criteria_tags.get("values"):
             total_conditions += 1  # tags counts as 1 condition
         total_conditions += len(criteria_filters)  # each filter is 1 condition
         
         print(f"Total conditions count: {total_conditions}")
 
-        if not criteria_skills and not criteria_tags and not criteria_filters:
+        if (not criteria_skills or not criteria_skills.get("values")) and (not criteria_tags or not criteria_tags.get("values")) and not criteria_filters:
             frappe.throw(
                 f"Không tìm thấy tiêu chí hợp lệ trong segment '{segment_name}'"
             )
@@ -955,11 +969,14 @@ def find_candidates_fuzzy(
             score_breakdown = []
             
             # Calculate skills score
-            if criteria_skills:
-                print(f"Checking skills...")
+            if criteria_skills and criteria_skills.get("values"):
+                skill_operator = criteria_skills.get("operator", "in")
+                skill_values = criteria_skills.get("values", [])
+                print(f"Checking skills... (operator: {skill_operator})")
+                
                 # Count how many criteria skills the talent has
                 matched_skills = 0
-                for crit_skill in criteria_skills:
+                for crit_skill in skill_values:
                     # Check exact match (case-insensitive)
                     is_matched = any(
                         crit_skill.lower() == cand_skill.lower() 
@@ -980,25 +997,36 @@ def find_candidates_fuzzy(
                         else:
                             print(f"  Skill '{crit_skill}' → NOT MATCHED")
                 
-                # Calculate skill score for this condition
-                if total_conditions == 1:
-                    # Single condition: match any 1 skill → 100 points
-                    skill_score = 100 if matched_skills >= 1 else 0
-                    print(f"  Single condition mode: matched {matched_skills}/{len(criteria_skills)} → {skill_score} points")
+                # Calculate skill score based on operator
+                if skill_operator in ["==", "equals", "equal"]:
+                    # EQUAL operator: must match ALL skills to get 100 points, otherwise 0
+                    if matched_skills == len(skill_values):
+                        skill_score = 100
+                        print(f"  EQUAL mode: matched ALL {matched_skills}/{len(skill_values)} → {skill_score} points")
+                    else:
+                        skill_score = 0
+                        print(f"  EQUAL mode: matched {matched_skills}/{len(skill_values)} (missing {len(skill_values) - matched_skills}) → {skill_score} points")
                 else:
-                    # Multiple conditions: score based on match ratio
-                    skill_score = round((matched_skills / len(criteria_skills)) * 100)
-                    print(f"  Multiple conditions mode: matched {matched_skills}/{len(criteria_skills)} → {skill_score} points")
+                    # IN operator (default): match ANY 1 skill → 100 points
+                    if matched_skills >= 1:
+                        skill_score = 100
+                        print(f"  IN mode: matched {matched_skills}/{len(skill_values)} → {skill_score} points")
+                    else:
+                        skill_score = 0
+                        print(f"  IN mode: matched {matched_skills}/{len(skill_values)} → {skill_score} points")
                 
                 condition_scores.append(skill_score)
-                score_breakdown.append(f"Skills: {matched_skills}/{len(criteria_skills)} matched → {skill_score}")
+                score_breakdown.append(f"Skills ({skill_operator}): {matched_skills}/{len(skill_values)} matched → {skill_score}")
 
             # Calculate tags score
-            if criteria_tags:
-                print(f"Checking tags...")
+            if criteria_tags and criteria_tags.get("values"):
+                tag_operator = criteria_tags.get("operator", "in")
+                tag_values = criteria_tags.get("values", [])
+                print(f"Checking tags... (operator: {tag_operator})")
+                
                 # Count how many criteria tags the talent has
                 matched_tags = 0
-                for criteria_tag in criteria_tags:
+                for criteria_tag in tag_values:
                     # Check exact match (case-insensitive)
                     is_matched = any(
                         criteria_tag.lower() == cand_tag.lower() 
@@ -1019,18 +1047,26 @@ def find_candidates_fuzzy(
                         else:
                             print(f"  Tag '{criteria_tag}' → NOT MATCHED")
                 
-                # Calculate tag score for this condition
-                if total_conditions == 1:
-                    # Single condition: match any 1 tag → 100 points
-                    tag_score = 100 if matched_tags >= 1 else 0
-                    print(f"  Single condition mode: matched {matched_tags}/{len(criteria_tags)} → {tag_score} points")
+                # Calculate tag score based on operator
+                if tag_operator in ["==", "equals", "equal"]:
+                    # EQUAL operator: must match ALL tags to get 100 points, otherwise 0
+                    if matched_tags == len(tag_values):
+                        tag_score = 100
+                        print(f"  EQUAL mode: matched ALL {matched_tags}/{len(tag_values)} → {tag_score} points")
+                    else:
+                        tag_score = 0
+                        print(f"  EQUAL mode: matched {matched_tags}/{len(tag_values)} (missing {len(tag_values) - matched_tags}) → {tag_score} points")
                 else:
-                    # Multiple conditions: score based on match ratio
-                    tag_score = round((matched_tags / len(criteria_tags)) * 100)
-                    print(f"  Multiple conditions mode: matched {matched_tags}/{len(criteria_tags)} → {tag_score} points")
+                    # IN operator (default): match ANY 1 tag → 100 points
+                    if matched_tags >= 1:
+                        tag_score = 100
+                        print(f"  IN mode: matched {matched_tags}/{len(tag_values)} → {tag_score} points")
+                    else:
+                        tag_score = 0
+                        print(f"  IN mode: matched {matched_tags}/{len(tag_values)} → {tag_score} points")
                 
                 condition_scores.append(tag_score)
-                score_breakdown.append(f"Tags: {matched_tags}/{len(criteria_tags)} matched → {tag_score}")
+                score_breakdown.append(f"Tags ({tag_operator}): {matched_tags}/{len(tag_values)} matched → {tag_score}")
 
             # Check other filters (each filter is a separate condition)
             if criteria_filters:
@@ -1144,8 +1180,8 @@ def find_candidates_fuzzy(
                         "full_name": c.full_name,
                         "skills": candidate_skills,
                         "tags": candidate_tags,
-                        "criteria_skills": criteria_skills,
-                        "criteria_tags": criteria_tags,
+                        "criteria_skills": criteria_skills.get("values", []) if criteria_skills else [],
+                        "criteria_tags": criteria_tags.get("values", []) if criteria_tags else [],
                         "score": avg_score,  # Already rounded integer
                         "score_breakdown": score_breakdown,
                     }
@@ -1168,7 +1204,6 @@ def find_candidates_fuzzy(
 
         traceback.print_exc()
         return []
-
 
 def render_merge_tags(html: str, context: dict) -> str:
     import re
