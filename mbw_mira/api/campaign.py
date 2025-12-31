@@ -24,7 +24,7 @@ def check_pool_has_birthday(pool_name):
     }
 
 @frappe.whitelist()
-def send_test_email(recipient, subject, content, campaign_id=None):
+def send_test_email(recipient, subject, content, campaign_id=None, attachments=None):
     """
     Send a test email with the provided content.
     Used by ActionEditor options to verify email configuration.
@@ -43,6 +43,7 @@ def send_test_email(recipient, subject, content, campaign_id=None):
     logger.info(f"[TEST EMAIL] Recipient: {recipient}")
     logger.info(f"[TEST EMAIL] Subject: {subject[:50]}")
     logger.info(f"[TEST EMAIL] Campaign ID: {campaign_id}")
+    logger.info(f"[TEST EMAIL] Attachments count: {len(attachments) if attachments else 0}")
     
     if not recipient:
         frappe.throw(_("Recipient email is required"))
@@ -74,12 +75,39 @@ def send_test_email(recipient, subject, content, campaign_id=None):
              if '\n' in content:
                  content = content.replace('\n', '<br>')
 
+        # Prepare attachments for Frappe send_email
+        prepared_attachments = []
+        if attachments:
+            import json
+            # Parse attachments if it's a JSON string
+            if isinstance(attachments, str):
+                try:
+                    attachments = json.loads(attachments)
+                except:
+                    attachments = []
+            
+            for att in attachments:
+                if isinstance(att, str):
+                    # Simple file path string (e.g., "/files/image.png")
+                    file_name = att.split("/")[-1]
+                    prepared_attachments.append({"file_name": file_name, "file_url": att})
+                elif isinstance(att, dict):
+                    # Dict with file_name and file_url/file_path
+                    file_name = att.get("file_name") or att.get("name") or "attachment"
+                    file_url = att.get("file_url") or att.get("file_path") or att.get("url") or ""
+                    if file_url:
+                        prepared_attachments.append({"file_name": file_name, "file_url": file_url})
+        
+        logger.info(f"[TEST EMAIL] Prepared {len(prepared_attachments)} attachments")
+        print(f"[TEST EMAIL] Prepared {len(prepared_attachments)} attachments: {prepared_attachments}")
+
         logger.info(f"[TEST EMAIL] Calling send_email()...")
         result = send_email(
             recipients=[recipient],
             subject=f"{subject}",
             content=content,
-            as_html=as_html
+            as_html=as_html,
+            attachments=prepared_attachments if prepared_attachments else None
         )
         logger.info(f"[TEST EMAIL] send_email() returned: {result}")
 

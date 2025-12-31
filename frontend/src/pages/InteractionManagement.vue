@@ -191,7 +191,7 @@
       <!-- Data Table -->
       <div class="bg-white border border-slate-200 rounded-lg">
         <div class="flex justify-between items-center p-4 border-b border-slate-200">
-          <span class="text-lg font-semibold text-slate-800">Interactions ({{ pagination.total }})</span>
+          <span class="text-lg font-semibold text-slate-800">Interactions ({{ filteredItems.length }})</span>
           <div class="flex gap-2">
             <Button
               v-if="selected.length > 0"
@@ -230,8 +230,8 @@
                   <input
                     type="checkbox"
                     class="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                    :checked="selected.length === items.length && items.length > 0"
-                    :indeterminate="selected.length > 0 && selected.length < items.length"
+                    :checked="selected.length === paginatedItems.length && paginatedItems.length > 0"
+                    :indeterminate="selected.length > 0 && selected.length < paginatedItems.length"
                     @change="toggleSelectAll"
                   />
                 </th>
@@ -369,29 +369,56 @@
         </div>
 
         <!-- Pagination -->
-        <div v-if="!loading && items.length > 0" class="flex justify-between items-center p-4 border-t border-slate-200">
+        <div v-if="!loading && filteredItems.length > 0" class="flex items-center justify-between p-6 border-t border-slate-200">
           <div class="text-sm text-slate-600">
-            Showing {{ ((pagination.page - 1) * pagination.limit) + 1 }} to {{ Math.min(pagination.page * pagination.limit, pagination.total) }} of {{ pagination.total }} results
+            {{ __('Showing') }} {{ (currentPage - 1) * pageSize + 1 }}-{{ Math.min(currentPage * pageSize, filteredItems.length) }} {{ __('of') }}
+            <span class="font-medium">{{ filteredItems.length }}</span> {{ __('results') }}
           </div>
-          <div class="flex items-center gap-2">
+          <div class="flex items-center space-x-1">
             <Button
+              @click="currentPage--"
+              :disabled="currentPage === 1"
               variant="outline"
               size="sm"
-              :disabled="pagination.page <= 1"
-              @click="pagination.page--; loadData()"
+              class="px-3 py-1.5"
             >
-              Previous
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
             </Button>
-            <span class="text-sm text-slate-600">
-              Page {{ pagination.page }} of {{ Math.ceil(pagination.total / pagination.limit) }}
-            </span>
+
+            <template v-for="page in visiblePages" :key="page">
             <Button
+                v-if="page === '...'"
+                variant="ghost"
+                size="sm"
+                class="px-3 py-1.5"
+                disabled
+              >
+                ...
+              </Button>
+              <Button
+                v-else
+                @click="currentPage = page"
+                :variant="currentPage === page ? 'solid' : 'ghost'"
+                :theme="currentPage === page ? 'gray' : 'gray'"
+                size="sm"
+                class="px-3 py-1.5"
+              >
+                {{ page }}
+              </Button>
+            </template>
+
+            <Button
+              @click="currentPage++"
+              :disabled="currentPage >= totalPages"
               variant="outline"
               size="sm"
-              :disabled="pagination.page >= Math.ceil(pagination.total / pagination.limit)"
-              @click="pagination.page++; loadData()"
+              class="px-3 py-1.5"
             >
-              Next
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
             </Button>
           </div>
         </div>
@@ -484,7 +511,6 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button, Dialog, FormControl, Avatar, Badge, Breadcrumbs } from 'frappe-ui'
 import { useInteractionStore } from '@/stores/interaction'
-import { useCandidateStore } from '@/stores/candidate'
 import { call } from 'frappe-ui'
 import { debounce } from 'lodash'
 import LayoutHeader from '@/components/LayoutHeader.vue'
@@ -501,19 +527,20 @@ const router = useRouter()
 
 // Stores
 const interactionStore = useInteractionStore()
-const candidateStore = useCandidateStore()
 
 // State
 const loading = ref(false)
 const saving = ref(false)
 const deleting = ref(false)
-const items = ref([])
+const allItems = ref([]) // Store all loaded items
 const selected = ref([])
 const search = ref('')
 const showFormModal = ref(false)
 const showDeleteDialog = ref(false)
 const itemToDelete = ref(null)
 const showAdvancedFilters = ref(false)
+const currentPage = ref(1)
+const pageSize = ref(20)
 
 // Mira Interaction type options matching doctype
 const interactionTypeOptions = [
@@ -567,7 +594,7 @@ const filterOptions = reactive({
   actions: []
 })
 
-// Pagination
+// Pagination (kept for backward compatibility, but using client-side pagination now)
 const pagination = reactive({
   page: 1,
   limit: 20,
@@ -602,6 +629,73 @@ const formValid = computed(() => {
   return formData.talent_id && formData.interaction_type
 })
 
+// Filtered items based on search and filters
+const filteredItems = computed(() => {
+  let filtered = allItems.value
+
+  // Apply text search
+  const searchTerm = search.value ? search.value.trim().toLowerCase() : ''
+  if (searchTerm) {
+    filtered = filtered.filter(item =>
+      item.talent_id?.toLowerCase().includes(searchTerm) ||
+      item.interaction_type?.toLowerCase().includes(searchTerm) ||
+      item.description?.toLowerCase().includes(searchTerm)
+    )
+  }
+
+  // Apply advanced filters
+  if (filters.interaction_type && filters.interaction_type !== '') {
+    filtered = filtered.filter(item => item.interaction_type === filters.interaction_type)
+  }
+  if (filters.talent_id && filters.talent_id !== '') {
+    filtered = filtered.filter(item => item.talent_id === filters.talent_id)
+  }
+  if (filters.action && filters.action !== '') {
+    filtered = filtered.filter(item => item.action === filters.action)
+  }
+  if (filters.url && filters.url !== '') {
+    filtered = filtered.filter(item => item.url?.includes(filters.url))
+  }
+
+  return filtered
+})
+
+// Pagination computed properties
+const totalPages = computed(() => {
+  return Math.ceil(filteredItems.value.length / pageSize.value)
+})
+
+const paginatedItems = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  const end = start + pageSize.value
+  return filteredItems.value.slice(start, end)
+})
+
+const visiblePages = computed(() => {
+  const total = totalPages.value
+  const current = currentPage.value
+  const range = []
+
+  if (total <= 5) {
+    for (let i = 1; i <= total; i++) {
+      range.push(i)
+    }
+  } else {
+    if (current <= 3) {
+      range.push(1, 2, 3, 4, '...', total)
+    } else if (current >= total - 2) {
+      range.push(1, '...', total - 3, total - 2, total - 1, total)
+    } else {
+      range.push(1, '...', current - 1, current, current + 1, '...', total)
+    }
+  }
+
+  return range
+})
+
+// Items for backward compatibility
+const items = computed(() => paginatedItems.value)
+
 // Methods
 const loadData = async () => {
   loading.value = true
@@ -616,52 +710,48 @@ const loadData = async () => {
       }
     })
     
-    // Prepare search conditions
-    const searchConditions = []
-    if (search.value && search.value.trim() !== '') {
-      searchConditions.push(['talent_id', 'like', `%${search.value}%`])
-      searchConditions.push(['interaction_type', 'like', `%${search.value}%`])
-      searchConditions.push(['description', 'like', `%${search.value}%`])
-    }
-    
+    // Load all data for client-side pagination
     const params = {
       filters: apiFilters,
-      limit_page_length: pagination.limit,
-      limit_start: (pagination.page - 1) * pagination.limit,
+      page_length: 0, // Load all records
+      start: 0,
       order_by: 'modified desc',
       fields: ['name', 'talent_id', 'interaction_type', 'action', 'url', 'description', 'modified']
     }
     
-    // Add search conditions if any
-    if (searchConditions.length > 0) {
-      params.or_filters = searchConditions
-    }
+    console.log('[InteractionManagement] loadData params:', params)
 
     const result = await interactionStore.fetchInteractions(params)
     
-    if (result.success) {
-      items.value = result.data || []
-      if (result.pagination) {
-        Object.assign(pagination, result.pagination)
-      }
+    console.log('[InteractionManagement] loadData result:', {
+      success: result?.success,
+      total: result?.pagination?.total,
+      count: Array.isArray(result?.data) ? result.data.length : 'no-array'
+    })
+    
+    if (result && result.success && Array.isArray(result.data)) {
+      allItems.value = result.data
       
-      // Update stats
-      stats.total = result.pagination?.total || 0
-      stats.emails = result.data?.filter(item => item.interaction_type.includes('EMAIL')).length || 0
-      stats.calls = result.data?.filter(item => item.interaction_type.includes('CALL')).length || 0
+      // Update stats from all items
+      stats.total = result.data.length
+      stats.emails = result.data.filter(item => item.interaction_type?.includes('EMAIL')).length
+      stats.calls = result.data.filter(item => item.interaction_type?.includes('CALL')).length
       
       // Count today's interactions
       const today = new Date().toISOString().split('T')[0]
-      stats.today = result.data?.filter(item => 
+      stats.today = result.data.filter(item => 
         item.modified && item.modified.startsWith(today)
-      ).length || 0
+      ).length
+      
+      // Reset to first page when data loads
+      currentPage.value = 1
     } else {
       console.error('Error loading data:', result.error)
-      items.value = []
+      allItems.value = []
     }
   } catch (error) {
     console.error('Error loading data:', error)
-    items.value = []
+    allItems.value = []
   } finally {
     loading.value = false
   }
@@ -670,26 +760,27 @@ const loadData = async () => {
 const loadFilterOptions = async () => {
   try {
     // Load candidates
-    const candidateResult = await candidateStore.fetchCandidates({
+    const candidateResult = await call('frappe.client.get_list', {
+      doctype: 'Mira Talent',
       fields: ['name', 'full_name', 'email'],
-      limit: 1000
+      limit_page_length: 1000
     })
-    if (candidateResult && candidateResult.data && candidateResult.data.length) {
-      filterOptions.candidates = candidateResult.data.map(item => ({
-        label: `${item.full_name} (${item.email})`,
+    if (candidateResult && candidateResult.length) {
+      filterOptions.candidates = candidateResult.map(item => ({
+        label: `${item.full_name || item.name}${item.email ? ' (' + item.email + ')' : ''}`,
         value: item.name
       }))
     }
     
     // Load actions
     const actionResult = await call('frappe.client.get_list', {
-      doctype: 'Action',
-      fields: ['name', 'talent_campaign_id', 'campaign_step'],
+      doctype: 'Mira Action',
+      fields: ['name', 'talent_campaign_id', 'action_type'],
       limit_page_length: 1000
     })
     if (actionResult && actionResult.length) {
       filterOptions.actions = actionResult.map(item => ({
-        label: `${item.talent_campaign_id} - ${item.campaign_step}`,
+        label: `${item.talent_campaign_id} - ${item.action_type || item.name}`,
         value: item.name
       }))
     }
@@ -699,13 +790,13 @@ const loadFilterOptions = async () => {
 }
 
 const applyFilters = debounce(() => {
-  pagination.page = 1
-  loadData()
+  currentPage.value = 1
+  // No need to reload data, filtering is done client-side
 }, 300)
 
 const debouncedSearch = debounce(() => {
-  pagination.page = 1
-  loadData()
+  currentPage.value = 1
+  // No need to reload data, filtering is done client-side
 }, 300)
 
 const clearFilters = () => {
@@ -713,8 +804,8 @@ const clearFilters = () => {
     filters[key] = ''
   })
   search.value = ''
-  pagination.page = 1
-  loadData()
+  currentPage.value = 1
+  // No need to reload data, filtering is done client-side
 }
 
 const handleRefresh = async () => {
@@ -729,7 +820,7 @@ const handleRefresh = async () => {
 
 const toggleSelectAll = (event) => {
   if (event.target.checked) {
-    selected.value = [...items.value]
+    selected.value = [...paginatedItems.value]
   } else {
     selected.value = []
   }

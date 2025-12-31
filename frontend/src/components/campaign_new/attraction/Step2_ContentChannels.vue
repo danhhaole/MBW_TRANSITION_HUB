@@ -8,6 +8,17 @@
       <p class="text-sm text-gray-600">
         {{ __('Create content and choose where to post your attraction campaign') }}
       </p>
+      <div
+        v-if="campaignObjective"
+        class="mt-2 inline-flex items-start rounded-md bg-blue-50 px-3 py-2 text-xs text-blue-800 border border-blue-100 max-w-2xl"
+      >
+        <span class="font-medium mr-1">
+          {{ __('Campaign Objective') }}:
+        </span>
+        <span class="line-clamp-2">
+          {{ campaignObjective }}
+        </span>
+      </div>
     </div>
 
     <!-- Landing Page Selector (Section 2.1) -->
@@ -339,6 +350,10 @@ const props = defineProps({
     default: ''
   },
   campaignId: {
+    type: String,
+    default: ''
+  },
+  campaignObjective: {
     type: String,
     default: ''
   },

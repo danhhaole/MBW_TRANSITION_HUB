@@ -1262,8 +1262,8 @@ def _process_job_share(share_doc):
         share_doc.save(ignore_permissions=True)
 
         #Update social
-        if share_data and hasattr(share_data,"social_id"):
-            social = frappe.get_doc("Mira Campaign Social",share_data.social_id)
+        if share_data and share_data.get("social_id"):
+            social = frappe.get_doc("Mira Campaign Social", share_data.get("social_id"))
             social.status = share_doc.status
             social.response_data = share_doc.response_data
             social.error_message = share_doc.error_message
@@ -1329,9 +1329,17 @@ def replace_urls_with_tracking(content, campaign_id, source,social_id):
     Thay tất cả URL trong content bằng redirect URL:
     - Gói URL gốc vào param `url`
     - Thêm param `url_tracking` với tracking link
+    - KHÔNG thay thế short links (is.gd, bit.ly, etc.) - giữ nguyên
     - Không append 2 lần
     """
     url_regex = r"(https?://[^\s\"\'<>]+)"
+
+    # Danh sách các short link domains - KHÔNG thay thế
+    short_link_domains = [
+        'is.gd', 'bit.ly', 'tinyurl.com', 't.co', 'goo.gl', 'ow.ly', 
+        'buff.ly', 'short.link', 'tiny.cc', 'rebrand.ly', 'cutt.ly',
+        'shorturl.at', 'shorte.st', 'adf.ly', 'bc.vc'
+    ]
 
     # Lấy tracking URL
     tracking_url = _create_tracking(campaign_id, source,social_id)
@@ -1347,6 +1355,14 @@ def replace_urls_with_tracking(content, campaign_id, source,social_id):
         if "url_tracking=" in original_url:
             return original_url
 
+        # Kiểm tra nếu là short link → GIỮ NGUYÊN, không thay thế
+        url_lower = original_url.lower()
+        for short_domain in short_link_domains:
+            if short_domain in url_lower:
+                frappe.log_error(f"[URL TRACKING] Giữ nguyên short link: {original_url}")
+                return original_url
+
+        # Chỉ thay thế long URLs (không phải short links)
         # Encode URL gốc để làm param
         encoded_original = quote(original_url, safe="")
 
@@ -1379,8 +1395,8 @@ def _share_to_facebook(connection, share_doc, share_data):
 
         # Prepare post content
         social_id = None
-        if hasattr(share_data,"social_id") and share_data.social_id:
-            social_id = share_data.social_id
+        if share_data and share_data.get("social_id"):
+            social_id = share_data.get("social_id")
         message = replace_urls_with_tracking(share_doc.message,share_doc.campaign,"facebook",social_id)
         # Prepare image URL if available
 
@@ -1468,8 +1484,8 @@ def _share_to_zalo(connection, share_doc, share_data):
             return {"success": False, "error": "No Zalo OA ID configured or available"}
 
         social_id = None
-        if hasattr(share_data,"social_id") and share_data.social_id:
-            social_id = share_data.social_id
+        if share_data and share_data.get("social_id"):
+            social_id = share_data.get("social_id")
 
         # Prepare image URL if available
         # photo_url = ""

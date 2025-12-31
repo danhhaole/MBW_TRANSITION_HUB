@@ -40,7 +40,7 @@ export const useActionStore = defineStore('action', () => {
       const searchLower = filters.value.search.toLowerCase()
       filtered = filtered.filter(action => 
         action.talent_campaign_id?.toLowerCase().includes(searchLower) ||
-        action.campaign_step?.toLowerCase().includes(searchLower) ||
+        action.campaign_social?.toLowerCase().includes(searchLower) ||
         action.assignee_id?.toLowerCase().includes(searchLower)
       )
     }
@@ -66,38 +66,82 @@ export const useActionStore = defineStore('action', () => {
     error.value = null
     
     try {
+      // Build filters from options (ActionManagement.vue passes filters directly)
+      const apiFilters = options.filters || {}
+      
+      // Prepare params for frappe.client.get_list
       const params = {
-        page: pagination.value.page,
-        limit: pagination.value.limit,
-        filters: {
-          ...filters.value,
-          ...options.filters
-        },
-        fields: ['name', 'talent_campaign_id', 'campaign_step', 'status', 'scheduled_at', 'executed_at', 'result', 'assignee_id'],
-        order_by: 'modified desc',
-        ...options
+        doctype: 'Mira Action',
+        fields: options.fields || ['name', 'talent_campaign_id', 'campaign_social', 'action_type', 'status', 'scheduled_at', 'executed_at', 'result', 'assignee_id'],
+        order_by: options.order_by || 'modified desc'
+      }
+      
+      // Add filters if any
+      if (Object.keys(apiFilters).length > 0) {
+        params.filters = apiFilters
+      }
+      
+      // Add or_filters if provided
+      if (options.or_filters && options.or_filters.length > 0) {
+        params.or_filters = options.or_filters
+      }
+      
+      // Handle pagination - frappe.client.get_list uses limit_page_length and start
+      if (options.page_length !== undefined) {
+        params.limit_page_length = options.page_length
+      }
+      
+      if (options.start !== undefined) {
+        params.start = options.start
       }
 
-      const result = await call('frappe.client.get_list', {
-        doctype: 'Action',
-        ...params
-      })
+      console.log('[ActionStore] fetchActions options:', options)
+      console.log('[ActionStore] fetchActions params:', params)
+
+      // Get list and count in parallel
+      const [listResult, countResult] = await Promise.all([
+        call('frappe.client.get_list', params),
+        call('frappe.client.get_count', {
+          doctype: 'Mira Action',
+          filters: apiFilters,
+          or_filters: options.or_filters
+        })
+      ])
       
-      if (result && result.data) {
-        actions.value = result.data.map(action => ({
-          ...action,
-          display_status: getStatusDisplay(action.status),
-          status_color: getStatusColor(action.status),
-          formatted_scheduled_at: formatDate(action.scheduled_at),
-          formatted_executed_at: formatDate(action.executed_at)
-        }))
-        
-        if (result.pagination) {
-          Object.assign(pagination.value, result.pagination)
+      console.log('[ActionStore] fetchActions raw listResult:', listResult)
+      console.log('[ActionStore] fetchActions raw countResult:', countResult)
+      
+      // frappe.client.get_list returns an array directly
+      const dataArray = Array.isArray(listResult) ? listResult : []
+      
+      actions.value = dataArray.map(action => ({
+        ...action,
+        display_status: getStatusDisplay(action.status),
+        status_color: getStatusColor(action.status),
+        formatted_scheduled_at: formatDate(action.scheduled_at),
+        formatted_executed_at: formatDate(action.executed_at)
+      }))
+      
+      // Get total count
+      const total = countResult || 0
+      
+      // Update pagination
+      if (options.start !== undefined && options.page_length !== undefined) {
+        const page = Math.floor(options.start / options.page_length) + 1
+        pagination.value.page = page
+        pagination.value.limit = options.page_length
+      }
+      pagination.value.total = total
+      
+      return { 
+        success: true, 
+        data: actions.value,
+        pagination: {
+          total: total,
+          page: pagination.value.page,
+          limit: pagination.value.limit
         }
       }
-      
-      return { success: true, data: actions.value }
     } catch (err) {
       error.value = parseError(err)
       console.error('Error fetching actions:', err)
@@ -113,7 +157,7 @@ export const useActionStore = defineStore('action', () => {
     
     try {
       const result = await call('frappe.client.get', { 
-        doctype: 'Action',
+        doctype: 'Mira Action',
         name: id 
       })
       
@@ -142,7 +186,7 @@ export const useActionStore = defineStore('action', () => {
     
     try {
       const result = await call('frappe.client.set_value', {
-        doctype: 'Action',
+        doctype: 'Mira Action',
         name: actionData.name,
         fieldname: 'status',
         value: 'EXECUTED'
@@ -180,7 +224,7 @@ export const useActionStore = defineStore('action', () => {
     
     try {
       const result = await call('frappe.client.delete', { 
-        doctype: 'Action',
+        doctype: 'Mira Action',
         name: actionId 
       })
       
@@ -211,13 +255,13 @@ export const useActionStore = defineStore('action', () => {
     try {
       const params = {
         filters: filters.value,
-        fields: ['name', 'talent_campaign_id', 'campaign_step', 'status', 'scheduled_at', 'executed_at', 'result', 'assignee_id'],
+        fields: ['name', 'talent_campaign_id', 'campaign_social', 'action_type', 'status', 'scheduled_at', 'executed_at', 'result', 'assignee_id'],
         ...exportOptions
       }
       
       // For export, we'll get the data and handle export client-side
       const result = await call('frappe.client.get_list', {
-        doctype: 'Action',
+        doctype: 'Mira Action',
         ...params,
         limit_page_length: 0 // Get all records for export
       })

@@ -53,10 +53,14 @@ def send_email(
         frappe.throw("Either template name or raw content must be provided")
     print("DEBUG: Template/content check passed")
 
-    print("DEBUG: Skipping normalize_emails and prepare_attachments for debugging...")
-    # Skip these functions temporarily to isolate the issue
+    # Prepare attachments for Frappe sendmail
     prepared_attachments = []
-    print("DEBUG: Email preparation complete (simplified)")
+    if attachments:
+        prepared_attachments = prepare_attachments(attachments)
+        print(f"DEBUG: Prepared {len(prepared_attachments)} attachments: {prepared_attachments}")
+    else:
+        print("DEBUG: No attachments provided")
+    print("DEBUG: Email preparation complete")
 
     # Default sender
     senderemail = ''
@@ -111,6 +115,7 @@ def send_email(
                     subject=subject,
                     sender=senderemail,
                     message=content,  # Use 'message' instead of 'content' to preserve HTML
+                    attachments=prepared_attachments if prepared_attachments else None,
                     now=True
                 )
                 print(f"DEBUG: frappe.sendmail returned: {result}")
@@ -141,6 +146,7 @@ def send_email(
                     subject=subject,
                     sender=senderemail,
                     message=text_message or content,
+                    attachments=prepared_attachments if prepared_attachments else None,
                     now=True
                 )
                 print("DEBUG: Plain text email sent via Frappe successfully!")
@@ -208,9 +214,10 @@ def normalize_emails(emails):
 def prepare_attachments(attachments):
     """
     Accept:
-    - /files/ URLs
-    - File paths
+    - /files/ URLs (string)
+    - File paths (string)
     - Dict with fname+content
+    - Dict with file_name+file_url (from send_test_email)
     Returns frappe.sendmail-compatible list
     """
     result = []
@@ -220,8 +227,18 @@ def prepare_attachments(attachments):
     for item in attachments:
         if not item:
             continue
+        
+        # Dict with fname+content (existing format)
         if isinstance(item, dict) and 'fname' in item and 'content' in item:
             result.append(item)
+        # Dict with file_name+file_url (from send_test_email)
+        elif isinstance(item, dict) and 'file_url' in item:
+            file_url = item.get('file_url') or item.get('file_path') or ''
+            file_name = item.get('file_name') or item.get('name') or ''
+            if file_url:
+                # Frappe sendmail accepts file_url directly
+                result.append({"file_url": file_url})
+        # String path
         elif isinstance(item, str):
             if item.startswith("/files/"):
                 result.append({"file_url": item})
@@ -231,6 +248,7 @@ def prepare_attachments(attachments):
                 result.append({"fname": os.path.basename(item), "content": content})
             else:
                 frappe.logger().warn(f"Attachment not found: {item}")
+    
     return result
 
 

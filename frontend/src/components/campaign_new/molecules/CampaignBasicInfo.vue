@@ -38,7 +38,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { FormControl } from 'frappe-ui'
 
 const props = defineProps({
@@ -65,7 +65,17 @@ const localCampaignName = computed({
 
 const localObjective = computed({
   get: () => props.objective,
-  set: (value) => emit('update:objective', value)
+  set: (value) => {
+    console.log('[CampaignBasicInfo] update objective (localObjective):', value)
+    emit('update:objective', value)
+  }
 })
+
+watch(
+  () => props.objective,
+  (val) => {
+    console.log('[CampaignBasicInfo] props.objective changed:', val)
+  }
+)
 
 </script>

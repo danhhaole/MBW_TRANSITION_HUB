@@ -39,7 +39,7 @@
         <CampaignStep1
           v-if="currentStep === 1"
           :campaign-name="campaignData.campaign_name"
-          :objective="campaignData.description"
+          :objective="campaignData.objective"
           :campaign-id="campaignData.name"
           :campaign-tags="campaignData.campaign_tags"
           :config-data="campaignData.config_data"
@@ -48,7 +48,7 @@
           :show-error="showValidationError"
           :start-date="campaignData.start_date"
           @update:campaign-name="campaignData.campaign_name = $event"
-          @update:objective="campaignData.description = $event"
+          @update:objective="campaignData.objective = $event"
           @update:campaign-tags="campaignData.campaign_tags = $event"
           @update:config-data="campaignData.config_data = $event"
           @update:conditions="campaignData.conditions = $event"
@@ -63,7 +63,8 @@
           v-else-if="currentStep === 2"
           :triggers="campaignData.triggers"
           :campaign-name="campaignData.campaign_name"
-           :name="campaignData.name"
+          :campaign-objective="campaignData.objective"
+          :name="campaignData.name"
           :ladipage-url="campaignData.ladipage_url"
           :ladipage-id="campaignData.ladipage_id"
           :target-pool="targetPool"
@@ -469,7 +470,7 @@ const targetPool = campaignData.value.config_data?.selectedSegment?.value || cam
 
       const result = await campaignStore.submitNewCampaign({
         campaign_name: campaignData.value.campaign_name,
-        description: campaignData.value.description,
+        description: campaignData.value.objective,
         target_pool: targetPool,
         condition_filter: JSON.stringify(campaignData.value.conditions),
         type: campaignData.value.type,
@@ -515,9 +516,9 @@ const targetPool = campaignData.value.config_data?.selectedSegment?.value || cam
         await call('frappe.client.set_value', {
           doctype: 'Mira Campaign',
           name: campaignData.value.name,
-          fieldname: {
+            fieldname: {
             campaign_name: campaignData.value.campaign_name,
-            description: campaignData.value.description,
+            description: campaignData.value.objective,
             target_pool: targetPool,
             condition_filter: JSON.stringify(campaignData.value.conditions),
             start_date: campaignData.value.start_date

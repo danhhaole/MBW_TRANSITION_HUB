@@ -211,8 +211,13 @@ const updateUrl = async () => {
   const params = new URLSearchParams();
   params.append('utm_source', utmSource);
 
-  if (campaignName.value.trim()) {
-    params.append('utm_campaign', campaignName.value.trim());
+  // utm_campaign LUÔN dùng campaignId (ví dụ: CPG-251230-00767)
+  // Input hiển thị campaignName (tên chiến dịch) nhưng URL dùng campaignId
+  if (props.pageData && props.pageData.campaignId) {
+    const campaignId = String(props.pageData.campaignId).trim();
+    if (campaignId) {
+      params.append('utm_campaign', campaignId);
+    }
   }
 
   // Clean content value - remove HTML tags and check if there's actual text
@@ -238,12 +243,26 @@ const updateUrl = async () => {
   }
 }
 
+// Helper to get human-readable campaign name for display
+const resolveCampaignName = (pageData) => {
+  if (!pageData) return 'campaign'
+  // Prefer explicit name fields; avoid falling back to id unless nothing else
+  return (
+    pageData.campaign_name ||
+    pageData.campaignName ||
+    pageData.title ||
+    pageData.display_name ||
+    pageData.name || // last resort
+    'campaign'
+  )
+}
+
 // Watch for modal open to initialize
 watch(() => props.show, (newShow) => {
   if (newShow && props.pageData) {
     // Initialize with platform from props or default to Facebook
     selectedPlatform.value = props.platform || 'Facebook'
-    campaignName.value = props.pageData.campaignName || 'campaign'
+    campaignName.value = resolveCampaignName(props.pageData)
     contentValue.value = ''
     updateUrl()
   }
@@ -253,7 +272,7 @@ watch(() => props.show, (newShow) => {
 onMounted(() => {
   if (props.show && props.pageData) {
     selectedPlatform.value = props.platform || 'Facebook';
-    campaignName.value = props.pageData.campaignName || 'campaign';
+    campaignName.value = resolveCampaignName(props.pageData);
     contentValue.value = '';
     updateUrl();
   }

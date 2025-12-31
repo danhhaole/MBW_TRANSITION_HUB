@@ -87,7 +87,9 @@
               v-model="search"
               :placeholder="__('Search actions...')"
               class="flex-1"
+              @input="debouncedSearch"
               @update:model-value="debouncedSearch"
+              @keyup.enter="handleSearch"
             >
               <template #prefix>
                 <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -164,9 +166,9 @@
               />
               <FormControl
                 type="select"
-                v-model="filters.campaign_step"
-                :options="filterOptions.campaignSteps"
-                :placeholder="__('Campaign Step')"
+                v-model="filters.campaign_social"
+                :options="filterOptions.campaignSocials"
+                :placeholder="__('Campaign Social')"
                 @change="applyFilters"
               />
               <FormControl
@@ -199,13 +201,14 @@
                   <input
                     type="checkbox"
                     class="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                    :checked="selected.length === items.length && items.length > 0"
-                    :indeterminate="selected.length > 0 && selected.length < items.length"
+                    :checked="selected.length === paginatedItems.length && paginatedItems.length > 0"
+                    :indeterminate="selected.length > 0 && selected.length < paginatedItems.length"
                     @change="toggleSelectAll"
                   />
                 </th>
-                <th class="text-left p-3 text-sm font-medium text-slate-600">{{ __('Candidate Campaign') }}</th>
-                <th class="text-left p-3 text-sm font-medium text-slate-600">{{ __('Campaign Step') }}</th>
+                <th class="text-left p-3 text-sm font-medium text-slate-600 w-60">{{ __('Candidate Campaign') }}</th>
+                <th class="text-left p-3 text-sm font-medium text-slate-600">{{ __('Campaign Social') }}</th>
+                <th class="text-left p-3 text-sm font-medium text-slate-600">{{ __('Action Type') }}</th>
                 <th class="text-left p-3 text-sm font-medium text-slate-600">{{ __('Status') }}</th>
                 <th class="text-left p-3 text-sm font-medium text-slate-600">{{ __('Scheduled At') }}</th>
                 <th class="text-left p-3 text-sm font-medium text-slate-600">{{ __('Executed At') }}</th>
@@ -224,7 +227,7 @@
                 <td class="p-3"><div class="h-4 bg-slate-200 rounded w-24"></div></td>
                 <td class="p-3"><div class="h-4 bg-slate-200 rounded w-20"></div></td>
               </tr>
-              <tr v-else-if="items.length === 0" class="text-center">
+              <tr v-else-if="filteredItems.length === 0" class="text-center">
                 <td colspan="8" class="p-8 text-slate-500">
                   <div class="flex flex-col items-center">
                     <svg class="w-12 h-12 text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -236,7 +239,7 @@
               </tr>
               <tr
                 v-else
-                v-for="item in items"
+                v-for="item in paginatedItems"
                 :key="item.name"
                 class="hover:bg-slate-50 transition-colors"
                 :class="{ 'bg-blue-50': selected.includes(item) }"
@@ -264,7 +267,16 @@
                     theme="purple"
                     size="sm"
                   >
-                    {{ item.campaign_step }}
+                    {{ item.campaign_social || '-' }}
+                  </Badge>
+                </td>
+                <td class="p-3">
+                  <Badge
+                    variant="outline"
+                    theme="blue"
+                    size="sm"
+                  >
+                    {{ item.action_type || '-' }}
                   </Badge>
                 </td>
                 <td class="p-3">
@@ -337,29 +349,56 @@
         </div>
 
         <!-- Pagination -->
-        <div v-if="!loading && items.length > 0" class="flex justify-between items-center p-4 border-t border-slate-200">
+        <div v-if="!loading && filteredItems.length > 0" class="flex items-center justify-between p-6 border-t border-slate-200">
           <div class="text-sm text-slate-600">
-            {{ __('Showing') }} {{ ((pagination.page - 1) * pagination.limit) + 1 }} {{ __('to') }} {{ Math.min(pagination.page * pagination.limit, pagination.total) }} {{ __('of') }} {{ pagination.total }} {{ __('results') }}
+            {{ __('Showing') }} {{ (currentPage - 1) * pageSize + 1 }}-{{ Math.min(currentPage * pageSize, filteredItems.length) }} {{ __('of') }}
+            <span class="font-medium">{{ filteredItems.length }}</span> {{ __('results') }}
           </div>
-          <div class="flex items-center gap-2">
+          <div class="flex items-center space-x-1">
             <Button
+              @click="currentPage--"
+              :disabled="currentPage === 1"
               variant="outline"
               size="sm"
-              :disabled="pagination.page <= 1"
-              @click="pagination.page--; loadData()"
+              class="px-3 py-1.5"
             >
-              {{ __('Previous') }}
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
             </Button>
-            <span class="text-sm text-slate-600">
-              {{ __('Page') }} {{ pagination.page }} {{ __('of') }} {{ Math.ceil(pagination.total / pagination.limit) }}
-            </span>
+
+            <template v-for="page in visiblePages" :key="page">
             <Button
+                v-if="page === '...'"
+                variant="ghost"
+                size="sm"
+                class="px-3 py-1.5"
+                disabled
+              >
+                ...
+              </Button>
+              <Button
+                v-else
+                @click="currentPage = page"
+                :variant="currentPage === page ? 'solid' : 'ghost'"
+                :theme="currentPage === page ? 'gray' : 'gray'"
+                size="sm"
+                class="px-3 py-1.5"
+              >
+                {{ page }}
+              </Button>
+            </template>
+
+            <Button
+              @click="currentPage++"
+              :disabled="currentPage >= totalPages"
               variant="outline"
               size="sm"
-              :disabled="pagination.page >= Math.ceil(pagination.total / pagination.limit)"
-              @click="pagination.page++; loadData()"
+              class="px-3 py-1.5"
             >
-              {{ __('Next') }}
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
             </Button>
           </div>
         </div>
@@ -379,14 +418,19 @@
               />
               <FormControl
                 type="select"
-                :label="__('Campaign Step')"
-                v-model="formData.campaign_step"
-                :options="filterOptions.campaignSteps"
-                :required="true"
+                :label="__('Campaign Social')"
+                v-model="formData.campaign_social"
+                :options="filterOptions.campaignSocials"
               />
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormControl
+                type="select"
+                :label="__('Action Type')"
+                v-model="formData.action_type"
+                :options="actionTypeOptions"
+              />
               <FormControl
                 type="select"
                 :label="__('Status')"
@@ -394,6 +438,9 @@
                 :options="statusOptions"
                 :required="true"
               />
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormControl
                 type="select"
                 :label="__('Assignee')"
@@ -463,7 +510,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button, Dialog, FormControl, Badge } from 'frappe-ui'
 import { call } from 'frappe-ui'
@@ -495,13 +542,15 @@ const breadcrumbs = [
 const loading = ref(false)
 const saving = ref(false)
 const deleting = ref(false)
-const items = ref([])
+const allItems = ref([]) // Store all loaded items
 const selected = ref([])
 const search = ref('')
 const showFormModal = ref(false)
 const showDeleteDialog = ref(false)
 const itemToDelete = ref(null)
 const showAdvancedFilters = ref(false)
+const currentPage = ref(1)
+const pageSize = ref(20)
 
 // Status options matching doctype
 const statusOptions = [
@@ -512,11 +561,21 @@ const statusOptions = [
   { label: 'Pending Manual', value: 'PENDING_MANUAL' }
 ]
 
+// Action type options matching doctype
+const actionTypeOptions = [
+  { label: 'Send Email', value: 'SEND_EMAIL' },
+  { label: 'Send Zalo', value: 'SEND_ZALO' },
+  { label: 'Post Facebook', value: 'POST_FACEBOOK' },
+  { label: 'Post TopCV', value: 'POST_TOPCV' },
+  { label: 'Post LinkedIn', value: 'POST_LINKEDIN' }
+]
+
 // Form data matching doctype fields
 const formData = reactive({
   name: '',
   talent_campaign_id: '',
-  campaign_step: '',
+  campaign_social: '',
+  action_type: '',
   status: 'SCHEDULED',
   scheduled_at: null,
   executed_at: null,
@@ -527,7 +586,7 @@ const formData = reactive({
 // Filters
 const filters = reactive({
   status: '',
-  campaign_step: '',
+  campaign_social: '',
   talent_campaign_id: '',
   assignee_id: ''
 })
@@ -535,11 +594,11 @@ const filters = reactive({
 // Filter options
 const filterOptions = reactive({
   candidateCampaigns: [],
-  campaignSteps: [],
+  campaignSocials: [],
   assignees: []
 })
 
-// Pagination
+// Pagination (kept for backward compatibility, but using client-side pagination now)
 const pagination = reactive({
   page: 1,
   limit: 20,
@@ -557,7 +616,8 @@ const stats = reactive({
 // Table headers matching doctype fields
 const headers = [
   { title: 'Candidate Campaign', key: 'talent_campaign_id', sortable: true },
-  { title: 'Campaign Step', key: 'campaign_step', sortable: true },
+    { title: 'Campaign Social', key: 'campaign_social', sortable: true },
+    { title: 'Action Type', key: 'action_type', sortable: true },
   { title: 'Status', key: 'status', sortable: true },
   { title: 'Scheduled At', key: 'scheduled_at', sortable: true },
   { title: 'Executed At', key: 'executed_at', sortable: true },
@@ -571,8 +631,73 @@ const hasActiveFilters = computed(() => {
 })
 
 const formValid = computed(() => {
-  return formData.talent_campaign_id && formData.campaign_step && formData.status
+  return formData.talent_campaign_id && formData.status
 })
+
+// Filtered items based on search and filters
+const filteredItems = computed(() => {
+  let filtered = allItems.value
+
+  // Apply search filter (action_type only)
+  const searchTerm = search.value ? search.value.trim().toLowerCase() : ''
+  if (searchTerm !== '') {
+    filtered = filtered.filter(item =>
+      item.action_type?.toLowerCase().includes(searchTerm)
+    )
+  }
+
+  // Apply other filters
+  if (filters.status && filters.status !== '') {
+    filtered = filtered.filter(item => item.status === filters.status)
+  }
+  if (filters.campaign_social && filters.campaign_social !== '') {
+    filtered = filtered.filter(item => item.campaign_social === filters.campaign_social)
+  }
+  if (filters.talent_campaign_id && filters.talent_campaign_id !== '') {
+    filtered = filtered.filter(item => item.talent_campaign_id === filters.talent_campaign_id)
+  }
+  if (filters.assignee_id && filters.assignee_id !== '') {
+    filtered = filtered.filter(item => item.assignee_id === filters.assignee_id)
+  }
+
+  return filtered
+})
+
+// Pagination computed properties
+const totalPages = computed(() => {
+  return Math.ceil(filteredItems.value.length / pageSize.value)
+})
+
+const paginatedItems = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  const end = start + pageSize.value
+  return filteredItems.value.slice(start, end)
+})
+
+const visiblePages = computed(() => {
+  const total = totalPages.value
+  const current = currentPage.value
+  const range = []
+
+  if (total <= 5) {
+    for (let i = 1; i <= total; i++) {
+      range.push(i)
+    }
+  } else {
+    if (current <= 3) {
+      range.push(1, 2, 3, 4, '...', total)
+    } else if (current >= total - 2) {
+      range.push(1, '...', total - 3, total - 2, total - 1, total)
+    } else {
+      range.push(1, '...', current - 1, current, current + 1, '...', total)
+    }
+  }
+
+  return range
+})
+
+// Items for backward compatibility
+const items = computed(() => paginatedItems.value)
 
 // Methods
 const loadData = async () => {
@@ -588,39 +713,39 @@ const loadData = async () => {
       }
     })
     
-    // Prepare search conditions
-    let or_filters = undefined
-    if (search.value && search.value.trim() !== '') {
-      or_filters = [
-        ['talent_campaign_id', 'like', `%${search.value}%`],
-        ['campaign_step', 'like', `%${search.value}%`],
-        ['assignee_id', 'like', `%${search.value}%`]
-      ]
-    }
+    // Load all data for client-side pagination
     const params = {
       filters: apiFilters,
-      or_filters,
-      page_length: pagination.limit,
-      start: (pagination.page - 1) * pagination.limit,
+      page_length: 0, // Load all records
+      start: 0,
       order_by: 'scheduled_at desc',
-      fields: ['name', 'talent_campaign_id', 'campaign_step', 'status', 'scheduled_at', 'executed_at', 'result', 'assignee_id', 'modified']
+      fields: ['name', 'talent_campaign_id', 'campaign_social', 'action_type', 'status', 'scheduled_at', 'executed_at', 'result', 'assignee_id', 'modified']
     }
 
+    console.log('[ActionManagement] loadData params:', params)
+
     const result = await actionStore.fetchActions(params)
+    console.log('[ActionManagement] loadData result:', {
+      success: result?.success,
+      total: result?.pagination?.total,
+      count: Array.isArray(result?.data) ? result.data.length : 'no-array'
+    })
+
     if (result && Array.isArray(result.data)) {
-      items.value = result.data
-      Object.assign(pagination, result.pagination)
-      // Update stats
-      stats.total = result.pagination?.total || 0
-      stats.executed = result.data?.filter(item => item.status === 'EXECUTED').length || 0
-      stats.scheduled = result.data?.filter(item => item.status === 'SCHEDULED').length || 0
-      stats.failed = result.data?.filter(item => item.status === 'FAILED').length || 0
+      allItems.value = result.data
+      // Update stats from all items
+      stats.total = result.data.length
+      stats.executed = result.data.filter(item => item.status === 'EXECUTED').length
+      stats.scheduled = result.data.filter(item => item.status === 'SCHEDULED').length
+      stats.failed = result.data.filter(item => item.status === 'FAILED').length
+      // Reset to first page when data loads
+      currentPage.value = 1
     } else {
-      items.value = []
+      allItems.value = []
     }
   } catch (error) {
     console.error('Error loading data:', error)
-    items.value = []
+    allItems.value = []
   } finally {
     loading.value = false
   }
@@ -630,26 +755,26 @@ const loadFilterOptions = async () => {
   try {
     // Load candidate campaigns
     const candidateCampaignResult = await call('frappe.client.get_list', {
-      doctype: 'Mira Talent Pool',
-      fields: ['name', 'talent_id'],
+      doctype: 'Mira Talent Campaign',
+      fields: ['name', 'talent_id', 'campaign_id'],
       limit_page_length: 1000
     })
     if (candidateCampaignResult && candidateCampaignResult.length) {
       filterOptions.candidateCampaigns = candidateCampaignResult.map(item => ({
-        label: `${item.name} (${item.talent_id} - ${item.campaign_id})`,
+        label: `${item.name}${item.talent_id ? ' - ' + item.talent_id : ''}${item.campaign_id ? ' (' + item.campaign_id + ')' : ''}`,
         value: item.name
       }))
     }
     
-    // Load campaign steps
-    const campaignStepResult = await call('frappe.client.get_list', {
-      doctype: 'Mira Campaign Step',
-      fields: ['name', 'campaign_step_name', 'campaign'],
+    // Load campaign socials
+    const campaignSocialResult = await call('frappe.client.get_list', {
+      doctype: 'Mira Campaign Social',
+      fields: ['name', 'campaign_id'],
       limit_page_length: 1000
     })
-    if (campaignStepResult && campaignStepResult.length) {
-      filterOptions.campaignSteps = campaignStepResult.map(item => ({
-        label: `${item.campaign_step_name} (${item.campaign})`,
+    if (campaignSocialResult && campaignSocialResult.length) {
+      filterOptions.campaignSocials = campaignSocialResult.map(item => ({
+        label: `${item.name}${item.campaign_id ? ' (' + item.campaign_id + ')' : ''}`,
         value: item.name
       }))
     }
@@ -672,22 +797,27 @@ const loadFilterOptions = async () => {
 }
 
 const applyFilters = debounce(() => {
-  pagination.page = 1
-  loadData()
+  currentPage.value = 1
+  // No need to reload data, filtering is done client-side
 }, 300)
 
 const debouncedSearch = debounce(() => {
-  pagination.page = 1
-  loadData()
+  currentPage.value = 1
+  // No need to reload data, filtering is done client-side
 }, 300)
+
+const handleSearch = () => {
+  currentPage.value = 1
+  // No need to reload data, filtering is done client-side
+}
 
 const clearFilters = () => {
   Object.keys(filters).forEach(key => {
     filters[key] = ''
   })
   search.value = ''
-  pagination.page = 1
-  loadData()
+  currentPage.value = 1
+  // No need to reload data, filtering is done client-side
 }
 
 const handleRefresh = async () => {
@@ -702,7 +832,7 @@ const handleRefresh = async () => {
 
 const toggleSelectAll = (event) => {
   if (event.target.checked) {
-    selected.value = [...items.value]
+    selected.value = [...paginatedItems.value]
   } else {
     selected.value = []
   }
@@ -735,7 +865,8 @@ const resetForm = () => {
   Object.assign(formData, {
     name: '',
     talent_campaign_id: '',
-    campaign_step: '',
+    campaign_social: '',
+    action_type: '',
     status: 'SCHEDULED',
     scheduled_at: null,
     executed_at: null,
@@ -748,10 +879,6 @@ const saveData = async () => {
   // Validate required fields
   if (!formData.talent_campaign_id) {
     alert('Please select a candidate campaign')
-    return
-  }
-  if (!formData.campaign_step) {
-    alert('Please select a campaign step')
     return
   }
   if (!formData.status) {
@@ -777,13 +904,37 @@ const saveData = async () => {
       }
     }
 
-    const result = await call(save(dataToSave))
-    if (result.success) {
+    let result
+    if (dataToSave.name) {
+      // Update existing - remove name from fieldsToUpdate object
+      const { name, ...fieldsToUpdate } = dataToSave
+      // Remove empty string values (but keep null if it's intentional)
+      Object.keys(fieldsToUpdate).forEach(key => {
+        if (fieldsToUpdate[key] === '') {
+          delete fieldsToUpdate[key]
+        }
+      })
+      result = await call('frappe.client.set_value', {
+        doctype: 'Mira Action',
+        name: dataToSave.name,
+        fieldname: fieldsToUpdate
+      })
+    } else {
+      // Create new
+      result = await call('frappe.client.insert', {
+        doc: {
+          doctype: 'Mira Action',
+          ...dataToSave
+        }
+      })
+    }
+    
+    if (result) {
       closeFormModal()
       loadData()
     } else {
-      console.error('Error saving data:', result.error)
-      alert('Error saving action: ' + (result.error || 'Unknown error'))
+      console.error('Error saving data')
+      alert('Error saving action')
     }
   } catch (error) {
     console.error('Error saving data:', error)
@@ -803,15 +954,13 @@ const deleteData = async () => {
 
   deleting.value = true
   try {
-    const result = await call(delete(itemToDelete.value.name))
-    if (result.success) {
-      showDeleteDialog.value = false
-      itemToDelete.value = null
-      loadData()
-    } else {
-      console.error('Error deleting data:', result.error)
-      alert('Error deleting action: ' + (result.error || 'Unknown error'))
-    }
+    await call('frappe.client.delete', {
+      doctype: 'Mira Action',
+      name: itemToDelete.value.name
+    })
+    showDeleteDialog.value = false
+    itemToDelete.value = null
+    loadData()
   } catch (error) {
     console.error('Error deleting data:', error)
     alert('Error deleting action: ' + (error.message || 'Unknown error'))
@@ -822,32 +971,39 @@ const deleteData = async () => {
 
 const executeAction = async (item) => {
   try {
-    // Create resource for updating Action
-    const updateResource = createResource({
-      url: 'frappe.client.set_value',
-      method: 'POST'
-    })
-    
     // Update status to EXECUTED
-    await updateResource.submit({
-      doctype: 'Action',
+    await call('frappe.client.set_value', {
+      doctype: 'Mira Action',
       name: item.name,
       fieldname: 'status',
       value: 'EXECUTED'
     })
     
-    // Set executed_at timestamp
-    await updateResource.submit({
-      doctype: 'Action',
+    // Set executed_at timestamp (MySQL DATETIME format: YYYY-MM-DD HH:MM:SS)
+    const now = new Date()
+    const pad = (n) => String(n).padStart(2, '0')
+    const formattedNow = [
+      now.getFullYear(),
+      pad(now.getMonth() + 1),
+      pad(now.getDate())
+    ].join('-') + ' ' + [
+      pad(now.getHours()),
+      pad(now.getMinutes()),
+      pad(now.getSeconds())
+    ].join(':')
+
+    await call('frappe.client.set_value', {
+      doctype: 'Mira Action',
       name: item.name,
       fieldname: 'executed_at',
-      value: new Date().toISOString()
+      value: formattedNow
     })
     
     // Reload data to reflect changes
     loadData()
   } catch (error) {
     console.error('Error executing action:', error)
+    alert('Error executing action: ' + (error.message || 'Unknown error'))
   }
 }
 
@@ -879,7 +1035,7 @@ const exportData = async () => {
   try {
     const result = await actionStore.exportActions({
       filters: filters,
-      fields: ['name', 'talent_campaign_id', 'campaign_step', 'status', 'scheduled_at', 'executed_at', 'result', 'assignee_id']
+        fields: ['name', 'talent_campaign_id', 'campaign_social', 'action_type', 'status', 'scheduled_at', 'executed_at', 'result', 'assignee_id']
     })
     if (result.success) {
       // Handle export (download file)
@@ -909,6 +1065,13 @@ const formatDate = (dateString) => {
     return dateString
   }
 }
+
+// Watch search value for real-time search
+watch(search, (newValue, oldValue) => {
+  if (newValue !== oldValue) {
+    debouncedSearch()
+  }
+}, { immediate: false })
 
 // Lifecycle
 onMounted(() => {

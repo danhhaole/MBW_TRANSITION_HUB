@@ -9,6 +9,20 @@
       <p class="text-sm text-gray-600">
         {{ __('Create content for recruitment campaign across multiple channels') }}
       </p>
+      <div
+        v-if="campaignObjective"
+        class="mt-3 flex items-start rounded-md bg-blue-50 px-3 py-2 text-sm text-blue-800 border border-blue-200 w-full"
+      >
+        <FeatherIcon name="target" class="h-4 w-4 mr-2 mt-0.5 flex-shrink-0 text-blue-600" />
+        <div class="flex-1 min-w-0">
+          <span class="font-semibold mr-2">
+            {{ __('Campaign Objective') }}:
+          </span>
+          <span class="text-blue-900">
+            {{ campaignObjective }}
+          </span>
+        </div>
+      </div>
     </div>
 
     <!-- Landing Page Selector (Section 2.1) -->
@@ -369,6 +383,10 @@ const props = defineProps({
     type: Object,
     default: () => ({ subject: '', body: '' })
   },
+  campaignObjective: {
+    type: String,
+    default: ''
+  },
   facebookContent: {
     type: Object,
     default: () => ({ content: '', image: null, page_id: null })
@@ -410,6 +428,8 @@ const props = defineProps({
     default: 'Mira Campaign' // 'Mira Campaign' or 'Mira Campaign Template'
   }
 })
+
+console.log('[Step2_ContentChannels] props.campaignObjective:', props.campaignObjective)
 
 const emit = defineEmits([
   'update:selectedChannels',
@@ -456,7 +476,9 @@ const sharePageData = computed(() => {
   if (!localLadipageUrl.value) return null
   return {
     url: localLadipageUrl.value,
-    campaignName: props.campaignName
+    campaignName: props.campaignName,
+    // Dùng campaignId (props.name) cho utm_campaign, vẫn hiển thị campaignName
+    campaignId: props.name
   }
 })
 
@@ -829,37 +851,67 @@ const testShareJobPosting = async () => {
       throw new Error('Facebook page connection ID not found. Please reconnect your Facebook account.')
     }
 
-    // Strip HTML tags from content before sending to Facebook (message body)
-    const cleanMessage = stripHtmlTags(localFacebookContent.value.content)
-    console.log('Original content:', localFacebookContent.value.content)
-    console.log('Clean message:', cleanMessage)
-
-    // Prefer using short link (if present in content) as the URL sent to backend.
-    // This ensures the actual Facebook post shows the short URL (e.g. is.gd/xxxx),
-    // while Facebook will still redirect to the full landing page behind the scenes.
-    let shareUrl = props.ladipageUrl
+    // Extract URL from content (both HTML and plain text) - prioritize short links
+    let extractedUrl = null
+    let cleanMessage = ''
+    
     try {
-      // Simple URL extraction from raw HTML/text (first URL found)
-      const urlMatch = (localFacebookContent.value.content || '').match(/https?:\/\/[^\s<>"']+/i)
-      if (urlMatch && urlMatch[0]) {
-        shareUrl = urlMatch[0]
-        console.log('🔗 Using short URL for Facebook share:', shareUrl)
+      const content = localFacebookContent.value.content || ''
+      console.log('Original content:', content)
+      
+      // First, try to extract URL from HTML links (<a href="...">)
+      const htmlLinkMatch = content.match(/<a[^>]+href=["']([^"']+)["'][^>]*>/i)
+      if (htmlLinkMatch && htmlLinkMatch[1]) {
+        extractedUrl = htmlLinkMatch[1]
+        console.log('🔗 Found URL in HTML link:', extractedUrl)
+      }
+      
+      // If no HTML link, try plain URL pattern (prioritize short links like is.gd, bit.ly, etc.)
+      if (!extractedUrl) {
+        // Pattern for short link services (is.gd, bit.ly, tinyurl, etc.) or any URL
+        const urlPatterns = [
+          /https?:\/\/(?:is\.gd|bit\.ly|tinyurl|t\.co|goo\.gl|ow\.ly|buff\.ly|short\.link)\/[^\s<>"']+/i, // Short links first
+          /https?:\/\/[^\s<>"']+/i // Any URL
+        ]
+        
+        for (const pattern of urlPatterns) {
+          const urlMatch = content.match(pattern)
+          if (urlMatch && urlMatch[0]) {
+            extractedUrl = urlMatch[0]
+            console.log('🔗 Found URL in content:', extractedUrl)
+            break
+          }
+        }
+      }
+      
+      // Strip HTML tags from content for message body
+      cleanMessage = stripHtmlTags(content)
+      console.log('Clean message:', cleanMessage)
+      
+      // If we found a URL in content, use it; otherwise use ladipageUrl
+      if (extractedUrl) {
+        console.log('✅ Using extracted URL from content:', extractedUrl)
       } else {
-        console.log('ℹ️ No explicit URL found in content; falling back to ladipageUrl:', shareUrl)
+        console.log('ℹ️ No URL found in content; will use ladipageUrl:', props.ladipageUrl)
       }
     } catch (e) {
-      console.warn('⚠️ Error detecting URL from content, using ladipageUrl instead:', e)
+      console.warn('⚠️ Error extracting URL from content:', e)
+      cleanMessage = stripHtmlTags(localFacebookContent.value.content)
     }
+    
+    // Use extracted URL if found, otherwise fallback to ladipageUrl
+    const shareUrl = extractedUrl || props.ladipageUrl
 
     const result = await call('mbw_mira.api.external_connections.share_job_posting', {
       connection_id: selectedPage.connection_id,
       job_id: props.name || 'test_job_id',
-      message: cleanMessage,  // Dùng text sạch cho nội dung post
+      message: cleanMessage,  // Message đã chứa short link (nếu có)
       schedule_type: 'now',
       image_url: localFacebookContent.value.image || '',
       campaign_id: props.name,
-      // Gửi short URL (nếu có) thay vì luôn dùng ladipageUrl dài
-      ladipage_url: shareUrl,
+      // Chỉ gửi ladipage_url nếu không có URL trong message (để Facebook tự append)
+      // Nếu message đã có short link, không cần ladipage_url
+      ladipage_url: extractedUrl ? '' : shareUrl, // Empty nếu đã có URL trong message
       platform_type: selectedPage.platform_type || 'facebook',
       scheduled_time: localFacebookContent.value.schedule_time
     })
@@ -1258,13 +1310,18 @@ const sendEmail = async (content, recipient) => {
     console.log('✅ [sendEmail] Final content length:', finalContent.length)
     console.log('✅ [sendEmail] CSS in content:', finalContent.includes(cssContent?.substring(0, 50) || ''))
 
-    // Pass campaign_id để update status của Mira Campaign Social
+    // Get attachments from content
+    const attachments = content?.attachments || []
+    console.log('📎 [sendEmail] Attachments:', attachments)
+    
+    // Pass campaign_id và attachments để update status của Mira Campaign Social
     console.log('📧 [sendEmail] Sending test email with campaign_id:', props.name)
     const result = await call('mbw_mira.api.campaign.send_test_email', {
       recipient: recipient,
       subject,
       content: finalContent,
-      campaign_id: props.name || null  // Pass campaign ID nếu có
+      campaign_id: props.name || null,  // Pass campaign ID nếu có
+      attachments: attachments.length > 0 ? attachments : null  // Pass attachments nếu có
     })
     
     console.log('📧 [sendEmail] Test email result:', result)

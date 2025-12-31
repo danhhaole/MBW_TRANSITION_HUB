@@ -19,6 +19,17 @@
           <p class="text-sm text-gray-600">
             {{ __("Create a series of messages to nurture your candidates over time") }}
           </p>
+          <div
+            v-if="campaignObjective"
+            class="mt-1 inline-flex items-start rounded-md bg-blue-50 px-3 py-2 text-xs text-blue-800 border border-blue-100 max-w-2xl"
+          >
+            <span class="font-medium mr-1">
+              {{ __('Campaign Objective') }}:
+            </span>
+            <span class="line-clamp-2">
+              {{ campaignObjective }}
+            </span>
+          </div>
         </div>
 
         <!-- Add Message Dropdown -->
@@ -442,6 +453,10 @@ const props = defineProps({
     type: String,
     default: ''
   },
+  campaignObjective: {
+    type: String,
+    default: ''
+  },
   ladipageUrl: {
     type: String,
     default: ''
@@ -465,6 +480,9 @@ const props = defineProps({
 })
 const emit = defineEmits(['update:triggers', 'update:ladipageUrl', 'update:ladipageId'])
 const toast = useToast()
+
+console.log('[Step2_ContentTimeline] props.campaignName:', props.campaignName)
+console.log('[Step2_ContentTimeline] props.campaignObjective:', props.campaignObjective)
 
 // Available channels for nurturing (no Facebook posts)
 const availableChannels = [
@@ -501,7 +519,9 @@ const sharePageData = computed(() => {
   if (!localLadipageUrl.value) return null
   return {
     url: localLadipageUrl.value,
-    campaignName: props.campaignName
+    campaignName: props.campaignName,
+    // Dùng campaignId (props.name) cho utm_campaign, vẫn hiển thị campaignName
+    campaignId: props.name
   }
 })
 
@@ -1456,13 +1476,18 @@ const sendEmail = async (trigger, recipient) => {
     console.log('✅ [sendEmail] Final content length:', content.length)
     console.log('✅ [sendEmail] CSS in content:', content.includes(cssContent?.substring(0, 50) || ''))
 
-    // Pass campaign_id để update status của Mira Campaign Social
+    // Get attachments from trigger content
+    const attachments = trigger.content?.attachments || []
+    console.log('📎 [sendEmail] Attachments:', attachments)
+    
+    // Pass campaign_id và attachments để update status của Mira Campaign Social
     console.log('📧 [sendEmail] Sending test email with campaign_id:', props.name);
     const result = await call('mbw_mira.api.campaign.send_test_email', {
       recipient: recipient,
       subject,
       content,
-      campaign_id: props.name || null  // Pass campaign ID nếu có
+      campaign_id: props.name || null,  // Pass campaign ID nếu có
+      attachments: attachments.length > 0 ? attachments : null  // Pass attachments nếu có
     });
     
     console.log('📧 [sendEmail] Test email result:', result);

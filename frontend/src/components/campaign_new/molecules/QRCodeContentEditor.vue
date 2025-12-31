@@ -147,7 +147,7 @@
             />
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 gap-4">
             <!-- UTM Source -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -160,7 +160,7 @@
             </div>
 
             <!-- UTM Medium -->
-            <div>
+            <!-- <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">
                 {{ __('UTM Medium') }} <span class="text-red-500">*</span>
               </label>
@@ -168,7 +168,7 @@
                 v-model="newQRData.utm_medium"
                 :placeholder="__('e.g., qr, print, offline')"
               />
-            </div>
+            </div> -->
           </div>
 
           <!-- Preview if QR exists -->
@@ -288,7 +288,7 @@ const props = defineProps({
     type: Object,
     default: () => ({
       utm_campaign: '',
-      utm_source: 'qr_code',
+      utm_source: 'Facebook',
       utm_medium: 'qr',
       qr_data: null
     })
@@ -320,7 +320,7 @@ const newQRData = ref({
   qr_name: '',
   description: '',
   purpose: '',
-  utm_source: 'qr_code',
+  utm_source: 'facebook',
   utm_medium: 'qr'
 })
 
@@ -432,7 +432,7 @@ const resetModalData = () => {
     qr_name: '',
     description: '',
     purpose: '',
-    utm_source: 'qr_code',
+    utm_source: 'facebook',
     utm_medium: 'qr'
   }
   editingQR.value = null

@@ -42,11 +42,11 @@
               <tbody class="bg-white divide-y divide-gray-200">
                 <tr v-for="item in currentItems" :key="item.name" class="hover:bg-gray-50">
                   <td class="px-6 py-4">
-                    <div class="flex items-start gap-3">
-                      <div class="mt-2">
-                          <svg viewBox="0 0 24 24" width="16" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 text-blue-500"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                    <div class="flex items-center gap-3">
+                      <div class="flex-shrink-0">
+                          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
                       </div>
-                      <div>
+                      <div class="flex-1">
                         <div class="text-gray-900 text-base font-medium">{{ item.campaign_step_name || item.campaign_step }}</div>
                         <div class="text-base text-gray-500">{{ item.campaign_name }}</div>
                       </div>
@@ -295,7 +295,7 @@ const miraTalentPoolStore = useMiraTalentPoolStore()
   const toast = useToast()
 
   const resource = createResource({
-    url: 'mbw_mira.mbw_mira.doctype.action.action.get_my_actions',
+    url: 'mbw_mira.mbw_mira.doctype.mira_action.mira_action.get_my_mira_actions',
     method: 'POST',
   })
   
@@ -395,7 +395,7 @@ const miraTalentPoolStore = useMiraTalentPoolStore()
   // Update action to EXECUTED
   const updateAction = async (item) => {
     try {
-      const updater = createResource({ url: 'mbw_mira.mbw_mira.doctype.action.action.update_action', method: 'POST' })
+      const updater = createResource({ url: 'mbw_mira.mbw_mira.doctype.mira_action.mira_action.update_mira_action', method: 'POST' })
       const payload = {
         name: item.name,
         status: 'EXECUTED',
@@ -513,7 +513,7 @@ const miraTalentPoolStore = useMiraTalentPoolStore()
     // Lấy dữ liệu đầy đủ từ server để hiển thị chi tiết
     try {
       const getDoc = createResource({ url: 'mbw_mira.api.common.get_form_data', method: 'POST' })
-      const res = await getDoc.submit({ doctype: 'Action', name: item.name })
+      const res = await getDoc.submit({ doctype: 'Mira Action', name: item.name })
       const data = res?.data || {}
       Object.assign(viewData, {
         ...item,
@@ -541,7 +541,7 @@ const miraTalentPoolStore = useMiraTalentPoolStore()
     // Lấy dữ liệu đầy đủ từ server để đảm bảo có field result
     try {
       const getDoc = createResource({ url: 'mbw_mira.api.common.get_form_data', method: 'POST' })
-      const res = await getDoc.submit({ doctype: 'Action', name: item.name })
+      const res = await getDoc.submit({ doctype: 'Mira Action', name: item.name })
       const data = res?.data || {}
       Object.assign(editForm, {
         name: data.name || item.name,
@@ -587,7 +587,7 @@ const miraTalentPoolStore = useMiraTalentPoolStore()
     if (!selectedAction.value) return
     savingEdit.value = true
     try {
-      const updater = createResource({ url: 'mbw_mira.mbw_mira.doctype.action.action.update_action', method: 'POST' })
+      const updater = createResource({ url: 'mbw_mira.mbw_mira.doctype.mira_action.mira_action.update_mira_action', method: 'POST' })
       const payload = {
         name: editForm.name,
         status: selectedAction.value,

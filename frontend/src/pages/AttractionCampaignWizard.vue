@@ -64,6 +64,7 @@
           :ladipage-id="campaignData.ladipage_id"
           :page-data="campaignData.page_data"
           :campaign-name="campaignData.campaign_name"
+          :campaign-objective="campaignData.description"
           :name="campaignData.name"
           :show-error="showValidationError"
           @update:selected-channels="campaignData.selected_channels = $event"

@@ -435,9 +435,10 @@ const addShortLink = async (block) => {
   const params = new URLSearchParams()
   params.append('utm_source', 'zalo')
   params.append('utm_medium', 'social')
-  
-  if (props.sharePageData.campaignName) {
-    params.append('utm_campaign', props.sharePageData.campaignName.trim())
+  // Ưu tiên dùng campaignId cho utm_campaign nếu có, fallback về campaignName
+  const utmCampaign = props.sharePageData.campaignId || props.sharePageData.campaignName
+  if (utmCampaign) {
+    params.append('utm_campaign', String(utmCampaign).trim())
   }
 
   const separator = baseUrl.includes('?') ? '&' : '?'
@@ -594,10 +595,10 @@ watch(() => props.sharePageData?.url, async (newUrl, oldUrl) => {
         const params = new URLSearchParams()
         params.append('utm_source', 'zalo')
         params.append('utm_medium', 'social')
-        
-        if (props.sharePageData?.campaignName) {
-          params.append('utm_campaign', props.sharePageData.campaignName.trim())
-        }
+      const utmCampaign = props.sharePageData?.campaignId || props.sharePageData?.campaignName
+      if (utmCampaign) {
+        params.append('utm_campaign', String(utmCampaign).trim())
+      }
 
         const separator = baseUrl.includes('?') ? '&' : '?'
         const urlWithUtm = `${baseUrl}${separator}${params.toString()}`

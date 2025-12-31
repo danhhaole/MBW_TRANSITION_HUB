@@ -69,11 +69,11 @@ def get_mira_action_worker(step):
 	Args:
 		step (SEND_EMAIL/SEND_SMS): _description_
 	"""
-	mira_actions = frappe.get_list("MiraAction",filters={"status":"SCHEDULED", "scheduled_at":["<=", now_datetime()]})
+	mira_actions = frappe.get_list("Mira Action",filters={"status":"SCHEDULED", "scheduled_at":["<=", now_datetime()]})
 	#Duyệt danh sách mira_actions, tìm step nào có mira_action_type là gửi email
 	mira_actions_name =[]
 	for mira_action in mira_actions:
-		step_exists = frappe.db.exists("Mira Campaign Step",{"name":mira_action.campaign_social, "mira_action_type":step})
+		step_exists = frappe.db.exists("Mira Campaign Step",{"name":mira_action.campaign_social, "action_type":step})
 		if step_exists:
 			mira_actions_name.append(mira_action)
 	return mira_actions_name
@@ -84,7 +84,7 @@ def check_duplicate_mira_action(doc):
         "campaign_social": doc.campaign_social,
     }
 
-    existing = frappe.db.exists("MiraAction", filters)
+    existing = frappe.db.exists("Mira Action", filters)
 
     if existing and existing != doc.name:  # ← tránh trùng với chính mình khi update
         frappe.throw(
@@ -106,24 +106,60 @@ def _map_by(items, key):
 
 
 def _get_enriched_mira_actions(mira_action_rows):
-    step_names = [row.get("campaign_social") for row in mira_action_rows if row.get("campaign_social")]
+    # Get campaign_social IDs and user IDs
+    campaign_social_ids = [row.get("campaign_social") for row in mira_action_rows if row.get("campaign_social")]
+    talent_campaign_ids = [row.get("talent_campaign_id") for row in mira_action_rows if row.get("talent_campaign_id")]
     user_ids = list({row.get("assignee_id") for row in mira_action_rows if row.get("assignee_id")})
 
-    steps = frappe.get_all(
-        "Mira Campaign Step",
-        filters={"name": ["in", step_names]} if step_names else {},
-        fields=["name", "campaign_step_name", "campaign", "mira_action_type"],
-    ) if step_names else []
-    steps_by_name = _map_by(steps, "name")
+    # Get Mira Campaign Social records
+    campaign_socials = frappe.get_all(
+        "Mira Campaign Social",
+        filters={"name": ["in", campaign_social_ids]} if campaign_social_ids else {},
+        fields=["name", "campaign_id", "social_page_name"],
+    ) if campaign_social_ids else []
+    campaign_socials_by_name = _map_by(campaign_socials, "name")
 
-    campaign_ids = list({s.get("campaign") for s in steps}) if steps else []
+    # Get Mira Talent Campaign records to find current_step_order
+    talent_campaigns = frappe.get_all(
+        "Mira Talent Campaign",
+        filters={"name": ["in", talent_campaign_ids]} if talent_campaign_ids else {},
+        fields=["name", "campaign_id", "current_step_order"],
+    ) if talent_campaign_ids else []
+    talent_campaigns_by_name = _map_by(talent_campaigns, "name")
+
+    # Collect all campaign_ids from both sources
+    campaign_ids = set()
+    for cs in campaign_socials:
+        if cs.get("campaign_id"):
+            campaign_ids.add(cs.get("campaign_id"))
+    for tc in talent_campaigns:
+        if tc.get("campaign_id"):
+            campaign_ids.add(tc.get("campaign_id"))
+    
+    # Get Mira Campaign records
     campaigns = frappe.get_all(
         "Mira Campaign",
-        filters={"name": ["in", campaign_ids]} if campaign_ids else {},
+        filters={"name": ["in", list(campaign_ids)]} if campaign_ids else {},
         fields=["name", "campaign_name"],
     ) if campaign_ids else []
     campaigns_by_id = _map_by(campaigns, "name")
 
+    # Get Mira Campaign Step records based on campaign_id and step_order
+    steps_by_campaign_and_order = {}
+    for tc in talent_campaigns:
+        campaign_id = tc.get("campaign_id")
+        step_order = tc.get("current_step_order")
+        if campaign_id and step_order:
+            steps = frappe.get_all(
+                "Mira Campaign Step",
+                filters={"campaign": campaign_id, "step_order": step_order},
+                fields=["name", "campaign_step_name", "campaign", "action_type"],
+                limit=1
+            )
+            if steps:
+                steps_by_campaign_and_order[tc.get("name")] = steps[0]
+
+    # Get Users
     users = frappe.get_all(
         "User",
         filters={"name": ["in", user_ids]} if user_ids else {},
@@ -133,17 +169,33 @@ def _get_enriched_mira_actions(mira_action_rows):
 
     enriched = []
     for row in mira_action_rows:
-        step = steps_by_name.get(row.get("campaign_step"), {})
-        camp = campaigns_by_id.get(step.get("campaign"), {})
+        # Get campaign_social info
+        campaign_social = campaign_socials_by_name.get(row.get("campaign_social"), {})
+        campaign_id_from_social = campaign_social.get("campaign_id")
+        
+        # Get talent_campaign info
+        talent_campaign = talent_campaigns_by_name.get(row.get("talent_campaign_id"), {})
+        campaign_id_from_tc = talent_campaign.get("campaign_id")
+        step_order = talent_campaign.get("current_step_order")
+        
+        # Get step info from talent_campaign
+        step = steps_by_campaign_and_order.get(row.get("talent_campaign_id"), {})
+        
+        # Use campaign_id from talent_campaign first, fallback to campaign_social
+        campaign_id = campaign_id_from_tc or campaign_id_from_social
+        camp = campaigns_by_id.get(campaign_id, {})
         user = users_by_id.get(row.get("assignee_id"), {})
+        
         enriched.append({
             **row,
             "campaign_step_name": step.get("campaign_step_name"),
-            "mira_action_type": step.get("mira_action_type"),
-            "campaign_id": step.get("campaign"),
+            "mira_action_type": step.get("action_type"),  # Map action_type to mira_action_type for compatibility
+            "action_type": step.get("action_type"),
+            "campaign_id": campaign_id,
             "campaign_name": camp.get("campaign_name"),
             "assignee_full_name": user.get("full_name"),
             "assignee_email": user.get("email"),
+            "assignee_name": user.get("full_name"),  # Add for compatibility
         })
     return enriched
 
@@ -166,7 +218,7 @@ def get_my_mira_actions(page=1, limit=20, search="", assigned_to="@me", include_
         
         base_fields = [
             "name",
-            "campaign_step",
+            "campaign_social",
             "status",
             "talent_campaign_id",
             "assignee_id",
@@ -199,7 +251,7 @@ def get_my_mira_actions(page=1, limit=20, search="", assigned_to="@me", include_
         pending_filters["status"] = "PENDING_MANUAL"
         
         pending_rows = frappe.get_list(
-            "MiraAction",
+            "Mira Action",
             fields=base_fields,
             filters=pending_filters,
             or_filters=search_condition if search else None,
@@ -208,7 +260,7 @@ def get_my_mira_actions(page=1, limit=20, search="", assigned_to="@me", include_
             page_length=cint(limit),
         ) or []
         pending_total = len(
-            frappe.get_list("MiraAction", filters=pending_filters, or_filters=search_condition if search else None)
+            frappe.get_list("Mira Action", filters=pending_filters, or_filters=search_condition if search else None)
         )
 
         # Completed: chỉ lấy EXECUTED
@@ -216,7 +268,7 @@ def get_my_mira_actions(page=1, limit=20, search="", assigned_to="@me", include_
         completed_filters["status"] = "EXECUTED"
         
         completed_rows = frappe.get_list(
-            "MiraAction",
+            "Mira Action",
             fields=base_fields,
             filters=completed_filters,
             or_filters=search_condition if search else None,
@@ -225,12 +277,12 @@ def get_my_mira_actions(page=1, limit=20, search="", assigned_to="@me", include_
             page_length=cint(limit),
         ) or []
         completed_total = len(
-            frappe.get_list("MiraAction", filters=completed_filters, or_filters=search_condition if search else None)
+            frappe.get_list("Mira Action", filters=completed_filters, or_filters=search_condition if search else None)
         )
 
         # All: lấy cả PENDING_MANUAL và EXECUTED
         all_rows = frappe.get_list(
-            "MiraAction",
+            "Mira Action",
             fields=base_fields,
             filters=common_filters,
             or_filters=search_condition if search else None,
@@ -239,7 +291,7 @@ def get_my_mira_actions(page=1, limit=20, search="", assigned_to="@me", include_
             page_length=cint(limit),
         ) or []
         all_total = len(
-            frappe.get_list("MiraAction", filters=common_filters, or_filters=search_condition if search else None)
+            frappe.get_list("Mira Action", filters=common_filters, or_filters=search_condition if search else None)
         )
 
         # Enrich with step/campaign/user info
@@ -322,7 +374,7 @@ def update_mira_action(name, data=None, **kwargs):
                 # giữ nguyên chuỗi nếu không phải JSON hợp lệ
                 pass
 
-        doc = frappe.get_doc("MiraAction", name)
+        doc = frappe.get_doc("Mira Action", name)
         doc.update(payload)
         doc.save()
 

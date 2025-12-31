@@ -34,7 +34,7 @@
         <CampaignStep1
           v-if="currentStep === 1"
           :campaign-name="campaignData.campaign_name"
-          :objective="campaignData.description"
+          :objective="campaignData.objective"
           :campaign-id="campaignData.name"
           :campaign-tags="campaignData.campaign_tags"
           :config-data="campaignData.config_data"
@@ -43,7 +43,7 @@
           :show-error="showValidationError"
           :start-date="campaignData.start_date"
           @update:campaign-name="campaignData.campaign_name = $event"
-          @update:objective="campaignData.description = $event"
+          @update:objective="campaignData.objective = $event"
           @update:campaign-tags="campaignData.campaign_tags = $event"
           @update:config-data="campaignData.config_data = $event"
           @update:conditions="campaignData.conditions = $event"
@@ -61,6 +61,7 @@
           :facebook-content="campaignData.facebook_content"
           :zalo-content="campaignData.zalo_content"
           :campaign-name="campaignData.campaign_name"
+          :campaign-objective="campaignData.objective"
           :name="campaignData.name"
           :ladipage-url="campaignData.ladipage_url"
           :ladipage-id="campaignData.ladipage_id"
@@ -151,7 +152,7 @@ const loadingTriggers = ref(false)
 
 const campaignData = ref({
   campaign_name: '',
-  description: '',
+  objective: '',
   campaign_tags: [],
   config_data: {},
   conditions: [],
@@ -346,7 +347,7 @@ const targetPool = campaignData.value.config_data?.selectedSegment?.value || cam
       
       const result = await campaignStore.submitNewCampaign({
         campaign_name: campaignData.value.campaign_name,
-        description: campaignData.value.description,
+        description: campaignData.value.objective,
         target_pool: targetPool,
         condition_filter: JSON.stringify(campaignData.value.conditions),
         type: campaignData.value.type,
@@ -394,7 +395,7 @@ const targetPool = campaignData.value.config_data?.selectedSegment?.value || cam
           name: campaignData.value.name,
           fieldname: {
             campaign_name: campaignData.value.campaign_name,
-            description: campaignData.value.description,
+            description: campaignData.value.objective,
             target_pool: targetPool,
             condition_filter: JSON.stringify(campaignData.value.conditions),
             start_date: campaignData.value.start_date === 'SEND_NOW' ? moment().format('YYYY-MM-DDTHH:mm') : (campaignData.value.start_date || moment().format('YYYY-MM-DDTHH:mm'))
