@@ -275,7 +275,7 @@
 							>
 								{{ __('Clicked') }} ({{ filterCounts.clicked }})
 							</button>
-							<button
+							<!-- <button
 								@click="handleFilterClick('failed')"
 								:class="[
 									'px-4 py-2 text-sm font-medium rounded-lg transition-colors',
@@ -285,7 +285,7 @@
 								]"
 							>
 								{{ __('Failed') }} ({{ filterCounts.failed }})
-							</button>
+							</button> -->
 							<button
 								@click="handleFilterClick('bounced')"
 								:class="[
@@ -297,7 +297,7 @@
 							>
 								{{ __('Bounced') }} ({{ filterCounts.bounced }})
 							</button>
-							<button
+							<!-- <button
 								@click="handleFilterClick('spam')"
 								:class="[
 									'px-4 py-2 text-sm font-medium rounded-lg transition-colors',
@@ -307,7 +307,7 @@
 								]"
 							>
 								{{ __('Spam') }} ({{ filterCounts.spam }})
-							</button>
+							</button> -->
 						</div>
 
 						<!-- Talent Campaign Table -->
@@ -1381,6 +1381,26 @@ const filterCounts = ref({
 	spam: 0,
 })
 
+// Store all talent records (unfiltered)
+const allTalentCampaignRecords = ref([])
+
+// Store interactions by talent_id (map of talent_id -> array of interaction types)
+const talentInteractions = ref({})
+
+// Store failed talent IDs (from Mira Action with status FAILED)
+const failedTalentIds = ref(new Set())
+
+// Mapping từ filter key sang interaction type
+const filterToInteractionType = {
+	'sent': 'EMAIL_SENT',
+	'delivered': 'EMAIL_DELIVERED',
+	'opened': 'EMAIL_OPENED',
+	'clicked': 'ON_LINK_CLICK',
+	// 'failed': 'FAILED',
+	'bounced': 'EMAIL_BOUNCED',
+	// 'spam': 'EMAIL_SPAM',
+}
+
 // Get campaign type route name based on campaign type
 const getCampaignTypeRoute = (type) => {
 	const routeMap = {
@@ -1537,10 +1557,19 @@ const loadTalentCampaign = async () => {
 			console.error('Error loading Mira Contact Campaign:', err)
 		}
 
-		talentCampaignRecords.value = all
-		console.log('Loaded talent campaign records:', all)
+		// Store all records
+		allTalentCampaignRecords.value = all
+		console.log('[loadTalentCampaign] Loaded', all.length, 'talent campaign records')
+		console.log('[loadTalentCampaign] Talent IDs:', all.map(r => r.name))
+		
+		// Apply current filter (only if interactions are already loaded)
+		// If interactions are not loaded yet, filter will be applied after interactions load
+		if (Object.keys(talentInteractions.value).length > 0 || talentFilter.value === 'sent') {
+			applyTalentFilter()
+		}
 	} catch (err) {
 		console.error('Error loading Talent Campaign:', err)
+		allTalentCampaignRecords.value = []
 		talentCampaignRecords.value = []
 	}
 }
@@ -2417,20 +2446,214 @@ const loadInteractions = async () => {
 		// Use backend API endpoint for safer query
 		const response = await call('mbw_mira.api.interaction.get_campaign_interactions', {
 			campaign_id: route.params.id,
-			limit: 100
+			limit: 10000 // Load all interactions for filtering
 		})
 		
 		if (response && response.status === 'success') {
 			interactions.value = response.interactions || []
+			console.log('[loadInteractions] Total interactions loaded:', interactions.value.length)
+			console.log('[loadInteractions] Sample interactions:', interactions.value.slice(0, 5))
+			
+			// Group interactions by talent_id
+			const interactionsByTalent = {}
+			for (const interaction of response.interactions || []) {
+				const talentId = interaction.talent_id
+				if (talentId) {
+					if (!interactionsByTalent[talentId]) {
+						interactionsByTalent[talentId] = new Set()
+					}
+					if (interaction.interaction_type) {
+						interactionsByTalent[talentId].add(interaction.interaction_type)
+					}
+				}
+			}
+			
+			// Convert Sets to Arrays
+			for (const talentId in interactionsByTalent) {
+				talentInteractions.value[talentId] = Array.from(interactionsByTalent[talentId])
+			}
+			
+			console.log('[loadInteractions] Loaded interactions for', Object.keys(talentInteractions.value).length, 'talents')
+			console.log('[loadInteractions] Full talentInteractions:', talentInteractions.value)
+			
+			// Debug: Log interactions by type
+			const interactionsByType = {}
+			for (const interaction of response.interactions || []) {
+				const type = interaction.interaction_type
+				if (type) {
+					if (!interactionsByType[type]) {
+						interactionsByType[type] = []
+					}
+					interactionsByType[type].push(interaction.talent_id)
+				}
+			}
+			console.log('[loadInteractions] Interactions by type:', interactionsByType)
+			
+			// Apply current filter after loading interactions (only if talents are already loaded)
+			if (allTalentCampaignRecords.value.length > 0) {
+				applyTalentFilter()
+			}
 		} else {
 			interactions.value = []
+			talentInteractions.value = {}
 		}
 	} catch (err) {
 		console.error('Error loading interactions:', err)
 		interactions.value = []
+		talentInteractions.value = {}
 	} finally {
 		loadingInteractions.value = false
 	}
+}
+
+// Load failed talent IDs from Mira Action
+const loadFailedTalents = async () => {
+	try {
+		// Get all talent_campaign_ids for this campaign
+		const talentCampaignRes = await call('frappe.client.get_list', {
+			doctype: 'Mira Talent Campaign',
+			fields: ['name', 'talent_id'],
+			filters: [['campaign_id', '=', route.params.id]],
+			limit_page_length: 1000,
+		})
+		
+		if (talentCampaignRes.length > 0) {
+			const talentCampaignIds = talentCampaignRes.map(tc => tc.name)
+			const failedActions = await call('frappe.client.get_list', {
+				doctype: 'Mira Action',
+				fields: ['talent_campaign_id'],
+				filters: {
+					talent_campaign_id: ['in', talentCampaignIds],
+					status: 'FAILED'
+				},
+				limit_page_length: 1000,
+			})
+			
+			// Map talent_campaign_id -> talent_id
+			const tcToTalent = {}
+			for (const tc of talentCampaignRes) {
+				if (tc.name && tc.talent_id) {
+					tcToTalent[tc.name] = tc.talent_id
+				}
+			}
+			
+			const failedSet = new Set()
+			for (const action of failedActions || []) {
+				const tcId = action.talent_campaign_id
+				if (tcId && tcId in tcToTalent) {
+					failedSet.add(tcToTalent[tcId])
+				}
+			}
+			
+			failedTalentIds.value = failedSet
+			console.log('[loadFailedTalents] Loaded', failedSet.size, 'failed talent IDs')
+			console.log('[loadFailedTalents] Failed talent IDs:', Array.from(failedSet))
+			
+			// Apply current filter after loading failed talents (only if talents are already loaded)
+			if (allTalentCampaignRecords.value.length > 0 && talentFilter.value === 'failed') {
+				applyTalentFilter()
+			}
+		}
+	} catch (err) {
+		console.error('Error loading failed talents:', err)
+		failedTalentIds.value = new Set()
+	}
+}
+
+// Apply filter to talent records
+const applyTalentFilter = () => {
+	console.log('=== [applyTalentFilter] START ===')
+	console.log('[applyTalentFilter] Current filter:', talentFilter.value)
+	console.log('[applyTalentFilter] Total records before filter:', allTalentCampaignRecords.value.length)
+	console.log('[applyTalentFilter] Talent interactions loaded:', Object.keys(talentInteractions.value).length, 'talents')
+	console.log('[applyTalentFilter] Failed talent IDs:', failedTalentIds.value.size)
+	
+	// Debug: Log all talent IDs in records
+	console.log('[applyTalentFilter] All talent IDs in records:', allTalentCampaignRecords.value.map(r => r.name))
+	console.log('[applyTalentFilter] All talent IDs with interactions:', Object.keys(talentInteractions.value))
+	
+	// If no records loaded yet, don't filter
+	if (allTalentCampaignRecords.value.length === 0) {
+		console.log('[applyTalentFilter] No records loaded yet, skipping filter')
+		talentCampaignRecords.value = []
+		console.log('=== [applyTalentFilter] END (no records) ===')
+		return
+	}
+	
+	if (!talentFilter.value || talentFilter.value === 'sent') {
+		// "sent" means show all records (all were sent)
+		talentCampaignRecords.value = [...allTalentCampaignRecords.value]
+		console.log('[applyTalentFilter] Filter "sent" - showing all', talentCampaignRecords.value.length, 'records')
+		console.log('=== [applyTalentFilter] END (sent = all) ===')
+		return
+	}
+	
+	// Get interaction type from filter key
+	const interactionType = filterToInteractionType[talentFilter.value]
+	console.log('[applyTalentFilter] Filter key:', talentFilter.value, '-> Interaction type:', interactionType)
+	
+	if (!interactionType) {
+		console.warn('[applyTalentFilter] Unknown filter type:', talentFilter.value)
+		talentCampaignRecords.value = [...allTalentCampaignRecords.value]
+		console.log('=== [applyTalentFilter] END (unknown filter) ===')
+		return
+	}
+	
+	// Filter by interaction type
+	const filtered = []
+	
+	if (interactionType === 'FAILED') {
+		// Filter by failed talent IDs
+		for (const record of allTalentCampaignRecords.value) {
+			const talentId = record.name
+			if (failedTalentIds.value.has(talentId)) {
+				filtered.push(record)
+				console.log('[applyTalentFilter] Added failed talent:', talentId, record.full_name)
+			}
+		}
+		} else {
+			// Filter by interaction type
+			console.log('[applyTalentFilter] Filtering by interaction type:', interactionType)
+			console.log('[applyTalentFilter] Full talentInteractions map:', talentInteractions.value)
+			
+			// Debug: Count how many talents in allTalentCampaignRecords have this interaction type
+			const talentsWithInteraction = allTalentCampaignRecords.value.filter(record => {
+				const talentId = record.name
+				const interactions = talentInteractions.value[talentId] || []
+				return interactions.includes(interactionType)
+			})
+			console.log(`[applyTalentFilter] Found ${talentsWithInteraction.length} talents in campaign with ${interactionType}`)
+			console.log(`[applyTalentFilter] Expected count from API: ${filterCounts.value[talentFilter.value]}`)
+			
+			// Debug: List all talent IDs that have this interaction (from interactions data)
+			const allTalentsWithInteraction = Object.keys(talentInteractions.value).filter(talentId => 
+				talentInteractions.value[talentId].includes(interactionType)
+			)
+			console.log(`[applyTalentFilter] All talent IDs with ${interactionType} (from interactions):`, allTalentsWithInteraction)
+			console.log(`[applyTalentFilter] All talent IDs in campaign:`, allTalentCampaignRecords.value.map(r => r.name))
+			
+			for (const record of allTalentCampaignRecords.value) {
+				const talentId = record.name
+				const interactions = talentInteractions.value[talentId] || []
+				
+				console.log(`[applyTalentFilter] Checking talent ${talentId} (${record.full_name}):`)
+				console.log(`  - Interactions array:`, interactions)
+				console.log(`  - Looking for: ${interactionType}`)
+				console.log(`  - Includes? ${interactions.includes(interactionType)}`)
+				
+				if (interactions.includes(interactionType)) {
+					filtered.push(record)
+					console.log(`  ✓ Added to filtered list`)
+				} else {
+					console.log(`  ✗ Not added (does not have ${interactionType})`)
+				}
+			}
+		}
+	
+	talentCampaignRecords.value = filtered
+	console.log('[applyTalentFilter] Filtered to', filtered.length, 'records')
+	console.log('[applyTalentFilter] Filtered records:', filtered.map(r => ({ id: r.name, name: r.full_name })))
+	console.log('=== [applyTalentFilter] END ===')
 }
 
 // Load social posts for the campaign
@@ -2490,6 +2713,8 @@ const loadFilterCounts = async () => {
 				bounced: response.filter_counts.bounced || 0,
 				spam: response.filter_counts.spam || 0,
 			}
+			console.log('[loadFilterCounts] Filter counts from API:', filterCounts.value)
+			console.log('[loadFilterCounts] Total recipients:', response.total_recipients)
 		}
 	} catch (error) {
 		console.error('Error loading filter counts:', error)
@@ -2544,6 +2769,13 @@ watch(activeTab, (newTab) => {
 		if (socialPosts.value.length === 0) {
 			loadSocialPosts()
 		}
+	} else if (newTab === 'candidates') {
+		console.log('[watch activeTab] Switching to candidates tab, loading interactions and failed talents...')
+		// Load interactions and failed talents for filtering
+		if (Object.keys(talentInteractions.value).length === 0) {
+			loadInteractions()
+		}
+		loadFailedTalents()
 	}
 })
 onMounted(() => {
@@ -2558,6 +2790,7 @@ onMounted(() => {
 	loadSocialPages()
 	loadJobOpenings()
 	loadInteractions()
+	loadFailedTalents()
 	loadFilterCounts()
 })
 
@@ -2573,6 +2806,8 @@ watch(
 			loadAvailableCandidates()
 			loadFilterCounts()
 			loadTalentCampaign()
+			loadInteractions()
+			loadFailedTalents()
 		}
 	},
 )
@@ -2859,15 +3094,20 @@ const viewTargetSegment = () => {
 }
 
 // Handle filter click for talent list
-const handleFilterClick = (filterType) => {
-	console.log('Filter clicked:', filterType)
+const handleFilterClick = async (filterType) => {
+	console.log('[handleFilterClick] Filter clicked:', filterType)
 	talentFilter.value = filterType
 	
-	// TODO: Implement actual filtering logic when doctype is ready
-	// This will filter talentCampaignRecords based on the selected filter
-	// For now, just log the filter type
-	console.log('Current filter:', talentFilter.value)
-	console.log('Filter counts:', filterCounts.value)
+	// Ensure interactions are loaded before applying filter (if not already loaded)
+	if (Object.keys(talentInteractions.value).length === 0 && filterType !== 'sent') {
+		console.log('[handleFilterClick] Interactions not loaded yet, loading now...')
+		await loadInteractions()
+	}
+	
+	// Apply filter immediately
+	applyTalentFilter()
+	
+	console.log('[handleFilterClick] Filter applied. Current records:', talentCampaignRecords.value.length)
 }
 </script>
 

@@ -68,17 +68,25 @@ export const useInteractionStore = defineStore('interaction', () => {
     error.value = null
     
     try {
+      // Build filters - merge store filters with options filters
+      const mergedFilters = {
+        ...filters.value,
+        ...(options.filters || {})
+      }
+      
+      // Build params - options override defaults
       const params = {
-        page: pagination.value.page,
-        limit: pagination.value.limit,
-        filters: {
-          ...filters.value,
-          ...options.filters
-        },
+        filters: mergedFilters,
         fields: ['name', 'talent_id', 'interaction_type', 'action', 'url', 'description', 'modified'],
         order_by: 'modified desc',
+        // Default pagination (can be overridden by options)
+        limit_page_length: pagination.value.limit,
+        limit_start: (pagination.value.page - 1) * pagination.value.limit,
+        // Override with options (if limit_page_length is 0, it means load all)
         ...options
       }
+
+      console.log('[InteractionStore] fetchInteractions params:', params)
 
       const result = await call('frappe.client.get_list', {
         doctype: 'Mira Interaction',

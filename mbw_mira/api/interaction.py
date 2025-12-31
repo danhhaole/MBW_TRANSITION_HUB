@@ -661,6 +661,23 @@ def get_campaign_filter_counts(campaign_id):
         if not campaign_id:
             frappe.throw(_("Campaign ID is required"))
         
+        # Lấy danh sách talent_campaign_ids thuộc campaign này TRƯỚC để filter interactions
+        try:
+            talent_campaigns = frappe.get_all(
+                "Mira Talent Campaign",
+                filters={"campaign_id": campaign_id},
+                fields=["name", "talent_id"],
+                limit_page_length=0
+            ) or []
+        except:
+            talent_campaigns = []
+        
+        # Lấy set các talent_id còn trong campaign
+        active_talent_ids = set()
+        for tc in talent_campaigns:
+            if tc.get("talent_id"):
+                active_talent_ids.add(tc.get("talent_id"))
+        
         # Lấy tất cả interactions của campaign
         try:
             interactions = frappe.get_all(
@@ -672,28 +689,18 @@ def get_campaign_filter_counts(campaign_id):
         except:
             interactions = []
         
-        # Đếm số unique talent_id theo interaction_type
+        # Đếm số unique talent_id theo interaction_type (CHỈ ĐẾM TALENTS CÒN TRONG CAMPAIGN)
         type_talents = {}
         for item in interactions:
             itype = item.get("interaction_type")
             talent_id = item.get("talent_id")
-            if itype and talent_id:
+            # CHỈ ĐẾM nếu talent_id còn trong campaign
+            if itype and talent_id and talent_id in active_talent_ids:
                 if itype not in type_talents:
                     type_talents[itype] = set()
                 type_talents[itype].add(talent_id)
         
         counts = {itype: len(talents) for itype, talents in type_talents.items()}
-        
-        # Lấy danh sách talent_campaign_ids thuộc campaign này
-        try:
-            talent_campaigns = frappe.get_all(
-                "Mira Talent Campaign",
-                filters={"campaign_id": campaign_id},
-                fields=["name", "talent_id"],
-                limit_page_length=0
-            ) or []
-        except:
-            talent_campaigns = []
         
         talent_campaign_ids = [tc.name for tc in talent_campaigns if tc.get("name")]
         

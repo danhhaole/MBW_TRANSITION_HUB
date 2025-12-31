@@ -713,8 +713,8 @@ const loadData = async () => {
     // Load all data for client-side pagination
     const params = {
       filters: apiFilters,
-      page_length: 0, // Load all records
-      start: 0,
+      limit_page_length: 0, // Load all records (0 = no limit)
+      limit_start: 0,
       order_by: 'modified desc',
       fields: ['name', 'talent_id', 'interaction_type', 'action', 'url', 'description', 'modified']
     }
