@@ -553,9 +553,10 @@
 										</h4>
 
 										<!-- Content Preview -->
-										<p class="text-sm text-gray-600 mb-4 line-clamp-3">
-											{{ stripHtml(post.template_content) || __('No content') }}
-										</p>
+										<p
+											class="text-sm text-gray-600 mb-4 line-clamp-3 whitespace-pre-wrap"
+											v-html="highlightLinks(getPostPreviewText(post) || __('No content'))"
+										></p>
 
 										<!-- Error Message -->
 										<div v-if="post.error_message" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -787,7 +788,16 @@
 									
 									<!-- Post Content -->
 									<div class="mb-3">
-										<p class="text-gray-800 text-sm whitespace-pre-wrap">{{ stripHtml(selectedPost.template_content) || selectedPost.subject || 'No content' }}</p>
+										<p
+											class="text-gray-800 text-sm whitespace-pre-wrap"
+											v-html="
+												highlightLinks(
+													stripHtml(selectedPost.template_content) ||
+														selectedPost.subject ||
+														'No content',
+												)
+											"
+										></p>
 									</div>
 									
 									<!-- Post Image -->
@@ -821,6 +831,41 @@
 												Share
 											</span>
 										</div>
+									</div>
+								</div>
+							</div>
+
+							<div v-else-if="selectedPost.platform?.toLowerCase() === 'zalo'" class="space-y-4">
+								<!-- Zalo Message Preview -->
+								<h4 class="text-sm font-medium text-gray-500 mb-3">{{ __('Zalo Message Preview') }}</h4>
+								<div class="bg-gray-100 border border-gray-200 rounded-lg max-w-md mx-auto p-4">
+									<!-- Zalo Header -->
+									<div class="flex items-center mb-3">
+										<div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
+											{{ selectedPost.social_page_name ? selectedPost.social_page_name.charAt(0).toUpperCase() : 'Z' }}
+										</div>
+										<div class="ml-3">
+											<p class="font-semibold text-gray-900 text-sm">
+												{{ selectedPost.social_page_name || 'Zalo OA' }}
+											</p>
+											<p class="text-xs text-gray-500">
+												{{ formatDateTime(selectedPost.post_schedule_time) || 'Now' }}
+											</p>
+										</div>
+									</div>
+
+									<!-- Zalo Bubble -->
+									<div class="flex justify-start">
+										<div
+											class="bg-white rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm text-sm text-gray-800 whitespace-pre-wrap break-words max-w-full"
+											v-html="
+												highlightLinks(
+													getZaloTextFromTemplate(selectedPost.template_content) ||
+														selectedPost.subject ||
+														'No content',
+												)
+											"
+										></div>
 									</div>
 								</div>
 							</div>
@@ -2830,11 +2875,113 @@ const formatDateTime = (date) => {
 }
 
 // Strip HTML tags and decode entities for preview
+// IMPORTANT: Giữ nguyên xuống dòng & khoảng trắng để content
+// hiển thị giống nhất có thể với post thực tế (Facebook, v.v.)
 const stripHtml = (html) => {
 	if (!html) return ''
-	// Create a temporary element to decode HTML entities
-	const doc = new DOMParser().parseFromString(html, 'text/html')
-	return doc.body.textContent || ''
+
+	// 1) Thay các thẻ block bằng newline trước khi bỏ tag
+	let text = html
+		// Kết thúc đoạn -> 2 dòng trống
+		.replace(/<\/p>/gi, '\n\n')
+		.replace(/<\/div>/gi, '\n\n')
+		.replace(/<\/h[1-6]>/gi, '\n\n')
+		// Li trong list -> xuống dòng
+		.replace(/<\/li>/gi, '\n')
+		// BR -> xuống dòng
+		.replace(/<br\s*\/?>/gi, '\n')
+		// Bắt đầu li -> bullet
+		.replace(/<li[^>]*>/gi, '\n• ')
+
+	// 2) Dùng DOMParser để decode entity, bỏ tag còn lại
+	const doc = new DOMParser().parseFromString(text, 'text/html')
+	text = doc.body.textContent || ''
+
+	// 3) Chuẩn hoá newline nhưng KHÔNG trim để tránh dính chữ và URL
+	text = text
+		.replace(/\r\n/g, '\n')      // windows newline -> unix
+		.replace(/\n{3,}/g, '\n\n')  // >2 newline liên tiếp -> 2
+
+	return text
+}
+
+// Parse Zalo template_content (JSON với blocks + optional short_link) thành plain text
+const getZaloTextFromTemplate = (templateContent) => {
+	if (!templateContent) return ''
+	try {
+		const data =
+			typeof templateContent === 'string'
+				? JSON.parse(templateContent)
+				: templateContent
+
+		const blocks = Array.isArray(data?.blocks) ? data.blocks : []
+
+		// Text chính trong các block
+		const textParts = blocks
+			.map((b) => (b && b.text_content ? String(b.text_content) : ''))
+			.filter((t) => t.trim() !== '')
+
+		// Short link có thể nằm trong từng block (block.short_link)
+		const shortLinksFromBlocks = blocks
+			.map((b) => (b && b.short_link ? String(b.short_link) : ''))
+			.filter((t) => t.trim() !== '')
+
+		// Hoặc ở level root (data.short_link) – phòng trường hợp format khác
+		const rootShortLink =
+			data.short_link && String(data.short_link).trim() !== ''
+				? [String(data.short_link).trim()]
+				: []
+
+		let parts = [...textParts, ...shortLinksFromBlocks, ...rootShortLink]
+
+		if (!parts.length) {
+			// Nếu không parse được blocks thì fallback raw string
+			return typeof templateContent === 'string'
+				? templateContent
+				: JSON.stringify(templateContent)
+		}
+
+		return parts.join('\n\n')
+	} catch (e) {
+		console.error('Error parsing Zalo template_content in CampaignDetailView:', e, templateContent)
+		return typeof templateContent === 'string'
+			? templateContent
+			: JSON.stringify(templateContent)
+	}
+}
+
+// Lấy preview text cho card Social Posts (Facebook/Zalo/khác)
+const getPostPreviewText = (post) => {
+	if (!post) return ''
+	if (post.platform?.toLowerCase() === 'zalo') {
+		return getZaloTextFromTemplate(post.template_content)
+	}
+	return stripHtml(post.template_content)
+}
+
+// Highlight links in text by wrapping them in bold/blue span, returned as HTML.
+// Đồng thời escape HTML cho phần không phải link để tránh XSS.
+const highlightLinks = (text) => {
+	if (!text) return ''
+
+	// Escape HTML cho toàn bộ text trước
+	const escapeHtml = (str) =>
+		str
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;')
+
+	const escaped = escapeHtml(text)
+
+	// Regex đơn giản bắt URL (http/https)
+	const urlRegex = /(https?:\/\/[^\s]+)/g
+
+	// Thay URL bằng span bôi đậm/màu
+	const html = escaped.replace(urlRegex, (url) => {
+		return `<span class="font-semibold text-blue-600 break-words">${url}</span>`
+	})
+
+	return html
 }
 
 // Combine css_content and template_content for email preview
