@@ -69,7 +69,7 @@
           :job-info="campaignData.job_info"
           :show-error="showValidationError"
           @update:selected-channels="campaignData.selected_channels = $event"
-          @update:email-content="campaignData.email_content = { ...campaignData.email_content, ...$event }"
+          @update:email-content="handleEmailContentUpdate($event)"
           @update:facebook-content="campaignData.facebook_content = $event"
           @update:zalo-content="campaignData.zalo_content = $event"
           @update:ladipage-url="campaignData.ladipage_url = $event"
@@ -234,6 +234,41 @@ const handleValidate = (isValid) => {
 const handleConditionsChange = (conditions) => {
   console.log('Conditions changed:', conditions)
   campaignData.value.conditions = conditions
+}
+
+// Handle email content update from Step2
+const handleEmailContentUpdate = (content) => {
+  console.log('📥 [RecruitmentCampaignWizard] ========== RECEIVED update:email-content ==========')
+  console.log('   incoming content.email_subject:', content?.email_subject)
+  console.log('   incoming content.email_subject type:', typeof content?.email_subject)
+  console.log('   incoming content.email_subject length:', content?.email_subject?.length || 0)
+  console.log('   incoming content.email_subject value:', JSON.stringify(content?.email_subject))
+  console.log('   current campaignData.email_content.email_subject:', campaignData.value.email_content?.email_subject)
+  console.log('   attachments count:', content?.attachments?.length || 0)
+  console.log('   content keys:', Object.keys(content || {}))
+  
+  // IMPORTANT: Preserve email_subject if incoming content.email_subject is empty string or undefined
+  // This prevents overwriting user input when Step2 emits update:email-content with empty email_subject
+  const currentEmailSubject = campaignData.value.email_content?.email_subject || ''
+  const newEmailSubject = content?.email_subject || ''
+  const shouldPreserveEmailSubject = currentEmailSubject.trim() !== '' && newEmailSubject.trim() === ''
+  const preservedEmailSubject = shouldPreserveEmailSubject 
+    ? currentEmailSubject
+    : newEmailSubject
+  
+  // Merge content but preserve email_subject if needed
+  campaignData.value.email_content = {
+    ...campaignData.value.email_content,
+    ...content,
+    // IMPORTANT: Preserve email_subject if incoming content doesn't have a valid value
+    email_subject: preservedEmailSubject
+  }
+  
+  console.log('✅ [RecruitmentCampaignWizard] Updated campaignData.email_content')
+  console.log('   preserved email_subject:', campaignData.value.email_content?.email_subject)
+  console.log('   email_subject preserved:', shouldPreserveEmailSubject)
+  console.log('   attachments count:', campaignData.value.email_content?.attachments?.length || 0)
+  console.log('📥 [RecruitmentCampaignWizard] ========== END RECEIVED update:email-content ==========')
 }
 
 const closeWizard = () => {
@@ -672,6 +707,17 @@ const loadSocialPosts = async (campaignId) => {
     // Map posts back to campaign data
     for (const post of posts) {
       if (post.platform === 'Email') {
+        // Load attachments from child table if available
+        const attachments = post.attachments || []
+        
+        console.log('🔍 [loadSocialPosts] ========== DEBUG POST DATA ==========')
+        console.log('   post object:', post)
+        console.log('   post.subject:', post.subject)
+        console.log('   post.subject type:', typeof post.subject)
+        console.log('   post.subject value:', JSON.stringify(post.subject))
+        console.log('   post keys:', Object.keys(post))
+        console.log('   Full post:', JSON.stringify(post, null, 2))
+        
         campaignData.value.email_content = {
           email_subject: post.subject || '',
           email_content: post.template_content || '',     // HTML format
@@ -679,21 +725,25 @@ const loadSocialPosts = async (campaignId) => {
           template_content: post.template_content || '',  // HTML format
           mjml_content: post.mjml_content || '',          // MJML format
           css_content: post.css_content || '',            // CSS content for styling
-          attachments: [],
+          attachments: Array.isArray(attachments) ? attachments : [],
           sender_account: post.sender_account || null,
           schedule_time: post.post_schedule_time || null
         }
         
         console.log('📧 [loadSocialPosts] Email content loaded:')
+        console.log('   email_subject (from post.subject):', campaignData.value.email_content.email_subject)
+        console.log('   email_subject type:', typeof campaignData.value.email_content.email_subject)
+        console.log('   email_subject length:', campaignData.value.email_content.email_subject?.length || 0)
+        console.log('   attachments count:', campaignData.value.email_content.attachments?.length || 0)
         console.log('   css_content exists:', !!post.css_content)
         console.log('   css_content length:', post.css_content?.length || 0)
         console.log('   template_content exists:', !!post.template_content)
         console.log('   template_content length:', post.template_content?.length || 0)
         console.log('   block_content exists:', !!post.block_content)
         console.log('   block_content length:', post.block_content?.length || 0)
-        console.log('   block_content preview:', post.block_content?.substring(0, 200) + '...')
         console.log('   mjml_content exists:', !!post.mjml_content)
         console.log('   mjml_content length:', post.mjml_content?.length || 0)
+        console.log('🔍 [loadSocialPosts] ========== END DEBUG ==========')
         if (!campaignData.value.selected_channels?.includes('email')) {
           campaignData.value.selected_channels = campaignData.value.selected_channels || []
           campaignData.value.selected_channels.push('email')
@@ -758,7 +808,18 @@ const saveSocialPosts = async () => {
     if (campaignData.value.selected_channels.includes('email')) {
       const emailContent = campaignData.value.email_content
       
-      socialPosts.push({
+      console.log('🔍 [saveSocialPosts] ========== DEBUG EMAIL CONTENT ==========')
+      console.log('   emailContent object:', emailContent)
+      console.log('   emailContent.email_subject:', emailContent?.email_subject)
+      console.log('   emailContent.email_subject type:', typeof emailContent?.email_subject)
+      console.log('   emailContent.email_subject value:', JSON.stringify(emailContent?.email_subject))
+      console.log('   emailContent.attachments:', emailContent?.attachments)
+      console.log('   emailContent.attachments type:', typeof emailContent?.attachments)
+      console.log('   emailContent.attachments isArray:', Array.isArray(emailContent?.attachments))
+      console.log('   emailContent keys:', Object.keys(emailContent || {}))
+      console.log('   Full emailContent:', JSON.stringify(emailContent, null, 2))
+      
+      const emailPost = {
         platform: 'Email',
         subject: emailContent.email_subject || '',
         template_content: emailContent.template_content || emailContent.email_content || '',  // HTML format
@@ -767,18 +828,23 @@ const saveSocialPosts = async () => {
         css_content: emailContent.css_content || '',            // CSS content for styling
         sender_account: emailContent.sender_account || null,
         status: 'Pending',
-        post_schedule_time: emailContent.schedule_time || null
-      })
+        post_schedule_time: emailContent.schedule_time || null,
+        attachments: Array.isArray(emailContent.attachments) ? emailContent.attachments : []  // IMPORTANT: Include attachments
+      }
       
-      console.log('📧 [saveSocialPosts] Email content being saved:')
-      console.log('   css_content exists:', !!emailContent.css_content)
-      console.log('   css_content length:', emailContent.css_content?.length || 0)
-      console.log('   template_content length:', emailContent.template_content?.length || 0)
-      console.log('   block_content exists:', !!emailContent.block_content)
-      console.log('   block_content length:', emailContent.block_content?.length || 0)
-      console.log('   block_content preview:', emailContent.block_content?.substring(0, 200) + '...')
-      console.log('   mjml_content exists:', !!emailContent.mjml_content)
-      console.log('   mjml_content length:', emailContent.mjml_content?.length || 0)
+      console.log('📧 [saveSocialPosts] Email post to save:')
+      console.log('   platform:', emailPost.platform)
+      console.log('   subject:', emailPost.subject)
+      console.log('   subject type:', typeof emailPost.subject)
+      console.log('   subject value:', JSON.stringify(emailPost.subject))
+      console.log('   attachments:', emailPost.attachments)
+      console.log('   attachments count:', emailPost.attachments?.length || 0)
+      console.log('   css_content exists:', !!emailPost.css_content)
+      console.log('   template_content length:', emailPost.template_content?.length || 0)
+      console.log('   block_content length:', emailPost.block_content?.length || 0)
+      console.log('🔍 [saveSocialPosts] ========== END DEBUG ==========')
+      
+      socialPosts.push(emailPost)
     }
     
     // Facebook post

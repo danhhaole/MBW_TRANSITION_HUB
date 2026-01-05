@@ -68,6 +68,21 @@ def save_campaign_social_posts(campaign_id, posts):
                 )
                 continue
 
+            # DEBUG: Log post_data before processing
+            frappe.logger().info(f"[save_campaign_social_posts] Processing post for platform: {platform}")
+            frappe.logger().info(f"[save_campaign_social_posts] post_data keys: {list(post_data.keys())}")
+            frappe.logger().info(f"[save_campaign_social_posts] subject: {post_data.get('subject')}")
+            frappe.logger().info(f"[save_campaign_social_posts] subject type: {type(post_data.get('subject'))}")
+            frappe.logger().info(f"[save_campaign_social_posts] attachments: {post_data.get('attachments')}")
+            frappe.logger().info(f"[save_campaign_social_posts] attachments type: {type(post_data.get('attachments'))}")
+
+            # Extract attachments data before creating/updating doc (attachments is a child table)
+            attachments_data = post_data.pop("attachments", [])
+            
+            frappe.logger().info(f"[save_campaign_social_posts] After pop - attachments_data: {attachments_data}")
+            frappe.logger().info(f"[save_campaign_social_posts] After pop - post_data keys: {list(post_data.keys())}")
+            frappe.logger().info(f"[save_campaign_social_posts] After pop - subject: {post_data.get('subject')}")
+
             # Check if post exists for this platform
             existing_name = existing_map.get(platform)
 
@@ -75,10 +90,35 @@ def save_campaign_social_posts(campaign_id, posts):
                 # Update existing post
                 doc = frappe.get_doc("Mira Campaign Social", existing_name)
 
-                # Update fields
+                # DEBUG: Log before updating
+                frappe.logger().info(f"[save_campaign_social_posts] Updating existing post: {existing_name}")
+                frappe.logger().info(f"[save_campaign_social_posts] Current doc.subject: {doc.subject}")
+                frappe.logger().info(f"[save_campaign_social_posts] post_data.subject: {post_data.get('subject')}")
+
+                # Update fields (skip attachments as it's handled separately)
                 for key, value in post_data.items():
-                    if key != "doctype" and hasattr(doc, key):
+                    if key != "doctype" and key != "attachments" and hasattr(doc, key):
+                        frappe.logger().info(f"[save_campaign_social_posts] Setting {key} = {value} (type: {type(value)})")
                         setattr(doc, key, value)
+                
+                # IMPORTANT: Explicitly set subject field to ensure it's saved
+                if "subject" in post_data:
+                    doc.subject = post_data["subject"]
+                    frappe.logger().info(f"[save_campaign_social_posts] Explicitly set doc.subject = {post_data['subject']}")
+                
+                frappe.logger().info(f"[save_campaign_social_posts] After update - doc.subject: {doc.subject}")
+                frappe.logger().info(f"[save_campaign_social_posts] doc.subject type: {type(doc.subject)}")
+                frappe.logger().info(f"[save_campaign_social_posts] doc.subject length: {len(doc.subject) if doc.subject else 0}")
+
+                # Handle attachments - clear existing and add new ones
+                if attachments_data:
+                    doc.attachments = []
+                    for attachment in attachments_data:
+                        doc.append("attachments", {
+                            "file_name": attachment.get("file_name", ""),
+                            "file_url": attachment.get("file_url", ""),
+                            "file_size": attachment.get("file_size", 0)
+                        })
 
                 doc.save(ignore_permissions=True)
                 results.append({
@@ -90,14 +130,41 @@ def save_campaign_social_posts(campaign_id, posts):
                 frappe.logger().info(f"Updated social post {doc.name} for platform {platform}")
 
             else:
+                # DEBUG: Log before creating
+                frappe.logger().info(f"[save_campaign_social_posts] Creating new post for platform: {platform}")
+                frappe.logger().info(f"[save_campaign_social_posts] post_data.subject: {post_data.get('subject')}")
+                frappe.logger().info(f"[save_campaign_social_posts] post_data keys: {list(post_data.keys())}")
+                
                 # Create new post
-                doc = frappe.get_doc({
+                # IMPORTANT: Explicitly set subject field to ensure it's saved
+                doc_data = {
                     "doctype": "Mira Campaign Social",
                     "campaign_id": campaign_id,
                     **post_data
-                })
+                }
+                
+                # Ensure subject is explicitly set
+                if "subject" in post_data:
+                    doc_data["subject"] = post_data["subject"]
+                    frappe.logger().info(f"[save_campaign_social_posts] Explicitly setting subject in doc_data: {post_data['subject']}")
+                
+                doc = frappe.get_doc(doc_data)
+                
+                frappe.logger().info(f"[save_campaign_social_posts] After create - doc.subject: {doc.subject}")
+                frappe.logger().info(f"[save_campaign_social_posts] doc.subject type: {type(doc.subject)}")
+                frappe.logger().info(f"[save_campaign_social_posts] doc.subject length: {len(doc.subject) if doc.subject else 0}")
+
+                # Add attachments to child table
+                if attachments_data:
+                    for attachment in attachments_data:
+                        doc.append("attachments", {
+                            "file_name": attachment.get("file_name", ""),
+                            "file_url": attachment.get("file_url", ""),
+                            "file_size": attachment.get("file_size", 0)
+                        })
 
                 doc.insert(ignore_permissions=True)
+                frappe.logger().info(f"[save_campaign_social_posts] After insert - doc.subject: {doc.subject}")
                 results.append({
                     "name": doc.name,
                     "platform": platform,
@@ -175,6 +242,15 @@ def get_campaign_social_posts(campaign_id):
             fields=["*"],
             order_by="creation asc"
         )
+
+        # Load attachments for each post (like get_nurturing_campaign_triggers does)
+        for post in posts:
+            post["attachments"] = frappe.get_all(
+                "Mira Campaign Social Attachment",
+                filters={"parent": post["name"]},
+                fields=["file_name", "file_url", "file_size"],
+                order_by="idx ASC"
+            )
 
         return {
             "success": True,

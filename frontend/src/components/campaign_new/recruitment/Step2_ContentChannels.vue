@@ -570,43 +570,65 @@ const removeChannel = (channelType) => {
 
 // Content update handlers
 const updateEmailContent = (content) => {
-  // IMPORTANT: Merge content to preserve existing fields and ensure all fields are included
+  console.log('📧 [Step2_ContentChannels] ========== updateEmailContent called ==========')
+  console.log('   incoming content.email_subject:', content?.email_subject)
+  console.log('   incoming content.email_subject type:', typeof content?.email_subject)
+  console.log('   incoming content.email_subject length:', content?.email_subject?.length || 0)
+  console.log('   current localEmailContent.value.email_subject:', localEmailContent.value.email_subject)
+  
+  // IMPORTANT: Preserve email_subject if incoming content.email_subject is empty string or undefined
+  // This prevents overwriting user input when EmailEditor emits update:content
+  // Only preserve if current localEmailContent has a non-empty email_subject AND incoming content doesn't have a valid one
+  const currentEmailSubject = localEmailContent.value.email_subject || ''
+  const newEmailSubject = content.email_subject || ''
+  const shouldPreserveEmailSubject = currentEmailSubject.trim() !== '' && newEmailSubject.trim() === ''
+  const preservedEmailSubject = shouldPreserveEmailSubject 
+    ? currentEmailSubject
+    : newEmailSubject
+  
+  // IMPORTANT: Merge content to preserve existing fields (like nurturing campaign)
+  // Simply merge - preserve all existing fields including email_subject and attachments
   localEmailContent.value = {
     ...localEmailContent.value,
     ...content,
-    // Explicitly ensure all fields are preserved/updated
-    css_content: content.css_content !== undefined ? content.css_content : localEmailContent.value.css_content || '',
-    block_content: content.block_content !== undefined ? content.block_content : localEmailContent.value.block_content || '',
-    template_content: content.template_content !== undefined ? content.template_content : localEmailContent.value.template_content || ''
+    // IMPORTANT: Preserve email_subject if incoming content doesn't have a valid value
+    email_subject: preservedEmailSubject
   }
   
-  console.log('📧 [Step2_ContentChannels] Email content updated')
+  console.log('✅ [Step2_ContentChannels] Updated localEmailContent')
+  console.log('   preserved email_subject:', localEmailContent.value.email_subject)
+  console.log('   email_subject preserved:', shouldPreserveEmailSubject)
+  console.log('   attachments count:', localEmailContent.value.attachments?.length || 0)
   console.log('   template_content length:', localEmailContent.value.template_content?.length || 0)
-  console.log('   template_content exists:', !!localEmailContent.value.template_content)
   console.log('   block_content length:', localEmailContent.value.block_content?.length || 0)
-  console.log('   block_content exists:', !!localEmailContent.value.block_content)
   console.log('   css_content length:', localEmailContent.value.css_content?.length || 0)
-  console.log('   css_content preview:', localEmailContent.value.css_content?.substring(0, 100) + '...')
   
   // ✅ IMPORTANT: Emit to parent so wizard receives updated content with all fields
   emit('update:email-content', { ...localEmailContent.value })
+  console.log('📤 [Step2_ContentChannels] Emitted update:email-content to parent')
+  console.log('   emitted email_subject:', localEmailContent.value.email_subject)
+  console.log('📧 [Step2_ContentChannels] ========== END updateEmailContent ==========')
 }
 
 // Handle email saved event - ensure css_content is saved and auto-save to doctype
 const handleEmailSaved = async (content) => {
   console.log('💾 [Step2_ContentChannels] ========== EMAIL SAVED EVENT ==========')
   console.log('   Received content keys:', Object.keys(content || {}))
+  console.log('   email_subject:', content?.email_subject)
+  console.log('   email_subject type:', typeof content?.email_subject)
+  console.log('   email_subject length:', content?.email_subject?.length || 0)
+  console.log('   email_subject value:', JSON.stringify(content?.email_subject))
+  console.log('   attachments count:', content?.attachments?.length || 0)
+  console.log('   attachments:', content?.attachments)
   console.log('   css_content exists:', !!content?.css_content)
   console.log('   css_content length:', content?.css_content?.length || 0)
-  console.log('   css_content preview:', content?.css_content?.substring(0, 200) + '...')
   console.log('   template_content exists:', !!content?.template_content)
   console.log('   template_content length:', content?.template_content?.length || 0)
   console.log('   block_content exists:', !!content?.block_content)
   console.log('   block_content length:', content?.block_content?.length || 0)
-  console.log('   block_content preview:', content?.block_content?.substring(0, 200) + '...')
   console.log('   mjml_content exists:', !!content?.mjml_content)
   console.log('   mjml_content length:', content?.mjml_content?.length || 0)
-  console.log('   email_subject:', content?.email_subject)
+  console.log('   Full content object:', JSON.stringify(content, null, 2))
   
   // IMPORTANT: Use content from saved event directly (it has the latest data from EmailEditor)
   // Priority: content fields (from saved event) > localEmailContent.value fields (old)
@@ -622,68 +644,32 @@ const handleEmailSaved = async (content) => {
     ? content.template_content
     : (localEmailContent.value.template_content || '')
   
-  // IMPORTANT: Update localEmailContent with ALL saved content from EmailEditor
-  // Force trigger reactivity by creating completely new object reference
-  const updatedContent = {
-    ...localEmailContent.value,
-    ...content,
-    // Explicitly set all fields - prioritize from saved content
-    css_content: finalCssContent,
-    block_content: finalBlockContent,
-    template_content: finalTemplateContent
-  }
+  // IMPORTANT: Update localEmailContent directly with saved content (like nurturing campaign)
+  // This preserves ALL fields including email_subject and attachments
+  localEmailContent.value = { ...content }
   
-  // IMPORTANT: Create new object reference to force reactivity
-  // This ensures EmailContentEditor's watch(props.content) will trigger
-  localEmailContent.value = { ...updatedContent }
-  
-  console.log('✅ [Step2_ContentChannels] Updated localEmailContent:')
+  console.log('✅ [Step2_ContentChannels] Updated localEmailContent with saved content:')
+  console.log('   email_subject:', localEmailContent.value.email_subject)
+  console.log('   attachments count:', localEmailContent.value.attachments?.length || 0)
   console.log('   css_content length:', localEmailContent.value.css_content?.length || 0)
-  console.log('   css_content exists:', !!localEmailContent.value.css_content)
-  console.log('   css_content source:', content.css_content ? 'from saved event' : 'from localEmailContent')
   console.log('   template_content length:', localEmailContent.value.template_content?.length || 0)
-  console.log('   template_content exists:', !!localEmailContent.value.template_content)
-  console.log('   template_content preview:', localEmailContent.value.template_content?.substring(0, 200) + '...')
-  console.log('   template_content source:', content.template_content ? 'from saved event' : 'from localEmailContent')
-  console.log('   block_content exists:', !!localEmailContent.value.block_content)
   console.log('   block_content length:', localEmailContent.value.block_content?.length || 0)
-  console.log('   block_content source:', content.block_content ? 'from saved event' : 'from localEmailContent')
-  console.log('   localEmailContent object reference changed:', true)
   
-  // IMPORTANT: Emit to parent with FULL content including all fields
-  // Use final values to ensure we have the latest from saved event
-  const contentToEmit = {
-    ...localEmailContent.value,
-    css_content: finalCssContent,
-    block_content: finalBlockContent,
-    template_content: finalTemplateContent
-  }
+  // IMPORTANT: Emit to parent with FULL content including all fields (like nurturing campaign)
+  // Simply use content directly - it has ALL fields including email_subject and attachments
+  const contentToEmit = { ...content }
   
   // IMPORTANT: Emit update:email-content to parent
   // This will update props.emailContent in parent, which will flow back to EmailContentEditor
   emit('update:email-content', contentToEmit)
   console.log('📤 [Step2_ContentChannels] Emitted update:email-content to parent')
-  console.log('   This will update props.emailContent → EmailContentEditor props.content → EmailEditor props.content → Preview update')
   console.log('📤 [Step2_ContentChannels] Emitted to parent:')
+  console.log('   email_subject:', contentToEmit.email_subject)
+  console.log('   attachments count:', contentToEmit.attachments?.length || 0)
   console.log('   css_content length:', contentToEmit.css_content?.length || 0)
-  console.log('   css_content in emitted:', !!contentToEmit.css_content)
   console.log('   block_content length:', contentToEmit.block_content?.length || 0)
-  console.log('   block_content in emitted:', !!contentToEmit.block_content)
   console.log('   template_content length:', contentToEmit.template_content?.length || 0)
-  console.log('   template_content in emitted:', !!contentToEmit.template_content)
-  console.log('   template_content preview:', contentToEmit.template_content?.substring(0, 200) + '...')
   
-  // IMPORTANT: After emitting, wait for nextTick to ensure reactivity has propagated
-  // Then force update localEmailContent to trigger EmailContentEditor's watch(props.content)
-  // This ensures preview in EmailEditor updates immediately with the saved content
-  nextTick(() => {
-    // Force update localEmailContent with the latest saved content
-    // This creates a new object reference, triggering EmailContentEditor's watch
-    localEmailContent.value = { ...contentToEmit }
-    console.log('🔄 [Step2_ContentChannels] Force updated localEmailContent after nextTick')
-    console.log('   This will trigger EmailContentEditor watch(props.content) → EmailEditor watch(props.content) → Preview update')
-    console.log('   localEmailContent.template_content preview:', localEmailContent.value.template_content?.substring(0, 200) + '...')
-  })
   
   // Auto-save to doctype if campaign is already created
   if (props.name && props.doctype === 'Mira Campaign') {
@@ -691,13 +677,13 @@ const handleEmailSaved = async (content) => {
       console.log('💾 [Step2_ContentChannels] Auto-saving to Mira Campaign Social...')
       console.log('   Campaign ID:', props.name)
       
-      // IMPORTANT: Use contentToEmit (has latest css_content) for saving
+      // IMPORTANT: Use content directly (like nurturing campaign does)
       // Extract sender_account value if it's an object
       const emailContentToSave = {
-        ...contentToEmit,
-        sender_account: typeof contentToEmit.sender_account === 'object'
-          ? contentToEmit.sender_account?.value
-          : contentToEmit.sender_account
+        ...content,
+        sender_account: typeof content.sender_account === 'object'
+          ? content.sender_account?.value
+          : content.sender_account
       }
       
       // Prepare social posts array (only email for now)

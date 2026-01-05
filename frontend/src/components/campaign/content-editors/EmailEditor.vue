@@ -1718,6 +1718,13 @@ const formatFileSize = (bytes) => {
 }
 
 watch(localContent, (newContent) => {
+  console.log('🔄 [EmailEditor] localContent changed - emitting update:content')
+  console.log('   email_subject:', newContent.email_subject)
+  console.log('   email_subject type:', typeof newContent.email_subject)
+  console.log('   email_subject length:', newContent.email_subject?.length || 0)
+  console.log('   attachments count:', newContent.attachments?.length || 0)
+  console.log('   Full newContent keys:', Object.keys(newContent))
+  
   emit('update:content', newContent)
   
   // IMPORTANT: Update dialogCss when localContent.css_content changes
@@ -1747,15 +1754,30 @@ watch(() => props.content, (newContent) => {
   if (!newContent) return
   
   console.log('🔄 [EmailEditor] Props content changed')
+  console.log('   newContent.email_subject:', newContent?.email_subject)
+  console.log('   newContent.email_subject type:', typeof newContent?.email_subject)
+  console.log('   newContent.email_subject length:', newContent?.email_subject?.length || 0)
+  console.log('   current localContent.email_subject:', localContent.value.email_subject)
   console.log('   template_content length:', newContent?.template_content?.length || 0)
-  console.log('   template_content preview:', newContent?.template_content?.substring(0, 200) + '...')
   console.log('   block_content length:', newContent?.block_content?.length || 0)
   console.log('   css_content length:', newContent?.css_content?.length || 0)
   
   // IMPORTANT: Force trigger reactivity by creating new object
+  // IMPORTANT: Preserve email_subject if newContent.email_subject is empty string or undefined
+  // This prevents overwriting user input when props are updated from parent
+  // Only preserve if current localContent has a non-empty email_subject AND newContent doesn't have a valid one
+  const currentEmailSubject = localContent.value.email_subject || ''
+  const newEmailSubject = newContent.email_subject || ''
+  const shouldPreserveEmailSubject = currentEmailSubject.trim() !== '' && newEmailSubject.trim() === ''
+  const preservedEmailSubject = shouldPreserveEmailSubject 
+    ? currentEmailSubject
+    : newEmailSubject
+  
   localContent.value = { 
     ...localContent.value, 
     ...newContent,
+    // IMPORTANT: Preserve email_subject if newContent doesn't have a valid value
+    email_subject: preservedEmailSubject,
     // Ensure css_content is always a string, not undefined
     css_content: newContent?.css_content !== undefined ? newContent.css_content : (localContent.value.css_content || ''),
     // Explicitly ensure all fields are updated
@@ -1764,8 +1786,9 @@ watch(() => props.content, (newContent) => {
   }
   
   console.log('✅ [EmailEditor] Updated localContent from props')
+  console.log('   preserved email_subject:', localContent.value.email_subject)
+  console.log('   email_subject preserved:', shouldPreserveEmailSubject)
   console.log('   localContent.template_content length:', localContent.value.template_content?.length || 0)
-  console.log('   localContent.template_content preview:', localContent.value.template_content?.substring(0, 200) + '...')
   
   // Force iframe to update when props content changes (especially after save)
   if (previewIframe.value) {
