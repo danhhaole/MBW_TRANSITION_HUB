@@ -25,7 +25,7 @@ def track(campaign_id =None, talent_id=None,source=None,medium = None, action=No
         "utm_campaign":campaign_id,
         "utm_source":source,
         "utm_medium":medium,
-        "chanel":source,
+        "channel":source,
         "url": url,
         "ip_address":ip_address,
         "description": json.dumps(info)
@@ -51,40 +51,43 @@ def track(campaign_id =None, talent_id=None,source=None,medium = None, action=No
 
 @frappe.whitelist(allow_guest=True)
 def click_redirect():
+    # Lấy URL gốc cần redirect
     encoded_url = frappe.form_dict.get("url") or ""
-    tracking_sig = frappe.form_dict.get("url_tracking") or ""
+    decoded_url = urllib.parse.unquote(encoded_url)
+    
+    # Lấy params tracking trực tiếp từ query string
+    talent_id = frappe.form_dict.get("talent_id") or ""
+    campaign_id = frappe.form_dict.get("utm_campaign") or ""
+    source = frappe.form_dict.get("utm_source") or ""
+    medium = frappe.form_dict.get("utm_medium") or ""
+    action = frappe.form_dict.get("action") or ""
     sig = frappe.form_dict.get("sig") or ""
-
-    # Kiểm tra token/sig
+    ip_address = frappe.local.request_ip or ""
+    
+    # Track chỉ 1 lần dựa trên sig
     if sig and frappe.cache().get(f"used_sig:{sig}"):
         # Sig đã dùng → chỉ redirect
         frappe.local.response["type"] = "redirect"
-        frappe.local.response["location"] = urllib.parse.unquote(encoded_url)
+        frappe.local.response["location"] = decoded_url
         return
-
+    
     # Đánh dấu token đã dùng
     if sig:
-        frappe.cache().set(f"used_sig:{sig}", True, expire=3600)  # hết hạn 1h
-
-    # Decode URL gốc
-    decoded_url = urllib.parse.unquote(encoded_url)
-    decode_urltrack = urllib.parse.unquote(tracking_sig)
-    # Parse query params
-    parsed = urllib.parse.urlparse(decode_urltrack)
-    query_params = urllib.parse.parse_qs(parsed.query)
-    campaign_id = query_params.get("utm_campaign",[""])[0]
-    source = query_params.get("utm_source",[""])[0]
-    medium = query_params.get("utm_medium",[""])[0]
-    print(query_params)
-    talent_id = query_params.get("talent_id",[""])[0]
-    action = query_params.get("action",[""])[0]
-    ip_address = frappe.local.request_ip or ""
-    # Ghi tracking chỉ 1 lần
-    track(campaign_id=campaign_id, talent_id=talent_id,
-          source=source, medium=medium,
-          action=action, type="ON_LINK_CLICK",
-          url=decoded_url,ip_address=ip_address)
-
+        frappe.cache().set(f"used_sig:{sig}", True, expire=3600)
+    
+    # Gọi hàm track
+    track(
+        campaign_id=campaign_id,
+        talent_id=talent_id,
+        source=source,
+        medium=medium,
+        action=action,
+        type="ON_LINK_CLICK",
+        url=decoded_url,
+        ip_address=ip_address
+    )
+    
+    # Redirect đến URL gốc
     frappe.local.response["type"] = "redirect"
     frappe.local.response["location"] = decoded_url
 
@@ -92,33 +95,24 @@ def click_redirect():
 
 @frappe.whitelist(allow_guest=True)
 def tracking_pixel():
-    encoded_url = frappe.form_dict.get("url") or ""
-    tracking_sig = frappe.form_dict.get("url_tracking") or ""
-    sig = frappe.form_dict.get("sig") or ""
-
-    # Decode URL gốc
-    decoded_url = urllib.parse.unquote(encoded_url)
-
-    # Parse query params từ URL gốc
-    parsed = urllib.parse.urlparse(decoded_url)
-    query_params = urllib.parse.parse_qs(parsed.query)
-
-    campaign_id = query_params.get("utm_campaign")
-    source = query_params.get("utm_source")
-    medium = query_params.get("utm_medium")
-
+    # Lấy params trực tiếp từ query string
     talent_id = frappe.form_dict.get("talent_id") or ""
     action = frappe.form_dict.get("action") or ""
+    campaign_id = frappe.form_dict.get("utm_campaign") or ""
+    source = frappe.form_dict.get("utm_source") or ""
+    medium = frappe.form_dict.get("utm_medium") or ""
+    sig = frappe.form_dict.get("sig") or ""
     ip_address = frappe.local.request_ip or ""
-    # --- Track chỉ 1 lần dựa trên sig ---
+    
+    # Track chỉ 1 lần dựa trên sig
     if sig and frappe.cache().get(f"used_sig:{sig}"):
         # Sig đã dùng → không track nữa
         pass
     else:
         if sig:
-            frappe.cache().set(f"used_sig:{sig}", True, expire=3600)  # cache 1h
+            frappe.cache().set(f"used_sig:{sig}", True, expire=3600)
         
-        # Gọi hàm track
+        # Gọi hàm track với params đầy đủ
         track(
             campaign_id=campaign_id,
             talent_id=talent_id,
@@ -126,8 +120,8 @@ def tracking_pixel():
             medium=medium,
             action=action,
             type="EMAIL_OPENED",
-            url=decoded_url,
-            ip_address = ip_address
+            url="",
+            ip_address=ip_address
         )
 
     # --- Trả về transparent 1x1 GIF ---

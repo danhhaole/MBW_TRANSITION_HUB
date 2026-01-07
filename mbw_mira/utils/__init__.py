@@ -716,31 +716,42 @@ def _get_base_url():
     return get_url()
 def append_tracking_to_urls(content, tracking_url):
     """
-    Thay tất cả URL trong content bằng redirect URL:
-    - Gói URL gốc vào param `url`
-    - Thêm param `url_tracking` với tracking link
-    - Không thay đổi URL nếu đã có tracking
+    Thay tất cả URL trong content bằng redirect URL với tracking params
     """
-    url_regex = r"(https?://[^\s\"\'<>]+)"
-
-    # Encode tracking URL
-    encoded_tracking = quote(tracking_url, safe="")
-
-    # URL redirect
-    redirect_base = f"{_get_base_url()}/api/method/mbw_mira.api.interaction.click_redirect?url="
+    from urllib.parse import urlparse, parse_qs
+    
+    url_regex = r"(https?://[^\s\"'<>]+)"
+    
+    # Parse tracking_url để lấy params
+    parsed = urlparse(tracking_url)
+    tracking_params = parse_qs(parsed.query)
+    
+    # Chuyển params thành dict đơn giản (lấy giá trị đầu tiên từ list)
+    params_dict = {}
+    for k, v in tracking_params.items():
+        if isinstance(v, list) and len(v) > 0:
+            params_dict[k] = v[0]
+        else:
+            params_dict[k] = v
+    
+    # URL redirect base
+    redirect_base = f"{_get_base_url()}/api/method/mbw_mira.api.interaction.click_redirect?"
 
     def replace(match):
         original_url = match.group(0)
 
         # Nếu đã có tracking → bỏ qua
-        if "url_tracking=" in original_url:
+        if "mbw_mira.api.interaction" in original_url:
             return original_url
 
-        # Encode URL gốc để làm param
+        # Encode URL gốc
         encoded_original = quote(original_url, safe="")
+        
+        # Tạo query string với tracking params
+        params_str = "&".join([f"{k}={quote(str(v), safe='')}" for k, v in params_dict.items()])
 
-        # Trả về URL redirect đầy đủ
-        return f"{redirect_base}{encoded_original}&url_tracking={encoded_tracking}"
+        # Trả về URL redirect với tracking params
+        return f"{redirect_base}url={encoded_original}&{params_str}"
 
     return re.sub(url_regex, replace, content)
 
