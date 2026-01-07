@@ -63,7 +63,7 @@ const show = defineModel()
 const emit = defineEmits(['reload'])
 
 const fields = createResource({
-  url: 'mbw_mira.api.doc.get_fields',
+  url: 'mbw_transition_hub.api.doc.get_fields',
   cache: ['fields', props.doctype],
   params: {
     doctype: props.doctype,

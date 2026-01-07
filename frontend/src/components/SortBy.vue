@@ -193,7 +193,7 @@ const emit = defineEmits(['update'])
 const list = defineModel()
 
 const sortOptions = createResource({
-  url: 'mbw_mira.api.doc.sort_options',
+  url: 'mbw_transition_hub.api.doc.sort_options',
   cache: ['sortOptions', props.doctype],
   params: { doctype: props.doctype },
 })

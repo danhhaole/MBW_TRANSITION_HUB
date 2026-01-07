@@ -26,7 +26,7 @@ let posthog: typeof window.posthog = window.posthog
 
 // Posthog Settings Resource
 let posthogSettings = createResource({
-  url: 'mbw_mira.api.get_posthog_settings',
+  url: 'mbw_transition_hub.api.get_posthog_settings',
   cache: 'posthog_settings',
   onSuccess: (ps: PosthogSettings) => initPosthog(ps),
 })

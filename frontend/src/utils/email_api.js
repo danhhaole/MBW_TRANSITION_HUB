@@ -1,4 +1,4 @@
-// mbw_mira/public/js/email_api.js
+// mbw_transition_hub/public/js/email_api.js
 
 import { call } from 'frappe-ui'
 
@@ -17,7 +17,7 @@ export class EmailAPI {
    */
   static async getEmailTemplates(filters = {}) {
     try {
-      const response = await call('mbw_mira.api.email_api.get_email_templates', filters)
+      const response = await call('mbw_transition_hub.api.email_api.get_email_templates', filters)
       return response
     } catch (error) {
       console.error('Error fetching email templates:', error)
@@ -32,7 +32,7 @@ export class EmailAPI {
    */
   static async getEmailTemplate(templateId) {
     try {
-      const response = await call('mbw_mira.api.email_api.get_email_template', {
+      const response = await call('mbw_transition_hub.api.email_api.get_email_template', {
         template_id: templateId
       })
       return response
@@ -66,7 +66,7 @@ export class EmailAPI {
         attachments: JSON.stringify(processedAttachments)
       }
 
-      const response = await call('mbw_mira.api.email_api.send_candidate_email', payload)
+      const response = await call('mbw_transition_hub.api.email_api.send_candidate_email', payload)
       return response
     } catch (error) {
       console.error('Error sending email:', error)
@@ -90,7 +90,7 @@ export class EmailAPI {
         draft_id: draftId
       }
 
-      const response = await call('mbw_mira.api.email_api.save_email_draft', payload)
+      const response = await call('mbw_transition_hub.api.email_api.save_email_draft', payload)
       return response
     } catch (error) {
       console.error('Error saving draft:', error)
@@ -104,7 +104,7 @@ export class EmailAPI {
    */
   static async getEmailVariables() {
     try {
-      const response = await call('mbw_mira.api.email_api.get_email_variables')
+      const response = await call('mbw_transition_hub.api.email_api.get_email_variables')
       return response
     } catch (error) {
       console.error('Error fetching email variables:', error)
@@ -119,7 +119,7 @@ export class EmailAPI {
    */
     static async getCandidates() {
       try {
-        const response = await call('mbw_mira.api.email_api.get_candidates')
+        const response = await call('mbw_transition_hub.api.email_api.get_candidates')
         return response
       } catch (error) {
         console.error('Error fetching email variables:', error)
@@ -133,7 +133,7 @@ export class EmailAPI {
    */
   static async getTemplateTypes() {
     try {
-      const response = await call('mbw_mira.api.email_api.get_template_types')
+      const response = await call('mbw_transition_hub.api.email_api.get_template_types')
       return response
     } catch (error) {
       console.error('Error fetching template types:', error)

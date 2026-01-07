@@ -13,7 +13,7 @@ export const usePermissionStore = defineStore("permission", () => {
 
 	async function loadFeatures() {
 		try {
-			const res = await call("mbw_mira.api.roles.get_user_features");
+			const res = await call("mbw_transition_hub.api.roles.get_user_features");
 
 			try {
 				await userResource.fetch();
@@ -26,7 +26,7 @@ export const usePermissionStore = defineStore("permission", () => {
 			let resRoles = [];
 			if (userResource.data && userResource.data !== "Guest") {
 				try {
-					resRoles = await call("mbw_mira.api.roles.get_user_roles", {
+					resRoles = await call("mbw_transition_hub.api.roles.get_user_roles", {
 						user: userResource.data,
 					});
 				} catch (err) {

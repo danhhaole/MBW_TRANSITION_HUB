@@ -1,12 +1,12 @@
 {
-  "name": "mbw_mira-frontend",
+  "name": "mbw_transition_hub-frontend",
   "private": true,
   "type": "module",
   "version": "0.0.1",
   "scripts": {
     "dev": "vite",
-    "build": "NODE_OPTIONS=--max-old-space-size=4096 vite build --base=/assets/mbw_mira/frontend/ && yarn copy-html-entry",
-    "copy-html-entry": "cp ../mbw_mira/public/frontend/index.html ../mbw_mira/www/mbw_mira.html",
+    "build": "NODE_OPTIONS=--max-old-space-size=4096 vite build --base=/assets/mbw_transition_hub/frontend/ && yarn copy-html-entry",
+    "copy-html-entry": "cp ../mbw_transition_hub/public/frontend/index.html ../mbw_transition_hub/www/mbw_transition_hub.html",
     "serve": "vite preview"
   },
   "dependencies": {

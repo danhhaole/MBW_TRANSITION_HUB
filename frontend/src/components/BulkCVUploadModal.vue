@@ -272,7 +272,7 @@ const uploadFiles = async () => {
         formData.append('note', '');
         formData.append('segment', selected_segment.value || '');
 
-        const response = await fetch('/api/method/mbw_mira.mbw_mira.doctype.mira_resumeuploadsession.mira_resumeuploadsession.upload_resumes', {
+        const response = await fetch('/api/method/mbw_transition_hub.mbw_transition_hub.doctype.mira_resumeuploadsession.mira_resumeuploadsession.upload_resumes', {
             method: 'POST',
             body: formData,
             headers: {
@@ -301,7 +301,7 @@ const uploadFiles = async () => {
 const fetchHistory = async () => {
     isLoadingHistory.value = true;
     try {
-        const response = await call('mbw_mira.mbw_mira.doctype.mira_resumeuploadsession.mira_resumeuploadsession.get_upload_history');
+        const response = await call('mbw_transition_hub.mbw_transition_hub.doctype.mira_resumeuploadsession.mira_resumeuploadsession.get_upload_history');
         uploadSessions.value = response || [];
     } catch (error) {
         showError(__('Failed to load history: {0}', [error.message || error]))
@@ -336,7 +336,7 @@ const getStatusClass = (status) => {
 
 const retryFailedFiles = async (sessionName) => {
     try {
-        const response = await call('mbw_mira.mbw_mira.doctype.mira_resumeuploadsession.mira_resumeuploadsession.retry_failed_files', { session_name: sessionName });
+        const response = await call('mbw_transition_hub.mbw_transition_hub.doctype.mira_resumeuploadsession.mira_resumeuploadsession.retry_failed_files', { session_name: sessionName });
         showSuccess(__('{0} file(s) retried successfully.').format(response.retried))
         fetchHistory();
     } catch (error) {

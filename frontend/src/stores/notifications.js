@@ -7,7 +7,7 @@ export const visible = ref(false)
 // Use createListResource for unread notifications (similar to mbw_ats)
 export const unReadNotifications = createListResource({
   doctype: 'Notification Log',
-  url: 'mbw_mira.api.notifications.get_notifications',
+  url: 'mbw_transition_hub.api.notifications.get_notifications',
   filters: {
     read: 0,
   },
@@ -18,7 +18,7 @@ export const unReadNotifications = createListResource({
 // Use createListResource for read notifications
 export const readNotifications = createListResource({
   doctype: 'Notification Log',
-  url: 'mbw_mira.api.notifications.get_notifications',
+  url: 'mbw_transition_hub.api.notifications.get_notifications',
   filters: {
     read: 1,
   },
@@ -36,7 +36,7 @@ export const notifications = computed(() => unReadNotifications)
 
 export const notificationsStore = defineStore('mira-notifications', () => {
   const mark_as_read = createResource({
-    url: 'mbw_mira.api.notifications.mark_as_read',
+    url: 'mbw_transition_hub.api.notifications.mark_as_read',
     makeParams(values) {
       return {
         name: values.name,
@@ -49,7 +49,7 @@ export const notificationsStore = defineStore('mira-notifications', () => {
   })
 
   const mark_all_as_read = createResource({
-    url: 'mbw_mira.api.notifications.mark_all_as_read',
+    url: 'mbw_transition_hub.api.notifications.mark_all_as_read',
     onSuccess(data) {
       unReadNotifications.reload()
       readNotifications.reload()

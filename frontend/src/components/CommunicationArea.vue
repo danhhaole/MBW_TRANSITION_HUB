@@ -139,7 +139,7 @@ const subject = computed(() => {
 })
 
 const signature = createResource({
-  url: 'mbw_mira.api.get_user_signature',
+  url: 'mbw_transition_hub.api.get_user_signature',
   cache: 'user-email-signature',
   auto: true,
 })
@@ -212,7 +212,7 @@ async function sendMail() {
 }
 
 async function sendComment() {
-  let comment = await call('mbw_mira.api.comment.add_comment', {
+  let comment = await call('mbw_transition_hub.api.comment.add_comment', {
     reference_doctype: props.doctype,
     reference_name: doc.value?.data?.name || doc.value?.name,
     content: newComment.value,
@@ -221,7 +221,7 @@ async function sendComment() {
   })
   if (comment && attachments.value.length) {
     capture('comment_attachments_added')
-    await call('mbw_mira.api.comment.add_attachments', {
+    await call('mbw_transition_hub.api.comment.add_attachments', {
       name: comment.name,
       attachments: attachments.value.map((x) => x.name),
     })

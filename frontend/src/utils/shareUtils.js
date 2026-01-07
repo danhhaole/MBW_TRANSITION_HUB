@@ -9,7 +9,7 @@
 export function generateJobShareUrl(jobUrlCms, utmParams = {}) {
   try {
     const cleanSegment = (jobUrlCms || '').toString().trim()
-    const baseUrl = `${window.location.origin}/mbw_mira/jobs/${cleanSegment}`
+    const baseUrl = `${window.location.origin}/mbw_transition_hub/jobs/${cleanSegment}`
     
     // Add UTM parameters if provided
     const utmSearchParams = new URLSearchParams()
@@ -22,7 +22,7 @@ export function generateJobShareUrl(jobUrlCms, utmParams = {}) {
   } catch (error) {
     console.error('Error generating share URL:', error)
     // Fallback to simple URL using provided segment
-    return `${window.location.origin}/mbw_mira/jobs/${jobUrlCms || ''}`
+    return `${window.location.origin}/mbw_transition_hub/jobs/${jobUrlCms || ''}`
   }
 }
 
@@ -147,7 +147,7 @@ export async function trackUTMParameters(jobId) {
     // Send to backend for tracking
     try {
       const { call } = await import('frappe-ui')
-      await call('mbw_mira.mbw_mira.doctype.ats_jobopening.api.track_utm_visit', {
+      await call('mbw_transition_hub.mbw_transition_hub.doctype.ats_jobopening.api.track_utm_visit', {
         job_id: jobId,
         utm_source: utmSource,
         utm_medium: utmMedium,

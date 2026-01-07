@@ -11,7 +11,7 @@ export const usersStore = defineStore('mira-users', () => {
   const router = useRouter()
 
   const users = createResource({
-    url: 'mbw_mira.api.session.get_users',
+    url: 'mbw_transition_hub.api.session.get_users',
     cache: 'mira-users',
     initialData: [],
     auto: true,
@@ -27,7 +27,7 @@ export const usersStore = defineStore('mira-users', () => {
     onError(error) {
       console.log(error)
       if (error && error.exc_type === 'AuthenticationError') {
-        window.location.href = "/login?redirect-to=/mbw_mira/";
+        window.location.href = "/login?redirect-to=/mbw_transition_hub/";
       }
     },
   })

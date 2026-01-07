@@ -84,7 +84,7 @@ const _view = ref({
 async function create() {
   view.value.doctype = props.doctype
   let v = await call(
-    'mbw_mira.mbw_mira.doctype.mira_view_settings.mira_view_settings.create',
+    'mbw_transition_hub.mbw_transition_hub.doctype.mira_view_settings.mira_view_settings.create',
     { view: view.value },
   )
   show.value = false
@@ -93,7 +93,7 @@ async function create() {
 
 async function update() {
   view.value.doctype = props.doctype
-  await call('mbw_mira.mbw_mira.doctype.mira_view_settings.mira_view_settings.update', {
+  await call('mbw_transition_hub.mbw_transition_hub.doctype.mira_view_settings.mira_view_settings.update', {
     view: view.value,
   })
   show.value = false

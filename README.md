@@ -1,6 +1,6 @@
-### Talent CRM
+### mbw_transition_hub
 
-Talent CRM Talent Pool
+mbw_transition_hub
 
 ### Installation
 
@@ -9,7 +9,7 @@ You can install this app using the [bench](https://github.com/frappe/bench) CLI:
 ```bash
 cd $PATH_TO_YOUR_BENCH
 bench get-app $URL_OF_THIS_REPO --branch develop
-bench install-app mbw_mira
+bench install-app mbw_transition_hub
 ```
 
 ### Contributing
@@ -17,7 +17,7 @@ bench install-app mbw_mira
 This app uses `pre-commit` for code formatting and linting. Please [install pre-commit](https://pre-commit.com/#installation) and enable it for this repository:
 
 ```bash
-cd apps/mbw_mira
+cd apps/mbw_transition_hub
 pre-commit install
 ```
 
@@ -31,5 +31,5 @@ Pre-commit is configured to use the following tools for checking and formatting 
 ### License
 
 agpl-3.0
-# MBW_MIRA
-# MBW_MIRA
+# mbw_transition_hub
+# mbw_transition_hub

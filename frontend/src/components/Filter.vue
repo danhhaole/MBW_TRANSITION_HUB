@@ -195,7 +195,7 @@ const emit = defineEmits(['update'])
 const list = defineModel()
 
 const filterableFields = createResource({
-  url: 'mbw_mira.api.doc.get_filterable_fields',
+  url: 'mbw_transition_hub.api.doc.get_filterable_fields',
   cache: ['filterableFields', props.doctype],
   params: { doctype: props.doctype },
 })

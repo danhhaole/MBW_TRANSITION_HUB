@@ -12,15 +12,15 @@ const __dirname = path.dirname(__filename);
 
 // https://vitejs.dev/config/
 export default defineConfig({
-	base: '/mbw_mira/',
+	base: '/mbw_transition_hub/',
 	plugins: [
 		frappeui({
 			frappeProxy: true,
 			lucideIcons: true,
 			jinjaBootData: true,
 			buildConfig: {
-				indexHtmlPath: '../mbw_mira/www/mbw_mira.html',
-				outDir: '../mbw_mira/public/frontend',
+				indexHtmlPath: '../mbw_transition_hub/www/mbw_transition_hub.html',
+				outDir: '../mbw_transition_hub/public/frontend',
 				emptyOutDir: true,
 				sourcemap: true,
 			},
@@ -34,7 +34,7 @@ export default defineConfig({
 				display: 'standalone',
 				name: 'Talent CRM',
 				short_name: 'Talent CRM',
-				start_url: '/mbw_mira',
+				start_url: '/mbw_transition_hub',
 				description: 'Talent CRM .',
 				icons: [],
 			},

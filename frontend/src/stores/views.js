@@ -11,7 +11,7 @@ export const viewsStore = defineStore('mira-views', (doctype) => {
 
   // Views
   const views = createResource({
-    url: 'mbw_mira.api.views.get_views',
+    url: 'mbw_transition_hub.api.views.get_views',
     params: { doctype: doctype || '' },
     cache: 'mira-views',
     initialData: [],

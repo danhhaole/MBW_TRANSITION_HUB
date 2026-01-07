@@ -5,8 +5,8 @@ const settings = ref({})
 const brand = reactive({})
 
 const _settings = createDocumentResource({
-  doctype: 'Mira Settings',
-  name: 'Mira Settings',
+  doctype: 'Transition Hub Settings',
+  name: 'Transition Hub Settings',
   onSuccess: (data) => {
     settings.value = data
     getSettings().setupBrand()

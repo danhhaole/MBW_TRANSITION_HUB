@@ -149,7 +149,7 @@ const confirmUnlink = () => {
 }
 
 const deleteDocs = () => {
-  call('mbw_mira.api.doc.delete_bulk_docs', {
+  call('mbw_transition_hub.api.doc.delete_bulk_docs', {
     items: props.items,
     doctype: props.doctype,
     delete_linked: confirmDeleteInfo.value.delete,

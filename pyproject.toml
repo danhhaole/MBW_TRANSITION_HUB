@@ -1,5 +1,5 @@
 [project]
-name = "mbw_mira"
+name = "mbw_transition_hub"
 authors = [
     { name = "MBWCloud Co.", email = "dev@mbw.vn"}
 ]

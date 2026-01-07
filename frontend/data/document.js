@@ -47,7 +47,7 @@ export function useDocument(doctype, docname) {
   }
 
   const assignees = createResource({
-    url: 'mbw_mira.api.doc.get_assigned_users',
+    url: 'mbw_transition_hub.api.doc.get_assigned_users',
     cache: `assignees:${doctype}:${docname}`,
     auto: docname ? true : false,
     params: {

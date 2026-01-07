@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/assets/mbw_transition_hub/frontend/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MBW Mira</title>
+
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="MBW Mira" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="white" />
+    <script type="module" crossorigin src="/assets/mbw_transition_hub/frontend/assets/index-65d0de4a.js"></script>
+    <link rel="stylesheet" href="/assets/mbw_transition_hub/frontend/assets/index-ce908e49.css">
+  <link rel="manifest" href="/assets/mbw_transition_hub/frontend/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/assets/mbw_transition_hub/frontend/registerSW.js"></script></head>
+  <body>
+    <div id="app"></div>
+    <div id="modals"></div>
+    <div id="popovers"></div>
+
+    <script> window.csrf_token = '{{ csrf_token }}'; </script>
+    
+  
+          <script>
+              {% for key in boot %}
+              window["{{ key }}"] = {{ boot[key] | tojson }};
+              {% endfor %}
+          </script>
+          </body>
+          
+</html>

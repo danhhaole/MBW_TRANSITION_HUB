@@ -155,7 +155,7 @@ function removeAttachment(attachment) {
 }
 
 const allowedUsersResource = createResource({
-	url: "mbw_mira.api.roles.get_users_with_doctype_access",
+	url: "mbw_transition_hub.api.roles.get_users_with_doctype_access",
 	cache: ["allowed_users", props.doctype],
   auto: true,
 	makeParams(values) {

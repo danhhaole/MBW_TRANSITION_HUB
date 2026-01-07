@@ -61,7 +61,7 @@ const MIRA_TALENT_FIELDS = [
 
 // Create resource to fetch fields from API
 export const filterableFieldsResource = createResource({
-  url: 'mbw_mira.api.doctype_meta.get_filterable_fields',
+  url: 'mbw_transition_hub.api.doctype_meta.get_filterable_fields',
   params: {
     doctype: 'Mira Talent'
   },

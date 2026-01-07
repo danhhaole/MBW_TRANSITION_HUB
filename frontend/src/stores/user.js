@@ -29,12 +29,12 @@ export const usersStore = defineStore('ats-user', () => {
   
   
   const allUsers = createResource({
-    url: 'mbw_mira.api.get_all_users',
+    url: 'mbw_transition_hub.api.get_all_users',
     cache: ['allUsers'],
   })
 
   const getUser = createResource({
-    url: 'mbw_mira.api.get_user_info',
+    url: 'mbw_transition_hub.api.get_user_info',
     cache: 'UserInfo',
     // Chỉ tự động tải nếu đã đăng nhập
     auto: computed(() => user.value.name !== 'Guest'),

@@ -177,7 +177,7 @@ const confirmDeleteInfo = ref({
 })
 
 const linkedDocsResource = createResource({
-  url: 'mbw_mira.api.doc.get_linked_docs_of_document',
+  url: 'mbw_transition_hub.api.doc.get_linked_docs_of_document',
   params: {
     doctype: props.doctype,
     docname: props.docname,
@@ -221,7 +221,7 @@ const unlinkLinkedDoc = (doc) => {
     }))
   }
 
-  call('mbw_mira.api.doc.remove_linked_doc_reference', {
+  call('mbw_transition_hub.api.doc.remove_linked_doc_reference', {
     items: selectedDocs,
     remove_contact: props.doctype == 'Contact',
     delete: doc.delete,

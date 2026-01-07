@@ -438,7 +438,7 @@ async function restoreScrollState(state) {
 }
 
 const all_activities = createResource({
-	url: "mbw_mira.api.activities.get_activities",
+	url: "mbw_transition_hub.api.activities.get_activities",
 	params: { name: currentDocname.value },
 	cache: () => ["activity", currentDocname.value],
 	auto: true,
@@ -538,12 +538,12 @@ function handleNewComment(data) {
 
 onMounted(() => {
 	$socket?.on?.("connect", handleSocketConnect);
-    $socket?.on?.("mbw_mira:comment_added", handleNewComment);
+    $socket?.on?.("mbw_transition_hub:comment_added", handleNewComment);
 });
 
 onBeforeUnmount(() => {
 	$socket?.off?.("connect", handleSocketConnect);
-    $socket?.off?.("mbw_mira:comment_added", handleNewComment);
+    $socket?.off?.("mbw_transition_hub:comment_added", handleNewComment);
 	unsubscribeDocRoom();
 });
 

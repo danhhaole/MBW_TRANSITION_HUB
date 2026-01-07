@@ -65,7 +65,7 @@ const apps = createResource({
       },
     ]
     data.map((app) => {
-      if (app.name === 'mbw_mira') return
+      if (app.name === 'mbw_transition_hub') return
       _apps.push({
         name: app.name,
         logo: app.logo,

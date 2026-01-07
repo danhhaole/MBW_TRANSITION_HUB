@@ -49,7 +49,7 @@ const groupByValue = ref({
 })
 
 const groupByOptions = createResource({
-  url: 'mbw_mira.api.doc.get_group_by_fields',
+  url: 'mbw_transition_hub.api.doc.get_group_by_fields',
   cache: ['groupByOptions', props.doctype],
   params: { doctype: props.doctype },
 })

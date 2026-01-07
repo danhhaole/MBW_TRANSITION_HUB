@@ -90,7 +90,7 @@ async function bootstrap() {
   if (import.meta.env.DEV) {
     try {
       const values = await frappeRequest({
-        url: '/api/method/mbw_mira.www.mbw_mira.get_context_for_dev',
+        url: '/api/method/mbw_transition_hub.www.mbw_transition_hub.get_context_for_dev',
       })
       for (let key in values) {
         window[key] = values[key]

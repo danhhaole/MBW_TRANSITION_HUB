@@ -44,7 +44,7 @@ function translate(message, replace, context = null) {
 
 function fetchTranslations(lang) {
   createResource({
-    url: 'mbw_mira.api.get_translations',
+    url: 'mbw_transition_hub.api.get_translations',
     cache: 'translations',
     auto: true,
     transform: (data) => {
