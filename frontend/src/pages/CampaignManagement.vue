@@ -612,13 +612,13 @@ const campaignStore = useCampaignStore();
 
 // Breadcrumbs - dynamic based on campaign type
 const campaignTypeLabels = {
-  'ATTRACTION': 'Attraction Campaigns',
-  'NURTURING': 'Attract-Nurture Campaigns',
-  'RECRUITMENT': 'Recruitment Campaigns'
+  'ATTRACTION': __('Attraction Campaigns'),
+  'NURTURING': __('Attract-Nurture Campaigns'),
+  'RECRUITMENT': __('Recruitment Campaigns')
 };
 
 const breadcrumbs = computed(() => {
-  const label = props.campaignType ? campaignTypeLabels[props.campaignType] : 'All Campaigns';
+  const label = props.campaignType ? campaignTypeLabels[props.campaignType] : __('All Campaigns');
   return [{ label: __(label), route: { name: route.name } }];
 });
 

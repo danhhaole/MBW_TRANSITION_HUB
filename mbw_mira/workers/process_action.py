@@ -63,6 +63,41 @@ def process_email_action(action_name):
         return True
 
 
+#Tạo talent campaign để sinh ra action gửi email đến từng talent
+def run_campaign_social_email():
+    """Lấy ra danh sách socail email tìm campaign lấy ra danh sách
+    """
+    logger = frappe.logger("campaign_scheduler")
+    now = now_datetime()
+    #Lấy ra thời gian trong vòng 60s
+    before_60s = add_to_date(now, seconds=-60)
+    after_60s = add_to_date(now, seconds=60)
+    
+    print(f"[SCHEDULER] Checking Email campaigns between {before_60s} and {after_60s}")
+    logger.info(f"[SCHEDULER] Checking Email campaigns between {before_60s} and {after_60s}")
+    
+    campaign_social_email = frappe.get_all(
+        "Mira Campaign Social",
+        {"platform": "Email", "status": "Pending","post_schedule_time":["between", [before_60s, after_60s]]},order_by="post_schedule_time asc"
+    )
+    
+    print(f"[SCHEDULER] Found {len(campaign_social_email)} Email campaigns")
+    logger.info(f"[SCHEDULER] Found {len(campaign_social_email)} Email campaigns")
+    
+    if campaign_social_email:
+        for cpe in campaign_social_email:
+            print(f"[SCHEDULER] Enqueuing campaign: {cpe.name}")
+            logger.info(f"[SCHEDULER] Enqueuing campaign: {cpe.name}")
+            frappe.enqueue(
+                "mbw_mira.workers.process_action.enroll_talent_campaign",
+                social=cpe,          
+                queue="short"
+            )
+    else:
+        print("[SCHEDULER] No campaigns to process")
+        logger.info("[SCHEDULER] No campaigns to process")      
+
+
 def process_sms_action(action_name):
     """
     Worker: thực hiện SEND_SMS action
@@ -128,19 +163,33 @@ def check_pending_action(action_name):
 
 
 def enroll_talent_campaign(social):
+    logger = frappe.logger("campaign_worker")
+    logger.info(f"[WORKER] START enroll_talent_campaign for social: {social.name if hasattr(social, 'name') else social}")
+    
+    # Reload social to ensure all fields are available
+    if hasattr(social, 'name'):
+        try:
+             social = frappe.get_doc("Mira Campaign Social", social.name)
+             logger.info(f"[WORKER] Loaded social: {social.name}, Campaign: {social.campaign_id}, Schedule: {social.post_schedule_time}")
+        except Exception as e:
+             logger.error(f"[WORKER] Error loading social: {e}")
+             pass
+
     # Lấy danh sách talent từ campaign (talent pool và filter)
     talent_profiles = _get_combined_talent(social.campaign_id)
     count = 0
     try:
-        print("count", len(talent_profiles))
+        logger.info(f"[WORKER] Found {len(talent_profiles)} talent profiles")
         if talent_profiles:
             for profile in talent_profiles:
-                _create_talent_campaign(social, profile)
-
-                count += 1
+                result = _create_talent_campaign(social, profile)
+                if result:
+                    count += 1
+        logger.info(f"[WORKER] Enrolled {count} talents successfully")
         # frappe.publish_realtime('enroll_talent_campaign', message={'campaign': campaign})
         return count
     except Exception as e:
+        logger.error(f"[WORKER] Error in enroll_talent_campaign: {e}")
         frappe.log_error(frappe.get_traceback())
         return count
 
@@ -154,6 +203,8 @@ def _get_combined_talent(campaign_id):
                 if campaign.condition_filter
                 else []
             )
+        else:
+            conditions = campaign.condition_filter
 
         # Start with base filters
         filters = {}
@@ -234,10 +285,14 @@ def _create_talent_campaign(social, profile):
     """
     Tạo mới Mira Talent Campaign, chỉ set current_step_order nếu có
     """
+    logger = frappe.logger("campaign_worker")
     try:
+        next_action_at = None
         if social.post_schedule_time:
             next_action_at = add_days(social.post_schedule_time, 0)
+        
         if not _check_exists(social.campaign_id, profile.name) and profile.name:
+            logger.info(f"[WORKER] Creating Talent Campaign for {profile.name}")
             doc = frappe.get_doc(
                 {
                     "doctype": "Mira Talent Campaign",
@@ -251,11 +306,29 @@ def _create_talent_campaign(social, profile):
                 }
             )
             doc.insert(ignore_permissions=True)
+
+            # Create Action for Email if platform is Email
+            if social.platform == "Email":
+                 logger.info(f"[WORKER] Creating Email Action for talent {profile.name}")
+                 action = frappe.get_doc({
+                     "doctype": "Mira Action",
+                     "talent_campaign_id": doc.name,
+                     "action_type": "SEND_EMAIL",
+                     "status": "SCHEDULED",
+                     "scheduled_at": social.post_schedule_time or now_datetime(),
+                     "campaign_social": social.name,
+                     "campaign_step": "" # No step for Social Campaign
+                 })
+                 action.insert(ignore_permissions=True)
+                 logger.info(f"[WORKER] Created Action {action.name} scheduled at {action.scheduled_at}")
+
             frappe.db.commit()
             return doc.name
         else:
+            logger.info(f"[WORKER] Talent Campaign already exists for {profile.name}")
             return None
     except Exception as e:
+        logger.error(f"[WORKER] Error creating talent campaign: {e}")
         frappe.log_error(f"talent_profiles {e}")
         return None
 

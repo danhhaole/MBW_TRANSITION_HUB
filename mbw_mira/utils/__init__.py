@@ -156,42 +156,55 @@ def send_email_action(talentprofile_id, action_id):
     """
     Gửi email cho ứng viên, hỗ trợ cả message raw hoặc template.
     """
+    
+    print(f"\n{'*'*80}")
+    print(f"[DEBUG] send_email_action CALLED")
+    print(f"[DEBUG] talent_id: {talentprofile_id}")
+    print(f"[DEBUG] action_id: {action_id}")
+    print(f"{'*'*80}\n")
 
     # Lấy thông tin candidate
     action = frappe.get_doc("Mira Action", action_id)
     social = frappe.get_doc("Mira Campaign Social",action.campaign_social)
     talentprofiles = frappe.get_doc("Mira Talent", talentprofile_id)
+    
+    print(f"[DEBUG] Loaded docs - Action: {action.name}, Social: {social.name}, Talent: {talentprofiles.name}")
 
     logger = frappe.logger("campaign")
     if not talentprofiles.email:
+        print("[DEBUG] ❌ EARLY RETURN: No email")
         frappe.throw("Talent does not have an email.")
+    print(f"[DEBUG] Talent email: {talentprofiles.email}")
+    
     # Nếu ứng viên đã unsubcrible
     if talentprofiles.email_opt_out:
+        print("[DEBUG] ❌ EARLY RETURN: Email opt out")
         logger.error("Talent unsubcrible")
         return
+    print("[DEBUG] Email opt out check passed")
+    
     # Nếu email không tồn tại
     if talentprofiles.email_id_invalid:
+        print("[DEBUG] ❌ EARLY RETURN: Email invalid")
         logger.error("Talent Email Invalid")
         return
+    print("[DEBUG] Email invalid check passed")
 
     context = (talentprofiles, social, None)
 
+    # For nurturing campaigns, content is stored directly in Mira Campaign Social fields
+    # Not in action_parameters
     condition = {}
-    if hasattr(social, "action_parameters"):
+    if hasattr(social, "action_parameters") and social.action_parameters:
         condition = json.loads(social.action_parameters)
-    temp = condition
     
-    # Get email content - prioritize template_content (full HTML) > email_content
-    email_content = temp.get("template_content") or temp.get("email_content") or ""
+    # Get email content - prioritize direct fields from social over action_parameters
+    email_content = social.template_content or condition.get("template_content") or condition.get("email_content") or ""
     message = render_template(email_content, context)
     
     # IMPORTANT: Inject CSS into email content before sending
-    css_content = temp.get("css_content") or ""
-    
-    # If no CSS in action_parameters, try to get from Mira Campaign Social
-    if not css_content and hasattr(social, "css_content") and social.css_content:
-        css_content = social.css_content
-        logger.info(f"[EMAIL] Got CSS from Mira Campaign Social: {len(css_content)} chars")
+    # Get CSS from social fields first, then fallback to action_parameters
+    css_content = social.css_content or condition.get("css_content") or ""
     
     if css_content and message:
         # Remove existing <style> tags from message to avoid duplicates
@@ -219,13 +232,18 @@ def send_email_action(talentprofile_id, action_id):
     message = re.sub(r'src="http://localhost[^"]*"', lambda m: m.group(0).replace('localhost:8080', 'hireos.fastwork.vn').replace('localhost:8000', 'hireos.fastwork.vn'), message)
     message = re.sub(r'src="http://127\.0\.0\.1[^"]*"', lambda m: m.group(0).replace('127.0.0.1:8080', 'hireos.fastwork.vn').replace('127.0.0.1:8000', 'hireos.fastwork.vn'), message)
     
-    subject = "Thông báo"
-    if condition and temp.get("email_subject"):
-        subject = render_template(temp.get("email_subject"), context)
+    # Get subject from social fields first, then fallback to action_parameters
+    subject = social.subject or condition.get("email_subject") or "Thông báo"
+    if subject and subject != "Thông báo":
+        subject = render_template(subject, context)
+    
     talent_email = talentprofiles.email
     template = None
     template_args = None
-    sender = temp.get("sender_account")
+    
+    # Get sender from social fields first, then fallback to action_parameters
+    sender = social.social_page_id or condition.get("sender_account")
+    
     if not talent_email:
         logger.error("[EMAIL ERROR] Missing candidate_email")
         return
@@ -243,11 +261,42 @@ def send_email_action(talentprofile_id, action_id):
     action.executed_at = now_datetime()
     
     # Log thông tin ban đầu
+    print(f"\n{'='*80}")
+    print(f"[EMAIL] ========== START send_email_action ==========")
+    print(f"[EMAIL] Action: {action.name}")
+    print(f"[EMAIL] Social: {social.name} (current status: {social.status})")
+    print(f"[EMAIL] Talent: {talentprofiles.name} ({talent_email})")
+    print(f"[EMAIL] Subject: {subject[:50]}")
+    print(f"[EMAIL] Message length: {len(message)} chars")
+    print(f"[EMAIL] CSS length: {len(css_content)} chars")
+    print(f"[EMAIL] Sender: {sender}")
+    print(f"{'='*80}\n")
+    
     logger.info(f"[EMAIL] ========== START send_email_action ==========")
     logger.info(f"[EMAIL] Action: {action.name}")
     logger.info(f"[EMAIL] Social: {social.name} (current status: {social.status})")
     logger.info(f"[EMAIL] Talent: {talentprofiles.name} ({talent_email})")
     logger.info(f"[EMAIL] Subject: {subject[:50]}")
+    
+    # Get attachments from social if available
+    attachments = []
+    if hasattr(social, 'attachments') and social.attachments:
+        try:
+            print(f"[EMAIL] Processing attachments...")
+            for att in social.attachments:
+                # att is a child table object, get file_url
+                if hasattr(att, 'file_url') and att.file_url:
+                    attachments.append({"file_url": att.file_url})
+                    print(f"[EMAIL]   - Added attachment: {att.file_url}")
+                elif hasattr(att, 'file_path') and att.file_path:
+                    attachments.append({"file_url": att.file_path})
+                    print(f"[EMAIL]   - Added attachment: {att.file_path}")
+            print(f"[EMAIL] Total attachments: {len(attachments)}")
+        except Exception as e:
+            print(f"[EMAIL] Error parsing attachments: {e}")
+            logger.error(f"[EMAIL] Error parsing attachments: {e}")
+            import traceback
+            print(traceback.format_exc())
     
     try:
         result = send_email(
@@ -256,7 +305,8 @@ def send_email_action(talentprofile_id, action_id):
             content=message if not template else None,
             template=template,
             template_args=template_args,
-            sender=sender
+            sender=sender,
+            attachments=attachments if attachments else None
         )
         
         logger.info(f"[EMAIL] send_email() returned: {result}")
@@ -552,11 +602,16 @@ def render_template(template_str, context):
 
     talentprofiles, social, step = context
 
-    # Base URL
-    origin = frappe.request.headers.get("Origin")
-    protocol = frappe.request.scheme
-    host = frappe.request.host
-    base_url = origin if origin else f"{protocol}://{host}"
+    # Base URL - handle both HTTP requests and background jobs
+    try:
+        origin = frappe.request.headers.get("Origin")
+        protocol = frappe.request.scheme
+        host = frappe.request.host
+        base_url = origin if origin else f"{protocol}://{host}"
+    except RuntimeError:
+        # Running in background job without HTTP context
+        from frappe.utils import get_url
+        base_url = get_url()
 
     # Campaign
     campaign = frappe.get_doc("Mira Campaign", social.campaign_id)
@@ -567,11 +622,11 @@ def render_template(template_str, context):
     pixel_params = {
         "talent_id": talentprofiles.name,
         "action": social.name,
-        "url": campaign.ladipge_url,
+        "url": getattr(campaign, 'landing_page_url', '') or getattr(campaign, 'ladipge_url', ''),
         "utm_campaign": campaign.name,
         "utm_source": "email",
         "utm_medium": "email",
-        "utm_term": campaign.tags,
+        "utm_term": getattr(campaign, 'tags', '') or "",
     }
 
     sig = make_signature(pixel_params)
@@ -581,7 +636,8 @@ def render_template(template_str, context):
     )
     # Gửi vào context
     ctx = {
-        "candidate_name": talentprofiles.full_name,
+        "candidate_name": talentprofiles.full_name or talentprofiles.name,
+        "full_name": talentprofiles.full_name or talentprofiles.name,  # Add full_name alias
         "tracking_pixel_url": (
             f"{base_url}/api/method/mbw_mira.api.interaction.tracking_pixel?{pixel_query}"
         ),
