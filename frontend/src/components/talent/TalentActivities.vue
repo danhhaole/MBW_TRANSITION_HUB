@@ -2,14 +2,14 @@
   <div class="space-y-6">
     <!-- Header -->
     <div class="bg-white rounded-lg border border-gray-200 p-6">
-      <h2 class="text-xl font-semibold text-gray-900">Log Hoạt động Hệ thống & Nội bộ</h2>
+      <h2 class="text-xl font-semibold text-gray-900">{{ __('System & Internal Activity Log') }}</h2>
     </div>
 
     <!-- Loading State -->
     <div v-if="loading" class="bg-white rounded-lg border border-gray-200 p-6">
       <div class="flex items-center justify-center py-8">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span class="ml-3 text-gray-600">Loading activities...</span>
+        <span class="ml-3 text-gray-600">{{ __('Loading activities...') }}</span>
       </div>
     </div>
 
@@ -56,14 +56,14 @@
                   <!-- Additional Info -->
                   <div class="flex items-center space-x-3 mt-2 text-xs text-gray-500">
                     <span v-if="activity.trigger_type">
-                      Trigger: {{ activity.trigger_type }}
+                      {{ __('Trigger') }}: {{ activity.trigger_type }}
                     </span>
                     <span v-if="activity.score_change" class="flex items-center">
                       <FeatherIcon name="trending-up" class="w-3 h-3 mr-1" />
-                      Score: {{ activity.score_change > 0 ? '+' : '' }}{{ activity.score_change }}
+                      {{ __('Score') }}: {{ activity.score_change > 0 ? '+' : '' }}{{ activity.score_change }}
                     </span>
                     <span v-if="activity.source">
-                      Source: {{ activity.source }}
+                      {{ __('Source') }}: {{ activity.source }}
                     </span>
                   </div>
                 </div>
@@ -76,7 +76,7 @@
       <!-- Pagination -->
       <div v-if="pagination.total > pagination.limit" class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
         <div class="text-sm text-gray-500">
-          Showing {{ (pagination.page - 1) * pagination.limit + 1 }} - {{ Math.min(pagination.page * pagination.limit, pagination.total) }} of {{ pagination.total }}
+          {{ __('Showing') }} {{ (pagination.page - 1) * pagination.limit + 1 }} - {{ Math.min(pagination.page * pagination.limit, pagination.total) }} of {{ pagination.total }}
         </div>
         <div class="flex items-center space-x-2">
           <button
@@ -84,17 +84,17 @@
             :disabled="pagination.page === 1"
             class="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Previous
+            {{ __('Previous') }}
           </button>
           <span class="text-sm text-gray-600">
-            Page {{ pagination.page }} of {{ Math.ceil(pagination.total / pagination.limit) }}
+            {{ __('Page') }} {{ pagination.page }} of {{ Math.ceil(pagination.total / pagination.limit) }}
           </span>
           <button
             @click="nextPage"
             :disabled="pagination.page * pagination.limit >= pagination.total"
             class="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Next
+            {{ __('Next') }}
           </button>
         </div>
       </div>

@@ -2,15 +2,15 @@
   <div class="space-y-6">
     <!-- Header -->
     <div class="bg-white rounded-lg border border-gray-200 p-6">
-      <h2 class="text-xl font-semibold text-gray-900">Lịch sử Tương tác Marketing & Cá nhân</h2>
-      <p class="text-sm text-gray-600 mt-1">Lọc theo Email Sent, Email Opened, Link Clicked, Recruiter Messages.</p>
+      <h2 class="text-xl font-semibold text-gray-900">{{ __('Marketing & Personal Interaction History')}}</h2>
+      <p class="text-sm text-gray-600 mt-1">{{ __('Filter by Email Sent, Email Opened, Link Clicked, Recruiter Messages.')}}</p>
     </div>
 
     <!-- Loading State -->
     <div v-if="loading" class="bg-white rounded-lg border border-gray-200 p-6">
       <div class="flex items-center justify-center py-8">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span class="ml-3 text-gray-600">Loading interactions...</span>
+        <span class="ml-3 text-gray-600">{{ __('Loading interactions...') }}</span>
       </div>
     </div>
 
@@ -25,7 +25,7 @@
                 <span class="font-semibold text-gray-900">{{ getInteractionLabel(interaction.interaction_type) }}:</span>
                 <span class="text-gray-700">
                   <template v-if="interaction.campaign_name">
-                    Campaign: '{{ interaction.campaign_name }}'
+                    {{ __('Campaign') }}: '{{ interaction.campaign_name }}'
                   </template>
                   <template v-else-if="interaction.action">
                     {{ interaction.action }}
@@ -38,18 +38,18 @@
 
               <!-- Platform Info -->
               <div v-if="interaction.platform" class="text-sm text-gray-600 mb-1">
-                Platform: {{ interaction.platform }}
+                {{ __('Platform') }}: {{ interaction.platform }}
                 <span v-if="interaction.social_page_name"> - {{ interaction.social_page_name }}</span>
               </div>
 
               <!-- URL if available -->
               <div v-if="interaction.url" class="text-sm text-gray-600 mb-1">
-                URL: <a :href="interaction.url" target="_blank" class="text-blue-600 hover:underline">{{ interaction.url }}</a>
+                {{ __('URL') }}: <a :href="interaction.url" target="_blank" class="text-blue-600 hover:underline">{{ interaction.url }}</a>
               </div>
 
               <!-- Channel -->
               <div v-if="interaction.channel" class="text-xs text-gray-500">
-                Channel: {{ interaction.channel }}
+                {{ __('Channel') }}: {{ interaction.channel }}
               </div>
             </div>
 
@@ -65,8 +65,8 @@
     <!-- Empty State -->
     <div v-else class="bg-white rounded-lg border border-gray-200 p-12 text-center">
       <FeatherIcon name="inbox" class="w-12 h-12 text-gray-400 mx-auto mb-4" />
-      <h3 class="text-lg font-medium text-gray-900 mb-2">No Interactions Yet</h3>
-      <p class="text-gray-500">Email and marketing interactions will appear here.</p>
+      <h3 class="text-lg font-medium text-gray-900 mb-2">{{ __('No Interactions Yet') }}</h3>
+      <p class="text-gray-500">{{ __('Email and marketing interactions will appear here.') }}</p>
     </div>
   </div>
 </template>
