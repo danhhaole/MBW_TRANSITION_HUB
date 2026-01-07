@@ -285,13 +285,50 @@ def send_email_action(talentprofile_id, action_id):
             print(f"[EMAIL] Processing attachments...")
             for att in social.attachments:
                 # att is a child table object, get file_url
+                file_url = None
                 if hasattr(att, 'file_url') and att.file_url:
-                    attachments.append({"file_url": att.file_url})
-                    print(f"[EMAIL]   - Added attachment: {att.file_url}")
+                    file_url = att.file_url
                 elif hasattr(att, 'file_path') and att.file_path:
-                    attachments.append({"file_url": att.file_path})
-                    print(f"[EMAIL]   - Added attachment: {att.file_path}")
-            print(f"[EMAIL] Total attachments: {len(attachments)}")
+                    file_url = att.file_path
+                
+                if file_url:
+                    filename = file_url.split('/')[-1]
+                    
+                    # Strategy: Try file_url first (exact match), then fallback to filename
+                    # This works for both localhost and server
+                    try:
+                        # Try 1: Lookup by exact file_url (works on localhost)
+                        file_doc = frappe.db.get_value(
+                            "File",
+                            {"file_url": file_url},
+                            ["name", "file_url"],
+                            as_dict=True
+                        )
+                        
+                        # Try 2: If not found, lookup by filename (works on server with different paths)
+                        if not file_doc:
+                            file_doc = frappe.db.get_value(
+                                "File",
+                                {"file_name": filename},
+                                ["name", "file_url"],
+                                as_dict=True
+                            )
+                            if file_doc:
+                                print(f"[EMAIL]   - Found by filename fallback: {filename}")
+                        
+                        if file_doc and file_doc.name:
+                            # Use File.name (fid format) - this is what Frappe expects
+                            attachments.append({"fid": file_doc.name})
+                            print(f"[EMAIL]   - Added attachment: {filename} → File: {file_doc.name} (URL: {file_doc.file_url})")
+                        else:
+                            # File not found by either method - skip and log warning
+                            print(f"[EMAIL]   - WARNING: File not found for: {file_url} (filename: {filename})")
+                            logger.warning(f"[EMAIL] Skipping attachment - File not found: {file_url}")
+                    except Exception as lookup_err:
+                        print(f"[EMAIL]   - ERROR looking up File for {filename}: {lookup_err}")
+                        logger.error(f"[EMAIL] Error looking up File: {lookup_err}")
+                        
+            print(f"[EMAIL] Total valid attachments: {len(attachments)}")
         except Exception as e:
             print(f"[EMAIL] Error parsing attachments: {e}")
             logger.error(f"[EMAIL] Error parsing attachments: {e}")
