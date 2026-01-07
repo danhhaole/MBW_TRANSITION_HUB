@@ -55,7 +55,8 @@ msgstr ""
 msgid "(Foreign Key -> Candidate)"
 msgstr ""
 
-#. Description of the 'TalentProfile Campaign' (Link) field in DocType Mira Action
+#. Description of the 'TalentProfile Campaign' (Link) field in DocType Mira
+#. Action
 #: mbw_mira/mbw_mira/doctype/action/action.json
 msgid "(Foreign Key -> CandidateCampaign)"
 msgstr ""
@@ -111,12 +112,12 @@ msgstr ""
 msgid "@John, can you please check this?"
 msgstr ""
 
-#: mbw_mira/mbw_mira/doctype/talentprofiles/talentprofiles.py:34
-msgid "A TalentProfiles with Email <b>{0}</b> already exists: <a href='/app/TalentProfiles/{1}'>{1}</a>"
-msgstr ""
-
 #: mbw_mira/mbw_mira/doctype/talentprofilescampaign/talentprofilescampaign.py:31
 msgid "A Mira Talent Campaign with Campaign <b>{0}</b> and Candidate <b>{1}</b> already exists: <a href='/app/candidate-campaign/{2}'>{2}</a>"
+msgstr ""
+
+#: mbw_mira/mbw_mira/doctype/talentprofiles/talentprofiles.py:34
+msgid "A TalentProfiles with Email <b>{0}</b> already exists: <a href='/app/TalentProfiles/{1}'>{1}</a>"
 msgstr ""
 
 #: mbw_mira/mbw_mira/doctype/talentprofilessegment/talentprofilessegment.py:35
@@ -217,11 +218,6 @@ msgstr ""
 msgid "Access Token hiện tại (OAuth2)"
 msgstr ""
 
-#. Name of a DocType
-#: mbw_mira/mbw_mira/doctype/action/action.json
-msgid Mira Action
-msgstr ""
-
 #. Label of a JSON field in DocType 'Mira Step Template'
 #: mbw_mira/mbw_mira/doctype/campaigntemplatestep/campaigntemplatestep.json
 msgid "Action Config"
@@ -289,7 +285,8 @@ msgstr ""
 #. Label of a Check field in DocType "Mira Campaign"
 #. Option for the 'Status' (Select) field in DocType 'Mira Data Source'
 #. Label of a Check field in DocType 'Mira Data Source'
-#. Option for the 'Status' (Select) field in DocType 'Mira Email Template Editor'
+#. Option for the 'Status' (Select) field in DocType 'Mira Email Template
+#. Editor'
 #: frontend/src/components/CampaignTemplateFormModal.vue:78
 #: frontend/src/components/campaign/CampaignView.vue:41
 #: frontend/src/components/candidateDataSource/CandidateDataSourceFormDirect.vue:214
@@ -518,7 +515,8 @@ msgstr ""
 msgid "Additional Information"
 msgstr ""
 
-#. Option for the 'Campaign Type' (Select) field in DocType 'Mira Campaign Template'
+#. Option for the 'Campaign Type' (Select) field in DocType 'Mira Campaign
+#. Template'
 #: frontend/src/pages/CampaignTemplateManagement.vue:51
 #: mbw_mira/mbw_mira/doctype/campaigntemplate/campaigntemplate.json
 #: mbw_mira/public/frontend/assets/CampaignTemplateManagement-2fbd627d.js:1
@@ -690,11 +688,6 @@ msgstr ""
 msgid "Applicant Pool"
 msgstr ""
 
-#. Name of a DocType
-#: mbw_mira/mbw_mira/doctype/applicantpool/applicantpool.json
-msgid Mira Applicant
-msgstr ""
-
 #. Label of a Datetime field in DocType 'ApplicantPool'
 #: mbw_mira/mbw_mira/doctype/applicantpool/applicantpool.json
 msgid "Application Date"
@@ -731,7 +724,8 @@ msgstr ""
 msgid "Apps"
 msgstr ""
 
-#. Option for the 'Status' (Select) field in DocType 'Mira Email Template Editor'
+#. Option for the 'Status' (Select) field in DocType 'Mira Email Template
+#. Editor'
 #: frontend/src/pages/CampaignManagement.vue:224
 #: mbw_mira/mbw_mira/doctype/emailtemplateeditor/emailtemplateeditor.json
 msgid "Archived"
@@ -1059,24 +1053,6 @@ msgstr ""
 msgid "Camera"
 msgstr ""
 
-#. Label of a Link field in DocType 'ApplicantPool'
-#. Name of a DocType
-#. Label of a Link field in DocType "Mira Campaign Step"
-#. Label of a Link field in DocType 'Mira Ladi Page'
-#. Label of a Link field in DocType 'Mira Talent Campaign'
-#: frontend/src/components/shared/TaskUpdateModal.vue:23
-#: frontend/src/pages/Ladi/LadiPageFormModal.vue:31
-#: frontend/src/pages/Ladi/LadiPageManagement.vue:70
-#: frontend/src/pages/LadiPageEditor.vue:67
-#: mbw_mira/mbw_mira/doctype/applicantpool/applicantpool.json
-#: mbw_mira/mbw_mira/doctype/campaign/campaign.json
-#: mbw_mira/mbw_mira/doctype/campaignstep/campaignstep.json
-#: mbw_mira/mbw_mira/doctype/ladipage/ladipage.json
-#: mbw_mira/mbw_mira/doctype/talentprofilescampaign/talentprofilescampaign.json
-#: mbw_mira/public/frontend/assets/Dashboard-d6bad1e7.js:1
-msgid "Mira Campaign"
-msgstr ""
-
 #: frontend/src/pages/CampaignDetailView.vue:426
 msgid "Campaign Actions"
 msgstr ""
@@ -1196,21 +1172,6 @@ msgstr ""
 msgid "Campaign:"
 msgstr ""
 
-#. Name of a DocType
-#: mbw_mira/mbw_mira/doctype/campaignstep/campaignstep.json
-msgid "Mira Campaign Step"
-msgstr ""
-
-#. Name of a DocType
-#: mbw_mira/mbw_mira/doctype/campaigntemplate/campaigntemplate.json
-msgid "Mira Campaign Template"
-msgstr ""
-
-#. Name of a DocType
-#: mbw_mira/mbw_mira/doctype/campaigntemplatestep/campaigntemplatestep.json
-msgid "Mira Step Template"
-msgstr ""
-
 #: frontend/src/pages/CampaignDetailView.vue:825
 #: frontend/src/pages/CampaignManagement.vue:185
 msgid "Campaigns"
@@ -1312,11 +1273,6 @@ msgstr ""
 
 #: frontend/src/components/campaign/AtsConfig.vue:26
 msgid "Candidate Status"
-msgstr ""
-
-#. Name of a DocType
-#: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
-msgid "Mira Data Source"
 msgstr ""
 
 #. Name of a DocType
@@ -1714,16 +1670,13 @@ msgstr ""
 msgid "Create New Request"
 msgstr ""
 
-#: frontend/src/components/talent-segment/TalentSegmentListView.vue:65
-#: frontend/src/pages/TalentSegmentManagement.vue:246
-msgid "Create Talent Pool"
-msgstr ""
-
 #: frontend/src/pages/TalentSegmentManagement.vue:27
 msgid "Create Pool"
 msgstr ""
 
 #: frontend/src/components/talent-segment/TalentSegmentListView.vue:25
+#: frontend/src/components/talent-segment/TalentSegmentListView.vue:65
+#: frontend/src/pages/TalentSegmentManagement.vue:246
 msgid "Create Talent Pool"
 msgstr ""
 
@@ -2129,7 +2082,8 @@ msgstr ""
 msgid "Diploma"
 msgstr ""
 
-#. Option for the 'Campaign Type' (Select) field in DocType 'Mira Campaign Template'
+#. Option for the 'Campaign Type' (Select) field in DocType 'Mira Campaign
+#. Template'
 #: frontend/src/pages/CampaignTemplateManagement.vue:53
 #: mbw_mira/mbw_mira/doctype/campaigntemplate/campaigntemplate.json
 #: mbw_mira/public/frontend/assets/CampaignTemplateManagement-2fbd627d.js:1
@@ -2181,7 +2135,8 @@ msgstr ""
 msgid "Download"
 msgstr ""
 
-#. Option for the 'Status' (Select) field in DocType 'Mira Email Template Editor'
+#. Option for the 'Status' (Select) field in DocType 'Mira Email Template
+#. Editor'
 #: frontend/src/components/campaign/CampaignCardView.vue:201
 #: frontend/src/pages/CampaignManagement.vue:225
 #: frontend/src/pages/Ladi/LadiPageManagement.vue:105
@@ -2223,6 +2178,10 @@ msgstr ""
 msgid "Duplicate Action"
 msgstr ""
 
+#: mbw_mira/mbw_mira/doctype/talentprofilescampaign/talentprofilescampaign.py:34
+msgid "Duplicate Mira Talent Campaign"
+msgstr ""
+
 #: frontend/src/pages/CampaignTemplateDetail.vue:299
 #: mbw_mira/public/frontend/assets/CampaignTemplateDetail-de819100.js:1
 msgid "Duplicate Step"
@@ -2230,10 +2189,6 @@ msgstr ""
 
 #: mbw_mira/mbw_mira/doctype/talentprofiles/talentprofiles.py:37
 msgid "Duplicate TalentProfiles"
-msgstr ""
-
-#: mbw_mira/mbw_mira/doctype/talentprofilescampaign/talentprofilescampaign.py:34
-msgid "Duplicate Mira Talent Campaign"
 msgstr ""
 
 #: mbw_mira/mbw_mira/doctype/talentprofilessegment/talentprofilessegment.py:40
@@ -2433,7 +2388,8 @@ msgstr ""
 msgid "Education Level"
 msgstr ""
 
-#. Option for the 'Campaign Type' (Select) field in DocType 'Mira Campaign Template'
+#. Option for the 'Campaign Type' (Select) field in DocType 'Mira Campaign
+#. Template'
 #. Label of a Data field in DocType 'Candidate'
 #. Label of a Data field in DocType 'TalentProfiles'
 #: frontend/src/components/candidate-pool/CandidatePoolViewModal.vue:67
@@ -2514,16 +2470,6 @@ msgstr ""
 
 #: frontend/src/pages/CandidateDetailView.vue:1335
 msgid "Email will be sent immediately"
-msgstr ""
-
-#. Name of a DocType
-#: mbw_mira/mbw_mira/doctype/emaillog/emaillog.json
-msgid "Mira Email Log"
-msgstr ""
-
-#. Name of a DocType
-#: mbw_mira/mbw_mira/doctype/emailtemplateeditor/emailtemplateeditor.json
-msgid "Mira Email Template Editor"
 msgstr ""
 
 #: frontend/src/components/Filter.vue:124
@@ -3568,11 +3514,6 @@ msgstr ""
 msgid "Ladi page saved successfully"
 msgstr ""
 
-#. Name of a DocType
-#: mbw_mira/mbw_mira/doctype/ladipage/ladipage.json
-msgid "Mira Ladi Page"
-msgstr ""
-
 #: frontend/src/components/Filter.vue:620
 msgid "Last 6 Months"
 msgstr ""
@@ -3715,8 +3656,8 @@ msgstr ""
 msgid "Loading candidate pool details..."
 msgstr ""
 
-#: frontend/src/pages/LadiPageView.vue:35
-#: frontend/src/pages/Public/Mira Ladi Page.vue:3
+#: Ladi Page.vue:3 frontend/src/pages/LadiPageView.vue:35
+#: frontend/src/pages/Public/Mira
 msgid "Loading content..."
 msgstr ""
 
@@ -3954,9 +3895,57 @@ msgstr ""
 msgid "Mira"
 msgstr ""
 
+#. Label of a Link field in DocType 'ApplicantPool'
+#. Name of a DocType
+#. Label of a Link field in DocType "Mira Campaign Step"
+#. Label of a Link field in DocType 'Mira Ladi Page'
+#. Label of a Link field in DocType 'Mira Talent Campaign'
+#: frontend/src/components/shared/TaskUpdateModal.vue:23
+#: frontend/src/pages/Ladi/LadiPageFormModal.vue:31
+#: frontend/src/pages/Ladi/LadiPageManagement.vue:70
+#: frontend/src/pages/LadiPageEditor.vue:67
+#: mbw_mira/mbw_mira/doctype/applicantpool/applicantpool.json
+#: mbw_mira/mbw_mira/doctype/campaign/campaign.json
+#: mbw_mira/mbw_mira/doctype/campaignstep/campaignstep.json
+#: mbw_mira/mbw_mira/doctype/ladipage/ladipage.json
+#: mbw_mira/mbw_mira/doctype/talentprofilescampaign/talentprofilescampaign.json
+#: mbw_mira/public/frontend/assets/Dashboard-d6bad1e7.js:1
+msgid "Mira Campaign"
+msgstr ""
+
+#. Name of a DocType
+#: mbw_mira/mbw_mira/doctype/campaignstep/campaignstep.json
+msgid "Mira Campaign Step"
+msgstr ""
+
+#. Name of a DocType
+#: mbw_mira/mbw_mira/doctype/campaigntemplate/campaigntemplate.json
+msgid "Mira Campaign Template"
+msgstr ""
+
+#. Name of a DocType
+#: mbw_mira/mbw_mira/doctype/candidatedatasource/candidatedatasource.json
+msgid "Mira Data Source"
+msgstr ""
+
+#. Name of a DocType
+#: mbw_mira/mbw_mira/doctype/emaillog/emaillog.json
+msgid "Mira Email Log"
+msgstr ""
+
+#. Name of a DocType
+#: mbw_mira/mbw_mira/doctype/emailtemplateeditor/emailtemplateeditor.json
+msgid "Mira Email Template Editor"
+msgstr ""
+
 #. Name of a DocType
 #: mbw_mira/mbw_mira/doctype/mira_form_script/mira_form_script.json
 msgid "Mira Form Script"
+msgstr ""
+
+#. Name of a DocType
+#: mbw_mira/mbw_mira/doctype/ladipage/ladipage.json
+msgid "Mira Ladi Page"
 msgstr ""
 
 #. Name of a DocType
@@ -3967,6 +3956,21 @@ msgstr ""
 #. Name of a DocType
 #: mbw_mira/mbw_mira/doctype/mira_settings/mira_settings.json
 msgid "Mira Settings"
+msgstr ""
+
+#. Name of a DocType
+#: mbw_mira/mbw_mira/doctype/short_url/short_url.json
+msgid "Mira Short URL"
+msgstr ""
+
+#. Name of a DocType
+#: mbw_mira/mbw_mira/doctype/campaigntemplatestep/campaigntemplatestep.json
+msgid "Mira Step Template"
+msgstr ""
+
+#. Name of a DocType
+#: mbw_mira/mbw_mira/doctype/talentprofilescampaign/talentprofilescampaign.json
+msgid "Mira Talent Campaign"
 msgstr ""
 
 #. Name of a DocType
@@ -4702,7 +4706,7 @@ msgstr ""
 msgid "Page info updated successfully"
 msgstr ""
 
-#: frontend/src/pages/Public/Mira Ladi Page.vue:13
+#: Ladi Page.vue:13 frontend/src/pages/Public/Mira
 msgid "Page not found"
 msgstr ""
 
@@ -5200,7 +5204,8 @@ msgstr ""
 msgid "SKIPPED"
 msgstr ""
 
-#. Option for the 'Campaign Type' (Select) field in DocType 'Mira Campaign Template'
+#. Option for the 'Campaign Type' (Select) field in DocType 'Mira Campaign
+#. Template'
 #: frontend/src/pages/CampaignTemplateManagement.vue:50
 #: mbw_mira/mbw_mira/doctype/campaigntemplate/campaigntemplate.json
 #: mbw_mira/public/frontend/assets/CampaignTemplateManagement-2fbd627d.js:1
@@ -5639,11 +5644,6 @@ msgstr ""
 msgid "Short Code"
 msgstr ""
 
-#. Name of a DocType
-#: mbw_mira/mbw_mira/doctype/short_url/short_url.json
-msgid "Mira Short URL"
-msgstr ""
-
 #. Label of a Date field in DocType 'CandidatePool'
 #: frontend/src/components/candidate-pool/CandidatePoolViewModal.vue:95
 #: frontend/src/pages/CandidatePoolManagement.vue:102
@@ -5748,7 +5748,8 @@ msgstr ""
 msgid "Slug"
 msgstr ""
 
-#. Option for the 'Campaign Type' (Select) field in DocType 'Mira Campaign Template'
+#. Option for the 'Campaign Type' (Select) field in DocType 'Mira Campaign
+#. Template'
 #: frontend/src/pages/CampaignTemplateManagement.vue:52
 #: mbw_mira/mbw_mira/doctype/campaigntemplate/campaigntemplate.json
 #: mbw_mira/public/frontend/assets/CampaignTemplateManagement-2fbd627d.js:1
@@ -6167,11 +6168,6 @@ msgid "TalentProfiles"
 msgstr ""
 
 #. Name of a DocType
-#: mbw_mira/mbw_mira/doctype/talentprofilescampaign/talentprofilescampaign.json
-msgid "Mira Talent Campaign"
-msgstr ""
-
-#. Name of a DocType
 #: mbw_mira/mbw_mira/doctype/talentprofilessegment/talentprofilessegment.json
 msgid "TalentProfilesSegment"
 msgstr ""
@@ -6321,7 +6317,7 @@ msgstr ""
 msgid "The add candidate feature will be developed in the next phase."
 msgstr ""
 
-#: frontend/src/pages/Public/Mira Ladi Page.vue:14
+#: Ladi Page.vue:14 frontend/src/pages/Public/Mira
 msgid "The requested page could not be found."
 msgstr ""
 
@@ -7036,6 +7032,16 @@ msgstr ""
 
 #: frontend/src/utils/index.js:160
 msgid "in {0} years"
+msgstr ""
+
+#. Name of a DocType
+#: mbw_mira/mbw_mira/doctype/action/action.json
+msgid "ira Actio"
+msgstr ""
+
+#. Name of a DocType
+#: mbw_mira/mbw_mira/doctype/applicantpool/applicantpool.json
+msgid "ira Applican"
 msgstr ""
 
 #: frontend/src/pages/EmailLogManagement.vue:279
