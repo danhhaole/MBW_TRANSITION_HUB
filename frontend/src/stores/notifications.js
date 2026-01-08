@@ -34,7 +34,7 @@ export const unreadNotificationsCount = computed(
 // Legacy notifications resource for backward compatibility
 export const notifications = computed(() => unReadNotifications)
 
-export const notificationsStore = defineStore('mira-notifications', () => {
+export const notificationsStore = defineStore('transition_hubnotifications', () => {
   const mark_as_read = createResource({
     url: 'mbw_transition_hub.api.notifications.mark_as_read',
     makeParams(values) {

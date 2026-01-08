@@ -2,7 +2,7 @@ app_name = "mbw_transition_hub"
 app_title = "Transition Hub"
 app_publisher = "MBWCloud Co."
 app_description = "MBW Transition Hub"
-app_icon_url = "/assets/mbw_transition_hub/images/mira-logo.png"
+app_icon_url = "/assets/mbw_transition_hub/images/transition_hublogo.png"
 app_icon_title = "Transition Hub"
 app_icon_route = "/mbw_transition_hub"
 app_email = "dev@mbw.vn"
@@ -17,7 +17,7 @@ app_license = "agpl-3.0"
 add_to_apps_screen = [
     {
         "name": "mbw_transition_hub",
-        "logo": "/assets/mbw_transition_hub/images/mira-logo.png",
+        "logo": "/assets/mbw_transition_hub/images/transition_hublogo.png",
         "title": "Transition Hub",
         "route": "/mbw_transition_hub",
         # "has_permission": "mbw_transition_hub.api.permission.has_app_permission"
@@ -86,7 +86,7 @@ add_to_apps_screen = [
 # ------------
 
 # before_install = "mbw_transition_hub.install.before_install"
-after_install = "mbw_transition_hub.install.after_install"
+# after_install = "mbw_transition_hub.install.after_install"
 # after_migrate = "mbw_transition_hub.install.seed_mbw_transition_hub_features_if_ready"
 
 # Uninstallation

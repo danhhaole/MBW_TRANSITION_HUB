@@ -1,0 +1,73 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-01-08 13:42:04.325645",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_dwbo"
+ ],
+ "fields": [
+    {
+      "fieldname": "campaign",
+      "label": "Campaign",
+      "fieldtype": "Link",
+      "options": "Consent Campaign",
+      "reqd": 1
+    },
+    {
+      "fieldname": "event_type",
+      "label": "Event Type",
+      "fieldtype": "Select",
+      "options": "SENT\nOPENED\nGRANTED\nREJECTED\nEXPIRED",
+      "reqd": 1
+    },
+    {
+      "fieldname": "actor",
+      "label": "Actor",
+      "fieldtype": "Select",
+      "options": "candidate\nsystem"
+    },
+    {
+      "fieldname": "channel",
+      "label": "Channel",
+      "fieldtype": "Select",
+      "options": "email\nportal"
+    },
+    {
+      "fieldname": "ip_address",
+      "label": "IP Address",
+      "fieldtype": "Data"
+    },
+    {
+      "fieldname": "user_agent",
+      "label": "User Agent",
+      "fieldtype": "Data"
+    },
+    {
+      "fieldname": "evidence",
+      "label": "Evidence",
+      "fieldtype": "JSON"
+    },
+    {
+      "fieldname": "event_at",
+      "label": "Event At",
+      "fieldtype": "Datetime"
+    }
+  ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-01-08 13:42:04.325645",
+ "modified_by": "Administrator",
+ "module": "MBW Transition Hub",
+ "name": "Transition Hub Consent Campaign Event",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

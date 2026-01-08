@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { createResource } from 'frappe-ui'
 import { reactive, ref } from 'vue'
 
-export const viewsStore = defineStore('mira-views', (doctype) => {
+export const viewsStore = defineStore('transition_hubviews', (doctype) => {
   let viewsByName = reactive({})
   let pinnedViews = ref([])
   let publicViews = ref([])
@@ -13,7 +13,7 @@ export const viewsStore = defineStore('mira-views', (doctype) => {
   const views = createResource({
     url: 'mbw_transition_hub.api.views.get_views',
     params: { doctype: doctype || '' },
-    cache: 'mira-views',
+    cache: 'transition_hubviews',
     initialData: [],
     auto: true,
     transform(views) {

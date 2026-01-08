@@ -5,8 +5,8 @@ const settings = ref({})
 const brand = reactive({})
 
 const _settings = createDocumentResource({
-  doctype: 'Transition Hub Settings',
-  name: 'Transition Hub Settings',
+  doctype: 'Transition Hub Setting',
+  name: 'Transition Hub',
   onSuccess: (data) => {
     settings.value = data
     getSettings().setupBrand()

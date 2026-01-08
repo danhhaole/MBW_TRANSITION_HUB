@@ -4,7 +4,7 @@ import { sessionStore } from './session'
 import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
 
-export const usersStore = defineStore('mira-users', () => {
+export const usersStore = defineStore('transition_hubusers', () => {
   const session = sessionStore()
 
   let usersByName = reactive({})
@@ -12,7 +12,7 @@ export const usersStore = defineStore('mira-users', () => {
 
   const users = createResource({
     url: 'mbw_transition_hub.api.session.get_users',
-    cache: 'mira-users',
+    cache: 'transition_hubusers',
     initialData: [],
     auto: true,
     transform([allUsers, miraUsers]) {

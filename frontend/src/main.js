@@ -73,13 +73,11 @@ async function bootstrap() {
     if (getUser.data && getUser.data.roles) {
       await permissionStore.loadFeatures()
     } else {
-      console.log('User data or roles not available, initializing with minimal permissions')
-      await permissionStore.loadFeatures()
+      
     }
   } catch (error) {
     console.error('Error loading user data:', error)
     // Khởi tạo với quyền truy cập trống nếu có lỗi
-    await permissionStore.loadFeatures()
   }
 
   app.provide('$user', userResource)

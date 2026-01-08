@@ -1,0 +1,100 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-01-08 11:42:52.509056",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "import_session",
+  "email",
+  "phone",
+  "source",
+  "collected_at",
+  "original_purpose",
+  "consent_status",
+  "data_age_days",
+  "legal_bucket",
+  "raw_status"
+ ],
+ "fields": [
+  {
+   "fieldname": "import_session",
+   "fieldtype": "Link",
+   "label": "Import Session",
+   "options": "Transition Hub Import Session"
+  },
+  {
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "label": "Email"
+  },
+  {
+   "fieldname": "phone",
+   "fieldtype": "Data",
+   "label": "Phone"
+  },
+  {
+   "fieldname": "source",
+   "fieldtype": "Data",
+   "label": "Source"
+  },
+  {
+   "fieldname": "collected_at",
+   "fieldtype": "Datetime",
+   "label": "Collected At"
+  },
+  {
+   "fieldname": "original_purpose",
+   "fieldtype": "JSON",
+   "label": "Original Purpose"
+  },
+  {
+   "fieldname": "consent_status",
+   "fieldtype": "Select",
+   "label": "Consent Status",
+   "options": "unknown\nexplicit\nnone"
+  },
+  {
+   "fieldname": "data_age_days",
+   "fieldtype": "Int",
+   "label": "Data Age Days"
+  },
+  {
+   "fieldname": "legal_bucket",
+   "fieldtype": "Data",
+   "label": "Legal Bucket"
+  },
+  {
+   "fieldname": "raw_status",
+   "fieldtype": "Select",
+   "label": "Raw Status",
+   "options": "NEW\nCLASSIFIED\nCAMPAIGN_SENT\nDONE"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-01-08 12:04:37.922508",
+ "modified_by": "Administrator",
+ "module": "MBW Transition Hub",
+ "name": "Transition Hub Raw Candidate",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

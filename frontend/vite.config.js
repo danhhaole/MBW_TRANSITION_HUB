@@ -12,7 +12,7 @@ const __dirname = path.dirname(__filename);
 
 // https://vitejs.dev/config/
 export default defineConfig({
-	base: '/mbw_transition_hub/',
+	base: '/mbw_transition_hub',
 	plugins: [
 		frappeui({
 			frappeProxy: true,
@@ -32,10 +32,10 @@ export default defineConfig({
 			devOptions: { enabled: false },
 			manifest: {
 				display: 'standalone',
-				name: 'Talent CRM',
-				short_name: 'Talent CRM',
+				name: 'Transition Hub',
+				short_name: 'Transition Hub',
 				start_url: '/mbw_transition_hub',
-				description: 'Talent CRM .',
+				description: 'Transition Hub .',
 				icons: [],
 			},
 			workbox: {
@@ -45,7 +45,7 @@ export default defineConfig({
 	],
 	server: {
 		host: true,
-		allowedHosts: ['localhost', '127.0.0.1', 'mira.local', '172.30.57.120','russia-reduction-absolute-carriers.trycloudflare.com'],
+		allowedHosts: ['localhost', '127.0.0.1', 'hrm.local', '172.30.57.120','russia-reduction-absolute-carriers.trycloudflare.com'],
 	},
 	resolve: {
 		alias: {

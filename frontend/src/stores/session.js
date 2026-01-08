@@ -4,7 +4,7 @@ import  { userResource } from './user'
 import router from '@/router'
 import { ref, computed } from 'vue'
 
-export const sessionStore = defineStore('mira-session', () => {
+export const sessionStore = defineStore('transition_hub-session', () => {
   function sessionUser() {
     let cookies = new URLSearchParams(document.cookie.split('; ').join('&'))
     let _sessionUser = cookies.get('user_id')
@@ -34,9 +34,11 @@ export const sessionStore = defineStore('mira-session', () => {
   const logout = createResource({
     url: 'logout',
     onSuccess() {
+      
       userResource.reset()
       user.value = null
-      router.replace({ path: '/' })
+      window.location.href = "/login?redirect-to=/mbw_transition_hub"
+		return
     },
   })
 

@@ -1,0 +1,93 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-01-08 13:39:40.369177",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "raw_candidate",
+  "purpose",
+  "privacy_notice_version",
+  "campaign_type",
+  "expiry_days",
+  "response_status",
+  "responded_at"
+ ],
+ "fields": [
+  {
+   "fieldname": "raw_candidate",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Raw Candidate",
+   "options": "Transition Hub Raw Candidate",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "purpose",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Purpose",
+   "options": "Purpose",
+   "reqd": 1
+  },
+  {
+   "fieldname": "privacy_notice_version",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Privacy Notice Version",
+   "reqd": 1
+  },
+  {
+   "default": "RECONSENT_LEGAL_ONLY",
+   "fieldname": "campaign_type",
+   "fieldtype": "Data",
+   "label": "Campaign Type"
+  },
+  {
+   "fieldname": "expiry_days",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Expiry Days",
+   "reqd": 1
+  },
+  {
+   "default": "PENDING",
+   "fieldname": "response_status",
+   "fieldtype": "Select",
+   "label": "Response Status",
+   "options": "PENDING\nGRANTED\nREJECTED\nEXPIRED"
+  },
+  {
+   "fieldname": "responded_at",
+   "fieldtype": "Datetime",
+   "label": "Responded At"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-01-08 13:52:24.010758",
+ "modified_by": "Administrator",
+ "module": "MBW Transition Hub",
+ "name": "Transition Hub Consent Campaign",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

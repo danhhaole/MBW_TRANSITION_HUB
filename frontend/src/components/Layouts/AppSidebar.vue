@@ -252,7 +252,6 @@ import { capture } from '@/telemetry'
 import { useStorage } from '@vueuse/core'
 import { ref, computed, h, onMounted, reactive, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import Settings from '@/components/Settings/Settings.vue'
 
 const { getPinnedViews, getPublicViews } = viewsStore()
 const { toggle: toggleNotificationPanel } = notificationsStore()
@@ -309,130 +308,21 @@ const flyoutStyle = (label) => {
 const links = [
 	{
 		label: 'Dashboard',
-		icon: LeadsIcon,
+		icon: 'grid',
 		to: 'Dashboard',
-	},
-	{
-		label: 'Talent Hub',
-		icon: DealsIcon,
-		to: 'TalentPool',
-		relatedRoutes: ['TalentPool', 'SegmentPool'],
-		submenu: [
-			{
-				label: 'Talent Pools',
-				icon: 'layers',
-				to: 'SegmentPool',
-			},
-			{
-				label: 'Talent Profiles',
-				icon: 'users',
-				to: 'TalentPool',
-			},
-		],
-	},
-	{
-		label:'Talent Campaigns',
-		icon:OrganizationsIcon,
-		to:'',
-		relatedRoutes: [],
-		submenu: [
-			{
-				label: 'Attraction',
-				icon: Email2Icon,
-				to: { name: 'AttractionCampaign', query: { type: 'ATTRACTION' } },
-			},
-			{
-				label: 'Attract–Nurture',
-				icon: SequenceIcon,
-				to: { name: 'NurtureCampaign', query: { type: 'NURTURING' } },
-			},
-			{
-				label: 'Recruitment',
-				icon: "git",
-				to: { name: 'RecruitmentCampaign', query: { type: 'RECRUITMENT' } },
-			},
-			{
-				label: 'Campaign Templates',
-				icon: TaskIcon,
-				to: { name: 'CampaignTemplateManagement' },
-			},
-		]
-	},
-	// {
-	// 	label: 'LadiPage',
-	// 	icon: OrganizationsIcon,
-	// 	to:'https://hireos.fastwork.vn/cms/pages'
-	// },
-	{
-		label: 'My Tasks',
-		icon: TaskIcon,
-		to: { name: 'MyActions' },
-	},
-	{
-		label: 'Report',
-		icon: NoteIcon,
-		to: 'Report',
-		submenu: [
-			{
-				label: 'Interactions',
-				icon: ReplyIcon,
-				to: { name: 'InteractionManagement' },
-			},
-			{
-				label: 'Actions',
-				icon: PinIcon,
-				to: { name: 'ActionManagement' },
-			},
-			{
-				label: 'Email Logs',
-				icon: Email2Icon,
-				to: { name: 'EmailLogManagement' },
-			},
-		],
-	},
-	// {
-	//   label: "Settings",
-	//   icon: TaskIcon,
-	//   to: 'Settings',
-	//   submenu: [
-	//     // {
-	//     //   label: "integrations",
-	//     //   icon: ExternalLinkIcon,
-	//     //   to: { name: 'CandidateDataSourceManagementDirect' }
-	//     // },
-	//     // {
-	//     //   label: "Campaign Templates",
-	//     //   icon: NoteIcon,
-	//     //   to: { name: 'CampaignTemplateManagement' }
-	//     // },
-	//     {
-	//       label: "Tags",
-	//       icon: TagIcon,
-	//       to: { name: 'TagManagement' }
-	//     },
-	//     {
-	//       label: "Connectors",
-	//       icon: ExternalLinkIcon,
-	//       to: { name: 'Connectors' }
-	//       // to: 'Connectors'
-	//     },
-	//     // {
-	//     //   label: "Email Templates",
-	//     //   icon: Email2Icon,
-	//     //   to: { name: 'EmailEditor' }
-	//     // },
-	//     // {
-	//     //   label: "Ladi Pages",
-	//     //   icon: NoteIcon,
-	//     //   to: 'ladi-pages',
-	//     // },
-	//     { label: __("Email Templates"),
-	//       icon: "file",
-	//       to: "ListEmailTemplate",
-	//       feature: "emailtemplate_full_access"
-	//     },
-	//   ]
-	// },
+	},{
+		label: 'Raw Candidate',
+		icon: LeadsIcon,
+		to: '',
+	},{
+		label: 'Consent Campaign',
+		icon: LeadsIcon,
+		to: '',
+	},{
+		label: 'Consent Campaign',
+		icon: LeadsIcon,
+		to: '',
+	}
 ]
 
 const allViews = computed(() => {

@@ -1,10 +1,9 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { call } from "frappe-ui";
-import { DOCTYPE_FEATURE_MAP } from "@/config/permissionFixtures.js";
 import { usersStore } from "@/stores/user";
 
-export const usePermissionStore = defineStore("permission", () => {
+export const usePermissionStore = defineStore("transition_hub-permission", () => {
 	const userFeatures = ref([]);   
 	const featureMap = ref({});     
 	const roles = ref([]);
@@ -21,7 +20,6 @@ export const usePermissionStore = defineStore("permission", () => {
 				console.warn("⚠️ Không thể fetch userResource:", err);
 			}
 
-			console.log("userResource", userResource.data);
 
 			let resRoles = [];
 			if (userResource.data && userResource.data !== "Guest") {
@@ -37,15 +35,13 @@ export const usePermissionStore = defineStore("permission", () => {
 
 			// admin full quyền
 			if (roles.value.includes("Administrator") || roles.value.includes("System Manager")) {
-				featureMap.value = Object.fromEntries(
-					Object.keys(DOCTYPE_FEATURE_MAP).map(dt => [dt, "full"])
-				);
+				// featureMap.value = Object.fromEntries(
+				// 	Object.keys(DOCTYPE_FEATURE_MAP).map(dt => [dt, "full"])
+				// );
 				isReady.value = true;
 				return;
 			}
-
-			console.log("res.features", res.features);
-			
+		
 
 			userFeatures.value = res.features || [];
 			const map = {};
@@ -69,8 +65,6 @@ export const usePermissionStore = defineStore("permission", () => {
 
 	// ⚡ auto reactive version của can()
 	function can(doctype, level) {
-		console.log(roles.value)
-		console.log(level)
 		return computed(() => {
 			if (!isReady.value) return false;
 			if (roles.value.includes("Administrator") || roles.value.includes("System Manager")) {

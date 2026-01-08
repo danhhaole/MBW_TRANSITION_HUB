@@ -41,7 +41,7 @@ router.beforeEach(async (to, from, next) => {
 	const { isLoggedIn } = sessionStore()
 
 	if (!isPublicRoute && !isLoggedIn) {
-		window.location.href = "/login?redirect-to=/mbw_transition_hub/"
+		window.location.href = "/login?redirect-to=/mbw_transition_hub"
 		return
 	}
 
