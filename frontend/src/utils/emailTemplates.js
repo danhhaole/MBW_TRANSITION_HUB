@@ -52,7 +52,7 @@ export const getDefaultEmailTemplate = () => {
                         <!-- Footer -->
                         <tr>
                             <td style="background-color: #343a40; color: white; padding: 30px 20px; text-align: center;">
-                                <p style="margin: 0 0 10px 0; font-size: 14px;">© 2025 MBW Mira. All rights reserved.</p>
+                                <p style="margin: 0 0 10px 0; font-size: 14px;">© 2025 MBW Transition Hub. All rights reserved.</p>
                                 <p style="margin: 0; font-size: 12px;">
                                     <a href="#" style="color: #adb5bd; text-decoration: none;">Unsubscribe</a> | 
                                     <a href="#" style="color: #adb5bd; text-decoration: none;">Privacy Policy</a>

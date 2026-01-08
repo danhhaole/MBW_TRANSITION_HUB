@@ -10,8 +10,6 @@ from frappe.utils import make_filter_tuple
 from pypika import Criterion
 
 from mbw_transition_hub.api.views import get_views
-from mbw_transition_hub.mbw_transition_hub.doctype.mira_form_script.mira_form_script import get_mira_form_script
-# from mbw_transition_hub.utils import get_dynamic_linked_docs, get_linked_docs
 
 
 @frappe.whitelist()
@@ -558,8 +556,8 @@ def get_data(
 			0
 		].total_count,
 		"row_count": len(data),
-		"form_script": get_mira_form_script(doctype),
-		"list_script": get_mira_form_script(doctype, "List"),
+		"form_script": "",
+		"list_script": "",
 		"view_type": view_type,
 	}
 
